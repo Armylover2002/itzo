@@ -124,6 +124,7 @@ let globalQuickHomeCache = {
   headerSections: new Map(), // headerId -> sections
   categoryProducts: new Map(), // headerId -> products
   lastFetched: 0,
+  hasValidLocation: false,
 };
 
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -155,15 +156,22 @@ export const useQuickHomeData = ({ currentLocation }) => {
 
   const fetchData = useCallback(async () => {
     const seq = ++fetchDataSeqRef.current;
+    const hasValidLocation = Number.isFinite(currentLocation?.latitude) && Number.isFinite(currentLocation?.longitude);
     
     // Use cache if strictly valid
     if (globalQuickHomeCache.data && (Date.now() - globalQuickHomeCache.lastFetched < CACHE_EXPIRY_MS)) {
-       return;
+       // Re-fetch if we now have a valid location but cache was built without one
+       if (hasValidLocation && !globalQuickHomeCache.hasValidLocation) {
+           // Bypass cache
+       } else {
+           setIsBootstrapped(true);
+           setIsLoading(false);
+           return;
+       }
     }
 
     setIsLoading(true);
     try {
-      const hasValidLocation = Number.isFinite(currentLocation?.latitude) && Number.isFinite(currentLocation?.longitude);
       const productParams = { limit: 20 };
       if (hasValidLocation) {
         productParams.lat = currentLocation.latitude;
@@ -276,6 +284,9 @@ export const useQuickHomeData = ({ currentLocation }) => {
 
       globalQuickHomeCache.data = newDataCache;
       globalQuickHomeCache.lastFetched = Date.now();
+      if (hasValidLocation) {
+        globalQuickHomeCache.hasValidLocation = true;
+      }
     } catch (error) {
       console.error("Error fetching quick home data:", error);
     } finally {
