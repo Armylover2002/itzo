@@ -5,7 +5,8 @@ import { useSettings } from '@core/context/SettingsContext';
 
 const Footer = () => {
     const { settings } = useSettings();
-    const logoUrl = settings?.logoUrl || Logo;
+    // Use the dynamic logo set in admin, falling back through various standard keys
+    const logoUrl = settings?.landingFooterLogo?.url || settings?.userLogo?.url || settings?.adminLogo?.url || settings?.logoUrl || Logo;
     const primaryColor = settings?.primaryColor || '#0c831f';
 
     return (

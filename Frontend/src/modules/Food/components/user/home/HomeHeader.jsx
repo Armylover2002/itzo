@@ -464,7 +464,7 @@ export default function HomeHeader({
               className={cn(
                 "flex flex-col items-center justify-center py-2 px-4 rounded-[12px] transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-transparent",
                 !isFoodActive
-                  ? "bg-[#FE5502] text-white shadow-[0_6px_20px_rgba(254,85,2,0.25)] font-bold"
+                  ? "bg-[#0c831f] text-white shadow-[0_6px_20px_rgba(12,131,31,0.25)] font-bold"
                   : "bg-[#F1F5F9]/95 text-slate-600 border-transparent font-medium"
               )}
             >
