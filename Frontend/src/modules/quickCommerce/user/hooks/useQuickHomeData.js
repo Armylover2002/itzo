@@ -171,8 +171,8 @@ export const useQuickHomeData = ({ currentLocation }) => {
       }
 
       const [catRes, prodRes, expRes, sectionsRes, heroRes] = await Promise.all([
-        customerApi.getCategories(),
-        hasValidLocation ? customerApi.getProducts(productParams) : Promise.resolve({ data: { success: true, result: { items: [] } } }),
+        customerApi.getCategories().catch((err) => ({ data: { success: false, result: [], error: err } })),
+        hasValidLocation ? customerApi.getProducts(productParams).catch((err) => ({ data: { success: false, result: { items: [] }, error: err } })) : Promise.resolve({ data: { success: true, result: { items: [] } } }),
         customerApi.getExperienceSections({ pageType: "home" }).catch(() => null),
         hasValidLocation ? customerApi.getOfferSections({ lat: currentLocation.latitude, lng: currentLocation.longitude }).catch(() => ({ data: {} })) : Promise.resolve({ data: { results: [] } }),
         customerApi.getHeroConfig({ pageType: "home" }).catch(() => null),
@@ -192,7 +192,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
         subcategoryMap: {},
       };
 
-      if (catRes.data.success) {
+      if (catRes && catRes.data && catRes.data.success) {
         const dbCats = catRes.data.results || catRes.data.result || [];
         const catMap = {};
         const subMap = {};
@@ -240,7 +240,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
         newDataCache.quickCategories = formattedQuickCats;
       }
 
-      if (prodRes.data.success) {
+      if (prodRes && prodRes.data && prodRes.data.success) {
         const rawResult = prodRes.data.result;
         const dbProds = Array.isArray(prodRes.data.results) ? prodRes.data.results : (Array.isArray(rawResult?.items) ? rawResult.items : (Array.isArray(rawResult) ? rawResult : []));
         const formattedProds = dbProds.map((p) => ({
@@ -276,11 +276,13 @@ export const useQuickHomeData = ({ currentLocation }) => {
 
       globalQuickHomeCache.data = newDataCache;
       globalQuickHomeCache.lastFetched = Date.now();
-      setIsBootstrapped(true);
     } catch (error) {
       console.error("Error fetching quick home data:", error);
     } finally {
-      if (seq === fetchDataSeqRef.current) setIsLoading(false);
+      if (seq === fetchDataSeqRef.current) {
+        setIsBootstrapped(true);
+        setIsLoading(false);
+      }
     }
   }, [currentLocation, getQuickCategoryImage]);
 
