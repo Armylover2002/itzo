@@ -8,6 +8,12 @@ import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { getSellerCommissionSnapshot } from '../admin/services/commission.service.js';
 import {
+  createRazorpayOrder,
+  isRazorpayConfigured,
+  getRazorpayKeyId,
+  verifyPaymentSignature,
+} from '../../food/orders/helpers/razorpay.helper.js';
+import {
   calculateQuickPricing,
   getRiderEarning as getQuickRiderEarning,
 } from '../admin/services/billing.service.js';
@@ -254,10 +260,32 @@ export const placeOrder = async (req, res) => {
     const isOnlinePayment = String(req.body?.paymentMode || 'COD').toUpperCase() === 'ONLINE';
     const paymentMode = isOnlinePayment ? 'razorpay' : 'cash';
     const sellerPaymentMode = isOnlinePayment ? 'online' : 'cash';
-    // Seller must receive/track every order regardless of payment mode (COD/online).
-    // Earnings are based on delivered SellerOrders, so we always create these legs.
     const shouldFanOutSellerOrders = true;
     const deliveryAddress = normalizeDeliveryAddress(req.body?.address);
+    const amountDue = Math.max(0, total + Number(pricing.platformFee || 0));
+
+    let razorpayPayload = null;
+    let rpOrderId = null;
+    if (paymentMode === 'razorpay' && isRazorpayConfigured()) {
+      const amountPaise = Math.round(amountDue * 100);
+      if (amountPaise >= 100) {
+        try {
+          const rzOrder = await createRazorpayOrder(amountPaise, "INR", orderNumber);
+          rpOrderId = rzOrder.id;
+          razorpayPayload = {
+            key: getRazorpayKeyId(),
+            orderId: rzOrder.id,
+            amount: rzOrder.amount,
+            currency: rzOrder.currency || "INR",
+          };
+        } catch (err) {
+          logger.error(`Quick placeOrder Razorpay failed: ${err.message}`);
+          return res.status(500).json({ success: false, message: 'Failed to initialize payment gateway' });
+        }
+      } else {
+        return res.status(400).json({ success: false, message: 'Amount too low for online payment' });
+      }
+    }
 
     // Calculate rider earning (using base payout if distance is unknown/short)
     const riderEarning = await getQuickRiderEarning(0.1);
@@ -321,7 +349,8 @@ export const placeOrder = async (req, res) => {
       payment: {
         method: paymentMode,
         status: paymentMode === 'razorpay' ? 'created' : 'cod_pending',
-        amountDue: Math.max(0, total + Number(pricing.platformFee || 0)),
+        amountDue,
+        ...(rpOrderId ? { razorpay: { orderId: rpOrderId, paymentId: '', signature: '' } } : {})
       },
       orderStatus: 'placed',
       riderEarning: riderEarning || 0,
@@ -469,6 +498,7 @@ export const placeOrder = async (req, res) => {
         pricing: order.pricing || {},
         createdAt: order.createdAt,
       },
+      ...(razorpayPayload ? { razorpay: razorpayPayload } : {}),
     });
   } catch (error) {
     logger.error(`Quick placeOrder failed: ${error?.message || error}`);
@@ -627,12 +657,62 @@ export const getOrderById = async (req, res) => {
     });
   } catch (error) {
     logger.error(`Quick getOrderById failed: ${error?.message || error}`);
-    return res.status(500).json({
-      success: false,
-      error: error?.message || 'Failed to load quick order',
-    });
+    return res.status(500).json({ success: false, message: 'Failed to fetch order details' });
   }
 };
+
+export const verifyPayment = async (req, res) => {
+  try {
+    const idQuery = resolveId(req);
+    if (!idQuery) {
+      return res.status(400).json({ success: false, message: 'sessionId or userId is required' });
+    }
+
+    const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+    if (!orderId || !razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+      return res.status(400).json({ success: false, message: 'Missing payment details' });
+    }
+
+    const order = await QuickOrder.findOne({
+      ...idQuery,
+      $or: [{ _id: orderId }, { orderId: orderId }],
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const isValid = verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+    if (!isValid) {
+      return res.status(400).json({ success: false, message: 'Payment verification failed' });
+    }
+
+    order.payment.status = 'paid';
+    if (!order.payment.razorpay) order.payment.razorpay = {};
+    order.payment.razorpay.paymentId = razorpayPaymentId;
+    order.payment.razorpay.signature = razorpaySignature;
+    
+    order.statusHistory.push({
+      byRole: 'USER',
+      from: order.orderStatus,
+      to: order.orderStatus,
+      note: 'Payment verified successfully',
+    });
+
+    await order.save();
+    emitQuickOrderStatusUpdate(order, 'Payment verified successfully');
+
+    return res.json({
+      success: true,
+      message: 'Payment verified successfully',
+      data: { payment: order.payment },
+    });
+  } catch (error) {
+    logger.error(`Quick verifyPayment failed: ${error?.message || error}`);
+    return res.status(500).json({ success: false, message: 'Failed to verify payment' });
+  }
+};
+
 
 export const cancelOrder = async (req, res) => {
   try {

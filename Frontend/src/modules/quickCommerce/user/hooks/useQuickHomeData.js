@@ -180,9 +180,9 @@ export const useQuickHomeData = ({ currentLocation }) => {
 
       const [catRes, prodRes, expRes, sectionsRes, heroRes] = await Promise.all([
         customerApi.getCategories().catch((err) => ({ data: { success: false, result: [], error: err } })),
-        hasValidLocation ? customerApi.getProducts(productParams).catch((err) => ({ data: { success: false, result: { items: [] }, error: err } })) : Promise.resolve({ data: { success: true, result: { items: [] } } }),
+        customerApi.getProducts(productParams).catch((err) => ({ data: { success: false, result: { items: [] }, error: err } })),
         customerApi.getExperienceSections({ pageType: "home" }).catch(() => null),
-        hasValidLocation ? customerApi.getOfferSections({ lat: currentLocation.latitude, lng: currentLocation.longitude }).catch(() => ({ data: {} })) : Promise.resolve({ data: { results: [] } }),
+        customerApi.getOfferSections(hasValidLocation ? { lat: currentLocation.latitude, lng: currentLocation.longitude } : {}).catch(() => ({ data: { results: [] } })),
         customerApi.getHeroConfig({ pageType: "home" }).catch(() => null),
       ]);
 

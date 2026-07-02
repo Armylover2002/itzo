@@ -40,11 +40,20 @@ export function ProfileProvider({ children }) {
   const syncAddressesToStorage = (nextAddresses) => {
     localStorage.setItem("userAddresses", JSON.stringify(nextAddresses))
   }
-  const getUserSessionToken = () =>
-    localStorage.getItem("user_accessToken") ||
-    localStorage.getItem("auth_customer") ||
-    localStorage.getItem("accessToken") ||
-    null
+  const getUserSessionToken = () => {
+    let token = localStorage.getItem("user_accessToken") || localStorage.getItem("auth_customer");
+    if (!token) {
+      const generic = localStorage.getItem("accessToken");
+      if (generic) {
+        try {
+          const payload = JSON.parse(window.atob(generic.split(".")[1]));
+          if (payload?.role && payload.role.toUpperCase() !== "USER") return null;
+        } catch (e) {}
+        token = generic;
+      }
+    }
+    return token;
+  };
   const hasUserSession = Boolean(getUserSessionToken())
 
   const [userProfile, setUserProfile] = useState(() => {
@@ -179,6 +188,10 @@ export function ProfileProvider({ children }) {
           // Update localStorage
           localStorage.setItem("user_user", JSON.stringify(userData))
           localStorage.setItem("userProfile", JSON.stringify(userData))
+          
+          if (userData.role && userData.role !== 'USER') {
+            return;
+          }
         }
 
         // Fetch addresses

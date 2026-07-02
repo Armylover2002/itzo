@@ -1067,7 +1067,12 @@ export const useDeliveryNotifications = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (socketRef.current) {
         socketRef.current.removeAllListeners();
-        socketRef.current.disconnect();
+        const s = socketRef.current;
+        if (!s.connected) {
+           setTimeout(() => { if (s) s.disconnect(); }, 500);
+        } else {
+           s.disconnect();
+        }
         socketRef.current = null;
       }
     };

@@ -86,7 +86,19 @@ function getAccessToken(config) {
     
     // 2. Fallback to generic token only for non-admin modules
     if (module !== "admin") {
-      return localStorage.getItem("accessToken") || null;
+      const generic = localStorage.getItem("accessToken");
+      if (generic) {
+        try {
+          const payload = JSON.parse(window.atob(generic.split(".")[1]));
+          const expectedRole = module === "user" ? "USER" :
+                               module === "restaurant" ? "RESTAURANT" :
+                               module === "delivery" ? "DELIVERY_PARTNER" : null;
+          if (expectedRole && payload?.role && payload.role.toUpperCase() !== expectedRole) {
+            return null;
+          }
+        } catch (e) {}
+        return generic;
+      }
     }
     return null;
   } catch {

@@ -5,11 +5,18 @@ const OrdersContext = createContext(null)
 export function OrdersProvider({ children }) {
   const hasCustomerAuth = () => {
     if (typeof window === "undefined") return false
-    return Boolean(
-      localStorage.getItem("auth_customer") ||
-      localStorage.getItem("user_accessToken") ||
-      localStorage.getItem("accessToken")
-    )
+    let token = localStorage.getItem("auth_customer") || localStorage.getItem("user_accessToken")
+    if (!token) {
+      const generic = localStorage.getItem("accessToken")
+      if (generic) {
+        try {
+          const payload = JSON.parse(window.atob(generic.split(".")[1]))
+          if (payload?.role && payload.role.toUpperCase() !== "USER") return false
+        } catch (e) {}
+        token = generic
+      }
+    }
+    return Boolean(token)
   }
 
   const [orders, setOrders] = useState(() => {

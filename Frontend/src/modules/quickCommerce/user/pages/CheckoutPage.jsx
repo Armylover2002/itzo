@@ -36,6 +36,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@shared/components/ui/Toast";
 import { useSettings } from "@core/context/SettingsContext";
 import SlideToPay from "../components/shared/SlideToPay";
+import { initRazorpayPayment } from "@food/utils/razorpay";
 import { getCachedGeocode, setCachedGeocode } from "@/core/utils/geocodeCache";
 import {
   getOrderSocket,
@@ -1255,29 +1256,86 @@ const CheckoutPage = () => {
 
       if (response.data.success) {
         const order = response.data.result;
+        const razorpay = response.data.razorpay;
         const placedOrderId =
           order?.orderId || order?.orderNumber || order?.id || order?._id || "";
-        clearCart();
-        try {
-          if (typeof window !== "undefined") {
-            window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
-            window.localStorage.removeItem(RECIPIENT_STORAGE_KEY);
+          
+        const finishOrderSuccess = (finalOrder) => {
+          clearCart();
+          try {
+            if (typeof window !== "undefined") {
+              window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
+              window.localStorage.removeItem(RECIPIENT_STORAGE_KEY);
+            }
+          } catch {
+            // ignore storage errors
           }
-        } catch {
-          // ignore storage errors
+
+          showToast(`Order placed — waiting for seller to accept.`, "success");
+          setOrderId(placedOrderId);
+          setShowSuccess(true);
+
+          if (postOrderNavigateRef.current) {
+            clearTimeout(postOrderNavigateRef.current);
+          }
+          postOrderNavigateRef.current = setTimeout(() => {
+            postOrderNavigateRef.current = null;
+            navigate(getQuickOrderDetailPath(placedOrderId || finalOrder?._id || finalOrder?.id));
+          }, 1200);
+        };
+
+        if (razorpay && razorpay.orderId && razorpay.key) {
+          try {
+            await initRazorpayPayment({
+              key: razorpay.key,
+              amount: razorpay.amount,
+              currency: razorpay.currency || "INR",
+              order_id: razorpay.orderId,
+              name: "Itzo Quick Commerce",
+              description: `Order ${order.orderId || order._id}`,
+              prefill: {
+                name: String(userProfile?.name || "Customer"),
+                email: String(userProfile?.email || "customer@example.com"),
+                contact: String(userProfile?.phone || "").replace(/\D/g, "")
+              },
+              notes: {
+                orderId: order._id || order.orderId
+              },
+              handler: async (rpResponse) => {
+                try {
+                  const verifyRes = await customerApi.verifyPayment({
+                    orderId: order._id || order.orderId,
+                    razorpayOrderId: rpResponse.razorpay_order_id,
+                    razorpayPaymentId: rpResponse.razorpay_payment_id,
+                    razorpaySignature: rpResponse.razorpay_signature
+                  });
+
+                  if (verifyRes.data.success) {
+                    finishOrderSuccess(order);
+                  } else {
+                    throw new Error("Payment verification failed");
+                  }
+                } catch (err) {
+                  console.error(err);
+                  showToast("Payment verification failed. Please contact support.", "error");
+                  setIsPlacingOrder(false);
+                }
+              },
+              onError: (err) => {
+                console.error(err);
+                showToast("Payment failed or cancelled.", "error");
+                setIsPlacingOrder(false);
+              }
+            });
+          } catch (err) {
+            showToast("Failed to initialize payment gateway", "error");
+            setIsPlacingOrder(false);
+          }
+          return;
         }
 
-        showToast(`Order placed — waiting for seller to accept.`, "success");
-        setOrderId(placedOrderId);
-        setShowSuccess(true);
-
-        if (postOrderNavigateRef.current) {
-          clearTimeout(postOrderNavigateRef.current);
-        }
-        postOrderNavigateRef.current = setTimeout(() => {
-          postOrderNavigateRef.current = null;
-          navigate(getQuickOrderDetailPath(placedOrderId || order?._id || order?.id));
-        }, 1200);
+        // Cash flow or fallback
+        finishOrderSuccess(order);
       }
     } catch (error) {
       console.error("Failed to place order:", error);
@@ -1286,7 +1344,6 @@ const CheckoutPage = () => {
           "Failed to place order. Please try again.",
         "error",
       );
-    } finally {
       setIsPlacingOrder(false);
     }
   };

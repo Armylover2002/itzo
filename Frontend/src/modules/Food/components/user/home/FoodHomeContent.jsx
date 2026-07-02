@@ -97,7 +97,22 @@ const FoodRestaurantCard = memo(function FoodRestaurantCard({
                         event.preventDefault();
                         event.stopPropagation();
                         
-                        const token = localStorage.getItem("user_accessToken") || localStorage.getItem("auth_customer") || localStorage.getItem("accessToken");
+                        let token = localStorage.getItem("user_accessToken") || localStorage.getItem("auth_customer");
+                        if (!token) {
+                          const generic = localStorage.getItem("accessToken");
+                          if (generic) {
+                            try {
+                              const payload = JSON.parse(window.atob(generic.split(".")[1]));
+                              if (payload?.role && payload.role.toUpperCase() !== "USER") {
+                                token = null;
+                              } else {
+                                token = generic;
+                              }
+                            } catch (e) {
+                              token = generic;
+                            }
+                          }
+                        }
                         if (!token) {
                           toast.error("Please login to save dishes to your wishlist");
                           return;

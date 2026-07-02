@@ -532,7 +532,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     });
   }, [activeCategory, onThemeChange]);
 
-  const isInitialPageLoading = !isBootstrapped || isLoading;
+  const isInitialPageLoading = !isBootstrapped;
   const hasHeroBanners = (heroConfig.banners?.items || []).length > 0;
   const shouldShowHeroFallback = !isInitialPageLoading && !hasHeroBanners;
 

@@ -71,11 +71,20 @@ import { useOrders } from "@food/context/OrdersContext";
 import { orderAPI } from "@food/api";
 
 const getOrderKey = (order) => order?.id || order?._id || order?.orderId || null;
-const getCustomerToken = () =>
-  localStorage.getItem("auth_customer") ||
-  localStorage.getItem("user_accessToken") ||
-  localStorage.getItem("accessToken") ||
-  null;
+const getCustomerToken = () => {
+  let token = localStorage.getItem("auth_customer") || localStorage.getItem("user_accessToken");
+  if (!token) {
+    const generic = localStorage.getItem("accessToken");
+    if (generic) {
+      try {
+        const payload = JSON.parse(window.atob(generic.split(".")[1]));
+        if (payload?.role && payload.role.toUpperCase() !== "USER") return null;
+      } catch (e) {}
+      token = generic;
+    }
+  }
+  return token;
+};
 
 const getOrderStatus = (order) =>
   String(order?.orderStatus || order?.status || order?.deliveryState?.status || "").toLowerCase();

@@ -2797,6 +2797,9 @@ export async function listOrdersUser(userId, query) {
       .lean(),
     FoodOrder.countDocuments(filter),
   ]);
+
+  await enrichPickupPointsWithSellerData(docs);
+
   return buildPaginatedResult({
     docs: docs.map((doc) => normalizeOrderForClient(doc)),
     total,
@@ -3236,6 +3239,9 @@ export async function listOrdersRestaurant(restaurantId, query) {
       .lean(),
     FoodOrder.countDocuments(filter),
   ]);
+
+  await enrichPickupPointsWithSellerData(docs);
+
   return buildPaginatedResult({ docs, total, page, limit });
 }
 
@@ -3675,6 +3681,60 @@ export async function resendDeliveryNotificationRestaurant(orderId, restaurantId
     return { success: true };
 }
 
+async function enrichPickupPointsWithSellerData(orderDocs) {
+    if (!Array.isArray(orderDocs)) {
+        orderDocs = [orderDocs];
+    }
+    const sellerIds = new Set();
+    for (const order of orderDocs) {
+        if (!order) continue;
+        if (order.orderType === 'quick' || order.orderType === 'mixed') {
+            const points = order.pickupPoints || [];
+            for (const point of points) {
+                if (point.pickupType === 'quick' && point.sourceId) {
+                    sellerIds.add(point.sourceId);
+                }
+            }
+        }
+    }
+    
+    if (sellerIds.size === 0) return;
+    
+    const { Seller } = await import('../../../quick-commerce/seller/models/seller.model.js');
+    const sellers = await Seller.find({ _id: { $in: Array.from(sellerIds) } }).lean();
+    const sellerMap = {};
+    for (const s of sellers) {
+        sellerMap[String(s._id)] = s;
+    }
+    
+    for (const order of orderDocs) {
+        if (!order) continue;
+        if (order.orderType === 'quick' || order.orderType === 'mixed') {
+            const points = order.pickupPoints || [];
+            for (let i = 0; i < points.length; i++) {
+                if (points[i].pickupType === 'quick' && points[i].sourceId) {
+                    const seller = sellerMap[String(points[i].sourceId)];
+                    if (seller) {
+                        const sellerAddress = seller.location?.formattedAddress || seller.location?.address || seller.address || '';
+                        if (sellerAddress && !points[i].address) {
+                            points[i].address = sellerAddress;
+                        }
+                        if (seller.location?.coordinates && !points[i].location) {
+                            points[i].location = {
+                                type: 'Point',
+                                coordinates: seller.location.coordinates
+                            };
+                        }
+                        if (!points[i].sourceName && seller.shopName) {
+                             points[i].sourceName = seller.shopName;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 export async function getCurrentTripDelivery(deliveryPartnerId) {
   if (!deliveryPartnerId) throw new ValidationError("Delivery partner ID required");
   const partnerId = new mongoose.Types.ObjectId(deliveryPartnerId);
@@ -3695,6 +3755,7 @@ export async function getCurrentTripDelivery(deliveryPartnerId) {
     .lean();
 
   if (!order) return null;
+  await enrichPickupPointsWithSellerData([order]);
   return buildDeliveryOrderView(order, deliveryPartnerId, {
     assignedDispatchLeg: getAssignedDispatchLeg(order, deliveryPartnerId),
   });
@@ -3764,6 +3825,8 @@ export async function listOrdersAvailableDelivery(deliveryPartnerId, query) {
     .populate("userId", "name phone email gender")
     .populate("restaurantId", "restaurantName name address phone ownerPhone location profileImage")
     .lean();
+
+  await enrichPickupPointsWithSellerData(orders);
 
   const docs = [];
   for (const order of orders) {
