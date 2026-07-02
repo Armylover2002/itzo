@@ -41,7 +41,10 @@ if (typeof window !== 'undefined') {
 const resolveAudioSource = (source) => {
   if (!source) return '';
   // Handle ES6 module imports where the URL might be in a 'default' property
-  const url = typeof source === 'object' ? (source.default || source) : source;
+  let url = typeof source === 'object' ? (source.default || source) : source;
+  if (url && typeof url === 'string' && !url.includes('bypass=')) {
+    url += (url.includes('?') ? '&' : '?') + 'bypass=true';
+  }
   return url;
 };
 
@@ -779,7 +782,7 @@ export const useDeliveryNotifications = () => {
 
     socketRef.current = io(socketUrl, {
       path: '/socket.io/',
-      transports: ['polling', 'websocket'], // Allow both
+      transports: ['websocket', 'polling'], // Try websocket first to prevent upgrade closed errors
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,

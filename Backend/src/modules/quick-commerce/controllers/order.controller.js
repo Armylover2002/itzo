@@ -262,6 +262,39 @@ export const placeOrder = async (req, res) => {
     // Calculate rider earning (using base payout if distance is unknown/short)
     const riderEarning = await getQuickRiderEarning(0.1);
 
+    const sellerBuckets = new Map();
+    items.forEach((item) => {
+      const sellerId = item.sellerId ? String(item.sellerId) : '';
+      if (!sellerId) return;
+      if (!sellerBuckets.has(sellerId)) sellerBuckets.set(sellerId, []);
+      sellerBuckets.get(sellerId).push(item);
+    });
+
+    const sellerIds = Array.from(sellerBuckets.keys());
+    const sellers = sellerIds.length > 0 ? await Seller.find({ _id: { $in: sellerIds } }).lean() : [];
+    const sellerMap = sellers.reduce((acc, seller) => {
+      acc[String(seller._id)] = seller;
+      return acc;
+    }, {});
+
+    const pickupPoints = [];
+    for (const [sellerId, sellerItems] of sellerBuckets.entries()) {
+      const seller = sellerMap[sellerId];
+      if (seller) {
+         pickupPoints.push({
+           pickupType: 'quick',
+           sourceId: sellerId,
+           sourceName: seller.shopName || seller.name || 'Seller store',
+           address: seller.location?.address || seller.location?.formattedAddress || seller.address || '',
+           location: seller.location?.coordinates ? {
+             type: 'Point',
+             coordinates: seller.location.coordinates
+           } : undefined,
+           itemIds: sellerItems.map(i => String(i.productId))
+         });
+      }
+    }
+
     const order = await QuickOrder.create({
       orderType: 'quick',
       orderId: orderNumber,
@@ -277,6 +310,7 @@ export const placeOrder = async (req, res) => {
         sourceId: String(item.sellerId || item.productId),
         sourceName: '',
       })),
+      pickupPoints,
       pricing: {
         ...pricing,
         subtotal,
@@ -303,14 +337,6 @@ export const placeOrder = async (req, res) => {
           note: 'Quick commerce order placed',
         },
       ],
-    });
-
-    const sellerBuckets = new Map();
-    items.forEach((item) => {
-      const sellerId = item.sellerId ? String(item.sellerId) : '';
-      if (!sellerId) return;
-      if (!sellerBuckets.has(sellerId)) sellerBuckets.set(sellerId, []);
-      sellerBuckets.get(sellerId).push(item);
     });
 
     const sellerOrdersResults = sellerBuckets.size > 0
