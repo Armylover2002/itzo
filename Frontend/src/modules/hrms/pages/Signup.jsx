@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
+import AssessmentRunner from '../components/AssessmentRunner';
 import {
     Building2, User, Mail, Phone, Lock, MapPin, FileText,
-    GraduationCap, Briefcase, CreditCard, Heart, ChevronLeft,
+    GraduationCap, CreditCard, Heart, ChevronLeft,
     ChevronRight, Check, AlertCircle, Eye, EyeOff, Upload, Loader2
 } from 'lucide-react';
 
@@ -14,6 +15,7 @@ const STEPS = [
     { title: 'Address & KYC', icon: MapPin },
     { title: 'Qualifications', icon: GraduationCap },
     { title: 'Bank & Emergency', icon: CreditCard },
+    { title: 'Assessment', icon: FileText },
 ];
 
 export default function Signup() {
@@ -78,7 +80,7 @@ export default function Signup() {
                 if (!form.email.trim()) { toast.error('Email is required'); return false; }
                 if (!isValidEmail(form.email)) { toast.error('Please enter a valid email address'); return false; }
                 if (!form.phone.trim()) { toast.error('Phone number is required'); return false; }
-                if (!isValidPhone(form.phone)) { toast.error('Enter a valid 10-digit mobile number (starting with 6-9)'); return false; }
+                if (!isValidPhone(form.phone)) { toast.error('Enter a valid 10-digit mobile number'); return false; }
                 if (!form.password || form.password.length < 6) { toast.error('Password must be at least 6 characters'); return false; }
                 return true;
             case 1:
@@ -100,8 +102,7 @@ export default function Signup() {
 
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
-    const handleSubmit = async () => {
-        if (!validateStep()) return;
+    const handleFinalSubmit = async (assessmentResult) => {
         setLoading(true);
         try {
             const payload = {
@@ -141,7 +142,8 @@ export default function Signup() {
                     name: form.emergencyName,
                     relation: form.emergencyRelation,
                     phone: form.emergencyPhone
-                }
+                },
+                assessmentAttemptId: assessmentResult?.attemptId
             };
 
             await axiosInstance.post('/hrms/joining-requests/register', payload);
@@ -165,7 +167,7 @@ export default function Signup() {
                         </div>
                         <h2 className="text-2xl font-bold text-slate-900 mb-3">Application Submitted!</h2>
                         <p className="text-slate-400 text-sm leading-relaxed mb-8">
-                            Your joining request has been received. Our team will review your application and you'll be notified once it's approved. You cannot login until approved.
+                            Your joining request has been received along with your assessment result. Our team will review your application and you'll be notified once it's approved. You cannot login until approved.
                         </p>
                         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6">
                             <div className="flex items-start gap-3">
@@ -465,44 +467,40 @@ export default function Signup() {
                             </div>
                         )}
 
-                        {/* Navigation Buttons */}
-                        <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
-                            <button
-                                onClick={currentStep === 0 ? () => navigate('/hrms/login') : prevStep}
-                                className="flex items-center gap-2 px-5 h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all text-sm border border-slate-200"
-                            >
-                                <ChevronLeft className="w-4 h-4" />
-                                {currentStep === 0 ? 'Login' : 'Previous'}
-                            </button>
+                        {/* Step 5: Assessment */}
+                        {currentStep === 4 && (
+                            <div className="-m-6 sm:-m-8">
+                                <AssessmentRunner 
+                                    applicantInfo={{
+                                        fullName: form.fullName.trim(),
+                                        email: form.email.trim(),
+                                        phone: form.phone.trim()
+                                    }} 
+                                    onComplete={(result) => handleFinalSubmit(result)} 
+                                />
+                            </div>
+                        )}
 
-                            {currentStep < STEPS.length - 1 ? (
+                        {/* Navigation Buttons (Hide during assessment) */}
+                        {currentStep < 4 && (
+                            <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+                                <button
+                                    onClick={currentStep === 0 ? () => navigate('/hrms/login') : prevStep}
+                                    className="flex items-center gap-2 px-5 h-11 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all text-sm border border-slate-200"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                    {currentStep === 0 ? 'Login' : 'Previous'}
+                                </button>
+
                                 <button
                                     onClick={nextStep}
                                     className="flex items-center gap-2 px-5 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm"
                                 >
-                                    Next
+                                    {currentStep === 3 ? 'Start Assessment' : 'Next'}
                                     <ChevronRight className="w-4 h-4" />
                                 </button>
-                            ) : (
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={loading}
-                                    className="flex items-center gap-2 px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm disabled:opacity-50"
-                                >
-                                    {loading ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Submitting...
-                                        </span>
-                                    ) : (
-                                        <>
-                                            Submit Application
-                                            <Check className="w-4 h-4" />
-                                        </>
-                                    )}
-                                </button>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

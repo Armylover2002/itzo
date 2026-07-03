@@ -124,7 +124,13 @@ const hrmsJoiningRequestSchema = new mongoose.Schema(
             changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodAdmin' },
             changedAt: { type: Date, default: Date.now },
             reason: { type: String }
-        }]
+        }],
+
+        // Assessment Link
+        assessmentAttemptId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'AssessmentAttempt'
+        }
     },
     {
         timestamps: true,

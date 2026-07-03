@@ -268,6 +268,17 @@ export const adminSidebarMenu = [
       },
       {
         type: "expandable",
+        label: "Assessment Mgmt",
+        icon: "FileQuestion",
+        permissionKey: "assessments",
+        subItems: [
+          { label: "Question Bank", path: "/ecs/hrms/assessments/question-bank", permissionKey: "questions" },
+          { label: "Settings", path: "/ecs/hrms/assessments/settings", permissionKey: "settings" },
+          { label: "Test Analysis", path: "/ecs/hrms/assessments/analysis", permissionKey: "analysis" },
+        ],
+      },
+      {
+        type: "expandable",
         label: "Daily Reports",
         icon: "FileText",
         permissionKey: "daily_reports",

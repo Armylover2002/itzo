@@ -20,6 +20,11 @@ const AdminReportList = lazy(() => import("./reports/AdminReportList"));
 const AdminReportDetails = lazy(() => import("./reports/AdminReportDetails"));
 const AdminReportSettings = lazy(() => import("./reports/AdminReportSettings"));
 
+// Assessments
+const QuestionBank = lazy(() => import('./assessments/QuestionBank'));
+const AssessmentSettings = lazy(() => import('./assessments/AssessmentSettings'));
+const TestAnalysis = lazy(() => import('./assessments/TestAnalysis'));
+
 export default function HrmsRouter() {
     return (
         <Suspense fallback={<Loader />}>
@@ -40,6 +45,12 @@ export default function HrmsRouter() {
                 <Route path="support/requests" element={<SupportRequests />} />
                 <Route path="support/requests/:id" element={<SupportAdminDetails />} />
                 <Route path="support/settings" element={<SupportSettings />} />
+
+                {/* Assessments */}
+                <Route path="assessments" element={<Navigate to="question-bank" replace />} />
+                <Route path="assessments/question-bank" element={<QuestionBank />} />
+                <Route path="assessments/settings" element={<AssessmentSettings />} />
+                <Route path="assessments/analysis" element={<TestAnalysis />} />
 
                 {/* Daily Reports */}
                 <Route path="reports" element={<Navigate to="dashboard" replace />} />
