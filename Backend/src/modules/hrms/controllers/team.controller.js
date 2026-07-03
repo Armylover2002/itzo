@@ -113,7 +113,7 @@ export const addTeamMember = async (req, res, next) => {
 export const removeTeamMember = async (req, res, next) => {
     try {
         if (!req.hrmsEmployee) return sendError(res, 401, 'Unauthorized');
-        const { employeeId } = req.params;
+        const { employeeId } = req.body;
 
         const employee = await HrmsEmployee.findById(employeeId);
         if (!employee) return sendError(res, 404, 'Employee not found');
