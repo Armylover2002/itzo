@@ -1,12 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
-import Logo from '@/assets/Logo.png';
 import { useSettings } from '@core/context/SettingsContext';
+import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
 
 const Footer = () => {
     const { settings } = useSettings();
-    // Use the dynamic logo set in admin, falling back through various standard keys
-    const logoUrl = settings?.landingFooterLogo?.url || settings?.userLogo?.url || settings?.adminLogo?.url || settings?.logoUrl || Logo;
+    const [dynamicLogoUrl, setDynamicLogoUrl] = useState(undefined);
+
+    useEffect(() => {
+        const loadLogo = async () => {
+            try {
+                const cached = getCachedSettings();
+                if (cached?.logo?.url) {
+                    setDynamicLogoUrl(cached.logo.url);
+                } else {
+                    const businessSettings = await loadBusinessSettings();
+                    if (businessSettings?.logo?.url) {
+                        setDynamicLogoUrl(businessSettings.logo.url);
+                    }
+                }
+            } catch (error) {
+                // Silently fail, fallback to useSettings
+            }
+        };
+        loadLogo();
+
+        const handleSettingsUpdate = () => {
+            const cached = getCachedSettings();
+            if (cached?.logo?.url) {
+                setDynamicLogoUrl(cached.logo.url);
+            }
+        };
+        window.addEventListener('businessSettingsUpdated', handleSettingsUpdate);
+
+        return () => {
+            window.removeEventListener('businessSettingsUpdated', handleSettingsUpdate);
+        };
+    }, []);
+
+    // Use the dynamic logo from businessSettings, fallback to settings context, then defaults
+    let logoUrl = dynamicLogoUrl || settings?.logo?.url || settings?.landingFooterLogo?.url || settings?.userLogo?.url || settings?.adminLogo?.url || settings?.logoUrl || '/itzo-logo-transparent.png';
+    
+    // Edge case: override the old non-transparent logo if it's set in the DB
+    if (typeof logoUrl === 'string' && logoUrl.includes('itzo-logo.jpg')) {
+        logoUrl = '/itzo-logo-transparent.png';
+    }
+
     const primaryColor = settings?.primaryColor || '#0c831f';
 
     return (

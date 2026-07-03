@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Settings, Loader2, Save, Plus, X, Clock, CalendarDays, Wallet, Building2, MapPin, Upload, Image } from 'lucide-react';
+import { Settings, Loader2, Save, Plus, X, Clock, CalendarDays, Wallet, Building2, MapPin, Upload, Image, Navigation } from 'lucide-react';
 
 export default function HrmsSettings() {
     const [settings, setSettings] = useState(null);
@@ -89,6 +89,7 @@ export default function HrmsSettings() {
         { key: 'leavePolicies', label: 'Leave Policies', icon: CalendarDays },
         { key: 'payrollRules', label: 'Payroll Rules', icon: Wallet },
         { key: 'organization', label: 'Organization', icon: Building2 },
+        { key: 'trackingSettings', label: 'Tracking Settings', icon: Navigation },
         { key: 'shifts', label: 'Shifts', icon: Clock },
         { key: 'holidayCalendar', label: 'Holiday Calendar', icon: CalendarDays },
     ];
@@ -326,9 +327,116 @@ export default function HrmsSettings() {
                                 }} className="px-4 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium"><Plus className="w-4 h-4" /></button>
                             </div>
                         </div>
+
+                        {/* Office Locations */}
+                        <div>
+                            <h3 className="font-semibold text-slate-900 mb-3">Office Locations</h3>
+                            <div className="space-y-3 mb-4">
+                                {(settings.organization?.officeLocations || []).map((loc, i) => (
+                                    <div key={i} className="p-4 border border-slate-200 rounded-xl space-y-3 bg-slate-50 relative">
+                                        <button onClick={() => {
+                                            const locs = [...settings.organization.officeLocations];
+                                            locs.splice(i, 1);
+                                            updateNested('organization.officeLocations', locs);
+                                        }} className="absolute top-4 right-4"><X className="w-4 h-4 text-slate-400 hover:text-red-500" /></button>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                            <div>
+                                                <label className={labelClass}>Office Name</label>
+                                                <input className={inputClass} value={loc.name} onChange={e => {
+                                                    const locs = [...settings.organization.officeLocations];
+                                                    locs[i].name = e.target.value; updateNested('organization.officeLocations', locs);
+                                                }} placeholder="e.g. HQ Mumbai" />
+                                            </div>
+                                            <div>
+                                                <label className={labelClass}>Latitude</label>
+                                                <input type="number" step="any" className={inputClass} value={loc.latitude || ''} onChange={e => {
+                                                    const locs = [...settings.organization.officeLocations];
+                                                    locs[i].latitude = Number(e.target.value); updateNested('organization.officeLocations', locs);
+                                                }} placeholder="19.0760" />
+                                            </div>
+                                            <div>
+                                                <label className={labelClass}>Longitude</label>
+                                                <input type="number" step="any" className={inputClass} value={loc.longitude || ''} onChange={e => {
+                                                    const locs = [...settings.organization.officeLocations];
+                                                    locs[i].longitude = Number(e.target.value); updateNested('organization.officeLocations', locs);
+                                                }} placeholder="72.8777" />
+                                            </div>
+                                            <div>
+                                                <label className={labelClass}>Radius (Meters)</label>
+                                                <input type="number" className={inputClass} value={loc.radiusMeters || 200} onChange={e => {
+                                                    const locs = [...settings.organization.officeLocations];
+                                                    locs[i].radiusMeters = Number(e.target.value); updateNested('organization.officeLocations', locs);
+                                                }} placeholder="200" />
+                                            </div>
+                                            <div className="sm:col-span-2 lg:col-span-4 flex gap-4 items-center">
+                                                <div className="flex-1">
+                                                    <label className={labelClass}>Address</label>
+                                                    <input className={inputClass} value={loc.address || ''} onChange={e => {
+                                                        const locs = [...settings.organization.officeLocations];
+                                                        locs[i].address = e.target.value; updateNested('organization.officeLocations', locs);
+                                                    }} placeholder="Full Address" />
+                                                </div>
+                                                <label className="flex items-center gap-2 mt-4 text-sm font-medium text-slate-700 cursor-pointer">
+                                                    <input type="checkbox" checked={loc.isActive !== false} onChange={e => {
+                                                        const locs = [...settings.organization.officeLocations];
+                                                        locs[i].isActive = e.target.checked; updateNested('organization.officeLocations', locs);
+                                                    }} className="accent-orange-500 w-4 h-4 rounded border-slate-300" />
+                                                    Active
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <button onClick={() => {
+                                const locs = settings.organization?.officeLocations || [];
+                                updateNested('organization.officeLocations', [...locs, { name: '', address: '', latitude: 0, longitude: 0, radiusMeters: 200, isActive: true }]);
+                            }} className="flex items-center gap-2 text-sm text-orange-600 font-medium"><Plus className="w-4 h-4" /> Add Office Location</button>
+                        </div>
+                        
                         <button onClick={() => saveSection('organization', settings.organization)} disabled={saving}
                             className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Organization'}
+                        </button>
+                    </div>
+                )}
+
+                {activeSection === 'trackingSettings' && (
+                    <div className="space-y-6">
+                        <h3 className="font-semibold text-slate-900 mb-4">Live Tracking Settings (Field Employees)</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <label className={labelClass}>Enable Live Tracking</label>
+                                <select className={inputClass} value={settings.trackingSettings?.enableLiveTracking ? 'true' : 'false'}
+                                    onChange={e => updateNested('trackingSettings.enableLiveTracking', e.target.value === 'true')}>
+                                    <option value="true">Enabled</option>
+                                    <option value="false">Disabled</option>
+                                </select>
+                                <p className="text-xs text-slate-500 mt-1">If enabled, field employees' locations will be tracked after check-in.</p>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Tracking Interval (Seconds)</label>
+                                <input type="number" className={inputClass} value={settings.trackingSettings?.trackingIntervalSeconds || 60}
+                                    onChange={e => updateNested('trackingSettings.trackingIntervalSeconds', Number(e.target.value))} />
+                                <p className="text-xs text-slate-500 mt-1">How often the app sends GPS points to the server.</p>
+                            </div>
+                            <div>
+                                <label className={labelClass}>GPS Accuracy Threshold (Meters)</label>
+                                <input type="number" className={inputClass} value={settings.trackingSettings?.gpsAccuracyThreshold || 50}
+                                    onChange={e => updateNested('trackingSettings.gpsAccuracyThreshold', Number(e.target.value))} />
+                                <p className="text-xs text-slate-500 mt-1">Points with worse accuracy will be rejected.</p>
+                            </div>
+                            <div>
+                                <label className={labelClass}>Location Retention (Days)</label>
+                                <input type="number" className={inputClass} value={settings.trackingSettings?.locationRetentionDays || 30}
+                                    onChange={e => updateNested('trackingSettings.locationRetentionDays', Number(e.target.value))} />
+                                <p className="text-xs text-slate-500 mt-1">Number of days to keep location history (requires TTL index update).</p>
+                            </div>
+                        </div>
+                        <button onClick={() => saveSection('trackingSettings', settings.trackingSettings)} disabled={saving}
+                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50 mt-4">
+                            <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Tracking Settings'}
                         </button>
                     </div>
                 )}

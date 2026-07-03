@@ -47,7 +47,11 @@ const hrmsSettingsSchema = new mongoose.Schema(
             officeLocations: [{
                 name: { type: String, required: true },
                 address: { type: String },
-                city: { type: String }
+                city: { type: String },
+                latitude: { type: Number },
+                longitude: { type: Number },
+                radiusMeters: { type: Number, default: 200 },
+                isActive: { type: Boolean, default: true }
             }],
             zones: [{ type: String }],
         },
@@ -74,6 +78,16 @@ const hrmsSettingsSchema = new mongoose.Schema(
             offerLetterHtml: { type: String, default: '<h1>Offer Letter</h1>' },
             salarySlipHtml: { type: String, default: '<h1>Payslip</h1>' },
             welcomeEmailHtml: { type: String, default: '<h1>Welcome to ItzoFood</h1>' }
+        },
+
+        // 10. Location Tracking Settings (for Field employees & Office validation)
+        trackingSettings: {
+            enableLiveTracking: { type: Boolean, default: true },
+            trackingIntervalSeconds: { type: Number, default: 60 },
+            gpsAccuracyThreshold: { type: Number, default: 50 },  // meters
+            allowMockLocation: { type: Boolean, default: false },
+            allowOfflineAttendance: { type: Boolean, default: false },
+            locationRetentionDays: { type: Number, default: 90 }
         },
 
         // 10. Company Branding & Details

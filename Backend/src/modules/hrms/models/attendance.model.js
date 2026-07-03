@@ -1,5 +1,16 @@
 import mongoose from 'mongoose';
 
+// Sub-schema for structured GPS location data
+const locationSchema = new mongoose.Schema({
+    address: { type: String },
+    coordinates: {
+        latitude: { type: Number },
+        longitude: { type: Number }
+    },
+    accuracy: { type: Number },       // GPS accuracy in meters
+    timestamp: { type: Date }
+}, { _id: false });
+
 const hrmsAttendanceSchema = new mongoose.Schema(
     {
         employeeId: {
@@ -42,9 +53,25 @@ const hrmsAttendanceSchema = new mongoose.Schema(
             }
         },
 
-        // Geolocation/Device tracking for check-in
-        checkInLocation: { type: String },
-        checkOutLocation: { type: String }
+        // ── Location-Based Attendance ──
+        // Snapshot of employee type at time of attendance (for historical accuracy)
+        employeeType: { type: String, enum: ['Office', 'Field'] },
+
+        // Structured GPS location for check-in/out (replaces old plain string fields)
+        checkInLocation: { type: locationSchema },
+        checkOutLocation: { type: locationSchema },
+
+        // Office employee validation result
+        locationValidation: {
+            isValid: { type: Boolean },
+            officeLocationId: { type: mongoose.Schema.Types.ObjectId },
+            officeName: { type: String },
+            distanceFromOffice: { type: Number }  // meters
+        },
+
+        // Field employee route tracking summary
+        routeDistance: { type: Number, default: 0 },  // total meters traveled
+        trackingPointsCount: { type: Number, default: 0 }
     },
     {
         timestamps: true,
@@ -54,5 +81,7 @@ const hrmsAttendanceSchema = new mongoose.Schema(
 
 // Ensure one attendance record per employee per day
 hrmsAttendanceSchema.index({ employeeId: 1, date: 1 }, { unique: true });
+hrmsAttendanceSchema.index({ date: -1 });
+hrmsAttendanceSchema.index({ employeeType: 1 });
 
 export const HrmsAttendance = mongoose.model('HrmsAttendance', hrmsAttendanceSchema, 'hrms_attendance');

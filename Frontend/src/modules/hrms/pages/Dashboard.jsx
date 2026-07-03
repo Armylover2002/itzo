@@ -3,22 +3,40 @@ import { useAuth } from '@core/context/AuthContext';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Clock, CalendarDays, Wallet, FileCheck, LogIn, LogOut, Loader2, TrendingUp, Timer } from 'lucide-react';
+import { useHrmsSettings } from '../context/HrmsSettingsContext';
+import { useLocationTracker } from '../hooks/useLocationTracker';
+import { Clock, CalendarDays, Wallet, FileCheck, LogIn, LogOut, Loader2, TrendingUp, Timer, MapPin, Building2, Navigation, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { hrmsSettings } = useHrmsSettings();
     const [attendance, setAttendance] = useState(null);
     const [leaveBalance, setLeaveBalance] = useState(null);
+    const [employeeProfile, setEmployeeProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [elapsed, setElapsed] = useState('0:00');
+    const [locationStatus, setLocationStatus] = useState(''); // 'fetching', 'success', 'error'
+
+    // Determine if we should track (field employee + checked in + not checked out)
+    const isFieldEmployee = employeeProfile?.employeeType === 'Field';
+    const isCheckedIn = attendance?.checkInTime && !attendance?.checkOutTime;
+    const isDone = !!attendance?.checkOutTime;
+    const shouldTrack = isFieldEmployee && isCheckedIn;
+
+    const { isTracking, error: trackingError, lastLocation, pointsCount, getCurrentPosition, stopTracking } = useLocationTracker({
+        enabled: shouldTrack,
+        intervalSeconds: hrmsSettings?.trackingIntervalSeconds || 60,
+        accuracyThreshold: hrmsSettings?.gpsAccuracyThreshold || 50
+    });
 
     const fetchData = useCallback(async () => {
         try {
-            const [attRes, leaveRes] = await Promise.all([
+            const [attRes, leaveRes, profileRes] = await Promise.all([
                 axiosInstance.get('/hrms/attendance/me').catch(() => ({ data: { data: [] } })),
-                axiosInstance.get('/hrms/leaves/balance').catch(() => ({ data: { data: null } }))
+                axiosInstance.get('/hrms/leaves/balance').catch(() => ({ data: { data: null } })),
+                axiosInstance.get('/hrms/employees/me').catch(() => ({ data: { data: null } }))
             ]);
             const records = attRes.data?.data || [];
             if (records.length > 0) {
@@ -27,6 +45,7 @@ export default function Dashboard() {
                 if (new Date(latest.date).toDateString() === today) setAttendance(latest);
             }
             setLeaveBalance(leaveRes.data?.data || null);
+            setEmployeeProfile(profileRes.data?.data?.employee || null);
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
     }, []);
@@ -48,21 +67,67 @@ export default function Dashboard() {
 
     const handleCheckIn = async () => {
         setActionLoading(true);
+        setLocationStatus('fetching');
         try {
-            const res = await axiosInstance.post('/hrms/attendance/check-in');
+            // Get GPS position
+            let coords = {};
+            try {
+                coords = await getCurrentPosition();
+                setLocationStatus('success');
+            } catch (gpsErr) {
+                setLocationStatus('error');
+                toast.error(gpsErr.message || 'Unable to get your location. Please enable GPS.');
+                setActionLoading(false);
+                return;
+            }
+
+            const res = await axiosInstance.post('/hrms/attendance/check-in', {
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                accuracy: coords.accuracy
+            });
             setAttendance(res.data.data);
             toast.success('Checked in successfully!');
-        } catch (e) { toast.error(e.response?.data?.message || 'Check-in failed'); }
+            setLocationStatus('');
+        } catch (e) {
+            toast.error(e.response?.data?.message || 'Check-in failed');
+            setLocationStatus('');
+        }
         finally { setActionLoading(false); }
     };
 
     const handleCheckOut = async () => {
         setActionLoading(true);
+        setLocationStatus('fetching');
         try {
-            const res = await axiosInstance.post('/hrms/attendance/check-out');
+            // Stop tracking first for field employees
+            if (isFieldEmployee) {
+                await stopTracking();
+            }
+
+            let coords = {};
+            try {
+                coords = await getCurrentPosition();
+                setLocationStatus('success');
+            } catch (gpsErr) {
+                setLocationStatus('error');
+                toast.error(gpsErr.message || 'Unable to get your location. Please enable GPS.');
+                setActionLoading(false);
+                return;
+            }
+
+            const res = await axiosInstance.post('/hrms/attendance/check-out', {
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                accuracy: coords.accuracy
+            });
             setAttendance(res.data.data);
             toast.success('Checked out successfully!');
-        } catch (e) { toast.error(e.response?.data?.message || 'Check-out failed'); }
+            setLocationStatus('');
+        } catch (e) {
+            toast.error(e.response?.data?.message || 'Check-out failed');
+            setLocationStatus('');
+        }
         finally { setActionLoading(false); }
     };
 
@@ -72,15 +137,28 @@ export default function Dashboard() {
         return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
     }
 
-    const isCheckedIn = attendance?.checkInTime && !attendance?.checkOutTime;
-    const isDone = attendance?.checkOutTime;
-
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
             {/* Welcome Banner */}
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-orange-500/15">
-                <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {firstName}!</h1>
-                <p className="text-orange-100 mt-1 text-sm sm:text-base">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {firstName}!</h1>
+                        <p className="text-orange-100 mt-1 text-sm sm:text-base">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                    {employeeProfile && (
+                        <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                            employeeProfile.employeeType === 'Field'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white/20 text-white'
+                        }`}>
+                            {employeeProfile.employeeType === 'Field'
+                                ? <><MapPin className="w-3.5 h-3.5" /> Field Employee</>
+                                : <><Building2 className="w-3.5 h-3.5" /> Office Employee</>
+                            }
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -104,25 +182,56 @@ export default function Dashboard() {
                         <h3 className="font-bold text-slate-900 text-lg mb-1">
                             {isDone ? 'Shift Complete' : isCheckedIn ? 'Working' : 'Not Checked In'}
                         </h3>
-                        <p className="text-sm text-slate-500 mb-5">
+                        <p className="text-sm text-slate-500 mb-3">
                             {isDone
                                 ? `Checked out at ${new Date(attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                 : isCheckedIn
                                     ? `Since ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                     : 'Start your workday'}
                         </p>
+
+                        {/* Location Status Indicator */}
+                        {locationStatus === 'fetching' && (
+                            <div className="flex items-center justify-center gap-2 text-xs text-orange-500 mb-3">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Verifying your location...
+                            </div>
+                        )}
+
+                        {/* Tracking Status for Field Employees */}
+                        {isFieldEmployee && isCheckedIn && (
+                            <div className={`flex items-center justify-center gap-2 text-xs mb-3 px-3 py-1.5 rounded-lg ${
+                                isTracking ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                            }`}>
+                                {isTracking ? (
+                                    <><Navigation className="w-3 h-3" /> Live tracking active — {pointsCount} points</>
+                                ) : trackingError ? (
+                                    <><AlertTriangle className="w-3 h-3" /> {trackingError}</>
+                                ) : (
+                                    <><Loader2 className="w-3 h-3 animate-spin" /> Starting tracker...</>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Office Validation Info */}
+                        {attendance?.locationValidation && attendance.employeeType === 'Office' && (
+                            <div className="text-xs text-slate-500 mb-3 flex items-center justify-center gap-1">
+                                <Building2 className="w-3 h-3" />
+                                {attendance.locationValidation.officeName} — {attendance.locationValidation.distanceFromOffice}m away
+                            </div>
+                        )}
+
                         {!attendance?.checkInTime && (
                             <button onClick={handleCheckIn} disabled={actionLoading}
                                 className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                                {actionLoading ? 'Processing...' : 'Check In'}
+                                {actionLoading ? 'Verifying Location...' : 'Check In'}
                             </button>
                         )}
                         {isCheckedIn && (
                             <button onClick={handleCheckOut} disabled={actionLoading}
                                 className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-                                {actionLoading ? 'Processing...' : 'Check Out'}
+                                {actionLoading ? 'Verifying Location...' : 'Check Out'}
                             </button>
                         )}
                     </div>

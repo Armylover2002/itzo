@@ -22,7 +22,7 @@ export const submitJoiningRequest = async (req, res, next) => {
             department, designation, ctc, joiningDate,
             hrmsRole, shift, employmentType, officeLocation,
             profilePhotoUrl, aadhaarPhotoUrl, panPhotoUrl, resumeUrl,
-            documents
+            documents, employeeType
         } = req.body;
 
         // Validation
@@ -136,6 +136,7 @@ export const submitJoiningRequest = async (req, res, next) => {
             shift,
             employmentType,
             officeLocation,
+            employeeType: employeeType || 'Office',
             profilePhotoUrl,
             resumeUrl,
             documents: documents || [],
@@ -280,7 +281,8 @@ export const approveJoiningRequest = async (req, res, next) => {
         const { id } = req.params;
         const {
             department, designation, managerId, employmentType,
-            joiningDate, shift, officeLocation, zone, ctc, hrmsRole
+            joiningDate, shift, officeLocation, zone, ctc, hrmsRole,
+            employeeType, assignedOfficeLocationId
         } = req.body;
 
         const request = await HrmsJoiningRequest.findById(id).session(session);
@@ -351,6 +353,8 @@ export const approveJoiningRequest = async (req, res, next) => {
             zone: zone || '',
             ctc: ctc || request.ctc || 0,
             profilePhotoUrl: request.profilePhotoUrl || '',
+            employeeType: employeeType || request.employeeType || 'Office',
+            assignedOfficeLocationId: assignedOfficeLocationId || null,
             documents: {
                 aadhaarNumber: request.aadhaarNumber,
                 aadhaarPhotoUrl: request.aadhaarPhotoUrl,

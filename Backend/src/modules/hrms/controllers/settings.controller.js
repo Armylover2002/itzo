@@ -94,7 +94,7 @@ export const updateSettingsSection = async (req, res, next) => {
         const { section } = req.params;
         const data = req.body;
 
-        const validSections = ['workingHours', 'leavePolicies', 'payrollRules', 'expensePolicies', 'organization', 'shifts', 'documentTypes', 'holidayCalendar', 'templates', 'companyInfo'];
+        const validSections = ['workingHours', 'leavePolicies', 'payrollRules', 'expensePolicies', 'organization', 'shifts', 'documentTypes', 'holidayCalendar', 'templates', 'companyInfo', 'trackingSettings'];
         if (!validSections.includes(section)) {
             return sendError(res, 400, `Invalid section. Valid sections: ${validSections.join(', ')}`);
         }

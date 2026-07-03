@@ -85,7 +85,10 @@ export const config = {
     emailPort: Number(process.env.EMAIL_PORT) || 587,
     emailUser: process.env.EMAIL_USER,
     emailPass: process.env.EMAIL_PASS ? String(process.env.EMAIL_PASS).replace(/\s/g, '') : '',
-    emailFrom: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@example.com'
+    emailFrom: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'noreply@example.com',
+
+    // Google Maps (HRMS location tracking & office validation)
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || ''
 };
 
 export const env = {

@@ -86,6 +86,11 @@ const hrmsJoiningRequestSchema = new mongoose.Schema(
         shift: { type: String, trim: true, default: 'General' },
         employmentType: { type: String, trim: true, default: 'Full-Time' },
         officeLocation: { type: String, trim: true },
+        employeeType: {
+            type: String,
+            enum: ['Office', 'Field'],
+            default: 'Office'
+        },
 
         // 9. Status & Workflow
         status: {

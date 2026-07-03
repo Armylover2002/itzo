@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload } from 'lucide-react';
+import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { useHrmsSettings } from '../../../../hrms/context/HrmsSettingsContext';
 
 export default function HrmsEmployees() {
     const [searchParams] = useSearchParams();
@@ -13,6 +14,8 @@ export default function HrmsEmployees() {
     const [showOnboard, setShowOnboard] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [onboardLoading, setOnboardLoading] = useState(false);
+    const [filterEmployeeType, setFilterEmployeeType] = useState('all');
+    const { hrmsSettings } = useHrmsSettings();
 
     const [onboardForm, setOnboardForm] = useState({
         fullName: '', email: '', password: '', phone: '',
@@ -24,7 +27,8 @@ export default function HrmsEmployees() {
         accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
         emergencyName: '', emergencyRelation: '', emergencyPhone: '',
         employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
-        shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: ''
+        shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
+        employeeType: 'Office', assignedOfficeLocationId: ''
     });
     const [uploading, setUploading] = useState({ aadhaar: false, pan: false });
 
@@ -33,6 +37,7 @@ export default function HrmsEmployees() {
         try {
             const params = new URLSearchParams({ page, limit: 20, status: 'Active' });
             if (search) params.append('search', search);
+            if (filterEmployeeType !== 'all') params.append('employeeType', filterEmployeeType);
             const res = await axiosInstance.get(`/hrms/employees?${params}`);
             const data = res.data?.data || {};
             setEmployees(data.employees || []);
@@ -41,7 +46,7 @@ export default function HrmsEmployees() {
         finally { setLoading(false); }
     }, [search]);
 
-    useEffect(() => { fetchEmployees(); }, [fetchEmployees]);
+    useEffect(() => { fetchEmployees(); }, [fetchEmployees, filterEmployeeType]);
 
     const handleOnboard = async () => {
         if (!onboardForm.fullName || !onboardForm.email || !onboardForm.password || !onboardForm.joiningDate) {
@@ -52,6 +57,7 @@ export default function HrmsEmployees() {
             const payload = {
                 ...onboardForm,
                 ctc: Number(onboardForm.ctc) || 0,
+                assignedOfficeLocationId: onboardForm.assignedOfficeLocationId || null,
                 address: {
                     street: onboardForm.street, city: onboardForm.city,
                     state: onboardForm.state, pincode: onboardForm.pincode
@@ -79,7 +85,8 @@ export default function HrmsEmployees() {
                 accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
                 emergencyName: '', emergencyRelation: '', emergencyPhone: '',
                 employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
-                shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: ''
+                shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
+                employeeType: 'Office', assignedOfficeLocationId: ''
             });
             fetchEmployees();
         } catch (e) { toast.error(e.response?.data?.message || 'Onboarding failed'); }
@@ -221,7 +228,24 @@ export default function HrmsEmployees() {
                                         <option>Full-Time</option><option>Part-Time</option><option>Contract</option><option>Internship</option>
                                     </select>
                                 </div>
-                                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Office Location</label><input className={inputClass} value={onboardForm.officeLocation} onChange={e => setOnboardForm(p => ({ ...p, officeLocation: e.target.value }))} /></div>
+                                <div>
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Employee Type</label>
+                                    <select className={inputClass} value={onboardForm.employeeType} onChange={e => setOnboardForm(p => ({ ...p, employeeType: e.target.value }))}>
+                                        <option value="Office">Office</option><option value="Field">Field</option>
+                                    </select>
+                                </div>
+                                {onboardForm.employeeType === 'Office' && (
+                                    <div>
+                                        <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned Office Location</label>
+                                        <select className={inputClass} value={onboardForm.assignedOfficeLocationId} onChange={e => setOnboardForm(p => ({ ...p, assignedOfficeLocationId: e.target.value }))}>
+                                            <option value="">-- Select Office --</option>
+                                            {hrmsSettings?.organization?.officeLocations?.filter(o => o.isActive !== false).map(loc => (
+                                                <option key={loc._id} value={loc._id}>{loc.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Office Location Name (Legacy)</label><input className={inputClass} value={onboardForm.officeLocation} onChange={e => setOnboardForm(p => ({ ...p, officeLocation: e.target.value }))} /></div>
                             </div>
                         </div>
 
@@ -251,11 +275,22 @@ export default function HrmsEmployees() {
                 </div>
             )}
 
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, ID, department..."
-                    className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white" />
+            {/* Search & Filters */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, ID, department..."
+                        className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white" />
+                </div>
+                <div className="relative min-w-[200px]">
+                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <select value={filterEmployeeType} onChange={e => setFilterEmployeeType(e.target.value)} 
+                        className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white appearance-none cursor-pointer">
+                        <option value="all">All Employee Types</option>
+                        <option value="Office">Office Employees</option>
+                        <option value="Field">Field Employees</option>
+                    </select>
+                </div>
             </div>
 
             {/* Employee Detail Modal */}
@@ -278,6 +313,8 @@ export default function HrmsEmployees() {
                                     { l: 'Phone', v: selectedEmployee.adminId?.phone },
                                     { l: 'Department', v: selectedEmployee.department },
                                     { l: 'Designation', v: selectedEmployee.designation },
+                                    { l: 'Employee Type', v: selectedEmployee.employeeType },
+                                    { l: 'Assigned Office', v: selectedEmployee.assignedOfficeLocationId ? hrmsSettings?.organization?.officeLocations?.find(o => o._id === selectedEmployee.assignedOfficeLocationId)?.name || selectedEmployee.assignedOfficeLocationId : '—' },
                                     { l: 'HRMS Role', v: selectedEmployee.hrmsRole },
                                     { l: 'Employment', v: selectedEmployee.employmentType },
                                     { l: 'CTC', v: selectedEmployee.ctc ? `₹${Number(selectedEmployee.ctc).toLocaleString()}` : '—' },
@@ -326,6 +363,7 @@ export default function HrmsEmployees() {
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Name</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Department</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Designation</th>
+                                <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Type</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Role</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Status</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Action</th>
@@ -351,7 +389,8 @@ export default function HrmsEmployees() {
                                         </td>
                                         <td className="px-5 py-3.5 text-slate-600">{emp.department || '—'}</td>
                                         <td className="px-5 py-3.5 text-slate-600">{emp.designation || '—'}</td>
-                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.hrmsRole === 'Manager' ? 'bg-orange-50 text-blue-700' : emp.hrmsRole === 'HR' ? 'bg-violet-50 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>{emp.hrmsRole}</span></td>
+                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
+                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.hrmsRole === 'Manager' ? 'bg-orange-50 text-orange-700' : emp.hrmsRole === 'HR' ? 'bg-violet-50 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>{emp.hrmsRole}</span></td>
                                         <td className="px-5 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${emp.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{emp.status}</span></td>
                                         <td className="px-5 py-3.5">
                                             <button onClick={() => setSelectedEmployee(emp)} className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">

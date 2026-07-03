@@ -34,6 +34,18 @@ const hrmsEmployeeSchema = new mongoose.Schema(
             enum: ['Full-Time', 'Part-Time', 'Contract', 'Intern'],
             default: 'Full-Time'
         },
+
+        // Employee Type: Office (location-restricted) vs Field (mobile/tracked)
+        employeeType: {
+            type: String,
+            enum: ['Office', 'Field'],
+            default: 'Office'
+        },
+        // Reference to a specific office in HrmsSettings.organization.officeLocations
+        assignedOfficeLocationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null
+        },
         joiningDate: { type: Date, required: true },
         shift: { type: String, default: 'General' },
         officeLocation: { type: String, trim: true },
@@ -128,5 +140,6 @@ hrmsEmployeeSchema.index({ employeeId: 1 });
 hrmsEmployeeSchema.index({ status: 1 });
 hrmsEmployeeSchema.index({ hrmsRole: 1 });
 hrmsEmployeeSchema.index({ department: 1 });
+hrmsEmployeeSchema.index({ employeeType: 1 });
 
 export const HrmsEmployee = mongoose.model('HrmsEmployee', hrmsEmployeeSchema, 'hrms_employees');

@@ -18,7 +18,8 @@ export const createEmployee = async (req, res, next) => {
             joiningDate, shift, officeLocation, zone, ctc,
             aadhaarNumber, panNumber, accountHolderName, accountNumber, bankName, ifscCode, upiId,
             address, emergencyContact, qualification, experience,
-            profilePhotoUrl, aadhaarPhotoUrl, panPhotoUrl, offerLetterUrl
+            profilePhotoUrl, aadhaarPhotoUrl, panPhotoUrl, offerLetterUrl,
+            employeeType, assignedOfficeLocationId
         } = req.body;
 
         if (!fullName || !email || !password || !joiningDate) {
@@ -65,6 +66,8 @@ export const createEmployee = async (req, res, next) => {
             zone,
             ctc: ctc || 0,
             profilePhotoUrl,
+            employeeType: employeeType || 'Office',
+            assignedOfficeLocationId: assignedOfficeLocationId || null,
             documents: {
                 aadhaarNumber,
                 aadhaarPhotoUrl,
@@ -125,7 +128,7 @@ export const createEmployee = async (req, res, next) => {
  */
 export const getEmployees = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+        const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType } = req.query;
 
         const filter = {};
         if (status && status !== 'all') {
@@ -133,6 +136,9 @@ export const getEmployees = async (req, res, next) => {
         }
         if (department) {
             filter.department = department;
+        }
+        if (employeeType) {
+            filter.employeeType = employeeType;
         }
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -267,7 +273,8 @@ export const updateEmployee = async (req, res, next) => {
             'department', 'designation', 'managerId', 'employmentType', 'hrmsRole',
             'shift', 'officeLocation', 'zone', 'ctc',
             'bankDetails', 'address', 'emergencyContact', 'profilePhotoUrl',
-            'documents', 'qualification', 'experience'
+            'documents', 'qualification', 'experience',
+            'employeeType', 'assignedOfficeLocationId'
         ];
 
         for (const field of allowedFields) {
@@ -321,7 +328,7 @@ export const updateEmployeeStatus = async (req, res, next) => {
  */
 export const getEmployeeStats = async (req, res, next) => {
     try {
-        const [totalActive, totalSuspended, totalTerminated, departments] = await Promise.all([
+        const [totalActive, totalSuspended, totalTerminated, departments, employeeTypes] = await Promise.all([
             HrmsEmployee.countDocuments({ status: 'Active' }),
             HrmsEmployee.countDocuments({ status: 'Suspended' }),
             HrmsEmployee.countDocuments({ status: { $in: ['Terminated', 'Resigned'] } }),
@@ -329,6 +336,10 @@ export const getEmployeeStats = async (req, res, next) => {
                 { $match: { status: 'Active' } },
                 { $group: { _id: '$department', count: { $sum: 1 } } },
                 { $sort: { count: -1 } }
+            ]),
+            HrmsEmployee.aggregate([
+                { $match: { status: 'Active' } },
+                { $group: { _id: '$employeeType', count: { $sum: 1 } } }
             ])
         ]);
 
@@ -337,7 +348,8 @@ export const getEmployeeStats = async (req, res, next) => {
             totalSuspended,
             totalTerminated,
             totalEmployees: totalActive + totalSuspended + totalTerminated,
-            departments
+            departments,
+            employeeTypes
         });
     } catch (error) {
         next(error);

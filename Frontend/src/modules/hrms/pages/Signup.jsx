@@ -34,7 +34,8 @@ export default function Signup() {
         accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
         emergencyName: '', emergencyRelation: '', emergencyPhone: '',
         ctc: '', joiningDate: '', hrmsRole: 'Employee', shift: 'General',
-        employmentType: 'Full-Time', officeLocation: ''
+        employmentType: 'Full-Time', officeLocation: '',
+        employeeType: 'Office'
     });
     const [uploading, setUploading] = useState({ aadhaar: false, pan: false });
 
@@ -128,6 +129,7 @@ export default function Signup() {
                 shift: form.shift || undefined,
                 employmentType: form.employmentType || undefined,
                 officeLocation: form.officeLocation || undefined,
+                employeeType: form.employeeType || 'Office',
                 bankDetails: {
                     accountHolderName: form.accountHolderName,
                     accountNumber: form.accountNumber,
@@ -264,6 +266,34 @@ export default function Signup() {
                                                 <label key={g} className="flex items-center gap-2 cursor-pointer">
                                                     <input type="radio" name="gender" value={g} checked={form.gender === g} onChange={e => updateField('gender', e.target.value)} className="accent-orange-500" />
                                                     <span className="text-sm text-slate-300">{g}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <label className={labelClass}>Employee Type</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[{ value: 'Office', label: 'Office Employee', desc: 'Works from office location', icon: Building2 },
+                                              { value: 'Field', label: 'Field Employee', desc: 'Works on field / mobile', icon: MapPin }].map(opt => (
+                                                <label key={opt.value}
+                                                    className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                                                        form.employeeType === opt.value
+                                                            ? 'border-orange-500 bg-orange-50'
+                                                            : 'border-slate-200 hover:border-slate-300'
+                                                    }`}>
+                                                    <input type="radio" name="employeeType" value={opt.value}
+                                                        checked={form.employeeType === opt.value}
+                                                        onChange={e => updateField('employeeType', e.target.value)}
+                                                        className="hidden" />
+                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                                                        form.employeeType === opt.value ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500'
+                                                    }`}>
+                                                        <opt.icon className="w-4 h-4" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={`text-sm font-semibold ${form.employeeType === opt.value ? 'text-orange-600' : 'text-slate-700'}`}>{opt.label}</p>
+                                                        <p className="text-[10px] text-slate-400">{opt.desc}</p>
+                                                    </div>
                                                 </label>
                                             ))}
                                         </div>

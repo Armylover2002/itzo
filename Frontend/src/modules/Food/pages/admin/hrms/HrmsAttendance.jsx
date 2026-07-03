@@ -98,20 +98,43 @@ export default function HrmsAttendance() {
                             <table className="w-full text-sm">
                                 <thead><tr className="bg-slate-50 border-b border-slate-100">
                                     <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Employee</th>
+                                    <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Type</th>
                                     <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Date</th>
                                     <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Status</th>
                                     <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Check In</th>
                                     <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Check Out</th>
+                                    <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Location</th>
                                     <th className="px-5 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Hours</th>
                                 </tr></thead>
                                 <tbody>
                                     {records.map(r => (
                                         <tr key={r._id} className="border-b border-slate-50 hover:bg-slate-50/50">
                                             <td className="px-5 py-3.5 font-medium text-slate-900">{r.employeeId?.adminId?.name || '—'}</td>
+                                            <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>{r.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                             <td className="px-5 py-3.5 text-slate-600">{new Date(r.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' })}</td>
                                             <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.status === 'Present' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{r.status}</span></td>
                                             <td className="px-5 py-3.5 text-slate-600">{r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</td>
                                             <td className="px-5 py-3.5 text-slate-600">{r.checkOutTime ? new Date(r.checkOutTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</td>
+                                            <td className="px-5 py-3.5">
+                                                {r.checkInLocation?.address || r.locationValidation ? (
+                                                    <div className="text-xs space-y-0.5 max-w-[180px]">
+                                                        {r.employeeType === 'Office' && r.locationValidation?.officeName && (
+                                                            <span className="text-emerald-600 font-medium">🏢 {r.locationValidation.officeName}</span>
+                                                        )}
+                                                        {r.employeeType === 'Field' && r.routeDistance > 0 && (
+                                                            <span className="text-blue-600 font-medium">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
+                                                        )}
+                                                        {r.checkInLocation?.address && (
+                                                            <p className="text-slate-400 truncate" title={r.checkInLocation.address}>{r.checkInLocation.address}</p>
+                                                        )}
+                                                        {r.employeeType === 'Field' && r.checkInTime && (
+                                                            <a href={`/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-orange-500 hover:underline block mt-1">View Route Map</a>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-400">—</span>
+                                                )}
+                                            </td>
                                             <td className="px-5 py-3.5 font-semibold">{r.workingHours ? `${r.workingHours.toFixed(1)}h` : '—'}</td>
                                         </tr>
                                     ))}
