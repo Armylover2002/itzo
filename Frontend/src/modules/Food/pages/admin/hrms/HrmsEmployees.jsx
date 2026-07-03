@@ -352,7 +352,6 @@ export default function HrmsEmployees() {
                                 ))}
                             </div>
                         </div>
-                        </div>
                         <div className="p-6 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-4 justify-between items-center rounded-b-2xl">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-slate-700">Transfer Manager:</span>
