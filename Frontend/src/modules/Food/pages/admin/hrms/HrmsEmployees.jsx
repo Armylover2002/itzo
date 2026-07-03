@@ -15,6 +15,7 @@ export default function HrmsEmployees() {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [onboardLoading, setOnboardLoading] = useState(false);
     const [filterEmployeeType, setFilterEmployeeType] = useState('all');
+    const [managers, setManagers] = useState([]);
     const { hrmsSettings } = useHrmsSettings();
 
     const [onboardForm, setOnboardForm] = useState({
@@ -44,9 +45,19 @@ export default function HrmsEmployees() {
             setPagination(data.pagination || { page: 1, total: 0, totalPages: 0 });
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
-    }, [search]);
+    }, [search, filterEmployeeType]);
 
-    useEffect(() => { fetchEmployees(); }, [fetchEmployees, filterEmployeeType]);
+    const fetchManagers = useCallback(async () => {
+        try {
+            const res = await axiosInstance.get('/hrms/employees/managers/active');
+            setManagers(res.data?.data || []);
+        } catch (e) { console.error('Failed to fetch managers', e); }
+    }, []);
+
+    useEffect(() => { 
+        fetchEmployees(); 
+        fetchManagers();
+    }, [fetchEmployees, fetchManagers]);
 
     const handleOnboard = async () => {
         if (!onboardForm.fullName || !onboardForm.email || !onboardForm.password || !onboardForm.joiningDate) {
@@ -58,6 +69,7 @@ export default function HrmsEmployees() {
                 ...onboardForm,
                 ctc: Number(onboardForm.ctc) || 0,
                 assignedOfficeLocationId: onboardForm.assignedOfficeLocationId || null,
+                managerId: onboardForm.managerId || null,
                 address: {
                     street: onboardForm.street, city: onboardForm.city,
                     state: onboardForm.state, pincode: onboardForm.pincode
@@ -86,7 +98,7 @@ export default function HrmsEmployees() {
                 emergencyName: '', emergencyRelation: '', emergencyPhone: '',
                 employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
                 shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
-                employeeType: 'Office', assignedOfficeLocationId: ''
+                employeeType: 'Office', assignedOfficeLocationId: '', managerId: ''
             });
             fetchEmployees();
         } catch (e) { toast.error(e.response?.data?.message || 'Onboarding failed'); }
@@ -217,6 +229,15 @@ export default function HrmsEmployees() {
                                     </select>
                                 </div>
                                 <div>
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Reporting Manager</label>
+                                    <select className={inputClass} value={onboardForm.managerId} onChange={e => setOnboardForm(p => ({ ...p, managerId: e.target.value }))}>
+                                        <option value="">-- No Manager --</option>
+                                        {managers.map(m => (
+                                            <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
                                     <label className="text-xs font-medium text-slate-600 mb-1 block">Shift</label>
                                     <select className={inputClass} value={onboardForm.shift} onChange={e => setOnboardForm(p => ({ ...p, shift: e.target.value }))}>
                                         <option>General</option><option>Morning</option><option>Night</option>
@@ -331,16 +352,44 @@ export default function HrmsEmployees() {
                                 ))}
                             </div>
                         </div>
-                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex gap-3 justify-end rounded-b-2xl">
-                            {selectedEmployee.status === 'Active' && (
-                                <button onClick={() => handleStatusChange(selectedEmployee._id, 'Suspended')} className="px-5 h-10 bg-white border-2 border-orange-400 text-orange-500 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Suspend Employee</button>
-                            )}
-                            {selectedEmployee.status === 'Suspended' && (
-                                <button onClick={() => handleStatusChange(selectedEmployee._id, 'Active')} className="px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm">Reactivate Employee</button>
-                            )}
-                            {selectedEmployee.status !== 'Terminated' && (
-                                <button onClick={() => handleStatusChange(selectedEmployee._id, 'Terminated')} className="px-5 h-10 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Terminate Employee</button>
-                            )}
+                        </div>
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-4 justify-between items-center rounded-b-2xl">
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-slate-700">Transfer Manager:</span>
+                                <select 
+                                    className="h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                                    onChange={async (e) => {
+                                        if(!e.target.value) return;
+                                        try {
+                                            const newManagerId = e.target.value === 'unassigned' ? null : e.target.value;
+                                            await axiosInstance.put(`/hrms/employees/${selectedEmployee._id}/manager`, { newManagerId });
+                                            toast.success('Employee transferred successfully');
+                                            fetchEmployees(pagination.page);
+                                            setSelectedEmployee(null);
+                                        } catch(err) {
+                                            toast.error(err.response?.data?.message || 'Transfer failed');
+                                        }
+                                    }}
+                                    value=""
+                                >
+                                    <option value="">-- Select New Manager --</option>
+                                    {managers.filter(m => String(m._id) !== String(selectedEmployee.managerId?._id)).map(m => (
+                                        <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
+                                    ))}
+                                    {selectedEmployee.managerId && <option value="unassigned">-- Remove Manager --</option>}
+                                </select>
+                            </div>
+                            <div className="flex gap-3">
+                                {selectedEmployee.status === 'Active' && (
+                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Suspended')} className="px-5 h-10 bg-white border-2 border-orange-400 text-orange-500 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Suspend Employee</button>
+                                )}
+                                {selectedEmployee.status === 'Suspended' && (
+                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Active')} className="px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm">Reactivate Employee</button>
+                                )}
+                                {selectedEmployee.status !== 'Terminated' && (
+                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Terminated')} className="px-5 h-10 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Terminate Employee</button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

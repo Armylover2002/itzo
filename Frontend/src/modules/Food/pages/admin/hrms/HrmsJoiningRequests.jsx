@@ -34,10 +34,11 @@ export default function HrmsJoiningRequests() {
 
     const [approvalForm, setApprovalForm] = useState({
         department: '', designation: '', employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
-        shift: 'General', officeLocation: '', ctc: '', hrmsRole: 'Employee'
+        shift: 'General', officeLocation: '', ctc: '', hrmsRole: 'Employee', managerId: '', employeeType: 'Office', assignedOfficeLocationId: ''
     });
     const [rejectionReason, setRejectionReason] = useState('');
     const [infoMessage, setInfoMessage] = useState('');
+    const [managers, setManagers] = useState([]);
 
     const fetchRequests = useCallback(async (page = 1) => {
         setLoading(true);
@@ -58,7 +59,17 @@ export default function HrmsJoiningRequests() {
         finally { setLoading(false); }
     }, [statusFilter, search, mainTab]);
 
-    useEffect(() => { fetchRequests(); }, [fetchRequests]);
+    const fetchManagers = useCallback(async () => {
+        try {
+            const res = await axiosInstance.get('/hrms/employees/managers/active');
+            setManagers(res.data?.data || []);
+        } catch (e) { console.error('Failed to fetch managers', e); }
+    }, []);
+
+    useEffect(() => { 
+        fetchRequests(); 
+        if (mainTab === 'joining') fetchManagers();
+    }, [fetchRequests, fetchManagers, mainTab]);
 
     const handleApprove = async () => {
         if (!approvalForm.department || !approvalForm.designation || !approvalForm.joiningDate) {
@@ -263,6 +274,15 @@ export default function HrmsJoiningRequests() {
                                                     <option>Employee</option>
                                                     <option>Manager</option>
                                                     <option>HR</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Reporting Manager</label>
+                                                <select className={inputClass} value={approvalForm.managerId} onChange={e => setApprovalForm(p => ({ ...p, managerId: e.target.value }))}>
+                                                    <option value="">-- No Manager --</option>
+                                                    {managers.map(m => (
+                                                        <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>

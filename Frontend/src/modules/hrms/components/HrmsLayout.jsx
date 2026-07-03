@@ -32,7 +32,17 @@ export default function HrmsLayout() {
     const { hrmsSettings } = useHrmsSettings();
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [openMenus, setOpenMenus] = useState({});
+    const [employeeProfile, setEmployeeProfile] = useState(null);
+
+    React.useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await axiosInstance.get('/hrms/employees/me');
+                setEmployeeProfile(res.data?.data?.employee || null);
+            } catch(e) {}
+        };
+        fetchProfile();
+    }, []);
 
     const toggleMenu = (label) => {
         setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
@@ -42,6 +52,23 @@ export default function HrmsLayout() {
         logout();
         navigate('/hrms/login');
     };
+
+    const dynamicNavItems = [...navItems];
+    if (employeeProfile?.hrmsRole === 'Manager') {
+        dynamicNavItems.splice(1, 0, { 
+            label: 'Team Management', 
+            icon: Building2, 
+            path: '/hrms/team',
+            subItems: [
+                { label: 'My Team', icon: Building2, path: '/hrms/team' },
+                { label: 'Team Dashboard', icon: LayoutDashboard, path: '/hrms/team/dashboard' },
+                { label: 'Team Attendance', icon: Clock, path: '/hrms/team/attendance' },
+                { label: 'Team Leaves', icon: CalendarDays, path: '/hrms/team/leaves' },
+                { label: 'Team Expenses', icon: Receipt, path: '/hrms/team/expenses' },
+                { label: 'Team Reports', icon: ClipboardList, path: '/hrms/team/reports' }
+            ]
+        });
+    }
 
     return (
         <div className="flex h-screen bg-slate-50">
@@ -102,7 +129,7 @@ export default function HrmsLayout() {
 
                 {/* Navigation */}
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/50 hover:[&::-webkit-scrollbar-thumb]:bg-orange-500/50 [&::-webkit-scrollbar-thumb]:rounded-full">
-                    {navItems.map((item) => (
+                    {dynamicNavItems.map((item) => (
                         <div key={item.label}>
                             {item.subItems ? (
                                 <>

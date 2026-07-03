@@ -80,7 +80,17 @@ export const getAllExpenses = async (req, res, next) => {
         // Manager scope
         if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
             const teamIds = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).select('_id').lean();
-            filter.employeeId = { $in: teamIds.map(t => t._id) };
+            const allowedIds = teamIds.map(t => t._id);
+            if (filter.employeeId) {
+                if (!allowedIds.some(id => String(id) === String(filter.employeeId))) {
+                    return sendResponse(res, 200, 'Expenses retrieved', {
+                        expenses: [],
+                        pagination: { page: 1, limit: parseInt(limit), total: 0, totalPages: 0 }
+                    });
+                }
+            } else {
+                filter.employeeId = { $in: allowedIds };
+            }
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -116,9 +126,16 @@ export const approveExpense = async (req, res, next) => {
         if (!expense) return sendError(res, 404, 'Expense not found');
         if (expense.status !== 'Pending') return sendError(res, 400, `Expense is already ${expense.status}`);
 
-        // Self-approval prevention
-        if (req.hrmsEmployee && String(expense.employeeId) === String(req.hrmsEmployee._id)) {
-            return sendError(res, 403, 'You cannot approve your own expense');
+        // Self-approval prevention and Manager scope check
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            if (String(expense.employeeId) === String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You cannot approve your own expense');
+            }
+            
+            const targetEmployee = await HrmsEmployee.findById(expense.employeeId).lean();
+            if (!targetEmployee || String(targetEmployee.managerId) !== String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You can only manage expenses for your team members');
+            }
         }
 
         const approverEmployee = await HrmsEmployee.findOne({ adminId: req.user.userId });

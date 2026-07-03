@@ -29,6 +29,11 @@ const hrmsEmployeeSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'HrmsEmployee'
         },
+        teamHistory: [{
+            managerId: { type: mongoose.Schema.Types.ObjectId, ref: 'HrmsEmployee' },
+            assignedAt: { type: Date, default: Date.now },
+            removedAt: { type: Date }
+        }],
         employmentType: {
             type: String,
             enum: ['Full-Time', 'Part-Time', 'Contract', 'Intern'],

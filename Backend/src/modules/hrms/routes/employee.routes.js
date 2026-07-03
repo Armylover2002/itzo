@@ -10,7 +10,9 @@ import {
     getTeamMembers,
     requestProfileUpdate,
     getPendingProfileEdits,
-    approveProfileEdit
+    approveProfileEdit,
+    getActiveManagers,
+    transferEmployee
 } from '../controllers/employee.controller.js';
 import { authMiddleware } from '../../../core/auth/auth.middleware.js';
 import { requireHrmsEmployee, requireAdminOrManager } from '../middleware/hrmsAuth.middleware.js';
@@ -30,10 +32,12 @@ router.get('/team', authMiddleware, requireHrmsEmployee, getTeamMembers);
 
 // ADMIN: Employee management
 router.get('/stats', authMiddleware, requireAdminOrManager, getEmployeeStats);
+router.get('/managers/active', authMiddleware, requireAdminOrManager, getActiveManagers);
 router.post('/', authMiddleware, requireAdminOrManager, createEmployee);
 router.get('/', authMiddleware, requireAdminOrManager, getEmployees);
 router.get('/:id', authMiddleware, requireAdminOrManager, getEmployeeById);
 router.put('/:id', authMiddleware, requireAdminOrManager, updateEmployee);
+router.put('/:id/manager', authMiddleware, requireAdminOrManager, transferEmployee);
 router.patch('/:id/status', authMiddleware, requireAdminOrManager, updateEmployeeStatus);
 router.post('/:id/edit-request/action', authMiddleware, requireAdminOrManager, approveProfileEdit);
 

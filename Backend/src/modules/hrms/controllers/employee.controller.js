@@ -474,3 +474,58 @@ export const approveProfileEdit = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * ADMIN: Get all active managers for dropdowns
+ */
+export const getActiveManagers = async (req, res, next) => {
+    try {
+        const managers = await HrmsEmployee.find({ hrmsRole: { $in: ['Manager', 'HR'] }, status: 'Active' })
+            .populate('adminId', 'name email profileImage')
+            .select('adminId employeeId department designation')
+            .lean();
+
+        return sendResponse(res, 200, 'Active managers retrieved', managers);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ADMIN: Transfer employee to a new manager
+ */
+export const transferEmployee = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { newManagerId } = req.body;
+
+        const employee = await HrmsEmployee.findById(id);
+        if (!employee) return sendError(res, 404, 'Employee not found');
+
+        if (String(employee.managerId) === String(newManagerId)) {
+            return sendError(res, 400, 'Employee is already assigned to this manager');
+        }
+
+        // Close previous history
+        if (employee.managerId && employee.teamHistory && employee.teamHistory.length > 0) {
+            const lastIndex = employee.teamHistory.length - 1;
+            if (!employee.teamHistory[lastIndex].removedAt) {
+                employee.teamHistory[lastIndex].removedAt = new Date();
+            }
+        }
+
+        // Assign new manager
+        employee.managerId = newManagerId || null;
+        if (newManagerId) {
+            employee.teamHistory.push({
+                managerId: newManagerId,
+                assignedAt: new Date()
+            });
+        }
+
+        await employee.save();
+        return sendResponse(res, 200, 'Employee transferred successfully', employee);
+    } catch (error) {
+        next(error);
+    }
+};

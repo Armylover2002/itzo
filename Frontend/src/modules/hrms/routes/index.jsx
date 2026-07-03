@@ -20,6 +20,12 @@ const SupportDetails = lazy(() => import('../pages/support/SupportDetails'));
 const ReportList = lazy(() => import('../pages/reports/ReportList'));
 const CreateReport = lazy(() => import('../pages/reports/CreateReport'));
 const ReportDetails = lazy(() => import('../pages/reports/ReportDetails'));
+const MyTeam = lazy(() => import('../pages/MyTeam'));
+const ManagerDashboard = lazy(() => import('../pages/team/ManagerDashboard'));
+const TeamAttendance = lazy(() => import('../pages/team/TeamAttendance'));
+const TeamLeaves = lazy(() => import('../pages/team/TeamLeaves'));
+const TeamExpenses = lazy(() => import('../pages/team/TeamExpenses'));
+const TeamReports = lazy(() => import('../pages/team/TeamReports'));
 
 export default function HrmsEmployeeApp() {
     return (
@@ -59,6 +65,14 @@ export default function HrmsEmployeeApp() {
                         <Route path="reports/list" element={<ReportList />} />
                         <Route path="reports/create" element={<CreateReport />} />
                         <Route path="reports/:id" element={<ReportDetails />} />
+
+                        {/* Manager Module */}
+                        <Route path="team" element={<MyTeam />} />
+                        <Route path="team/dashboard" element={<ManagerDashboard />} />
+                        <Route path="team/attendance" element={<TeamAttendance />} />
+                        <Route path="team/leaves" element={<TeamLeaves />} />
+                        <Route path="team/expenses" element={<TeamExpenses />} />
+                        <Route path="team/reports" element={<TeamReports />} />
                     </Route>
 
                     {/* Fallback */}

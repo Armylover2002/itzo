@@ -285,6 +285,23 @@ export const getAllLeaves = async (req, res, next) => {
             };
         }
 
+        // If manager, scope to team only
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamIds = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id })
+                .select('_id').lean();
+            const allowedIds = teamIds.map(t => t._id);
+            if (filter.employeeId) {
+                if (!allowedIds.some(id => String(id) === String(filter.employeeId))) {
+                    return sendResponse(res, 200, 'Leaves retrieved', {
+                        leaves: [],
+                        pagination: { page: 1, limit: parseInt(limit), total: 0, totalPages: 0 }
+                    });
+                }
+            } else {
+                filter.employeeId = { $in: allowedIds };
+            }
+        }
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         const [leaves, total] = await Promise.all([

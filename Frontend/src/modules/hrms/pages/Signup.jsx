@@ -391,7 +391,6 @@ export default function Signup() {
                                         <select className={inputClass} value={form.hrmsRole} onChange={e => updateField('hrmsRole', e.target.value)}>
                                             <option value="Employee">Employee</option>
                                             <option value="Manager">Manager</option>
-                                            <option value="HR">HR</option>
                                         </select>
                                     </div>
                                     <div>
