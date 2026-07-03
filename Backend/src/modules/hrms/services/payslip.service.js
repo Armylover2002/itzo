@@ -66,7 +66,7 @@ export const uploadPdfToCloudinary = (buffer, filename) => {
         const uploadStream = cloudinary.v2.uploader.upload_stream(
             {
                 folder: 'hrms/payslips/generated',
-                resource_type: 'raw',
+                resource_type: 'image',
                 public_id: filename,
                 format: 'pdf'
             },

@@ -155,7 +155,12 @@ export default function Salary() {
                         {previewPdf.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
                             <img src={previewPdf} className="max-w-full max-h-full object-contain rounded-xl" alt="Payslip Preview" />
                         ) : (
-                            <iframe src={previewPdf} className="w-full h-full rounded-xl bg-white" title="Payslip Document" />
+                            <object data={previewPdf} type="application/pdf" className="w-full h-full rounded-xl bg-white">
+                                <div className="flex flex-col items-center justify-center h-full space-y-4">
+                                    <p className="text-white font-medium">Unable to display PDF inline.</p>
+                                    <a href={previewPdf} download target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium">Download PDF</a>
+                                </div>
+                            </object>
                         )}
                     </div>
                 </div>
