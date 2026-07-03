@@ -27,6 +27,10 @@ const TeamLeaves = lazy(() => import('../pages/team/TeamLeaves'));
 const TeamExpenses = lazy(() => import('../pages/team/TeamExpenses'));
 const TeamReports = lazy(() => import('../pages/team/TeamReports'));
 
+// Performance
+const EmployeePerformance = lazy(() => import('../pages/performance/EmployeePerformance'));
+const TeamPerformance = lazy(() => import('../pages/team/TeamPerformance'));
+
 export default function HrmsEmployeeApp() {
     return (
         <HrmsSettingsProvider>
@@ -73,6 +77,9 @@ export default function HrmsEmployeeApp() {
                         <Route path="team/leaves" element={<TeamLeaves />} />
                         <Route path="team/expenses" element={<TeamExpenses />} />
                         <Route path="team/reports" element={<TeamReports />} />
+                        {/* Performance Module */}
+                        <Route path="performance" element={<EmployeePerformance />} />
+                        <Route path="team/performance" element={<TeamPerformance />} />
                     </Route>
 
                     {/* Fallback */}

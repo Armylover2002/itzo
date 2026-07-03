@@ -323,7 +323,27 @@ const restaurantSchema = new mongoose.Schema(
           type: Date,
           default: null
       }
-    }
+    },
+    // HRMS Linkage for KPI and Performance Tracking
+    onboardedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'HrmsEmployee',
+      index: true,
+      default: null
+    },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'HrmsEmployee',
+      index: true,
+      default: null
+    },
+    transferHistory: [{
+      fromEmployee: { type: mongoose.Schema.Types.ObjectId, ref: 'HrmsEmployee' },
+      toEmployee: { type: mongoose.Schema.Types.ObjectId, ref: 'HrmsEmployee' },
+      transferredAt: { type: Date, default: Date.now },
+      transferredByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodAdmin' },
+      reason: { type: String, trim: true }
+    }]
   },
   {
     collection: 'food_restaurants',

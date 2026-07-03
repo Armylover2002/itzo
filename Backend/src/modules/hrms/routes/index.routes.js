@@ -12,6 +12,7 @@ import dailyReportRoutes from './dailyReport.routes.js';
 import locationTrackRoutes from './locationTrack.routes.js';
 import assessmentRoutes from './assessment.routes.js';
 import teamRoutes from './team.routes.js';
+import performanceRoutes from './performance.routes.js';
 
 const router = express.Router();
 
@@ -28,5 +29,6 @@ router.use('/daily-reports', dailyReportRoutes);
 router.use('/location-tracks', locationTrackRoutes);
 router.use('/assessments', assessmentRoutes);
 router.use('/team', teamRoutes);
+router.use('/performance', performanceRoutes);
 
 export default router;

@@ -26,6 +26,10 @@ const QuestionBank = lazy(() => import('./assessments/QuestionBank'));
 const AssessmentSettings = lazy(() => import('./assessments/AssessmentSettings'));
 const TestAnalysis = lazy(() => import('./assessments/TestAnalysis'));
 
+// Performance
+const HrmsAdminPerformance = lazy(() => import('./HrmsAdminPerformance'));
+const HrmsKpiSettings = lazy(() => import('./HrmsKpiSettings'));
+
 export default function HrmsRouter() {
     return (
         <Suspense fallback={<Loader />}>
@@ -60,6 +64,10 @@ export default function HrmsRouter() {
                 <Route path="reports/all" element={<AdminReportList />} />
                 <Route path="reports/:id" element={<AdminReportDetails />} />
                 <Route path="reports/settings" element={<AdminReportSettings />} />
+
+                {/* Performance & KPIs */}
+                <Route path="performance" element={<HrmsAdminPerformance />} />
+                <Route path="kpi-settings" element={<HrmsKpiSettings />} />
                 </Routes>
             </HrmsSettingsProvider>
         </Suspense>

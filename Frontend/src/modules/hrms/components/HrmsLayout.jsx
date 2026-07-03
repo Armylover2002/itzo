@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@core/context/AuthContext';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
+import axiosInstance from '@core/api/axios';
 import {
     LayoutDashboard, Clock, CalendarDays, Wallet, FileText,
     Receipt, User, LogOut, Menu, X, ChevronRight, Building2,
-    LifeBuoy, ChevronDown, MessageSquarePlus, List, Phone, ClipboardList
+    LifeBuoy, ChevronDown, MessageSquarePlus, List, Phone, ClipboardList, Target
 } from 'lucide-react';
 
 const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/hrms/dashboard' },
+    { label: 'My Performance', icon: Target, path: '/hrms/performance' },
     { label: 'Attendance', icon: Clock, path: '/hrms/attendance' },
     { label: 'Leave', icon: CalendarDays, path: '/hrms/leave' },
     { label: 'Salary & Payslip', icon: Wallet, path: '/hrms/salary' },
@@ -33,6 +35,7 @@ export default function HrmsLayout() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [employeeProfile, setEmployeeProfile] = useState(null);
+    const [openMenus, setOpenMenus] = useState({});
 
     React.useEffect(() => {
         const fetchProfile = async () => {
@@ -55,13 +58,14 @@ export default function HrmsLayout() {
 
     const dynamicNavItems = [...navItems];
     if (employeeProfile?.hrmsRole === 'Manager') {
-        dynamicNavItems.splice(1, 0, { 
+        dynamicNavItems.splice(2, 0, { 
             label: 'Team Management', 
             icon: Building2, 
             path: '/hrms/team',
             subItems: [
                 { label: 'My Team', icon: Building2, path: '/hrms/team' },
                 { label: 'Team Dashboard', icon: LayoutDashboard, path: '/hrms/team/dashboard' },
+                { label: 'Team Performance', icon: Target, path: '/hrms/team/performance' },
                 { label: 'Team Attendance', icon: Clock, path: '/hrms/team/attendance' },
                 { label: 'Team Leaves', icon: CalendarDays, path: '/hrms/team/leaves' },
                 { label: 'Team Expenses', icon: Receipt, path: '/hrms/team/expenses' },
