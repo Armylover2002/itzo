@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Loader from "@food/components/Loader";
+import { HrmsSettingsProvider } from "../../../../hrms/context/HrmsSettingsContext";
 
 const HrmsDashboard = lazy(() => import("./HrmsDashboard"));
 const HrmsJoiningRequests = lazy(() => import("./HrmsJoiningRequests"));
@@ -28,8 +29,9 @@ const TestAnalysis = lazy(() => import('./assessments/TestAnalysis'));
 export default function HrmsRouter() {
     return (
         <Suspense fallback={<Loader />}>
-            <Routes>
-                <Route path="/" element={<Navigate to="dashboard" replace />} />
+            <HrmsSettingsProvider>
+                <Routes>
+                    <Route path="/" element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<HrmsDashboard />} />
                 <Route path="joining-requests" element={<HrmsJoiningRequests />} />
                 <Route path="employees" element={<HrmsEmployees />} />
@@ -58,7 +60,8 @@ export default function HrmsRouter() {
                 <Route path="reports/all" element={<AdminReportList />} />
                 <Route path="reports/:id" element={<AdminReportDetails />} />
                 <Route path="reports/settings" element={<AdminReportSettings />} />
-            </Routes>
+                </Routes>
+            </HrmsSettingsProvider>
         </Suspense>
     );
 }
