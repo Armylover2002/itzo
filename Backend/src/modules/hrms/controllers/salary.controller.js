@@ -4,7 +4,10 @@ import { HrmsAttendance } from '../models/attendance.model.js';
 import { HrmsLeave } from '../models/leave.model.js';
 import { HrmsExpense } from '../models/expense.model.js';
 import { HrmsSettings } from '../models/settings.model.js';
+import { HrmsDocument } from '../models/document.model.js';
+import { generatePdfBuffer, uploadPdfToCloudinary } from '../services/payslip.service.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
+
 /**
  * ADMIN: Generate payroll for a month
  */
@@ -303,6 +306,101 @@ export const uploadPayslip = async (req, res, next) => {
         if (!salary) return sendError(res, 404, 'Salary record not found');
 
         return sendResponse(res, 200, 'Payslip uploaded successfully', salary);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ADMIN: Generate a professional PDF payslip
+ */
+export const generatePayslipPdf = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const salary = await HrmsSalary.findById(id).populate({
+            path: 'employeeId',
+            populate: { path: 'adminId', select: 'name email phone' }
+        });
+
+        if (!salary) return sendError(res, 404, 'Salary record not found');
+        
+        const employee = salary.employeeId;
+
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+        const grossEarnings = (salary.baseSalary || 0) + (salary.overtimeBonus || 0) + (salary.reimbursements || 0);
+        const totalDeductions = (salary.shortHourDeduction || 0) + (salary.lopDeduction || 0);
+
+        // Prepare data for Handlebars
+        const data = {
+            companyName: 'ItzoFood Enterprise',
+            companyAddress: '123 Business Avenue, Tech Park, City, Country',
+            monthName: monthNames[salary.month - 1],
+            year: salary.year,
+            employeeName: employee.adminId?.name || 'Employee',
+            employeeId: employee._id.toString().slice(-6).toUpperCase(), // simple hash for presentation
+            designation: employee.designation || 'Staff',
+            department: employee.department || 'Operations',
+            joiningDate: employee.joiningDate ? new Date(employee.joiningDate).toLocaleDateString() : 'N/A',
+            
+            totalWorkingDays: salary.totalWorkingDays,
+            presentDays: salary.presentDays,
+            lopDays: salary.lopDays,
+            bankName: employee.bankDetails?.bankName || 'N/A',
+            accountNumber: employee.bankDetails?.accountNumber || 'N/A',
+            panNumber: employee.panNumber || 'N/A',
+
+            baseSalary: (salary.baseSalary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+            overtimeBonus: (salary.overtimeBonus || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+            reimbursements: (salary.reimbursements || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+            grossEarnings: grossEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+
+            lopDeduction: (salary.lopDeduction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+            shortHourDeduction: (salary.shortHourDeduction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+            totalDeductions: totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+
+            netSalary: (salary.netSalary || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+            
+            // Custom helper parameter
+            amountInWords: `Rupees ${salary.netSalary} Only`,
+
+            generatedBy: req.user.name || 'Admin',
+            generatedDate: new Date().toLocaleDateString(),
+            payslipVersion: (salary.payslipVersion || 0) + 1
+        };
+
+        // 1. Generate PDF buffer
+        const pdfBuffer = await generatePdfBuffer(data);
+
+        // 2. Upload to Cloudinary
+        const filename = `Payslip_${employee.adminId?.name?.replace(/\s+/g, '_')}_${data.monthName}_${data.year}_v${data.payslipVersion}`;
+        const pdfUrl = await uploadPdfToCloudinary(pdfBuffer, filename);
+
+        // 3. Update HrmsSalary record
+        salary.payslipUrl = pdfUrl;
+        salary.payslipVersion = data.payslipVersion;
+        salary.payslipGeneratedAt = new Date();
+        await salary.save();
+
+        // 4. Upsert Document in HRMS Documents
+        await HrmsDocument.findOneAndUpdate(
+            { employeeId: employee._id, documentType: 'Payslip', month: salary.month, year: salary.year },
+            {
+                $set: {
+                    name: `Payslip - ${data.monthName} ${data.year}`,
+                    url: pdfUrl,
+                    fileSize: pdfBuffer.length,
+                    mimeType: 'application/pdf',
+                    uploadedBy: req.user.userId,
+                    isVerified: true,
+                    remarks: 'Auto-generated by System'
+                }
+            },
+            { upsert: true, new: true }
+        );
+
+        return sendResponse(res, 200, 'Payslip generated successfully', salary);
     } catch (error) {
         next(error);
     }

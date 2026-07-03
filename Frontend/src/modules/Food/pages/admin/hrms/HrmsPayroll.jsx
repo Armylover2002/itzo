@@ -83,6 +83,19 @@ export default function HrmsPayroll() {
         } catch (e) { toast.error(e.response?.data?.message || 'Action failed'); }
     };
 
+    const handleGeneratePayslipPdf = async (id) => {
+        const toastId = toast.loading('Generating payslip PDF...');
+        try {
+            await axiosInstance.post(`/hrms/salaries/${id}/generate-payslip`);
+            toast.success('Payslip generated successfully', { id: toastId });
+            // Refresh table
+            const res = await axiosInstance.get(`/hrms/salaries?month=${month}&year=${year}`);
+            setPayrollRecords(res.data?.data?.records || []);
+        } catch (e) {
+            toast.error(e.response?.data?.message || 'Failed to generate payslip', { id: toastId });
+        }
+    };
+
     const handleUploadPayslip = async (e) => {
         e.preventDefault();
         if (!file || !selectedSalaryId) return;
@@ -213,10 +226,16 @@ export default function HrmsPayroll() {
                                                         <span className="text-slate-300">|</span>
                                                         <a href={r.payslipUrl} download target="_blank" rel="noopener noreferrer" className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Download Payslip">DL</a>
                                                         <span className="text-slate-300">|</span>
-                                                        <button onClick={() => { setSelectedSalaryId(r._id); setUploadModalOpen(true); }} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Replace Payslip">Replace</button>
+                                                        <button onClick={() => handleGeneratePayslipPdf(r._id)} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Regenerate PDF">Regenerate</button>
+                                                        <span className="text-slate-300">|</span>
+                                                        <button onClick={() => { setSelectedSalaryId(r._id); setUploadModalOpen(true); }} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Replace Manual Payslip">Replace</button>
                                                     </div>
                                                 ) : (
-                                                    <button onClick={() => { setSelectedSalaryId(r._id); setUploadModalOpen(true); }} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Upload Payslip">Upload</button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => handleGeneratePayslipPdf(r._id)} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Generate PDF Payslip">Generate</button>
+                                                        <span className="text-slate-300">|</span>
+                                                        <button onClick={() => { setSelectedSalaryId(r._id); setUploadModalOpen(true); }} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Upload Manual Payslip">Upload</button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
