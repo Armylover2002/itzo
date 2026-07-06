@@ -93,221 +93,130 @@ const findBrowserExecutable = () => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Auto-Install Chrome (one-time, uses @puppeteer/browsers which ships with puppeteer)
+// Chrome Management — Simple and Foolproof
 // ──────────────────────────────────────────────────────────────────────────────
-let autoInstallAttempted = false;
-let depsInstallAttempted = false;
 
-const autoInstallChrome = async () => {
-    if (autoInstallAttempted) return null;
-    autoInstallAttempted = true;
+/**
+ * Ensures a working Chrome binary is available. Returns the executable path.
+ * Strategy: find existing → download if missing. install() is idempotent.
+ */
+const ensureChromeInstalled = async () => {
+    // 1. Check if Chrome is already available (cache + system paths)
+    const existing = findBrowserExecutable();
+    if (existing) return existing;
 
+    // 2. Download Chrome via @puppeteer/browsers (idempotent — instant if already cached)
+    console.log('[Payslip] No Chrome found anywhere. Downloading...');
     try {
         const platform = detectBrowserPlatform();
         const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(os.homedir(), '.cache', 'puppeteer');
-
-        console.log(`[Payslip] Chrome not found. Auto-downloading for platform: ${platform}`);
-        console.log(`[Payslip] Download cache directory: ${cacheDir}`);
-
         const buildId = await resolveBuildId(Browser.CHROME, platform, 'stable');
-        console.log(`[Payslip] Downloading Chrome build ${buildId}... (this may take 1-3 minutes on first run)`);
 
-        const result = await install({
-            browser: Browser.CHROME,
-            buildId,
-            cacheDir,
-        });
-
-        console.log(`[Payslip] ✅ Chrome ${buildId} installed at: ${result.executablePath}`);
+        console.log(`[Payslip] Downloading Chrome ${buildId} for ${platform} to ${cacheDir}...`);
+        const result = await install({ browser: Browser.CHROME, buildId, cacheDir });
+        console.log(`[Payslip] ✅ Chrome ready at: ${result.executablePath}`);
         return result.executablePath;
-    } catch (error) {
-        console.error(`[Payslip] ❌ Chrome auto-install failed: ${error.message}`);
-        return null;
+    } catch (dlError) {
+        console.error(`[Payslip] Chrome download failed: ${dlError.message}`);
     }
+
+    // 3. Last resort: re-scan after download attempt (cache might have partial data)
+    const afterDownload = findBrowserExecutable();
+    if (afterDownload) return afterDownload;
+
+    throw new Error('No Chrome binary available. Please SSH into your VPS and run: sudo apt-get update && sudo apt-get install -y chromium-browser');
 };
 
 /**
  * Install system libraries required by Chrome on Ubuntu/Debian VPS.
- * Tries multiple strategies to handle different Ubuntu versions (18/20/22/24).
- * Only runs once per server lifetime.
+ * Tries multiple strategies for different Ubuntu versions.
  */
+let depsInstalled = false;
 const installSystemDependencies = async () => {
-    if (depsInstallAttempted) return false;
-    depsInstallAttempted = true;
+    if (depsInstalled) return;
+    depsInstalled = true;
 
-    let execSyncFn;
-    try {
-        const cp = await import('child_process');
-        execSyncFn = cp.execSync;
-    } catch {
-        console.error('[Payslip] child_process not available');
-        return false;
-    }
-
-    // Safe exec helper — never throws, returns true/false
+    const { execSync } = await import('child_process');
     const run = (cmd, timeout = 180000) => {
-        try {
-            execSyncFn(cmd, { stdio: 'pipe', timeout });
-            return true;
-        } catch {
-            return false;
-        }
+        try { execSync(cmd, { stdio: 'pipe', timeout }); return true; } catch { return false; }
     };
 
     console.log('[Payslip] Installing Chrome system dependencies...');
-
-    // Step 1: Update package lists (ok if this partially fails)
     run('apt-get update -qq 2>/dev/null', 60000);
 
-    // Step 2 (BEST): Install chromium system package — this auto-pulls ALL deps
-    // Works across Ubuntu/Debian versions and handles library naming differences
+    // Strategy 1: Install chromium system package (pulls ALL deps automatically)
     if (run('apt-get install -y --no-install-recommends chromium-browser 2>/dev/null') ||
         run('apt-get install -y --no-install-recommends chromium 2>/dev/null')) {
-        console.log('[Payslip] ✅ Dependencies installed via chromium system package.');
-        return true;
+        console.log('[Payslip] ✅ Deps installed via system chromium package.');
+        return;
     }
 
-    // Step 3 (FALLBACK): Install individual libs — try standard names first
-    console.log('[Payslip] Chromium package not available. Installing individual libraries...');
-    const libSets = [
-        // Ubuntu 20.04 / 22.04 names
-        'libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0 libnss3 libnspr4 libxss1 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 fonts-liberation',
-        // Ubuntu 24.04+ names (t64 suffix)
-        'libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2t64 libatspi2.0-0t64 libnss3 libnspr4 libxss1 libgtk-3-0t64 libx11-xcb1 libxcb-dri3-0 fonts-liberation',
-    ];
-
-    for (const libs of libSets) {
-        if (run(`apt-get install -y --no-install-recommends ${libs} 2>/dev/null`)) {
-            console.log('[Payslip] ✅ Individual libraries installed successfully.');
-            return true;
-        }
-    }
-
-    // Step 4 (LAST RESORT): Install libs one by one, skip any that fail
-    console.log('[Payslip] Batch install failed. Installing libraries one-by-one...');
-    const allLibs = [
+    // Strategy 2: Install individual libs one-by-one (skip any that fail)
+    console.log('[Payslip] Installing individual libraries...');
+    const libs = [
         'libatk1.0-0', 'libatk-bridge2.0-0', 'libcups2', 'libdrm2',
         'libxkbcommon0', 'libxcomposite1', 'libxdamage1', 'libxrandr2',
         'libgbm1', 'libpango-1.0-0', 'libcairo2', 'libasound2',
         'libatspi2.0-0', 'libnss3', 'libnspr4', 'libxss1',
         'libgtk-3-0', 'libx11-xcb1', 'libxcb-dri3-0', 'fonts-liberation'
     ];
-    let installedCount = 0;
-    for (const lib of allLibs) {
-        if (run(`apt-get install -y --no-install-recommends ${lib} 2>/dev/null`, 30000)) {
-            installedCount++;
-        }
+    let ok = 0;
+    for (const lib of libs) {
+        if (run(`apt-get install -y ${lib} 2>/dev/null`, 30000)) ok++;
     }
-    console.log(`[Payslip] Installed ${installedCount}/${allLibs.length} libraries.`);
-    return installedCount > 0;
+    console.log(`[Payslip] Installed ${ok}/${libs.length} libraries.`);
 };
 
-// Singleton browser instance pool to avoid memory/CPU spikes on production servers
+// ──────────────────────────────────────────────────────────────────────────────
+// Browser Singleton
+// ──────────────────────────────────────────────────────────────────────────────
 let browserInstance = null;
 let isLaunching = false;
 
-/**
- * Retrieves a reused Puppeteer browser instance or launches a new one.
- * Auto-installs Chrome + system dependencies on first use if missing.
- */
 const getBrowser = async () => {
-    if (browserInstance && browserInstance.connected) {
-        return browserInstance;
-    }
+    if (browserInstance && browserInstance.connected) return browserInstance;
 
     if (isLaunching) {
         for (let i = 0; i < 20; i++) {
             await new Promise(r => setTimeout(r, 250));
-            if (browserInstance && browserInstance.connected) {
-                return browserInstance;
-            }
+            if (browserInstance && browserInstance.connected) return browserInstance;
         }
     }
 
     isLaunching = true;
     try {
+        // ALWAYS get a concrete Chrome path — never let Puppeteer guess
+        const chromePath = await ensureChromeInstalled();
+        console.log(`[Payslip] Using Chrome: ${chromePath}`);
+
         const launchOptions = {
             headless: 'new',
+            executablePath: chromePath,
             args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage',
-                '--disable-gpu',
-                '--no-first-run',
-                '--no-zygote',
-                '--single-process',
-                '--disable-extensions',
-                '--memory-pressure-off',
-                '--disable-background-networking',
-                '--disable-default-apps',
-                '--disable-sync',
-                '--disable-translate',
-                '--hide-scrollbars',
-                '--metrics-recording-only',
-                '--mute-audio',
-                '--no-default-browser-check'
+                '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
+                '--disable-gpu', '--no-first-run', '--no-zygote', '--single-process',
+                '--disable-extensions', '--memory-pressure-off',
+                '--disable-background-networking', '--disable-default-apps',
+                '--disable-sync', '--disable-translate', '--hide-scrollbars',
+                '--metrics-recording-only', '--mute-audio', '--no-default-browser-check'
             ]
         };
 
-        let execPath = findBrowserExecutable();
-        if (execPath) {
-            launchOptions.executablePath = execPath;
-        }
-
-        const attemptLaunch = async () => {
-            console.log('[Payslip] Launching Chrome browser...');
-            browserInstance = await puppeteer.launch(launchOptions);
-        };
-
         try {
-            // Attempt 1: Normal launch
-            await attemptLaunch();
-        } catch (launchError) {
-            const msg = launchError.message || '';
-            const isMissingBinary = msg.includes('Could not find') || msg.includes('No such file or directory');
-            const isMissingLibs = msg.includes('error while loading shared libraries') || msg.includes('cannot open shared object');
-            const isLaunchFailed = msg.includes('Failed to launch');
-
-            console.warn(`[Payslip] Launch failed: ${msg.substring(0, 200)}`);
-
-            if (isMissingBinary || (isLaunchFailed && !isMissingLibs)) {
-                // Attempt 2: Auto-install Chrome binary, then retry
-                const installedPath = await autoInstallChrome();
-                if (installedPath) {
-                    launchOptions.executablePath = installedPath;
-                }
-
-                try {
-                    await attemptLaunch();
-                } catch (retryError) {
-                    const retryMsg = retryError.message || '';
-                    if (retryMsg.includes('shared libraries') || retryMsg.includes('shared object')) {
-                        // Attempt 3: Install system deps, then retry
-                        await installSystemDependencies();
-                        await attemptLaunch();
-                    } else {
-                        throw retryError;
-                    }
-                }
-            } else if (isMissingLibs || isLaunchFailed) {
-                // Attempt 2: Install system deps directly, then retry
-                await installSystemDependencies();
-                await attemptLaunch();
-            } else {
-                throw launchError;
-            }
+            browserInstance = await puppeteer.launch(launchOptions);
+        } catch (firstErr) {
+            // Most likely missing shared libraries — install deps and retry once
+            console.warn(`[Payslip] First launch failed: ${firstErr.message.substring(0, 150)}`);
+            await installSystemDependencies();
+            browserInstance = await puppeteer.launch(launchOptions);
         }
 
-        browserInstance.on('disconnected', () => {
-            console.warn('[Payslip] Browser disconnected. Resetting pool.');
-            browserInstance = null;
-        });
-
+        browserInstance.on('disconnected', () => { browserInstance = null; });
+        console.log('[Payslip] ✅ Chrome browser launched successfully.');
         return browserInstance;
     } catch (error) {
-        console.error('[Payslip] Failed to launch browser:', error.message);
         browserInstance = null;
-        throw new Error(`Payslip generation failed: Unable to launch Chrome. ${error.message}. SSH fix: sudo apt-get update && sudo apt-get install -y chromium-browser`);
+        throw new Error(`Payslip generation failed: ${error.message}`);
     } finally {
         isLaunching = false;
     }
