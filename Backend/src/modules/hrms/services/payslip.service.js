@@ -30,10 +30,12 @@ const COMMON_CHROME_PATHS = [
 
 /**
  * Intelligent Executable Detection
- * Scans environment variables and standard OS paths for an installed Chromium/Chrome browser.
+ * Scans: 1) Puppeteer's expected bundled path, 2) Puppeteer cache for ANY version,
+ * 3) Standard system Chrome paths. This handles version mismatches between
+ * Puppeteer's expected Chrome and what was actually downloaded.
  */
 const findBrowserExecutable = () => {
-    // 1. Check if Puppeteer has its own downloaded Chromium
+    // 1. Check if Puppeteer has its expected bundled Chromium
     try {
         const bundledPath = puppeteer.executablePath();
         if (bundledPath && fs.existsSync(bundledPath)) {
@@ -44,7 +46,41 @@ const findBrowserExecutable = () => {
         // Bundled browser not found or skipped during install
     }
 
-    // 2. Scan known system paths on Ubuntu VPS / Linux / Windows / Mac
+    // 2. Scan Puppeteer cache for ANY downloaded Chrome version
+    //    (fixes mismatch: Puppeteer expects v131 but auto-install downloaded v150)
+    try {
+        const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(os.homedir(), '.cache', 'puppeteer');
+        const chromeCacheDir = path.join(cacheDir, 'chrome');
+        if (fs.existsSync(chromeCacheDir)) {
+            const versions = fs.readdirSync(chromeCacheDir)
+                .filter(d => fs.statSync(path.join(chromeCacheDir, d)).isDirectory())
+                .sort().reverse(); // newest version first
+            for (const ver of versions) {
+                // Linux path pattern
+                const linuxPath = path.join(chromeCacheDir, ver, 'chrome-linux64', 'chrome');
+                if (fs.existsSync(linuxPath)) {
+                    console.log(`[Payslip] Using cached Chrome (${ver}): ${linuxPath}`);
+                    return linuxPath;
+                }
+                // Windows path pattern
+                const winPath = path.join(chromeCacheDir, ver, 'chrome-win64', 'chrome.exe');
+                if (fs.existsSync(winPath)) {
+                    console.log(`[Payslip] Using cached Chrome (${ver}): ${winPath}`);
+                    return winPath;
+                }
+                // Mac path pattern
+                const macPath = path.join(chromeCacheDir, ver, 'chrome-mac-x64', 'Google Chrome for Testing.app', 'Contents', 'MacOS', 'Google Chrome for Testing');
+                if (fs.existsSync(macPath)) {
+                    console.log(`[Payslip] Using cached Chrome (${ver}): ${macPath}`);
+                    return macPath;
+                }
+            }
+        }
+    } catch (err) {
+        // Cache scanning failed, continue to system paths
+    }
+
+    // 3. Scan known system paths on Ubuntu VPS / Linux / Windows / Mac
     for (const execPath of COMMON_CHROME_PATHS) {
         if (fs.existsSync(execPath)) {
             console.log(`[Payslip] Using system Chrome/Chromium: ${execPath}`);
