@@ -93,78 +93,127 @@ const findBrowserExecutable = () => {
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Chrome Management — Simple and Foolproof
+// Chrome Management — Non-blocking one-time setup
 // ──────────────────────────────────────────────────────────────────────────────
+
+let isDownloadingChrome = false;
+let isInstallingDeps = false;
+let depsInstalled = false;
 
 /**
  * Ensures a working Chrome binary is available. Returns the executable path.
- * Strategy: find existing → download if missing. install() is idempotent.
+ * If missing, starts download in background and throws a fast friendly error.
  */
 const ensureChromeInstalled = async () => {
-    // 1. Check if Chrome is already available (cache + system paths)
+    // 1. Check if Chrome is already available
     const existing = findBrowserExecutable();
     if (existing) return existing;
 
-    // 2. Download Chrome via @puppeteer/browsers (idempotent — instant if already cached)
-    console.log('[Payslip] No Chrome found anywhere. Downloading...');
-    try {
-        const platform = detectBrowserPlatform();
-        const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(os.homedir(), '.cache', 'puppeteer');
-        const buildId = await resolveBuildId(Browser.CHROME, platform, 'stable');
-
-        console.log(`[Payslip] Downloading Chrome ${buildId} for ${platform} to ${cacheDir}...`);
-        const result = await install({ browser: Browser.CHROME, buildId, cacheDir });
-        console.log(`[Payslip] ✅ Chrome ready at: ${result.executablePath}`);
-        return result.executablePath;
-    } catch (dlError) {
-        console.error(`[Payslip] Chrome download failed: ${dlError.message}`);
+    if (isDownloadingChrome) {
+        throw new Error('Server is performing one-time setup (Downloading PDF Engine). This takes 1-2 minutes. Please try again shortly.');
     }
 
-    // 3. Last resort: re-scan after download attempt (cache might have partial data)
-    const afterDownload = findBrowserExecutable();
-    if (afterDownload) return afterDownload;
+    // 2. Start background download
+    isDownloadingChrome = true;
+    console.log('[Payslip] No Chrome found. Starting background download...');
+    
+    // Fire and forget background task
+    (async () => {
+        try {
+            const platform = detectBrowserPlatform();
+            const cacheDir = process.env.PUPPETEER_CACHE_DIR || path.join(os.homedir(), '.cache', 'puppeteer');
+            const buildId = await resolveBuildId(Browser.CHROME, platform, 'stable');
+            
+            console.log(`[Payslip] Downloading Chrome ${buildId} to ${cacheDir}...`);
+            await install({ browser: Browser.CHROME, buildId, cacheDir });
+            console.log(`[Payslip] ✅ Chrome download complete.`);
+        } catch (dlError) {
+            console.error(`[Payslip] Chrome download failed: ${dlError.message}`);
+        } finally {
+            isDownloadingChrome = false;
+        }
+    })();
 
-    throw new Error('No Chrome binary available. Please SSH into your VPS and run: sudo apt-get update && sudo apt-get install -y chromium-browser');
+    throw new Error('Server is performing one-time setup (Downloading PDF Engine). This takes 1-2 minutes. Please try again shortly.');
 };
 
 /**
  * Install system libraries required by Chrome on Ubuntu/Debian VPS.
- * Tries multiple strategies for different Ubuntu versions.
+ * Runs in background to avoid 504 Gateway timeouts.
  */
-let depsInstalled = false;
+let installAttemptCount = 0;
+
 const installSystemDependencies = async () => {
-    if (depsInstalled) return;
-    depsInstalled = true;
-
-    const { execSync } = await import('child_process');
-    const run = (cmd, timeout = 180000) => {
-        try { execSync(cmd, { stdio: 'pipe', timeout }); return true; } catch { return false; }
-    };
-
-    console.log('[Payslip] Installing Chrome system dependencies...');
-    run('apt-get update -qq 2>/dev/null', 60000);
-
-    // Strategy 1: Install chromium system package (pulls ALL deps automatically)
-    if (run('apt-get install -y --no-install-recommends chromium-browser 2>/dev/null') ||
-        run('apt-get install -y --no-install-recommends chromium 2>/dev/null')) {
-        console.log('[Payslip] ✅ Deps installed via system chromium package.');
-        return;
+    // Stop trying after 3 attempts to prevent infinite loops
+    if (depsInstalled || installAttemptCount >= 3) return;
+    
+    if (isInstallingDeps) {
+        throw new Error('Server is performing one-time setup (Installing System Libraries). This takes 1-2 minutes. Please try again shortly.');
     }
 
-    // Strategy 2: Install individual libs one-by-one (skip any that fail)
-    console.log('[Payslip] Installing individual libraries...');
-    const libs = [
-        'libatk1.0-0', 'libatk-bridge2.0-0', 'libcups2', 'libdrm2',
-        'libxkbcommon0', 'libxcomposite1', 'libxdamage1', 'libxrandr2',
-        'libgbm1', 'libpango-1.0-0', 'libcairo2', 'libasound2',
-        'libatspi2.0-0', 'libnss3', 'libnspr4', 'libxss1',
-        'libgtk-3-0', 'libx11-xcb1', 'libxcb-dri3-0', 'fonts-liberation'
-    ];
-    let ok = 0;
-    for (const lib of libs) {
-        if (run(`apt-get install -y ${lib} 2>/dev/null`, 30000)) ok++;
-    }
-    console.log(`[Payslip] Installed ${ok}/${libs.length} libraries.`);
+    isInstallingDeps = true;
+    installAttemptCount++;
+    console.log(`[Payslip] Starting background system dependencies installation (Attempt ${installAttemptCount})...`);
+
+    // Fire and forget background task
+    (async () => {
+        try {
+            const { exec } = await import('child_process');
+            const runAsync = (cmd, timeout = 180000) => new Promise((resolve) => {
+                exec(cmd, { timeout }, (err) => resolve(!err));
+            });
+
+            await runAsync('apt-get update -qq 2>/dev/null', 60000);
+
+            // Strategy 1: Install chromium system package
+            if (await runAsync('apt-get install -y --no-install-recommends chromium-browser 2>/dev/null') ||
+                await runAsync('apt-get install -y --no-install-recommends chromium 2>/dev/null')) {
+                console.log('[Payslip] ✅ Deps installed via system chromium package.');
+                depsInstalled = true;
+                return;
+            }
+
+            // Strategy 2: Install individual libs one-by-one, including Ubuntu 24.04 t64 variants
+            console.log('[Payslip] Installing individual libraries...');
+            const libs = [
+                'libatk1.0-0', 'libatk1.0-0t64',
+                'libatk-bridge2.0-0', 'libatk-bridge2.0-0t64',
+                'libcups2', 'libcups2t64',
+                'libdrm2',
+                'libxkbcommon0',
+                'libxcomposite1',
+                'libxdamage1',
+                'libxrandr2',
+                'libgbm1',
+                'libpango-1.0-0',
+                'libcairo2',
+                'libasound2', 'libasound2t64',
+                'libatspi2.0-0', 'libatspi2.0-0t64',
+                'libnss3',
+                'libnspr4',
+                'libxss1',
+                'libgtk-3-0', 'libgtk-3-0t64',
+                'libx11-xcb1',
+                'libxcb-dri3-0',
+                'fonts-liberation'
+            ];
+            
+            let ok = 0;
+            for (const lib of libs) {
+                if (await runAsync(`apt-get install -y ${lib} 2>/dev/null`, 30000)) ok++;
+            }
+            console.log(`[Payslip] Installed ${ok}/${libs.length} libraries.`);
+            
+            // Mark as installed so we don't keep running this unless a launch actually fails again
+            depsInstalled = true;
+        } catch (err) {
+            console.error('[Payslip] Dependency install error:', err);
+        } finally {
+            isInstallingDeps = false;
+        }
+    })();
+
+    throw new Error('Server is performing one-time setup (Installing System Libraries). This takes 1-2 minutes. Please try again shortly.');
 };
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -185,10 +234,7 @@ const getBrowser = async () => {
 
     isLaunching = true;
     try {
-        // ALWAYS get a concrete Chrome path — never let Puppeteer guess
         const chromePath = await ensureChromeInstalled();
-        console.log(`[Payslip] Using Chrome: ${chromePath}`);
-
         const launchOptions = {
             headless: 'new',
             executablePath: chromePath,
@@ -205,17 +251,29 @@ const getBrowser = async () => {
         try {
             browserInstance = await puppeteer.launch(launchOptions);
         } catch (firstErr) {
-            // Most likely missing shared libraries — install deps and retry once
             console.warn(`[Payslip] First launch failed: ${firstErr.message.substring(0, 150)}`);
             await installSystemDependencies();
-            browserInstance = await puppeteer.launch(launchOptions);
+            // Since installSystemDependencies throws a friendly error to avoid 504,
+            // this line won't execute if deps are missing (which is exactly what we want).
+            
+            try {
+                browserInstance = await puppeteer.launch(launchOptions);
+            } catch (secondErr) {
+                // If it STILL fails after dependencies supposedly installed, reset the flag
+                // so it can retry the installation next time (up to 3 times total).
+                if (secondErr.message.includes('shared libraries') || secondErr.message.includes('shared object')) {
+                    depsInstalled = false;
+                }
+                throw secondErr;
+            }
         }
 
         browserInstance.on('disconnected', () => { browserInstance = null; });
-        console.log('[Payslip] ✅ Chrome browser launched successfully.');
         return browserInstance;
     } catch (error) {
         browserInstance = null;
+        // Keep the friendly throw messages intact, otherwise generic error
+        if (error.message.includes('one-time setup')) throw error;
         throw new Error(`Payslip generation failed: ${error.message}`);
     } finally {
         isLaunching = false;
