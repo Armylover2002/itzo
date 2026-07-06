@@ -288,6 +288,16 @@ export const adminSidebarMenu = [
           { label: "Report Settings", path: "/ecs/hrms/reports/settings", permissionKey: "reports_settings" },
         ],
       },
+      {
+        type: "expandable",
+        label: "Performance & KPIs",
+        icon: "Award",
+        permissionKey: "performance",
+        subItems: [
+          { label: "BI Dashboard", path: "/ecs/hrms/performance", permissionKey: "performance_view" },
+          { label: "KPI Settings Engine", path: "/ecs/hrms/kpi-settings", permissionKey: "kpi_settings" },
+        ],
+      },
       { type: "link", label: "Settings", permissionKey: "settings", path: "/ecs/hrms/settings", icon: "Settings" },
     ],
   },
