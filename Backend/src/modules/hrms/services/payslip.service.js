@@ -92,39 +92,78 @@ const autoInstallChrome = async () => {
 
 /**
  * Install system libraries required by Chrome on Ubuntu/Debian VPS.
- * Only runs once. Requires root (which is confirmed by /root/.cache path).
+ * Tries multiple strategies to handle different Ubuntu versions (18/20/22/24).
+ * Only runs once per server lifetime.
  */
 const installSystemDependencies = async () => {
     if (depsInstallAttempted) return false;
     depsInstallAttempted = true;
 
-    // These are ALL the shared libraries Chrome needs on a minimal Ubuntu VPS
-    const packages = [
+    let execSyncFn;
+    try {
+        const cp = await import('child_process');
+        execSyncFn = cp.execSync;
+    } catch {
+        console.error('[Payslip] child_process not available');
+        return false;
+    }
+
+    // Safe exec helper — never throws, returns true/false
+    const run = (cmd, timeout = 180000) => {
+        try {
+            execSyncFn(cmd, { stdio: 'pipe', timeout });
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    console.log('[Payslip] Installing Chrome system dependencies...');
+
+    // Step 1: Update package lists (ok if this partially fails)
+    run('apt-get update -qq 2>/dev/null', 60000);
+
+    // Step 2 (BEST): Install chromium system package — this auto-pulls ALL deps
+    // Works across Ubuntu/Debian versions and handles library naming differences
+    if (run('apt-get install -y --no-install-recommends chromium-browser 2>/dev/null') ||
+        run('apt-get install -y --no-install-recommends chromium 2>/dev/null')) {
+        console.log('[Payslip] ✅ Dependencies installed via chromium system package.');
+        return true;
+    }
+
+    // Step 3 (FALLBACK): Install individual libs — try standard names first
+    console.log('[Payslip] Chromium package not available. Installing individual libraries...');
+    const libSets = [
+        // Ubuntu 20.04 / 22.04 names
+        'libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0 libnss3 libnspr4 libxss1 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 fonts-liberation',
+        // Ubuntu 24.04+ names (t64 suffix)
+        'libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2t64 libatspi2.0-0t64 libnss3 libnspr4 libxss1 libgtk-3-0t64 libx11-xcb1 libxcb-dri3-0 fonts-liberation',
+    ];
+
+    for (const libs of libSets) {
+        if (run(`apt-get install -y --no-install-recommends ${libs} 2>/dev/null`)) {
+            console.log('[Payslip] ✅ Individual libraries installed successfully.');
+            return true;
+        }
+    }
+
+    // Step 4 (LAST RESORT): Install libs one by one, skip any that fail
+    console.log('[Payslip] Batch install failed. Installing libraries one-by-one...');
+    const allLibs = [
         'libatk1.0-0', 'libatk-bridge2.0-0', 'libcups2', 'libdrm2',
         'libxkbcommon0', 'libxcomposite1', 'libxdamage1', 'libxrandr2',
         'libgbm1', 'libpango-1.0-0', 'libcairo2', 'libasound2',
         'libatspi2.0-0', 'libnss3', 'libnspr4', 'libxss1',
-        'libgtk-3-0', 'libx11-xcb1', 'libxcb-dri3-0',
-        'fonts-liberation', 'xdg-utils', 'wget'
+        'libgtk-3-0', 'libx11-xcb1', 'libxcb-dri3-0', 'fonts-liberation'
     ];
-
-    try {
-        const { execSync } = await import('child_process');
-
-        console.log('[Payslip] Installing Chrome system dependencies via apt-get...');
-        execSync('apt-get update -qq', { stdio: 'pipe', timeout: 60000 });
-        execSync(`apt-get install -y -qq --no-install-recommends ${packages.join(' ')}`, {
-            stdio: 'pipe',
-            timeout: 180000
-        });
-        console.log('[Payslip] ✅ System dependencies installed successfully.');
-        return true;
-    } catch (error) {
-        console.error(`[Payslip] ❌ System dependency install failed: ${error.message}`);
-        console.error('[Payslip] Please SSH into your VPS and run manually:');
-        console.error(`  sudo apt-get update && sudo apt-get install -y ${packages.join(' ')}`);
-        return false;
+    let installedCount = 0;
+    for (const lib of allLibs) {
+        if (run(`apt-get install -y --no-install-recommends ${lib} 2>/dev/null`, 30000)) {
+            installedCount++;
+        }
     }
+    console.log(`[Payslip] Installed ${installedCount}/${allLibs.length} libraries.`);
+    return installedCount > 0;
 };
 
 // Singleton browser instance pool to avoid memory/CPU spikes on production servers
