@@ -131,6 +131,9 @@ export const getEmployees = async (req, res, next) => {
         const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType } = req.query;
 
         const filter = {};
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            filter.managerId = req.hrmsEmployee._id;
+        }
         if (status && status !== 'all') {
             filter.status = status;
         }
@@ -178,6 +181,9 @@ export const getEmployees = async (req, res, next) => {
             if (adminMatches.length > 0) {
                 const adminIds = adminMatches.map(a => a._id);
                 const baseFilter = { ...filter };
+                if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+                    baseFilter.managerId = req.hrmsEmployee._id;
+                }
                 delete baseFilter.$or;
                 baseFilter.adminId = { $in: adminIds };
 
@@ -220,6 +226,12 @@ export const getEmployeeById = async (req, res, next) => {
 
         if (!employee) {
             return sendError(res, 404, 'Employee not found');
+        }
+
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            if (String(employee.managerId?._id || employee.managerId) !== String(req.hrmsEmployee._id) && String(employee._id) !== String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You can only view details of your team members');
+            }
         }
 
         // Get documents
@@ -283,6 +295,12 @@ export const updateEmployee = async (req, res, next) => {
         const employee = await HrmsEmployee.findById(id);
         if (!employee) return sendError(res, 404, 'Employee not found');
 
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            if (String(employee.managerId?._id || employee.managerId) !== String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You can only update your team members');
+            }
+        }
+
         // Fields that can be updated
         const allowedFields = [
             'department', 'designation', 'managerId', 'employmentType', 'hrmsRole',
@@ -324,6 +342,12 @@ export const updateEmployeeStatus = async (req, res, next) => {
 
         const employee = await HrmsEmployee.findById(id);
         if (!employee) return sendError(res, 404, 'Employee not found');
+
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            if (String(employee.managerId?._id || employee.managerId) !== String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You can only update your team members');
+            }
+        }
 
         employee.status = status;
         await employee.save();

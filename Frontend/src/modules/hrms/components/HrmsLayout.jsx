@@ -6,7 +6,7 @@ import axiosInstance from '@core/api/axios';
 import {
     LayoutDashboard, Clock, CalendarDays, Wallet, FileText,
     Receipt, User, LogOut, Menu, X, ChevronRight, Building2,
-    LifeBuoy, ChevronDown, MessageSquarePlus, List, Phone, ClipboardList, Target
+    LifeBuoy, ChevronDown, MessageSquarePlus, List, Phone, ClipboardList, Target, Users, MapPin
 } from 'lucide-react';
 
 const navItems = [
@@ -35,7 +35,7 @@ export default function HrmsLayout() {
     const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [employeeProfile, setEmployeeProfile] = useState(null);
-    const [openMenus, setOpenMenus] = useState({});
+    const [openMenus, setOpenMenus] = useState({ 'Manager Portal (Team)': true });
 
     React.useEffect(() => {
         const fetchProfile = async () => {
@@ -57,19 +57,21 @@ export default function HrmsLayout() {
     };
 
     const dynamicNavItems = [...navItems];
-    if (employeeProfile?.hrmsRole === 'Manager') {
+    if (employeeProfile?.hrmsRole === 'Manager' || employeeProfile?.hrmsRole === 'HR' || employeeProfile?.hrmsRole === 'Admin') {
         dynamicNavItems.splice(2, 0, { 
-            label: 'Team Management', 
+            label: 'Manager Portal (Team)', 
             icon: Building2, 
             path: '/hrms/team',
             subItems: [
-                { label: 'My Team', icon: Building2, path: '/hrms/team' },
                 { label: 'Team Dashboard', icon: LayoutDashboard, path: '/hrms/team/dashboard' },
-                { label: 'Team Performance', icon: Target, path: '/hrms/team/performance' },
-                { label: 'Team Attendance', icon: Clock, path: '/hrms/team/attendance' },
-                { label: 'Team Leaves', icon: CalendarDays, path: '/hrms/team/leaves' },
-                { label: 'Team Expenses', icon: Receipt, path: '/hrms/team/expenses' },
-                { label: 'Team Reports', icon: ClipboardList, path: '/hrms/team/reports' }
+                { label: 'Team Employees', icon: Users, path: '/hrms/team/employees' },
+                { label: 'Attendance & Leaves', icon: Clock, path: '/hrms/team/attendance' },
+                { label: 'Payroll & Expenses', icon: Receipt, path: '/hrms/team/expenses' },
+                { label: 'Test Scores & Analysis', icon: FileText, path: '/hrms/team/assessments' },
+                { label: 'Employee Documents', icon: FileText, path: '/hrms/team/employee-docs' },
+                { label: 'Live Tracking', icon: MapPin, path: '/hrms/team/live-tracking' },
+                { label: 'Daily Reports', icon: ClipboardList, path: '/hrms/team/reports' },
+                { label: 'Team Performance', icon: Target, path: '/hrms/team/performance' }
             ]
         });
     }

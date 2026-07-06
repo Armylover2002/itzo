@@ -3,8 +3,8 @@ import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import { Clock, Loader2, CheckCircle, XCircle, CalendarDays } from 'lucide-react';
 
-export default function HrmsAttendance() {
-    const [tab, setTab] = useState('attendance');
+export default function HrmsAttendance({ defaultTab = 'attendance' }) {
+    const [tab, setTab] = useState(defaultTab);
     const [records, setRecords] = useState([]);
     const [pendingRegs, setPendingRegs] = useState([]);
     const [pendingLeaves, setPendingLeaves] = useState([]);

@@ -20,7 +20,11 @@ export const generatePayroll = async (req, res, next) => {
         const y = parseInt(year);
 
         // Get all active employees
-        const allEmployees = await HrmsEmployee.find({ status: 'Active' }).populate('adminId', 'name email').lean();
+        const empQuery = { status: 'Active' };
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            empQuery.managerId = req.hrmsEmployee._id;
+        }
+        const allEmployees = await HrmsEmployee.find(empQuery).populate('adminId', 'name email').lean();
 
         // Filter out employees who already have a salary record for this month
         const existingSalaries = await HrmsSalary.find({ month: m, year: y }, { employeeId: 1 }).lean();
@@ -166,11 +170,13 @@ export const generatePayroll = async (req, res, next) => {
 export const approvePayroll = async (req, res, next) => {
     try {
         const { month, year } = req.body;
+        const filter = { month: parseInt(month), year: parseInt(year), status: 'Draft' };
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamIds = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).select('_id').lean();
+            filter.employeeId = { $in: teamIds.map(t => t._id) };
+        }
 
-        const result = await HrmsSalary.updateMany(
-            { month: parseInt(month), year: parseInt(year), status: 'Draft' },
-            { $set: { status: 'Approved' } }
-        );
+        const result = await HrmsSalary.updateMany(filter, { $set: { status: 'Approved' } });
 
         return sendResponse(res, 200, `${result.modifiedCount} salary records approved`, result);
     } catch (error) {
@@ -184,11 +190,13 @@ export const approvePayroll = async (req, res, next) => {
 export const markPayrollPaid = async (req, res, next) => {
     try {
         const { month, year } = req.body;
+        const filter = { month: parseInt(month), year: parseInt(year), status: 'Approved' };
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamIds = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).select('_id').lean();
+            filter.employeeId = { $in: teamIds.map(t => t._id) };
+        }
 
-        const result = await HrmsSalary.updateMany(
-            { month: parseInt(month), year: parseInt(year), status: 'Approved' },
-            { $set: { status: 'Paid', paidAt: new Date() } }
-        );
+        const result = await HrmsSalary.updateMany(filter, { $set: { status: 'Paid', paidAt: new Date() } });
 
         return sendResponse(res, 200, `${result.modifiedCount} salary records marked as paid`, result);
     } catch (error) {
@@ -205,6 +213,10 @@ export const getPayroll = async (req, res, next) => {
         if (!month || !year) return sendError(res, 400, 'Month and year are required');
 
         const filter = { month: parseInt(month), year: parseInt(year) };
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamIds = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).select('_id').lean();
+            filter.employeeId = { $in: teamIds.map(t => t._id) };
+        }
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
         const [records, total] = await Promise.all([

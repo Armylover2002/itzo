@@ -20,12 +20,14 @@ const SupportDetails = lazy(() => import('../pages/support/SupportDetails'));
 const ReportList = lazy(() => import('../pages/reports/ReportList'));
 const CreateReport = lazy(() => import('../pages/reports/CreateReport'));
 const ReportDetails = lazy(() => import('../pages/reports/ReportDetails'));
-const MyTeam = lazy(() => import('../pages/MyTeam'));
 const ManagerDashboard = lazy(() => import('../pages/team/ManagerDashboard'));
-const TeamAttendance = lazy(() => import('../pages/team/TeamAttendance'));
-const TeamLeaves = lazy(() => import('../pages/team/TeamLeaves'));
-const TeamExpenses = lazy(() => import('../pages/team/TeamExpenses'));
 const TeamReports = lazy(() => import('../pages/team/TeamReports'));
+const HrmsEmployeesAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEmployees'));
+const HrmsAttendanceAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsAttendance'));
+const HrmsPayrollAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsPayroll'));
+const TestAnalysisAdmin = lazy(() => import('../../Food/pages/admin/hrms/assessments/TestAnalysis'));
+const HrmsEmployeeDocsAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEmployeeDocs'));
+const HrmsLiveTrackingAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsLiveTracking'));
 
 // Performance
 const EmployeePerformance = lazy(() => import('../pages/performance/EmployeePerformance'));
@@ -70,12 +72,17 @@ export default function HrmsEmployeeApp() {
                         <Route path="reports/create" element={<CreateReport />} />
                         <Route path="reports/:id" element={<ReportDetails />} />
 
-                        {/* Manager Module */}
-                        <Route path="team" element={<MyTeam />} />
+                        {/* Manager Module - Using exact ECS Admin UI components scoped to Manager's team */}
+                        <Route path="team" element={<Navigate to="employees" replace />} />
                         <Route path="team/dashboard" element={<ManagerDashboard />} />
-                        <Route path="team/attendance" element={<TeamAttendance />} />
-                        <Route path="team/leaves" element={<TeamLeaves />} />
-                        <Route path="team/expenses" element={<TeamExpenses />} />
+                        <Route path="team/employees" element={<HrmsEmployeesAdmin />} />
+                        <Route path="team/attendance" element={<HrmsAttendanceAdmin />} />
+                        <Route path="team/leaves" element={<HrmsAttendanceAdmin defaultTab="leaves" />} />
+                        <Route path="team/expenses" element={<HrmsPayrollAdmin defaultTab="expenses" />} />
+                        <Route path="team/salary" element={<HrmsPayrollAdmin defaultTab="payroll" />} />
+                        <Route path="team/assessments" element={<TestAnalysisAdmin />} />
+                        <Route path="team/employee-docs" element={<HrmsEmployeeDocsAdmin />} />
+                        <Route path="team/live-tracking" element={<HrmsLiveTrackingAdmin />} />
                         <Route path="team/reports" element={<TeamReports />} />
                         {/* Performance Module */}
                         <Route path="performance" element={<EmployeePerformance />} />

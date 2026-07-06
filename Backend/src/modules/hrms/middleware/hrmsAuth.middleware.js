@@ -18,7 +18,9 @@ export const requireHrmsEmployee = async (req, res, next) => {
             return sendError(res, 403, 'HRMS Employee access required');
         }
 
-        const employee = await HrmsEmployee.findOne({ adminId: req.user.userId }).lean();
+        const employee = await HrmsEmployee.findOne({
+            $or: [{ adminId: req.user.userId }, { _id: req.user.userId }]
+        }).lean();
         if (!employee) {
             return sendError(res, 404, 'HRMS Employee profile not found');
         }
@@ -74,7 +76,7 @@ export const requireAdminOrManager = async (req, res, next) => {
             let hasAccess = false;
 
             // 1. Check if they have an active HrmsEmployee profile
-            const query = req.user.role === 'EMPLOYEE' ? { adminId: req.user.userId } : { _id: req.user.userId };
+            const query = { $or: [{ adminId: req.user.userId }, { _id: req.user.userId }] };
             const employee = await HrmsEmployee.findOne(query).lean();
             if (employee && employee.status === 'Active' &&
                 (employee.hrmsRole === 'Manager' || employee.hrmsRole === 'HR' || employee.hrmsRole === 'Admin')) {

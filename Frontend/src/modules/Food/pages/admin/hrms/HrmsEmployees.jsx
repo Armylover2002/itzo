@@ -380,7 +380,7 @@ export default function HrmsEmployees() {
                             </div>
                             <div className="flex flex-wrap gap-3">
                                 {selectedEmployee.employeeType === 'Field' && (
-                                    <a href={`/ecs/hrms/live-tracking?employeeId=${selectedEmployee._id}`} className="px-5 h-10 bg-white border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 rounded-xl text-sm font-medium transition-all shadow-sm">
+                                    <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${selectedEmployee._id}` : `/ecs/hrms/live-tracking?employeeId=${selectedEmployee._id}`} className="px-5 h-10 bg-white border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 rounded-xl text-sm font-medium transition-all shadow-sm">
                                         <MapPin className="w-4 h-4" /> View Live Track
                                     </a>
                                 )}

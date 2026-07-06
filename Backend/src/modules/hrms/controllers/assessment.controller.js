@@ -1,6 +1,7 @@
 import { AssessmentQuestion } from '../models/assessmentQuestion.model.js';
 import { AssessmentSettings } from '../models/assessmentSettings.model.js';
 import { AssessmentAttempt } from '../models/assessmentAttempt.model.js';
+import { HrmsEmployee } from '../models/employee.model.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 import crypto from 'crypto';
 
@@ -280,15 +281,30 @@ export const getAllAttempts = async (req, res, next) => {
         const { search, status, isPassed, page = 1, limit = 50 } = req.query;
         
         const filter = {};
-        if (status) filter.status = status;
-        if (isPassed !== undefined) filter.isPassed = isPassed === 'true';
-        if (search) {
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamEmployees = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).populate('adminId', 'email phone').lean();
+            const emails = teamEmployees.map(e => e.adminId?.email).filter(Boolean);
+            const phones = teamEmployees.map(e => e.adminId?.phone).filter(Boolean);
+            if (emails.length === 0 && phones.length === 0) {
+                return sendResponse(res, 200, 'Attempts retrieved', { attempts: [], total: 0, page: 1, pages: 0 });
+            }
+            if (search) {
+                filter.$and = [
+                    { $or: [{ applicantEmail: { $in: emails } }, { applicantPhone: { $in: phones } }] },
+                    { $or: [{ applicantName: { $regex: search, $options: 'i' } }, { applicantEmail: { $regex: search, $options: 'i' } }, { applicantPhone: { $regex: search, $options: 'i' } }] }
+                ];
+            } else {
+                filter.$or = [{ applicantEmail: { $in: emails } }, { applicantPhone: { $in: phones } }];
+            }
+        } else if (search) {
             filter.$or = [
                 { applicantName: { $regex: search, $options: 'i' } },
                 { applicantEmail: { $regex: search, $options: 'i' } },
                 { applicantPhone: { $regex: search, $options: 'i' } }
             ];
         }
+        if (status) filter.status = status;
+        if (isPassed !== undefined) filter.isPassed = isPassed === 'true';
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const attempts = await AssessmentAttempt.find(filter)
@@ -315,6 +331,14 @@ export const getAttemptDetails = async (req, res, next) => {
         const { id } = req.params;
         const attempt = await AssessmentAttempt.findById(id);
         if (!attempt) return sendError(res, 404, 'Attempt not found');
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamEmployees = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).populate('adminId', 'email phone').lean();
+            const emails = teamEmployees.map(e => e.adminId?.email).filter(Boolean);
+            const phones = teamEmployees.map(e => e.adminId?.phone).filter(Boolean);
+            if (!emails.includes(attempt.applicantEmail) && !phones.includes(attempt.applicantPhone)) {
+                return sendError(res, 403, 'You can only view test scores of your team members');
+            }
+        }
         
         return sendResponse(res, 200, 'Attempt details retrieved', attempt);
     } catch (error) {
@@ -327,6 +351,14 @@ export const resetAttempt = async (req, res, next) => {
         const { id } = req.params;
         const attempt = await AssessmentAttempt.findById(id);
         if (!attempt) return sendError(res, 404, 'Attempt not found');
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamEmployees = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).populate('adminId', 'email phone').lean();
+            const emails = teamEmployees.map(e => e.adminId?.email).filter(Boolean);
+            const phones = teamEmployees.map(e => e.adminId?.phone).filter(Boolean);
+            if (!emails.includes(attempt.applicantEmail) && !phones.includes(attempt.applicantPhone)) {
+                return sendError(res, 403, 'You can only manage test scores of your team members');
+            }
+        }
         
         attempt.status = 'Reset';
         await attempt.save();

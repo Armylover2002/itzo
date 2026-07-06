@@ -3,8 +3,8 @@ import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import { Wallet, Loader2, Play, CheckCircle, DollarSign, Receipt } from 'lucide-react';
 
-export default function HrmsPayroll() {
-    const [tab, setTab] = useState('payroll');
+export default function HrmsPayroll({ defaultTab = 'payroll' }) {
+    const [tab, setTab] = useState(defaultTab);
     const [payrollRecords, setPayrollRecords] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [summary, setSummary] = useState(null);

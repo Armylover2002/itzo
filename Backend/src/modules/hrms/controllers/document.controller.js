@@ -27,6 +27,12 @@ export const getMyDocuments = async (req, res, next) => {
 export const getEmployeeDocuments = async (req, res, next) => {
     try {
         const { employeeId } = req.params;
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const emp = await HrmsEmployee.findById(employeeId).lean();
+            if (!emp || (String(emp.managerId?._id || emp.managerId) !== String(req.hrmsEmployee._id) && String(emp._id) !== String(req.hrmsEmployee._id))) {
+                return sendError(res, 403, 'You can only view documents of your team members');
+            }
+        }
         const documents = await HrmsDocument.find({ employeeId }).sort({ createdAt: -1 }).lean();
         return sendResponse(res, 200, 'Documents retrieved', documents);
     } catch (error) {
@@ -47,6 +53,12 @@ export const uploadDocument = async (req, res, next) => {
 
         const employee = await HrmsEmployee.findById(employeeId);
         if (!employee) return sendError(res, 404, 'Employee not found');
+
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            if (String(employee.managerId?._id || employee.managerId) !== String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You can only manage documents of your team members');
+            }
+        }
 
         const doc = new HrmsDocument({
             employeeId,
@@ -72,8 +84,15 @@ export const uploadDocument = async (req, res, next) => {
 export const deleteDocument = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const doc = await HrmsDocument.findByIdAndDelete(id);
+        const doc = await HrmsDocument.findById(id);
         if (!doc) return sendError(res, 404, 'Document not found');
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const emp = await HrmsEmployee.findById(doc.employeeId).lean();
+            if (!emp || String(emp.managerId?._id || emp.managerId) !== String(req.hrmsEmployee._id)) {
+                return sendError(res, 403, 'You can only manage documents of your team members');
+            }
+        }
+        await HrmsDocument.findByIdAndDelete(id);
 
         return sendResponse(res, 200, 'Document deleted successfully');
     } catch (error) {
@@ -89,6 +108,10 @@ export const getAllDocuments = async (req, res, next) => {
         const { documentType } = req.query;
         const filter = {};
         if (documentType) filter.documentType = documentType;
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const teamIds = await HrmsEmployee.find({ managerId: req.hrmsEmployee._id }).select('_id').lean();
+            filter.employeeId = { $in: teamIds.map(t => t._id) };
+        }
 
         const documents = await HrmsDocument.find(filter).sort({ createdAt: -1 }).lean();
         return sendResponse(res, 200, 'Documents retrieved', documents);
