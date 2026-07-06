@@ -110,7 +110,7 @@ export const uploadPdfBuffer = async (buffer, folder = 'hrms/payslips') => {
         const stream = cloudinary.uploader.upload_stream(
             { 
                 folder, 
-                resource_type: 'raw',
+                resource_type: 'image',
                 format: 'pdf'
             },
             (error, result) => {

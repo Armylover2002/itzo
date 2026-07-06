@@ -7,12 +7,16 @@ import {
     getMySalary,
     getPayslipDetail,
     uploadPayslip,
-    generatePayslipPdf
+    generatePayslipPdf,
+    proxyPayslipDocument
 } from '../controllers/salary.controller.js';
 import { authMiddleware } from '../../../core/auth/auth.middleware.js';
 import { requireHrmsEmployee, requireAdminOrManager } from '../middleware/hrmsAuth.middleware.js';
 
 const router = express.Router();
+
+// PUBLIC/PROXY: Foolproof document delivery (bypasses client DNS/adblocker blocks and CORS)
+router.get('/proxy-document', proxyPayslipDocument);
 
 // EMPLOYEE: View own salary
 router.get('/me', authMiddleware, requireHrmsEmployee, getMySalary);

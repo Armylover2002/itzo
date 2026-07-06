@@ -417,3 +417,81 @@ export const generatePayslipPdf = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * PROXY: Foolproof document & image delivery endpoint
+ * Proxies Cloudinary assets through Backend to eliminate client DNS/adblocker blocks ("site can't be reached")
+ * and guarantee clean Content-Type headers for iframe viewing and attachment downloading.
+ */
+export const proxyPayslipDocument = async (req, res) => {
+    try {
+        const { url, mode = 'view', format = 'pdf' } = req.query;
+        if (!url) {
+            return res.status(400).json({ success: false, message: 'URL parameter is required' });
+        }
+
+        let targetUrl = url;
+        const isRaw = targetUrl.includes('/raw/upload/');
+
+        // If user requested PNG image format
+        if (format === 'png' || format === 'image') {
+            if (targetUrl.includes('/image/upload/') && targetUrl.toLowerCase().endsWith('.pdf')) {
+                // Cloudinary on-the-fly PDF page 1 to PNG conversion
+                targetUrl = targetUrl.replace('/upload/', '/upload/f_png,pg_1,q_auto:best/').replace(/\.pdf$/i, '.png');
+            } else if (!targetUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i) && !isRaw) {
+                targetUrl = `${targetUrl}.png`;
+            }
+        } else if (format === 'pdf') {
+            if (isRaw && !targetUrl.toLowerCase().endsWith('.pdf')) {
+                targetUrl = `${targetUrl}.pdf`;
+            }
+        }
+
+        // Fetch using built-in fetch
+        const response = await fetch(targetUrl);
+        if (!response.ok) {
+            console.error(`[Payslip Proxy] Cloudinary fetch failed for ${targetUrl}: ${response.status} ${response.statusText}`);
+            // If PNG conversion failed (e.g. on raw file), try fetching original URL directly
+            if (targetUrl !== url) {
+                const fallbackResponse = await fetch(url);
+                if (fallbackResponse.ok) {
+                    const arrayBuffer = await fallbackResponse.arrayBuffer();
+                    const buffer = Buffer.from(arrayBuffer);
+                    res.setHeader('Content-Type', 'application/pdf');
+                    res.setHeader('Access-Control-Allow-Origin', '*');
+                    if (mode === 'download') {
+                        res.setHeader('Content-Disposition', `attachment; filename="Payslip_${Date.now()}.pdf"`);
+                    } else {
+                        res.setHeader('Content-Disposition', 'inline');
+                    }
+                    return res.send(buffer);
+                }
+            }
+            return res.status(response.status).json({ success: false, message: `Failed to retrieve document from cloud storage (${response.status})` });
+        }
+
+        // Determine clean Content-Type
+        const isPngOrImage = format === 'png' || format === 'image' || targetUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+        const contentType = isPngOrImage && !isRaw ? 'image/png' : 'application/pdf';
+        
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        if (mode === 'download') {
+            const ext = isPngOrImage && !isRaw ? 'png' : 'pdf';
+            const filename = `Payslip_Document_${Date.now()}.${ext}`;
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        } else {
+            res.setHeader('Content-Disposition', 'inline');
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        res.send(buffer);
+    } catch (error) {
+        console.error('[Payslip Proxy] Error proxying document:', error.message);
+        res.status(500).json({ success: false, message: 'Failed to fetch payslip document from cloud storage' });
+    }
+};

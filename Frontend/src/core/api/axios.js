@@ -99,9 +99,11 @@ axiosInstance.interceptors.response.use(
                     ? 'admin'
                     : requestUrl.startsWith('/delivery')
                         ? 'delivery'
-                        : requestUrl.startsWith('/user') || requestUrl.startsWith('/customer') || requestUrl.startsWith('/auth')
-                            ? 'customer'
-                            : null;
+                        : requestUrl.startsWith('/hrms')
+                            ? 'hrms'
+                            : requestUrl.startsWith('/user') || requestUrl.startsWith('/customer') || requestUrl.startsWith('/auth')
+                                ? 'customer'
+                                : null;
 
             // Prevent cross-module 401s from logging out the active session
             // (e.g. seller page accidentally calling an admin endpoint).

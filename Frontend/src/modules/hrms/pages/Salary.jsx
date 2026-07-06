@@ -1,6 +1,88 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import axiosInstance from '@core/api/axios';
-import { Wallet, Loader2, Download, Eye } from 'lucide-react';
+import { Wallet, Loader2, Download, Eye, Printer, ExternalLink, FileText, Image } from 'lucide-react';
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Payslip Document Helpers (Foolproof: uses Backend Proxy via raw axios)
+// ──────────────────────────────────────────────────────────────────────────────
+// IMPORTANT: We use raw `axios` (NOT axiosInstance) for proxy requests because:
+// 1. The proxy endpoint is PUBLIC (no auth needed)
+// 2. axiosInstance's 401 interceptor treats /hrms/* URLs as unknown module,
+//    causing any error to wipe auth tokens and redirect to login
+// ──────────────────────────────────────────────────────────────────────────────
+const PROXY_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'}/hrms/salaries/proxy-document`;
+
+// Programmatic download: fetches document via backend proxy as blob, then triggers browser save dialog
+const handleProxyDownload = async (url, format = 'pdf') => {
+    if (!url) return;
+    try {
+        const res = await axios.get(PROXY_BASE, {
+            params: { url, mode: 'download', format },
+            responseType: 'blob',
+            withCredentials: false
+        });
+        const ext = format === 'png' || format === 'image' ? 'png' : 'pdf';
+        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
+        const blob = new Blob([res.data], { type: mimeType });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `Payslip_${Date.now()}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+    } catch (e) {
+        console.error('Download failed:', e);
+        window.open(url, '_blank');
+    }
+};
+
+// Programmatic open-in-new-tab: fetches document via backend proxy as blob, then opens blob URL
+const handleProxyOpen = async (url, format = 'pdf') => {
+    if (!url) return;
+    try {
+        const res = await axios.get(PROXY_BASE, {
+            params: { url, mode: 'view', format },
+            responseType: 'blob',
+            withCredentials: false
+        });
+        const ext = format === 'png' || format === 'image' ? 'png' : 'pdf';
+        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
+        const blob = new Blob([res.data], { type: mimeType });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } catch (e) {
+        console.error('Open failed:', e);
+        window.open(url, '_blank');
+    }
+};
+
+// Generate preview blob URL for iframe/img display within the modal
+const fetchPreviewBlobUrl = async (url, format = 'pdf') => {
+    try {
+        const res = await axios.get(PROXY_BASE, {
+            params: { url, mode: 'view', format },
+            responseType: 'blob',
+            withCredentials: false
+        });
+        const ext = format === 'png' || format === 'image' ? 'png' : 'pdf';
+        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
+        const blob = new Blob([res.data], { type: mimeType });
+        return URL.createObjectURL(blob);
+    } catch (e) {
+        console.error('Preview fetch failed:', e);
+        return null;
+    }
+};
+
+// Helper to determine if URL is an image or should be rendered as an image
+const isImageUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    return url.match(/\.(jpeg|jpg|gif|png|webp)$/i) || (url.includes('/image/upload/') && !url.toLowerCase().endsWith('.pdf'));
+};
 
 export default function Salary() {
     const [records, setRecords] = useState([]);
@@ -9,6 +91,28 @@ export default function Salary() {
     const [tab, setTab] = useState('overview');
     const [selectedPayslip, setSelectedPayslip] = useState(null);
     const [previewPdf, setPreviewPdf] = useState(null);
+    const [previewBlobUrl, setPreviewBlobUrl] = useState(null);
+    const [previewLoading, setPreviewLoading] = useState(false);
+
+    // When previewPdf URL changes, fetch blob from backend proxy for reliable inline display
+    useEffect(() => {
+        if (!previewPdf) {
+            if (previewBlobUrl) {
+                URL.revokeObjectURL(previewBlobUrl);
+                setPreviewBlobUrl(null);
+            }
+            return;
+        }
+        let cancelled = false;
+        setPreviewLoading(true);
+        fetchPreviewBlobUrl(previewPdf, 'png').then(blobUrl => {
+            if (!cancelled) {
+                setPreviewBlobUrl(blobUrl);
+                setPreviewLoading(false);
+            }
+        });
+        return () => { cancelled = true; };
+    }, [previewPdf]);
 
     useEffect(() => {
         const fetch = async () => {
@@ -115,14 +219,13 @@ export default function Salary() {
                                                 </button>
                                             ) : (
                                                 r.payslipUrl ? (
-                                                    <div className="flex items-center gap-3">
-                                                        <button onClick={() => setPreviewPdf(r.payslipUrl)} className="text-orange-500 hover:text-orange-600 text-xs font-medium flex items-center gap-1">
-                                                            <Eye className="w-3.5 h-3.5" /> Preview Payslip
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <button onClick={() => setPreviewPdf(r.payslipUrl)} className="text-orange-600 hover:text-orange-700 text-xs font-semibold flex items-center gap-1 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors" title="View Payslip Image">
+                                                            <Eye className="w-3.5 h-3.5" /> View
                                                         </button>
-                                                        <span className="text-slate-300">|</span>
-                                                        <a href={r.payslipUrl} download target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 text-xs font-medium flex items-center gap-1">
-                                                            <Download className="w-3.5 h-3.5" /> Download Payslip
-                                                        </a>
+                                                        <button onClick={() => handleProxyDownload(r.payslipUrl, 'png')} className="text-emerald-600 hover:text-emerald-700 text-xs font-semibold flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg transition-colors" title="Download Image">
+                                                            <Download className="w-3.5 h-3.5" /> Download
+                                                        </button>
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-slate-400 italic">Not uploaded yet</span>
@@ -137,30 +240,63 @@ export default function Salary() {
                 )}
             </div>
 
-            {/* PDF Preview Modal */}
+            {/* Payslip Preview Modal — Image Only */}
             {previewPdf && (
-                <div className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-sm">
-                    <div className="flex items-center justify-between p-4 border-b border-slate-200 text-white">
-                        <h3 className="font-medium text-lg">Payslip Preview</h3>
-                        <div className="flex gap-4">
-                            <a href={previewPdf} download target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition-colors flex items-center gap-2">
-                                Download
-                            </a>
-                            <button onClick={() => setPreviewPdf(null)} className="px-4 py-2 bg-orange-100 text-orange-600 hover:bg-orange-200 rounded-lg text-sm transition-colors">
+                <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 backdrop-blur-md">
+                    <div className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 text-white shadow-lg">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400">
+                                <Image className="w-4 h-4" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-base text-white">Payslip Image Viewer</h3>
+                                <p className="text-xs text-slate-400">Official HRMS Generated Record</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <button
+                                onClick={() => handleProxyOpen(previewPdf, 'png')}
+                                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-slate-700"
+                                title="View as Image in New Tab"
+                            >
+                                <Eye className="w-3.5 h-3.5 text-emerald-400" /> View as Image
+                            </button>
+                            <button
+                                onClick={() => handleProxyDownload(previewPdf, 'png')}
+                                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 transform hover:scale-105"
+                                title="Download as High-Res PNG Image"
+                            >
+                                <Download className="w-3.5 h-3.5" /> Download Image
+                            </button>
+                            <button
+                                onClick={() => setPreviewPdf(null)}
+                                className="ml-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold transition-all border border-red-500/20"
+                            >
                                 Close
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 w-full h-full p-4 flex items-center justify-center">
-                        {previewPdf.match(/\.(jpeg|jpg|gif|png|webp)$/i) ? (
-                            <img src={previewPdf} className="max-w-full max-h-full object-contain rounded-xl" alt="Payslip Preview" />
+                    <div className="flex-1 w-full h-full p-6 flex items-center justify-center overflow-hidden bg-slate-950/50">
+                        {previewLoading ? (
+                            <div className="flex flex-col items-center gap-4">
+                                <Loader2 className="w-10 h-10 animate-spin text-orange-400" />
+                                <p className="text-slate-400 text-sm">Loading payslip image...</p>
+                            </div>
+                        ) : previewBlobUrl ? (
+                            <img src={previewBlobUrl} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl bg-white p-4" alt="Payslip Preview" />
                         ) : (
-                            <object data={previewPdf} type="application/pdf" className="w-full h-full rounded-xl bg-white">
-                                <div className="flex flex-col items-center justify-center h-full space-y-4">
-                                    <p className="text-white font-medium">Unable to display PDF inline.</p>
-                                    <a href={previewPdf} download target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium">Download PDF</a>
+                            <div className="flex flex-col items-center gap-4 text-center">
+                                <Image className="w-12 h-12 text-slate-500" />
+                                <p className="text-slate-400 text-sm">Could not load payslip image.</p>
+                                <div className="flex gap-3">
+                                    <button onClick={() => handleProxyOpen(previewPdf, 'png')} className="px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-bold">
+                                        View as Image
+                                    </button>
+                                    <button onClick={() => handleProxyDownload(previewPdf, 'png')} className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold">
+                                        Download Image
+                                    </button>
                                 </div>
-                            </object>
+                            </div>
                         )}
                     </div>
                 </div>
