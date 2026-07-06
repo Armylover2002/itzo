@@ -251,7 +251,22 @@ export const getMyProfile = async (req, res, next) => {
             .select('documentType name url createdAt')
             .lean();
 
-        return sendResponse(res, 200, 'Profile retrieved successfully', { employee, documents });
+        const employeeObj = employee.toObject();
+
+        if (employeeObj.employeeType === 'Office') {
+            const { HrmsSettings } = await import('../models/settings.model.js');
+            const settings = await HrmsSettings.findOne().select('organization.officeLocations').lean();
+            const offices = settings?.organization?.officeLocations || [];
+            if (employeeObj.assignedOfficeLocationId) {
+                employeeObj.assignedOfficeDetails = offices.find(o => String(o._id) === String(employeeObj.assignedOfficeLocationId) && o.isActive !== false);
+            }
+            if (!employeeObj.assignedOfficeDetails) {
+                // If they don't have an assigned office, fallback is ANY active office with GPS
+                employeeObj.assignedOfficeDetails = offices.find(o => o.latitude && o.longitude && o.isActive !== false);
+            }
+        }
+
+        return sendResponse(res, 200, 'Profile retrieved successfully', { employee: employeeObj, documents });
     } catch (error) {
         next(error);
     }

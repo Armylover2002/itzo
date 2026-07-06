@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Loader2, ArrowLeft, Navigation, Map as MapIcon, User, Clock, AlertTriangle, Calendar } from 'lucide-react';
+import { Loader2, ArrowLeft, Navigation, Map as MapIcon, User, Clock, AlertTriangle, Calendar, MapPin } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker, InfoWindow } from '@react-google-maps/api';
 
 const mapContainerStyle = { width: '100%', height: '100%' };
 const defaultCenter = { lat: 20.5937, lng: 78.9629 }; // India Center
+const mapLibraries = ['places'];
 
 export default function HrmsLiveTracking() {
     const [searchParams] = useSearchParams();
@@ -23,14 +24,14 @@ export default function HrmsLiveTracking() {
     // Google Maps Loader
     const { isLoaded, loadError } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        libraries: ['places']
+        libraries: mapLibraries
     });
 
     const fetchTrackingData = async (isPolling = false) => {
         if (!employeeId) return;
         if (!isPolling) setLoading(true);
         try {
-            const res = await axiosInstance.get(`/hrms/location-tracks/live/${employeeId}?date=${date}`);
+            const res = await axiosInstance.get(`/hrms/location-tracks/${employeeId}/${date}`);
             setTrackingData(res.data?.data || null);
             
             // If we have points and map instance, fit bounds
@@ -208,13 +209,33 @@ export default function HrmsLiveTracking() {
                         )}
                     </div>
                     <div className="p-4 space-y-3 flex-1 overflow-y-auto">
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 flex items-center gap-1.5"><Clock className="w-4 h-4" /> Check In</span>
-                            <span className="font-medium text-slate-900">{trackingData?.attendance?.checkInTime ? new Date(trackingData.attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                        <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500 flex items-center gap-1.5"><Clock className="w-4 h-4" /> Check In</span>
+                                <span className="font-medium text-slate-900">{trackingData?.attendance?.checkInTime ? new Date(trackingData.attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                            </div>
+                            {trackingData?.attendance?.checkInLocation?.address && (
+                                <div className="flex items-start gap-1.5 text-[11px] text-slate-500 pl-5 pr-2">
+                                    <MapPin className="w-3 h-3 shrink-0 text-emerald-500 mt-0.5" />
+                                    <span className="line-clamp-2 leading-tight" title={trackingData.attendance.checkInLocation.address}>
+                                        {trackingData.attendance.checkInLocation.address}
+                                    </span>
+                                </div>
+                            )}
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-slate-500 flex items-center gap-1.5"><Clock className="w-4 h-4" /> Check Out</span>
-                            <span className="font-medium text-slate-900">{trackingData?.attendance?.checkOutTime ? new Date(trackingData.attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                        <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500 flex items-center gap-1.5"><Clock className="w-4 h-4" /> Check Out</span>
+                                <span className="font-medium text-slate-900">{trackingData?.attendance?.checkOutTime ? new Date(trackingData.attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                            </div>
+                            {trackingData?.attendance?.checkOutLocation?.address && (
+                                <div className="flex items-start gap-1.5 text-[11px] text-slate-500 pl-5 pr-2">
+                                    <MapPin className="w-3 h-3 shrink-0 text-red-500 mt-0.5" />
+                                    <span className="line-clamp-2 leading-tight" title={trackingData.attendance.checkOutLocation.address}>
+                                        {trackingData.attendance.checkOutLocation.address}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                         <div className="pt-3 border-t border-slate-100">
                             <div className="flex justify-between items-center text-sm mb-1">

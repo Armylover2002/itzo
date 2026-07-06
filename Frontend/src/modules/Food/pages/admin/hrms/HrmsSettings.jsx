@@ -369,6 +369,47 @@ export default function HrmsSettings() {
                                                     locs[i].radiusMeters = Number(e.target.value); updateNested('organization.officeLocations', locs);
                                                 }} placeholder="200" />
                                             </div>
+                                            <div className="sm:col-span-2 lg:col-span-4 flex items-center gap-2 mb-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if ('geolocation' in navigator) {
+                                                            const toastId = toast.loading('Fetching location...');
+                                                            navigator.geolocation.getCurrentPosition(
+                                                                async (position) => {
+                                                                    const lat = Number(position.coords.latitude.toFixed(6));
+                                                                    const lon = Number(position.coords.longitude.toFixed(6));
+                                                                    const locs = [...settings.organization.officeLocations];
+                                                                    locs[i].latitude = lat;
+                                                                    locs[i].longitude = lon;
+                                                                    
+                                                                    try {
+                                                                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+                                                                        const data = await res.json();
+                                                                        if (data && data.display_name) {
+                                                                            locs[i].address = data.display_name;
+                                                                        }
+                                                                    } catch (err) {
+                                                                        console.error('Reverse geocoding failed:', err);
+                                                                    }
+
+                                                                    updateNested('organization.officeLocations', locs);
+                                                                    toast.success('Live location and address fetched successfully!', { id: toastId });
+                                                                },
+                                                                (error) => {
+                                                                    toast.error('Error fetching location: ' + error.message, { id: toastId });
+                                                                },
+                                                                { enableHighAccuracy: true }
+                                                            );
+                                                        } else {
+                                                            toast.error('Geolocation is not supported by your browser.');
+                                                        }
+                                                    }}
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
+                                                >
+                                                    <MapPin className="w-3.5 h-3.5" /> Fetch Live Location
+                                                </button>
+                                            </div>
                                             <div className="sm:col-span-2 lg:col-span-4 flex gap-4 items-center">
                                                 <div className="flex-1">
                                                     <label className={labelClass}>Address</label>

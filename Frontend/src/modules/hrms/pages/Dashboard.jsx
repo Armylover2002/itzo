@@ -5,7 +5,10 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
 import { useLocationTracker } from '../hooks/useLocationTracker';
-import { Clock, CalendarDays, Wallet, FileCheck, LogIn, LogOut, Loader2, TrendingUp, Timer, MapPin, Building2, Navigation, AlertTriangle } from 'lucide-react';
+import { Clock, CalendarDays, Wallet, FileCheck, LogIn, LogOut, Loader2, TrendingUp, Timer, MapPin, Building2, Navigation, AlertTriangle, Briefcase, Map as MapIcon } from 'lucide-react';
+import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
+
+const mapLibraries = ['places'];
 
 export default function Dashboard() {
     const { user } = useAuth();
@@ -18,6 +21,13 @@ export default function Dashboard() {
     const [actionLoading, setActionLoading] = useState(false);
     const [elapsed, setElapsed] = useState('0:00');
     const [locationStatus, setLocationStatus] = useState(''); // 'fetching', 'success', 'error'
+    const [trackingData, setTrackingData] = useState(null);
+    const [mapInstance, setMapInstance] = useState(null);
+
+    const { isLoaded, loadError } = useJsApiLoader({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+        libraries: mapLibraries
+    });
 
     // Determine if we should track (field employee + checked in + not checked out)
     const isFieldEmployee = employeeProfile?.employeeType === 'Field';
@@ -64,6 +74,43 @@ export default function Dashboard() {
         const interval = setInterval(update, 60000);
         return () => clearInterval(interval);
     }, [attendance]);
+
+    const fetchMyTrack = useCallback(async () => {
+        if (!isFieldEmployee) return;
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const res = await axiosInstance.get(`/hrms/location-tracks/my/${today}`);
+            setTrackingData(res.data?.data || null);
+        } catch (e) { console.error('Failed to load tracking data', e); }
+    }, [isFieldEmployee]);
+
+    useEffect(() => {
+        fetchMyTrack();
+    }, [fetchMyTrack]);
+
+    useEffect(() => {
+        if (!shouldTrack) return;
+        const interval = setInterval(fetchMyTrack, 60000);
+        return () => clearInterval(interval);
+    }, [shouldTrack, fetchMyTrack]);
+
+    const onLoadMap = React.useCallback((map) => {
+        setMapInstance(map);
+    }, []);
+
+    useEffect(() => {
+        if (mapInstance && trackingData?.points?.length > 0) {
+            const bounds = new window.google.maps.LatLngBounds();
+            trackingData.points.forEach(p => {
+                bounds.extend({ lat: p.location.coordinates[1], lng: p.location.coordinates[0] });
+            });
+            mapInstance.fitBounds(bounds);
+        }
+    }, [mapInstance, trackingData]);
+
+    const pathCoordinates = trackingData?.points?.map(p => ({
+        lat: p.location.coordinates[1], lng: p.location.coordinates[0]
+    })) || [];
 
     const handleCheckIn = async () => {
         setActionLoading(true);
@@ -146,18 +193,21 @@ export default function Dashboard() {
                         <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {firstName}!</h1>
                         <p className="text-orange-100 mt-1 text-sm sm:text-base">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
-                    {employeeProfile && (
-                        <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
-                            employeeProfile.employeeType === 'Field'
-                                ? 'bg-white/20 text-white'
-                                : 'bg-white/20 text-white'
-                        }`}>
-                            {employeeProfile.employeeType === 'Field'
-                                ? <><MapPin className="w-3.5 h-3.5" /> Field Employee</>
-                                : <><Building2 className="w-3.5 h-3.5" /> Office Employee</>
-                            }
-                        </div>
-                    )}
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                        {employeeProfile?.hrmsRole === 'Manager' && (
+                            <div className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 bg-white text-orange-600 shadow-sm">
+                                <Briefcase className="w-3.5 h-3.5" /> Manager
+                            </div>
+                        )}
+                        {employeeProfile && (
+                            <div className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 bg-white/20 text-white">
+                                {employeeProfile.employeeType === 'Field'
+                                    ? <><MapPin className="w-3.5 h-3.5" /> Field Employee</>
+                                    : <><Building2 className="w-3.5 h-3.5" /> Office Employee</>
+                                }
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -190,6 +240,25 @@ export default function Dashboard() {
                                     : 'Start your workday'}
                         </p>
 
+                        {/* Check-In Location for Field Employees */}
+                        {isFieldEmployee && attendance?.checkInLocation?.address && (
+                            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-2 px-2">
+                                <MapPin className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                                <span className="line-clamp-2" title={attendance.checkInLocation.address}>
+                                    <strong>In:</strong> {attendance.checkInLocation.address}
+                                </span>
+                            </div>
+                        )}
+                        {/* Check-Out Location for Field Employees */}
+                        {isFieldEmployee && attendance?.checkOutLocation?.address && (
+                            <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-3 px-2">
+                                <MapPin className="w-3.5 h-3.5 shrink-0 text-red-500" />
+                                <span className="line-clamp-2" title={attendance.checkOutLocation.address}>
+                                    <strong>Out:</strong> {attendance.checkOutLocation.address}
+                                </span>
+                            </div>
+                        )}
+
                         {/* Location Status Indicator */}
                         {locationStatus === 'fetching' && (
                             <div className="flex items-center justify-center gap-2 text-xs text-orange-500 mb-3">
@@ -217,6 +286,23 @@ export default function Dashboard() {
                             <div className="text-xs text-slate-500 mb-3 flex items-center justify-center gap-1">
                                 <Building2 className="w-3 h-3" />
                                 {attendance.locationValidation.officeName} — {attendance.locationValidation.distanceFromOffice}m away
+                            </div>
+                        )}
+
+                        {/* Assigned Office Info (Before or During Check-in) */}
+                        {employeeProfile?.employeeType === 'Office' && (
+                            <div className="mb-4 bg-orange-50/50 border border-orange-100 rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                                <div className="text-xs font-semibold text-orange-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                    <Building2 className="w-3.5 h-3.5" /> Your Office Location
+                                </div>
+                                <div className="text-sm font-medium text-slate-800">
+                                    {employeeProfile?.assignedOfficeDetails?.name || 'No GPS-enabled office found'}
+                                </div>
+                                {employeeProfile?.assignedOfficeDetails?.address && (
+                                    <div className="text-xs text-slate-500 mt-0.5 line-clamp-2 px-2">
+                                        {employeeProfile.assignedOfficeDetails.address}
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -296,6 +382,74 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+                {/* Live Tracking Map for Field Employees */}
+                {isFieldEmployee && (
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden md:col-span-2 xl:col-span-3">
+                        <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
+                        <div className="p-6 h-full flex flex-col">
+                            <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                        <MapIcon className="w-5 h-5 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                            My Live Route
+                                            {shouldTrack && <span className="flex h-2.5 w-2.5 relative ml-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span></span>}
+                                        </h3>
+                                        <p className="text-xs text-slate-500">
+                                            {trackingData?.totalDistance ? (trackingData.totalDistance / 1000).toFixed(2) + ' km traveled today' : 'No movement recorded yet'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex-1 w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100">
+                                {loadError ? (
+                                    <div className="absolute inset-0 flex items-center justify-center text-red-500 text-sm">Failed to load Google Maps</div>
+                                ) : !isLoaded ? (
+                                    <div className="absolute inset-0 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+                                ) : (
+                                    <GoogleMap
+                                        mapContainerStyle={{ width: '100%', height: '100%' }}
+                                        center={pathCoordinates.length > 0 ? pathCoordinates[pathCoordinates.length - 1] : { lat: 20.5937, lng: 78.9629 }}
+                                        zoom={pathCoordinates.length > 0 ? 15 : 4}
+                                        onLoad={onLoadMap}
+                                        options={{
+                                            disableDefaultUI: false,
+                                            zoomControl: true,
+                                            mapTypeControl: false,
+                                            scaleControl: true,
+                                            streetViewControl: false,
+                                            rotateControl: false,
+                                            fullscreenControl: true
+                                        }}
+                                    >
+                                        {pathCoordinates.length > 0 && (
+                                            <Polyline
+                                                path={pathCoordinates}
+                                                options={{ strokeColor: '#10b981', strokeOpacity: 0.8, strokeWeight: 4 }}
+                                            />
+                                        )}
+                                        {pathCoordinates.length > 0 && (
+                                            <Marker
+                                                position={pathCoordinates[0]}
+                                                title="Start Position"
+                                                icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' }}
+                                            />
+                                        )}
+                                        {pathCoordinates.length > 1 && (
+                                            <Marker
+                                                position={pathCoordinates[pathCoordinates.length - 1]}
+                                                title="Current/End Position"
+                                                icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' }}
+                                            />
+                                        )}
+                                    </GoogleMap>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -378,7 +378,12 @@ export default function HrmsEmployees() {
                                     {selectedEmployee.managerId && <option value="unassigned">-- Remove Manager --</option>}
                                 </select>
                             </div>
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-3">
+                                {selectedEmployee.employeeType === 'Field' && (
+                                    <a href={`/ecs/hrms/live-tracking?employeeId=${selectedEmployee._id}`} className="px-5 h-10 bg-white border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 rounded-xl text-sm font-medium transition-all shadow-sm">
+                                        <MapPin className="w-4 h-4" /> View Live Track
+                                    </a>
+                                )}
                                 {selectedEmployee.status === 'Active' && (
                                     <button onClick={() => handleStatusChange(selectedEmployee._id, 'Suspended')} className="px-5 h-10 bg-white border-2 border-orange-400 text-orange-500 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Suspend Employee</button>
                                 )}

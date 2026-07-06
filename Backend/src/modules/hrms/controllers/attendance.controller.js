@@ -78,8 +78,7 @@ export const checkIn = async (req, res, next) => {
                     o => o.latitude && o.longitude && o.isActive !== false
                 );
                 if (activeOffices.length === 0) {
-                    // No GPS-configured offices — allow check-in without location validation
-                    // (graceful backward compat for orgs that haven't set up office GPS yet)
+                    return sendError(res, 403, 'No office locations are configured for GPS attendance. Please contact HR.');
                 } else {
                     // Find nearest
                     let minDist = Infinity;
@@ -113,6 +112,8 @@ export const checkIn = async (req, res, next) => {
                         `Attendance is only allowed within ${allowedRadius}m of your office location.`
                     );
                 }
+            } else {
+                return sendError(res, 403, 'Assigned office location lacks GPS coordinates. Please contact HR.');
             }
         }
 
@@ -203,7 +204,11 @@ export const checkOut = async (req, res, next) => {
         }
 
         // ── Office Employee: Validate checkout location ──
-        if (attendance.employeeType === 'Office' && latitude !== undefined && longitude !== undefined) {
+        if (attendance.employeeType === 'Office') {
+            if (latitude === undefined || longitude === undefined) {
+                return sendError(res, 400, 'GPS location is required for office checkout. Please enable location services.');
+            }
+
             const officeLocations = settings?.organization?.officeLocations || [];
             let assignedOffice = null;
 
@@ -211,6 +216,24 @@ export const checkOut = async (req, res, next) => {
                 assignedOffice = officeLocations.find(
                     o => String(o._id) === String(employee.assignedOfficeLocationId) && o.isActive !== false
                 );
+            }
+
+            if (!assignedOffice) {
+                const activeOffices = officeLocations.filter(
+                    o => o.latitude && o.longitude && o.isActive !== false
+                );
+                if (activeOffices.length === 0) {
+                    return sendError(res, 403, 'No office locations are configured for GPS attendance. Please contact HR.');
+                } else {
+                    let minDist = Infinity;
+                    for (const office of activeOffices) {
+                        const dist = haversineDistance(latitude, longitude, office.latitude, office.longitude);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            assignedOffice = office;
+                        }
+                    }
+                }
             }
 
             if (assignedOffice && assignedOffice.latitude && assignedOffice.longitude) {
@@ -226,6 +249,8 @@ export const checkOut = async (req, res, next) => {
                         `Check-out is only allowed within ${allowedRadius}m of your office.`
                     );
                 }
+            } else {
+                return sendError(res, 403, 'Assigned office location lacks GPS coordinates. Please contact HR.');
             }
         }
 
