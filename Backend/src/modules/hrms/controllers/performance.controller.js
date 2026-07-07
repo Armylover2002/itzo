@@ -212,9 +212,15 @@ export const getAnalyticsOverview = async (req, res, next) => {
             .populate('adminId', 'name email profileImage')
             .lean();
 
+        const allActiveKpis = await HrmsKpi.find({ isActive: true }).populate('categoryId').lean();
+
+        const evaluatedList = await KpiEngine.mapConcurrent(employees, 15, async (emp) => {
+            const perf = await KpiEngine.evaluateEmployeePerformance(emp, period, forceRecalculate === 'true', allActiveKpis);
+            return { employee: emp, performance: perf };
+        });
+
         let totalScore = 0;
         let count = 0;
-        const evaluatedList = [];
         let financials = {
             grossRevenue: 0,
             platformCharges: 0,
@@ -228,9 +234,8 @@ export const getAnalyticsOverview = async (req, res, next) => {
         const riskEmployees = [];
         const inactiveEmployees = [];
 
-        for (const emp of employees) {
-            const perf = await KpiEngine.evaluateEmployeePerformance(emp._id, period, forceRecalculate === 'true');
-            evaluatedList.push({ employee: emp, performance: perf });
+        for (const item of evaluatedList) {
+            const { employee: emp, performance: perf } = item;
             totalScore += perf.finalScore;
             count++;
 
@@ -289,14 +294,19 @@ export const exportPerformanceReport = async (req, res, next) => {
         if (zone && zone !== 'All') empQuery.zone = zone;
 
         const employees = await HrmsEmployee.find(empQuery)
-            .select('_id adminId employeeId designation department zone')
+            .select('_id adminId employeeId designation department zone hrmsRole')
             .populate('adminId', 'name email')
             .lean();
 
+        const allActiveKpis = await HrmsKpi.find({ isActive: true }).populate('categoryId').lean();
+
+        const evaluatedList = await KpiEngine.mapConcurrent(employees, 15, async (emp) => {
+            const perf = await KpiEngine.evaluateEmployeePerformance(emp, period, false, allActiveKpis);
+            return { emp, perf };
+        });
+
         const rows = [];
-        for (const emp of employees) {
-            const perf = await KpiEngine.evaluateEmployeePerformance(emp._id, period, false);
-            
+        for (const { emp, perf } of evaluatedList) {
             if (reportType === 'Revenue' || reportType === 'Profit') {
                 rows.push({
                     EmployeeID: emp.employeeId || emp._id,

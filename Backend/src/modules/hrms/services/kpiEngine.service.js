@@ -344,25 +344,50 @@ export class KpiEngine {
     }
 
     /**
+     * Bounded concurrent execution helper to prevent database connection exhaustion
+     */
+    static async mapConcurrent(items, limit, fn) {
+        const results = [];
+        for (let i = 0; i < items.length; i += limit) {
+            const chunk = items.slice(i, i + limit);
+            const chunkResults = await Promise.all(chunk.map(fn));
+            results.push(...chunkResults);
+        }
+        return results;
+    }
+
+    /**
      * Evaluate all active KPIs for an employee
      */
-    static async evaluateEmployeePerformance(employeeId, periodStr, forceRecalculate = false) {
+    static async evaluateEmployeePerformance(employeeIdOrObj, periodStr, forceRecalculate = false, cachedKpis = null) {
         const { startDate, endDate, period } = this.getPeriodDates(periodStr);
         
-        const employee = await HrmsEmployee.findById(employeeId).lean();
+        const employee = (typeof employeeIdOrObj === 'object' && employeeIdOrObj !== null && employeeIdOrObj._id)
+            ? employeeIdOrObj
+            : await HrmsEmployee.findById(employeeIdOrObj).lean();
+            
         if (!employee) throw new Error('Employee not found');
+        const employeeId = employee._id;
 
-        const kpis = await HrmsKpi.find({
-            isActive: true,
-            $or: [
-                { department: 'All' },
-                { department: employee.department }
-            ],
-            $or: [
-                { role: 'All' },
-                { role: employee.hrmsRole }
-            ]
-        }).populate('categoryId').lean();
+        let kpis;
+        if (cachedKpis && Array.isArray(cachedKpis)) {
+            kpis = cachedKpis.filter(k => 
+                (k.department === 'All' || k.department === employee.department) &&
+                (k.role === 'All' || k.role === employee.hrmsRole)
+            );
+        } else {
+            kpis = await HrmsKpi.find({
+                isActive: true,
+                $or: [
+                    { department: 'All' },
+                    { department: employee.department }
+                ],
+                $or: [
+                    { role: 'All' },
+                    { role: employee.hrmsRole }
+                ]
+            }).populate('categoryId').lean();
+        }
 
         let totalWeightage = 0;
         let finalScore = 0;
@@ -378,8 +403,14 @@ export class KpiEngine {
             profitMarginPercent: 0
         };
 
+        // Batch fetch existing results to prevent N+1 queries during normal page loads
+        const existingResults = !forceRecalculate 
+            ? await HrmsKpiResult.find({ employeeId, kpiId: { $in: kpis.map(k => k._id) }, period }).lean()
+            : [];
+        const resultMap = new Map(existingResults.map(r => [r.kpiId.toString(), r]));
+
         for (const kpi of kpis) {
-            let resultDoc = await HrmsKpiResult.findOne({ employeeId, kpiId: kpi._id, period });
+            let resultDoc = resultMap.get(kpi._id.toString()) || null;
             
             if (!resultDoc || forceRecalculate) {
                 // Collect dynamic metrics
@@ -483,29 +514,29 @@ export class KpiEngine {
      */
     static async evaluateTeamPerformance(managerId, periodStr, forceRecalculate = false) {
         const team = await HrmsEmployee.find({ managerId, status: 'Active' })
-            .select('_id adminId employeeId designation department zone')
+            .select('_id adminId employeeId designation department zone hrmsRole')
             .populate('adminId', 'name email profileImage')
             .lean();
         
+        const allActiveKpis = await HrmsKpi.find({ isActive: true }).populate('categoryId').lean();
+        
         let teamTotalScore = 0;
         let count = 0;
-        const teamMembersPerformance = [];
         let aggregatedFinancials = { grossRevenue: 0, netProfit: 0, approvedExpenses: 0, operationalCost: 0 };
 
-        for (const member of team) {
-            const perf = await this.evaluateEmployeePerformance(member._id, periodStr, forceRecalculate);
-            teamMembersPerformance.push({
-                member,
-                performance: perf
-            });
-            teamTotalScore += perf.finalScore;
-            count++;
+        const teamMembersPerformance = await this.mapConcurrent(team, 15, async (member) => {
+            const perf = await this.evaluateEmployeePerformance(member, periodStr, forceRecalculate, allActiveKpis);
+            return { member, performance: perf };
+        });
 
-            if (perf.financialBreakdown) {
-                aggregatedFinancials.grossRevenue += Number(perf.financialBreakdown.grossRevenue) || 0;
-                aggregatedFinancials.netProfit += Number(perf.financialBreakdown.netProfit) || 0;
-                aggregatedFinancials.approvedExpenses += Number(perf.financialBreakdown.approvedExpenses) || 0;
-                aggregatedFinancials.operationalCost += Number(perf.financialBreakdown.operationalCost) || 0;
+        for (const item of teamMembersPerformance) {
+            teamTotalScore += item.performance.finalScore;
+            count++;
+            if (item.performance.financialBreakdown) {
+                aggregatedFinancials.grossRevenue += Number(item.performance.financialBreakdown.grossRevenue) || 0;
+                aggregatedFinancials.netProfit += Number(item.performance.financialBreakdown.netProfit) || 0;
+                aggregatedFinancials.approvedExpenses += Number(item.performance.financialBreakdown.approvedExpenses) || 0;
+                aggregatedFinancials.operationalCost += Number(item.performance.financialBreakdown.operationalCost) || 0;
             }
         }
 
@@ -534,22 +565,26 @@ export class KpiEngine {
         const query = { status: 'Active' };
         if (departmentName && departmentName !== 'All') query.department = departmentName;
 
-        const employees = await HrmsEmployee.find(query).select('_id').lean();
+        const employees = await HrmsEmployee.find(query).select('_id designation department zone hrmsRole').lean();
+        const allActiveKpis = await HrmsKpi.find({ isActive: true }).populate('categoryId').lean();
+
+        const performances = await this.mapConcurrent(employees, 15, (emp) => 
+            this.evaluateEmployeePerformance(emp, periodStr, forceRecalculate, allActiveKpis)
+        );
+
         let totalScore = 0;
-        let count = 0;
         let totalRevenue = 0;
         let totalProfit = 0;
 
-        for (const emp of employees) {
-            const perf = await this.evaluateEmployeePerformance(emp._id, periodStr, forceRecalculate);
+        for (const perf of performances) {
             totalScore += perf.finalScore;
             if (perf.financialBreakdown) {
                 totalRevenue += perf.financialBreakdown.grossRevenue || 0;
                 totalProfit += perf.financialBreakdown.netProfit || 0;
             }
-            count++;
         }
 
+        const count = performances.length;
         const avgScore = count > 0 ? Number((totalScore / count).toFixed(2)) : 0;
         return {
             department: departmentName || 'All',
@@ -568,22 +603,26 @@ export class KpiEngine {
         const query = { status: 'Active' };
         if (zoneName && zoneName !== 'All') query.zone = zoneName;
 
-        const employees = await HrmsEmployee.find(query).select('_id').lean();
+        const employees = await HrmsEmployee.find(query).select('_id designation department zone hrmsRole').lean();
+        const allActiveKpis = await HrmsKpi.find({ isActive: true }).populate('categoryId').lean();
+
+        const performances = await this.mapConcurrent(employees, 15, (emp) => 
+            this.evaluateEmployeePerformance(emp, periodStr, forceRecalculate, allActiveKpis)
+        );
+
         let totalScore = 0;
-        let count = 0;
         let totalRevenue = 0;
         let totalProfit = 0;
 
-        for (const emp of employees) {
-            const perf = await this.evaluateEmployeePerformance(emp._id, periodStr, forceRecalculate);
+        for (const perf of performances) {
             totalScore += perf.finalScore;
             if (perf.financialBreakdown) {
                 totalRevenue += perf.financialBreakdown.grossRevenue || 0;
                 totalProfit += perf.financialBreakdown.netProfit || 0;
             }
-            count++;
         }
 
+        const count = performances.length;
         const avgScore = count > 0 ? Number((totalScore / count).toFixed(2)) : 0;
         return {
             zone: zoneName || 'All',
@@ -600,13 +639,14 @@ export class KpiEngine {
      */
     static async evaluateCompanyPerformance(periodStr, forceRecalculate = false) {
         const employees = await HrmsEmployee.find({ status: 'Active' })
-            .select('_id adminId employeeId designation department zone')
+            .select('_id adminId employeeId designation department zone hrmsRole')
             .populate('adminId', 'name email profileImage')
             .lean();
 
+        const allActiveKpis = await HrmsKpi.find({ isActive: true }).populate('categoryId').lean();
+
         let totalScore = 0;
         let count = 0;
-        const allPerformances = [];
         let companyFinancials = {
             grossRevenue: 0,
             platformCharges: 0,
@@ -621,9 +661,13 @@ export class KpiEngine {
         const deptMap = {};
         const zoneMap = {};
 
-        for (const emp of employees) {
-            const perf = await this.evaluateEmployeePerformance(emp._id, periodStr, forceRecalculate);
-            allPerformances.push({ employee: emp, performance: perf });
+        const allPerformances = await this.mapConcurrent(employees, 15, async (emp) => {
+            const perf = await this.evaluateEmployeePerformance(emp, periodStr, forceRecalculate, allActiveKpis);
+            return { employee: emp, performance: perf };
+        });
+
+        for (const item of allPerformances) {
+            const { employee: emp, performance: perf } = item;
             totalScore += perf.finalScore;
             count++;
 
