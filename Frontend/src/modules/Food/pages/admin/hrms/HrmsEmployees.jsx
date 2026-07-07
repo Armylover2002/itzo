@@ -145,7 +145,7 @@ export default function HrmsEmployees() {
                     <p className="text-sm text-slate-500 mt-1">Manage your active workforce</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <a href="/ecs/hrms/employee-docs" className="flex items-center gap-2 px-4 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-xl shadow-sm transition-all text-sm">
+                    <a href={window.location.pathname.startsWith('/hrms') ? "/hrms/team/employee-docs" : "/ecs/hrms/employee-docs"} className="flex items-center gap-2 px-4 h-10 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-xl shadow-sm transition-all text-sm">
                         <FileText className="w-4 h-4" /> Employee Docs
                     </a>
                     <button onClick={() => setShowOnboard(!showOnboard)}

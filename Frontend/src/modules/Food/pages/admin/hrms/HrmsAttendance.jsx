@@ -128,7 +128,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                                             <p className="text-slate-400 truncate" title={r.checkInLocation.address}>{r.checkInLocation.address}</p>
                                                         )}
                                                         {r.employeeType === 'Field' && r.checkInTime && (
-                                                            <a href={`/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-orange-500 hover:underline block mt-1">View Route Map</a>
+                                                            <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}` : `/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-orange-500 hover:underline block mt-1">View Route Map</a>
                                                         )}
                                                     </div>
                                                 ) : (

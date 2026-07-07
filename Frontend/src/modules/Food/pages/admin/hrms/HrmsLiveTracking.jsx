@@ -88,7 +88,7 @@ export default function HrmsLiveTracking() {
                 <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
                 <h2 className="text-lg font-bold text-slate-900">Missing Employee ID</h2>
                 <p className="text-slate-500">Please provide an employee ID to view live tracking.</p>
-                <a href="/ecs/hrms/attendance" className="inline-flex items-center gap-2 mt-4 text-orange-600 font-medium hover:underline">
+                <a href={window.location.pathname.startsWith('/hrms') ? "/hrms/team/attendance" : "/ecs/hrms/attendance"} className="inline-flex items-center gap-2 mt-4 text-orange-600 font-medium hover:underline">
                     <ArrowLeft className="w-4 h-4" /> Back to Attendance
                 </a>
             </div>
@@ -110,7 +110,7 @@ export default function HrmsLiveTracking() {
             {/* Header / Top Bar */}
             <div className="bg-white border-b border-slate-200 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 z-10 shadow-sm">
                 <div className="flex items-center gap-4">
-                    <a href="/ecs/hrms/attendance" className="p-2 -ml-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
+                    <a href={window.location.pathname.startsWith('/hrms') ? "/hrms/team/attendance" : "/ecs/hrms/attendance"} className="p-2 -ml-2 rounded-xl hover:bg-slate-100 text-slate-600 transition-colors">
                         <ArrowLeft className="w-5 h-5" />
                     </a>
                     <div>

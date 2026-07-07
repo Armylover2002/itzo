@@ -244,7 +244,7 @@ export default function AdminRouter() {
           }
         >
           {/* Default Admin Redirect */}
-          <Route path="/" element={<Navigate to="food" replace />} />
+          <Route path="/" element={<Navigate to="/ecs/food" replace />} />
 
           {/* Quick Commerce Admin Routes */}
           <Route path="quick-commerce/*" element={
@@ -262,7 +262,7 @@ export default function AdminRouter() {
 
           {/* Global Application Settings (Common Module) */}
           <Route path="global-settings">
-            <Route index element={<Navigate to="app" replace />} />
+            <Route index element={<Navigate to="/ecs/global-settings/app" replace />} />
             <Route path="app" element={<GlobalApplicationSettings />} />
             <Route path="admin" element={<AdminProfile />} />
             <Route path="modules" element={<ModuleManagement />} />

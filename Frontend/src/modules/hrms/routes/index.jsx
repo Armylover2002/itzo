@@ -50,7 +50,7 @@ export default function HrmsEmployeeApp() {
                             </HrmsGuard>
                         }
                     >
-                        <Route index element={<Navigate to="dashboard" replace />} />
+                        <Route index element={<Navigate to="/hrms/dashboard" replace />} />
                         <Route path="dashboard" element={<Dashboard />} />
                         <Route path="attendance" element={<Attendance />} />
                         <Route path="leave" element={<Leave />} />
@@ -60,20 +60,20 @@ export default function HrmsEmployeeApp() {
                         <Route path="profile" element={<Profile />} />
 
                         {/* Support Center */}
-                        <Route path="support" element={<Navigate to="list" replace />} />
+                        <Route path="support" element={<Navigate to="/hrms/support/list" replace />} />
                         <Route path="support/contact" element={<SupportContact />} />
                         <Route path="support/create" element={<SupportCreate />} />
                         <Route path="support/list" element={<SupportList />} />
                         <Route path="support/:id" element={<SupportDetails />} />
 
                         {/* Daily Reports */}
-                        <Route path="reports" element={<Navigate to="list" replace />} />
+                        <Route path="reports" element={<Navigate to="/hrms/reports/list" replace />} />
                         <Route path="reports/list" element={<ReportList />} />
                         <Route path="reports/create" element={<CreateReport />} />
                         <Route path="reports/:id" element={<ReportDetails />} />
 
                         {/* Manager Module - Using exact ECS Admin UI components scoped to Manager's team */}
-                        <Route path="team" element={<Navigate to="employees" replace />} />
+                        <Route path="team" element={<Navigate to="/hrms/team/employees" replace />} />
                         <Route path="team/dashboard" element={<ManagerDashboard />} />
                         <Route path="team/employees" element={<HrmsEmployeesAdmin />} />
                         <Route path="team/attendance" element={<HrmsAttendanceAdmin />} />
@@ -90,7 +90,7 @@ export default function HrmsEmployeeApp() {
                     </Route>
 
                     {/* Fallback */}
-                    <Route path="*" element={<Navigate to="dashboard" replace />} />
+                    <Route path="*" element={<Navigate to="/hrms/dashboard" replace />} />
                 </Routes>
             </Suspense>
         </HrmsSettingsProvider>

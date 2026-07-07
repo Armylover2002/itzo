@@ -35,7 +35,7 @@ export default function HrmsRouter() {
         <Suspense fallback={<Loader />}>
             <HrmsSettingsProvider>
                 <Routes>
-                    <Route path="/" element={<Navigate to="dashboard" replace />} />
+                    <Route path="/" element={<Navigate to="/ecs/hrms/dashboard" replace />} />
                 <Route path="dashboard" element={<HrmsDashboard />} />
                 <Route path="joining-requests" element={<HrmsJoiningRequests />} />
                 <Route path="employees" element={<HrmsEmployees />} />
@@ -46,20 +46,20 @@ export default function HrmsRouter() {
                 <Route path="settings" element={<HrmsSettings />} />
 
                 {/* Support Center */}
-                <Route path="support" element={<Navigate to="dashboard" replace />} />
+                <Route path="support" element={<Navigate to="/ecs/hrms/support/dashboard" replace />} />
                 <Route path="support/dashboard" element={<SupportDashboard />} />
                 <Route path="support/requests" element={<SupportRequests />} />
                 <Route path="support/requests/:id" element={<SupportAdminDetails />} />
                 <Route path="support/settings" element={<SupportSettings />} />
 
                 {/* Assessments */}
-                <Route path="assessments" element={<Navigate to="question-bank" replace />} />
+                <Route path="assessments" element={<Navigate to="/ecs/hrms/assessments/question-bank" replace />} />
                 <Route path="assessments/question-bank" element={<QuestionBank />} />
                 <Route path="assessments/settings" element={<AssessmentSettings />} />
                 <Route path="assessments/analysis" element={<TestAnalysis />} />
 
                 {/* Daily Reports */}
-                <Route path="reports" element={<Navigate to="dashboard" replace />} />
+                <Route path="reports" element={<Navigate to="/ecs/hrms/reports/dashboard" replace />} />
                 <Route path="reports/dashboard" element={<AdminReportDashboard />} />
                 <Route path="reports/all" element={<AdminReportList />} />
                 <Route path="reports/:id" element={<AdminReportDetails />} />

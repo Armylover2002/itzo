@@ -23,7 +23,7 @@ export default function TeamReports() {
             });
             if (dateFilter) params.append('date', dateFilter);
             
-            const res = await axiosInstance.get(`/hrms/daily-reports/admin?${params}`);
+            const res = await axiosInstance.get(`/hrms/daily-reports/admin/all?${params}`);
             setReports(res.data?.data?.reports || []);
             setPagination(res.data?.data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
         } catch (error) {
