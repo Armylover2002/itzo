@@ -146,21 +146,29 @@ export default function Attendance() {
                                             </span>
                                         </td>
                                         <td className="px-5 py-3.5">
-                                            {r.checkInLocation?.address || r.locationValidation ? (
-                                                <div className="text-xs space-y-0.5 max-w-[180px]">
-                                                    {r.employeeType === 'Office' && r.locationValidation?.officeName && (
-                                                        <span className="text-emerald-600 font-medium">🏢 {r.locationValidation.officeName}</span>
-                                                    )}
-                                                    {r.employeeType === 'Field' && r.routeDistance > 0 && (
-                                                        <span className="text-blue-600 font-medium">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
-                                                    )}
-                                                    {r.checkInLocation?.address && (
-                                                        <p className="text-slate-400 truncate" title={r.checkInLocation.address}>{r.checkInLocation.address}</p>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <span className="text-slate-400">—</span>
-                                            )}
+                                            <div className="text-xs space-y-1 max-w-[200px]">
+                                                {r.employeeType === 'Office' && r.locationValidation?.officeName && (
+                                                    <span className="text-emerald-600 font-medium block">🏢 {r.locationValidation.officeName}</span>
+                                                )}
+                                                {r.employeeType === 'Field' && r.routeDistance > 0 && (
+                                                    <span className="text-blue-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
+                                                )}
+                                                {r.checkInLocation?.address && (
+                                                    <div className="text-slate-500 flex items-start gap-1" title={r.checkInLocation.address}>
+                                                        <span className="text-[10px] font-bold text-emerald-600 uppercase shrink-0 mt-0.5">In:</span>
+                                                        <span className="truncate">{r.checkInLocation.address}</span>
+                                                    </div>
+                                                )}
+                                                {r.checkOutLocation?.address && (
+                                                    <div className="text-slate-500 flex items-start gap-1" title={r.checkOutLocation.address}>
+                                                        <span className="text-[10px] font-bold text-red-600 uppercase shrink-0 mt-0.5">Out:</span>
+                                                        <span className="truncate">{r.checkOutLocation.address}</span>
+                                                    </div>
+                                                )}
+                                                {!r.checkInLocation?.address && !r.checkOutLocation?.address && !r.locationValidation?.officeName && (
+                                                    <span className="text-slate-400">—</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-5 py-3.5">
                                             {r.regularization?.isRequested ? (

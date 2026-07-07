@@ -408,13 +408,20 @@ export class KpiEngine {
             ? await HrmsKpiResult.find({ employeeId, kpiId: { $in: kpis.map(k => k._id) }, period }).lean()
             : [];
         const resultMap = new Map(existingResults.map(r => [r.kpiId.toString(), r]));
+        
+        let sharedMetrics = null;
 
         for (const kpi of kpis) {
             let resultDoc = resultMap.get(kpi._id.toString()) || null;
             
             if (!resultDoc || forceRecalculate) {
-                // Collect dynamic metrics
-                const metrics = await this.collectEmployeeMetrics(employeeId, startDate, endDate, kpi.target, kpi.ruleConfig);
+                // Collect dynamic metrics ONCE per employee to dramatically reduce DB queries
+                if (!sharedMetrics) {
+                    sharedMetrics = await this.collectEmployeeMetrics(employeeId, startDate, endDate, kpi.target, kpi.ruleConfig);
+                }
+                
+                // Clone and override target for current KPI
+                const metrics = { ...sharedMetrics, TARGET: kpi.target };
                 metrics.ACHIEVED = this.resolveAchievedValue(kpi.metricKey, metrics);
 
                 // Evaluate score using dynamic formula expression or standard target percentage

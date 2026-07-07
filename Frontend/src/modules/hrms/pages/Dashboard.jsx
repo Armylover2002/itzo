@@ -234,14 +234,14 @@ export default function Dashboard() {
                         </h3>
                         <p className="text-sm text-slate-500 mb-3">
                             {isDone
-                                ? `Checked out at ${new Date(attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                ? `Checked in: ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · Checked out: ${new Date(attendance.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                 : isCheckedIn
                                     ? `Since ${new Date(attendance.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                     : 'Start your workday'}
                         </p>
 
-                        {/* Check-In Location for Field Employees */}
-                        {isFieldEmployee && attendance?.checkInLocation?.address && (
+                        {/* Check-In Location for All Employees */}
+                        {attendance?.checkInLocation?.address && (
                             <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-2 px-2">
                                 <MapPin className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
                                 <span className="line-clamp-2" title={attendance.checkInLocation.address}>
@@ -249,8 +249,8 @@ export default function Dashboard() {
                                 </span>
                             </div>
                         )}
-                        {/* Check-Out Location for Field Employees */}
-                        {isFieldEmployee && attendance?.checkOutLocation?.address && (
+                        {/* Check-Out Location for All Employees */}
+                        {attendance?.checkOutLocation?.address && (
                             <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-3 px-2">
                                 <MapPin className="w-3.5 h-3.5 shrink-0 text-red-500" />
                                 <span className="line-clamp-2" title={attendance.checkOutLocation.address}>
