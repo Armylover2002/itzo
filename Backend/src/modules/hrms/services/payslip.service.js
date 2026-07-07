@@ -240,7 +240,7 @@ const getBrowser = async () => {
             executablePath: chromePath,
             args: [
                 '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
-                '--disable-gpu', '--no-first-run', '--no-zygote', '--single-process',
+                '--disable-gpu', '--no-first-run', '--no-zygote',
                 '--disable-extensions', '--memory-pressure-off',
                 '--disable-background-networking', '--disable-default-apps',
                 '--disable-sync', '--disable-translate', '--hide-scrollbars',
@@ -309,7 +309,7 @@ export const generatePdfBuffer = async (data) => {
         page.setDefaultNavigationTimeout(30000);
         page.setDefaultTimeout(30000);
 
-        await page.setContent(html, { waitUntil: ['load', 'networkidle0'], timeout: 25000 });
+        await page.setContent(html, { waitUntil: ['load', 'networkidle2'], timeout: 30000 });
 
         const pdfBuffer = await page.pdf({
             format: 'A4',
