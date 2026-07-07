@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'react-hot-toast';
-import { Target, TrendingUp, RefreshCw, BarChart2, Star, CheckCircle, Clock, Award, Trophy, DollarSign, AlertCircle, ShieldCheck, Sparkles, Zap, CheckCircle2, XCircle } from 'lucide-react';
+import { Target, TrendingUp, RefreshCw, Award, Trophy, DollarSign, AlertCircle, CheckCircle2, Zap } from 'lucide-react';
 
 export default function EmployeePerformance() {
     const [performanceData, setPerformanceData] = useState(null);
@@ -34,11 +34,11 @@ export default function EmployeePerformance() {
     const getLevelBadge = (levelName, color) => {
         return (
             <span
-                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold"
                 style={{
-                    backgroundColor: `${color || '#3b82f6'}20`,
+                    backgroundColor: `${color || '#3b82f6'}15`,
                     color: color || '#3b82f6',
-                    borderColor: `${color || '#3b82f6'}40`,
+                    borderColor: `${color || '#3b82f6'}30`,
                     borderWidth: '1px'
                 }}
             >
@@ -53,18 +53,17 @@ export default function EmployeePerformance() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            {/* Header Suite */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-orange-950/40 p-6 rounded-3xl text-white shadow-xl border border-slate-800">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <div className="flex items-center gap-2 text-orange-400 font-bold text-xs tracking-wider uppercase mb-1">
-                        <Sparkles className="w-4 h-4" /> Personal Scorecard & Growth Engine
-                    </div>
-                    <h1 className="text-2xl font-extrabold text-white flex items-center gap-2">
-                        <Target className="w-7 h-7 text-orange-500" />
-                        My Performance & KPI Scorecard
+                    <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                            <Target className="w-5 h-5 text-orange-600" />
+                        </div>
+                        My Performance
                     </h1>
-                    <p className="text-sm text-slate-300 mt-1">
-                        Track your monthly achievement, financial contributions, strengths, and target progression.
+                    <p className="text-sm text-slate-500 mt-1 ml-[52px]">
+                        Track your monthly achievements, targets, and growth areas.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -72,11 +71,11 @@ export default function EmployeePerformance() {
                         type="month" 
                         value={period}
                         onChange={(e) => setPeriod(e.target.value)}
-                        className="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs font-bold focus:outline-none focus:border-orange-500 shadow-sm"
+                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                     />
                     <button
                         onClick={() => fetchPerformance(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl shadow-lg shadow-orange-500/20 font-bold text-xs transition-all"
+                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-xs transition-colors"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -86,109 +85,109 @@ export default function EmployeePerformance() {
 
             {loading ? (
                 <div className="flex flex-col justify-center items-center py-24">
-                    <RefreshCw className="w-10 h-10 text-orange-500 animate-spin mb-3" />
-                    <p className="text-slate-500 font-bold text-sm">Evaluating Personal Scorecard...</p>
+                    <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mb-3" />
+                    <p className="text-slate-400 font-medium text-sm">Loading your scorecard...</p>
                 </div>
             ) : !performanceData ? (
-                <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
-                    <Target className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                    <p className="text-slate-600 font-bold text-lg">No performance scorecard found for {period}.</p>
-                    <p className="text-xs text-slate-400 mt-1">Check back once your manager assigns KPIs or orders are generated.</p>
+                <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
+                    <Target className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-slate-700 font-semibold text-lg">No scorecard found for {period}</p>
+                    <p className="text-sm text-slate-400 mt-1">Check back once KPIs are assigned and data is available.</p>
                 </div>
             ) : (
                 <>
-                    {/* Overall Score & Badge Card */}
-                    <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/60 rounded-3xl border border-slate-800 p-8 shadow-2xl text-white flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex items-center gap-5">
-                            <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 flex-shrink-0">
-                                <Trophy className="w-8 h-8" />
+                    {/* Overall Score Card */}
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                                <Trophy className="w-7 h-7 text-orange-500" />
                             </div>
                             <div>
-                                <span className="text-xs font-bold text-orange-400 uppercase tracking-wider block mb-1">
-                                    Overall Monthly Evaluation
+                                <span className="text-xs font-semibold text-orange-600 block mb-1">
+                                    Monthly Performance
                                 </span>
-                                <h2 className="text-2xl font-extrabold text-white">
-                                    {performanceData.performanceLevel?.levelName || 'Evaluated Performer'}
+                                <h2 className="text-xl font-bold text-slate-900">
+                                    {performanceData.performanceLevel?.levelName || 'Evaluated'}
                                 </h2>
-                                <p className="text-xs text-slate-400 mt-1 max-w-md">
+                                <p className="text-xs text-slate-500 mt-0.5 max-w-md">
                                     {performanceData.performanceLevel?.description || 'Your score reflects weighted KPI achievements across operations and discipline.'}
                                 </p>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-800 w-full md:w-auto justify-between md:justify-end">
+                        <div className="flex items-center gap-5 border-t md:border-t-0 pt-4 md:pt-0 border-slate-100 w-full md:w-auto justify-between md:justify-end">
                             <div className="text-right">
-                                <span className="text-xs text-slate-400 uppercase font-bold block">Final Score</span>
-                                <div className="text-5xl font-black text-white tracking-tight mt-0.5">
-                                    {performanceData.finalScore} <span className="text-lg font-normal text-slate-500">/ 100</span>
+                                <span className="text-xs text-slate-500 font-medium block">Score</span>
+                                <div className="text-4xl font-black text-slate-900 tracking-tight mt-0.5">
+                                    {performanceData.finalScore} <span className="text-base font-normal text-slate-400">/ 100</span>
                                 </div>
                             </div>
-                            <div className="pl-4 border-l border-slate-800">
+                            <div className="pl-4 border-l border-slate-200">
                                 {getLevelBadge(performanceData.performanceLevel?.levelName, performanceData.performanceLevel?.color)}
                             </div>
                         </div>
                     </div>
 
-                    {/* Financial & Operational Contributions */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex items-center justify-between">
+                    {/* Financial Contributions */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
                             <div>
-                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Gross Revenue Generated</span>
-                                <span className="text-2xl font-extrabold text-emerald-600 mt-1 block">
+                                <span className="text-xs font-medium text-slate-500 block">Gross Revenue</span>
+                                <span className="text-xl font-bold text-emerald-600 mt-0.5 block">
                                     {formatCurrency(performanceData.financialBreakdown?.grossRevenue)}
                                 </span>
-                                <span className="text-[11px] text-slate-500 mt-0.5 block">From your onboarded & assigned restaurants</span>
+                                <span className="text-xs text-slate-400 mt-0.5 block">From your restaurants</span>
                             </div>
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-                                <DollarSign className="w-6 h-6" />
+                            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                <DollarSign className="w-5 h-5" />
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex items-center justify-between">
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
                             <div>
-                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Approved Expenses</span>
-                                <span className="text-2xl font-extrabold text-amber-600 mt-1 block">
+                                <span className="text-xs font-medium text-slate-500 block">Approved Expenses</span>
+                                <span className="text-xl font-bold text-amber-600 mt-0.5 block">
                                     {formatCurrency(performanceData.financialBreakdown?.approvedExpenses)}
                                 </span>
-                                <span className="text-[11px] text-slate-500 mt-0.5 block">Travel, food & hotel claims</span>
+                                <span className="text-xs text-slate-400 mt-0.5 block">Travel, food & hotel</span>
                             </div>
-                            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-                                <TrendingUp className="w-6 h-6" />
+                            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                                <TrendingUp className="w-5 h-5" />
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex items-center justify-between">
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
                             <div>
-                                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Net Profit Contribution</span>
-                                <span className="text-2xl font-extrabold text-blue-600 mt-1 block">
+                                <span className="text-xs font-medium text-slate-500 block">Net Profit Contribution</span>
+                                <span className="text-xl font-bold text-blue-600 mt-0.5 block">
                                     {formatCurrency(performanceData.financialBreakdown?.netProfit)}
                                 </span>
-                                <span className="text-[11px] text-slate-500 mt-0.5 block">After platform charges & deductions</span>
+                                <span className="text-xs text-slate-400 mt-0.5 block">After all deductions</span>
                             </div>
-                            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-                                <Zap className="w-6 h-6" />
+                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                                <Zap className="w-5 h-5" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Strengths & Improvement Areas Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-emerald-50/50 to-white border border-emerald-200/80 rounded-3xl p-6 shadow-sm">
-                            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-600" /> Core Strengths (Exceeding Targets)
+                    {/* Strengths & Improvement Areas */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-4">
+                                <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Strengths
                             </h3>
                             {strengths.length === 0 ? (
-                                <p className="text-xs text-slate-500 py-4">Keep pushing! Achieve 80%+ on any KPI to unlock a strength badge.</p>
+                                <p className="text-sm text-slate-400 py-3">Achieve 80%+ on any KPI to see your strengths here.</p>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-2.5">
                                     {strengths.map((s, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-emerald-100 shadow-sm">
+                                        <div key={idx} className="flex items-center justify-between p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-sm">{s.kpi?.name}</h4>
-                                                <span className="text-[11px] text-slate-500">Target: {s.result?.targetValue} • Weight: {s.kpi?.weightage}%</span>
+                                                <h4 className="font-semibold text-slate-800 text-sm">{s.kpi?.name}</h4>
+                                                <span className="text-xs text-slate-500">Target: {s.result?.targetValue} • Weight: {s.kpi?.weightage}%</span>
                                             </div>
-                                            <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 font-extrabold text-xs rounded-full border border-emerald-200">
-                                                {s.result?.scorePercentage}% Achieved
+                                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-bold text-xs rounded-full">
+                                                {s.result?.scorePercentage}%
                                             </span>
                                         </div>
                                     ))}
@@ -196,22 +195,22 @@ export default function EmployeePerformance() {
                             )}
                         </div>
 
-                        <div className="bg-gradient-to-br from-amber-50/50 to-white border border-amber-200/80 rounded-3xl p-6 shadow-sm">
-                            <h3 className="text-base font-bold text-slate-800 flex items-center gap-2 mb-4">
-                                <AlertCircle className="w-5 h-5 text-amber-600" /> Areas for Growth (&lt;60% Score)
+                        <div className="bg-white border border-amber-200 rounded-2xl p-5 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-4">
+                                <AlertCircle className="w-5 h-5 text-amber-500" /> Areas to Improve
                             </h3>
                             {improvements.length === 0 ? (
-                                <p className="text-xs text-emerald-600 font-semibold py-4">Excellent! None of your KPIs are in the needs-improvement zone.</p>
+                                <p className="text-sm text-emerald-600 font-medium py-3">Great! All your KPIs are above the improvement threshold.</p>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-2.5">
                                     {improvements.map((s, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-amber-100 shadow-sm">
+                                        <div key={idx} className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100">
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-sm">{s.kpi?.name}</h4>
-                                                <span className="text-[11px] text-slate-500">Target: {s.result?.targetValue} • Achieved: {s.result?.achievedValue}</span>
+                                                <h4 className="font-semibold text-slate-800 text-sm">{s.kpi?.name}</h4>
+                                                <span className="text-xs text-slate-500">Target: {s.result?.targetValue} • Achieved: {s.result?.achievedValue}</span>
                                             </div>
-                                            <span className="px-3 py-1 bg-amber-500/10 text-amber-600 font-extrabold text-xs rounded-full border border-amber-200">
-                                                {s.result?.scorePercentage}% Score
+                                            <span className="px-2.5 py-1 bg-amber-100 text-amber-700 font-bold text-xs rounded-full">
+                                                {s.result?.scorePercentage}%
                                             </span>
                                         </div>
                                     ))}
@@ -222,54 +221,51 @@ export default function EmployeePerformance() {
 
                     {/* KPI Detail Cards */}
                     <div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-4">Detailed KPI Breakdown & Progress</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <h3 className="text-base font-bold text-slate-900 mb-4">KPI Breakdown</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {performanceData.results?.map((kpiData, idx) => (
-                                <div key={idx} className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between hover:border-orange-500/30 transition-all duration-300">
+                                <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:border-orange-200 transition-all duration-200">
                                     <div>
                                         <div className="flex justify-between items-start mb-3 gap-2">
                                             <div>
-                                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-orange-500 bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
-                                                    {kpiData.kpi?.categoryId?.name || 'General KPI'}
+                                                <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
+                                                    {kpiData.kpi?.categoryId?.name || 'General'}
                                                 </span>
-                                                <h4 className="font-extrabold text-slate-800 text-base mt-2">{kpiData.kpi.name}</h4>
+                                                <h4 className="font-semibold text-slate-900 text-sm mt-1.5">{kpiData.kpi.name}</h4>
                                             </div>
-                                            <span className="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-xl flex-shrink-0">
-                                                Weight: {kpiData.kpi.weightage}%
+                                            <span className="text-xs font-medium px-2 py-1 bg-slate-50 text-slate-500 rounded-lg flex-shrink-0">
+                                                {kpiData.kpi.weightage}%
                                             </span>
                                         </div>
                                         
-                                        <p className="text-xs text-slate-500 line-clamp-2 mb-6">
-                                            {kpiData.kpi.description || 'No description provided.'}
+                                        <p className="text-xs text-slate-400 line-clamp-2 mb-4">
+                                            {kpiData.kpi.description || 'No description.'}
                                         </p>
                                     </div>
                                     
-                                    <div className="space-y-4 pt-4 border-t border-slate-100">
+                                    <div className="space-y-3 pt-3 border-t border-slate-100">
                                         <div className="flex justify-between items-end">
                                             <div>
-                                                <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Achieved / Target</span>
-                                                <span className="text-xl font-extrabold text-slate-800">
+                                                <span className="text-xs text-slate-400 block mb-0.5">Achieved / Target</span>
+                                                <span className="text-lg font-bold text-slate-900">
                                                     {kpiData.kpi.targetType === 'Currency' ? '₹' : ''}{kpiData.result.achievedValue}
-                                                    <span className="text-xs font-semibold text-slate-400 ml-1">
-                                                        / {kpiData.kpi.targetType === 'Currency' ? '₹' : ''}{kpiData.result.targetValue} {kpiData.kpi.targetType === 'Percentage' ? '%' : ''}
+                                                    <span className="text-xs font-medium text-slate-400 ml-1">
+                                                        / {kpiData.kpi.targetType === 'Currency' ? '₹' : ''}{kpiData.result.targetValue}{kpiData.kpi.targetType === 'Percentage' ? '%' : ''}
                                                     </span>
                                                 </span>
                                             </div>
-                                            <div className="text-right">
-                                                <span className="text-[11px] text-slate-400 font-semibold block mb-0.5">Score Rate</span>
-                                                <span className={`text-lg font-extrabold ${
-                                                    kpiData.result.scorePercentage >= 80 ? 'text-emerald-600' : kpiData.result.scorePercentage >= 50 ? 'text-orange-500' : 'text-rose-500'
-                                                }`}>
-                                                    {kpiData.result.scorePercentage}%
-                                                </span>
-                                            </div>
+                                            <span className={`text-lg font-bold ${
+                                                kpiData.result.scorePercentage >= 80 ? 'text-emerald-600' : kpiData.result.scorePercentage >= 50 ? 'text-orange-500' : 'text-red-500'
+                                            }`}>
+                                                {kpiData.result.scorePercentage}%
+                                            </span>
                                         </div>
                                         
                                         {/* Progress Bar */}
-                                        <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                             <div 
                                                 className={`h-full rounded-full transition-all duration-1000 ${
-                                                    kpiData.result.scorePercentage >= 80 ? 'bg-emerald-500' : kpiData.result.scorePercentage >= 50 ? 'bg-orange-500' : 'bg-rose-500'
+                                                    kpiData.result.scorePercentage >= 80 ? 'bg-emerald-500' : kpiData.result.scorePercentage >= 50 ? 'bg-orange-500' : 'bg-red-500'
                                                 }`}
                                                 style={{ width: `${Math.min(100, kpiData.result.scorePercentage)}%` }}
                                             />
