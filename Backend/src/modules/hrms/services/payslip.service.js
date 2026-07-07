@@ -240,7 +240,7 @@ const getBrowser = async () => {
             executablePath: chromePath,
             args: [
                 '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage',
-                '--disable-gpu', '--no-first-run', '--no-zygote',
+                '--disable-gpu', '--no-first-run', '--no-zygote', '--single-process',
                 '--disable-extensions', '--memory-pressure-off',
                 '--disable-background-networking', '--disable-default-apps',
                 '--disable-sync', '--disable-translate', '--hide-scrollbars',
@@ -309,20 +309,17 @@ export const generatePdfBuffer = async (data) => {
         page.setDefaultNavigationTimeout(30000);
         page.setDefaultTimeout(30000);
 
+        // Set viewport to A4 size for the screenshot (794x1123 at 96 DPI)
+        await page.setViewport({ width: 794, height: 1123, deviceScaleFactor: 2 });
         await page.setContent(html, { waitUntil: ['load', 'networkidle2'], timeout: 30000 });
 
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            margin: {
-                top: '0px',
-                right: '0px',
-                bottom: '0px',
-                left: '0px'
-            }
+        // Use screenshot instead of pdf() to avoid Target closed crashes in --single-process mode
+        const imageBuffer = await page.screenshot({
+            type: 'png',
+            fullPage: true
         });
 
-        return Buffer.from(pdfBuffer);
+        return Buffer.from(imageBuffer);
     } catch (error) {
         console.error('[Payslip PDF] Error generating PDF buffer:', error);
         if (browserInstance && !browserInstance.connected) {
@@ -344,14 +341,14 @@ export const generatePdfBuffer = async (data) => {
  */
 export const uploadPdfToCloudinary = (buffer, filename) => {
     return new Promise((resolve, reject) => {
-        const publicId = filename.toLowerCase().endsWith('.pdf') ? filename : `${filename}.pdf`;
+        const publicId = filename.toLowerCase().endsWith('.png') ? filename : `${filename}.png`;
         
         const uploadStream = cloudinary.v2.uploader.upload_stream(
             {
                 folder: 'hrms/payslips/generated',
                 resource_type: 'image',
                 public_id: publicId,
-                format: 'pdf'
+                format: 'png'
             },
             (error, result) => {
                 if (error) {
