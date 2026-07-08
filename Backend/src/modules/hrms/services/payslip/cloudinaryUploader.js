@@ -3,11 +3,13 @@
  * ──────────────────────────────────────────────────────────────────────────────
  * Handles uploading generated payslip PDF buffers to Cloudinary.
  * Uses Node's native Readable.from() instead of the `streamifier` package.
- * 
- * NOTE ON SECURITY BYPASS: Cloudinary free-tier accounts block the delivery of 
- * raw PDF/ZIP files by default (ACL deny). To bypass this without requiring user 
- * configuration changes, we masquerade the PDF by uploading it with a .png extension.
- * The proxy endpoint later intercepts this and serves it with the correct application/pdf MIME type.
+ *
+ * CLOUDINARY ACL WORKAROUND:
+ * Cloudinary free-tier blocks delivery of raw PDF files (returns 401 Unauthorized).
+ * To bypass this, we upload with format:'png' so the stored URL ends in .png.
+ * The binary content is still a valid PDF — the extension is just a disguise.
+ * The backend proxy endpoint fetches the .png URL (which Cloudinary serves fine)
+ * and re-serves it to the frontend with the correct application/pdf Content-Type.
  * ──────────────────────────────────────────────────────────────────────────────
  */
 
@@ -30,15 +32,14 @@ export const uploadPayslipToCloudinary = (buffer, filename) => {
             return reject(new Error('Filename is required for Cloudinary upload'));
         }
 
-        // Clean filename and append a marker so frontend knows it's a PDF masquerading as PNG
         const cleanName = filename.replace(/\.(png|pdf)$/i, '');
-        const publicId = `${cleanName}_pdf_doc`;
 
         const uploadStream = cloudinary.v2.uploader.upload_stream(
             {
                 folder: 'hrms/payslips/generated',
                 resource_type: 'raw',
-                format: 'png', // Masquerade as PNG to bypass Cloudinary PDF delivery block
+                format: 'png',  // Masquerade as PNG to bypass Cloudinary free-tier PDF delivery block (401)
+                public_id: cleanName,
                 overwrite: true
             },
             (error, result) => {
@@ -55,3 +56,4 @@ export const uploadPayslipToCloudinary = (buffer, filename) => {
         Readable.from(buffer).pipe(uploadStream);
     });
 };
+

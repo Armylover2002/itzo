@@ -161,7 +161,7 @@ export default function ManagerDashboard() {
                     </div>
                 ) : (
                     <div className="h-[320px] w-full pt-4">
-                        <ResponsiveContainer width="100%" height="100%" minHeight={320}>
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
                             <BarChart data={stats.performanceData} margin={{ top: 10, right: 20, left: -10, bottom: 40 }}>
                                 <defs>
                                     <linearGradient id="scoreGradientHigh" x1="0" y1="0" x2="0" y2="1">

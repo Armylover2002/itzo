@@ -5,48 +5,36 @@ import { toast } from 'sonner';
 import { Wallet, Loader2, Play, CheckCircle, DollarSign, Receipt, Eye, Download, Printer, FileText } from 'lucide-react';
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Payslip Document Helpers (Foolproof: uses Backend Proxy via raw axios)
+// Payslip PDF Helpers (Foolproof: uses Backend Proxy via raw axios)
 // ──────────────────────────────────────────────────────────────────────────────
 // IMPORTANT: We use raw `axios` (NOT axiosInstance) for proxy requests because:
 // 1. The proxy endpoint is PUBLIC (no auth needed)
 // 2. axiosInstance's 401 interceptor treats /hrms/* URLs as unknown module,
 //    causing any error to wipe auth tokens and redirect to /ecs/login
+// The backend proxy auto-detects format (PDF vs legacy image) from the URL.
+// Frontend always treats payslips as PDF — the proxy handles edge cases.
 // ──────────────────────────────────────────────────────────────────────────────
 const PROXY_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'}/hrms/salaries/proxy-document`;
-
-// Detect if a payslip URL points to a legacy PNG image
-const isLegacyImageUrl = (url) => {
-    if (!url || typeof url !== 'string') return false;
-    // New PDFs are masqueraded as PNGs to bypass Cloudinary ACL. They contain '_pdf_doc' in the public ID.
-    if (url.includes('_pdf_doc') && url.toLowerCase().endsWith('.png')) return false;
-    return url.match(/\.(jpeg|jpg|gif|png|webp)$/i) || (url.includes('/image/upload/') && !url.toLowerCase().endsWith('.pdf'));
-};
-
-// Get the correct proxy format based on the payslip URL
-const getProxyFormat = (url) => isLegacyImageUrl(url) ? 'png' : 'pdf';
 
 // Programmatic download: fetches document via backend proxy as blob, then triggers browser save dialog
 const handleProxyDownload = async (url) => {
     if (!url) return;
-    const format = getProxyFormat(url);
     try {
         const res = await axios.get(PROXY_BASE, {
-            params: { url, mode: 'download', format },
+            params: { url, mode: 'download' },
             responseType: 'blob',
             withCredentials: false
         });
-        const ext = format === 'png' ? 'png' : 'pdf';
-        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
-        const blob = new Blob([res.data], { type: mimeType });
+        const blob = new Blob([res.data], { type: 'application/pdf' });
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = blobUrl;
-        a.download = `Payslip_${Date.now()}.${ext}`;
+        a.download = `Payslip_${Date.now()}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-        toast.success(`${ext.toUpperCase()} downloaded`);
+        toast.success('PDF downloaded');
     } catch (e) {
         console.error('Download failed:', e);
         toast.error('Download failed. Try opening directly.');
@@ -57,16 +45,13 @@ const handleProxyDownload = async (url) => {
 // Programmatic open-in-new-tab: fetches document via backend proxy as blob, then opens blob URL
 const handleProxyOpen = async (url) => {
     if (!url) return;
-    const format = getProxyFormat(url);
     try {
         const res = await axios.get(PROXY_BASE, {
-            params: { url, mode: 'view', format },
+            params: { url, mode: 'view' },
             responseType: 'blob',
             withCredentials: false
         });
-        const ext = format === 'png' ? 'png' : 'pdf';
-        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
-        const blob = new Blob([res.data], { type: mimeType });
+        const blob = new Blob([res.data], { type: 'application/pdf' });
         const blobUrl = URL.createObjectURL(blob);
         window.open(blobUrl, '_blank');
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
@@ -80,55 +65,40 @@ const handleProxyOpen = async (url) => {
 // Programmatic print: fetches document via backend proxy as blob, opens in hidden iframe and triggers print
 const handleProxyPrint = async (url) => {
     if (!url) return;
-    const format = getProxyFormat(url);
     try {
         const res = await axios.get(PROXY_BASE, {
-            params: { url, mode: 'view', format },
+            params: { url, mode: 'view' },
             responseType: 'blob',
             withCredentials: false
         });
-        const ext = format === 'png' ? 'png' : 'pdf';
-        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
-        const blob = new Blob([res.data], { type: mimeType });
+        const blob = new Blob([res.data], { type: 'application/pdf' });
         const blobUrl = URL.createObjectURL(blob);
-        
-        if (ext === 'pdf') {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = blobUrl;
-            document.body.appendChild(iframe);
-            iframe.onload = () => {
-                iframe.contentWindow?.print();
-                setTimeout(() => {
-                    document.body.removeChild(iframe);
-                    URL.revokeObjectURL(blobUrl);
-                }, 60000);
-            };
-        } else {
-            // For images, open in new window and print
-            const printWin = window.open(blobUrl, '_blank');
-            if (printWin) {
-                printWin.onload = () => printWin.print();
-            }
-        }
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = blobUrl;
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+            iframe.contentWindow?.print();
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+                URL.revokeObjectURL(blobUrl);
+            }, 60000);
+        };
     } catch (e) {
         console.error('Print failed:', e);
         toast.error('Print failed. Try downloading first.');
     }
 };
 
-// Generate preview blob URL for iframe/img display within the modal
+// Generate preview blob URL for iframe display within the modal
 const fetchPreviewBlobUrl = async (url) => {
-    const format = getProxyFormat(url);
     try {
         const res = await axios.get(PROXY_BASE, {
-            params: { url, mode: 'view', format },
+            params: { url, mode: 'view' },
             responseType: 'blob',
             withCredentials: false
         });
-        const ext = format === 'png' ? 'png' : 'pdf';
-        const mimeType = ext === 'png' ? 'image/png' : 'application/pdf';
-        const blob = new Blob([res.data], { type: mimeType });
+        const blob = new Blob([res.data], { type: 'application/pdf' });
         return URL.createObjectURL(blob);
     } catch (e) {
         console.error('Preview fetch failed:', e);
@@ -155,8 +125,6 @@ export default function HrmsPayroll({ defaultTab = 'payroll' }) {
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
 
-    // Track whether the currently previewed payslip is a legacy image
-    const previewIsImage = previewPdf ? isLegacyImageUrl(previewPdf) : false;
 
     // When previewPdf URL changes, fetch blob from backend proxy for reliable inline display
     useEffect(() => {
@@ -437,7 +405,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll' }) {
                                 <FileText className="w-4 h-4" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-base text-white">Payslip {previewIsImage ? 'Image' : 'PDF'} Viewer</h3>
+                                <h3 className="font-bold text-base text-white">Payslip PDF Viewer</h3>
                                 <p className="text-xs text-slate-400">Official HRMS Generated Record</p>
                             </div>
                         </div>
@@ -454,7 +422,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll' }) {
                                 className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 transform hover:scale-105"
                                 title="Download Payslip"
                             >
-                                <Download className="w-3.5 h-3.5" /> Download {previewIsImage ? 'Image' : 'PDF'}
+                                <Download className="w-3.5 h-3.5" /> Download PDF
                             </button>
                             <button
                                 onClick={() => handleProxyPrint(previewPdf)}
@@ -478,11 +446,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll' }) {
                                 <p className="text-slate-400 text-sm">Loading payslip...</p>
                             </div>
                         ) : previewBlobUrl ? (
-                            previewIsImage ? (
-                                <img src={previewBlobUrl} className="max-w-full max-h-full object-contain rounded-xl shadow-2xl bg-white p-4" alt="Payslip Preview" />
-                            ) : (
-                                <iframe src={previewBlobUrl} className="w-full h-full rounded-xl shadow-2xl bg-white" title="Payslip PDF Preview" />
-                            )
+                            <iframe src={previewBlobUrl} className="w-full h-full rounded-xl shadow-2xl bg-white" title="Payslip PDF Preview" />
                         ) : (
                             <div className="flex flex-col items-center gap-4 text-center">
                                 <FileText className="w-12 h-12 text-slate-500" />

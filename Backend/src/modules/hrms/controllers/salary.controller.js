@@ -381,80 +381,82 @@ export const generatePayslipPdf = async (req, res, next) => {
 
 /**
  * PROXY: Foolproof document & image delivery endpoint
- * Proxies Cloudinary assets through Backend to eliminate client DNS/adblocker blocks ("site can't be reached")
+ * Proxies Cloudinary assets through Backend to eliminate client DNS/adblocker blocks
  * and guarantee clean Content-Type headers for iframe viewing and attachment downloading.
+ *
+ * Handles three cases:
+ * 1. Raw uploads (/raw/upload/) — always served as PDF (content is PDF regardless of extension)
+ *    - .png extension: Cloudinary delivers fine (masqueraded PDF) → serve as application/pdf
+ *    - .pdf extension: Cloudinary blocks with 401 → retry with .png extension fallback
+ * 2. Image uploads (/image/upload/ with image extension) — legacy manually-uploaded payslips → serve as image
+ * 3. Everything else → default to PDF
  */
 export const proxyPayslipDocument = async (req, res) => {
     try {
         const { url, mode = 'view' } = req.query;
-        let { format } = req.query;
         if (!url) {
             return res.status(400).json({ success: false, message: 'URL parameter is required' });
         }
 
-        // Auto-detect format from URL if not explicitly provided
-        const isImageUrl = url.match(/\.(jpeg|jpg|gif|png|webp)$/i) || (url.includes('/image/upload/') && !url.toLowerCase().endsWith('.pdf'));
-        if (!format) {
-            format = isImageUrl ? 'png' : 'pdf';
-        }
+        // Determine if this is a genuine image (legacy manually-uploaded payslips)
+        const isRawUpload = url.includes('/raw/upload/');
+        const isGenuineImage = !isRawUpload &&
+            url.includes('/image/upload/') &&
+            /\.(jpeg|jpg|gif|png|webp)$/i.test(url);
 
-        let targetUrl = url;
-        const isRaw = targetUrl.includes('/raw/upload/');
+        // For genuine images, serve as image; everything else is PDF
+        const servingAsPdf = !isGenuineImage;
+        const contentType = servingAsPdf ? 'application/pdf' : 'image/png';
+        const fileExt = servingAsPdf ? 'pdf' : 'png';
 
-        // If user requested PNG image format, and it's a Cloudinary image upload (not raw)
-        if ((format === 'png' || format === 'image') && !isRaw) {
-            if (targetUrl.includes('/image/upload/') && targetUrl.toLowerCase().endsWith('.pdf')) {
-                // Cloudinary on-the-fly PDF page 1 to PNG conversion
-                targetUrl = targetUrl.replace('/upload/', '/upload/f_png,pg_1,q_auto:best/').replace(/\.pdf$/i, '.png');
-            } else if (!targetUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-                targetUrl = `${targetUrl}.png`;
+        // Fetch the document from Cloudinary
+        let response = await fetch(url);
+
+        // If fetch failed (e.g. 401 from Cloudinary blocking raw PDF delivery),
+        // try swapping the extension: .pdf → .png (masquerade) or vice versa
+        if (!response.ok && isRawUpload) {
+            let fallbackUrl = null;
+            if (url.toLowerCase().endsWith('.pdf')) {
+                // Cloudinary blocks .pdf delivery → try .png (masquerade format)
+                fallbackUrl = url.replace(/\.pdf$/i, '.png');
+            } else if (url.toLowerCase().endsWith('.png')) {
+                // In case .png somehow fails, try .pdf
+                fallbackUrl = url.replace(/\.png$/i, '.pdf');
             }
-        }
-        // For 'pdf' format, we don't append '.pdf' because raw URLs must be exact 
-        // (including masqueraded .png extensions).
 
-        // Fetch using built-in fetch
-        const response = await fetch(targetUrl);
-        if (!response.ok) {
-            console.error(`[Payslip Proxy] Cloudinary fetch failed for ${targetUrl}: ${response.status} ${response.statusText}`);
-            // If PNG conversion failed (e.g. on raw file), try fetching original URL directly
-            if (targetUrl !== url) {
-                const fallbackResponse = await fetch(url);
+            if (fallbackUrl) {
+                console.log(`[Payslip Proxy] Primary URL returned ${response.status}, trying fallback: ${fallbackUrl}`);
+                const fallbackResponse = await fetch(fallbackUrl);
                 if (fallbackResponse.ok) {
-                    const arrayBuffer = await fallbackResponse.arrayBuffer();
-                    const buffer = Buffer.from(arrayBuffer);
-                    res.setHeader('Content-Type', 'application/pdf');
-                    res.setHeader('Access-Control-Allow-Origin', '*');
-                    if (mode === 'download') {
-                        res.setHeader('Content-Disposition', `attachment; filename="Payslip_${Date.now()}.pdf"`);
-                    } else {
-                        res.setHeader('Content-Disposition', 'inline');
-                    }
-                    return res.send(buffer);
+                    response = fallbackResponse;
                 }
             }
-            return res.status(response.status).json({ success: false, message: `Failed to retrieve document from cloud storage (${response.status})` });
         }
 
-        // Determine clean Content-Type
-        const isPngOrImage = format === 'png' || format === 'image' || targetUrl.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-        const contentType = isPngOrImage && !isRaw ? 'image/png' : 'application/pdf';
-        
+        if (!response.ok) {
+            console.error(`[Payslip Proxy] Cloudinary fetch failed for ${url}: ${response.status} ${response.statusText}`);
+            return res.status(response.status).json({
+                success: false,
+                message: `Failed to retrieve document from cloud storage (${response.status})`
+            });
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        // Set response headers
         res.setHeader('Content-Type', contentType);
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
         if (mode === 'download') {
-            const ext = (format === 'pdf') ? 'pdf' : 'png';
-            const filename = `Payslip_Document_${Date.now()}.${ext}`;
+            const filename = `Payslip_${Date.now()}.${fileExt}`;
             res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         } else {
             res.setHeader('Content-Disposition', 'inline');
         }
 
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
         res.send(buffer);
     } catch (error) {
         console.error('[Payslip Proxy] Error proxying document:', error.message);
