@@ -64,6 +64,7 @@ export default function HrmsLayout() {
             path: '/hrms/team',
             subItems: [
                 { label: 'Team Dashboard', icon: LayoutDashboard, path: '/hrms/team/dashboard' },
+                { label: 'My Team', icon: Users, path: '/hrms/team/my-team' },
                 { label: 'Team Employees', icon: Users, path: '/hrms/team/employees' },
                 { label: 'Attendance & Leaves', icon: Clock, path: '/hrms/team/attendance' },
                 { label: 'Payroll & Expenses', icon: Receipt, path: '/hrms/team/expenses' },

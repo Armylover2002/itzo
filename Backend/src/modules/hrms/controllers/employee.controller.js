@@ -52,6 +52,11 @@ export const createEmployee = async (req, res, next) => {
         const employeeId = `ITZO-EMP-${String(seq).padStart(4, '0')}`;
 
         // 3. Create HRMS Employee Profile
+        const teamHistory = [];
+        if (managerId) {
+            teamHistory.push({ managerId, assignedAt: new Date() });
+        }
+
         const newEmployee = new HrmsEmployee({
             adminId: newAdmin._id,
             employeeId,
@@ -59,6 +64,7 @@ export const createEmployee = async (req, res, next) => {
             department,
             designation,
             managerId: managerId || null,
+            teamHistory,
             employmentType: employmentType || 'Full-Time',
             joiningDate,
             shift: shift || 'General',
@@ -541,8 +547,36 @@ export const transferEmployee = async (req, res, next) => {
         const employee = await HrmsEmployee.findById(id);
         if (!employee) return sendError(res, 404, 'Employee not found');
 
-        if (String(employee.managerId) === String(newManagerId)) {
+        // Edge case: employee must be active
+        if (employee.status !== 'Active') {
+            return sendError(res, 400, 'Cannot transfer an inactive or suspended employee');
+        }
+
+        // Edge case: same manager check
+        if (newManagerId && String(employee.managerId) === String(newManagerId)) {
             return sendError(res, 400, 'Employee is already assigned to this manager');
+        }
+
+        // Edge case: cannot assign employee to themselves
+        if (newManagerId && String(id) === String(newManagerId)) {
+            return sendError(res, 400, 'Cannot assign an employee to themselves');
+        }
+
+        if (newManagerId) {
+            // Validate the new manager exists, is active, and has Manager/HR role
+            const newManager = await HrmsEmployee.findById(newManagerId);
+            if (!newManager) return sendError(res, 404, 'Target manager not found');
+            if (newManager.status !== 'Active') {
+                return sendError(res, 400, 'Cannot assign to an inactive or suspended manager');
+            }
+            if (newManager.hrmsRole !== 'Manager' && newManager.hrmsRole !== 'HR') {
+                return sendError(res, 400, 'Target employee does not have a Manager or HR role');
+            }
+
+            // Edge case: prevent circular assignment (manager can't report to their own team member)
+            if (String(newManager.managerId) === String(id)) {
+                return sendError(res, 400, 'Circular assignment: this manager already reports to this employee');
+            }
         }
 
         // Close previous history
@@ -553,7 +587,7 @@ export const transferEmployee = async (req, res, next) => {
             }
         }
 
-        // Assign new manager
+        // Assign new manager (or null to unassign)
         employee.managerId = newManagerId || null;
         if (newManagerId) {
             employee.teamHistory.push({
@@ -563,7 +597,14 @@ export const transferEmployee = async (req, res, next) => {
         }
 
         await employee.save();
-        return sendResponse(res, 200, 'Employee transferred successfully', employee);
+
+        // Populate the response for frontend
+        const populated = await HrmsEmployee.findById(id)
+            .populate('adminId', 'name email phone profileImage')
+            .populate({ path: 'managerId', populate: { path: 'adminId', select: 'name email' } })
+            .lean();
+
+        return sendResponse(res, 200, 'Employee transferred successfully', populated);
     } catch (error) {
         next(error);
     }

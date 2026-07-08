@@ -38,14 +38,17 @@ export const getMyTeam = async (req, res, next) => {
 };
 
 /**
- * MANAGER/ADMIN: Get all unassigned active employees (who do not have a managerId)
+ * MANAGER/ADMIN: Get all active employees with their assignment status.
+ * Returns both unassigned AND assigned employees so the UI can show
+ * "Available" vs "Already Assigned to: Manager Name" badges.
+ * Backward compatible: unassigned employees still appear as before.
  */
 export const getUnassignedEmployees = async (req, res, next) => {
     try {
         const { search } = req.query;
         
-        // Exclude HR and Managers if you want, but for now just unassigned 'Employee' or anyone without a manager
-        const filter = { managerId: null, status: 'Active', _id: { $ne: req.hrmsEmployee?._id } };
+        // Base filter: active employees, exclude the requesting manager themselves
+        const filter = { status: 'Active', _id: { $ne: req.hrmsEmployee?._id } };
 
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -61,12 +64,24 @@ export const getUnassignedEmployees = async (req, res, next) => {
             ];
         }
 
-        const unassigned = await HrmsEmployee.find(filter)
+        const employees = await HrmsEmployee.find(filter)
             .populate('adminId', 'name email phone profileImage')
-            .limit(50)
+            .populate({
+                path: 'managerId',
+                populate: { path: 'adminId', select: 'name email' }
+            })
+            .limit(100)
             .lean();
 
-        return sendResponse(res, 200, 'Unassigned employees retrieved', unassigned);
+        // Enrich each employee with assignment status
+        const enriched = employees.map(emp => ({
+            ...emp,
+            assignmentStatus: emp.managerId ? 'Assigned' : 'Available',
+            currentManagerName: emp.managerId?.adminId?.name || null,
+            currentManagerId: emp.managerId?._id || null
+        }));
+
+        return sendResponse(res, 200, 'Employees with assignment status retrieved', enriched);
     } catch (error) {
         next(error);
     }

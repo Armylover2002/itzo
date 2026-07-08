@@ -21,6 +21,7 @@ const ReportList = lazy(() => import('../pages/reports/ReportList'));
 const CreateReport = lazy(() => import('../pages/reports/CreateReport'));
 const ReportDetails = lazy(() => import('../pages/reports/ReportDetails'));
 const ManagerDashboard = lazy(() => import('../pages/team/ManagerDashboard'));
+const MyTeam = lazy(() => import('../pages/MyTeam'));
 const TeamReports = lazy(() => import('../pages/team/TeamReports'));
 const HrmsEmployeesAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEmployees'));
 const HrmsAttendanceAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsAttendance'));
@@ -75,6 +76,7 @@ export default function HrmsEmployeeApp() {
                         {/* Manager Module - Using exact ECS Admin UI components scoped to Manager's team */}
                         <Route path="team" element={<Navigate to="/hrms/team/employees" replace />} />
                         <Route path="team/dashboard" element={<ManagerDashboard />} />
+                        <Route path="team/my-team" element={<MyTeam />} />
                         <Route path="team/employees" element={<HrmsEmployeesAdmin />} />
                         <Route path="team/attendance" element={<HrmsAttendanceAdmin />} />
                         <Route path="team/leaves" element={<HrmsAttendanceAdmin defaultTab="leaves" />} />
