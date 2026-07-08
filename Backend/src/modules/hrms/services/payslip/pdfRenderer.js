@@ -82,22 +82,7 @@ const drawHeader = (doc, data) => {
     drawText(doc, 'PAYSLIP', PAGE_W - MARGIN, MARGIN + 5, { size: 16, color: COLORS.primary, style: 'bold', align: 'right' });
     drawText(doc, `${data.monthName} ${data.year}`, PAGE_W - MARGIN, MARGIN + 12, { size: 10, color: COLORS.muted, align: 'right' });
 
-    // Status badge
-    const statusColors = {
-        Paid: COLORS.emerald,
-        Approved: COLORS.blue,
-        Draft: COLORS.label
-    };
-    const badgeColor = statusColors[data.status] || COLORS.label;
-    const badgeText = (data.status || 'DRAFT').toUpperCase();
-
-    // Badge background
-    doc.setFontSize(8);
-    const badgeWidth = doc.getTextWidth(badgeText) + 8;
-    const badgeX = PAGE_W - MARGIN - badgeWidth;
-    const badgeY = MARGIN + 16;
-    drawRoundedRect(doc, badgeX, badgeY, badgeWidth, 5, 1.5, [...badgeColor, 30]);
-    drawText(doc, badgeText, badgeX + badgeWidth / 2, badgeY + 3.6, { size: 7, color: badgeColor, style: 'bold', align: 'center' });
+    // Status badge removed as per request
 
     y += 10;
 
