@@ -14,9 +14,9 @@ const Section = ({ icon: Icon, title, children }) => (
 );
 
 const Field = ({ label, value }) => (
-    <div>
+    <div className="min-w-0">
         <p className="text-xs font-medium text-slate-500 mb-1">{label}</p>
-        <p className="text-sm font-medium text-slate-900">{value || '—'}</p>
+        <p className="text-sm font-medium text-slate-900 break-words break-all">{value || '—'}</p>
     </div>
 );
 
