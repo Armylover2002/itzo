@@ -54,8 +54,8 @@ export const startAssessment = async (req, res, next) => {
                 await completedAttempt.save();
             }
 
-            if (!settings.allowRetest || existingAttempts.length >= settings.maxAttempts) {
-                // If retest not allowed or max attempts reached, return the result directly.
+            if (completedAttempt.isPassed || !settings.allowRetest || existingAttempts.length >= settings.maxAttempts) {
+                // If passed, or retest not allowed, or max attempts reached, return the result directly.
                 return sendResponse(res, 200, 'Assessment already completed.', {
                     sessionToken: completedAttempt.sessionToken,
                     status: completedAttempt.status,

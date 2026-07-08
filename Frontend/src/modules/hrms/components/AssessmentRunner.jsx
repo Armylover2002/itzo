@@ -158,7 +158,8 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
             // Clean up
             clearInterval(timerRef.current);
             clearInterval(autoSaveIntervalRef.current);
-            localStorage.removeItem('hrms_assessment_token');
+            // DO NOT remove hrms_assessment_token here. It will be removed in Signup.jsx 
+            // after the final joining request is successfully submitted.
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to submit assessment.');
         } finally {
