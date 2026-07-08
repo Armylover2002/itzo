@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Loader2, RefreshCw, FileText, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Search, Loader2, RefreshCw, FileText, CheckCircle2, XCircle, Clock, AlertCircle, RotateCcw } from 'lucide-react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 
@@ -8,6 +8,7 @@ export default function TestAnalysis() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [retakeFilter, setRetakeFilter] = useState(false);
     
     // Pagination
     const [page, setPage] = useState(1);
@@ -19,7 +20,12 @@ export default function TestAnalysis() {
             const res = await axiosInstance.get('/hrms/assessments/attempts', {
                 params: { search: searchTerm, status: statusFilter, page, limit: 20 }
             });
-            setAttempts(res.data?.data?.attempts || []);
+            let data = res.data?.data?.attempts || [];
+            // Client-side filter for retake requested
+            if (retakeFilter) {
+                data = data.filter(a => a.retakeRequested);
+            }
+            setAttempts(data);
             setTotalPages(res.data?.data?.pages || 1);
         } catch (error) {
             toast.error('Failed to fetch test results');
@@ -30,13 +36,13 @@ export default function TestAnalysis() {
 
     useEffect(() => {
         fetchAttempts();
-    }, [searchTerm, statusFilter, page]);
+    }, [searchTerm, statusFilter, retakeFilter, page]);
 
     const handleReset = async (id) => {
         if (!window.confirm('Are you sure you want to reset this attempt? The applicant will be able to retake the test.')) return;
         try {
             await axiosInstance.post(`/hrms/assessments/attempts/${id}/reset`);
-            toast.success('Attempt reset successfully');
+            toast.success('Attempt reset successfully. Applicant can now retake the test.');
             fetchAttempts();
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to reset attempt');
@@ -49,6 +55,8 @@ export default function TestAnalysis() {
         return `${m} min`;
     };
 
+    const retakeRequestCount = attempts.filter(a => a.retakeRequested).length;
+
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
@@ -56,6 +64,12 @@ export default function TestAnalysis() {
                     <h1 className="text-2xl font-bold text-slate-900">Test Analysis</h1>
                     <p className="text-slate-500 text-sm mt-1">Review applicant assessment results and performance</p>
                 </div>
+                {retakeRequestCount > 0 && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl">
+                        <RotateCcw className="w-4 h-4 text-amber-600" />
+                        <span className="text-sm font-semibold text-amber-700">{retakeRequestCount} Retake Request{retakeRequestCount > 1 ? 's' : ''}</span>
+                    </div>
+                )}
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[60vh]">
@@ -71,7 +85,7 @@ export default function TestAnalysis() {
                             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                         />
                     </div>
-                    <div className="relative w-full sm:w-64">
+                    <div className="relative w-full sm:w-48">
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
@@ -84,6 +98,17 @@ export default function TestAnalysis() {
                             <option value="Reset">Reset</option>
                         </select>
                     </div>
+                    <button
+                        onClick={() => setRetakeFilter(prev => !prev)}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
+                            retakeFilter
+                                ? 'bg-amber-100 border-amber-300 text-amber-800'
+                                : 'bg-white border-slate-200 text-slate-600 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700'
+                        }`}
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                        Retake Requested
+                    </button>
                 </div>
 
                 {/* Table */}
@@ -112,21 +137,28 @@ export default function TestAnalysis() {
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {attempts.map(attempt => (
-                                    <tr key={attempt._id} className="hover:bg-slate-50 transition-colors">
+                                    <tr key={attempt._id} className={`hover:bg-slate-50 transition-colors ${attempt.retakeRequested ? 'bg-amber-50/40' : ''}`}>
                                         <td className="px-6 py-4">
                                             <p className="text-sm font-bold text-slate-900">{attempt.applicantName}</p>
                                             <p className="text-xs text-slate-500">{attempt.applicantEmail}</p>
                                             <p className="text-xs text-slate-500">{attempt.applicantPhone}</p>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${
-                                                attempt.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
-                                                attempt.status === 'In_Progress' ? 'bg-blue-50 text-blue-700' :
-                                                attempt.status === 'Timeout' ? 'bg-orange-50 text-orange-700' :
-                                                'bg-slate-100 text-slate-700'
-                                            }`}>
-                                                {attempt.status.replace('_', ' ')}
-                                            </span>
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${
+                                                    attempt.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
+                                                    attempt.status === 'In_Progress' ? 'bg-blue-50 text-blue-700' :
+                                                    attempt.status === 'Timeout' ? 'bg-orange-50 text-orange-700' :
+                                                    'bg-slate-100 text-slate-700'
+                                                }`}>
+                                                    {attempt.status.replace('_', ' ')}
+                                                </span>
+                                                {attempt.retakeRequested && (
+                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 w-fit animate-pulse">
+                                                        <RotateCcw className="w-3 h-3" /> Retake Requested
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             {attempt.status === 'Completed' || attempt.status === 'Timeout' ? (
@@ -163,14 +195,37 @@ export default function TestAnalysis() {
                                             {new Date(attempt.createdAt).toLocaleDateString('en-GB')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <button 
-                                                onClick={() => handleReset(attempt._id)} 
-                                                disabled={attempt.status === 'Reset'}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 hover:text-orange-600 transition-colors disabled:opacity-50"
-                                                title="Reset attempt so applicant can take test again"
-                                            >
-                                                <RefreshCw className="w-3.5 h-3.5" /> Reset
-                                            </button>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <button 
+                                                    onClick={() => handleReset(attempt._id)} 
+                                                    disabled={attempt.status === 'Reset'}
+                                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 ${
+                                                        attempt.retakeRequested
+                                                            ? 'bg-amber-100 border border-amber-300 text-amber-800 hover:bg-amber-200'
+                                                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-orange-600'
+                                                    }`}
+                                                    title={attempt.retakeRequested ? 'Approve retake request by resetting this attempt' : 'Reset attempt so applicant can take test again'}
+                                                >
+                                                    <RefreshCw className="w-3.5 h-3.5" />
+                                                    {attempt.retakeRequested ? 'Approve Retake' : 'Reset'}
+                                                </button>
+                                                {attempt.retakeRequested && attempt.retakeReason && (
+                                                    <div className="max-w-[200px] text-left bg-amber-50 border border-amber-200 rounded-lg p-2">
+                                                        <p className="text-[10px] text-amber-600 font-semibold uppercase mb-0.5">Reason</p>
+                                                        <p className="text-xs text-amber-800 leading-tight">{attempt.retakeReason}</p>
+                                                        {attempt.retakeRequestedAt && (
+                                                            <p className="text-[10px] text-amber-500 mt-1">
+                                                                {new Date(attempt.retakeRequestedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {attempt.retakeRequested && !attempt.retakeReason && attempt.retakeRequestedAt && (
+                                                    <p className="text-[10px] text-amber-500">
+                                                        Requested: {new Date(attempt.retakeRequestedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

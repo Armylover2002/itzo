@@ -17,6 +17,7 @@ import {
     startAssessment, 
     syncAssessment, 
     submitAssessment, 
+    requestRetake,
     getAllAttempts, 
     getAttemptDetails, 
     resetAttempt 
@@ -30,6 +31,7 @@ const router = Router();
 router.post('/start', startAssessment);
 router.post('/sync', syncAssessment);
 router.post('/submit', submitAssessment);
+router.post('/request-retake', requestRetake);
 
 // ==========================================
 // ECS ADMIN ROUTES (Requires HR/Manager/Admin)

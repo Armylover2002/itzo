@@ -69,7 +69,12 @@ const assessmentAttemptSchema = new mongoose.Schema(
         // Timing
         startTime: { type: Date, required: true },
         endTime: { type: Date },
-        durationSeconds: { type: Number, default: 0 }
+        durationSeconds: { type: Number, default: 0 },
+
+        // Retake Request (applicant requests admin to allow retake after failing)
+        retakeRequested: { type: Boolean, default: false },
+        retakeRequestedAt: { type: Date, default: null },
+        retakeReason: { type: String, trim: true, default: '' }
     },
     { timestamps: true }
 );

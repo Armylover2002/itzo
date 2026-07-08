@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Clock, CheckCircle2, Circle, AlertCircle, ChevronLeft, ChevronRight, Save, Send } from 'lucide-react';
+import { Clock, CheckCircle2, Circle, AlertCircle, ChevronLeft, ChevronRight, Save, Send, RotateCcw, Loader2 as Loader2Icon } from 'lucide-react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 
@@ -14,6 +14,11 @@ export default function AssessmentRunner({ applicantInfo, onComplete }) {
     const [timeLeft, setTimeLeft] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [result, setResult] = useState(null);
+
+    // Retake Request State
+    const [retakeReason, setRetakeReason] = useState('');
+    const [retakeRequesting, setRetakeRequesting] = useState(false);
+    const [retakeAlreadySent, setRetakeAlreadySent] = useState(false);
     
     // Refs for timer and auto-save
     const timerRef = useRef(null);
@@ -36,6 +41,8 @@ export default function AssessmentRunner({ applicantInfo, onComplete }) {
                 // If it was already completed (maybe they refreshed after finishing)
                 if (data.status === 'Completed' || data.status === 'Timeout') {
                     setResult(data);
+                    // Check if retake was already requested
+                    if (data.retakeRequested) setRetakeAlreadySent(true);
                     if (data.isPassed) onComplete(data);
                     setLoading(false);
                     return;
@@ -159,6 +166,29 @@ export default function AssessmentRunner({ applicantInfo, onComplete }) {
         }
     };
 
+    const handleRequestRetake = async () => {
+        if (retakeRequesting || retakeAlreadySent) return;
+        setRetakeRequesting(true);
+        try {
+            await axiosInstance.post('/hrms/assessments/request-retake', {
+                attemptId: result.attemptId,
+                applicantEmail: applicantInfo.email,
+                applicantPhone: applicantInfo.phone,
+                reason: retakeReason.trim()
+            });
+            setRetakeAlreadySent(true);
+            toast.success('Retake request sent! Please wait for admin approval.');
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Failed to send retake request.';
+            if (error.response?.status === 409) {
+                setRetakeAlreadySent(true); // Already sent
+            }
+            toast.error(msg);
+        } finally {
+            setRetakeRequesting(false);
+        }
+    };
+
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60);
         const s = seconds % 60;
@@ -192,7 +222,7 @@ export default function AssessmentRunner({ applicantInfo, onComplete }) {
                 <p className="text-slate-500 mb-8">
                     {result.isPassed 
                         ? 'Great job! Your score meets our requirements. You can now submit your joining request.'
-                        : 'Unfortunately, your score did not meet the required threshold. Your application cannot proceed at this time.'}
+                        : 'Unfortunately, your score did not meet the required threshold.'}
                 </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -221,6 +251,52 @@ export default function AssessmentRunner({ applicantInfo, onComplete }) {
                     >
                         Proceed to Submit Application
                     </button>
+                )}
+
+                {/* Retake Request Section (only for failed attempts) */}
+                {!result.isPassed && (
+                    <div className="mt-8 pt-6 border-t border-slate-100">
+                        {retakeAlreadySent ? (
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
+                                    <p className="text-sm font-semibold text-blue-700">Retake Request Already Sent</p>
+                                </div>
+                                <p className="text-xs text-blue-500">
+                                    Your request has been submitted. An admin will review and reset your attempt so you can retake the test. Please check back later.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <h4 className="text-sm font-semibold text-amber-800 mb-3 flex items-center justify-center gap-2">
+                                    <RotateCcw className="w-4 h-4" />
+                                    Request to Retake Assessment
+                                </h4>
+                                <p className="text-xs text-amber-600 mb-4">
+                                    If you believe you can do better, you can request the admin to allow you to retake the assessment. Your form data is preserved.
+                                </p>
+                                <textarea
+                                    value={retakeReason}
+                                    onChange={(e) => setRetakeReason(e.target.value)}
+                                    placeholder="Optional: Explain why you'd like to retake (e.g., technical issue, want to prepare better)..."
+                                    className="w-full px-4 py-3 bg-white border border-amber-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400 resize-none mb-4"
+                                    rows={3}
+                                    maxLength={500}
+                                />
+                                <button
+                                    onClick={handleRequestRetake}
+                                    disabled={retakeRequesting}
+                                    className="w-full sm:w-auto px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-xl transition-colors shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 mx-auto disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {retakeRequesting ? (
+                                        <><Loader2Icon className="w-4 h-4 animate-spin" /> Sending...</>
+                                    ) : (
+                                        <><RotateCcw className="w-4 h-4" /> Request Retake</>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
         );

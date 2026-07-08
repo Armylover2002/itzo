@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
@@ -18,30 +18,87 @@ const STEPS = [
     { title: 'Assessment', icon: FileText },
 ];
 
+const DEFAULT_FORM = {
+    fullName: '', email: '', phone: '', password: '',
+    dateOfBirth: '', gender: '',
+    street: '', city: '', state: '', pincode: '',
+    aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '',
+    qualification: '', experience: '',
+    department: '', designation: '',
+    accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
+    emergencyName: '', emergencyRelation: '', emergencyPhone: '',
+    ctc: '', joiningDate: '', hrmsRole: 'Employee', shift: 'General',
+    employmentType: 'Full-Time', officeLocation: '',
+    employeeType: 'Office'
+};
+
+// localStorage helpers — isolated per applicant (email+phone)
+const getStorageKey = (email, phone) => {
+    if (!email && !phone) return null;
+    const id = `${(email || '').trim().toLowerCase()}_${(phone || '').trim()}`;
+    return `hrms_signup_${id}`;
+};
+
+const loadSavedForm = () => {
+    try {
+        // Try to find any saved signup data (we don't know email/phone yet on first load)
+        const keys = Object.keys(localStorage).filter(k => k.startsWith('hrms_signup_'));
+        if (keys.length === 0) return { form: DEFAULT_FORM, step: 0 };
+        // Use the most recent one
+        const raw = localStorage.getItem(keys[keys.length - 1]);
+        if (!raw) return { form: DEFAULT_FORM, step: 0 };
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object' || !parsed.form) return { form: DEFAULT_FORM, step: 0 };
+        // Merge with defaults to handle any missing fields
+        return {
+            form: { ...DEFAULT_FORM, ...parsed.form },
+            step: typeof parsed.step === 'number' ? Math.min(parsed.step, STEPS.length - 1) : 0
+        };
+    } catch {
+        return { form: DEFAULT_FORM, step: 0 };
+    }
+};
+
+const saveFormToStorage = (form, step) => {
+    try {
+        const key = getStorageKey(form.email, form.phone);
+        if (!key) return;
+        // Don't store the password in localStorage for security
+        const { password, ...safeForm } = form;
+        localStorage.setItem(key, JSON.stringify({ form: safeForm, step }));
+    } catch { /* quota exceeded or private mode — silently ignore */ }
+};
+
+const clearFormStorage = (email, phone) => {
+    try {
+        const key = getStorageKey(email, phone);
+        if (key) localStorage.removeItem(key);
+        // Also clean up any orphaned keys for this user
+        Object.keys(localStorage)
+            .filter(k => k.startsWith('hrms_signup_'))
+            .forEach(k => localStorage.removeItem(k));
+    } catch { /* ignore */ }
+};
+
 export default function Signup() {
     const navigate = useNavigate();
     const { hrmsSettings } = useHrmsSettings();
-    const [currentStep, setCurrentStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const [form, setForm] = useState({
-        fullName: '', email: '', phone: '', password: '',
-        dateOfBirth: '', gender: '',
-        street: '', city: '', state: '', pincode: '',
-        aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '',
-        qualification: '', experience: '',
-        department: '', designation: '',
-        accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
-        emergencyName: '', emergencyRelation: '', emergencyPhone: '',
-        ctc: '', joiningDate: '', hrmsRole: 'Employee', shift: 'General',
-        employmentType: 'Full-Time', officeLocation: '',
-        employeeType: 'Office'
-    });
+    // Load saved form data from localStorage on mount
+    const saved = loadSavedForm();
+    const [currentStep, setCurrentStep] = useState(saved.step);
+    const [form, setForm] = useState({ ...saved.form, password: '' });
     const [uploading, setUploading] = useState({ aadhaar: false, pan: false });
 
     const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+    // Save form to localStorage whenever step changes
+    useEffect(() => {
+        saveFormToStorage(form, currentStep);
+    }, [currentStep]);
 
     /* ── strict validators ── */
     const isValidName = (v) => /^[A-Za-z\s]{2,50}$/.test(v.trim());
@@ -97,10 +154,22 @@ export default function Signup() {
     };
 
     const nextStep = () => {
-        if (validateStep()) setCurrentStep(prev => Math.min(prev + 1, STEPS.length - 1));
+        if (validateStep()) {
+            setCurrentStep(prev => {
+                const next = Math.min(prev + 1, STEPS.length - 1);
+                saveFormToStorage(form, next);
+                return next;
+            });
+        }
     };
 
-    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+    const prevStep = () => {
+        setCurrentStep(prev => {
+            const next = Math.max(prev - 1, 0);
+            saveFormToStorage(form, next);
+            return next;
+        });
+    };
 
     const handleFinalSubmit = async (assessmentResult) => {
         setLoading(true);
@@ -148,6 +217,9 @@ export default function Signup() {
 
             await axiosInstance.post('/hrms/joining-requests/register', payload);
             setSubmitted(true);
+            // Clear saved form data from localStorage on successful submission
+            clearFormStorage(form.email, form.phone);
+            localStorage.removeItem('hrms_assessment_token');
             toast.success('Application submitted successfully!');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Submission failed. Please try again.');

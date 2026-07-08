@@ -275,6 +275,49 @@ export const submitAssessment = async (req, res, next) => {
     }
 };
 
+// ── Retake Request (Public — called by failed applicant) ──────────────────────
+export const requestRetake = async (req, res, next) => {
+    try {
+        const { attemptId, applicantEmail, applicantPhone, reason } = req.body;
+
+        if (!attemptId || !applicantEmail || !applicantPhone) {
+            return sendError(res, 400, 'Attempt ID, email, and phone are required.');
+        }
+
+        const attempt = await AssessmentAttempt.findById(attemptId);
+        if (!attempt) return sendError(res, 404, 'Assessment attempt not found.');
+
+        // Ownership verification — only the applicant who took the test can request
+        if (attempt.applicantEmail !== applicantEmail.trim().toLowerCase() ||
+            attempt.applicantPhone !== applicantPhone.trim()) {
+            return sendError(res, 403, 'You can only request a retake for your own assessment.');
+        }
+
+        // Only allow retake requests for failed & completed attempts
+        if (attempt.status !== 'Completed' && attempt.status !== 'Timeout') {
+            return sendError(res, 400, 'Retake can only be requested for completed assessments.');
+        }
+        if (attempt.isPassed) {
+            return sendError(res, 400, 'You passed this assessment. No retake needed.');
+        }
+        if (attempt.retakeRequested) {
+            return sendError(res, 409, 'Retake request already submitted for this attempt.');
+        }
+
+        attempt.retakeRequested = true;
+        attempt.retakeRequestedAt = new Date();
+        attempt.retakeReason = (reason || '').trim().slice(0, 500);
+        await attempt.save();
+
+        return sendResponse(res, 200, 'Retake request submitted successfully. Please wait for admin approval.', {
+            attemptId: attempt._id,
+            retakeRequested: true
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Admin Endpoints
 export const getAllAttempts = async (req, res, next) => {
     try {
@@ -361,6 +404,10 @@ export const resetAttempt = async (req, res, next) => {
         }
         
         attempt.status = 'Reset';
+        // Clear retake request fields on reset (request is now resolved)
+        attempt.retakeRequested = false;
+        attempt.retakeRequestedAt = null;
+        attempt.retakeReason = '';
         await attempt.save();
         
         return sendResponse(res, 200, 'Attempt reset. Applicant can retest.', attempt);
