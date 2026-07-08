@@ -142,7 +142,7 @@ const drawBreakdownTable = (doc, x, y, headerText, rows, totalRow, width) => {
         startY: y,
         margin: { left: x, right: PAGE_W - x - width },
         tableWidth: width,
-        head: [[headerText, 'Amount (₹)']],
+        head: [[headerText, 'Amount (Rs.)']],
         body: tableBody,
         foot: [[totalRow[0], totalRow[1]]],
         theme: 'plain',
@@ -194,11 +194,11 @@ const drawSummarySection = (doc, y, data) => {
 
     // Gross Earnings
     drawText(doc, 'Gross Earnings', MARGIN + thirdW * 0.5, y + 7, { size: 8, color: COLORS.label, align: 'center' });
-    drawText(doc, `₹${data.grossEarnings}`, MARGIN + thirdW * 0.5, y + 13, { size: 11, color: COLORS.dark, style: 'bold', align: 'center' });
+    drawText(doc, `Rs.${data.grossEarnings}`, MARGIN + thirdW * 0.5, y + 13, { size: 11, color: COLORS.dark, style: 'bold', align: 'center' });
 
     // Total Deductions
     drawText(doc, 'Total Deductions', MARGIN + thirdW * 1.5, y + 7, { size: 8, color: COLORS.label, align: 'center' });
-    drawText(doc, `₹${data.totalDeductions}`, MARGIN + thirdW * 1.5, y + 13, { size: 11, color: COLORS.red, style: 'bold', align: 'center' });
+    drawText(doc, `Rs.${data.totalDeductions}`, MARGIN + thirdW * 1.5, y + 13, { size: 11, color: COLORS.red, style: 'bold', align: 'center' });
 
     // Vertical separator lines
     drawLine(doc, MARGIN + thirdW, y + 4, MARGIN + thirdW, y + sectionH - 4, COLORS.border, 0.3);
@@ -206,7 +206,7 @@ const drawSummarySection = (doc, y, data) => {
 
     // Net Pay (highlighted)
     drawText(doc, 'Net Pay', MARGIN + thirdW * 2.5, y + 7, { size: 8, color: COLORS.label, align: 'center' });
-    drawText(doc, `₹${data.netSalary}`, MARGIN + thirdW * 2.5, y + 13, { size: 14, color: COLORS.emerald, style: 'bold', align: 'center' });
+    drawText(doc, `Rs.${data.netSalary}`, MARGIN + thirdW * 2.5, y + 13, { size: 14, color: COLORS.emerald, style: 'bold', align: 'center' });
 
     // Amount in words
     drawText(doc, `Amount in words: ${data.amountInWords}`, PAGE_W / 2, y + 22, { size: 7.5, color: COLORS.muted, style: 'italic', align: 'center' });

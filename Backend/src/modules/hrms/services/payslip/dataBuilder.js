@@ -63,11 +63,11 @@ export const buildPayslipData = (salary, reqUser) => {
 
         // ── Employee details (all edge-case safe) ────────────────────────────
         employeeName: admin.name || 'Employee',
-        employeeId:   employee._id ? employee._id.toString().slice(-6).toUpperCase() : '------',
+        employeeId:   employee.employeeId || '------',
         designation:  employee.designation || 'Staff',
         department:   employee.department  || 'Operations',
         joiningDate:  employee.joiningDate
-            ? new Date(employee.joiningDate).toLocaleDateString('en-IN')
+            ? (() => { const d = new Date(employee.joiningDate); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; })()
             : 'N/A',
 
         // ── Attendance ───────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export const buildPayslipData = (salary, reqUser) => {
         // ── Bank info (safe defaults) ────────────────────────────────────────
         bankName:      employee.bankDetails?.bankName      || 'N/A',
         accountNumber: employee.bankDetails?.accountNumber || 'N/A',
-        panNumber:     employee.panNumber                  || 'N/A',
+        panNumber:     employee.documents?.panNumber  || 'N/A',
 
         // ── Earnings (formatted strings) ─────────────────────────────────────
         baseSalary:      formatINR(baseSalary),
