@@ -548,6 +548,7 @@ export default function Signup() {
                                         phone: form.phone.trim()
                                     }} 
                                     onComplete={(result) => handleFinalSubmit(result)} 
+                                    onBack={prevStep} 
                                 />
                             </div>
                         )}

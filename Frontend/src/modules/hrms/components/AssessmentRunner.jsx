@@ -3,7 +3,7 @@ import { Clock, CheckCircle2, Circle, AlertCircle, ChevronLeft, ChevronRight, Sa
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 
-export default function AssessmentRunner({ applicantInfo, onComplete }) {
+export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) {
     const [loading, setLoading] = useState(true);
     const [assessmentData, setAssessmentData] = useState(null);
     const [sessionToken, setSessionToken] = useState(localStorage.getItem('hrms_assessment_token') || null);
@@ -245,12 +245,23 @@ export default function AssessmentRunner({ applicantInfo, onComplete }) {
                 </div>
 
                 {result.isPassed && (
-                    <button 
-                        onClick={() => onComplete(result)}
-                        className="w-full sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/30"
-                    >
-                        Proceed to Submit Application
-                    </button>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        {onBack && (
+                            <button 
+                                onClick={onBack}
+                                className="w-full sm:w-auto px-8 py-3 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                                Back to Edit Info
+                            </button>
+                        )}
+                        <button 
+                            onClick={() => onComplete(result)}
+                            className="w-full sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/30"
+                        >
+                            Proceed to Submit Application
+                        </button>
+                    </div>
                 )}
 
                 {/* Retake Request Section (only for failed attempts) */}

@@ -43,6 +43,17 @@ export const startAssessment = async (req, res, next) => {
         let completedAttempt = existingAttempts.find(a => a.status === 'Completed' || a.status === 'Timeout');
 
         if (completedAttempt) {
+            // Update applicant details if they changed them by going back to a previous step
+            if (completedAttempt.applicantEmail !== applicantEmail.toLowerCase().trim() || 
+                completedAttempt.applicantPhone !== applicantPhone.trim() || 
+                completedAttempt.applicantName !== applicantName.trim()) {
+                
+                completedAttempt.applicantEmail = applicantEmail.toLowerCase().trim();
+                completedAttempt.applicantPhone = applicantPhone.trim();
+                completedAttempt.applicantName = applicantName.trim();
+                await completedAttempt.save();
+            }
+
             if (!settings.allowRetest || existingAttempts.length >= settings.maxAttempts) {
                 // If retest not allowed or max attempts reached, return the result directly.
                 return sendResponse(res, 200, 'Assessment already completed.', {
@@ -51,7 +62,8 @@ export const startAssessment = async (req, res, next) => {
                     score: completedAttempt.score,
                     percentage: completedAttempt.percentage,
                     isPassed: completedAttempt.isPassed,
-                    attemptId: completedAttempt._id
+                    attemptId: completedAttempt._id,
+                    retakeRequested: completedAttempt.retakeRequested
                 });
             }
         }
