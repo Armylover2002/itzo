@@ -10,6 +10,8 @@ export const getMyDocuments = async (req, res, next) => {
         const employee = await HrmsEmployee.findOne({ adminId: req.user.userId });
         if (!employee) return sendError(res, 404, 'Employee not found');
 
+        await HrmsDocument.syncEmployeeDocuments(employee);
+
         const { documentType } = req.query;
         const filter = { employeeId: employee._id };
         if (documentType) filter.documentType = documentType;
@@ -32,6 +34,10 @@ export const getEmployeeDocuments = async (req, res, next) => {
             if (!emp || (String(emp.managerId?._id || emp.managerId) !== String(req.hrmsEmployee._id) && String(emp._id) !== String(req.hrmsEmployee._id))) {
                 return sendError(res, 403, 'You can only view documents of your team members');
             }
+        }
+        const empToSync = await HrmsEmployee.findById(employeeId).lean();
+        if (empToSync) {
+            await HrmsDocument.syncEmployeeDocuments(empToSync);
         }
         const documents = await HrmsDocument.find({ employeeId }).sort({ createdAt: -1 }).lean();
         return sendResponse(res, 200, 'Documents retrieved', documents);

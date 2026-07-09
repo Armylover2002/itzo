@@ -99,13 +99,26 @@ export const createEmployee = async (req, res, next) => {
         // 4. Create document records
         const docRecords = [];
         if (offerLetterUrl) {
-            docRecords.push({ employeeId: newEmployee._id, documentType: 'Offer Letter', name: 'Offer Letter', url: offerLetterUrl, uploadedBy: req.user.userId });
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Offer Letter', name: 'Offer Letter', url: offerLetterUrl, uploadedBy: req.user.userId, isVerified: true });
         }
         if (aadhaarPhotoUrl) {
-            docRecords.push({ employeeId: newEmployee._id, documentType: 'Aadhaar', name: 'Aadhaar Card', url: aadhaarPhotoUrl, uploadedBy: req.user.userId });
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Aadhaar', name: 'Aadhaar Card', url: aadhaarPhotoUrl, uploadedBy: req.user.userId, isVerified: true });
         }
         if (panPhotoUrl) {
-            docRecords.push({ employeeId: newEmployee._id, documentType: 'PAN', name: 'PAN Card', url: panPhotoUrl, uploadedBy: req.user.userId });
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'PAN', name: 'PAN Card', url: panPhotoUrl, uploadedBy: req.user.userId, isVerified: true });
+        }
+        if (req.body.profilePhotoUrl) {
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Other', name: 'Profile Photo', url: req.body.profilePhotoUrl, uploadedBy: req.user.userId, isVerified: true });
+        }
+        if (req.body.resumeUrl) {
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Resume', name: 'Resume / CV', url: req.body.resumeUrl, uploadedBy: req.user.userId, isVerified: true });
+        }
+        if (req.body.documents && Array.isArray(req.body.documents)) {
+            for (const doc of req.body.documents) {
+                if (doc.url) {
+                    docRecords.push({ employeeId: newEmployee._id, documentType: doc.type || 'Other', name: doc.name || 'Document', url: doc.url, uploadedBy: req.user.userId, isVerified: true });
+                }
+            }
         }
         if (docRecords.length > 0) {
             await HrmsDocument.insertMany(docRecords, { session });
@@ -241,6 +254,7 @@ export const getEmployeeById = async (req, res, next) => {
         }
 
         // Get documents
+        await HrmsDocument.syncEmployeeDocuments(employee);
         const documents = await HrmsDocument.find({ employeeId: employee._id }).lean();
 
         return sendResponse(res, 200, 'Employee details retrieved', { employee, documents });
@@ -265,6 +279,7 @@ export const getMyProfile = async (req, res, next) => {
             return sendError(res, 404, 'Employee profile not found');
         }
 
+        await HrmsDocument.syncEmployeeDocuments(employee);
         const documents = await HrmsDocument.find({ employeeId: employee._id })
             .select('documentType name url createdAt')
             .lean();

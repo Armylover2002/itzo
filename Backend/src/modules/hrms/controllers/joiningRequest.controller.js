@@ -404,18 +404,21 @@ export const approveJoiningRequest = async (req, res, next) => {
         // 4. Create document records for uploaded docs
         const docRecords = [];
         if (request.aadhaarPhotoUrl) {
-            docRecords.push({ employeeId: newEmployee._id, documentType: 'Aadhaar', name: 'Aadhaar Card', url: request.aadhaarPhotoUrl, uploadedBy: req.user.userId });
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Aadhaar', name: 'Aadhaar Card', url: request.aadhaarPhotoUrl, uploadedBy: req.user.userId, isVerified: true });
         }
         if (request.panPhotoUrl) {
-            docRecords.push({ employeeId: newEmployee._id, documentType: 'PAN', name: 'PAN Card', url: request.panPhotoUrl, uploadedBy: req.user.userId });
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'PAN', name: 'PAN Card', url: request.panPhotoUrl, uploadedBy: req.user.userId, isVerified: true });
         }
         if (request.resumeUrl) {
-            docRecords.push({ employeeId: newEmployee._id, documentType: 'Resume', name: 'Resume', url: request.resumeUrl, uploadedBy: req.user.userId });
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Resume', name: 'Resume', url: request.resumeUrl, uploadedBy: req.user.userId, isVerified: true });
+        }
+        if (request.profilePhotoUrl) {
+            docRecords.push({ employeeId: newEmployee._id, documentType: 'Other', name: 'Profile Photo', url: request.profilePhotoUrl, uploadedBy: req.user.userId, isVerified: true });
         }
         if (request.documents && request.documents.length > 0) {
             for (const doc of request.documents) {
                 if (doc.url) {
-                    docRecords.push({ employeeId: newEmployee._id, documentType: doc.type || 'Other', name: doc.name || 'Document', url: doc.url, uploadedBy: req.user.userId });
+                    docRecords.push({ employeeId: newEmployee._id, documentType: doc.type || 'Other', name: doc.name || 'Document', url: doc.url, uploadedBy: req.user.userId, isVerified: true });
                 }
             }
         }
