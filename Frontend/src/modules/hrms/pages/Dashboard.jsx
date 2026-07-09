@@ -241,20 +241,20 @@ export default function Dashboard() {
                         </p>
 
                         {/* Check-In Location for All Employees */}
-                        {attendance?.checkInLocation?.address && (
+                        {attendance?.checkInLocation && (attendance.checkInLocation.address || attendance.checkInLocation.coordinates || attendance.locationValidation?.officeName) && (
                             <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-2 px-2">
                                 <MapPin className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
-                                <span className="line-clamp-2" title={attendance.checkInLocation.address}>
-                                    <strong>In:</strong> {attendance.checkInLocation.address}
+                                <span className="line-clamp-2" title={attendance.checkInLocation.address || attendance.locationValidation?.officeName || 'Location Coordinates'}>
+                                    <strong>In:</strong> {attendance.checkInLocation.address || (attendance.locationValidation?.officeName ? `${attendance.locationValidation.officeName} (Office)` : (attendance.checkInLocation.coordinates ? `${attendance.checkInLocation.coordinates.latitude.toFixed(4)}, ${attendance.checkInLocation.coordinates.longitude.toFixed(4)}` : 'Location verified'))}
                                 </span>
                             </div>
                         )}
                         {/* Check-Out Location for All Employees */}
-                        {attendance?.checkOutLocation?.address && (
+                        {attendance?.checkOutLocation && (attendance.checkOutLocation.address || attendance.checkOutLocation.coordinates || attendance.locationValidation?.officeName) && (
                             <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500 mb-3 px-2">
                                 <MapPin className="w-3.5 h-3.5 shrink-0 text-red-500" />
-                                <span className="line-clamp-2" title={attendance.checkOutLocation.address}>
-                                    <strong>Out:</strong> {attendance.checkOutLocation.address}
+                                <span className="line-clamp-2" title={attendance.checkOutLocation.address || attendance.locationValidation?.officeName || 'Location Coordinates'}>
+                                    <strong>Out:</strong> {attendance.checkOutLocation.address || (attendance.locationValidation?.officeName ? `${attendance.locationValidation.officeName} (Office)` : (attendance.checkOutLocation.coordinates ? `${attendance.checkOutLocation.coordinates.latitude.toFixed(4)}, ${attendance.checkOutLocation.coordinates.longitude.toFixed(4)}` : 'Location verified'))}
                                 </span>
                             </div>
                         )}

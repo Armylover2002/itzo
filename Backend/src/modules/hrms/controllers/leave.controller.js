@@ -8,7 +8,7 @@ import { sendResponse, sendError } from '../../../utils/response.js';
  */
 export const applyLeave = async (req, res, next) => {
     try {
-        const employee = await HrmsEmployee.findOne({ adminId: req.user.userId });
+        const employee = req.hrmsEmployee;
         if (!employee) return sendError(res, 404, 'Employee not found');
 
         const { leaveType, startDate, endDate, reason, isHalfDay } = req.body;
@@ -110,7 +110,7 @@ export const applyLeave = async (req, res, next) => {
  */
 export const getMyLeaves = async (req, res, next) => {
     try {
-        const employee = await HrmsEmployee.findOne({ adminId: req.user.userId });
+        const employee = req.hrmsEmployee;
         if (!employee) return sendError(res, 404, 'Employee not found');
 
         const { month, year, status } = req.query;
@@ -136,7 +136,7 @@ export const getMyLeaves = async (req, res, next) => {
  */
 export const getLeaveBalance = async (req, res, next) => {
     try {
-        const employee = await HrmsEmployee.findOne({ adminId: req.user.userId });
+        const employee = req.hrmsEmployee;
         if (!employee) return sendError(res, 404, 'Employee not found');
 
         const now = new Date();
