@@ -3,7 +3,10 @@ import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import {
     UserPlus, Loader2, Search, Eye, CheckCircle, XCircle,
-    MessageSquare, ChevronLeft, ChevronRight, UserCog, X
+    MessageSquare, ChevronLeft, ChevronRight, UserCog, X,
+    FileText, ExternalLink, FileCheck, AlertTriangle, Award,
+    Clock, Building, Phone, Mail, ShieldCheck, Download,
+    Image as ImageIcon
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -27,6 +30,7 @@ export default function HrmsJoiningRequests() {
     const [search, setSearch] = useState(searchParams.get('search') || '');
     const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || 'Pending');
     const [selectedRequest, setSelectedRequest] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
 
     // Profile Edits State
@@ -128,6 +132,21 @@ export default function HrmsJoiningRequests() {
         }
     };
 
+    const handleSelectRequest = async (r) => {
+        setSelectedRequest(r);
+        setDetailLoading(true);
+        try {
+            const res = await axiosInstance.get(`/hrms/joining-requests/${r._id}`);
+            if (res.data?.data) {
+                setSelectedRequest(res.data.data);
+            }
+        } catch (e) {
+            console.error('Failed to fetch full request details:', e);
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
     const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30";
 
     return (
@@ -190,50 +209,319 @@ export default function HrmsJoiningRequests() {
 
                     {/* Detail View */}
                     {selectedRequest && (
-                        <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-bold text-slate-900">
-                                    {selectedRequest.fullName}
-                                    <span className="text-sm font-normal text-slate-400 ml-2">{selectedRequest.requestId}</span>
-                                </h2>
-                                <button onClick={() => setSelectedRequest(null)} className="p-2 rounded-lg hover:bg-slate-100"><X className="w-5 h-5 text-slate-400" /></button>
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 space-y-6 animate-in fade-in duration-200">
+                            {/* Top Bar / Header */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+                                <div className="flex items-center gap-4">
+                                    {selectedRequest.profilePhotoUrl ? (
+                                        <img src={selectedRequest.profilePhotoUrl} alt={selectedRequest.fullName} className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-sm" />
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xl shadow-sm">
+                                            {selectedRequest.fullName?.charAt(0) || 'U'}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <div className="flex items-center gap-2.5 flex-wrap">
+                                            <h2 className="text-xl font-bold text-slate-900">{selectedRequest.fullName}</h2>
+                                            <span className="font-mono text-xs px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold">{selectedRequest.requestId}</span>
+                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${statusStyles[selectedRequest.status] || 'bg-slate-100 text-slate-600'}`}>
+                                                {selectedRequest.status?.replace('_', ' ')}
+                                            </span>
+                                            {detailLoading && (
+                                                <span className="flex items-center gap-1.5 text-xs text-orange-600 font-medium animate-pulse">
+                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching complete documents...
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-3 flex-wrap">
+                                            <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5 text-slate-400" /> {selectedRequest.email}</span>
+                                            <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5 text-slate-400" /> {selectedRequest.phone}</span>
+                                            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-slate-400" /> Applied on {new Date(selectedRequest.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedRequest(null)} className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors self-end sm:self-center">
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-sm">
-                                {[
-                                    { l: 'Email', v: selectedRequest.email },
-                                    { l: 'Phone', v: selectedRequest.phone },
-                                    { l: 'Gender', v: selectedRequest.gender },
-                                    { l: 'DOB', v: selectedRequest.dateOfBirth ? new Date(selectedRequest.dateOfBirth).toLocaleDateString('en-IN') : '—' },
-                                    { l: 'Aadhaar', v: selectedRequest.aadhaarNumber },
-                                    { l: 'PAN', v: selectedRequest.panNumber },
-                                    { l: 'Qualification', v: selectedRequest.qualification },
-                                    { l: 'Experience', v: selectedRequest.experience },
-                                    { l: 'Preferred Dept', v: selectedRequest.preferredDepartment },
-                                    { l: 'Preferred Designation', v: selectedRequest.preferredDesignation },
-                                    { l: 'City', v: selectedRequest.address?.city },
-                                    { l: 'State', v: selectedRequest.address?.state },
-                                    { l: 'Bank', v: selectedRequest.bankDetails?.bankName },
-                                    { l: 'A/C Holder', v: selectedRequest.bankDetails?.accountHolderName },
-                                    { l: 'Emergency', v: selectedRequest.emergencyContact?.name ? `${selectedRequest.emergencyContact.name} (${selectedRequest.emergencyContact.relation})` : '—' },
-                                    { l: 'Applied On', v: new Date(selectedRequest.createdAt).toLocaleDateString('en-IN') },
-                                ].map((f, i) => (
-                                    <div key={i} className="min-w-0">
-                                        <p className="text-xs text-slate-500">{f.l}</p>
-                                        <p className="font-medium text-slate-900 truncate" title={f.v}>{f.v || '—'}</p>
+                            {/* Cards Grid */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Card 1: Personal & Contact Information */}
+                                <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                                        <UserPlus className="w-4 h-4 text-orange-500" /> Personal & Contact Information
+                                    </h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Gender</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.gender || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Date of Birth</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.dateOfBirth ? new Date(selectedRequest.dateOfBirth).toLocaleDateString('en-IN') : '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Employee Type</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.employeeType || 'Office'}</p>
+                                        </div>
+                                        <div className="col-span-2 sm:col-span-3">
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Full Residential Address</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">
+                                                {selectedRequest.address ? (
+                                                    [selectedRequest.address.street, selectedRequest.address.city, selectedRequest.address.state, selectedRequest.address.pincode, selectedRequest.address.country].filter(Boolean).join(', ') || '—'
+                                                ) : '—'}
+                                            </p>
+                                        </div>
+                                        <div className="col-span-2 sm:col-span-3 pt-2 border-t border-slate-200/60">
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-1">Emergency Contact</p>
+                                            <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
+                                                <span><span className="text-slate-500">Name:</span> <strong className="text-slate-800">{selectedRequest.emergencyContact?.name || '—'}</strong></span>
+                                                <span><span className="text-slate-500">Relation:</span> <strong className="text-slate-800">{selectedRequest.emergencyContact?.relation || '—'}</strong></span>
+                                                <span><span className="text-slate-500">Phone:</span> <strong className="text-slate-800 font-mono">{selectedRequest.emergencyContact?.phone || '—'}</strong></span>
+                                            </div>
+                                        </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* Card 2: Qualifications & Proposed Employment */}
+                                <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                                        <Award className="w-4 h-4 text-orange-500" /> Qualifications & Role Preferences
+                                    </h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Qualification</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.qualification || '—'}</p>
+                                        </div>
+                                        <div className="col-span-1 sm:col-span-2">
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Experience</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.experience || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Pref. Department</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.preferredDepartment || selectedRequest.department || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Pref. Designation</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.preferredDesignation || selectedRequest.designation || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Expected CTC</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.ctc ? `₹${selectedRequest.ctc.toLocaleString('en-IN')}` : '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Pref. Joining Date</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.joiningDate ? new Date(selectedRequest.joiningDate).toLocaleDateString('en-IN') : '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Employment Type</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.employmentType || 'Full-Time'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Pref. Shift / Office</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.shift || 'General'} · {selectedRequest.officeLocation || 'Any'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card 3: Bank Details */}
+                                <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                                        <Building className="w-4 h-4 text-orange-500" /> Bank & Payout Information
+                                    </h3>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Bank Name</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.bankDetails?.bankName || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">A/C Holder Name</p>
+                                            <p className="font-semibold text-slate-800 mt-0.5">{selectedRequest.bankDetails?.accountHolderName || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Account Number</p>
+                                            <p className="font-semibold text-slate-800 font-mono mt-0.5">{selectedRequest.bankDetails?.accountNumber || '—'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">IFSC Code</p>
+                                            <p className="font-semibold text-slate-800 font-mono mt-0.5">{selectedRequest.bankDetails?.ifscCode || '—'}</p>
+                                        </div>
+                                        <div className="col-span-1 sm:col-span-2">
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">UPI ID</p>
+                                            <p className="font-semibold text-slate-800 font-mono mt-0.5">{selectedRequest.bankDetails?.upiId || '—'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Card 4: KYC Documents & Photos Verification */}
+                                <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
+                                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
+                                        <ShieldCheck className="w-4 h-4 text-orange-500" /> KYC Documents & Photos Verification
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                        {/* Aadhaar */}
+                                        <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 shadow-sm">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                                    <FileCheck className="w-3.5 h-3.5 text-emerald-500" /> Aadhaar Card
+                                                </p>
+                                                <p className="text-xs font-mono text-slate-500 mt-0.5">{selectedRequest.aadhaarNumber || 'Number Not Provided'}</p>
+                                            </div>
+                                            {selectedRequest.aadhaarPhotoUrl ? (
+                                                <button onClick={() => window.open(selectedRequest.aadhaarPhotoUrl, '_blank')}
+                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    <ExternalLink className="w-3 h-3" /> View Photo
+                                                </button>
+                                            ) : (
+                                                <span className="shrink-0 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg text-[11px] font-medium">Not Uploaded</span>
+                                            )}
+                                        </div>
+
+                                        {/* PAN */}
+                                        <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 shadow-sm">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                                    <FileCheck className="w-3.5 h-3.5 text-blue-500" /> PAN Card
+                                                </p>
+                                                <p className="text-xs font-mono text-slate-500 mt-0.5">{selectedRequest.panNumber || 'Number Not Provided'}</p>
+                                            </div>
+                                            {selectedRequest.panPhotoUrl ? (
+                                                <button onClick={() => window.open(selectedRequest.panPhotoUrl, '_blank')}
+                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    <ExternalLink className="w-3 h-3" /> View Photo
+                                                </button>
+                                            ) : (
+                                                <span className="shrink-0 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg text-[11px] font-medium">Not Uploaded</span>
+                                            )}
+                                        </div>
+
+                                        {/* Resume / CV */}
+                                        <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 shadow-sm">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                                    <FileText className="w-3.5 h-3.5 text-amber-500" /> Resume / CV
+                                                </p>
+                                                <p className="text-xs text-slate-400 mt-0.5 truncate">Applicant CV / Biodata</p>
+                                            </div>
+                                            {selectedRequest.resumeUrl ? (
+                                                <button onClick={() => window.open(selectedRequest.resumeUrl, '_blank')}
+                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    <Download className="w-3 h-3" /> Open File
+                                                </button>
+                                            ) : (
+                                                <span className="shrink-0 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg text-[11px] font-medium">Not Uploaded</span>
+                                            )}
+                                        </div>
+
+                                        {/* Profile Photo Link */}
+                                        <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 shadow-sm">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                                    <ImageIcon className="w-3.5 h-3.5 text-purple-500" /> Profile Photo
+                                                </p>
+                                                <p className="text-xs text-slate-400 mt-0.5 truncate">ID Card / Avatar Image</p>
+                                            </div>
+                                            {selectedRequest.profilePhotoUrl ? (
+                                                <button onClick={() => window.open(selectedRequest.profilePhotoUrl, '_blank')}
+                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    <ExternalLink className="w-3 h-3" /> View Photo
+                                                </button>
+                                            ) : (
+                                                <span className="shrink-0 px-2.5 py-1 bg-slate-100 text-slate-400 rounded-lg text-[11px] font-medium">Not Uploaded</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Additional Documents List */}
+                                    {Array.isArray(selectedRequest.documents) && selectedRequest.documents.length > 0 && (
+                                        <div className="pt-2 border-t border-slate-200/60">
+                                            <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider mb-2">Additional Uploaded Documents ({selectedRequest.documents.length})</p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                {selectedRequest.documents.map((doc, idx) => (
+                                                    <div key={idx} className="p-2.5 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-2 shadow-sm">
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-semibold text-slate-800 truncate">{doc.name || `Document #${idx + 1}`}</p>
+                                                            <span className="text-[10px] text-slate-400 uppercase font-medium">{doc.type || 'Certificate'}</span>
+                                                        </div>
+                                                        {doc.url && (
+                                                            <button onClick={() => window.open(doc.url, '_blank')}
+                                                                className="shrink-0 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition-colors">
+                                                                Open
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
+
+                            {/* Online Assessment Results Card (If taken) */}
+                            {selectedRequest.assessmentAttemptId && typeof selectedRequest.assessmentAttemptId === 'object' && (
+                                <div className="bg-gradient-to-r from-orange-50/80 via-amber-50/50 to-orange-50/80 rounded-2xl p-5 border border-orange-200 shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between flex-wrap gap-2 border-b border-orange-200/80 pb-3">
+                                        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4 text-orange-600" /> Online Assessment Verification Scorecard
+                                        </h3>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${selectedRequest.assessmentAttemptId.isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}`}>
+                                                {selectedRequest.assessmentAttemptId.isPassed ? 'Passed Assessment' : 'Did Not Pass'}
+                                            </span>
+                                            <span className="px-2.5 py-1 bg-white border border-orange-200 text-orange-800 rounded-lg text-xs font-semibold">
+                                                Status: {selectedRequest.assessmentAttemptId.status?.replace('_', ' ')}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center bg-white/80 p-4 rounded-xl border border-orange-100 shadow-sm">
+                                        <div>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase">Total Score</p>
+                                            <p className="text-xl font-black text-slate-900 mt-0.5">{selectedRequest.assessmentAttemptId.percentage || selectedRequest.assessmentAttemptId.score || 0}%</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase">Correct Answers</p>
+                                            <p className="text-xl font-black text-emerald-600 mt-0.5">{selectedRequest.assessmentAttemptId.correctCount || 0}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase">Wrong Answers</p>
+                                            <p className="text-xl font-black text-red-600 mt-0.5">{selectedRequest.assessmentAttemptId.wrongCount || 0}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase">Skipped</p>
+                                            <p className="text-xl font-black text-slate-600 mt-0.5">{selectedRequest.assessmentAttemptId.skippedCount || 0}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase">Time Taken</p>
+                                            <p className="text-xl font-black text-slate-800 mt-0.5">
+                                                {selectedRequest.assessmentAttemptId.durationSeconds ? `${Math.floor(selectedRequest.assessmentAttemptId.durationSeconds / 60)}m ${selectedRequest.assessmentAttemptId.durationSeconds % 60}s` : '—'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {selectedRequest.assessmentAttemptId.retakeRequested && (
+                                        <div className="p-3 bg-amber-100/90 border border-amber-300 rounded-xl flex items-start gap-2.5 text-xs text-amber-900">
+                                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                                            <div>
+                                                <strong className="font-bold">Applicant Requested Retake:</strong> &ldquo;{selectedRequest.assessmentAttemptId.retakeReason || 'No reason specified'}&rdquo;
+                                                <span className="block text-[11px] text-amber-700 mt-0.5">Requested on: {selectedRequest.assessmentAttemptId.retakeRequestedAt ? new Date(selectedRequest.assessmentAttemptId.retakeRequestedAt).toLocaleDateString('en-IN') : '—'}</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Status History */}
                             {selectedRequest.statusHistory?.length > 0 && (
-                                <div>
-                                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Status History</h4>
-                                    <div className="space-y-1.5">
+                                <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80">
+                                    <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                        <Clock className="w-4 h-4 text-orange-500" /> Status & Audit Timeline
+                                    </h4>
+                                    <div className="space-y-2">
                                         {selectedRequest.statusHistory.map((h, i) => (
-                                            <div key={i} className="flex items-center gap-3 text-sm">
-                                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${statusStyles[h.status] || 'bg-slate-100 text-slate-600'}`}>{h.status?.replace('_', ' ')}</span>
-                                                <span className="text-slate-500">{new Date(h.changedAt).toLocaleDateString('en-IN')} — {h.reason}</span>
+                                            <div key={i} className="flex items-center gap-3 text-sm bg-white p-2.5 rounded-xl border border-slate-200/60 shadow-xs">
+                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusStyles[h.status] || 'bg-slate-100 text-slate-600'}`}>{h.status?.replace('_', ' ')}</span>
+                                                <span className="text-slate-600 font-medium">{h.reason || 'Status updated'}</span>
+                                                <span className="text-slate-400 text-xs ml-auto shrink-0 font-mono">{new Date(h.changedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -242,80 +530,87 @@ export default function HrmsJoiningRequests() {
 
                             {/* Action Panels */}
                             {selectedRequest.status !== 'Approved' && selectedRequest.status !== 'Rejected' && (
-                                <div className="space-y-4 pt-4 border-t border-slate-100">
+                                <div className="space-y-4 pt-4 border-t border-slate-200">
                                     <details className="group">
-                                        <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-semibold text-sm">
-                                            <CheckCircle className="w-4 h-4" /> Approve & Onboard
+                                        <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-bold text-sm hover:text-orange-700 transition-colors bg-orange-50/60 p-3.5 rounded-xl border border-orange-200/60 shadow-xs">
+                                            <CheckCircle className="w-4 h-4 text-orange-600" /> Approve & Onboard as Active Employee
                                         </summary>
-                                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        <div className="mt-4 p-5 bg-slate-50/80 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Department *</label>
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Department *</label>
                                                 <input className={inputClass} value={approvalForm.department} onChange={e => setApprovalForm(p => ({ ...p, department: e.target.value }))} placeholder="e.g., Engineering" />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Designation *</label>
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Designation *</label>
                                                 <input className={inputClass} value={approvalForm.designation} onChange={e => setApprovalForm(p => ({ ...p, designation: e.target.value }))} placeholder="e.g., Associate" />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">CTC (Annual ₹)</label>
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">CTC (Annual ₹)</label>
                                                 <input type="number" className={inputClass} value={approvalForm.ctc} onChange={e => setApprovalForm(p => ({ ...p, ctc: e.target.value }))} placeholder="e.g., 600000" />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Joining Date *</label>
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Joining Date *</label>
                                                 <input type="date" className={inputClass} value={approvalForm.joiningDate} onChange={e => setApprovalForm(p => ({ ...p, joiningDate: e.target.value }))} />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Shift</label>
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Shift</label>
                                                 <input className={inputClass} value={approvalForm.shift} onChange={e => setApprovalForm(p => ({ ...p, shift: e.target.value }))} />
                                             </div>
                                             <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">HRMS Role</label>
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">HRMS Role</label>
                                                 <select className={inputClass} value={approvalForm.hrmsRole} onChange={e => setApprovalForm(p => ({ ...p, hrmsRole: e.target.value }))}>
                                                     <option>Employee</option>
                                                     <option>Manager</option>
                                                     <option>HR</option>
                                                 </select>
                                             </div>
-                                            <div>
-                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Reporting Manager</label>
+                                            <div className="sm:col-span-2 lg:col-span-3">
+                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Reporting Manager</label>
                                                 <select className={inputClass} value={approvalForm.managerId} onChange={e => setApprovalForm(p => ({ ...p, managerId: e.target.value }))}>
-                                                    <option value="">-- No Manager --</option>
+                                                    <option value="">-- No Manager Assigned --</option>
                                                     {managers.map(m => (
                                                         <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
                                                     ))}
                                                 </select>
                                             </div>
+                                            <div className="sm:col-span-2 lg:col-span-3 pt-2">
+                                                <button onClick={handleApprove} disabled={actionLoading}
+                                                    className="px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 shadow-md flex items-center justify-center gap-2">
+                                                    {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                                                    {actionLoading ? 'Processing Approval...' : 'Approve Application & Create Employee Record'}
+                                                </button>
+                                            </div>
                                         </div>
-                                        <button onClick={handleApprove} disabled={actionLoading}
-                                            className="mt-4 px-6 h-10 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm">
-                                            {actionLoading ? 'Processing...' : 'Approve & Create Employee'}
-                                        </button>
                                     </details>
 
                                     <details className="group">
-                                        <summary className="flex items-center gap-2 cursor-pointer text-red-600 font-semibold text-sm">
-                                            <XCircle className="w-4 h-4" /> Reject Application
+                                        <summary className="flex items-center gap-2 cursor-pointer text-red-600 font-bold text-sm hover:text-red-700 transition-colors bg-red-50/60 p-3.5 rounded-xl border border-red-200/60 shadow-xs">
+                                            <XCircle className="w-4 h-4 text-red-600" /> Reject Application
                                         </summary>
-                                        <div className="mt-4">
-                                            <textarea value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} rows={2} placeholder="Reason for rejection (required)"
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none" />
+                                        <div className="mt-3 p-5 bg-red-50/40 rounded-2xl border border-red-200/80">
+                                            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Reason for Rejection *</label>
+                                            <textarea value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} rows={3} placeholder="Please explain clearly why the application is being rejected..."
+                                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30 resize-none bg-white" />
                                             <button onClick={handleReject} disabled={actionLoading}
-                                                className="mt-2 px-6 h-10 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 font-semibold rounded-xl transition-all text-sm disabled:opacity-50">
-                                                {actionLoading ? 'Processing...' : 'Reject'}
+                                                className="mt-3 px-6 h-10 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">
+                                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                                Confirm Rejection
                                             </button>
                                         </div>
                                     </details>
 
                                     <details className="group">
-                                        <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-semibold text-sm">
-                                            <MessageSquare className="w-4 h-4" /> Request More Information
+                                        <summary className="flex items-center gap-2 cursor-pointer text-blue-600 font-bold text-sm hover:text-blue-700 transition-colors bg-blue-50/60 p-3.5 rounded-xl border border-blue-200/60 shadow-xs">
+                                            <MessageSquare className="w-4 h-4 text-blue-600" /> Request More Information / Clarification
                                         </summary>
-                                        <div className="mt-4">
-                                            <textarea value={infoMessage} onChange={e => setInfoMessage(e.target.value)} rows={2} placeholder="What information do you need?"
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none" />
+                                        <div className="mt-3 p-5 bg-blue-50/40 rounded-2xl border border-blue-200/80">
+                                            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Message to Applicant *</label>
+                                            <textarea value={infoMessage} onChange={e => setInfoMessage(e.target.value)} rows={3} placeholder="Specify what documents or details need clarification..."
+                                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none bg-white" />
                                             <button onClick={handleRequestInfo} disabled={actionLoading}
-                                                className="mt-2 px-6 h-10 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50">
-                                                {actionLoading ? 'Sending...' : 'Send Request'}
+                                                className="mt-3 px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">
+                                                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+                                                Send Information Request
                                             </button>
                                         </div>
                                     </details>
@@ -359,7 +654,7 @@ export default function HrmsJoiningRequests() {
                                                     </span>
                                                 </td>
                                                 <td className="px-5 py-3.5">
-                                                    <button onClick={() => setSelectedRequest(r)}
+                                                    <button onClick={() => handleSelectRequest(r)}
                                                         className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
                                                         <Eye className="w-3.5 h-3.5" /> View
                                                     </button>

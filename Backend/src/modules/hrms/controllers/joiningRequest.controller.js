@@ -4,6 +4,7 @@ import { HrmsJoiningRequest } from '../models/joiningRequest.model.js';
 import { HrmsEmployee } from '../models/employee.model.js';
 import { FoodAdmin } from '../../../core/admin/admin.model.js';
 import { HrmsDocument } from '../models/document.model.js';
+import { AssessmentAttempt } from '../models/assessmentAttempt.model.js';
 import { getNextSequence } from '../models/counter.model.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 import { config } from '../../../config/env.js';
@@ -214,12 +215,28 @@ export const getAllJoiningRequests = async (req, res, next) => {
         const [requests, total] = await Promise.all([
             HrmsJoiningRequest.find(filter)
                 .select('-password')
+                .populate('assessmentAttemptId')
                 .sort({ [sortBy]: sortDir })
                 .skip(skip)
                 .limit(parseInt(limit))
                 .lean(),
             HrmsJoiningRequest.countDocuments(filter)
         ]);
+
+        // Ensure assessment attempt info is attached if not explicitly linked by ID
+        for (const reqObj of requests) {
+            if (!reqObj.assessmentAttemptId && (reqObj.email || reqObj.phone)) {
+                const attempt = await AssessmentAttempt.findOne({
+                    $or: [
+                        { applicantEmail: reqObj.email },
+                        { applicantPhone: reqObj.phone }
+                    ]
+                }).sort({ createdAt: -1 }).lean();
+                if (attempt) {
+                    reqObj.assessmentAttemptId = attempt;
+                }
+            }
+        }
 
         // Get status counts
         const [pendingCount, approvedCount, rejectedCount, infoRequestedCount] = await Promise.all([
@@ -259,10 +276,23 @@ export const getJoiningRequestById = async (req, res, next) => {
         const request = await HrmsJoiningRequest.findById(id)
             .select('-password')
             .populate('reviewedBy', 'name email')
+            .populate('assessmentAttemptId')
             .lean();
 
         if (!request) {
             return sendError(res, 404, 'Joining request not found');
+        }
+
+        if (!request.assessmentAttemptId && (request.email || request.phone)) {
+            const attempt = await AssessmentAttempt.findOne({
+                $or: [
+                    { applicantEmail: request.email },
+                    { applicantPhone: request.phone }
+                ]
+            }).sort({ createdAt: -1 }).lean();
+            if (attempt) {
+                request.assessmentAttemptId = attempt;
+            }
         }
 
         return sendResponse(res, 200, 'Joining request details retrieved', request);
