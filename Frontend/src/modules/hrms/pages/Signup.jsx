@@ -29,34 +29,30 @@ const DEFAULT_FORM = {
     emergencyName: '', emergencyRelation: '', emergencyPhone: '',
     ctc: '', joiningDate: '', hrmsRole: 'Employee', shift: 'General',
     employmentType: 'Full-Time', officeLocation: '',
-    employeeType: 'Office'
+    assignedOfficeLocationId: '', employeeType: 'Office'
 };
 
 // localStorage helpers — isolated per applicant (email+phone)
 const getStorageKey = (email, phone) => {
     if (!email && !phone) return null;
-    const id = `${(email || '').trim().toLowerCase()}_${(phone || '').trim()}`;
-    return `hrms_signup_${id}`;
+    const cleanEmail = (email || '').toLowerCase().trim();
+    const cleanPhone = (phone || '').replace(/\D/g, '');
+    return `hrms_signup_${cleanEmail}_${cleanPhone}`;
 };
 
 const loadSavedForm = () => {
     try {
-        // Try to find any saved signup data (we don't know email/phone yet on first load)
+        // First try to load from any existing key if fields match or recent
         const keys = Object.keys(localStorage).filter(k => k.startsWith('hrms_signup_'));
-        if (keys.length === 0) return { form: DEFAULT_FORM, step: 0 };
-        // Use the most recent one
-        const raw = localStorage.getItem(keys[keys.length - 1]);
-        if (!raw) return { form: DEFAULT_FORM, step: 0 };
-        const parsed = JSON.parse(raw);
-        if (!parsed || typeof parsed !== 'object' || !parsed.form) return { form: DEFAULT_FORM, step: 0 };
-        // Merge with defaults to handle any missing fields
-        return {
-            form: { ...DEFAULT_FORM, ...parsed.form },
-            step: typeof parsed.step === 'number' ? Math.min(parsed.step, STEPS.length - 1) : 0
-        };
-    } catch {
-        return { form: DEFAULT_FORM, step: 0 };
-    }
+        if (keys.length > 0) {
+            const raw = localStorage.getItem(keys[keys.length - 1]);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                return { form: { ...DEFAULT_FORM, ...parsed.form }, step: parsed.step || 0 };
+            }
+        }
+    } catch { /* ignore corrupted storage */ }
+    return { form: { ...DEFAULT_FORM }, step: 0 };
 };
 
 const saveFormToStorage = (form, step) => {
@@ -101,10 +97,10 @@ export default function Signup() {
     }, [currentStep]);
 
     /* ── strict validators ── */
-    const isValidName = (v) => /^[A-Za-z\s]{2,50}$/.test(v.trim());
-    const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
-    const isValidPhone = (v) => /^[6-9]\d{9}$/.test(v.replace(/\D/g, ''));
-    const isValidAadhaar = (v) => !v || /^\d{12}$/.test(v.replace(/\s/g, ''));
+    const isValidName = (v) => /^[A-Za-z\s.-]{2,50}$/.test((v || '').trim());
+    const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((v || '').trim());
+    const isValidPhone = (v) => /^[1-9]\d{9}$/.test((v || '').replace(/\D/g, ''));
+    const isValidAadhaar = (v) => !v || /^\d{12}$/.test(v.replace(/\D/g, ''));
     const isValidPan = (v) => !v || /^[A-Z]{5}\d{4}[A-Z]$/.test(v.trim().toUpperCase());
     const isValidPincode = (v) => !v || /^\d{6}$/.test(v.trim());
 
@@ -115,10 +111,10 @@ export default function Signup() {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('folder', `hrms/joining-requests/${field}s`);
-            const res = await axiosInstance.post('/uploads/image', formData, {
+            const res = await axiosInstance.post('/uploads/file', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            const url = res.data?.url || res.data?.data?.url || res.data?.imageUrl;
+            const url = res.data?.url || res.data?.data?.url || res.data?.fileUrl || res.data?.imageUrl;
             if (!url) throw new Error('No URL returned from server');
             if (field === 'profilePhoto') updateField('profilePhotoUrl', url);
             else if (field === 'resume') updateField('resumeUrl', url);
@@ -134,22 +130,39 @@ export default function Signup() {
     const validateStep = () => {
         switch (currentStep) {
             case 0:
-                if (!form.fullName.trim()) { toast.error('Full name is required'); return false; }
-                if (!isValidName(form.fullName)) { toast.error('Name must be 2-50 characters (letters & spaces only)'); return false; }
-                if (!form.email.trim()) { toast.error('Email is required'); return false; }
+                if (!form.fullName?.trim()) { toast.error('Full name is required'); return false; }
+                if (!isValidName(form.fullName)) { toast.error('Name must be 2-50 characters (letters, spaces, dots, hyphens only)'); return false; }
+                if (!form.email?.trim()) { toast.error('Email is required'); return false; }
                 if (!isValidEmail(form.email)) { toast.error('Please enter a valid email address'); return false; }
-                if (!form.phone.trim()) { toast.error('Phone number is required'); return false; }
-                if (!isValidPhone(form.phone)) { toast.error('Enter a valid 10-digit mobile number'); return false; }
+                if (!form.phone?.trim()) { toast.error('Phone number is required'); return false; }
+                if (!isValidPhone(form.phone)) { toast.error('Enter a valid 10-digit mobile number across digits'); return false; }
                 if (!form.password || form.password.length < 6) { toast.error('Password must be at least 6 characters'); return false; }
                 return true;
             case 1:
-                if (form.aadhaarNumber && !isValidAadhaar(form.aadhaarNumber)) { toast.error('Aadhaar must be exactly 12 digits'); return false; }
-                if (form.panNumber && !isValidPan(form.panNumber)) { toast.error('PAN must be in format ABCDE1234F'); return false; }
+                if (form.aadhaarNumber && !isValidAadhaar(form.aadhaarNumber)) { toast.error('Aadhaar must be exactly 12 numeric digits'); return false; }
+                if (form.panNumber && !isValidPan(form.panNumber)) { toast.error('PAN must be in standard format (e.g. ABCDE1234F)'); return false; }
                 if (form.pincode && !isValidPincode(form.pincode)) { toast.error('Pincode must be exactly 6 digits'); return false; }
                 return true;
-            case 2: return true;
+            case 2:
+                if (!form.department) { toast.error('Department is required'); return false; }
+                if (!form.joiningDate || isNaN(new Date(form.joiningDate).getTime())) { toast.error('Please select a valid joining date'); return false; }
+                if (form.ctc !== '' && form.ctc !== null && form.ctc !== undefined && Number(form.ctc) < 0) {
+                    toast.error('Expected CTC / Salary cannot be negative'); return false;
+                }
+                if (form.employeeType === 'Office' && !form.assignedOfficeLocationId) {
+                    toast.error('Please select an Assigned Office Location'); return false;
+                }
+                return true;
             case 3:
-                if (form.emergencyPhone && !isValidPhone(form.emergencyPhone)) { toast.error('Emergency phone must be a valid 10-digit mobile number'); return false; }
+                if (form.accountNumber && !/^\d{9,18}$/.test(form.accountNumber.trim())) {
+                    toast.error('Bank account number must be numeric (9 to 18 digits)'); return false;
+                }
+                if (form.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(form.ifscCode.trim())) {
+                    toast.error('Please enter a valid IFSC code (e.g. SBIN0001234)'); return false;
+                }
+                if (form.emergencyPhone && !isValidPhone(form.emergencyPhone)) {
+                    toast.error('Emergency phone must be a valid 10-digit mobile number'); return false;
+                }
                 return true;
             default: return true;
         }
@@ -177,9 +190,9 @@ export default function Signup() {
         setLoading(true);
         try {
             const payload = {
-                fullName: form.fullName.trim(),
-                email: form.email.trim(),
-                phone: form.phone.trim(),
+                fullName: form.fullName.trim().replace(/\s+/g, ' '),
+                email: form.email.trim().toLowerCase(),
+                phone: form.phone.replace(/\D/g, ''),
                 password: form.password,
                 dateOfBirth: form.dateOfBirth || undefined,
                 gender: form.gender || undefined,
@@ -187,9 +200,9 @@ export default function Signup() {
                     street: form.street, city: form.city,
                     state: form.state, pincode: form.pincode
                 },
-                aadhaarNumber: form.aadhaarNumber || undefined,
+                aadhaarNumber: form.aadhaarNumber ? form.aadhaarNumber.replace(/\D/g, '') : undefined,
                 aadhaarPhotoUrl: form.aadhaarPhotoUrl || undefined,
-                panNumber: form.panNumber || undefined,
+                panNumber: form.panNumber ? form.panNumber.trim().toUpperCase() : undefined,
                 panPhotoUrl: form.panPhotoUrl || undefined,
                 profilePhotoUrl: form.profilePhotoUrl || undefined,
                 resumeUrl: form.resumeUrl || undefined,
@@ -203,12 +216,13 @@ export default function Signup() {
                 shift: form.shift || undefined,
                 employmentType: form.employmentType || undefined,
                 officeLocation: form.officeLocation || undefined,
+                assignedOfficeLocationId: form.assignedOfficeLocationId || undefined,
                 employeeType: form.employeeType || 'Office',
                 bankDetails: {
                     accountHolderName: form.accountHolderName,
                     accountNumber: form.accountNumber,
                     bankName: form.bankName,
-                    ifscCode: form.ifscCode,
+                    ifscCode: form.ifscCode ? form.ifscCode.trim().toUpperCase() : undefined,
                     upiId: form.upiId
                 },
                 emergencyContact: {
@@ -467,8 +481,19 @@ export default function Signup() {
                                         <input className={inputClass} value={form.experience} onChange={e => updateField('experience', e.target.value)} placeholder="e.g., 3 years in Sales" />
                                     </div>
                                     <div>
-                                        <label className={labelClass}>Department</label>
-                                        <input className={inputClass} value={form.department} onChange={e => updateField('department', e.target.value)} placeholder="e.g., Engineering, Sales" />
+                                        <label className={labelClass}>Department *</label>
+                                        <select className={inputClass} value={form.department} onChange={e => updateField('department', e.target.value)}>
+                                            <option value="">-- Select Department --</option>
+                                            {(() => {
+                                                const depts = hrmsSettings?.organization?.departments || [];
+                                                if (depts.length === 0) {
+                                                    return <option value="" disabled>No departments available.</option>;
+                                                }
+                                                return depts.map((d, idx) => (
+                                                    <option key={d._id || idx} value={d.name}>{d.name}</option>
+                                                ));
+                                            })()}
+                                        </select>
                                     </div>
                                     <div>
                                         <label className={labelClass}>Designation</label>
@@ -479,14 +504,23 @@ export default function Signup() {
                                         <input type="number" className={inputClass} value={form.ctc} onChange={e => updateField('ctc', e.target.value)} placeholder="e.g. 500000" />
                                     </div>
                                     <div>
-                                        <label className={labelClass}>Joining Date</label>
+                                        <label className={labelClass}>Joining Date *</label>
                                         <input type="date" className={inputClass} value={form.joiningDate} onChange={e => updateField('joiningDate', e.target.value)} />
                                     </div>
                                     <div>
-                                        <label className={labelClass}>HRMS Role</label>
-                                        <select className={inputClass} value={form.hrmsRole} onChange={e => updateField('hrmsRole', e.target.value)}>
-                                            <option value="Employee">Employee</option>
+                                        <label className={labelClass}>Role *</label>
+                                        <select className={inputClass} value={form.roleSelection || (form.hrmsRole === 'Manager' ? 'Manager' : form.employeeType === 'Field' ? 'Field Employee' : 'Office Employee')} onChange={e => {
+                                            const role = e.target.value;
+                                            setForm(p => ({
+                                                ...p,
+                                                roleSelection: role,
+                                                hrmsRole: role === 'Manager' ? 'Manager' : 'Employee',
+                                                employeeType: role === 'Field Employee' ? 'Field' : 'Office'
+                                            }));
+                                        }}>
                                             <option value="Manager">Manager</option>
+                                            <option value="Office Employee">Office Employee</option>
+                                            <option value="Field Employee">Field Employee</option>
                                         </select>
                                     </div>
                                     <div>
@@ -506,8 +540,35 @@ export default function Signup() {
                                             <option value="Internship">Internship</option>
                                         </select>
                                     </div>
+                                    {form.employeeType === 'Office' && (
+                                        <div className="sm:col-span-2">
+                                            <label className={labelClass}>Assigned Office Location *</label>
+                                            <select className={inputClass} value={form.assignedOfficeLocationId} onChange={e => {
+                                                const locId = e.target.value;
+                                                const selectedLoc = (hrmsSettings?.organization?.officeLocations || []).find(o => String(o._id) === String(locId));
+                                                setForm(p => ({
+                                                    ...p,
+                                                    assignedOfficeLocationId: locId,
+                                                    officeLocation: selectedLoc ? selectedLoc.name : ''
+                                                }));
+                                            }}>
+                                                <option value="">-- Select Office Location --</option>
+                                                {(() => {
+                                                    const activeLocs = (hrmsSettings?.organization?.officeLocations || []).filter(o => o.isActive !== false);
+                                                    if (activeLocs.length === 0) {
+                                                        return <option value="" disabled>No office locations available.</option>;
+                                                    }
+                                                    return activeLocs.map(loc => (
+                                                        <option key={loc._id} value={loc._id}>
+                                                            {loc.name}{loc.city ? ` (${loc.city}${loc.state ? `, ${loc.state}` : ''})` : ''}
+                                                        </option>
+                                                    ));
+                                                })()}
+                                            </select>
+                                        </div>
+                                    )}
                                     <div>
-                                        <label className={labelClass}>Office Location</label>
+                                        <label className={labelClass}>Office Location Name (Legacy)</label>
                                         <input className={inputClass} value={form.officeLocation} onChange={e => updateField('officeLocation', e.target.value)} placeholder="e.g., HQ, Remote" />
                                     </div>
                                 </div>

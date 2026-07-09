@@ -86,6 +86,10 @@ const hrmsJoiningRequestSchema = new mongoose.Schema(
         shift: { type: String, trim: true, default: 'General' },
         employmentType: { type: String, trim: true, default: 'Full-Time' },
         officeLocation: { type: String, trim: true },
+        assignedOfficeLocationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            default: null
+        },
         employeeType: {
             type: String,
             enum: ['Office', 'Field'],

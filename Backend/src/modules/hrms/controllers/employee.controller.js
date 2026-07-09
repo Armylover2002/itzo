@@ -1,6 +1,7 @@
 import { HrmsEmployee } from '../models/employee.model.js';
 import { FoodAdmin } from '../../../core/admin/admin.model.js';
 import { HrmsDocument } from '../models/document.model.js';
+import { HrmsJoiningRequest } from '../models/joiningRequest.model.js';
 import { getNextSequence } from '../models/counter.model.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 import mongoose from 'mongoose';
@@ -28,12 +29,101 @@ export const createEmployee = async (req, res, next) => {
             return sendError(res, 400, 'Full name, email, password, and joining date are required');
         }
 
-        // 1. Create base credentials in FoodAdmin
-        const existingAdmin = await FoodAdmin.findOne({ email: email.toLowerCase().trim() }).session(session);
+        if (!/^[A-Za-z\s.-]{2,50}$/.test(fullName.trim())) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 400, 'Name must be 2-50 characters (letters, spaces, dots, hyphens only)');
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 400, 'Please provide a valid email address');
+        }
+        if (phone && !/^[1-9]\d{9}$/.test(phone.replace(/\D/g, ''))) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 400, 'Phone must be a valid 10-digit mobile number and cannot start with 0');
+        }
+        if (password.length < 6) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 400, 'Password must be at least 6 characters');
+        }
+        if (aadhaarNumber && !/^\d{12}$/.test(aadhaarNumber.replace(/\D/g, ''))) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 400, 'Aadhaar number must be exactly 12 numeric digits');
+        }
+        if (panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(panNumber.trim())) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 400, 'PAN must be in standard format (e.g. ABCDE1234F)');
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const normalizedPhone = phone ? phone.replace(/\D/g, '') : '';
+
+        // 1. Check duplicate Email & Phone across active Admin accounts & joining requests
+        const existingAdmin = await FoodAdmin.findOne({ email: normalizedEmail }).session(session);
         if (existingAdmin) {
             await session.abortTransaction();
             session.endSession();
-            return sendError(res, 409, 'Email is already in use');
+            return sendError(res, 409, 'An account with this email already exists');
+        }
+        if (normalizedPhone) {
+            const existingAdminPhone = await FoodAdmin.findOne({ phone: normalizedPhone }).session(session);
+            if (existingAdminPhone) {
+                await session.abortTransaction();
+                session.endSession();
+                return sendError(res, 409, 'An account with this phone number already exists');
+            }
+        }
+
+        const dupReqEmail = await HrmsJoiningRequest.findOne({
+            email: normalizedEmail,
+            status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
+        }).session(session);
+        if (dupReqEmail) {
+            await session.abortTransaction(); session.endSession();
+            return sendError(res, 409, 'A pending joining request with this email already exists');
+        }
+        if (normalizedPhone) {
+            const dupReqPhone = await HrmsJoiningRequest.findOne({
+                phone: normalizedPhone,
+                status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
+            }).session(session);
+            if (dupReqPhone) {
+                await session.abortTransaction(); session.endSession();
+                return sendError(res, 409, 'A pending joining request with this phone number already exists');
+            }
+        }
+
+        // Check duplicate Aadhaar / PAN
+        if (aadhaarNumber) {
+            const cleanAadhaar = aadhaarNumber.replace(/\D/g, '');
+            const dupEmpAadhaar = await HrmsEmployee.findOne({ 'documents.aadhaarNumber': cleanAadhaar }).session(session);
+            if (dupEmpAadhaar) {
+                await session.abortTransaction(); session.endSession();
+                return sendError(res, 409, 'An employee with this Aadhaar number already exists');
+            }
+            const dupReqAadhaar = await HrmsJoiningRequest.findOne({
+                aadhaarNumber: cleanAadhaar,
+                status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
+            }).session(session);
+            if (dupReqAadhaar) {
+                await session.abortTransaction(); session.endSession();
+                return sendError(res, 409, 'A joining request with this Aadhaar number already exists');
+            }
+        }
+        if (panNumber) {
+            const cleanPan = panNumber.trim().toUpperCase();
+            const dupEmpPan = await HrmsEmployee.findOne({ 'documents.panNumber': cleanPan }).session(session);
+            if (dupEmpPan) {
+                await session.abortTransaction(); session.endSession();
+                return sendError(res, 409, 'An employee with this PAN number already exists');
+            }
+            const dupReqPan = await HrmsJoiningRequest.findOne({
+                panNumber: cleanPan,
+                status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
+            }).session(session);
+            if (dupReqPan) {
+                await session.abortTransaction(); session.endSession();
+                return sendError(res, 409, 'A joining request with this PAN number already exists');
+            }
         }
 
         const newAdmin = new FoodAdmin({

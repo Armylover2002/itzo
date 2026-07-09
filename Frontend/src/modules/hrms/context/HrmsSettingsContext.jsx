@@ -10,7 +10,28 @@ const DEFAULT_SETTINGS = {
     supportPhone: '',
     companyLogoUrl: '',
     currency: 'INR',
-    currencySymbol: '₹'
+    currencySymbol: '₹',
+    organization: {
+        departments: [
+            { name: 'Engineering' },
+            { name: 'Sales' },
+            { name: 'Operations' },
+            { name: 'HR' },
+            { name: 'Marketing' },
+            { name: 'Finance' }
+        ],
+        designations: [
+            'Junior Associate', 'Associate', 'Senior Associate',
+            'Team Lead', 'Manager', 'Senior Manager', 'Director'
+        ],
+        officeLocations: [{ name: 'Head Office', isActive: true }],
+        zones: []
+    },
+    shifts: [
+        { name: 'General', startTime: '09:00', endTime: '18:00' },
+        { name: 'Morning', startTime: '06:00', endTime: '14:00' },
+        { name: 'Evening', startTime: '14:00', endTime: '22:00' }
+    ]
 };
 
 export const HrmsSettingsProvider = ({ children }) => {

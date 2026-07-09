@@ -115,11 +115,11 @@ export const updateSettingsSection = async (req, res, next) => {
 };
 
 /**
- * PUBLIC: Get company branding and info (for login/signup pages before auth)
+ * PUBLIC: Get company branding, organization master, and shifts (for login/signup and onboarding forms before auth)
  */
 export const getPublicSettings = async (req, res, next) => {
     try {
-        let settings = await HrmsSettings.findOne().select('companyInfo').lean();
+        let settings = await HrmsSettings.findOne().select('companyInfo organization shifts').lean();
         // If settings don't exist yet, return the defaults
         const info = settings?.companyInfo || {
             companyName: 'ItzoFood',
@@ -130,7 +130,29 @@ export const getPublicSettings = async (req, res, next) => {
             currency: 'INR',
             currencySymbol: '₹'
         };
-        return sendResponse(res, 200, 'Public settings retrieved', info);
+        const organization = settings?.organization || {
+            departments: [
+                { name: 'Engineering' },
+                { name: 'Sales' },
+                { name: 'Operations' },
+                { name: 'HR' },
+                { name: 'Marketing' },
+                { name: 'Finance' }
+            ],
+            designations: [
+                'Junior Associate', 'Associate', 'Senior Associate',
+                'Team Lead', 'Manager', 'Senior Manager', 'Director'
+            ],
+            officeLocations: [{ name: 'Head Office', isActive: true }],
+            zones: []
+        };
+        const shifts = settings?.shifts || [
+            { name: 'General', startTime: '09:00', endTime: '18:00' },
+            { name: 'Morning', startTime: '06:00', endTime: '14:00' },
+            { name: 'Evening', startTime: '14:00', endTime: '22:00' }
+        ];
+
+        return sendResponse(res, 200, 'Public settings retrieved', { ...info, organization, shifts });
     } catch (error) {
         next(error);
     }

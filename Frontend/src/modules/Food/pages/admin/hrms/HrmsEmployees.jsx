@@ -67,13 +67,59 @@ export default function HrmsEmployees() {
     }, [fetchEmployees, fetchManagers]);
 
     const handleOnboard = async () => {
-        if (!onboardForm.fullName || !onboardForm.email || !onboardForm.password || !onboardForm.joiningDate) {
-            return toast.error('Name, email, password, and joining date are required');
+        const nameTrimmed = onboardForm.fullName?.trim() || '';
+        if (!nameTrimmed) return toast.error('Full name is required');
+        if (!/^[A-Za-z\s.-]{2,50}$/.test(nameTrimmed)) return toast.error('Name must be 2-50 characters (letters, spaces, dots, hyphens only)');
+
+        const emailTrimmed = onboardForm.email?.trim() || '';
+        if (!emailTrimmed) return toast.error('Email is required');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailTrimmed)) return toast.error('Please enter a valid RFC-compliant email address');
+
+        const phoneDigits = onboardForm.phone?.replace(/\D/g, '') || '';
+        if (!phoneDigits) return toast.error('Mobile number is required');
+        if (!/^[1-9]\d{9}$/.test(phoneDigits)) return toast.error('Mobile number must be exactly 10 numeric digits and cannot start with 0');
+
+        if (!onboardForm.password || onboardForm.password.length < 6) {
+            return toast.error('Password must be at least 6 characters');
         }
+
+        if (!onboardForm.joiningDate || isNaN(new Date(onboardForm.joiningDate).getTime())) {
+            return toast.error('Please select a valid joining date');
+        }
+
+        if (onboardForm.aadhaarNumber && !/^\d{12}$/.test(onboardForm.aadhaarNumber.replace(/\D/g, ''))) {
+            return toast.error('Aadhaar number must be exactly 12 numeric digits');
+        }
+
+        if (onboardForm.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i.test(onboardForm.panNumber.trim())) {
+            return toast.error('PAN must be in standard format (e.g. ABCDE1234F)');
+        }
+
+        if (onboardForm.accountNumber && !/^\d{9,18}$/.test(onboardForm.accountNumber.trim())) {
+            return toast.error('Bank account number must be numeric (9 to 18 digits)');
+        }
+
+        if (onboardForm.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(onboardForm.ifscCode.trim())) {
+            return toast.error('Please enter a valid IFSC code (e.g. SBIN0001234)');
+        }
+
+        if (onboardForm.pincode && !/^\d{6}$/.test(onboardForm.pincode.trim())) {
+            return toast.error('PIN code must be exactly 6 numeric digits');
+        }
+
+        if (onboardForm.ctc !== '' && onboardForm.ctc !== null && onboardForm.ctc !== undefined && Number(onboardForm.ctc) < 0) {
+            return toast.error('Salary / CTC cannot be negative');
+        }
+
         setOnboardLoading(true);
         try {
             const payload = {
                 ...onboardForm,
+                fullName: nameTrimmed.replace(/\s+/g, ' '),
+                email: emailTrimmed.toLowerCase(),
+                phone: phoneDigits,
+                aadhaarNumber: onboardForm.aadhaarNumber ? onboardForm.aadhaarNumber.replace(/\D/g, '') : '',
+                panNumber: onboardForm.panNumber ? onboardForm.panNumber.trim().toUpperCase() : '',
                 ctc: Number(onboardForm.ctc) || 0,
                 assignedOfficeLocationId: onboardForm.assignedOfficeLocationId || null,
                 managerId: onboardForm.hrmsRole === 'Manager' ? null : (onboardForm.managerId || null),
@@ -88,7 +134,7 @@ export default function HrmsEmployees() {
                     accountHolderName: onboardForm.accountHolderName,
                     accountNumber: onboardForm.accountNumber,
                     bankName: onboardForm.bankName,
-                    ifscCode: onboardForm.ifscCode,
+                    ifscCode: onboardForm.ifscCode ? onboardForm.ifscCode.trim().toUpperCase() : '',
                     upiId: onboardForm.upiId
                 },
                 emergencyContact: {
@@ -269,16 +315,38 @@ export default function HrmsEmployees() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div><label className="text-xs font-medium text-slate-600 mb-1 block">Highest Qualification</label><input className={inputClass} value={onboardForm.qualification} onChange={e => setOnboardForm(p => ({ ...p, qualification: e.target.value }))} /></div>
                                 <div><label className="text-xs font-medium text-slate-600 mb-1 block">Experience</label><input className={inputClass} value={onboardForm.experience} onChange={e => setOnboardForm(p => ({ ...p, experience: e.target.value }))} /></div>
-                                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Department</label><input className={inputClass} value={onboardForm.department} onChange={e => setOnboardForm(p => ({ ...p, department: e.target.value }))} /></div>
+                                <div>
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Department *</label>
+                                    <select className={inputClass} value={onboardForm.department} onChange={e => setOnboardForm(p => ({ ...p, department: e.target.value }))}>
+                                        <option value="">-- Select Department --</option>
+                                        {(() => {
+                                            const depts = hrmsSettings?.organization?.departments || [];
+                                            if (depts.length === 0) {
+                                                return <option value="" disabled>No departments available.</option>;
+                                            }
+                                            return depts.map((d, idx) => (
+                                                <option key={d._id || idx} value={d.name}>{d.name}</option>
+                                            ));
+                                        })()}
+                                    </select>
+                                </div>
                                 <div><label className="text-xs font-medium text-slate-600 mb-1 block">Designation</label><input className={inputClass} value={onboardForm.designation} onChange={e => setOnboardForm(p => ({ ...p, designation: e.target.value }))} /></div>
                                 <div><label className="text-xs font-medium text-slate-600 mb-1 block">CTC (Annual ₹)</label><input type="number" className={inputClass} value={onboardForm.ctc} onChange={e => setOnboardForm(p => ({ ...p, ctc: e.target.value }))} /></div>
                                 <div><label className="text-xs font-medium text-slate-600 mb-1 block">Joining Date *</label><input type="date" className={inputClass} value={onboardForm.joiningDate} onChange={e => setOnboardForm(p => ({ ...p, joiningDate: e.target.value }))} /></div>
                                 <div>
-                                    <label className="text-xs font-medium text-slate-600 mb-1 block">HRMS Role</label>
-                                    <select className={inputClass} value={onboardForm.hrmsRole} onChange={e => setOnboardForm(p => ({ ...p, hrmsRole: e.target.value, managerId: e.target.value === 'Manager' ? '' : p.managerId }))}>
-                                        <option value="Employee">Employee</option>
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Role *</label>
+                                    <select className={inputClass} value={onboardForm.hrmsRole === 'Manager' ? 'Manager' : onboardForm.employeeType === 'Field' ? 'Field Employee' : 'Office Employee'} onChange={e => {
+                                        const role = e.target.value;
+                                        setOnboardForm(p => ({
+                                            ...p,
+                                            hrmsRole: role === 'Manager' ? 'Manager' : 'Employee',
+                                            employeeType: role === 'Field Employee' ? 'Field' : 'Office',
+                                            managerId: role === 'Manager' ? '' : p.managerId
+                                        }));
+                                    }}>
                                         <option value="Manager">Manager</option>
-                                        <option value="HR">HR</option>
+                                        <option value="Office Employee">Office Employee</option>
+                                        <option value="Field Employee">Field Employee</option>
                                     </select>
                                 </div>
                                 {onboardForm.hrmsRole === 'Manager' ? (
@@ -352,24 +420,33 @@ export default function HrmsEmployees() {
                                         <option>Full-Time</option><option>Part-Time</option><option>Contract</option><option>Internship</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Employee Type</label>
-                                    <select className={inputClass} value={onboardForm.employeeType} onChange={e => setOnboardForm(p => ({ ...p, employeeType: e.target.value }))}>
-                                        <option value="Office">Office</option><option value="Field">Field</option>
-                                    </select>
-                                </div>
                                 {onboardForm.employeeType === 'Office' && (
-                                    <div>
-                                        <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned Office Location</label>
-                                        <select className={inputClass} value={onboardForm.assignedOfficeLocationId} onChange={e => setOnboardForm(p => ({ ...p, assignedOfficeLocationId: e.target.value }))}>
-                                            <option value="">-- Select Office --</option>
-                                            {hrmsSettings?.organization?.officeLocations?.filter(o => o.isActive !== false).map(loc => (
-                                                <option key={loc._id} value={loc._id}>{loc.name}</option>
-                                            ))}
+                                    <div className="sm:col-span-2">
+                                        <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned Office Location *</label>
+                                        <select className={inputClass} value={onboardForm.assignedOfficeLocationId} onChange={e => {
+                                            const locId = e.target.value;
+                                            const selectedLoc = (hrmsSettings?.organization?.officeLocations || []).find(o => String(o._id) === String(locId));
+                                            setOnboardForm(p => ({
+                                                ...p,
+                                                assignedOfficeLocationId: locId,
+                                                officeLocation: selectedLoc ? selectedLoc.name : ''
+                                            }));
+                                        }}>
+                                            <option value="">-- Select Office Location --</option>
+                                            {(() => {
+                                                const activeLocs = (hrmsSettings?.organization?.officeLocations || []).filter(o => o.isActive !== false);
+                                                if (activeLocs.length === 0) {
+                                                    return <option value="" disabled>No office locations available.</option>;
+                                                }
+                                                return activeLocs.map(loc => (
+                                                    <option key={loc._id} value={loc._id}>
+                                                        {loc.name}{loc.city ? ` (${loc.city}${loc.state ? `, ${loc.state}` : ''})` : ''}
+                                                    </option>
+                                                ));
+                                            })()}
                                         </select>
                                     </div>
                                 )}
-                                <div><label className="text-xs font-medium text-slate-600 mb-1 block">Office Location Name (Legacy)</label><input className={inputClass} value={onboardForm.officeLocation} onChange={e => setOnboardForm(p => ({ ...p, officeLocation: e.target.value }))} /></div>
                             </div>
                         </div>
 

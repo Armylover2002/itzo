@@ -70,7 +70,12 @@ export const submitJoiningRequest = async (req, res, next) => {
             return sendError(res, 409, 'An account with this email already exists');
         }
 
-        // Check duplicate phone in joining requests (non-rejected)
+        // Check duplicate phone across FoodAdmin & non-rejected joining requests
+        const existingAdminPhone = await FoodAdmin.findOne({ phone: normalizedPhone });
+        if (existingAdminPhone) {
+            return sendError(res, 409, 'An account with this phone number already exists');
+        }
+
         const existingPhoneRequest = await HrmsJoiningRequest.findOne({
             phone: normalizedPhone,
             status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
@@ -81,26 +86,32 @@ export const submitJoiningRequest = async (req, res, next) => {
 
         // Check duplicate Aadhaar/PAN if provided
         if (aadhaarNumber) {
+            const cleanAadhaar = aadhaarNumber.replace(/\D/g, '');
             const dupAadhaar = await HrmsJoiningRequest.findOne({
-                aadhaarNumber: aadhaarNumber.trim(),
+                aadhaarNumber: cleanAadhaar,
                 status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
             });
             if (dupAadhaar) {
                 return sendError(res, 409, 'A joining request with this Aadhaar number already exists');
             }
-            const dupEmpAadhaar = await HrmsEmployee.findOne({ 'documents.aadhaarNumber': aadhaarNumber.trim() });
+            const dupEmpAadhaar = await HrmsEmployee.findOne({ 'documents.aadhaarNumber': cleanAadhaar });
             if (dupEmpAadhaar) {
                 return sendError(res, 409, 'An employee with this Aadhaar number already exists');
             }
         }
 
         if (panNumber) {
+            const cleanPan = panNumber.trim().toUpperCase();
             const dupPan = await HrmsJoiningRequest.findOne({
-                panNumber: panNumber.trim().toUpperCase(),
+                panNumber: cleanPan,
                 status: { $in: ['Pending', 'Under_Review', 'Approved', 'Info_Requested'] }
             });
             if (dupPan) {
                 return sendError(res, 409, 'A joining request with this PAN number already exists');
+            }
+            const dupEmpPan = await HrmsEmployee.findOne({ 'documents.panNumber': cleanPan });
+            if (dupEmpPan) {
+                return sendError(res, 409, 'An employee with this PAN number already exists');
             }
         }
 
@@ -114,20 +125,23 @@ export const submitJoiningRequest = async (req, res, next) => {
 
         const newRequest = new HrmsJoiningRequest({
             requestId,
-            fullName: fullName.trim(),
+            fullName: fullName.trim().replace(/\s+/g, ' '),
             email: normalizedEmail,
             phone: normalizedPhone,
             password: hashedPassword,
             dateOfBirth,
             gender,
             address,
-            aadhaarNumber: aadhaarNumber?.trim(),
+            aadhaarNumber: aadhaarNumber ? aadhaarNumber.replace(/\D/g, '') : '',
             aadhaarPhotoUrl,
-            panNumber: panNumber?.trim()?.toUpperCase(),
+            panNumber: panNumber ? panNumber.trim().toUpperCase() : '',
             panPhotoUrl,
             qualification,
             experience,
-            bankDetails,
+            bankDetails: {
+                ...bankDetails,
+                ifscCode: bankDetails?.ifscCode ? bankDetails.ifscCode.trim().toUpperCase() : ''
+            },
             emergencyContact,
             department,
             designation,
@@ -137,6 +151,7 @@ export const submitJoiningRequest = async (req, res, next) => {
             shift,
             employmentType,
             officeLocation,
+            assignedOfficeLocationId: req.body.assignedOfficeLocationId || null,
             employeeType: employeeType || 'Office',
             profilePhotoUrl,
             resumeUrl,
@@ -385,7 +400,7 @@ export const approveJoiningRequest = async (req, res, next) => {
             profilePhotoUrl: request.profilePhotoUrl || '',
             resumeUrl: request.resumeUrl || '',
             employeeType: employeeType || request.employeeType || 'Office',
-            assignedOfficeLocationId: assignedOfficeLocationId || null,
+            assignedOfficeLocationId: assignedOfficeLocationId || request.assignedOfficeLocationId || null,
             documents: {
                 aadhaarNumber: request.aadhaarNumber,
                 aadhaarPhotoUrl: request.aadhaarPhotoUrl,
