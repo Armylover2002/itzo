@@ -60,8 +60,10 @@ const hrmsEmployeeSchema = new mongoose.Schema(
         ctc: { type: Number, default: 0 },
         monthlySalary: { type: Number, default: 0 },
 
-        // 3. Profile Photo
+        // 3. Profile Photo & Resume
         profilePhotoUrl: { type: String },
+        resumeUrl: { type: String },
+        offerLetterUrl: { type: String },
 
         // 4. KYC & Documents
         documents: {
@@ -70,6 +72,7 @@ const hrmsEmployeeSchema = new mongoose.Schema(
             panNumber: { type: String, trim: true },
             panPhotoUrl: { type: String },
             offerLetterUrl: { type: String },
+            resumeUrl: { type: String },
             otherDocuments: [{
                 name: { type: String },
                 url: { type: String }

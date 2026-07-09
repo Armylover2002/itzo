@@ -375,7 +375,7 @@ export const approveJoiningRequest = async (req, res, next) => {
             hrmsRole: hrmsRole || request.hrmsRole || 'Employee',
             department: department || request.department || '',
             designation: designation || request.designation || '',
-            managerId: managerId || null,
+            managerId: (hrmsRole === 'Manager' || (!hrmsRole && request.hrmsRole === 'Manager')) ? null : (managerId || null),
             employmentType: employmentType || request.employmentType || 'Full-Time',
             joiningDate: joiningDate || request.joiningDate || new Date(),
             shift: shift || request.shift || 'General',
@@ -383,13 +383,15 @@ export const approveJoiningRequest = async (req, res, next) => {
             zone: zone || '',
             ctc: ctc || request.ctc || 0,
             profilePhotoUrl: request.profilePhotoUrl || '',
+            resumeUrl: request.resumeUrl || '',
             employeeType: employeeType || request.employeeType || 'Office',
             assignedOfficeLocationId: assignedOfficeLocationId || null,
             documents: {
                 aadhaarNumber: request.aadhaarNumber,
                 aadhaarPhotoUrl: request.aadhaarPhotoUrl,
                 panNumber: request.panNumber,
-                panPhotoUrl: request.panPhotoUrl
+                panPhotoUrl: request.panPhotoUrl,
+                resumeUrl: request.resumeUrl || ''
             },
             bankDetails: request.bankDetails || {},
             address: request.address || {},
@@ -400,6 +402,14 @@ export const approveJoiningRequest = async (req, res, next) => {
             status: 'Active'
         });
         await newEmployee.save({ session });
+
+        if (req.body.assignedTeamMembers && Array.isArray(req.body.assignedTeamMembers) && req.body.assignedTeamMembers.length > 0) {
+            await HrmsEmployee.updateMany(
+                { _id: { $in: req.body.assignedTeamMembers } },
+                { $set: { managerId: newEmployee._id } },
+                { session }
+            );
+        }
 
         // 4. Create document records for uploaded docs
         const docRecords = [];

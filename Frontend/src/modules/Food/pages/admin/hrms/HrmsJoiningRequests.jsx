@@ -38,11 +38,12 @@ export default function HrmsJoiningRequests() {
 
     const [approvalForm, setApprovalForm] = useState({
         department: '', designation: '', employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
-        shift: 'General', officeLocation: '', ctc: '', hrmsRole: 'Employee', managerId: '', employeeType: 'Office', assignedOfficeLocationId: ''
+        shift: 'General', officeLocation: '', ctc: '', hrmsRole: 'Employee', managerId: '', employeeType: 'Office', assignedOfficeLocationId: '', assignedTeamMembers: []
     });
     const [rejectionReason, setRejectionReason] = useState('');
     const [infoMessage, setInfoMessage] = useState('');
     const [managers, setManagers] = useState([]);
+    const [activeEmployees, setActiveEmployees] = useState([]);
 
     const fetchRequests = useCallback(async (page = 1) => {
         setLoading(true);
@@ -65,9 +66,13 @@ export default function HrmsJoiningRequests() {
 
     const fetchManagers = useCallback(async () => {
         try {
-            const res = await axiosInstance.get('/hrms/employees/managers/active');
-            setManagers(res.data?.data || []);
-        } catch (e) { console.error('Failed to fetch managers', e); }
+            const [mgrRes, empRes] = await Promise.all([
+                axiosInstance.get('/hrms/employees/managers/active').catch(() => ({ data: { data: [] } })),
+                axiosInstance.get('/hrms/employees?status=Active&limit=200').catch(() => ({ data: { data: { employees: [] } } }))
+            ]);
+            setManagers(mgrRes.data?.data || []);
+            setActiveEmployees(empRes.data?.data?.employees || empRes.data?.data || []);
+        } catch (e) { console.error('Failed to fetch managers and employees', e); }
     }, []);
 
     useEffect(() => { 
@@ -82,7 +87,10 @@ export default function HrmsJoiningRequests() {
         setActionLoading(true);
         try {
             await axiosInstance.post(`/hrms/joining-requests/${selectedRequest._id}/approve`, {
-                ...approvalForm, ctc: Number(approvalForm.ctc) || 0
+                ...approvalForm,
+                managerId: approvalForm.hrmsRole === 'Manager' ? null : (approvalForm.managerId || null),
+                ctc: Number(approvalForm.ctc) || 0,
+                assignedTeamMembers: approvalForm.assignedTeamMembers || []
             });
             toast.success('Request approved! Employee can now login.');
             setSelectedRequest(null);
@@ -138,7 +146,17 @@ export default function HrmsJoiningRequests() {
         try {
             const res = await axiosInstance.get(`/hrms/joining-requests/${r._id}`);
             if (res.data?.data) {
-                setSelectedRequest(res.data.data);
+                const fullReq = res.data.data;
+                setSelectedRequest(fullReq);
+                setApprovalForm(prev => ({
+                    ...prev,
+                    department: fullReq.department || prev.department || '',
+                    designation: fullReq.designation || prev.designation || '',
+                    ctc: fullReq.ctc || prev.ctc || '',
+                    hrmsRole: fullReq.hrmsRole || prev.hrmsRole || 'Employee',
+                    managerId: fullReq.hrmsRole === 'Manager' ? '' : (prev.managerId || ''),
+                    assignedTeamMembers: []
+                }));
             }
         } catch (e) {
             console.error('Failed to fetch full request details:', e);
@@ -558,21 +576,64 @@ export default function HrmsJoiningRequests() {
                                             </div>
                                             <div>
                                                 <label className="text-xs font-semibold text-slate-700 mb-1.5 block">HRMS Role</label>
-                                                <select className={inputClass} value={approvalForm.hrmsRole} onChange={e => setApprovalForm(p => ({ ...p, hrmsRole: e.target.value }))}>
-                                                    <option>Employee</option>
-                                                    <option>Manager</option>
-                                                    <option>HR</option>
+                                                <select className={inputClass} value={approvalForm.hrmsRole} onChange={e => setApprovalForm(p => ({ ...p, hrmsRole: e.target.value, managerId: e.target.value === 'Manager' ? '' : p.managerId }))}>
+                                                    <option value="Employee">Employee</option>
+                                                    <option value="Manager">Manager</option>
+                                                    <option value="HR">HR</option>
                                                 </select>
                                             </div>
-                                            <div className="sm:col-span-2 lg:col-span-3">
-                                                <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Reporting Manager</label>
-                                                <select className={inputClass} value={approvalForm.managerId} onChange={e => setApprovalForm(p => ({ ...p, managerId: e.target.value }))}>
-                                                    <option value="">-- No Manager Assigned --</option>
-                                                    {managers.map(m => (
-                                                        <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
-                                                    ))}
-                                                </select>
-                                            </div>
+                                            {approvalForm.hrmsRole === 'Manager' ? (
+                                                <div className="sm:col-span-2 lg:col-span-3 bg-amber-50/90 border border-amber-300 p-3.5 rounded-xl flex items-center gap-3">
+                                                    <div className="text-xs text-amber-900">
+                                                        <span className="font-bold block text-sm mb-0.5">🚀 Manager Role Selected — No Reporting Manager Assigned</span>
+                                                        As this person is onboarding as a Manager, they will not be assigned a reporting manager.
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="sm:col-span-2 lg:col-span-3">
+                                                    <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Reporting Manager</label>
+                                                    <select className={inputClass} value={approvalForm.managerId} onChange={e => setApprovalForm(p => ({ ...p, managerId: e.target.value }))}>
+                                                        <option value="">-- No Manager Assigned --</option>
+                                                        {managers.map(m => (
+                                                            <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            {approvalForm.hrmsRole === 'Manager' && (
+                                                <div className="sm:col-span-2 lg:col-span-3 bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2.5">
+                                                    <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                                                        <span>👥 Assign Team Members Under This Manager</span>
+                                                        <span className="text-[11px] font-normal text-slate-500">Check employees to report to this manager</span>
+                                                    </label>
+                                                    <div className="max-h-48 overflow-y-auto border border-slate-100 rounded-lg p-2 space-y-1 bg-slate-50/50">
+                                                        {activeEmployees.length === 0 ? (
+                                                            <p className="text-xs text-slate-400 p-2 text-center">No active employees available</p>
+                                                        ) : (
+                                                            activeEmployees.map(emp => {
+                                                                const isChecked = (approvalForm.assignedTeamMembers || []).includes(emp._id);
+                                                                return (
+                                                                    <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50/90 border border-orange-200 text-orange-900 font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
+                                                                        <input type="checkbox" checked={isChecked} onChange={e => {
+                                                                            const checked = e.target.checked;
+                                                                            setApprovalForm(p => ({
+                                                                                ...p,
+                                                                                assignedTeamMembers: checked
+                                                                                    ? [...(p.assignedTeamMembers || []), emp._id]
+                                                                                    : (p.assignedTeamMembers || []).filter(id => id !== emp._id)
+                                                                            }));
+                                                                        }} className="rounded text-orange-500 focus:ring-orange-500 w-4 h-4" />
+                                                                        <span className="font-mono text-slate-500 text-[11px]">{emp.employeeId}</span>
+                                                                        <span>{emp.adminId?.name || 'Unknown'}</span>
+                                                                        <span className="text-slate-400 ml-auto">({emp.department || 'General'})</span>
+                                                                    </label>
+                                                                );
+                                                            })
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div className="sm:col-span-2 lg:col-span-3 pt-2">
                                                 <button onClick={handleApprove} disabled={actionLoading}
                                                     className="px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 shadow-md flex items-center justify-center gap-2">

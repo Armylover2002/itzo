@@ -22,7 +22,7 @@ const DEFAULT_FORM = {
     fullName: '', email: '', phone: '', password: '',
     dateOfBirth: '', gender: '',
     street: '', city: '', state: '', pincode: '',
-    aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '',
+    aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '', profilePhotoUrl: '', resumeUrl: '',
     qualification: '', experience: '',
     department: '', designation: '',
     accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
@@ -91,7 +91,7 @@ export default function Signup() {
     const saved = loadSavedForm();
     const [currentStep, setCurrentStep] = useState(saved.step);
     const [form, setForm] = useState({ ...saved.form, password: '' });
-    const [uploading, setUploading] = useState({ aadhaar: false, pan: false });
+    const [uploading, setUploading] = useState({ aadhaar: false, pan: false, profilePhoto: false, resume: false });
 
     const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
 
@@ -120,7 +120,9 @@ export default function Signup() {
             });
             const url = res.data?.url || res.data?.data?.url || res.data?.imageUrl;
             if (!url) throw new Error('No URL returned from server');
-            updateField(`${field}PhotoUrl`, url);
+            if (field === 'profilePhoto') updateField('profilePhotoUrl', url);
+            else if (field === 'resume') updateField('resumeUrl', url);
+            else updateField(`${field}PhotoUrl`, url);
             toast.success(`${field.toUpperCase()} uploaded successfully`);
         } catch (e) {
             toast.error(e.response?.data?.message || `Failed to upload ${field}`);
@@ -189,6 +191,8 @@ export default function Signup() {
                 aadhaarPhotoUrl: form.aadhaarPhotoUrl || undefined,
                 panNumber: form.panNumber || undefined,
                 panPhotoUrl: form.panPhotoUrl || undefined,
+                profilePhotoUrl: form.profilePhotoUrl || undefined,
+                resumeUrl: form.resumeUrl || undefined,
                 qualification: form.qualification || undefined,
                 experience: form.experience || undefined,
                 department: form.department || undefined,
@@ -422,6 +426,26 @@ export default function Signup() {
                                             <label htmlFor="pan-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.panPhotoUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
                                                 {uploading.pan ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.pan ? 'Uploading...' : form.panPhotoUrl ? 'Uploaded' : 'Upload File'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Upload Profile Photo</label>
+                                        <div className="relative">
+                                            <input type="file" id="profile-upload" className="hidden" accept="image/*" onChange={e => handleFileUpload('profilePhoto', e.target.files?.[0])} />
+                                            <label htmlFor="profile-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.profilePhotoUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
+                                                {uploading.profilePhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                                <span className="text-sm font-medium">{uploading.profilePhoto ? 'Uploading...' : form.profilePhotoUrl ? 'Uploaded' : 'Upload Photo'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className={labelClass}>Upload Resume / CV</label>
+                                        <div className="relative">
+                                            <input type="file" id="resume-upload" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={e => handleFileUpload('resume', e.target.files?.[0])} />
+                                            <label htmlFor="resume-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.resumeUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
+                                                {uploading.resume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                                <span className="text-sm font-medium">{uploading.resume ? 'Uploading...' : form.resumeUrl ? 'Uploaded' : 'Upload Resume'}</span>
                                             </label>
                                         </div>
                                     </div>

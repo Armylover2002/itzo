@@ -63,7 +63,7 @@ export const createEmployee = async (req, res, next) => {
             hrmsRole: hrmsRole || 'Employee',
             department,
             designation,
-            managerId: managerId || null,
+            managerId: (hrmsRole === 'Manager') ? null : (managerId || null),
             teamHistory,
             employmentType: employmentType || 'Full-Time',
             joiningDate,
@@ -72,6 +72,7 @@ export const createEmployee = async (req, res, next) => {
             zone,
             ctc: ctc || 0,
             profilePhotoUrl,
+            resumeUrl: req.body.resumeUrl || '',
             employeeType: employeeType || 'Office',
             assignedOfficeLocationId: assignedOfficeLocationId || null,
             documents: {
@@ -79,7 +80,8 @@ export const createEmployee = async (req, res, next) => {
                 aadhaarPhotoUrl,
                 panNumber,
                 panPhotoUrl,
-                offerLetterUrl
+                offerLetterUrl,
+                resumeUrl: req.body.resumeUrl || ''
             },
             bankDetails: {
                 accountHolderName,
@@ -95,6 +97,14 @@ export const createEmployee = async (req, res, next) => {
             status: 'Active'
         });
         await newEmployee.save({ session });
+
+        if (req.body.assignedTeamMembers && Array.isArray(req.body.assignedTeamMembers) && req.body.assignedTeamMembers.length > 0) {
+            await HrmsEmployee.updateMany(
+                { _id: { $in: req.body.assignedTeamMembers } },
+                { $set: { managerId: newEmployee._id } },
+                { session }
+            );
+        }
 
         // 4. Create document records
         const docRecords = [];

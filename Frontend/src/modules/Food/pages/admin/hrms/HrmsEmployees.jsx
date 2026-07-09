@@ -23,16 +23,16 @@ export default function HrmsEmployees() {
         fullName: '', email: '', password: '', phone: '',
         dateOfBirth: '', gender: '',
         street: '', city: '', state: '', pincode: '',
-        aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '',
+        aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '', profilePhotoUrl: '', resumeUrl: '',
         qualification: '', experience: '',
         department: '', designation: '',
         accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
         emergencyName: '', emergencyRelation: '', emergencyPhone: '',
         employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
         shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
-        employeeType: 'Office', assignedOfficeLocationId: ''
+        employeeType: 'Office', assignedOfficeLocationId: '', managerId: '', assignedTeamMembers: []
     });
-    const [uploading, setUploading] = useState({ aadhaar: false, pan: false });
+    const [uploading, setUploading] = useState({ aadhaar: false, pan: false, profilePhoto: false, resume: false });
 
     const fetchEmployees = useCallback(async (page = 1) => {
         setLoading(true);
@@ -70,7 +70,10 @@ export default function HrmsEmployees() {
                 ...onboardForm,
                 ctc: Number(onboardForm.ctc) || 0,
                 assignedOfficeLocationId: onboardForm.assignedOfficeLocationId || null,
-                managerId: onboardForm.managerId || null,
+                managerId: onboardForm.hrmsRole === 'Manager' ? null : (onboardForm.managerId || null),
+                assignedTeamMembers: onboardForm.assignedTeamMembers || [],
+                profilePhotoUrl: onboardForm.profilePhotoUrl || '',
+                resumeUrl: onboardForm.resumeUrl || '',
                 address: {
                     street: onboardForm.street, city: onboardForm.city,
                     state: onboardForm.state, pincode: onboardForm.pincode
@@ -93,13 +96,13 @@ export default function HrmsEmployees() {
             setShowOnboard(false);
             setOnboardForm({
                 fullName: '', email: '', password: '', phone: '', dateOfBirth: '', gender: '',
-                street: '', city: '', state: '', pincode: '', aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '',
+                street: '', city: '', state: '', pincode: '', aadhaarNumber: '', aadhaarPhotoUrl: '', panNumber: '', panPhotoUrl: '', profilePhotoUrl: '', resumeUrl: '',
                 qualification: '', experience: '', department: '', designation: '',
                 accountHolderName: '', accountNumber: '', bankName: '', ifscCode: '', upiId: '',
                 emergencyName: '', emergencyRelation: '', emergencyPhone: '',
                 employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
                 shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
-                employeeType: 'Office', assignedOfficeLocationId: '', managerId: ''
+                employeeType: 'Office', assignedOfficeLocationId: '', managerId: '', assignedTeamMembers: []
             });
             fetchEmployees();
         } catch (e) { toast.error(e.response?.data?.message || 'Onboarding failed'); }
@@ -224,6 +227,26 @@ export default function HrmsEmployees() {
                                         </label>
                                     </div>
                                 </div>
+                                <div>
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Upload Profile Photo</label>
+                                    <div className="relative">
+                                        <input type="file" id="admin-profile-upload" className="hidden" accept="image/*" onChange={e => handleFileUpload('profilePhoto', e.target.files?.[0])} />
+                                        <label htmlFor="admin-profile-upload" className={`flex items-center justify-center gap-2 w-full h-10 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${onboardForm.profilePhotoUrl ? 'text-emerald-600 border-emerald-300' : 'text-slate-500'}`}>
+                                            {uploading.profilePhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                            <span className="text-xs font-medium">{uploading.profilePhoto ? 'Uploading...' : onboardForm.profilePhotoUrl ? 'Uploaded' : 'Upload Photo'}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Upload Resume / CV</label>
+                                    <div className="relative">
+                                        <input type="file" id="admin-resume-upload" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={e => handleFileUpload('resume', e.target.files?.[0])} />
+                                        <label htmlFor="admin-resume-upload" className={`flex items-center justify-center gap-2 w-full h-10 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${onboardForm.resumeUrl ? 'text-emerald-600 border-emerald-300' : 'text-slate-500'}`}>
+                                            {uploading.resume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                            <span className="text-xs font-medium">{uploading.resume ? 'Uploading...' : onboardForm.resumeUrl ? 'Uploaded' : 'Upload Resume'}</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -239,19 +262,64 @@ export default function HrmsEmployees() {
                                 <div><label className="text-xs font-medium text-slate-600 mb-1 block">Joining Date *</label><input type="date" className={inputClass} value={onboardForm.joiningDate} onChange={e => setOnboardForm(p => ({ ...p, joiningDate: e.target.value }))} /></div>
                                 <div>
                                     <label className="text-xs font-medium text-slate-600 mb-1 block">HRMS Role</label>
-                                    <select className={inputClass} value={onboardForm.hrmsRole} onChange={e => setOnboardForm(p => ({ ...p, hrmsRole: e.target.value }))}>
-                                        <option>Employee</option><option>Manager</option><option>HR</option>
+                                    <select className={inputClass} value={onboardForm.hrmsRole} onChange={e => setOnboardForm(p => ({ ...p, hrmsRole: e.target.value, managerId: e.target.value === 'Manager' ? '' : p.managerId }))}>
+                                        <option value="Employee">Employee</option>
+                                        <option value="Manager">Manager</option>
+                                        <option value="HR">HR</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Reporting Manager</label>
-                                    <select className={inputClass} value={onboardForm.managerId} onChange={e => setOnboardForm(p => ({ ...p, managerId: e.target.value }))}>
-                                        <option value="">-- No Manager --</option>
-                                        {managers.map(m => (
-                                            <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {onboardForm.hrmsRole === 'Manager' ? (
+                                    <div className="sm:col-span-2 lg:col-span-3 bg-amber-50/90 border border-amber-300 p-3.5 rounded-xl flex items-center gap-3">
+                                        <div className="text-xs text-amber-900">
+                                            <span className="font-bold block text-sm mb-0.5">🚀 Manager Role Selected — No Reporting Manager Assigned</span>
+                                            As this person is onboarding as a Manager, they will not be assigned a reporting manager above them.
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="text-xs font-medium text-slate-600 mb-1 block">Reporting Manager</label>
+                                        <select className={inputClass} value={onboardForm.managerId} onChange={e => setOnboardForm(p => ({ ...p, managerId: e.target.value }))}>
+                                            <option value="">-- No Manager --</option>
+                                            {managers.map(m => (
+                                                <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                {onboardForm.hrmsRole === 'Manager' && (
+                                    <div className="sm:col-span-2 lg:col-span-4 bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-2.5">
+                                        <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
+                                            <span>👥 Assign Team Members Under This Manager</span>
+                                            <span className="text-[11px] font-normal text-slate-500">Check active employees to report directly to this manager</span>
+                                        </label>
+                                        <div className="max-h-48 overflow-y-auto border border-slate-100 rounded-lg p-2 space-y-1 bg-slate-50/50 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                            {employees.length === 0 ? (
+                                                <p className="text-xs text-slate-400 p-2 text-center col-span-2">No active employees found to assign</p>
+                                            ) : (
+                                                employees.map(emp => {
+                                                    const isChecked = (onboardForm.assignedTeamMembers || []).includes(emp._id);
+                                                    return (
+                                                        <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50/90 border border-orange-200 text-orange-900 font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
+                                                            <input type="checkbox" checked={isChecked} onChange={e => {
+                                                                const checked = e.target.checked;
+                                                                setOnboardForm(p => ({
+                                                                    ...p,
+                                                                    assignedTeamMembers: checked
+                                                                        ? [...(p.assignedTeamMembers || []), emp._id]
+                                                                        : (p.assignedTeamMembers || []).filter(id => id !== emp._id)
+                                                                }));
+                                                            }} className="rounded text-orange-500 focus:ring-orange-500 w-4 h-4" />
+                                                            <span className="font-mono text-slate-500 text-[11px]">{emp.employeeId}</span>
+                                                            <span className="truncate">{emp.adminId?.name || 'Unknown'}</span>
+                                                            <span className="text-slate-400 ml-auto shrink-0">({emp.department || 'General'})</span>
+                                                        </label>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                                 <div>
                                     <label className="text-xs font-medium text-slate-600 mb-1 block">Shift</label>
                                     <select className={inputClass} value={onboardForm.shift} onChange={e => setOnboardForm(p => ({ ...p, shift: e.target.value }))}>
