@@ -404,11 +404,27 @@ export const approveJoiningRequest = async (req, res, next) => {
         await newEmployee.save({ session });
 
         if (req.body.assignedTeamMembers && Array.isArray(req.body.assignedTeamMembers) && req.body.assignedTeamMembers.length > 0) {
-            await HrmsEmployee.updateMany(
-                { _id: { $in: req.body.assignedTeamMembers } },
-                { $set: { managerId: newEmployee._id } },
-                { session }
-            );
+            const teamEmps = await HrmsEmployee.find({
+                _id: { $in: req.body.assignedTeamMembers },
+                status: 'Active',
+                hrmsRole: { $nin: ['Manager', 'HR'] }
+            }).session(session);
+
+            for (const teamEmp of teamEmps) {
+                if (String(teamEmp._id) === String(newEmployee._id)) continue;
+                if (teamEmp.managerId && teamEmp.teamHistory && teamEmp.teamHistory.length > 0) {
+                    const lastIdx = teamEmp.teamHistory.length - 1;
+                    if (!teamEmp.teamHistory[lastIdx].removedAt) {
+                        teamEmp.teamHistory[lastIdx].removedAt = new Date();
+                    }
+                }
+                teamEmp.managerId = newEmployee._id;
+                teamEmp.teamHistory.push({
+                    managerId: newEmployee._id,
+                    assignedAt: new Date()
+                });
+                await teamEmp.save({ session });
+            }
         }
 
         // 4. Create document records for uploaded docs

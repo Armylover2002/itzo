@@ -68,7 +68,7 @@ export default function HrmsJoiningRequests() {
         try {
             const [mgrRes, empRes] = await Promise.all([
                 axiosInstance.get('/hrms/employees/managers/active').catch(() => ({ data: { data: [] } })),
-                axiosInstance.get('/hrms/employees?status=Active&limit=200').catch(() => ({ data: { data: { employees: [] } } }))
+                axiosInstance.get('/hrms/employees?status=Active&limit=200&excludeManagers=true').catch(() => ({ data: { data: { employees: [] } } }))
             ]);
             setManagers(mgrRes.data?.data || []);
             setActiveEmployees(empRes.data?.data?.employees || empRes.data?.data || []);
@@ -608,10 +608,17 @@ export default function HrmsJoiningRequests() {
                                                         <span className="text-[11px] font-normal text-slate-500">Check employees to report to this manager</span>
                                                     </label>
                                                     <div className="max-h-48 overflow-y-auto border border-slate-100 rounded-lg p-2 space-y-1 bg-slate-50/50">
-                                                        {activeEmployees.length === 0 ? (
-                                                            <p className="text-xs text-slate-400 p-2 text-center">No active employees available</p>
-                                                        ) : (
-                                                            activeEmployees.map(emp => {
+                                                        {(() => {
+                                                            const selectableEmps = activeEmployees.filter(emp =>
+                                                                ((approvalForm.assignedTeamMembers || []).includes(emp._id) || !emp.managerId) &&
+                                                                emp.hrmsRole !== 'Manager' &&
+                                                                emp.hrmsRole !== 'HR' &&
+                                                                emp.status === 'Active'
+                                                            );
+                                                            if (selectableEmps.length === 0) {
+                                                                return <p className="text-xs text-slate-400 p-3 text-center">No unassigned active employees available. Already assigned employees & managers are hidden to prevent duplicates.</p>;
+                                                            }
+                                                            return selectableEmps.map(emp => {
                                                                 const isChecked = (approvalForm.assignedTeamMembers || []).includes(emp._id);
                                                                 return (
                                                                     <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50/90 border border-orange-200 text-orange-900 font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
@@ -629,8 +636,8 @@ export default function HrmsJoiningRequests() {
                                                                         <span className="text-slate-400 ml-auto">({emp.department || 'General'})</span>
                                                                     </label>
                                                                 );
-                                                            })
-                                                        )}
+                                                            });
+                                                        })()}
                                                     </div>
                                                 </div>
                                             )}

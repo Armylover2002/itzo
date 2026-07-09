@@ -99,11 +99,27 @@ export const createEmployee = async (req, res, next) => {
         await newEmployee.save({ session });
 
         if (req.body.assignedTeamMembers && Array.isArray(req.body.assignedTeamMembers) && req.body.assignedTeamMembers.length > 0) {
-            await HrmsEmployee.updateMany(
-                { _id: { $in: req.body.assignedTeamMembers } },
-                { $set: { managerId: newEmployee._id } },
-                { session }
-            );
+            const teamEmps = await HrmsEmployee.find({
+                _id: { $in: req.body.assignedTeamMembers },
+                status: 'Active',
+                hrmsRole: { $nin: ['Manager', 'HR'] }
+            }).session(session);
+
+            for (const teamEmp of teamEmps) {
+                if (String(teamEmp._id) === String(newEmployee._id)) continue;
+                if (teamEmp.managerId && teamEmp.teamHistory && teamEmp.teamHistory.length > 0) {
+                    const lastIdx = teamEmp.teamHistory.length - 1;
+                    if (!teamEmp.teamHistory[lastIdx].removedAt) {
+                        teamEmp.teamHistory[lastIdx].removedAt = new Date();
+                    }
+                }
+                teamEmp.managerId = newEmployee._id;
+                teamEmp.teamHistory.push({
+                    managerId: newEmployee._id,
+                    assignedAt: new Date()
+                });
+                await teamEmp.save({ session });
+            }
         }
 
         // 4. Create document records
@@ -157,7 +173,7 @@ export const createEmployee = async (req, res, next) => {
  */
 export const getEmployees = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType } = req.query;
+        const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType, assignmentStatus, currentManagerId, hrmsRole, excludeManagers } = req.query;
 
         const filter = {};
         if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
@@ -166,11 +182,24 @@ export const getEmployees = async (req, res, next) => {
         if (status && status !== 'all') {
             filter.status = status;
         }
-        if (department) {
+        if (department && department !== 'all') {
             filter.department = department;
         }
-        if (employeeType) {
+        if (employeeType && employeeType !== 'all') {
             filter.employeeType = employeeType;
+        }
+        if (assignmentStatus === 'Assigned') {
+            filter.managerId = { $ne: null };
+        } else if (assignmentStatus === 'Available' || assignmentStatus === 'Unassigned') {
+            filter.managerId = null;
+        }
+        if (currentManagerId && currentManagerId !== 'all') {
+            filter.managerId = currentManagerId;
+        }
+        if (hrmsRole && hrmsRole !== 'all') {
+            filter.hrmsRole = hrmsRole;
+        } else if (excludeManagers === 'true') {
+            filter.hrmsRole = { $nin: ['Manager', 'HR'] };
         }
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -227,15 +256,18 @@ export const getEmployees = async (req, res, next) => {
                     HrmsEmployee.countDocuments(baseFilter)
                 ]);
                 finalEmployees = emps;
-                return sendResponse(res, 200, 'Employees retrieved successfully', {
-                    employees: finalEmployees,
-                    pagination: { page: parseInt(page), limit: parseInt(limit), total: cnt, totalPages: Math.ceil(cnt / parseInt(limit)) }
-                });
             }
         }
 
+        const enrichedEmployees = finalEmployees.map(emp => ({
+            ...emp,
+            assignmentStatus: emp.managerId ? 'Assigned' : 'Available',
+            currentManagerName: emp.managerId?.adminId?.name || null,
+            currentManagerId: emp.managerId?._id || null
+        }));
+
         return sendResponse(res, 200, 'Employees retrieved successfully', {
-            employees: finalEmployees,
+            employees: enrichedEmployees,
             pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / parseInt(limit)) }
         });
     } catch (error) {
@@ -336,7 +368,7 @@ export const updateEmployee = async (req, res, next) => {
         const allowedFields = [
             'department', 'designation', 'managerId', 'employmentType', 'hrmsRole',
             'shift', 'officeLocation', 'zone', 'ctc',
-            'bankDetails', 'address', 'emergencyContact', 'profilePhotoUrl',
+            'bankDetails', 'address', 'emergencyContact', 'profilePhotoUrl', 'resumeUrl',
             'documents', 'qualification', 'experience',
             'employeeType', 'assignedOfficeLocationId'
         ];
@@ -349,13 +381,17 @@ export const updateEmployee = async (req, res, next) => {
 
         await employee.save();
 
-        // Sync name/phone with FoodAdmin if provided
-        if (updateData.fullName || updateData.phone) {
+        // Sync name/phone/profileImage with FoodAdmin if provided
+        if (updateData.fullName || updateData.phone || updateData.profilePhotoUrl !== undefined) {
             const adminUpdate = {};
             if (updateData.fullName) adminUpdate.name = updateData.fullName;
             if (updateData.phone) adminUpdate.phone = updateData.phone;
+            if (updateData.profilePhotoUrl !== undefined) adminUpdate.profileImage = updateData.profilePhotoUrl;
             await FoodAdmin.findByIdAndUpdate(employee.adminId, adminUpdate);
         }
+
+        // Ensure HrmsDocument records are created or synced for any new document URLs
+        await HrmsDocument.syncEmployeeDocuments(employee);
 
         return sendResponse(res, 200, 'Employee updated successfully', employee);
     } catch (error) {
@@ -574,12 +610,17 @@ export const transferEmployee = async (req, res, next) => {
 
         // Edge case: employee must be active
         if (employee.status !== 'Active') {
-            return sendError(res, 400, 'Cannot transfer an inactive or suspended employee');
+            return sendError(res, 400, employee.status === 'Suspended' ? 'Employee is suspended.' : 'Employee is inactive.');
+        }
+
+        // Edge case: role check
+        if (newManagerId && (employee.hrmsRole === 'Manager' || employee.hrmsRole === 'HR')) {
+            return sendError(res, 400, 'Manager accounts cannot be added as team members.');
         }
 
         // Edge case: same manager check
         if (newManagerId && String(employee.managerId) === String(newManagerId)) {
-            return sendError(res, 400, 'Employee is already assigned to this manager');
+            return sendError(res, 400, 'Employee already belongs to this manager.');
         }
 
         // Edge case: cannot assign employee to themselves

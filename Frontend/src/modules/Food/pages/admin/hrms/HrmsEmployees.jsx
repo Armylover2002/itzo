@@ -15,6 +15,9 @@ export default function HrmsEmployees() {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [onboardLoading, setOnboardLoading] = useState(false);
     const [filterEmployeeType, setFilterEmployeeType] = useState('all');
+    const [filterAssignmentStatus, setFilterAssignmentStatus] = useState('all');
+    const [filterDepartment, setFilterDepartment] = useState('all');
+    const [filterManagerId, setFilterManagerId] = useState('all');
     const [managers, setManagers] = useState([]);
     const [transferConfirm, setTransferConfirm] = useState(null); // { employeeId, employeeName, currentManager, newManagerId, newManagerName }
     const { hrmsSettings } = useHrmsSettings();
@@ -40,13 +43,16 @@ export default function HrmsEmployees() {
             const params = new URLSearchParams({ page, limit: 20, status: 'Active' });
             if (search) params.append('search', search);
             if (filterEmployeeType !== 'all') params.append('employeeType', filterEmployeeType);
+            if (filterAssignmentStatus !== 'all') params.append('assignmentStatus', filterAssignmentStatus);
+            if (filterDepartment !== 'all') params.append('department', filterDepartment);
+            if (filterManagerId !== 'all') params.append('currentManagerId', filterManagerId);
             const res = await axiosInstance.get(`/hrms/employees?${params}`);
             const data = res.data?.data || {};
             setEmployees(data.employees || []);
             setPagination(data.pagination || { page: 1, total: 0, totalPages: 0 });
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
-    }, [search, filterEmployeeType]);
+    }, [search, filterEmployeeType, filterAssignmentStatus, filterDepartment, filterManagerId]);
 
     const fetchManagers = useCallback(async () => {
         try {
@@ -116,12 +122,19 @@ export default function HrmsEmployees() {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('folder', `hrms/employees/${field}s`);
-            const res = await axiosInstance.post('/uploads/image', formData, {
+            const endpoint = field === 'resume' || file.name?.toLowerCase().endsWith('.pdf') || file.name?.toLowerCase().endsWith('.doc') || file.name?.toLowerCase().endsWith('.docx') ? '/uploads/file' : '/uploads/image';
+            const res = await axiosInstance.post(endpoint, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             const url = res.data?.url || res.data?.data?.url || res.data?.imageUrl;
             if (!url) throw new Error('No URL returned from server');
-            setOnboardForm(prev => ({ ...prev, [`${field}PhotoUrl`]: url }));
+            if (field === 'profilePhoto') {
+                setOnboardForm(prev => ({ ...prev, profilePhotoUrl: url }));
+            } else if (field === 'resume') {
+                setOnboardForm(prev => ({ ...prev, resumeUrl: url }));
+            } else {
+                setOnboardForm(prev => ({ ...prev, [`${field}PhotoUrl`]: url }));
+            }
             toast.success(`${field.toUpperCase()} uploaded successfully`);
         } catch (e) {
             toast.error(e.response?.data?.message || `Failed to upload ${field}`);
@@ -294,10 +307,17 @@ export default function HrmsEmployees() {
                                             <span className="text-[11px] font-normal text-slate-500">Check active employees to report directly to this manager</span>
                                         </label>
                                         <div className="max-h-48 overflow-y-auto border border-slate-100 rounded-lg p-2 space-y-1 bg-slate-50/50 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                                            {employees.length === 0 ? (
-                                                <p className="text-xs text-slate-400 p-2 text-center col-span-2">No active employees found to assign</p>
-                                            ) : (
-                                                employees.map(emp => {
+                                            {(() => {
+                                                const selectableEmps = employees.filter(emp =>
+                                                    ((onboardForm.assignedTeamMembers || []).includes(emp._id) || !emp.managerId) &&
+                                                    emp.hrmsRole !== 'Manager' &&
+                                                    emp.hrmsRole !== 'HR' &&
+                                                    emp.status === 'Active'
+                                                );
+                                                if (selectableEmps.length === 0) {
+                                                    return <p className="text-xs text-slate-400 p-2 text-center col-span-2">No unassigned active employees found. Already assigned employees & managers are hidden to prevent duplicates.</p>;
+                                                }
+                                                return selectableEmps.map(emp => {
                                                     const isChecked = (onboardForm.assignedTeamMembers || []).includes(emp._id);
                                                     return (
                                                         <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50/90 border border-orange-200 text-orange-900 font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
@@ -315,8 +335,8 @@ export default function HrmsEmployees() {
                                                             <span className="text-slate-400 ml-auto shrink-0">({emp.department || 'General'})</span>
                                                         </label>
                                                     );
-                                                })
-                                            )}
+                                                });
+                                            })()}
                                         </div>
                                     </div>
                                 )}
@@ -380,17 +400,34 @@ export default function HrmsEmployees() {
             )}
 
             {/* Search & Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, ID, department..."
-                        className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="relative">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, ID, dept..."
+                        className="w-full h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white" />
                 </div>
-                <div className="relative min-w-[200px]">
-                    <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div className="relative">
+                    <select value={filterAssignmentStatus} onChange={e => setFilterAssignmentStatus(e.target.value)} 
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        <option value="all">Assignment: All Status</option>
+                        <option value="Available">Available Employees (Unassigned)</option>
+                        <option value="Assigned">Assigned Employees</option>
+                    </select>
+                </div>
+                <div className="relative">
+                    <select value={filterManagerId} onChange={e => setFilterManagerId(e.target.value)} 
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        <option value="all">Filter by Manager: All</option>
+                        <option value="unassigned">No Manager Assigned</option>
+                        {managers.map(m => (
+                            <option key={m._id} value={m._id}>{m.adminId?.name || m.employeeId}</option>
+                        ))}
+                    </select>
+                </div>
+                <div className="relative">
                     <select value={filterEmployeeType} onChange={e => setFilterEmployeeType(e.target.value)} 
-                        className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white appearance-none cursor-pointer">
-                        <option value="all">All Employee Types</option>
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        <option value="all">Type: All Types</option>
                         <option value="Office">Office Employees</option>
                         <option value="Field">Field Employees</option>
                     </select>
@@ -435,45 +472,66 @@ export default function HrmsEmployees() {
                                 ))}
                             </div>
                         </div>
-                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-4 justify-between items-center rounded-b-2xl">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-slate-700">Transfer Manager:</span>
-                                {selectedEmployee.managerId?.adminId?.name && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                                        <UserCog className="w-3.5 h-3.5" />
-                                        Current: {selectedEmployee.managerId.adminId.name}
-                                    </span>
-                                )}
-                                {!selectedEmployee.managerId?.adminId?.name && (
-                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-                                        Unassigned
-                                    </span>
-                                )}
-                                <select 
-                                    className="h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
-                                    onChange={(e) => {
-                                        if (!e.target.value) return;
-                                        const newManagerId = e.target.value;
-                                        const newManagerName = newManagerId === 'unassigned' 
-                                            ? null 
-                                            : managers.find(m => String(m._id) === String(newManagerId))?.adminId?.name || 'Unknown';
-                                        setTransferConfirm({
+                        <div className="p-6 border-t border-slate-100 bg-slate-50 flex flex-col gap-4 justify-between rounded-b-2xl">
+                            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/60">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Current Manager:</span>
+                                    {selectedEmployee.managerId?.adminId?.name ? (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-200 shadow-2xs">
+                                            <UserCog className="w-3.5 h-3.5" />
+                                            Reporting To: {selectedEmployee.managerId.adminId.name}
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            Available — Unassigned
+                                        </span>
+                                    )}
+                                </div>
+                                {selectedEmployee.managerId && (
+                                    <button
+                                        onClick={() => setTransferConfirm({
                                             employeeId: selectedEmployee._id,
                                             employeeName: selectedEmployee.adminId?.name || 'Unknown',
                                             currentManager: selectedEmployee.managerId?.adminId?.name || 'Unassigned',
-                                            newManagerId,
-                                            newManagerName: newManagerName || 'Unassigned'
-                                        });
-                                    }}
-                                    value=""
-                                >
-                                    <option value="">-- Select New Manager --</option>
-                                    {managers.filter(m => String(m._id) !== String(selectedEmployee.managerId?._id)).map(m => (
-                                        <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
-                                    ))}
-                                    {selectedEmployee.managerId && <option value="unassigned">-- Remove Manager --</option>}
-                                </select>
+                                            newManagerId: 'unassigned',
+                                            newManagerName: 'Unassigned'
+                                        })}
+                                        className="px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1.5 border border-red-200 shadow-2xs"
+                                    >
+                                        Remove From Team
+                                    </button>
+                                )}
                             </div>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
+                                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                                    <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">
+                                        {selectedEmployee.managerId ? 'Transfer To Manager:' : 'Assign Manager:'}
+                                    </span>
+                                    <select 
+                                        className="h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 w-full sm:w-64"
+                                        onChange={(e) => {
+                                            if (!e.target.value) return;
+                                            const newManagerId = e.target.value;
+                                            const newManagerName = newManagerId === 'unassigned' 
+                                                ? null 
+                                                : managers.find(m => String(m._id) === String(newManagerId))?.adminId?.name || 'Unknown';
+                                            setTransferConfirm({
+                                                employeeId: selectedEmployee._id,
+                                                employeeName: selectedEmployee.adminId?.name || 'Unknown',
+                                                currentManager: selectedEmployee.managerId?.adminId?.name || 'Unassigned',
+                                                newManagerId,
+                                                newManagerName: newManagerName || 'Unassigned'
+                                            });
+                                        }}
+                                        value=""
+                                    >
+                                        <option value="">-- Select New Manager --</option>
+                                        {managers.filter(m => String(m._id) !== String(selectedEmployee.managerId?._id) && String(m._id) !== String(selectedEmployee._id)).map(m => (
+                                            <option key={m._id} value={m._id}>{m.adminId?.name} ({m.employeeId})</option>
+                                        ))}
+                                        {selectedEmployee.managerId && <option value="unassigned">-- Remove From Team --</option>}
+                                    </select>
+                                </div>
                             <div className="flex flex-wrap gap-3">
                                 {selectedEmployee.employeeType === 'Field' && (
                                     <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${selectedEmployee._id}` : `/ecs/hrms/live-tracking?employeeId=${selectedEmployee._id}`} className="px-5 h-10 bg-white border-2 border-indigo-500 text-indigo-600 hover:bg-indigo-50 flex items-center gap-2 rounded-xl text-sm font-medium transition-all shadow-sm">
@@ -493,6 +551,7 @@ export default function HrmsEmployees() {
                         </div>
                     </div>
                 </div>
+            </div>
             )}
 
             {/* Employee Table */}
@@ -541,14 +600,18 @@ export default function HrmsEmployees() {
                                         <td className="px-5 py-3.5 text-slate-600">{emp.designation || '—'}</td>
                                         <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                         <td className="px-5 py-3.5">
-                                            {emp.managerId?.adminId?.name ? (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                            {emp.status !== 'Active' ? (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                                    Inactive
+                                                </span>
+                                            ) : emp.managerId?.adminId?.name ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200" title={`Already Assigned to ${emp.managerId.adminId.name}`}>
                                                     <UserCog className="w-3 h-3" />
                                                     {emp.managerId.adminId.name}
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
-                                                    Unassigned
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    Available
                                                 </span>
                                             )}
                                         </td>

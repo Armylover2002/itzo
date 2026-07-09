@@ -47,8 +47,8 @@ export const getUnassignedEmployees = async (req, res, next) => {
     try {
         const { search } = req.query;
         
-        // Base filter: active employees, exclude the requesting manager themselves
-        const filter = { status: 'Active', _id: { $ne: req.hrmsEmployee?._id } };
+        // Base filter: active normal employees only, exclude Managers, HR, inactive/suspended, and self
+        const filter = { status: 'Active', _id: { $ne: req.hrmsEmployee?._id }, hrmsRole: { $nin: ['Manager', 'HR'] } };
 
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -98,10 +98,21 @@ export const addTeamMember = async (req, res, next) => {
         const employee = await HrmsEmployee.findById(employeeId);
         if (!employee) return sendError(res, 404, 'Employee not found');
         
-        if (employee.status !== 'Active') return sendError(res, 400, 'Cannot assign an inactive employee');
+        if (employee.status !== 'Active') {
+            return sendError(res, 400, employee.status === 'Suspended' ? 'Employee is suspended.' : 'Employee is inactive.');
+        }
+
+        if (employee.hrmsRole === 'Manager' || employee.hrmsRole === 'HR') {
+            return sendError(res, 400, 'Manager accounts cannot be added as team members.');
+        }
 
         if (employee.managerId) {
-            return sendError(res, 400, 'This employee is already assigned to another manager');
+            if (String(employee.managerId) === String(req.hrmsEmployee._id)) {
+                return sendError(res, 400, 'Employee already belongs to this manager.');
+            }
+            await employee.populate({ path: 'managerId', populate: { path: 'adminId', select: 'name' } });
+            const otherManagerName = employee.managerId?.adminId?.name || 'Another Manager';
+            return sendError(res, 400, `Employee is already assigned to Manager: ${otherManagerName}.`);
         }
 
         // Prevent assigning self
