@@ -10,6 +10,129 @@ import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/
 
 const mapLibraries = ['places'];
 
+const WorkingTimer = ({ attendance, isCheckedIn, isDone }) => {
+    const [elapsed, setElapsed] = useState('0:00');
+    useEffect(() => {
+        if (!attendance?.checkInTime || attendance?.checkOutTime) return;
+        const update = () => {
+            const diff = Date.now() - new Date(attendance.checkInTime).getTime();
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            setElapsed(`${h}:${String(m).padStart(2, '0')}`);
+        };
+        update();
+        const interval = setInterval(update, 60000);
+        return () => clearInterval(interval);
+    }, [attendance]);
+
+    return (
+        <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center border-4 ${
+            isDone ? 'border-slate-100 bg-slate-50' : 'border-orange-100 bg-orange-50'
+        }`}>
+            {isDone ? (
+                <span className="text-base font-bold text-slate-500">
+                    {Math.floor(attendance?.workingHours || 0)}h {Math.round(((attendance?.workingHours || 0) % 1) * 60)}m
+                </span>
+            ) : isCheckedIn ? (
+                <span className="text-lg font-bold text-orange-600">{elapsed}</span>
+            ) : (
+                <Timer className="w-8 h-8 text-orange-500" />
+            )}
+        </div>
+    );
+};
+
+const DashboardLiveMap = ({ isFieldEmployee, shouldTrack, employeeProfile, isLoaded, loadError }) => {
+    const [trackingData, setTrackingData] = useState(null);
+    const [mapInstance, setMapInstance] = useState(null);
+
+    const fetchMyTrack = useCallback(async () => {
+        if (!isFieldEmployee) return;
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const res = await axiosInstance.get(`/hrms/location-tracks/my/${today}`);
+            setTrackingData(res.data?.data || null);
+        } catch (e) { console.error('Failed to load tracking data', e); }
+    }, [isFieldEmployee]);
+
+    useEffect(() => { fetchMyTrack(); }, [fetchMyTrack]);
+
+    useEffect(() => {
+        if (!shouldTrack) return;
+        const interval = setInterval(fetchMyTrack, 60000);
+        return () => clearInterval(interval);
+    }, [shouldTrack, fetchMyTrack]);
+
+    const onLoadMap = React.useCallback((map) => {
+        setMapInstance(map);
+    }, []);
+
+    const pathCoordinates = trackingData?.points?.map(p => ({
+        lat: p.location.coordinates[1], lng: p.location.coordinates[0]
+    })) || [];
+
+    useEffect(() => {
+        if (mapInstance) {
+            if (pathCoordinates.length > 0) {
+                const bounds = new window.google.maps.LatLngBounds();
+                pathCoordinates.forEach(p => bounds.extend(p));
+                mapInstance.fitBounds(bounds);
+            } else if (employeeProfile?.assignedOfficeDetails?.latitude && employeeProfile?.assignedOfficeDetails?.longitude) {
+                mapInstance.panTo({
+                    lat: employeeProfile.assignedOfficeDetails.latitude,
+                    lng: employeeProfile.assignedOfficeDetails.longitude
+                });
+                mapInstance.setZoom(15);
+            }
+        }
+    }, [mapInstance, trackingData, employeeProfile]);
+
+    if (!isFieldEmployee) return null;
+
+    return (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden md:col-span-2 xl:col-span-3">
+            <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
+            <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                            <MapIcon className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                My Live Route
+                                {shouldTrack && <span className="flex h-2.5 w-2.5 relative ml-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span></span>}
+                            </h3>
+                            <p className="text-xs text-slate-500">
+                                {trackingData?.totalDistance ? (trackingData.totalDistance / 1000).toFixed(2) + ' km traveled today' : 'No movement recorded yet'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex-1 w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100">
+                    {loadError ? (
+                        <div className="absolute inset-0 flex items-center justify-center text-red-500 text-sm">Failed to load Google Maps</div>
+                    ) : !isLoaded ? (
+                        <div className="absolute inset-0 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+                    ) : (
+                        <GoogleMap
+                            mapContainerStyle={{ width: '100%', height: '100%' }}
+                            center={pathCoordinates.length > 0 ? pathCoordinates[pathCoordinates.length - 1] : (employeeProfile?.assignedOfficeDetails?.latitude ? {lat: employeeProfile.assignedOfficeDetails.latitude, lng: employeeProfile.assignedOfficeDetails.longitude} : { lat: 20.5937, lng: 78.9629 })}
+                            zoom={pathCoordinates.length > 0 ? 15 : (employeeProfile?.assignedOfficeDetails?.latitude ? 15 : 4)}
+                            onLoad={onLoadMap}
+                            options={{ disableDefaultUI: false, zoomControl: true, mapTypeControl: false, scaleControl: true, streetViewControl: false, rotateControl: false, fullscreenControl: true }}
+                        >
+                            {pathCoordinates.length > 0 && <Polyline path={pathCoordinates} options={{ strokeColor: '#10b981', strokeOpacity: 0.8, strokeWeight: 4 }} />}
+                            {pathCoordinates.length > 0 && <Marker position={pathCoordinates[0]} title="Start Position" icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' }} />}
+                            {pathCoordinates.length > 1 && <Marker position={pathCoordinates[pathCoordinates.length - 1]} title="Current/End Position" icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' }} />}
+                        </GoogleMap>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export default function Dashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -19,10 +142,7 @@ export default function Dashboard() {
     const [employeeProfile, setEmployeeProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
-    const [elapsed, setElapsed] = useState('0:00');
     const [locationStatus, setLocationStatus] = useState(''); // 'fetching', 'success', 'error'
-    const [trackingData, setTrackingData] = useState(null);
-    const [mapInstance, setMapInstance] = useState(null);
 
     const { isLoaded, loadError } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
@@ -62,55 +182,7 @@ export default function Dashboard() {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    useEffect(() => {
-        if (!attendance?.checkInTime || attendance?.checkOutTime) return;
-        const update = () => {
-            const diff = Date.now() - new Date(attendance.checkInTime).getTime();
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            setElapsed(`${h}:${String(m).padStart(2, '0')}`);
-        };
-        update();
-        const interval = setInterval(update, 60000);
-        return () => clearInterval(interval);
-    }, [attendance]);
 
-    const fetchMyTrack = useCallback(async () => {
-        if (!isFieldEmployee) return;
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const res = await axiosInstance.get(`/hrms/location-tracks/my/${today}`);
-            setTrackingData(res.data?.data || null);
-        } catch (e) { console.error('Failed to load tracking data', e); }
-    }, [isFieldEmployee]);
-
-    useEffect(() => {
-        fetchMyTrack();
-    }, [fetchMyTrack]);
-
-    useEffect(() => {
-        if (!shouldTrack) return;
-        const interval = setInterval(fetchMyTrack, 60000);
-        return () => clearInterval(interval);
-    }, [shouldTrack, fetchMyTrack]);
-
-    const onLoadMap = React.useCallback((map) => {
-        setMapInstance(map);
-    }, []);
-
-    useEffect(() => {
-        if (mapInstance && trackingData?.points?.length > 0) {
-            const bounds = new window.google.maps.LatLngBounds();
-            trackingData.points.forEach(p => {
-                bounds.extend({ lat: p.location.coordinates[1], lng: p.location.coordinates[0] });
-            });
-            mapInstance.fitBounds(bounds);
-        }
-    }, [mapInstance, trackingData]);
-
-    const pathCoordinates = trackingData?.points?.map(p => ({
-        lat: p.location.coordinates[1], lng: p.location.coordinates[0]
-    })) || [];
 
     const handleCheckIn = async () => {
         setActionLoading(true);
@@ -216,19 +288,7 @@ export default function Dashboard() {
                 <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isDone ? 'border-slate-200' : isCheckedIn ? 'border-orange-300' : 'border-orange-200'}`}>
                     <div className={`h-1 ${isDone ? 'bg-slate-300' : 'bg-gradient-to-r from-orange-500 to-amber-500'}`} />
                     <div className="p-6 text-center">
-                        <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center border-4 ${
-                            isDone ? 'border-slate-100 bg-slate-50' : 'border-orange-100 bg-orange-50'
-                        }`}>
-                            {isDone ? (
-                                <span className="text-base font-bold text-slate-500">
-                                    {Math.floor(attendance.workingHours)}h {Math.round((attendance.workingHours % 1) * 60)}m
-                                </span>
-                            ) : isCheckedIn ? (
-                                <span className="text-lg font-bold text-orange-600">{elapsed}</span>
-                            ) : (
-                                <Timer className="w-8 h-8 text-orange-500" />
-                            )}
-                        </div>
+                        <WorkingTimer attendance={attendance} isCheckedIn={isCheckedIn} isDone={isDone} />
                         <h3 className="font-bold text-slate-900 text-lg mb-1">
                             {isDone ? 'Shift Complete' : isCheckedIn ? 'Working' : 'Not Checked In'}
                         </h3>
@@ -383,73 +443,14 @@ export default function Dashboard() {
                     </div>
                 </div>
                 {/* Live Tracking Map for Field Employees */}
-                {isFieldEmployee && (
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden md:col-span-2 xl:col-span-3">
-                        <div className="h-1 bg-gradient-to-r from-emerald-400 to-emerald-600" />
-                        <div className="p-6 h-full flex flex-col">
-                            <div className="flex items-center justify-between mb-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                                        <MapIcon className="w-5 h-5 text-emerald-600" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                            My Live Route
-                                            {shouldTrack && <span className="flex h-2.5 w-2.5 relative ml-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span></span>}
-                                        </h3>
-                                        <p className="text-xs text-slate-500">
-                                            {trackingData?.totalDistance ? (trackingData.totalDistance / 1000).toFixed(2) + ' km traveled today' : 'No movement recorded yet'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex-1 w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100">
-                                {loadError ? (
-                                    <div className="absolute inset-0 flex items-center justify-center text-red-500 text-sm">Failed to load Google Maps</div>
-                                ) : !isLoaded ? (
-                                    <div className="absolute inset-0 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
-                                ) : (
-                                    <GoogleMap
-                                        mapContainerStyle={{ width: '100%', height: '100%' }}
-                                        center={pathCoordinates.length > 0 ? pathCoordinates[pathCoordinates.length - 1] : { lat: 20.5937, lng: 78.9629 }}
-                                        zoom={pathCoordinates.length > 0 ? 15 : 4}
-                                        onLoad={onLoadMap}
-                                        options={{
-                                            disableDefaultUI: false,
-                                            zoomControl: true,
-                                            mapTypeControl: false,
-                                            scaleControl: true,
-                                            streetViewControl: false,
-                                            rotateControl: false,
-                                            fullscreenControl: true
-                                        }}
-                                    >
-                                        {pathCoordinates.length > 0 && (
-                                            <Polyline
-                                                path={pathCoordinates}
-                                                options={{ strokeColor: '#10b981', strokeOpacity: 0.8, strokeWeight: 4 }}
-                                            />
-                                        )}
-                                        {pathCoordinates.length > 0 && (
-                                            <Marker
-                                                position={pathCoordinates[0]}
-                                                title="Start Position"
-                                                icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' }}
-                                            />
-                                        )}
-                                        {pathCoordinates.length > 1 && (
-                                            <Marker
-                                                position={pathCoordinates[pathCoordinates.length - 1]}
-                                                title="Current/End Position"
-                                                icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png' }}
-                                            />
-                                        )}
-                                    </GoogleMap>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {/* Live Tracking Map for Field Employees */}
+                <DashboardLiveMap
+                    isFieldEmployee={isFieldEmployee}
+                    shouldTrack={shouldTrack}
+                    employeeProfile={employeeProfile}
+                    isLoaded={isLoaded}
+                    loadError={loadError}
+                />
             </div>
         </div>
     );

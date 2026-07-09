@@ -24,11 +24,13 @@ const handleProxyDownload = async (url) => {
             responseType: 'blob',
             withCredentials: false
         });
-        const blob = new Blob([res.data], { type: 'application/pdf' });
+        const contentType = res.headers['content-type'] || 'application/pdf';
+        const ext = contentType.includes('image') ? 'png' : 'pdf';
+        const blob = new Blob([res.data], { type: contentType });
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = blobUrl;
-        a.download = `Payslip_${Date.now()}.pdf`;
+        a.download = `Payslip_${Date.now()}.${ext}`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -48,7 +50,8 @@ const handleProxyOpen = async (url) => {
             responseType: 'blob',
             withCredentials: false
         });
-        const blob = new Blob([res.data], { type: 'application/pdf' });
+        const contentType = res.headers['content-type'] || 'application/pdf';
+        const blob = new Blob([res.data], { type: contentType });
         const blobUrl = URL.createObjectURL(blob);
         window.open(blobUrl, '_blank');
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
@@ -67,7 +70,8 @@ const handleProxyPrint = async (url) => {
             responseType: 'blob',
             withCredentials: false
         });
-        const blob = new Blob([res.data], { type: 'application/pdf' });
+        const contentType = res.headers['content-type'] || 'application/pdf';
+        const blob = new Blob([res.data], { type: contentType });
         const blobUrl = URL.createObjectURL(blob);
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
@@ -93,7 +97,8 @@ const fetchPreviewBlobUrl = async (url) => {
             responseType: 'blob',
             withCredentials: false
         });
-        const blob = new Blob([res.data], { type: 'application/pdf' });
+        const contentType = res.headers['content-type'] || 'application/pdf';
+        const blob = new Blob([res.data], { type: contentType });
         return URL.createObjectURL(blob);
     } catch (e) {
         console.error('Preview fetch failed:', e);
