@@ -13,6 +13,60 @@ const mapContainerStyle = { width: '100%', height: '100%' };
 const defaultCenter = { lat: 20.5937, lng: 78.9629 }; // India Center
 const mapLibraries = ['places'];
 
+const MemoizedGoogleMap = React.memo(({ pathCoordinates, points, isLive, isMock, onLoadMap, selectedPoint, setSelectedPoint, fallbackCenter }) => {
+    const latestPoint = points[points.length - 1];
+    return (
+        <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={pathCoordinates.length > 0 ? pathCoordinates[pathCoordinates.length - 1] : fallbackCenter}
+            zoom={pathCoordinates.length > 0 ? 15 : (fallbackCenter !== defaultCenter ? 15 : 4)}
+            onLoad={onLoadMap}
+            options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
+        >
+            {pathCoordinates.length > 0 && <Polyline path={pathCoordinates} options={{ strokeColor: '#f97316', strokeOpacity: 0.8, strokeWeight: 5 }} />}
+
+            {points.length > 0 && (
+                <Marker
+                    position={pathCoordinates[0]}
+                    label={{ text: 'S', color: 'white', fontWeight: 'bold' }}
+                    icon={{ path: window.google.maps.SymbolPath.CIRCLE, fillColor: '#10b981', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white', scale: 10 }}
+                    onClick={() => setSelectedPoint(points[0])}
+                />
+            )}
+
+            {points.length > 1 && (
+                <Marker
+                    position={pathCoordinates[pathCoordinates.length - 1]}
+                    icon={{ path: window.google.maps.SymbolPath.CIRCLE, fillColor: isMock ? '#ef4444' : isLive ? '#3b82f6' : '#f97316', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white', scale: 10 }}
+                    onClick={() => setSelectedPoint(latestPoint)}
+                />
+            )}
+
+            {selectedPoint && (
+                <InfoWindow
+                    position={{ lat: selectedPoint.location.coordinates[1], lng: selectedPoint.location.coordinates[0] }}
+                    onCloseClick={() => setSelectedPoint(null)}
+                >
+                    <div className="p-1 max-w-[200px]">
+                        <p className="text-xs font-bold text-slate-900 mb-1">{new Date(selectedPoint.timestamp).toLocaleTimeString()}</p>
+                        <p className="text-[10px] text-slate-500 mb-2 font-mono break-all">{selectedPoint.location.coordinates[1]}, {selectedPoint.location.coordinates[0]}</p>
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
+                            <span className="text-slate-500">Accuracy:</span><span className="font-medium">{Math.round(selectedPoint.accuracy)}m</span>
+                            <span className="text-slate-500">Speed:</span><span className="font-medium">{selectedPoint.speed ? Math.round(selectedPoint.speed * 3.6) + ' km/h' : '0 km/h'}</span>
+                            <span className="text-slate-500">Battery:</span><span className="font-medium">{selectedPoint.batteryLevel ? Math.round(selectedPoint.batteryLevel * 100) + '%' : '—'}</span>
+                        </div>
+                        {selectedPoint.isMocked && (
+                            <div className="mt-2 flex items-center gap-1 text-red-600 bg-red-50 p-1 rounded text-[10px] font-bold">
+                                <AlertTriangle className="w-3 h-3" /> MOCK LOCATION DETECTED
+                            </div>
+                        )}
+                    </div>
+                </InfoWindow>
+            )}
+        </GoogleMap>
+    );
+});
+
 // ─────────────────────────────────────────────────────────
 // Fleet Overview (no employeeId selected)
 // ─────────────────────────────────────────────────────────
@@ -380,54 +434,16 @@ function EmployeeTrackMap({ employeeId }) {
                         </div>
                     </div>
                 ) : (
-                    <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={pathCoordinates[0] || defaultCenter}
-                        zoom={14}
-                        onLoad={onLoadMap}
-                        options={{ streetViewControl: false, mapTypeControl: false, fullscreenControl: false }}
-                    >
-                        <Polyline path={pathCoordinates} options={{ strokeColor: '#f97316', strokeOpacity: 0.8, strokeWeight: 5 }} />
-
-                        {points.length > 0 && (
-                            <Marker
-                                position={pathCoordinates[0]}
-                                label={{ text: 'S', color: 'white', fontWeight: 'bold' }}
-                                icon={{ path: window.google.maps.SymbolPath.CIRCLE, fillColor: '#10b981', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white', scale: 10 }}
-                                onClick={() => setSelectedPoint(points[0])}
-                            />
-                        )}
-
-                        {points.length > 1 && (
-                            <Marker
-                                position={pathCoordinates[pathCoordinates.length - 1]}
-                                icon={{ path: window.google.maps.SymbolPath.CIRCLE, fillColor: isMock ? '#ef4444' : isLive ? '#3b82f6' : '#f97316', fillOpacity: 1, strokeWeight: 2, strokeColor: 'white', scale: 10 }}
-                                onClick={() => setSelectedPoint(latestPoint)}
-                            />
-                        )}
-
-                        {selectedPoint && (
-                            <InfoWindow
-                                position={{ lat: selectedPoint.location.coordinates[1], lng: selectedPoint.location.coordinates[0] }}
-                                onCloseClick={() => setSelectedPoint(null)}
-                            >
-                                <div className="p-1 max-w-[200px]">
-                                    <p className="text-xs font-bold text-slate-900 mb-1">{new Date(selectedPoint.timestamp).toLocaleTimeString()}</p>
-                                    <p className="text-[10px] text-slate-500 mb-2 font-mono break-all">{selectedPoint.location.coordinates[1]}, {selectedPoint.location.coordinates[0]}</p>
-                                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
-                                        <span className="text-slate-500">Accuracy:</span><span className="font-medium">{Math.round(selectedPoint.accuracy)}m</span>
-                                        <span className="text-slate-500">Speed:</span><span className="font-medium">{selectedPoint.speed ? Math.round(selectedPoint.speed * 3.6) + ' km/h' : '0 km/h'}</span>
-                                        <span className="text-slate-500">Battery:</span><span className="font-medium">{selectedPoint.batteryLevel ? Math.round(selectedPoint.batteryLevel * 100) + '%' : '—'}</span>
-                                    </div>
-                                    {selectedPoint.isMocked && (
-                                        <div className="mt-2 flex items-center gap-1 text-red-600 bg-red-50 p-1 rounded text-[10px] font-bold">
-                                            <AlertTriangle className="w-3 h-3" /> MOCK LOCATION DETECTED
-                                        </div>
-                                    )}
-                                </div>
-                            </InfoWindow>
-                        )}
-                    </GoogleMap>
+                    <MemoizedGoogleMap 
+                        pathCoordinates={pathCoordinates}
+                        points={points}
+                        isLive={isLive}
+                        isMock={isMock}
+                        onLoadMap={onLoadMap}
+                        selectedPoint={selectedPoint}
+                        setSelectedPoint={setSelectedPoint}
+                        fallbackCenter={trackingData?.employee?.assignedOfficeDetails?.latitude ? {lat: trackingData.employee.assignedOfficeDetails.latitude, lng: trackingData.employee.assignedOfficeDetails.longitude} : defaultCenter}
+                    />
                 )}
 
                 {/* Floating Info Panel */}

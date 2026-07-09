@@ -28,7 +28,7 @@ function useLiveDate() {
 }
 
 /* ───────── smooth SVG area chart ───────── */
-function AttendanceChart({ data }) {
+const AttendanceChart = React.memo(function AttendanceChart({ data }) {
     const W = 800, H = 260, PAD = { top: 24, right: 24, bottom: 44, left: 44 };
     const innerW = W - PAD.left - PAD.right;
     const innerH = H - PAD.top - PAD.bottom;
@@ -171,7 +171,7 @@ function AttendanceChart({ data }) {
             </svg>
         </div>
     );
-}
+});
 
 export default function HrmsDashboard() {
     const navigate = useNavigate();
