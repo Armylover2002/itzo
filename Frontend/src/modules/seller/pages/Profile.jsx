@@ -197,142 +197,161 @@ const SellerProfile = () => {
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-6 md:px-8 py-4 font-['Outfit']">
       {/* Header Section */}
-      <div className="relative mb-8 sm:mb-16 md:mb-24">
-        {/* Banner Background */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-black h-40 sm:h-56 md:h-64 rounded-2xl sm:rounded-3xl shadow-xl relative overflow-hidden">
-          <div className="absolute inset-0 opacity-20">
+      <div className="relative mb-8 sm:mb-12 md:mb-24">
+        {/* MOBILE HEADER (Unified Dark Card, no empty black rectangle!) */}
+        <div className="md:hidden bg-gradient-to-br from-slate-900 via-slate-950 to-black rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
           </div>
-          {/* Desktop-only internal text when overlayed */}
-          <div className="hidden md:flex absolute bottom-8 left-64 pl-6 right-12 items-end justify-between gap-6 z-10">
-            <div className="flex-1 pb-2">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
-                  {profile?.role || "SELLER"}
-                </span>
-                <span
-                  className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
-                    profile?.isActive !== false
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                      : "bg-red-500/10 text-red-400 border-red-500/20"
-                  }`}
-                  style={{ backdropFilter: "blur(12px)" }}
-                >
-                  {profile?.isActive !== false ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-sm mb-1 truncate">
-                {profile?.name || "Seller Profile"}
-              </h1>
-              <p className="text-white/70 font-bold tracking-wide text-base">
-                {profile?.shopName || "My Store"}
-              </p>
-            </div>
-            <div className="pb-2 flex-shrink-0">
-              {!isEditing ? (
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-xl px-8 py-4 flex items-center gap-3 font-black tracking-[2px] text-xs shadow-lg hover:scale-[1.03] active:scale-[0.98]"
-                >
-                  <Edit2 size={16} /> EDIT PROFILE
-                </Button>
-              ) : (
-                <div className="flex gap-3">
-                  <Button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    variant="outline"
-                    className="h-14 w-14 flex items-center justify-center bg-white/10 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-xl shadow-lg transition-all backdrop-blur-md"
-                  >
-                    <X size={22} className="stroke-[2.5]" />
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSaving}
-                    className="bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-8 py-4 font-black tracking-[2px] text-xs flex items-center gap-3 shadow-lg h-14"
-                  >
-                    {isSaving ? "UPDATING..." : (
-                      <>
-                        <Save size={18} /> SAVE CHANGES
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
 
-        {/* Avatar Container (Absolute over left edge of banner on desktop, centered overlapping on mobile) */}
-        <div className="md:absolute md:bottom-6 md:left-12 z-20 flex flex-col md:block items-center -mt-20 sm:-mt-24 md:mt-0 px-2 sm:px-4">
-          <div className="h-32 w-32 sm:h-40 sm:w-40 md:h-44 md:w-44 rounded-full bg-white p-1.5 sm:p-2 shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex-shrink-0 mx-auto">
+          {/* Avatar Inside Card */}
+          <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-white p-1.5 shadow-[0_15px_40px_rgba(0,0,0,0.4)] relative z-10 mb-4">
             <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center border-4 border-slate-100">
-              <span className="text-6xl sm:text-7xl font-black text-slate-900">
+              <span className="text-5xl sm:text-6xl font-black text-slate-900">
                 {profile?.name?.charAt(0) || "S"}
               </span>
             </div>
           </div>
 
-          {/* Mobile-only profile details below avatar */}
-          <div className="md:hidden flex flex-col items-center text-center mt-3 sm:mt-4 w-full">
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-2 sm:mb-3">
-              <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[1.5px] rounded-full border border-slate-800 shadow-sm">
-                {profile?.role || "SELLER"}
-              </span>
-              <span
-                className={`px-3 py-1 text-[10px] font-black uppercase tracking-[1.5px] rounded-full border shadow-sm ${
-                  profile?.isActive !== false
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                    : "bg-rose-50 text-rose-700 border-rose-200"
-                }`}
-              >
-                {profile?.isActive !== false ? "Active" : "Inactive"}
-              </span>
-            </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-1">
-              {profile?.name || "Seller Profile"}
-            </h1>
-            <p className="text-slate-500 font-bold tracking-wide text-sm sm:text-base mb-5 sm:mb-6">
-              {profile?.shopName || "My Store"}
-            </p>
+          {/* Badges Inside Card */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mb-3 relative z-10">
+            <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
+              {profile?.role || "SELLER"}
+            </span>
+            <span
+              className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
+                profile?.isActive !== false
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : "bg-red-500/10 text-red-400 border-red-500/20"
+              }`}
+            >
+              {profile?.isActive !== false ? "Active" : "Inactive"}
+            </span>
+          </div>
 
-            {/* Mobile-only action button */}
-            <div className="w-full max-w-sm">
-              {!isEditing ? (
+          {/* Name & Shop Inside Card */}
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-1 relative z-10">
+            {profile?.name || "Seller Profile"}
+          </h1>
+          <p className="text-white/70 font-bold tracking-wide text-sm sm:text-base mb-6 relative z-10">
+            {profile?.shopName || "My Store"}
+          </p>
+
+          {/* Action Button Inside Card */}
+          <div className="w-full max-w-sm relative z-10">
+            {!isEditing ? (
+              <Button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="w-full bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-xl px-6 py-4 flex items-center justify-center gap-3 font-black tracking-[2px] text-xs shadow-lg"
+              >
+                <Edit2 size={16} /> EDIT PROFILE
+              </Button>
+            ) : (
+              <div className="flex gap-3 w-full">
                 <Button
                   type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="w-full bg-slate-900 text-white hover:bg-black transition-all rounded-xl px-6 py-3.5 sm:py-4 flex items-center justify-center gap-3 font-black tracking-[2px] text-xs shadow-lg"
+                  onClick={() => setIsEditing(false)}
+                  variant="outline"
+                  className="h-12 w-12 flex items-center justify-center bg-white/10 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-xl shadow-lg transition-all backdrop-blur-md flex-shrink-0"
                 >
-                  <Edit2 size={16} /> EDIT PROFILE
+                  <X size={20} className="stroke-[2.5]" />
                 </Button>
-              ) : (
-                <div className="flex gap-3 w-full">
-                  <Button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    variant="outline"
-                    className="h-12 w-12 flex items-center justify-center bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded-xl shadow-sm flex-shrink-0"
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="flex-1 bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-6 py-4 font-black tracking-[2px] text-xs flex items-center justify-center gap-2 shadow-lg h-12"
+                >
+                  {isSaving ? "UPDATING..." : (
+                    <>
+                      <Save size={18} /> SAVE CHANGES
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* DESKTOP HEADER (Exact same structure that looks perfect on Web View!) */}
+        <div className="hidden md:block">
+          <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-black h-64 rounded-3xl shadow-xl relative overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+              <div className="absolute bottom-0 right-0 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+            </div>
+            {/* Desktop internal text */}
+            <div className="absolute bottom-8 left-64 pl-6 right-12 flex items-end justify-between gap-6 z-10">
+              <div className="flex-1 pb-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
+                    {profile?.role || "SELLER"}
+                  </span>
+                  <span
+                    className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
+                      profile?.isActive !== false
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-red-500/10 text-red-400 border-red-500/20"
+                    }`}
+                    style={{ backdropFilter: "blur(12px)" }}
                   >
-                    <X size={20} className="stroke-[2.5]" />
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSaving}
-                    className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl px-6 py-3.5 sm:py-4 font-black tracking-[2px] text-xs flex items-center justify-center gap-2 shadow-lg h-12"
-                  >
-                    {isSaving ? "UPDATING..." : (
-                      <>
-                        <Save size={18} /> SAVE CHANGES
-                      </>
-                    )}
-                  </Button>
+                    {profile?.isActive !== false ? "Active" : "Inactive"}
+                  </span>
                 </div>
-              )}
+                <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-sm mb-1 truncate">
+                  {profile?.name || "Seller Profile"}
+                </h1>
+                <p className="text-white/70 font-bold tracking-wide text-base">
+                  {profile?.shopName || "My Store"}
+                </p>
+              </div>
+              <div className="pb-2 flex-shrink-0">
+                {!isEditing ? (
+                  <Button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-xl px-8 py-4 flex items-center gap-3 font-black tracking-[2px] text-xs shadow-lg hover:scale-[1.03] active:scale-[0.98]"
+                  >
+                    <Edit2 size={16} /> EDIT PROFILE
+                  </Button>
+                ) : (
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      variant="outline"
+                      className="h-14 w-14 flex items-center justify-center bg-white/10 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-xl shadow-lg transition-all backdrop-blur-md"
+                    >
+                      <X size={22} className="stroke-[2.5]" />
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleSubmit}
+                      disabled={isSaving}
+                      className="bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-8 py-4 font-black tracking-[2px] text-xs flex items-center gap-3 shadow-lg h-14"
+                    >
+                      {isSaving ? "UPDATING..." : (
+                        <>
+                          <Save size={18} /> SAVE CHANGES
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Avatar Container (Absolute over left edge of banner) */}
+          <div className="absolute bottom-6 left-12 z-20 flex flex-col items-center">
+            <div className="h-44 w-44 rounded-full bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex-shrink-0">
+              <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center border-4 border-slate-100">
+                <span className="text-7xl font-black text-slate-900">
+                  {profile?.name?.charAt(0) || "S"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
