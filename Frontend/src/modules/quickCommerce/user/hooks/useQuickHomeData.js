@@ -154,15 +154,20 @@ export const useQuickHomeData = ({ currentLocation }) => {
     return resolveQuickImageUrl(candidate) || "https://cdn-icons-png.flaticon.com/128/2321/2321831.png";
   }, []);
 
+  const lat = currentLocation?.latitude;
+  const lng = currentLocation?.longitude;
+
   const fetchData = useCallback(async () => {
     const seq = ++fetchDataSeqRef.current;
-    const hasValidLocation = Number.isFinite(currentLocation?.latitude) && Number.isFinite(currentLocation?.longitude);
+    const hasValidLocation = Number.isFinite(lat) && Number.isFinite(lng);
     
-    // Use cache if strictly valid
+    // Use cache immediately if strictly valid
     if (globalQuickHomeCache.data && (Date.now() - globalQuickHomeCache.lastFetched < CACHE_EXPIRY_MS)) {
-       // Re-fetch if we now have a valid location but cache was built without one
+       // Re-fetch in background if we now have a valid location but cache was built without one
        if (hasValidLocation && !globalQuickHomeCache.hasValidLocation) {
-           // Bypass cache
+           setIsBootstrapped(true);
+           setIsLoading(false);
+           // Let execution continue below without setting isLoading to true!
        } else {
            setIsBootstrapped(true);
            setIsLoading(false);
@@ -170,12 +175,18 @@ export const useQuickHomeData = ({ currentLocation }) => {
        }
     }
 
-    setIsLoading(true);
+    if (!globalQuickHomeCache.data) {
+      setIsLoading(true);
+    } else {
+      setIsBootstrapped(true);
+      setIsLoading(false);
+    }
+
     try {
       const productParams = { limit: 20 };
       if (hasValidLocation) {
-        productParams.lat = currentLocation.latitude;
-        productParams.lng = currentLocation.longitude;
+        productParams.lat = lat;
+        productParams.lng = lng;
       }
 
       const [catRes, prodRes, expRes, sectionsRes, heroRes] = await Promise.all([
@@ -295,7 +306,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
         setIsLoading(false);
       }
     }
-  }, [currentLocation, getQuickCategoryImage]);
+  }, [lat, lng, getQuickCategoryImage]);
 
   useEffect(() => {
     fetchData();
