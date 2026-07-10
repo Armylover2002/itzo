@@ -286,7 +286,7 @@ export const checkOut = async (req, res, next) => {
         attendance.workingHours = Number(hours.toFixed(2));
 
         // Evaluate short hours against settings
-        const minHours = settings?.workingHours?.minimumWorkingHours || 8;
+        // minHours is already declared at the top of the checkOut function
 
         if (attendance.workingHours < minHours) {
             attendance.shortHours = Number((minHours - attendance.workingHours).toFixed(2));
