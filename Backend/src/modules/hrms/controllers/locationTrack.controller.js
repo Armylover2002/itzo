@@ -45,13 +45,12 @@ export const saveLocationPoints = async (req, res, next) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Check active attendance
+        // Check active attendance (sorted by date -1 to support night shifts crossing midnight)
         const attendance = await HrmsAttendance.findOne({
             employeeId: employee._id,
-            date: today,
             checkInTime: { $exists: true },
             checkOutTime: { $exists: false }
-        }).lean();
+        }).sort({ date: -1 }).lean();
 
         if (!attendance) {
             return sendError(res, 400, 'No active check-in found. Please check in first.');
@@ -64,14 +63,14 @@ export const saveLocationPoints = async (req, res, next) => {
         expiresAt.setDate(expiresAt.getDate() + retentionDays);
 
         // Batch append points and update totals atomically
+        const trackDate = attendance.date ? new Date(attendance.date) : today;
         const track = await HrmsLocationTrack.findOneAndUpdate(
-            { employeeId: employee._id, date: today },
+            { employeeId: employee._id, attendanceId: attendance._id },
             {
                 $push: { points: { $each: validPoints } },
                 $inc: { totalPoints: validPoints.length },
                 $setOnInsert: {
-                    attendanceId: attendance._id,
-                    date: today,
+                    date: trackDate,
                     expiresAt
                 }
             },
@@ -130,22 +129,28 @@ export const getLiveLocations = async (req, res, next) => {
 
         const employeeIds = fieldEmployees.map(e => e._id);
 
-        // Get today's attendance for these employees (only checked-in, not checked-out)
+        // Get active attendance for these employees (either checked-in and not checked-out, or checked-in today)
         const activeAttendances = await HrmsAttendance.find({
             employeeId: { $in: employeeIds },
-            date: today,
-            checkInTime: { $exists: true }
-        }).lean();
+            $or: [
+                { date: today, checkInTime: { $exists: true } },
+                { checkInTime: { $exists: true }, checkOutTime: { $exists: false } }
+            ]
+        }).sort({ date: -1 }).lean();
 
         const attendanceMap = {};
         for (const att of activeAttendances) {
-            attendanceMap[String(att.employeeId)] = att;
+            if (!attendanceMap[String(att.employeeId)]) {
+                attendanceMap[String(att.employeeId)] = att;
+            }
         }
 
-        // Get today's tracks
+        const attendanceIds = Object.values(attendanceMap).map(a => a._id);
         const tracks = await HrmsLocationTrack.find({
-            employeeId: { $in: employeeIds },
-            date: today
+            $or: [
+                { attendanceId: { $in: attendanceIds } },
+                { employeeId: { $in: employeeIds }, date: today }
+            ]
         }).lean();
 
         const trackMap = {};

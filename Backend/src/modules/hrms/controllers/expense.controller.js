@@ -122,6 +122,10 @@ export const approveExpense = async (req, res, next) => {
         const { id } = req.params;
         const { action, approvedAmount, rejectionReason } = req.body;
 
+        if (!['Approved', 'Rejected'].includes(action)) {
+            return sendError(res, 400, 'Invalid action. Must be Approved or Rejected.');
+        }
+
         const expense = await HrmsExpense.findById(id);
         if (!expense) return sendError(res, 404, 'Expense not found');
         if (expense.status !== 'Pending') return sendError(res, 400, `Expense is already ${expense.status}`);

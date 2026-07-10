@@ -103,8 +103,8 @@ export const generatePayroll = async (req, res, next) => {
 
             // 5. Calculate salary
             const monthlySalary = emp.monthlySalary || 0;
-            const dailySalary = monthlySalary / totalWorkingDays;
-            const hourlySalary = dailySalary / minHours;
+            const dailySalary = totalWorkingDays > 0 ? monthlySalary / totalWorkingDays : 0;
+            const hourlySalary = minHours > 0 ? dailySalary / minHours : 0;
 
             // Effective paid days = present + paid leaves
             const effectivePaidDays = presentDays + paidLeaveDays;

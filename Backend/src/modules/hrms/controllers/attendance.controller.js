@@ -301,8 +301,10 @@ export const checkOut = async (req, res, next) => {
         if (attendance.employeeType === 'Field') {
             try {
                 const track = await HrmsLocationTrack.findOne({
-                    employeeId: employee._id,
-                    date: today
+                    $or: [
+                        { attendanceId: attendance._id },
+                        { employeeId: employee._id, date: attendance.date }
+                    ]
                 }).lean();
                 if (track) {
                     attendance.routeDistance = track.totalDistance || 0;

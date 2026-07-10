@@ -60,11 +60,10 @@ export const applyLeave = async (req, res, next) => {
                 $match: {
                     employeeId: employee._id,
                     status: { $in: ['Pending', 'Approved'] },
-                    isPaid: true,
                     startDate: { $gte: startOfMonth, $lte: endOfMonth }
                 }
             },
-            { $group: { _id: null, total: { $sum: '$totalDays' } } }
+            { $group: { _id: null, total: { $sum: '$paidDays' } } }
         ]);
 
         const usedPaidDays = paidUsed[0]?.total || 0;
