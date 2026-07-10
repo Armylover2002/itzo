@@ -63,7 +63,7 @@ export default function SellerAuth() {
             : "OTP generated, but no debug code was returned.",
       );
       setOtpPhone(resolvedPhone);
-      setOtp(devOtp ? String(devOtp) : "");
+      setOtp("");
       setStep("otp");
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to send OTP");
