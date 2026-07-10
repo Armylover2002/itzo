@@ -183,14 +183,23 @@ export const checkOut = async (req, res, next) => {
         const settings = await HrmsSettings.findOne().lean();
         const trackingSettings = settings?.trackingSettings || {};
 
-        const today = getNormalizedDate();
-        const attendance = await HrmsAttendance.findOne({ employeeId: employee._id, date: today });
+        // To support night shifts crossing midnight, fetch the most recent attendance record
+        const attendance = await HrmsAttendance.findOne({ employeeId: employee._id }).sort({ date: -1 });
 
         if (!attendance || !attendance.checkInTime) {
-            return sendError(res, 400, 'No check-in found for today');
+            return sendError(res, 400, 'No active check-in found');
         }
         if (attendance.checkOutTime) {
-            return sendError(res, 400, 'Already checked out today');
+            return sendError(res, 400, 'Already checked out of your latest shift');
+        }
+
+        // Detect if this is an abandoned check-in from a previous day (e.g. forgot checkout)
+        const minHours = settings?.workingHours?.minimumWorkingHours || 8;
+        const maxShiftDurationHours = Math.max(minHours * 2, 16); 
+        const hoursSinceCheckIn = (Date.now() - new Date(attendance.checkInTime).getTime()) / (1000 * 60 * 60);
+
+        if (hoursSinceCheckIn > maxShiftDurationHours) {
+            return sendError(res, 400, `Your previous check-in from ${attendance.date.toDateString()} is missing a check-out and has expired. Please submit an Attendance Regularisation request instead.`);
         }
 
         // GPS validation for coordinates if provided
@@ -443,6 +452,20 @@ export const getMyAttendance = async (req, res, next) => {
         }
 
         const records = await HrmsAttendance.find(filter).sort({ date: -1 }).lean();
+
+        const settings = await HrmsSettings.findOne().lean();
+        const minHours = settings?.workingHours?.minimumWorkingHours || 8;
+        const maxShiftDurationHours = Math.max(minHours * 2, 16);
+
+        records.forEach(record => {
+            if (record.checkInTime && !record.checkOutTime) {
+                const hoursSinceCheckIn = (Date.now() - new Date(record.checkInTime).getTime()) / (1000 * 60 * 60);
+                record.isCheckoutMissing = hoursSinceCheckIn > maxShiftDurationHours;
+            } else {
+                record.isCheckoutMissing = false;
+            }
+        });
+
         return sendResponse(res, 200, 'Attendance retrieved', records);
     } catch (error) {
         next(error);
@@ -499,6 +522,19 @@ export const getAllAttendance = async (req, res, next) => {
                 .lean(),
             HrmsAttendance.countDocuments(filter)
         ]);
+
+        const settings = await HrmsSettings.findOne().lean();
+        const minHours = settings?.workingHours?.minimumWorkingHours || 8;
+        const maxShiftDurationHours = Math.max(minHours * 2, 16);
+
+        records.forEach(record => {
+            if (record.checkInTime && !record.checkOutTime) {
+                const hoursSinceCheckIn = (Date.now() - new Date(record.checkInTime).getTime()) / (1000 * 60 * 60);
+                record.isCheckoutMissing = hoursSinceCheckIn > maxShiftDurationHours;
+            } else {
+                record.isCheckoutMissing = false;
+            }
+        });
 
         return sendResponse(res, 200, 'All attendance retrieved', {
             records,

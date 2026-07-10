@@ -71,7 +71,12 @@ export const generatePayroll = async (req, res, next) => {
                 date: { $gte: startDate, $lte: endDate }
             }).lean();
 
-            const presentDays = attendance.filter(a => a.status === 'Present').length;
+            const presentDays = attendance.filter(a => {
+                if (a.status !== 'Present') return false;
+                // Exclude incomplete attendances from being counted as a present day
+                if (a.checkInTime && !a.checkOutTime) return false;
+                return true;
+            }).length;
             const totalShortHours = attendance.reduce((sum, a) => sum + (a.shortHours || 0), 0);
             const totalOvertimeHours = attendance.reduce((sum, a) => sum + (a.overtimeHours || 0), 0);
 
