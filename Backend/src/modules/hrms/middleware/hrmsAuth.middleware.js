@@ -46,8 +46,8 @@ export const requireHrmsManager = async (req, res, next) => {
             return sendError(res, 403, 'Employee profile required');
         }
 
-        if (req.hrmsEmployee.hrmsRole !== 'Manager' && req.hrmsEmployee.hrmsRole !== 'HR') {
-            return sendError(res, 403, 'Manager or HR access required');
+        if (req.hrmsEmployee.hrmsRole !== 'Manager') {
+            return sendError(res, 403, 'Manager access required');
         }
 
         next();
@@ -78,8 +78,7 @@ export const requireAdminOrManager = async (req, res, next) => {
             // 1. Check if they have an active HrmsEmployee profile
             const query = { $or: [{ adminId: req.user.userId }, { _id: req.user.userId }] };
             const employee = await HrmsEmployee.findOne(query).lean();
-            if (employee && employee.status === 'Active' &&
-                (employee.hrmsRole === 'Manager' || employee.hrmsRole === 'HR' || employee.hrmsRole === 'Admin')) {
+            if (employee && employee.status === 'Active' && employee.hrmsRole === 'Manager') {
                 hasAccess = true;
                 req.hrmsEmployee = employee;
             }

@@ -82,7 +82,7 @@ const hrmsJoiningRequestSchema = new mongoose.Schema(
         designation: { type: String, trim: true },
         ctc: { type: Number, default: 0 },
         joiningDate: { type: Date },
-        hrmsRole: { type: String, trim: true, default: 'Employee' },
+        hrmsRole: { type: String, enum: ['Employee', 'Manager'], default: 'Employee' },
         shift: { type: String, trim: true, default: 'General' },
         employmentType: { type: String, trim: true, default: 'Full-Time' },
         officeLocation: { type: String, trim: true },

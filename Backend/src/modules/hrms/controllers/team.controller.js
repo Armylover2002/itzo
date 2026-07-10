@@ -47,8 +47,8 @@ export const getUnassignedEmployees = async (req, res, next) => {
     try {
         const { search } = req.query;
         
-        // Base filter: active normal employees only, exclude Managers, HR, inactive/suspended, and self
-        const filter = { status: 'Active', _id: { $ne: req.hrmsEmployee?._id }, hrmsRole: { $nin: ['Manager', 'HR'] } };
+        // Base filter: active normal employees only, exclude Managers, inactive/suspended, and self
+        const filter = { status: 'Active', _id: { $ne: req.hrmsEmployee?._id }, hrmsRole: { $ne: 'Manager' } };
 
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -102,7 +102,7 @@ export const addTeamMember = async (req, res, next) => {
             return sendError(res, 400, employee.status === 'Suspended' ? 'Employee is suspended.' : 'Employee is inactive.');
         }
 
-        if (employee.hrmsRole === 'Manager' || employee.hrmsRole === 'HR') {
+        if (employee.hrmsRole === 'Manager') {
             return sendError(res, 400, 'Manager accounts cannot be added as team members.');
         }
 

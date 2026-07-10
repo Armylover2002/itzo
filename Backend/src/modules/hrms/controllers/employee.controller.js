@@ -289,7 +289,7 @@ export const getEmployees = async (req, res, next) => {
         if (hrmsRole && hrmsRole !== 'all') {
             filter.hrmsRole = hrmsRole;
         } else if (excludeManagers === 'true') {
-            filter.hrmsRole = { $nin: ['Manager', 'HR'] };
+            filter.hrmsRole = { $ne: 'Manager' };
         }
         if (search) {
             const regex = new RegExp(search, 'i');
@@ -725,8 +725,8 @@ export const transferEmployee = async (req, res, next) => {
             if (newManager.status !== 'Active') {
                 return sendError(res, 400, 'Cannot assign to an inactive or suspended manager');
             }
-            if (newManager.hrmsRole !== 'Manager' && newManager.hrmsRole !== 'HR') {
-                return sendError(res, 400, 'Target employee does not have a Manager or HR role');
+            if (newManager.hrmsRole !== 'Manager') {
+                return sendError(res, 400, 'Target employee does not have a Manager role');
             }
 
             // Edge case: prevent circular assignment (manager can't report to their own team member)

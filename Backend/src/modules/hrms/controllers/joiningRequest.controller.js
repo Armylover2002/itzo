@@ -422,7 +422,7 @@ export const approveJoiningRequest = async (req, res, next) => {
             const teamEmps = await HrmsEmployee.find({
                 _id: { $in: req.body.assignedTeamMembers },
                 status: 'Active',
-                hrmsRole: { $nin: ['Manager', 'HR'] }
+                hrmsRole: { $ne: 'Manager' }
             }).session(session);
 
             for (const teamEmp of teamEmps) {

@@ -18,7 +18,7 @@ const hrmsEmployeeSchema = new mongoose.Schema(
         // HRMS Role distinction (Manager vs Employee vs HR)
         hrmsRole: {
             type: String,
-            enum: ['Employee', 'Manager', 'HR'],
+            enum: ['Employee', 'Manager'],
             default: 'Employee'
         },
 
