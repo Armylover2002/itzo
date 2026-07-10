@@ -195,95 +195,159 @@ const SellerProfile = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-4 md:p-8 font-['Outfit']">
+    <div className="max-w-5xl mx-auto px-2 sm:px-6 md:px-8 py-4 font-['Outfit']">
       {/* Header Section */}
-      <div className="relative mb-24 px-4">
+      <div className="relative mb-8 sm:mb-16 md:mb-24">
         {/* Banner Background */}
-        <div className="bg-linear-to-r from-slate-900 via-slate-950 to-black h-64 rounded-lg shadow-2xl relative overflow-hidden">
+        <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-black h-40 sm:h-56 md:h-64 rounded-2xl sm:rounded-3xl shadow-xl relative overflow-hidden">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
           </div>
+          {/* Desktop-only internal text when overlayed */}
+          <div className="hidden md:flex absolute bottom-8 left-64 pl-6 right-12 items-end justify-between gap-6 z-10">
+            <div className="flex-1 pb-2">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
+                  {profile?.role || "SELLER"}
+                </span>
+                <span
+                  className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
+                    profile?.isActive !== false
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                      : "bg-red-500/10 text-red-400 border-red-500/20"
+                  }`}
+                  style={{ backdropFilter: "blur(12px)" }}
+                >
+                  {profile?.isActive !== false ? "Active" : "Inactive"}
+                </span>
+              </div>
+              <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-sm mb-1 truncate">
+                {profile?.name || "Seller Profile"}
+              </h1>
+              <p className="text-white/70 font-bold tracking-wide text-base">
+                {profile?.shopName || "My Store"}
+              </p>
+            </div>
+            <div className="pb-2 flex-shrink-0">
+              {!isEditing ? (
+                <Button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-xl px-8 py-4 flex items-center gap-3 font-black tracking-[2px] text-xs shadow-lg hover:scale-[1.03] active:scale-[0.98]"
+                >
+                  <Edit2 size={16} /> EDIT PROFILE
+                </Button>
+              ) : (
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    variant="outline"
+                    className="h-14 w-14 flex items-center justify-center bg-white/10 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-xl shadow-lg transition-all backdrop-blur-md"
+                  >
+                    <X size={22} className="stroke-[2.5]" />
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSaving}
+                    className="bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-8 py-4 font-black tracking-[2px] text-xs flex items-center gap-3 shadow-lg h-14"
+                  >
+                    {isSaving ? "UPDATING..." : (
+                      <>
+                        <Save size={18} /> SAVE CHANGES
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Profile Info Row */}
-        <div className="absolute bottom-8 left-12 right-12 flex flex-col md:flex-row items-center md:items-end gap-10">
-          {/* Avatar Container */}
-          <div className="h-44 w-44 rounded-full bg-white p-2 shadow-[0_30px_70px_rgba(0,0,0,0.15)] flex-shrink-0">
-            <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center border-4 border-slate-50">
-              <span className="text-7xl font-black text-slate-900">
-                {profile?.name?.charAt(0)}
+        {/* Avatar Container (Absolute over left edge of banner on desktop, centered overlapping on mobile) */}
+        <div className="md:absolute md:bottom-6 md:left-12 z-20 flex flex-col md:block items-center -mt-20 sm:-mt-24 md:mt-0 px-2 sm:px-4">
+          <div className="h-32 w-32 sm:h-40 sm:w-40 md:h-44 md:w-44 rounded-full bg-white p-1.5 sm:p-2 shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex-shrink-0 mx-auto">
+            <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center border-4 border-slate-100">
+              <span className="text-6xl sm:text-7xl font-black text-slate-900">
+                {profile?.name?.charAt(0) || "S"}
               </span>
             </div>
           </div>
 
-          {/* Info Block */}
-          <div className="flex-1 pb-4 text-center md:text-left">
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-3">
-              <span className="px-4 py-1.5 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
-                {profile?.role}
+          {/* Mobile-only profile details below avatar */}
+          <div className="md:hidden flex flex-col items-center text-center mt-3 sm:mt-4 w-full">
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-2 sm:mb-3">
+              <span className="px-3 py-1 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[1.5px] rounded-full border border-slate-800 shadow-sm">
+                {profile?.role || "SELLER"}
               </span>
               <span
-                className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${profile?.isActive ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}
-                style={{ backdropFilter: "blur(12px)" }}>
-                {profile?.isActive ? "Active" : "Inactive"}
+                className={`px-3 py-1 text-[10px] font-black uppercase tracking-[1.5px] rounded-full border shadow-sm ${
+                  profile?.isActive !== false
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : "bg-rose-50 text-rose-700 border-rose-200"
+                }`}
+              >
+                {profile?.isActive !== false ? "Active" : "Inactive"}
               </span>
             </div>
-            <h1 className="text-6xl font-black text-white tracking-tighter drop-shadow-sm mb-1">
-              {profile?.name}
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mb-1">
+              {profile?.name || "Seller Profile"}
             </h1>
-            <p className="text-white/60 font-black tracking-[1px] text-lg">
-              {profile?.shopName}
+            <p className="text-slate-500 font-bold tracking-wide text-sm sm:text-base mb-5 sm:mb-6">
+              {profile?.shopName || "My Store"}
             </p>
-          </div>
 
-          {/* Action Button */}
-          <div className="pb-4">
-            {!isEditing ? (
-              <Button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-lg px-12 py-5 flex items-center gap-4 font-black tracking-[3px] text-xs shadow-[0_20px_40px_rgba(0,0,0,0.1)] hover:scale-[1.05] active:scale-[0.95]">
-                <Edit2 size={18} /> EDIT PROFILE
-              </Button>
-            ) : (
-              <div className="flex gap-4">
+            {/* Mobile-only action button */}
+            <div className="w-full max-w-sm">
+              {!isEditing ? (
                 <Button
                   type="button"
-                  onClick={() => setIsEditing(false)}
-                  variant="outline"
-                  className="h-[64px] w-[64px] flex items-center justify-center bg-white/5 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-lg shadow-lg transition-all backdrop-blur-md">
-                  <X size={24} className="stroke-[2.5]" />
+                  onClick={() => setIsEditing(true)}
+                  className="w-full bg-slate-900 text-white hover:bg-black transition-all rounded-xl px-6 py-3.5 sm:py-4 flex items-center justify-center gap-3 font-black tracking-[2px] text-xs shadow-lg"
+                >
+                  <Edit2 size={16} /> EDIT PROFILE
                 </Button>
-                <Button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSaving}
-                  className="bg-white text-slate-950 hover:bg-slate-100 rounded-lg px-12 py-5 font-black tracking-[3px] text-xs flex items-center gap-4 shadow-[0_25px_50px_rgba(0,0,0,0.15)] h-[64px]">
-                  {isSaving ? (
-                    "UPDATING..."
-                  ) : (
-                    <>
-                      <Save size={20} /> SAVE CHANGES
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
+              ) : (
+                <div className="flex gap-3 w-full">
+                  <Button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    variant="outline"
+                    className="h-12 w-12 flex items-center justify-center bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 rounded-xl shadow-sm flex-shrink-0"
+                  >
+                    <X size={20} className="stroke-[2.5]" />
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSaving}
+                    className="flex-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl px-6 py-3.5 sm:py-4 font-black tracking-[2px] text-xs flex items-center justify-center gap-2 shadow-lg h-12"
+                  >
+                    {isSaving ? "UPDATING..." : (
+                      <>
+                        <Save size={18} /> SAVE CHANGES
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Main Info Card */}
-        <div className="md:col-span-2 space-y-8">
-          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-lg">
-            <h3 className="text-xl font-black text-slate-900 mb-8 border-b border-slate-50 pb-4">
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
               Business Profile
             </h3>
 
-            <form className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <form className="space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
                 <div className="space-y-3">
                   <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
                     Seller Identity
@@ -364,9 +428,9 @@ const SellerProfile = () => {
           </Card>
 
           {/* Location & Radius Settings Card */}
-          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-lg">
-            <div className="flex justify-between items-center mb-8 border-b border-slate-50 pb-4">
-              <h3 className="text-xl font-black text-slate-900">
+          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
+              <h3 className="text-lg sm:text-xl font-black text-slate-900">
                 Location & Service Settings
               </h3>
               {!isEditing && (
@@ -380,11 +444,11 @@ const SellerProfile = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-100/50 space-y-6">
-                <div className="flex items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
+              <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border-2 border-slate-100/50 space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
+                  <div className="flex items-start sm:items-center gap-3 sm:gap-4">
                     <div
-                      className={`h-12 w-12 rounded-xl flex items-center justify-center transition-all ${
+                      className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
                         formData.lat
                           ? "bg-emerald-100 text-emerald-600 shadow-[0_8px_20px_-6px_rgba(16,185,129,0.3)]"
                           : "bg-white text-slate-400 shadow-sm"
@@ -408,14 +472,14 @@ const SellerProfile = () => {
                       type="button"
                       onClick={() => setIsMapOpen(true)}
                       disabled={isLocationSaving}
-                      className="bg-white text-slate-900 border-2 border-slate-200 hover:border-slate-900 rounded-lg px-8 py-3 text-[10px] font-black tracking-[2px] shadow-sm hover:shadow-md transition-all whitespace-nowrap">
+                      className="w-full sm:w-auto bg-white text-slate-900 border-2 border-slate-200 hover:border-slate-900 rounded-lg px-6 sm:px-8 py-3 text-[10px] font-black tracking-[2px] shadow-sm hover:shadow-md transition-all whitespace-nowrap">
                       {isLocationSaving ? "UPDATING..." : "CHANGE PIN"}
                     </Button>
                   )}
                 </div>
 
                 {formData.lat !== null && formData.lat !== undefined && (
-                  <div className="pt-6 border-t border-slate-200/60 flex flex-wrap gap-8">
+                  <div className="pt-6 border-t border-slate-200/60 grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-8">
                     <div className="space-y-2">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                         Service Radius
@@ -462,9 +526,8 @@ const SellerProfile = () => {
           </Card>
         </div>
 
-        {/* Sidebar Card */}
-        <div className="space-y-8">
-          <Card className="p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[40px] bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 text-white">
+        <div className="space-y-6 sm:space-y-8">
+          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-[40px] bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 text-white">
             <h4 className="text-[10px] font-black uppercase tracking-[4px] text-white/40 mb-6">
               Security & Trust
             </h4>

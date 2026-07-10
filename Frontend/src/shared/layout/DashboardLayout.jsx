@@ -356,7 +356,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
             <div className={cn("transition-all duration-300", (role === "admin" || role === "seller") ? "pl-0 md:pl-80" : "pl-80")}>
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
                 <main className={cn("min-h-screen", (role === "admin" || role === "seller") ? "pt-20 md:pt-6 pb-24 md:pb-8" : "pt-20")}>
-                    <div className="w-full" style={{ padding: '20px 20px 48px 20px', marginLeft: '20px' }}>
+                    <div className="w-full px-3 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
                         <SellerOrdersContext.Provider
                             value={{
                                 orders: role === 'seller' ? sellerOrders : [],
