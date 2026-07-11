@@ -57,28 +57,31 @@ export default function AddZone() {
   }, [formData.country])
 
   // Initialize Places Autocomplete when map is loaded
+  const initAutocomplete = useCallback((google) => {
+    if (!google?.maps?.places || !autocompleteInputRef.current || autocompleteRef.current) return
+
+    const autocomplete = new google.maps.places.Autocomplete(autocompleteInputRef.current, {
+      componentRestrictions: { country: 'in' }
+    })
+    
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace()
+      if (place.geometry && place.geometry.location && mapInstanceRef.current) {
+        const location = place.geometry.location
+        mapInstanceRef.current.setCenter(location)
+        mapInstanceRef.current.setZoom(15)
+        setLocationSearch(place.formatted_address || place.name || "")
+      }
+    })
+    
+    autocompleteRef.current = autocomplete
+  }, [])
+
   useEffect(() => {
-    if (!mapLoading && mapInstanceRef.current && autocompleteInputRef.current && window.google?.maps?.places && !autocompleteRef.current) {
-      const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, {
-        // No `geocode` type — it routes predictions through Geocoding-style endpoints.
-        componentRestrictions: { country: 'in' } // Restrict to India
-      })
-      
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
-        if (place.geometry && place.geometry.location && mapInstanceRef.current) {
-          const location = place.geometry.location
-          mapInstanceRef.current.setCenter(location)
-          mapInstanceRef.current.setZoom(15) // Zoom in when location is selected
-          
-          // Set the search input value
-          setLocationSearch(place.formatted_address || place.name || "")
-        }
-      })
-      
-      autocompleteRef.current = autocomplete
+    if (window.google) {
+      initAutocomplete(window.google)
     }
-  }, [mapLoading])
+  }, [mapLoading, initAutocomplete])
 
   // Draw existing polygon when in edit mode and coordinates are loaded
   useEffect(() => {
@@ -434,6 +437,7 @@ export default function AddZone() {
 
     mapInstanceRef.current = map
     setMapLoading(false)
+    initAutocomplete(google)
 
     if (isEditMode && coordinates.length >= 3) {
       setTimeout(() => {
@@ -778,6 +782,7 @@ export default function AddZone() {
                     placeholder="Search location on map..."
                     value={locationSearch}
                     onChange={(e) => setLocationSearch(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
                     className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
