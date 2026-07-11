@@ -14,7 +14,7 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
     const fetchJobs = async () => {
       try {
         // Fetch only featured active jobs
-        const res = await axiosInstance.get('/food/landing/careers', { params: { featured: 'true', limit: 3 } });
+        const res = await axiosInstance.get('/food/careers', { params: { featured: 'true', limit: 3 } });
         if (mounted && res.data.success) {
           setJobs(res.data.data.jobs || []);
         }
@@ -60,13 +60,13 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           {jobs.map((job, index) => (
             <motion.div
-              key={job._id}
+              key={job._id || job.id || index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 * index }}
               className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer flex flex-col h-full group"
-              onClick={() => navigate(`/food/careers/${job._id}`)}
+              onClick={() => navigate(`/food/careers/${job._id || job.id}`)}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0">

@@ -12,7 +12,7 @@ const SettingsContext = createContext(undefined);
 
 /** Default fallbacks when settings are not yet loaded or API fails */
 const DEFAULT_SETTINGS = {
-  appName: "App",
+  appName: "ItzoFood",
   supportEmail: "",
   supportPhone: "",
   currencySymbol: "₹",

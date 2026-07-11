@@ -79,7 +79,7 @@ const Hero = () => {
 
                         {banners.map((banner, index) => (
                             <div
-                                key={banner.id}
+                                key={banner.id || banner._id || `hero-${index}`}
                                 className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                             >
                                 {/* Background Image */}

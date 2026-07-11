@@ -130,11 +130,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
         <motion.div
             layout
             className="relative flex items-end md:justify-center gap-0 overflow-x-auto no-scrollbar snap-x min-h-[60px] md:min-h-[76px] pb-0.5">
-            {categories.slice(0, 10).map((cat) => {
+            {categories.slice(0, 10).map((cat, idx) => {
               const isActive = (activeCategory?._id || activeCategory?.id) === (cat._id || cat.id);
               return (
                 <CategoryNavColumn
-                  key={cat._id || cat.id}
+                  key={cat._id || cat.id || `qcat-${idx}`}
                   cat={cat}
                   isActive={isActive}
                   categoryAccent="#ffffff"
@@ -465,11 +465,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
               overflowY: "hidden",
             }}
             className="relative flex items-end md:justify-center gap-0 overflow-x-auto no-scrollbar -mx-2 px-2 md:mx-0 md:px-0 z-10 snap-x pt-1 min-h-[60px] md:min-h-[76px] pb-0.5">
-            {categories.slice(0, 10).map((cat) => {
+            {categories.slice(0, 10).map((cat, idx) => {
               const isActive = (activeCategory?._id || activeCategory?.id) === (cat._id || cat.id);
               return (
                 <CategoryNavColumn
-                  key={cat._id || cat.id}
+                  key={cat._id || cat.id || `qcat2-${idx}`}
                   cat={cat}
                   isActive={isActive}
                   categoryAccent={categoryAccent}

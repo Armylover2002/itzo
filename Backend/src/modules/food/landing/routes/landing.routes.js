@@ -66,6 +66,7 @@ router.get('/referral-settings', getPublicReferralSettingsController);
 // Public Careers API
 import careerRoutes from './career.route.js';
 router.use('/careers', careerRoutes);
+router.use('/landing/careers', careerRoutes);
 
 // Admin hero banner management (DEV: auth temporarily disabled for faster integration)
 router.get('/hero-banners', listHeroBannersController);

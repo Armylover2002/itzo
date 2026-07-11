@@ -443,7 +443,7 @@ function QuickHomeLoadingState({ embedded }) {
         <div className="flex gap-3 overflow-hidden">
           {Array.from({ length: 6 }).map((_, index) => (
             <div
-              key={index}
+              key={`quick-skel-top-${index}`}
               className="flex min-w-[84px] flex-col items-center gap-2 md:min-w-[112px]">
               <Skeleton className="h-[96px] w-[84px] rounded-[22px] md:h-[126px] md:w-[112px]" />
               <Skeleton className="h-3 w-16 rounded-full" />
@@ -464,7 +464,7 @@ function QuickHomeLoadingState({ embedded }) {
 
           <div className="flex gap-3 overflow-hidden md:gap-5">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="w-[140px] shrink-0 space-y-3">
+              <div key={`quick-skel-card-${index}`} className="w-[140px] shrink-0 space-y-3">
                 <Skeleton className="h-[132px] w-full rounded-[20px]" />
                 <Skeleton className="h-3 w-5/6 rounded-full" />
                 <Skeleton className="h-3 w-2/3 rounded-full" />
@@ -887,7 +887,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                     const categoryImage = getQuickCategoryImage(cat);
                     return (
                       <motion.div
-                        key={cat.id}
+                        key={cat.id || cat._id || `cat-${idx}`}
                         whileHover={{ y: -4 }}
                         whileTap={{ scale: 0.96 }}
                         onClick={() => {
@@ -989,9 +989,9 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                 </div>
 
                 <div className="relative z-10 flex overflow-x-auto gap-3 md:gap-4 pb-5 md:pb-6 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
-                  {products.slice(0, 12).map((product) => (
+                  {products.slice(0, 12).map((product, idx) => (
                     <div
-                      key={product.id}
+                      key={product.id || product._id || `prod-${idx}`}
                       className="w-[125px] md:w-[155px] lg:w-[175px] shrink-0 snap-start">
                       <ProductCard
                         product={product}
@@ -1034,7 +1034,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                   });
                 })
                 .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                .map((section) => {
+                .map((section, sIdx) => {
                   const bgColor = getBackgroundColorByValue(
                     section.backgroundColor,
                   );
@@ -1057,7 +1057,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                     }));
                   return (
                     <motion.div
-                      key={section._id}
+                      key={section._id || section.id || `sec-${sIdx}`}
                       initial={{ opacity: 0, y: 24 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, amount: 0.25 }}
@@ -1151,9 +1151,9 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                               No products in this section yet.
                             </div>
                           ) : (
-                            sectionProducts.map((product) => (
+                            sectionProducts.map((product, pIdx) => (
                               <div
-                                key={product.id}
+                                key={product.id || product._id || `sprod-${pIdx}`}
                                 className="w-[130px] md:w-[160px] lg:w-[180px] flex-shrink-0 snap-start">
                                 <ProductCard
                                   product={product}

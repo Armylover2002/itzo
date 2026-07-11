@@ -26,9 +26,9 @@ const Categories = () => {
                 </div>
 
                 <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide snap-x -mx-4 px-4 md:mx-0 md:px-0 md:flex md:flex-wrap md:gap-8 md:justify-start">
-                    {categories.slice(0, 8).map((category) => (
+                    {categories.slice(0, 8).map((category, idx) => (
                         <a
-                            key={category.id}
+                            key={category.id || category._id || `homecat-${idx}`}
                             href={`/category/${category.name.toLowerCase()}`}
                             className="flex flex-col items-center gap-4 min-w-[140px] snap-start group cursor-pointer"
                         >
