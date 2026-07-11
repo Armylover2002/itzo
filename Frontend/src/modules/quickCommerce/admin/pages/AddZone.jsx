@@ -193,11 +193,28 @@ export default function AddZone() {
     })
   }, [])
 
+  const removeMarkerFromMap = useCallback((marker) => {
+    if (!marker) return
+    if (marker.setMap) {
+      marker.setMap(null)
+    } else {
+      marker.map = null
+    }
+  }, [])
+
   const getSortedCoordinatesFromMarkers = useCallback(() => {
-    const coords = tempMarkersRef.current.map(m => ({
-      latitude: m.getPosition().lat(),
-      longitude: m.getPosition().lng()
-    }))
+    const coords = tempMarkersRef.current.map(m => {
+      let lat, lng
+      if (m.getPosition) {
+        lat = m.getPosition().lat()
+        lng = m.getPosition().lng()
+      } else {
+        const pos = m.position
+        lat = typeof pos.lat === 'function' ? pos.lat() : pos.lat
+        lng = typeof pos.lng === 'function' ? pos.lng() : pos.lng
+      }
+      return { latitude: lat, longitude: lng }
+    })
     return radialSort(coords)
   }, [radialSort])
 
@@ -235,23 +252,43 @@ export default function AddZone() {
   const handleMapClick = useCallback((e) => {
     if (!window.google) return
     const latLng = e.latLng
-    
-    // Create new draggable marker
-    const marker = new window.google.maps.Marker({
-      position: latLng,
-      map: mapInstanceRef.current,
-      draggable: true,
-      icon: {
-        path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 8,
-        fillColor: "#0c831f",
-        fillOpacity: 1,
-        strokeColor: "#ffffff",
-        strokeWeight: 2
-      },
-      zIndex: 1000,
-      title: `Point ${tempMarkersRef.current.length + 1}`
-    })
+    const title = `Point ${tempMarkersRef.current.length + 1}`
+    let marker
+
+    if (window.google.maps.marker?.AdvancedMarkerElement) {
+      const pinElement = document.createElement('div')
+      pinElement.style.width = '16px'
+      pinElement.style.height = '16px'
+      pinElement.style.backgroundColor = '#0c831f'
+      pinElement.style.borderRadius = '50%'
+      pinElement.style.border = '2px solid white'
+      pinElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'
+      pinElement.style.cursor = 'pointer'
+
+      marker = new window.google.maps.marker.AdvancedMarkerElement({
+        position: latLng,
+        map: mapInstanceRef.current,
+        content: pinElement,
+        gmpDraggable: true,
+        title: title
+      })
+    } else {
+      marker = new window.google.maps.Marker({
+        position: latLng,
+        map: mapInstanceRef.current,
+        draggable: true,
+        icon: {
+          path: window.google.maps.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: "#0c831f",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2
+        },
+        zIndex: 1000,
+        title: title
+      })
+    }
 
     marker.addListener('drag', () => {
       updatePreviewPath()
@@ -321,7 +358,7 @@ export default function AddZone() {
         previewPolygonRef.current.setMap(null)
         previewPolygonRef.current = null
       }
-      tempMarkersRef.current.forEach(m => m.setMap(null))
+      tempMarkersRef.current.forEach(removeMarkerFromMap)
       tempMarkersRef.current = []
       
       setCoordinates([])
@@ -358,7 +395,7 @@ export default function AddZone() {
       }
 
       // Clean up drawing phase markers and preview polygon
-      tempMarkersRef.current.forEach(m => m.setMap(null))
+      tempMarkersRef.current.forEach(removeMarkerFromMap)
       tempMarkersRef.current = []
       if (previewPolygonRef.current) {
         previewPolygonRef.current.setMap(null)
@@ -380,6 +417,7 @@ export default function AddZone() {
     const map = new google.maps.Map(mapRef.current, {
       center: initialLocation,
       zoom: 5,
+      mapId: "DEMO_MAP_ID",
       mapTypeControl: true,
       mapTypeControlOptions: {
         style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -515,7 +553,7 @@ export default function AddZone() {
       previewPolygonRef.current.setMap(null)
       previewPolygonRef.current = null
     }
-    tempMarkersRef.current.forEach(marker => marker.setMap(null))
+    tempMarkersRef.current.forEach(removeMarkerFromMap)
     tempMarkersRef.current = []
     setCoordinates([])
   }
