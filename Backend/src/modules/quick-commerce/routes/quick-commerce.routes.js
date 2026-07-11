@@ -5,6 +5,9 @@ import {
   getCoupons,
   applyCoupon,
   getHomeData,
+  getExperienceOnly,
+  getHeroOnly,
+  getOfferSectionsOnly,
   getOffers,
   getProductById,
   getProductReviews,
@@ -136,9 +139,9 @@ router.get("/health", (_req, res) =>
 );
 
 router.get("/home", getHomeData);
-router.get("/experience", getHomeData); // Bridge experience to home data for now
-router.get("/experience/hero", getHomeData); // Bridge hero to home data for now
-router.get("/offer-sections", getHomeData); // Bridge offer-sections
+router.get("/experience", getExperienceOnly);
+router.get("/experience/hero", getHeroOnly);
+router.get("/offer-sections", getOfferSectionsOnly);
 router.get("/offers", getOffers);
 router.get("/coupons", getCoupons);
 router.post("/coupons/apply", applyCoupon);

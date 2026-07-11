@@ -32,7 +32,7 @@ axiosInstance.interceptors.request.use(
             token = localStorage.getItem('auth_delivery');
         } else if (pagePath.startsWith('/hrms')) {
             token = localStorage.getItem('auth_hrms');
-        } else if (pagePath.startsWith('/customer')) {
+        } else if (pagePath.startsWith('/customer') || pagePath.startsWith('/quick') || pagePath === '/') {
             token = getCustomerToken();
         }
 

@@ -9,20 +9,25 @@ export async function getGlobalSettings(req, res, next) {
     try {
         let settings = await GlobalSettings.findOne();
         if (!settings) {
-            // Create default settings if none exist
-            settings = await GlobalSettings.create({
-                companyName: 'Appzeto',
-                email: 'admin@appzeto.com'
-            });
+            try {
+                settings = await GlobalSettings.create({
+                    companyName: 'Appzeto',
+                    email: 'admin@appzeto.com'
+                });
+            } catch (err) {
+                // If duplicate key error occurs due to concurrent requests, re-query
+                settings = await GlobalSettings.findOne();
+            }
         }
 
-        // Cleanup any extra modules that might be in the DB (taxi, hotel, etc.)
-        const rawSettings = settings.toObject();
+        const rawSettings = settings && typeof settings.toObject === 'function' 
+            ? settings.toObject() 
+            : (settings ? { ...settings } : { companyName: 'Appzeto', email: 'admin@appzeto.com', modules: {} });
+
         const allowedModules = ['food', 'quickCommerce'];
         const cleanedModules = {};
         
         allowedModules.forEach(mod => {
-            // Ensure we always return a boolean for these keys
             cleanedModules[mod] = (rawSettings.modules && rawSettings.modules[mod] !== undefined) 
                 ? !!rawSettings.modules[mod] 
                 : true;

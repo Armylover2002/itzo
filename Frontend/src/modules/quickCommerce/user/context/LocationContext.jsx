@@ -314,29 +314,30 @@ export const LocationProvider = ({ children }) => {
 
       setSavedAddresses(normalizedShared);
       return normalizedShared;
-    } catch {
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        setSavedAddresses([]);
+        return [];
+      }
       try {
-        const { data } = await customerApi.getProfile();
-        const profile = data?.result ?? data?.data ?? data;
-        const raw = Array.isArray(profile?.addresses) ? profile.addresses : [];
-        const normalizedProfile = raw.map((addr, idx) =>
-          mapSharedAddress(addr, idx, profile || user || {}),
-        );
-        setSavedAddresses(normalizedProfile);
-        return normalizedProfile;
-      } catch {
-        try {
-          const rawStored = localStorage.getItem("userAddresses");
-          const parsedStored = rawStored ? JSON.parse(rawStored) : [];
-          const normalizedStored = Array.isArray(parsedStored)
-            ? parsedStored.map((addr, idx) => mapSharedAddress(addr, idx, user || {}))
-            : [];
-          setSavedAddresses(normalizedStored);
-          return normalizedStored;
-        } catch {
-          setSavedAddresses([]);
-          return [];
+        const raw = Array.isArray(user?.addresses) ? user.addresses : [];
+        if (raw.length > 0) {
+          const normalizedProfile = raw.map((addr, idx) =>
+            mapSharedAddress(addr, idx, user || {}),
+          );
+          setSavedAddresses(normalizedProfile);
+          return normalizedProfile;
         }
+        const rawStored = typeof window !== "undefined" ? localStorage.getItem("userAddresses") : null;
+        const parsedStored = rawStored ? JSON.parse(rawStored) : [];
+        const normalizedStored = Array.isArray(parsedStored)
+          ? parsedStored.map((addr, idx) => mapSharedAddress(addr, idx, user || {}))
+          : [];
+        setSavedAddresses(normalizedStored);
+        return normalizedStored;
+      } catch {
+        setSavedAddresses([]);
+        return [];
       }
     }
   }, [isAuthenticated, user]);

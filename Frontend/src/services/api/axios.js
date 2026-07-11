@@ -84,22 +84,23 @@ function getAccessToken(config) {
     const moduleToken = localStorage.getItem(key);
     if (moduleToken) return moduleToken;
     
-    // 2. Fallback to generic token only for non-admin modules
-    if (module !== "admin") {
-      const generic = localStorage.getItem("accessToken");
-      if (generic) {
-        try {
-          const payload = JSON.parse(window.atob(generic.split(".")[1]));
-          const expectedRole = module === "user" ? "USER" :
-                               module === "restaurant" ? "RESTAURANT" :
-                               module === "delivery" ? "DELIVERY_PARTNER" : null;
-          if (expectedRole && payload?.role && payload.role.toUpperCase() !== expectedRole) {
-            return null;
-          }
-        } catch (e) {}
-        return generic;
-      }
+    // 2. Try auth context keys
+    if (module === "user") {
+      return localStorage.getItem("auth_customer") || localStorage.getItem("user_accessToken") || localStorage.getItem("accessToken") || localStorage.getItem("token") || null;
     }
+    if (module === "seller") {
+      return localStorage.getItem("auth_seller") || localStorage.getItem("accessToken") || localStorage.getItem("token") || null;
+    }
+    if (module === "restaurant") {
+      return localStorage.getItem("auth_restaurant") || localStorage.getItem("accessToken") || localStorage.getItem("token") || null;
+    }
+    if (module === "delivery") {
+      return localStorage.getItem("auth_delivery") || localStorage.getItem("accessToken") || localStorage.getItem("token") || null;
+    }
+    if (module === "admin") {
+      return localStorage.getItem("auth_admin") || localStorage.getItem("adminToken") || null;
+    }
+
     return null;
   } catch {
     return null;
@@ -108,11 +109,15 @@ function getAccessToken(config) {
 
 function getRefreshToken(module) {
   try {
-    // 1. Try module-specific refresh token
     const moduleRefreshToken = localStorage.getItem(`${module}_refreshToken`);
     if (moduleRefreshToken) return moduleRefreshToken;
     
-    // 2. Fallback to generic refresh token only for non-admin modules
+    if (module === "user") {
+      return localStorage.getItem("auth_customer_refresh") || localStorage.getItem("user_refreshToken") || localStorage.getItem("refreshToken") || null;
+    }
+    if (module === "seller") {
+      return localStorage.getItem("auth_seller_refresh") || localStorage.getItem("refreshToken") || null;
+    }
     if (module !== "admin") {
       return localStorage.getItem("refreshToken") || null;
     }
@@ -122,20 +127,23 @@ function getRefreshToken(module) {
   }
 }
 
-function clearModuleAuth(module) {
+function clearModuleAuth(module, forceGlobal = false) {
   try {
     localStorage.removeItem(`${module}_accessToken`);
     localStorage.removeItem(`${module}_refreshToken`);
     localStorage.removeItem(`${module}_authenticated`);
     localStorage.removeItem(`${module}_user`);
-    if (module === "admin") {
-      localStorage.removeItem("auth_admin");
-      localStorage.removeItem("adminToken");
-      localStorage.removeItem("adminInfo");
-    } else if (module === "user") {
-      localStorage.removeItem("auth_customer");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("token");
+    if (forceGlobal) {
+      if (module === "admin") {
+        localStorage.removeItem("auth_admin");
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminInfo");
+      } else if (module === "user") {
+        localStorage.removeItem("auth_customer");
+        localStorage.removeItem("auth_customer_refresh");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("token");
+      }
     }
   } catch (_) {}
 }
@@ -153,30 +161,27 @@ function onRefreshed(newToken, module) {
 }
 
 function onRefreshFailed(module) {
-  clearModuleAuth(module);
+  clearModuleAuth(module, true);
   // Fail any queued requests that were waiting for this refresh
   refreshSubscribers.forEach((cb) => cb(null, module));
   refreshSubscribers = [];
   
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("authRefreshFailed", { detail: { module } }));
-  }
+  // Dispatch a custom event specifically for the module that failed refresh
+  window.dispatchEvent(new CustomEvent("authRefreshFailed", { detail: { module } }));
 }
 
+// Ensure every request from the application receives appropriate context tags and authentication token.
 apiClient.interceptors.request.use(
   (config) => {
+    // Determine target module for authorization headers scoping
     config.contextModule = getModuleFromConfig(config);
-
-    // If sending FormData, let the browser set proper multipart boundary.
-    if (config.data instanceof FormData) {
-      if (config.headers && config.headers["Content-Type"]) {
-        delete config.headers["Content-Type"];
-      }
-    }
 
     const token = getAccessToken(config);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = 'Bearer ' + token;
+    } else {
+      // Clean stale header if token absent
+      delete config.headers.Authorization;
     }
 
     // Attach context module as header for backend scoping (e.g. notifications)
@@ -202,7 +207,7 @@ apiClient.interceptors.response.use(
     const module = original.contextModule || getModuleFromUrl(original.url);
     const refreshToken = getRefreshToken(module);
     if (!refreshToken) {
-      clearModuleAuth(module);
+      clearModuleAuth(module, false);
       return Promise.reject(err);
     }
 
@@ -235,6 +240,8 @@ apiClient.interceptors.response.use(
           // Also sync legacy and global keys for consistency across the app
           if (module === "admin") {
             localStorage.setItem("adminToken", newAccessToken);
+          } else if (module === "user") {
+            localStorage.setItem("auth_customer", newAccessToken);
           }
           localStorage.setItem("accessToken", newAccessToken);
 

@@ -143,8 +143,12 @@ export const backfillLegacyCategoryWorkflow = async (categories = []) => {
     }
 
     if (writes.length) {
-        const { FoodCategory } = await import('../admin/models/category.model.js');
-        await FoodCategory.bulkWrite(writes, { ordered: false });
+        try {
+            const { FoodCategory } = await import('../admin/models/category.model.js');
+            await FoodCategory.bulkWrite(writes, { ordered: false });
+        } catch (e) {
+            // Ignore bulkWrite race conditions during high-concurrency read operations
+        }
     }
 
     return statsById;

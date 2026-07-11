@@ -216,23 +216,53 @@ export const getHomeData = async (req, res) => {
     offerSections,
   };
 
-  // Partial returns for specialized frontend calls
-  if (req.path.includes('/hero')) {
-    return res.json({ success: true, result: resolvedHero });
-  }
-
-  if (req.path.includes('/experience')) {
-    return res.json({ success: true, result: resolvedSections });
-  }
-
-  if (req.path.includes('/offer-sections')) {
-    return res.json({ success: true, results: offerSections });
-  }
-
   return res.json({
     success: true,
     result: homeData,
   });
+};
+
+export const getExperienceOnly = async (req, res) => {
+  setPublicCache(res, 60);
+  const pageType = req.query?.pageType || 'home';
+  const headerId = req.query?.headerId || null;
+  const sections = await getQuickExperienceSections({ pageType, headerId });
+  const fallbackSections = [
+    {
+      _id: 'best-sellers-section',
+      title: 'Best Sellers',
+      displayType: 'products',
+      config: { products: { productIds: [], rows: 1, columns: 2, singleRowScrollable: true } },
+    },
+  ];
+  return res.json({ success: true, result: sections.length ? sections : fallbackSections });
+};
+
+export const getHeroOnly = async (req, res) => {
+  setPublicCache(res, 60);
+  const pageType = req.query?.pageType || 'home';
+  const headerId = req.query?.headerId || null;
+  const heroConfig = await getQuickHeroConfig({ pageType, headerId });
+  const fallbackHero = {
+    title: 'Blinkit style quick delivery',
+    subtitle: 'Groceries delivered in minutes',
+    banners: { items: [{ imageUrl: '/assets/ExperienceBanner.png', title: '', subtitle: '', linkType: 'none', linkValue: '', status: 'active' }] },
+    categoryIds: [],
+  };
+  const resolvedHero = heroConfig
+    ? {
+        ...heroConfig,
+        banners: heroConfig.banners || { items: [] },
+        categoryIds: Array.isArray(heroConfig.categoryIds) ? heroConfig.categoryIds : [],
+      }
+    : fallbackHero;
+  return res.json({ success: true, result: resolvedHero });
+};
+
+export const getOfferSectionsOnly = async (_req, res) => {
+  setPublicCache(res, 60);
+  const offerSections = await getQuickOfferSections();
+  return res.json({ success: true, results: offerSections || [] });
 };
 
 export const getCoupons = async (_req, res) => {

@@ -189,30 +189,31 @@ export const useQuickHomeData = ({ currentLocation }) => {
         productParams.lng = lng;
       }
 
-      const [catRes, prodRes, expRes, sectionsRes, heroRes] = await Promise.all([
+      const [homeRes, catRes, prodRes] = await Promise.all([
+        customerApi.getHomeData().catch(() => null),
         customerApi.getCategories().catch((err) => ({ data: { success: false, result: [], error: err } })),
         customerApi.getProducts(productParams).catch((err) => ({ data: { success: false, result: { items: [] }, error: err } })),
-        customerApi.getExperienceSections({ pageType: "home" }).catch(() => null),
-        customerApi.getOfferSections(hasValidLocation ? { lat: currentLocation.latitude, lng: currentLocation.longitude } : {}).catch(() => ({ data: { results: [] } })),
-        customerApi.getHeroConfig({ pageType: "home" }).catch(() => null),
       ]);
 
       if (seq !== fetchDataSeqRef.current) return;
+
+      const homePayload = homeRes?.data?.result || {};
 
       const newDataCache = {
         categories: [ALL_CATEGORY],
         activeCategory: ALL_CATEGORY,
         products: [],
         quickCategories: [],
-        experienceSections: [],
-        offerSections: [],
-        heroConfig: { banners: { items: [] }, categoryIds: [] },
+        experienceSections: homePayload.sections || [],
+        offerSections: homePayload.offerSections || [],
+        heroConfig: homePayload.hero || { banners: { items: [] }, categoryIds: [] },
         categoryMap: {},
         subcategoryMap: {},
       };
 
-      if (catRes && catRes.data && catRes.data.success) {
-        const dbCats = catRes.data.results || catRes.data.result || [];
+      // Process Categories (from catRes or homeData.categories)
+      const dbCats = (catRes?.data?.success && (catRes.data.results || catRes.data.result)) || homePayload.categories || [];
+      if (Array.isArray(dbCats) && dbCats.length > 0) {
         const catMap = {};
         const subMap = {};
         dbCats.forEach((c) => {
@@ -243,8 +244,8 @@ export const useQuickHomeData = ({ currentLocation }) => {
 
         // Restore active category if stored
         let initialActive = mergedAllCategory;
-        const storedHeaderReturn = window.sessionStorage.getItem(QUICK_HEADER_RETURN_STORAGE_KEY);
-        const storedExpReturn = window.sessionStorage.getItem("experienceReturn");
+        const storedHeaderReturn = typeof window !== "undefined" ? window.sessionStorage.getItem(QUICK_HEADER_RETURN_STORAGE_KEY) : null;
+        const storedExpReturn = typeof window !== "undefined" ? window.sessionStorage.getItem("experienceReturn") : null;
         
         const restoreId = (storedHeaderReturn && JSON.parse(storedHeaderReturn)?.headerId) || (storedExpReturn && JSON.parse(storedExpReturn)?.headerId);
         if (restoreId) {
@@ -259,11 +260,12 @@ export const useQuickHomeData = ({ currentLocation }) => {
         newDataCache.quickCategories = formattedQuickCats;
       }
 
-      if (prodRes && prodRes.data && prodRes.data.success) {
-        const rawResult = prodRes.data.result;
-        const dbProds = Array.isArray(prodRes.data.results) ? prodRes.data.results : (Array.isArray(rawResult?.items) ? rawResult.items : (Array.isArray(rawResult) ? rawResult : []));
+      // Process Products (from prodRes or homePayload.bestSellers)
+      const rawProds = (prodRes?.data?.success && (prodRes.data.results || prodRes.data.result?.items || prodRes.data.result)) || homePayload.bestSellers || [];
+      const dbProds = Array.isArray(rawProds) ? rawProds : [];
+      if (dbProds.length > 0) {
         const formattedProds = dbProds.map((p) => ({
-          ...p, id: p._id, image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
+          ...p, id: p._id || p.id, image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
           price: Number(p.salePrice || 0) > 0 ? Number(p.salePrice) : Number(p.price || 0),
           originalPrice: Number(p.originalPrice || p.mrp || p.price || p.salePrice || 0),
           weight: p.weight || "1 unit", deliveryTime: "8-15 mins"
@@ -272,25 +274,14 @@ export const useQuickHomeData = ({ currentLocation }) => {
         newDataCache.products = formattedProds;
       }
 
-      if (expRes?.data?.success) {
-        const raw = expRes.data.result || expRes.data.results || expRes.data;
-        const sections = Array.isArray(raw) ? raw : [];
-        setExperienceSections(sections);
-        newDataCache.experienceSections = sections;
+      if (homePayload.sections && Array.isArray(homePayload.sections)) {
+        setExperienceSections(homePayload.sections);
       }
-
-      const sectionsList = sectionsRes?.data?.results || sectionsRes?.data?.result || sectionsRes?.data;
-      const offerSecs = Array.isArray(sectionsList) ? sectionsList : [];
-      setOfferSections(offerSecs);
-      newDataCache.offerSections = offerSecs;
-
-      if (heroRes?.data?.success) {
-        const payload = heroRes.data.result || heroRes.data.results || heroRes.data;
-        const config = payload && (payload.banners?.items?.length > 0 || payload.categoryIds?.length > 0)
-          ? { banners: payload.banners || { items: [] }, categoryIds: payload.categoryIds || [] }
-          : { banners: { items: [] }, categoryIds: [] };
-        setHeroConfig(config);
-        newDataCache.heroConfig = config;
+      if (homePayload.offerSections && Array.isArray(homePayload.offerSections)) {
+        setOfferSections(homePayload.offerSections);
+      }
+      if (homePayload.hero) {
+        setHeroConfig(homePayload.hero);
       }
 
       globalQuickHomeCache.data = newDataCache;

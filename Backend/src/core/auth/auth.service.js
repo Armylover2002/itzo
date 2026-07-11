@@ -657,9 +657,12 @@ export const getProfile = async (userId, role) => {
   }
   let profile = null;
   const id = userId;
+  const normalizedRole = String(role || "USER").toUpperCase();
 
-  switch (role) {
-    case ROLES.USER: {
+  switch (normalizedRole) {
+    case ROLES.USER:
+    case "CUSTOMER":
+    case "FOOD_USER": {
       const userProfile = await FoodUser.findById(id).lean();
       if (!userProfile) break;
       profile = {
@@ -674,6 +677,7 @@ export const getProfile = async (userId, role) => {
     case ROLES.ADMIN:
     case "EMPLOYEE":
     case "HRMS_EMPLOYEE":
+    case "HRMS":
       profile = normalizeAdminProfile(await getAdminProfileDocument(id));
       break;
     case ROLES.RESTAURANT:
@@ -735,7 +739,8 @@ export const getProfile = async (userId, role) => {
         };
       }
       break;
-    case ROLES.DELIVERY_PARTNER: {
+    case ROLES.DELIVERY_PARTNER:
+    case "DELIVERY": {
       const partner = await FoodDeliveryPartner.findById(id).lean();
       if (!partner) break;
       const deliveryId = partner._id
@@ -839,7 +844,7 @@ export const getProfile = async (userId, role) => {
       break;
     }
     default:
-      throw new AuthError("Unknown role");
+      throw new AuthError("Unknown role: " + role);
   }
 
   if (!profile) {

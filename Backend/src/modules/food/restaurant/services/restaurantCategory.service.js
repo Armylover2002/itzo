@@ -122,7 +122,10 @@ export async function listRestaurantCategories(restaurantId, query = {}) {
         FoodCategory.countDocuments(filter)
     ]);
 
-    const statsById = await backfillLegacyCategoryWorkflow(list);
+    let statsById = new Map();
+    try {
+        statsById = await backfillLegacyCategoryWorkflow(list);
+    } catch (e) {}
     const restaurantIds = !compact
         ? Array.from(
             new Set(
@@ -198,7 +201,9 @@ export async function listPublicCategories(query = {}) {
         FoodCategory.countDocuments(filter)
     ]);
 
-    await backfillLegacyCategoryWorkflow(list);
+    try {
+        await backfillLegacyCategoryWorkflow(list);
+    } catch (e) {}
     const categories = list.map((category) => serializeCategoryForResponse(category));
 
     return { categories, total, page, limit };

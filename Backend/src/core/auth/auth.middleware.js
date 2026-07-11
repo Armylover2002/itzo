@@ -25,11 +25,12 @@ export const authMiddleware = (req, res, next) => {
 
     try {
         const decoded = verifyAccessToken(token);
+        const role = String(decoded.role || 'USER').toUpperCase();
         req.user = {
             userId: decoded.userId,
-            role: decoded.role
+            role: (role === 'CUSTOMER' || role === 'FOOD_USER') ? 'USER' : (role === 'DELIVERY' ? 'DELIVERY_PARTNER' : role)
         };
-        if (decoded.role === 'USER') {
+        if (role === 'USER' || role === 'CUSTOMER' || role === 'FOOD_USER') {
             // Enforce active status in real-time - deactivated users are logged out on next request.
             FoodUser.findById(decoded.userId).select('isActive').lean().then((doc) => {
                 if (!doc || doc.isActive === false) {
@@ -39,7 +40,7 @@ export const authMiddleware = (req, res, next) => {
             }).catch(() => sendError(res, 401, 'Authentication failed'));
             return;
         }
-        if (decoded.role === 'DELIVERY_PARTNER') {
+        if (role === 'DELIVERY_PARTNER' || role === 'DELIVERY') {
             FoodDeliveryPartner.findById(decoded.userId).select('isActive').lean().then((doc) => {
                 if (!doc || doc.isActive === false) {
                     return sendError(res, 401, 'Delivery account is inactive');
