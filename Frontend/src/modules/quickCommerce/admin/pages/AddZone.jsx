@@ -205,7 +205,7 @@ export default function AddZone() {
     }
   }, [])
 
-  const getSortedCoordinatesFromMarkers = useCallback(() => {
+  const getCoordinatesFromMarkers = useCallback(() => {
     const coords = tempMarkersRef.current.map(m => {
       let lat, lng
       if (m.getPosition) {
@@ -218,13 +218,13 @@ export default function AddZone() {
       }
       return { latitude: lat, longitude: lng }
     })
-    return radialSort(coords)
-  }, [radialSort])
+    return coords
+  }, [])
 
   const updatePreviewPath = useCallback(() => {
     if (!window.google) return
-    const sorted = getSortedCoordinatesFromMarkers()
-    if (sorted.length < 2) {
+    const coords = getCoordinatesFromMarkers()
+    if (coords.length < 2) {
       if (previewPolygonRef.current) {
         previewPolygonRef.current.setMap(null)
         previewPolygonRef.current = null
@@ -232,7 +232,7 @@ export default function AddZone() {
       return
     }
 
-    const path = sorted.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
+    const path = coords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
 
     if (!previewPolygonRef.current) {
       previewPolygonRef.current = new window.google.maps.Polygon({
@@ -250,7 +250,7 @@ export default function AddZone() {
     } else {
       previewPolygonRef.current.setPaths(path)
     }
-  }, [getSortedCoordinatesFromMarkers])
+  }, [getCoordinatesFromMarkers])
 
   const handleMapClick = useCallback((e) => {
     if (!window.google) return
@@ -298,16 +298,32 @@ export default function AddZone() {
     })
 
     marker.addListener('dragend', () => {
-      const sorted = getSortedCoordinatesFromMarkers()
-      setCoordinates(sorted)
+      const coords = getCoordinatesFromMarkers()
+      setCoordinates(coords)
+    })
+
+    marker.addListener('rightclick', () => {
+      removeMarkerFromMap(marker)
+      tempMarkersRef.current = tempMarkersRef.current.filter(m => m !== marker)
+      tempMarkersRef.current.forEach((m, idx) => {
+        const markerTitle = `Point ${idx + 1}`
+        if (m.setTitle) {
+          m.setTitle(markerTitle)
+        } else {
+          m.title = markerTitle
+        }
+      })
+      updatePreviewPath()
+      const coords = getCoordinatesFromMarkers()
+      setCoordinates(coords)
     })
 
     tempMarkersRef.current.push(marker)
     updatePreviewPath()
     
-    const sorted = getSortedCoordinatesFromMarkers()
-    setCoordinates(sorted)
-  }, [updatePreviewPath, getSortedCoordinatesFromMarkers])
+    const coords = getCoordinatesFromMarkers()
+    setCoordinates(coords)
+  }, [updatePreviewPath, getCoordinatesFromMarkers])
 
   const setupPolygonListeners = useCallback((polygon) => {
     if (!polygon) return

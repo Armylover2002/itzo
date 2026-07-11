@@ -384,6 +384,16 @@ export default function AddZone() {
     })
   }
 
+  const getCoordinatesFromMarkers = () => {
+    return markersRef.current.map(m => {
+      const pos = m.getPosition()
+      return {
+        latitude: pos.lat(),
+        longitude: pos.lng()
+      }
+    })
+  }
+
   const addDrawingPoint = (latLng) => {
     if (!mapInstanceRef.current || !window.google) return
 
@@ -412,19 +422,12 @@ export default function AddZone() {
 
     // State Synchronization on Drag End
     marker.addListener('dragend', () => {
-      const currentCoords = markersRef.current.map(m => {
-        const pos = m.getPosition()
-        return {
-          latitude: pos.lat(),
-          longitude: pos.lng()
-        }
-      })
-      const sortedCoords = radialSort(currentCoords)
+      const currentCoords = getCoordinatesFromMarkers()
       if (polygonRef.current) {
-        const path = sortedCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
+        const path = currentCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
         polygonRef.current.setPath(path)
       }
-      setCoordinates(sortedCoords)
+      setCoordinates(currentCoords)
     })
 
     // Check click on the first marker to finish drawing
@@ -434,34 +437,28 @@ export default function AddZone() {
       }
     })
 
+    // Support right-click deletion
+    marker.addListener('rightclick', () => {
+      marker.setMap(null)
+      markersRef.current = markersRef.current.filter(m => m !== marker)
+      updatePreviewPolygon()
+      const currentCoords = getCoordinatesFromMarkers()
+      setCoordinates(currentCoords)
+    })
+
     // Update preview polygon
     updatePreviewPolygon()
 
     // Update coordinates state (for UI display of points drawn)
-    const currentCoords = markersRef.current.map(m => {
-      const pos = m.getPosition()
-      return {
-        latitude: pos.lat(),
-        longitude: pos.lng()
-      }
-    })
-    const sortedCoords = radialSort(currentCoords)
-    setCoordinates(sortedCoords)
+    const currentCoords = getCoordinatesFromMarkers()
+    setCoordinates(currentCoords)
   }
 
   const updatePreviewPolygon = () => {
     if (!mapInstanceRef.current || !window.google) return
     
-    const currentCoords = markersRef.current.map(marker => {
-      const pos = marker.getPosition()
-      return {
-        latitude: pos.lat(),
-        longitude: pos.lng()
-      }
-    })
-
-    const sortedCoords = radialSort(currentCoords)
-    const path = sortedCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
+    const currentCoords = getCoordinatesFromMarkers()
+    const path = currentCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
 
     if (!polygonRef.current) {
       polygonRef.current = new window.google.maps.Polygon({
@@ -492,26 +489,18 @@ export default function AddZone() {
       if (polygon) polygon.setOptions({ clickable: true })
     })
 
-    // Get the final radially-sorted coordinates from the markers
-    const currentCoords = markersRef.current.map(marker => {
-      const pos = marker.getPosition()
-      return {
-        latitude: pos.lat(),
-        longitude: pos.lng()
-      }
-    })
-    
-    const sortedCoords = radialSort(currentCoords)
+    // Get the final coordinates in click order from the markers
+    const currentCoords = getCoordinatesFromMarkers()
 
     // Clean up all the custom markers
     markersRef.current.forEach(marker => marker.setMap(null))
     markersRef.current = []
 
     // Render/Update the single editable polygon
-    renderEditablePolygon(sortedCoords)
+    renderEditablePolygon(currentCoords)
     
     // Sync to React state
-    setCoordinates(sortedCoords)
+    setCoordinates(currentCoords)
   }
 
   const clearDrawing = () => {
