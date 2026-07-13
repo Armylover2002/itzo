@@ -268,7 +268,7 @@ export default function HrmsAdminPerformance() {
                                             <DollarSign className="w-5 h-5 text-emerald-600" />
                                         </div>
                                     </div>
-                                    <p className="text-xs font-medium text-slate-500">Gross Revenue</p>
+                                    <p className="text-xs font-medium text-slate-500">Net Revenue</p>
                                     <h3 className="text-xl font-bold text-emerald-600 mt-0.5">{formatCurrency(data.financialBreakdown?.grossRevenue)}</h3>
                                 </div>
 
@@ -290,7 +290,7 @@ export default function HrmsAdminPerformance() {
                                 </h3>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                                     <div className="bg-slate-50 p-4 rounded-xl">
-                                        <span className="text-xs font-medium text-slate-500 block">Gross Revenue</span>
+                                        <span className="text-xs font-medium text-slate-500 block">Net Revenue</span>
                                         <span className="text-base font-bold text-slate-900 mt-1 block">{formatCurrency(data.financialBreakdown?.grossRevenue)}</span>
                                     </div>
                                     <div className="bg-slate-50 p-4 rounded-xl">
@@ -482,7 +482,7 @@ export default function HrmsAdminPerformance() {
                                         <tr className="border-b border-slate-100 text-xs font-semibold text-slate-500 uppercase tracking-wider bg-slate-50">
                                             <th className="py-3 px-5">Employee</th>
                                             <th className="py-3 px-5">Department & Zone</th>
-                                            <th className="py-3 px-5 text-right">Gross Revenue</th>
+                                            <th className="py-3 px-5 text-right">Net Revenue</th>
                                             <th className="py-3 px-5 text-right">Net Profit</th>
                                             <th className="py-3 px-5 text-right">Score</th>
                                             <th className="py-3 px-5 text-center">Rating</th>

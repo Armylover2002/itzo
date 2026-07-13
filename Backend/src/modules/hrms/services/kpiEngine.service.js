@@ -9,6 +9,7 @@ import { HrmsExpense } from '../models/expense.model.js';
 const getFoodModels = () => ({
     Restaurant: mongoose.model('FoodRestaurant'),
     Order: mongoose.model('FoodOrder'),
+    FoodWalletLedger: mongoose.model('FoodWalletLedger'),
 });
 
 /**
@@ -210,8 +211,7 @@ export class KpiEngine {
                 { $match: { restaurantId: { $in: restIds }, orderStatus: 'Delivered', createdAt: dateFilter } },
                 { $group: {
                     _id: '$restaurantId',
-                    totalOrders: { $sum: 1 },
-                    totalRev: { $sum: '$grandTotal' }
+                    totalOrders: { $sum: 1 }
                 }}
             ]);
 
@@ -220,7 +220,53 @@ export class KpiEngine {
             
             for (const r of orderAgg) {
                 monthlyOrdersCount += r.totalOrders;
-                grossRevenueAmount += r.totalRev;
+            }
+        }
+
+        // Net Revenue (grossRevenueAmount) calculation based on subscription deductions from ONBOARDED restaurants
+        const { FoodWalletLedger } = getFoodModels();
+        const onboardedRests = await Restaurant.find({ onboardedBy: employeeObjId }).select('_id').lean();
+        const onboardedRestIds = onboardedRests.map(r => r._id);
+
+        if (onboardedRestIds.length > 0) {
+            const ledgerAgg = await FoodWalletLedger.aggregate([
+                { 
+                    $match: { 
+                        ownerId: { $in: onboardedRestIds }, 
+                        ownerType: 'RESTAURANT',
+                        type: { $in: ['DAILY_DEDUCTION', 'WEEKLY_SUBSCRIPTION', 'MONTHLY_SUBSCRIPTION', 'REFUND'] },
+                        createdAt: dateFilter 
+                    } 
+                },
+                { 
+                    $group: {
+                        _id: null,
+                        totalDeductions: { 
+                            $sum: {
+                                $cond: [
+                                    { $in: ['$type', ['DAILY_DEDUCTION', 'WEEKLY_SUBSCRIPTION', 'MONTHLY_SUBSCRIPTION']] },
+                                    '$amount',
+                                    0
+                                ]
+                            } 
+                        },
+                        totalRefunds: {
+                            $sum: {
+                                $cond: [
+                                    { $eq: ['$type', 'REFUND'] },
+                                    '$amount',
+                                    0
+                                ]
+                            }
+                        }
+                    } 
+                }
+            ]);
+
+            if (ledgerAgg.length > 0) {
+                // Subscription fees received minus any refunds
+                grossRevenueAmount = (ledgerAgg[0].totalDeductions || 0) - (ledgerAgg[0].totalRefunds || 0);
+                if (grossRevenueAmount < 0) grossRevenueAmount = 0;
             }
         }
 
