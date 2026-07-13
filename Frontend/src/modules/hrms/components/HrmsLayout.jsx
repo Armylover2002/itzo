@@ -67,7 +67,7 @@ export default function HrmsLayout() {
                 { label: 'My Team', icon: Users, path: '/hrms/team/my-team' },
                 { label: 'Team Employees', icon: Users, path: '/hrms/team/employees' },
                 { label: 'Attendance & Leaves', icon: Clock, path: '/hrms/team/attendance' },
-                { label: 'Payroll & Expenses', icon: Receipt, path: '/hrms/team/expenses' },
+                { label: 'Expenses', icon: Receipt, path: '/hrms/team/expenses' },
 
 
                 { label: 'Live Tracking', icon: MapPin, path: '/hrms/team/live-tracking' },

@@ -111,7 +111,7 @@ const fetchPreviewBlobUrl = async (url) => {
     }
 };
 
-export default function HrmsPayroll({ defaultTab = 'payroll' }) {
+export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = false }) {
     const [tab, setTab] = useState(defaultTab);
     const [payrollRecords, setPayrollRecords] = useState([]);
     const [expenses, setExpenses] = useState([]);
@@ -270,10 +270,12 @@ export default function HrmsPayroll({ defaultTab = 'payroll' }) {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-slate-900">Payroll & Expenses</h1>
+            <h1 className="text-2xl font-bold text-slate-900">{hidePayroll ? 'Expenses' : 'Payroll & Expenses'}</h1>
 
             <div className="flex gap-2">
-                <button onClick={() => setTab('payroll')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payroll' ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payroll</button>
+                {!hidePayroll && (
+                    <button onClick={() => setTab('payroll')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payroll' ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payroll</button>
+                )}
                 <button onClick={() => setTab('expenses')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'expenses' ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Pending Expenses</button>
             </div>
 

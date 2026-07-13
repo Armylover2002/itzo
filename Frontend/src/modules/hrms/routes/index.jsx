@@ -80,8 +80,7 @@ export default function HrmsEmployeeApp() {
                         <Route path="team/employees" element={<HrmsEmployeesAdmin />} />
                         <Route path="team/attendance" element={<HrmsAttendanceAdmin />} />
                         <Route path="team/leaves" element={<HrmsAttendanceAdmin defaultTab="leaves" />} />
-                        <Route path="team/expenses" element={<HrmsPayrollAdmin defaultTab="expenses" />} />
-                        <Route path="team/salary" element={<HrmsPayrollAdmin defaultTab="payroll" />} />
+                        <Route path="team/expenses" element={<HrmsPayrollAdmin defaultTab="expenses" hidePayroll={true} />} />
 
 
                         <Route path="team/live-tracking" element={<HrmsLiveTrackingAdmin />} />
