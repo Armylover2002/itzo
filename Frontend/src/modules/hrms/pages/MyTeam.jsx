@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Users, UserPlus, Search, Loader2, UserMinus, ShieldAlert, Building2, MapPin } from 'lucide-react';
+import { Users, UserPlus, Search, Loader2, ShieldAlert, Building2, MapPin } from 'lucide-react';
 
 export default function MyTeam() {
     const [team, setTeam] = useState([]);
@@ -45,19 +45,7 @@ export default function MyTeam() {
         }
     };
 
-    const handleRemoveMember = async (employeeId) => {
-        if (!window.confirm('Are you sure you want to remove this employee from your team?')) return;
-        setActionLoading(employeeId);
-        try {
-            await axiosInstance.post('/hrms/team/remove', { employeeId });
-            toast.success('Team member removed successfully');
-            fetchTeamData();
-        } catch (e) {
-            toast.error(e.response?.data?.message || 'Failed to remove member');
-        } finally {
-            setActionLoading(null);
-        }
-    };
+
 
     const filteredTeam = team.filter(m => 
         m.adminId?.name?.toLowerCase().includes(searchTeam.toLowerCase()) || 
@@ -157,14 +145,7 @@ export default function MyTeam() {
                                                 <p className="text-xs text-slate-500">{member.designation || 'Employee'}</p>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => handleRemoveMember(member._id)}
-                                            disabled={actionLoading === member._id}
-                                            className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Remove from team"
-                                        >
-                                            {actionLoading === member._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserMinus className="w-4 h-4" />}
-                                        </button>
+
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-y-2 text-xs">
                                         <div>
