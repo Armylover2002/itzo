@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter, UserCog, ArrowRight, Edit2, Save } from 'lucide-react';
+import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter, UserCog, ArrowRight, Edit2, Save, Globe, Store } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useHrmsSettings } from '../../../../hrms/context/HrmsSettingsContext';
 
@@ -19,11 +19,15 @@ export default function HrmsEmployees() {
     const [filterDepartment, setFilterDepartment] = useState('all');
     const [filterManagerId, setFilterManagerId] = useState('all');
     const [managers, setManagers] = useState([]);
-    const [transferConfirm, setTransferConfirm] = useState(null); // { employeeId, employeeName, currentManager, newManagerId, newManagerName }
+    const [transferConfirm, setTransferConfirm] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [editForm, setEditForm] = useState({});
     const [editSaving, setEditSaving] = useState(false);
     const { hrmsSettings } = useHrmsSettings();
+    const [zones, setZones] = useState([]);
+    const [filterZoneId, setFilterZoneId] = useState('all');
+    const [employeeRestaurants, setEmployeeRestaurants] = useState(null);
+    const [restaurantLoading, setRestaurantLoading] = useState(false);
 
     const [onboardForm, setOnboardForm] = useState({
         fullName: '', email: '', password: '', phone: '',
@@ -36,7 +40,8 @@ export default function HrmsEmployees() {
         emergencyName: '', emergencyRelation: '', emergencyPhone: '',
         employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
         shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
-        employeeType: 'Office', assignedOfficeLocationId: '', managerId: '', assignedTeamMembers: []
+        employeeType: 'Office', assignedOfficeLocationId: '', managerId: '', assignedTeamMembers: [],
+        assignedZoneIds: []
     });
     const [uploading, setUploading] = useState({ aadhaar: false, pan: false, profilePhoto: false, resume: false });
 
@@ -49,13 +54,14 @@ export default function HrmsEmployees() {
             if (filterAssignmentStatus !== 'all') params.append('assignmentStatus', filterAssignmentStatus);
             if (filterDepartment !== 'all') params.append('department', filterDepartment);
             if (filterManagerId !== 'all') params.append('currentManagerId', filterManagerId);
+            if (filterZoneId !== 'all') params.append('zoneId', filterZoneId);
             const res = await axiosInstance.get(`/hrms/employees?${params}`);
             const data = res.data?.data || {};
             setEmployees(data.employees || []);
             setPagination(data.pagination || { page: 1, total: 0, totalPages: 0 });
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
-    }, [search, filterEmployeeType, filterAssignmentStatus, filterDepartment, filterManagerId]);
+    }, [search, filterEmployeeType, filterAssignmentStatus, filterDepartment, filterManagerId, filterZoneId]);
 
     const fetchManagers = useCallback(async () => {
         try {
@@ -64,10 +70,27 @@ export default function HrmsEmployees() {
         } catch (e) { console.error('Failed to fetch managers', e); }
     }, []);
 
+    const fetchZones = useCallback(async () => {
+        try {
+            const res = await axiosInstance.get('/food/admin/zones?isActive=true&limit=500');
+            setZones(res.data?.data?.zones || []);
+        } catch (e) { console.error('Failed to fetch zones', e); }
+    }, []);
+
+    const fetchEmployeeRestaurants = async (empId) => {
+        setRestaurantLoading(true);
+        try {
+            const res = await axiosInstance.get(`/hrms/employees/${empId}/restaurants?limit=100`);
+            setEmployeeRestaurants(res.data?.data || null);
+        } catch (e) { console.error(e); setEmployeeRestaurants(null); }
+        finally { setRestaurantLoading(false); }
+    };
+
     useEffect(() => { 
         fetchEmployees(); 
         fetchManagers();
-    }, [fetchEmployees, fetchManagers]);
+        fetchZones();
+    }, [fetchEmployees, fetchManagers, fetchZones]);
 
     const handleOnboard = async () => {
         const nameTrimmed = onboardForm.fullName?.trim() || '';
@@ -126,6 +149,7 @@ export default function HrmsEmployees() {
                 ctc: Number(onboardForm.ctc) || 0,
                 assignedOfficeLocationId: onboardForm.assignedOfficeLocationId || null,
                 managerId: onboardForm.hrmsRole === 'Manager' ? null : (onboardForm.managerId || null),
+                assignedZoneIds: onboardForm.assignedZoneIds || [],
                 assignedTeamMembers: onboardForm.assignedTeamMembers || [],
                 profilePhotoUrl: onboardForm.profilePhotoUrl || '',
                 resumeUrl: onboardForm.resumeUrl || '',
@@ -157,7 +181,8 @@ export default function HrmsEmployees() {
                 emergencyName: '', emergencyRelation: '', emergencyPhone: '',
                 employmentType: 'Full-Time', joiningDate: new Date().toISOString().split('T')[0],
                 shift: 'General', ctc: '', hrmsRole: 'Employee', officeLocation: '',
-                employeeType: 'Office', assignedOfficeLocationId: '', managerId: '', assignedTeamMembers: []
+                employeeType: 'Office', assignedOfficeLocationId: '', managerId: '', assignedTeamMembers: [],
+                assignedZoneIds: []
             });
             fetchEmployees();
         } catch (e) { toast.error(e.response?.data?.message || 'Onboarding failed'); }
@@ -212,6 +237,7 @@ export default function HrmsEmployees() {
             ctc: emp.ctc || '',
             officeLocation: emp.officeLocation || '',
             assignedOfficeLocationId: emp.assignedOfficeLocationId || '',
+            assignedZoneIds: (emp.assignedZoneIds || []).map(z => typeof z === 'object' ? z._id : z),
         });
         setEditMode(true);
     };
@@ -487,6 +513,35 @@ export default function HrmsEmployees() {
                                         </select>
                                     </div>
                                 )}
+                                {/* Assign Zones */}
+                                <div className="sm:col-span-2 lg:col-span-4">
+                                    <label className="text-xs font-medium text-slate-600 mb-1 block">Assign Zones</label>
+                                    <div className="border border-slate-200 rounded-xl p-2 max-h-40 overflow-y-auto bg-white">
+                                        {zones.length === 0 ? (
+                                            <p className="text-xs text-slate-400 py-2 text-center">No active zones available</p>
+                                        ) : zones.map(z => {
+                                            const isChecked = (onboardForm.assignedZoneIds || []).includes(z._id);
+                                            return (
+                                                <label key={z._id} className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50 border border-orange-200 text-orange-900 font-medium' : 'hover:bg-slate-50 text-slate-700'}`}>
+                                                    <input type="checkbox" checked={isChecked} onChange={e => {
+                                                        setOnboardForm(p => ({
+                                                            ...p,
+                                                            assignedZoneIds: e.target.checked
+                                                                ? [...(p.assignedZoneIds || []), z._id]
+                                                                : (p.assignedZoneIds || []).filter(id => id !== z._id)
+                                                        }));
+                                                    }} className="rounded text-orange-500 focus:ring-orange-500 w-3.5 h-3.5" />
+                                                    <Globe className="w-3 h-3 text-slate-400 shrink-0" />
+                                                    <span className="truncate">{z.name}</span>
+                                                    {z.serviceLocation && <span className="text-slate-400 ml-auto text-[10px] shrink-0">({z.serviceLocation})</span>}
+                                                </label>
+                                            );
+                                        })}
+                                    </div>
+                                    {(onboardForm.assignedZoneIds || []).length > 0 && (
+                                        <p className="text-[10px] text-orange-600 mt-1">{(onboardForm.assignedZoneIds || []).length} zone(s) selected</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -517,7 +572,7 @@ export default function HrmsEmployees() {
             )}
 
             {/* Search & Filters */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <div className="relative">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, ID, dept..."
@@ -549,6 +604,15 @@ export default function HrmsEmployees() {
                         <option value="Field">Field Employees</option>
                     </select>
                 </div>
+                <div className="relative">
+                    <select value={filterZoneId} onChange={e => setFilterZoneId(e.target.value)} 
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        <option value="all">Zone: All Zones</option>
+                        {zones.map(z => (
+                            <option key={z._id} value={z._id}>{z.name}{z.serviceLocation ? ` (${z.serviceLocation})` : ''}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Employee Detail Modal */}
@@ -575,7 +639,7 @@ export default function HrmsEmployees() {
                                         </button>
                                     </>
                                 )}
-                                <button onClick={() => { setSelectedEmployee(null); setEditMode(false); }} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                                <button onClick={() => { setSelectedEmployee(null); setEditMode(false); setEmployeeRestaurants(null); }} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
                                     <X className="w-5 h-5 text-slate-400" />
                                 </button>
                             </div>
@@ -643,6 +707,35 @@ export default function HrmsEmployees() {
                                                 </select>
                                             </div>
                                         )}
+                                        {/* Zone Multi-Select */}
+                                        <div className="col-span-2 sm:col-span-3">
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned Zones</label>
+                                            <div className="border border-slate-200 rounded-xl p-2 max-h-40 overflow-y-auto bg-white">
+                                                {zones.length === 0 ? (
+                                                    <p className="text-xs text-slate-400 py-2 text-center">No active zones available</p>
+                                                ) : zones.map(z => {
+                                                    const isChecked = (editForm.assignedZoneIds || []).includes(z._id);
+                                                    return (
+                                                        <label key={z._id} className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50 border border-orange-200 text-orange-900 font-medium' : 'hover:bg-slate-50 text-slate-700'}`}>
+                                                            <input type="checkbox" checked={isChecked} onChange={e => {
+                                                                setEditForm(p => ({
+                                                                    ...p,
+                                                                    assignedZoneIds: e.target.checked
+                                                                        ? [...(p.assignedZoneIds || []), z._id]
+                                                                        : (p.assignedZoneIds || []).filter(id => id !== z._id)
+                                                                }));
+                                                            }} className="rounded text-orange-500 focus:ring-orange-500 w-3.5 h-3.5" />
+                                                            <Globe className="w-3 h-3 text-slate-400 shrink-0" />
+                                                            <span className="truncate">{z.name}</span>
+                                                            {z.serviceLocation && <span className="text-slate-400 ml-auto text-[10px] shrink-0">({z.serviceLocation})</span>}
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                            {(editForm.assignedZoneIds || []).length > 0 && (
+                                                <p className="text-[10px] text-orange-600 mt-1">{(editForm.assignedZoneIds || []).length} zone(s) selected</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
@@ -668,6 +761,67 @@ export default function HrmsEmployees() {
                                         <p className="font-medium text-slate-900 truncate" title={f.v}>{f.v || '—'}</p>
                                     </div>
                                 ))}
+                                {/* Assigned Zones Section */}
+                                <div className="col-span-2 sm:col-span-3 mt-2 pt-3 border-t border-slate-100">
+                                    <p className="text-xs text-slate-500 mb-2 flex items-center gap-1.5">
+                                        <Globe className="w-3.5 h-3.5" /> Assigned Zones
+                                    </p>
+                                    {(selectedEmployee.assignedZoneIds && selectedEmployee.assignedZoneIds.length > 0) ? (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {selectedEmployee.assignedZoneIds.map((z, i) => (
+                                                <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                                    <MapPin className="w-3 h-3" />
+                                                    {typeof z === 'object' ? `${z.name}${z.serviceLocation ? ` (${z.serviceLocation})` : ''}` : z}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-slate-400">No zones assigned</span>
+                                    )}
+                                </div>
+                                {/* Restaurant Count */}
+                                <div className="col-span-2 sm:col-span-3 mt-1">
+                                    <button
+                                        onClick={() => fetchEmployeeRestaurants(selectedEmployee._id)}
+                                        className="flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                                    >
+                                        <Store className="w-3.5 h-3.5" /> View Restaurants Onboarded / Assigned
+                                    </button>
+                                    {restaurantLoading && <p className="text-xs text-slate-400 mt-1">Loading restaurants...</p>}
+                                    {employeeRestaurants && !restaurantLoading && (
+                                        <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-bold text-slate-700">Total Restaurants: {employeeRestaurants.totalRestaurants || 0}</span>
+                                                <button onClick={() => setEmployeeRestaurants(null)} className="text-xs text-slate-400 hover:text-slate-600"><X className="w-3 h-3" /></button>
+                                            </div>
+                                            {employeeRestaurants.zoneSummary?.length > 0 && (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {employeeRestaurants.zoneSummary.map((zs, i) => (
+                                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                                            {zs.zoneName}: {zs.count}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {employeeRestaurants.restaurants?.length > 0 && (
+                                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                                    {employeeRestaurants.restaurants.map(r => (
+                                                        <div key={r._id} className="flex items-center justify-between text-xs p-1.5 bg-white rounded border border-slate-100">
+                                                            <div>
+                                                                <span className="font-medium text-slate-800">{r.restaurantName}</span>
+                                                                <span className="text-slate-400 ml-1.5">{r.restaurantId}</span>
+                                                            </div>
+                                                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                                                r.status === 'approved' ? 'bg-emerald-50 text-emerald-700' :
+                                                                r.status === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'
+                                                            }`}>{r.status}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             )}
                         </div>
@@ -770,6 +924,7 @@ export default function HrmsEmployees() {
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Name</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Department</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Designation</th>
+                                <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Zones</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Type</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Manager</th>
                                 <th className="px-5 py-3 text-left font-semibold text-slate-600 text-xs uppercase">Role</th>
@@ -797,6 +952,22 @@ export default function HrmsEmployees() {
                                         </td>
                                         <td className="px-5 py-3.5 text-slate-600">{emp.department || '—'}</td>
                                         <td className="px-5 py-3.5 text-slate-600">{emp.designation || '—'}</td>
+                                        <td className="px-5 py-3.5">
+                                            {emp.assignedZoneIds && emp.assignedZoneIds.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {emp.assignedZoneIds.slice(0, 2).map((z, i) => (
+                                                        <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100 truncate max-w-[80px]" title={typeof z === 'object' ? z.name : z}>
+                                                            {typeof z === 'object' ? z.name : z}
+                                                        </span>
+                                                    ))}
+                                                    {emp.assignedZoneIds.length > 2 && (
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">+{emp.assignedZoneIds.length - 2}</span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-slate-400">—</span>
+                                            )}
+                                        </td>
                                         <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                         <td className="px-5 py-3.5">
                                             {emp.status !== 'Active' ? (

@@ -12,7 +12,9 @@ import {
     getPendingProfileEdits,
     approveProfileEdit,
     getActiveManagers,
-    transferEmployee
+    transferEmployee,
+    manageEmployeeZones,
+    getEmployeeRestaurants
 } from '../controllers/employee.controller.js';
 import { authMiddleware } from '../../../core/auth/auth.middleware.js';
 import { requireHrmsEmployee, requireAdminOrManager } from '../middleware/hrmsAuth.middleware.js';
@@ -38,6 +40,8 @@ router.get('/', authMiddleware, requireAdminOrManager, getEmployees);
 router.get('/:id', authMiddleware, requireAdminOrManager, getEmployeeById);
 router.put('/:id', authMiddleware, requireAdminOrManager, updateEmployee);
 router.put('/:id/manager', authMiddleware, requireAdminOrManager, transferEmployee);
+router.put('/:id/zones', authMiddleware, requireAdminOrManager, manageEmployeeZones);
+router.get('/:id/restaurants', authMiddleware, requireAdminOrManager, getEmployeeRestaurants);
 router.patch('/:id/status', authMiddleware, requireAdminOrManager, updateEmployeeStatus);
 router.post('/:id/edit-request/action', authMiddleware, requireAdminOrManager, approveProfileEdit);
 

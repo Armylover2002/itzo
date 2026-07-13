@@ -3,6 +3,7 @@ import { FoodAdmin } from '../../../core/admin/admin.model.js';
 import { HrmsDocument } from '../models/document.model.js';
 import { HrmsJoiningRequest } from '../models/joiningRequest.model.js';
 import { getNextSequence } from '../models/counter.model.js';
+import { FoodZone } from '../../food/admin/models/zone.model.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 import mongoose from 'mongoose';
 
@@ -20,7 +21,7 @@ export const createEmployee = async (req, res, next) => {
             aadhaarNumber, panNumber, accountHolderName, accountNumber, bankName, ifscCode, upiId,
             address, emergencyContact, qualification, experience,
             profilePhotoUrl, aadhaarPhotoUrl, panPhotoUrl, offerLetterUrl,
-            employeeType, assignedOfficeLocationId
+            employeeType, assignedOfficeLocationId, assignedZoneIds
         } = req.body;
 
         if (!fullName || !email || !password || !joiningDate) {
@@ -147,6 +148,14 @@ export const createEmployee = async (req, res, next) => {
             teamHistory.push({ managerId, assignedAt: new Date() });
         }
 
+        // Validate and deduplicate assignedZoneIds
+        let validatedZoneIds = [];
+        if (Array.isArray(assignedZoneIds) && assignedZoneIds.length > 0) {
+            const uniqueZoneIds = [...new Set(assignedZoneIds.filter(Boolean))];
+            const activeZones = await FoodZone.find({ _id: { $in: uniqueZoneIds }, isActive: true }).select('_id').session(session).lean();
+            validatedZoneIds = activeZones.map(z => z._id);
+        }
+
         const newEmployee = new HrmsEmployee({
             adminId: newAdmin._id,
             employeeId,
@@ -165,6 +174,7 @@ export const createEmployee = async (req, res, next) => {
             resumeUrl: req.body.resumeUrl || '',
             employeeType: employeeType || 'Office',
             assignedOfficeLocationId: assignedOfficeLocationId || null,
+            assignedZoneIds: validatedZoneIds,
             documents: {
                 aadhaarNumber,
                 aadhaarPhotoUrl,
@@ -263,7 +273,7 @@ export const createEmployee = async (req, res, next) => {
  */
 export const getEmployees = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType, assignmentStatus, currentManagerId, hrmsRole, excludeManagers } = req.query;
+        const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType, assignmentStatus, currentManagerId, hrmsRole, excludeManagers, zoneId } = req.query;
 
         const filter = {};
         if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
@@ -299,6 +309,9 @@ export const getEmployees = async (req, res, next) => {
                 { designation: regex }
             ];
         }
+        if (zoneId && zoneId !== 'all') {
+            filter.assignedZoneIds = zoneId;
+        }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const sortDir = sortOrder === 'asc' ? 1 : -1;
@@ -310,6 +323,7 @@ export const getEmployees = async (req, res, next) => {
                     path: 'managerId',
                     populate: { path: 'adminId', select: 'name email' }
                 })
+                .populate('assignedZoneIds', 'name zoneName serviceLocation isActive')
                 .sort({ [sortBy]: sortDir })
                 .skip(skip)
                 .limit(parseInt(limit))
@@ -373,7 +387,8 @@ export const getEmployeeById = async (req, res, next) => {
         const { id } = req.params;
         const employee = await HrmsEmployee.findById(id)
             .populate('adminId', 'name email phone profileImage isActive')
-            .populate({ path: 'managerId', populate: { path: 'adminId', select: 'name email' } });
+            .populate({ path: 'managerId', populate: { path: 'adminId', select: 'name email' } })
+            .populate('assignedZoneIds', 'name zoneName serviceLocation isActive');
 
         if (!employee) {
             return sendError(res, 404, 'Employee not found');
@@ -405,7 +420,8 @@ export const getMyProfile = async (req, res, next) => {
             .populate({
                 path: 'managerId',
                 populate: { path: 'adminId', select: 'name email' }
-            });
+            })
+            .populate('assignedZoneIds', 'name zoneName serviceLocation isActive');
 
         if (!employee) {
             return sendError(res, 404, 'Employee profile not found');
@@ -460,12 +476,23 @@ export const updateEmployee = async (req, res, next) => {
             'shift', 'officeLocation', 'zone', 'ctc',
             'bankDetails', 'address', 'emergencyContact', 'profilePhotoUrl', 'resumeUrl',
             'documents', 'qualification', 'experience',
-            'employeeType', 'assignedOfficeLocationId'
+            'employeeType', 'assignedOfficeLocationId', 'assignedZoneIds'
         ];
 
         for (const field of allowedFields) {
             if (updateData[field] !== undefined) {
                 employee[field] = updateData[field];
+            }
+        }
+
+        // Validate and deduplicate assignedZoneIds if provided
+        if (Array.isArray(updateData.assignedZoneIds)) {
+            const uniqueZoneIds = [...new Set(updateData.assignedZoneIds.filter(Boolean))];
+            if (uniqueZoneIds.length > 0) {
+                const activeZones = await FoodZone.find({ _id: { $in: uniqueZoneIds }, isActive: true }).select('_id').lean();
+                employee.assignedZoneIds = activeZones.map(z => z._id);
+            } else {
+                employee.assignedZoneIds = [];
             }
         }
 
@@ -761,6 +788,128 @@ export const transferEmployee = async (req, res, next) => {
             .lean();
 
         return sendResponse(res, 200, 'Employee transferred successfully', populated);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ADMIN: Manage employee zone assignments (assign/remove/replace)
+ */
+export const manageEmployeeZones = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { assignedZoneIds } = req.body;
+
+        if (!Array.isArray(assignedZoneIds)) {
+            return sendError(res, 400, 'assignedZoneIds must be an array');
+        }
+
+        const employee = await HrmsEmployee.findById(id);
+        if (!employee) return sendError(res, 404, 'Employee not found');
+
+        // Deduplicate and validate against active zones
+        const uniqueZoneIds = [...new Set(assignedZoneIds.filter(Boolean))];
+        let validatedZoneIds = [];
+        if (uniqueZoneIds.length > 0) {
+            const activeZones = await FoodZone.find({ _id: { $in: uniqueZoneIds }, isActive: true }).select('_id').lean();
+            validatedZoneIds = activeZones.map(z => z._id);
+
+            // Warn if some requested zones were invalid/inactive
+            if (validatedZoneIds.length < uniqueZoneIds.length) {
+                const invalidCount = uniqueZoneIds.length - validatedZoneIds.length;
+                console.warn(`manageEmployeeZones: ${invalidCount} invalid/inactive zone IDs skipped for employee ${id}`);
+            }
+        }
+
+        employee.assignedZoneIds = validatedZoneIds;
+        await employee.save();
+
+        const populated = await HrmsEmployee.findById(id)
+            .populate('assignedZoneIds', 'name zoneName serviceLocation isActive')
+            .populate('adminId', 'name email')
+            .lean();
+
+        return sendResponse(res, 200, 'Employee zones updated successfully', populated);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ADMIN/MANAGER: Get restaurants onboarded by or assigned to an employee
+ */
+export const getEmployeeRestaurants = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { page = 1, limit = 20, search, status, zoneId, type = 'all' } = req.query;
+
+        const employee = await HrmsEmployee.findById(id).select('_id adminId').lean();
+        if (!employee) return sendError(res, 404, 'Employee not found');
+
+        // RBAC: Managers can only view their team members' restaurants
+        if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
+            const isTeamMember = await HrmsEmployee.findOne({ _id: id, managerId: req.hrmsEmployee._id }).lean();
+            const isSelf = String(id) === String(req.hrmsEmployee._id);
+            if (!isTeamMember && !isSelf) {
+                return sendError(res, 403, 'You can only view restaurants for your team members');
+            }
+        }
+
+        // Lazy import to avoid circular dependencies
+        const { FoodRestaurant } = await import('../../food/restaurant/models/restaurant.model.js');
+
+        // Build filter: restaurants onboarded by OR assigned to this employee
+        const employeeObjId = new mongoose.Types.ObjectId(id);
+        const filter = {};
+        if (type === 'onboarded') {
+            filter.onboardedBy = employeeObjId;
+        } else if (type === 'assigned') {
+            filter.assignedTo = employeeObjId;
+        } else {
+            filter.$or = [{ onboardedBy: employeeObjId }, { assignedTo: employeeObjId }];
+        }
+        if (status && status !== 'all') filter.status = status;
+        if (zoneId && zoneId !== 'all') filter.zoneId = zoneId;
+        if (search) {
+            const regex = new RegExp(search, 'i');
+            if (filter.$or) {
+                filter.$and = [{ $or: filter.$or }, { $or: [{ restaurantName: regex }, { restaurantId: regex }] }];
+                delete filter.$or;
+            } else {
+                filter.$or = [{ restaurantName: regex }, { restaurantId: regex }];
+            }
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const [restaurants, total] = await Promise.all([
+            FoodRestaurant.find(filter)
+                .select('restaurantId restaurantName ownerName status zoneId city area onboardedBy assignedTo createdAt profileImage')
+                .populate('zoneId', 'name zoneName serviceLocation')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(parseInt(limit))
+                .lean(),
+            FoodRestaurant.countDocuments(filter)
+        ]);
+
+        // Also get summary counts by zone (single aggregation)
+        const zoneSummary = await FoodRestaurant.aggregate([
+            { $match: { $or: [{ onboardedBy: employeeObjId }, { assignedTo: employeeObjId }] } },
+            { $group: { _id: '$zoneId', count: { $sum: 1 } } },
+            { $lookup: { from: 'food_zones', localField: '_id', foreignField: '_id', as: 'zone' } },
+            { $unwind: { path: '$zone', preserveNullAndEmptyArrays: true } },
+            { $project: { zoneId: '$_id', count: 1, zoneName: { $ifNull: ['$zone.name', 'Unassigned'] }, serviceLocation: '$zone.serviceLocation' } },
+            { $sort: { count: -1 } }
+        ]);
+
+        return sendResponse(res, 200, 'Employee restaurants retrieved', {
+            restaurants,
+            pagination: { page: parseInt(page), limit: parseInt(limit), total, totalPages: Math.ceil(total / parseInt(limit)) },
+            zoneSummary,
+            totalRestaurants: zoneSummary.reduce((sum, z) => sum + z.count, 0)
+        });
     } catch (error) {
         next(error);
     }

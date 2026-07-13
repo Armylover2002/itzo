@@ -56,6 +56,12 @@ const hrmsEmployeeSchema = new mongoose.Schema(
         officeLocation: { type: String, trim: true },
         zone: { type: String, trim: true },
 
+        // Assigned Zones (multi-zone mapping via Zone Master)
+        assignedZoneIds: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'FoodZone'
+        }],
+
         // 2. Compensation
         ctc: { type: Number, default: 0 },
         monthlySalary: { type: Number, default: 0 },
@@ -149,5 +155,6 @@ hrmsEmployeeSchema.index({ status: 1 });
 hrmsEmployeeSchema.index({ hrmsRole: 1 });
 hrmsEmployeeSchema.index({ department: 1 });
 hrmsEmployeeSchema.index({ employeeType: 1 });
+hrmsEmployeeSchema.index({ assignedZoneIds: 1 });
 
 export const HrmsEmployee = mongoose.model('HrmsEmployee', hrmsEmployeeSchema, 'hrms_employees');
