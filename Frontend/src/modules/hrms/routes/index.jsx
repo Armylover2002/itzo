@@ -26,7 +26,7 @@ const TeamReports = lazy(() => import('../pages/team/TeamReports'));
 const HrmsEmployeesAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEmployees'));
 const HrmsAttendanceAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsAttendance'));
 const HrmsPayrollAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsPayroll'));
-const TestAnalysisAdmin = lazy(() => import('../../Food/pages/admin/hrms/assessments/TestAnalysis'));
+
 const HrmsEmployeeDocsAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEmployeeDocs'));
 const HrmsLiveTrackingAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsLiveTracking'));
 
@@ -82,7 +82,7 @@ export default function HrmsEmployeeApp() {
                         <Route path="team/leaves" element={<HrmsAttendanceAdmin defaultTab="leaves" />} />
                         <Route path="team/expenses" element={<HrmsPayrollAdmin defaultTab="expenses" />} />
                         <Route path="team/salary" element={<HrmsPayrollAdmin defaultTab="payroll" />} />
-                        <Route path="team/assessments" element={<TestAnalysisAdmin />} />
+
                         <Route path="team/employee-docs" element={<HrmsEmployeeDocsAdmin />} />
                         <Route path="team/live-tracking" element={<HrmsLiveTrackingAdmin />} />
                         <Route path="team/reports" element={<TeamReports />} />
