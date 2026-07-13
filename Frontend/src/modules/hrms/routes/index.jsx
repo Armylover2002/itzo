@@ -27,7 +27,7 @@ const HrmsEmployeesAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEm
 const HrmsAttendanceAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsAttendance'));
 const HrmsPayrollAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsPayroll'));
 
-const HrmsEmployeeDocsAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsEmployeeDocs'));
+
 const HrmsLiveTrackingAdmin = lazy(() => import('../../Food/pages/admin/hrms/HrmsLiveTracking'));
 
 // Performance
@@ -83,7 +83,7 @@ export default function HrmsEmployeeApp() {
                         <Route path="team/expenses" element={<HrmsPayrollAdmin defaultTab="expenses" />} />
                         <Route path="team/salary" element={<HrmsPayrollAdmin defaultTab="payroll" />} />
 
-                        <Route path="team/employee-docs" element={<HrmsEmployeeDocsAdmin />} />
+
                         <Route path="team/live-tracking" element={<HrmsLiveTrackingAdmin />} />
                         <Route path="team/reports" element={<TeamReports />} />
                         {/* Performance Module */}
