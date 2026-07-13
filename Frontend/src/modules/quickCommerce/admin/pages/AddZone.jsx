@@ -84,17 +84,16 @@ export default function AddZone() {
   }, [mapLoading, initAutocomplete])
 
   // Draw existing polygon when in edit mode and coordinates are loaded
+  const hasDrawnInitialPolygonRef = useRef(false)
+
   useEffect(() => {
-    if (isEditMode && coordinates.length >= 3 && mapInstanceRef.current && window.google && !mapLoading) {
+    if (isEditMode && coordinates.length >= 3 && mapInstanceRef.current && window.google && !mapLoading && !hasDrawnInitialPolygonRef.current) {
       debugLog("Drawing existing polygon in edit mode, coordinates:", coordinates.length)
-      setTimeout(() => {
-        if (mapInstanceRef.current && window.google) {
-          setIsDrawing(false)
-          drawExistingPolygon(window.google, mapInstanceRef.current, coordinates)
-        }
-      }, 500)
+      hasDrawnInitialPolygonRef.current = true
+      setIsDrawing(false)
+      drawExistingPolygon(window.google, mapInstanceRef.current, coordinates)
     }
-  }, [isEditMode, coordinates.length, mapLoading])
+  }, [isEditMode, coordinates, mapLoading])
 
 
   const fetchExistingZones = async () => {
@@ -196,16 +195,16 @@ export default function AddZone() {
     })
   }, [])
 
-  const removeMarkerFromMap = useCallback((marker) => {
+  const removeMarkerFromMap = (marker) => {
     if (!marker) return
     if (marker.setMap) {
       marker.setMap(null)
     } else {
       marker.map = null
     }
-  }, [])
+  }
 
-  const getCoordinatesFromMarkers = useCallback(() => {
+  const getCoordinatesFromMarkers = () => {
     const coords = tempMarkersRef.current.map(m => {
       let lat, lng
       if (m.getPosition) {
@@ -219,12 +218,12 @@ export default function AddZone() {
       return { latitude: lat, longitude: lng }
     })
     return coords
-  }, [])
+  }
 
-  const updatePreviewPath = useCallback(() => {
+  const updatePreviewPath = () => {
     if (!window.google) return
-    const coords = getCoordinatesFromMarkers()
-    if (coords.length < 2) {
+    const rawCoords = getCoordinatesFromMarkers()
+    if (rawCoords.length < 2) {
       if (previewPolygonRef.current) {
         previewPolygonRef.current.setMap(null)
         previewPolygonRef.current = null
@@ -232,6 +231,7 @@ export default function AddZone() {
       return
     }
 
+    const coords = radialSort(rawCoords)
     const path = coords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
 
     if (!previewPolygonRef.current) {
@@ -250,9 +250,82 @@ export default function AddZone() {
     } else {
       previewPolygonRef.current.setPaths(path)
     }
-  }, [getCoordinatesFromMarkers])
+  }
 
-  const handleMapClick = useCallback((e) => {
+  const setupPolygonListeners = (polygon) => {
+    if (!polygon) return
+
+    const handlePathChange = () => {
+      const path = polygon.getPath()
+      const coords = []
+      path.forEach(latLng => {
+        coords.push({
+          latitude: parseFloat(latLng.lat().toFixed(6)),
+          longitude: parseFloat(latLng.lng().toFixed(6))
+        })
+      })
+      setCoordinates(coords)
+    }
+
+    const path = polygon.getPath()
+    window.google.maps.event.addListener(path, 'set_at', handlePathChange)
+    window.google.maps.event.addListener(path, 'insert_at', handlePathChange)
+    window.google.maps.event.addListener(path, 'remove_at', handlePathChange)
+
+    // Vertex deletion on right click
+    window.google.maps.event.addListener(polygon, 'rightclick', (event) => {
+      if (event.vertex !== undefined) {
+        const currentPath = polygon.getPath()
+        if (currentPath.getLength() > 3) {
+          currentPath.removeAt(event.vertex)
+        } else {
+          alert("A polygon must have at least 3 vertices.")
+        }
+      }
+    })
+  }
+
+  const finishDrawing = () => {
+    setIsDrawing(false)
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setOptions({ draggableCursor: null })
+    }
+    
+    existingZonesPolygonsRef.current.forEach(polygon => {
+      if (polygon) polygon.setOptions({ clickable: true })
+    })
+
+    const coords = getCoordinatesFromMarkers()
+    if (coords.length >= 3) {
+      const sortedCoords = radialSort(coords)
+      const path = sortedCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
+      
+      const polygon = new window.google.maps.Polygon({
+        paths: path,
+        strokeColor: "#9333ea",
+        strokeOpacity: 0.8,
+        strokeWeight: 3,
+        fillColor: "#9333ea",
+        fillOpacity: 0.35,
+        editable: true,
+        draggable: false,
+        map: mapInstanceRef.current
+      })
+
+      polygonRef.current = polygon
+      setupPolygonListeners(polygon)
+      setCoordinates(sortedCoords)
+    }
+
+    tempMarkersRef.current.forEach(removeMarkerFromMap)
+    tempMarkersRef.current = []
+    if (previewPolygonRef.current) {
+      previewPolygonRef.current.setMap(null)
+      previewPolygonRef.current = null
+    }
+  }
+
+  const handleMapClick = (e) => {
     if (!window.google) return
     const latLng = e.latLng
     const title = `Point ${tempMarkersRef.current.length + 1}`
@@ -299,7 +372,13 @@ export default function AddZone() {
 
     marker.addListener('dragend', () => {
       const coords = getCoordinatesFromMarkers()
-      setCoordinates(coords)
+      setCoordinates(radialSort(coords))
+    })
+
+    marker.addListener('click', () => {
+      if (tempMarkersRef.current[0] === marker && tempMarkersRef.current.length >= 3) {
+        finishDrawing()
+      }
     })
 
     marker.addListener('rightclick', () => {
@@ -315,118 +394,38 @@ export default function AddZone() {
       })
       updatePreviewPath()
       const coords = getCoordinatesFromMarkers()
-      setCoordinates(coords)
+      setCoordinates(radialSort(coords))
     })
 
     tempMarkersRef.current.push(marker)
     updatePreviewPath()
     
     const coords = getCoordinatesFromMarkers()
-    setCoordinates(coords)
-  }, [updatePreviewPath, getCoordinatesFromMarkers])
-
-  const setupPolygonListeners = useCallback((polygon) => {
-    if (!polygon) return
-
-    const handlePathChange = () => {
-      const path = polygon.getPath()
-      const coords = []
-      path.forEach(latLng => {
-        coords.push({
-          latitude: parseFloat(latLng.lat().toFixed(6)),
-          longitude: parseFloat(latLng.lng().toFixed(6))
-        })
-      })
-      setCoordinates(coords)
-    }
-
-    const path = polygon.getPath()
-    window.google.maps.event.addListener(path, 'set_at', handlePathChange)
-    window.google.maps.event.addListener(path, 'insert_at', handlePathChange)
-    window.google.maps.event.addListener(path, 'remove_at', handlePathChange)
-
-    // Vertex deletion on right click
-    window.google.maps.event.addListener(polygon, 'rightclick', (event) => {
-      if (event.vertex !== undefined) {
-        const currentPath = polygon.getPath()
-        if (currentPath.getLength() > 3) {
-          currentPath.removeAt(event.vertex)
-        } else {
-          alert("A polygon must have at least 3 vertices.")
-        }
-      }
-    })
-  }, [])
+    setCoordinates(radialSort(coords))
+  }
 
   // Handle start/stop drawing state changes
   useEffect(() => {
     if (!mapInstanceRef.current || !window.google) return
-
+    let mapClickListener = null
     if (isDrawing) {
-      // Start Drawing Phase
       mapInstanceRef.current.setOptions({ draggableCursor: 'crosshair' })
-      
-      // Clear any existing main polygon
-      if (polygonRef.current) {
-        polygonRef.current.setMap(null)
-        polygonRef.current = null
-      }
-      
-      // Clean up previous drawing artifacts
-      if (previewPolygonRef.current) {
-        previewPolygonRef.current.setMap(null)
-        previewPolygonRef.current = null
-      }
-      tempMarkersRef.current.forEach(removeMarkerFromMap)
-      tempMarkersRef.current = []
-      
-      setCoordinates([])
-
-      // Listen for map clicks
-      mapClickListenerRef.current = mapInstanceRef.current.addListener('click', handleMapClick)
+      mapClickListener = mapInstanceRef.current.addListener('click', handleMapClick)
     } else {
-      // Stop Drawing Phase
       mapInstanceRef.current.setOptions({ draggableCursor: null })
-
-      if (mapClickListenerRef.current) {
-        window.google.maps.event.removeListener(mapClickListenerRef.current)
-        mapClickListenerRef.current = null
-      }
-
-      // Finish drawing transition
-      if (coordinates.length >= 3) {
-        const path = coordinates.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
-        
-        const polygon = new window.google.maps.Polygon({
-          paths: path,
-          strokeColor: "#9333ea",
-          strokeOpacity: 0.8,
-          strokeWeight: 3,
-          fillColor: "#9333ea",
-          fillOpacity: 0.35,
-          editable: true,
-          draggable: false,
-          map: mapInstanceRef.current
-        })
-
-        polygonRef.current = polygon
-        setupPolygonListeners(polygon)
-      }
-
-      // Clean up drawing phase markers and preview polygon
-      tempMarkersRef.current.forEach(removeMarkerFromMap)
-      tempMarkersRef.current = []
-      if (previewPolygonRef.current) {
-        previewPolygonRef.current.setMap(null)
-        previewPolygonRef.current = null
+    }
+    return () => {
+      if (mapClickListener) {
+        window.google.maps.event.removeListener(mapClickListener)
       }
     }
+  }, [isDrawing])
 
-    // Toggle clickability on existing zones
+  useEffect(() => {
     existingZonesPolygonsRef.current.forEach(poly => {
       if (poly) poly.setOptions({ clickable: !isDrawing })
     })
-  }, [isDrawing, handleMapClick, coordinates.length, setupPolygonListeners])
+  }, [isDrawing])
 
   const initializeMap = (google) => {
     if (!mapRef.current) return
@@ -454,14 +453,6 @@ export default function AddZone() {
     mapInstanceRef.current = map
     setMapLoading(false)
     initAutocomplete(google)
-
-    if (isEditMode && coordinates.length >= 3) {
-      setTimeout(() => {
-        if (mapInstanceRef.current && window.google) {
-          drawExistingPolygon(window.google, mapInstanceRef.current, coordinates)
-        }
-      }, 500)
-    }
   }
 
   const drawExistingZonesOnMap = (google, map) => {
@@ -560,10 +551,6 @@ export default function AddZone() {
     setupPolygonListeners(polygon)
   }
 
-  const toggleDrawingMode = () => {
-    setIsDrawing(prev => !prev)
-  }
-
   const clearDrawing = () => {
     if (polygonRef.current) {
       polygonRef.current.setMap(null)
@@ -576,6 +563,19 @@ export default function AddZone() {
     tempMarkersRef.current.forEach(removeMarkerFromMap)
     tempMarkersRef.current = []
     setCoordinates([])
+  }
+
+  const toggleDrawingMode = () => {
+    if (isDrawing) {
+      if (tempMarkersRef.current.length >= 3) {
+        finishDrawing()
+      } else {
+        alert("Please draw at least 3 points before stopping, or clear.")
+      }
+    } else {
+      clearDrawing()
+      setIsDrawing(true)
+    }
   }
 
   const handleInputChange = (field, value) => {

@@ -423,11 +423,12 @@ export default function AddZone() {
     // State Synchronization on Drag End
     marker.addListener('dragend', () => {
       const currentCoords = getCoordinatesFromMarkers()
+      const sortedCoords = radialSort(currentCoords)
       if (polygonRef.current) {
-        const path = currentCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
+        const path = sortedCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
         polygonRef.current.setPath(path)
       }
-      setCoordinates(currentCoords)
+      setCoordinates(sortedCoords)
     })
 
     // Check click on the first marker to finish drawing
@@ -443,7 +444,7 @@ export default function AddZone() {
       markersRef.current = markersRef.current.filter(m => m !== marker)
       updatePreviewPolygon()
       const currentCoords = getCoordinatesFromMarkers()
-      setCoordinates(currentCoords)
+      setCoordinates(radialSort(currentCoords))
     })
 
     // Update preview polygon
@@ -451,13 +452,21 @@ export default function AddZone() {
 
     // Update coordinates state (for UI display of points drawn)
     const currentCoords = getCoordinatesFromMarkers()
-    setCoordinates(currentCoords)
+    setCoordinates(radialSort(currentCoords))
   }
 
   const updatePreviewPolygon = () => {
     if (!mapInstanceRef.current || !window.google) return
     
-    const currentCoords = getCoordinatesFromMarkers()
+    const rawCoords = getCoordinatesFromMarkers()
+    if (rawCoords.length < 2) {
+      if (polygonRef.current) {
+        polygonRef.current.setMap(null)
+        polygonRef.current = null
+      }
+      return
+    }
+    const currentCoords = radialSort(rawCoords)
     const path = currentCoords.map(c => new window.google.maps.LatLng(c.latitude, c.longitude))
 
     if (!polygonRef.current) {
@@ -490,7 +499,8 @@ export default function AddZone() {
     })
 
     // Get the final coordinates in click order from the markers
-    const currentCoords = getCoordinatesFromMarkers()
+    const rawCoords = getCoordinatesFromMarkers()
+    const currentCoords = radialSort(rawCoords)
 
     // Clean up all the custom markers
     markersRef.current.forEach(marker => marker.setMap(null))
