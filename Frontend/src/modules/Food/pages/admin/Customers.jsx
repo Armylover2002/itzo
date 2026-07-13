@@ -352,7 +352,7 @@ export default function Customers() {
       ["Name", "Phone Number"],
       ...userContacts.map(c => [
         `"${(c.contactName || '').replace(/"/g, '""')}"`,
-        `"${(c.contactNumber || '').replace(/"/g, '""')}"`
+        `"=""${(c.contactNumber || '').replace(/"/g, '""')}"""`
       ])
     ].map(e => e.join(",")).join("\n");
     

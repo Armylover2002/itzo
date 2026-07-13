@@ -204,6 +204,11 @@ apiClient.interceptors.response.use(
     if (err?.response?.status !== 401 || !original || original._retry) {
       return Promise.reject(err);
     }
+    
+    // Skip token refresh if the 401 is specifically for the contacts viewer password
+    if (err?.response?.data?.message === 'Invalid or missing contacts view password') {
+      return Promise.reject(err);
+    }
     const module = original.contextModule || getModuleFromUrl(original.url);
     const refreshToken = getRefreshToken(module);
     if (!refreshToken) {
