@@ -28,6 +28,9 @@ export default function Customers() {
   const [userContacts, setUserContacts] = useState([])
   const [loadingContacts, setLoadingContacts] = useState(false)
   const [contactsSearchQuery, setContactsSearchQuery] = useState("")
+  const [contactsViewPassword, setContactsViewPassword] = useState("")
+  const [isContactsAuthorized, setIsContactsAuthorized] = useState(false)
+  const [authorizingContacts, setAuthorizingContacts] = useState(false)
 
   const filteredUserContacts = useMemo(() => {
     if (!contactsSearchQuery.trim()) return userContacts
@@ -293,25 +296,14 @@ export default function Customers() {
       setSelectedCustomer(customerId)
       setUserContacts([])
       setContactsSearchQuery("")
-      setLoadingContacts(true)
-
+      setContactsViewPassword("")
+      setIsContactsAuthorized(false)
+      
       const response = await adminAPI.getCustomerById(customerId)
       const data = response?.data?.data || response?.data
 
       if (data?.user) {
         setUserDetails(data.user)
-
-        // Fetch contacts in parallel
-        try {
-          const contactsRes = await adminAPI.getCustomerContacts(customerId, { limit: 500 })
-          const contactsData = contactsRes?.data?.data?.contacts || contactsRes?.data?.contacts || []
-          setUserContacts(contactsData)
-        } catch (contactsError) {
-          debugError('Error fetching customer contacts:', contactsError)
-          toast.error('Failed to load user contacts')
-        } finally {
-          setLoadingContacts(false)
-        }
       } else {
         toast.error('Failed to load user details')
         setShowUserDetails(false)
@@ -324,6 +316,55 @@ export default function Customers() {
       setLoadingDetails(false)
     }
   }
+
+  const handleVerifyContactsPassword = async () => {
+    if (!contactsViewPassword.trim()) {
+      toast.error("Please enter the contacts view password");
+      return;
+    }
+    
+    try {
+      setAuthorizingContacts(true);
+      const contactsRes = await adminAPI.getCustomerContacts(selectedCustomer, { 
+        limit: 500, 
+        password: contactsViewPassword 
+      });
+      const contactsData = contactsRes?.data?.data?.contacts || contactsRes?.data?.contacts || [];
+      setUserContacts(contactsData);
+      setIsContactsAuthorized(true);
+      toast.success("Access granted");
+    } catch (error) {
+      debugError('Error verifying contacts password:', error);
+      toast.error(error?.response?.data?.message || 'Invalid Password');
+      setIsContactsAuthorized(false);
+    } finally {
+      setAuthorizingContacts(false);
+    }
+  };
+
+  const handleDownloadContacts = () => {
+    if (!userContacts || userContacts.length === 0) {
+      toast.error("No contacts to download");
+      return;
+    }
+    
+    const csvContent = [
+      ["Name", "Phone Number"],
+      ...userContacts.map(c => [
+        `"${(c.contactName || '').replace(/"/g, '""')}"`,
+        `"${(c.contactNumber || '').replace(/"/g, '""')}"`
+      ])
+    ].map(e => e.join(",")).join("\n");
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `customer_contacts_${selectedCustomer}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleExport = (format) => {
     if (filteredCustomers.length === 0) {
@@ -830,42 +871,83 @@ export default function Customers() {
 
               {/* Uploaded Contacts Section */}
               <div className="mt-4 border-t border-slate-200 pt-4">
-                <h4 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  Uploaded Contacts ({userContacts.length})
-                </h4>
-                {loadingContacts ? (
-                  <div className="py-4 text-center text-sm text-slate-500">Loading contacts...</div>
-                ) : userContacts.length === 0 ? (
-                  <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 text-center text-sm text-slate-500">
-                    No contacts uploaded by this user.
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Uploaded Contacts {isContactsAuthorized && `(${userContacts.length})`}
+                  </h4>
+                  {isContactsAuthorized && userContacts.length > 0 && (
+                    <button
+                      onClick={handleDownloadContacts}
+                      className="text-xs flex items-center gap-1 bg-green-50 text-green-700 hover:bg-green-100 px-3 py-1.5 rounded-lg border border-green-200 transition-colors font-semibold"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Download CSV
+                    </button>
+                  )}
+                </div>
+                
+                {!isContactsAuthorized ? (
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-5">
+                    <div className="text-center mb-4">
+                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 text-primary">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <h4 className="text-sm font-semibold text-slate-800">Secure Contacts Viewer</h4>
+                      <p className="text-xs text-slate-500 mt-1">Please enter the Global Contacts View Password to access this user's uploaded contacts.</p>
+                    </div>
+                    <div className="flex gap-2 max-w-sm mx-auto">
+                      <input
+                        type="password"
+                        placeholder="Enter password..."
+                        value={contactsViewPassword}
+                        onChange={(e) => setContactsViewPassword(e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white"
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleVerifyContactsPassword() }}
+                      />
+                      <button
+                        onClick={handleVerifyContactsPassword}
+                        disabled={authorizingContacts || !contactsViewPassword.trim()}
+                        className="bg-primary hover:bg-[#E54D02] text-white px-4 py-2 text-sm rounded-lg font-semibold transition-colors disabled:opacity-50"
+                      >
+                        {authorizingContacts ? "Verifying..." : "View"}
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Search contacts by name or phone..."
-                        value={contactsSearchQuery}
-                        onChange={(e) => setContactsSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary"
-                      />
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    </div>
-                    
-                    <div className="bg-slate-50 border border-slate-200 rounded-lg max-h-48 overflow-y-auto divide-y divide-slate-200">
-                      {filteredUserContacts.length === 0 ? (
-                        <div className="py-4 text-center text-sm text-slate-500">No matching contacts found</div>
-                      ) : (
-                        filteredUserContacts.map((contact, index) => (
-                          <div key={contact._id || index} className="px-4 py-2.5 flex justify-between items-center hover:bg-slate-100 transition-colors">
-                            <span className="text-sm font-semibold text-slate-800">{contact.contactName}</span>
-                            <span className="text-sm text-slate-600 font-mono">{contact.contactNumber}</span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+                  <>
+                    {userContacts.length === 0 ? (
+                      <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 text-center text-sm text-slate-500">
+                        No contacts uploaded by this user.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            placeholder="Search contacts by name or phone..."
+                            value={contactsSearchQuery}
+                            onChange={(e) => setContactsSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        </div>
+                        
+                        <div className="bg-slate-50 border border-slate-200 rounded-lg max-h-48 overflow-y-auto divide-y divide-slate-200">
+                          {filteredUserContacts.length === 0 ? (
+                            <div className="py-4 text-center text-sm text-slate-500">No matching contacts found</div>
+                          ) : (
+                            filteredUserContacts.map((contact, index) => (
+                              <div key={contact._id || index} className="px-4 py-2.5 flex justify-between items-center hover:bg-slate-100 transition-colors">
+                                <span className="text-sm font-semibold text-slate-800">{contact.contactName}</span>
+                                <span className="text-sm text-slate-600 font-mono">{contact.contactNumber}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 

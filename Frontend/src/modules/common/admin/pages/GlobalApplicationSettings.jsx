@@ -209,6 +209,7 @@ const GlobalApplicationSettings = () => {
     companySupportNumber: "",
     companyWhatsappNumber: "",
     privacyMessage: "",
+    contactsViewPassword: "",
   });
 
   const fetchSettings = async () => {
@@ -236,6 +237,7 @@ const GlobalApplicationSettings = () => {
           companySupportNumber: settings.companySupportNumber || "",
           companyWhatsappNumber: settings.companyWhatsappNumber || "",
           privacyMessage: settings.privacyMessage || "",
+          contactsViewPassword: settings.contactsViewPassword || "",
         });
 
         if (settings.adminLogo?.url) setAdminLogoPreview(settings.adminLogo.url);
@@ -304,6 +306,7 @@ const GlobalApplicationSettings = () => {
         companySupportNumber: formData.companySupportNumber,
         companyWhatsappNumber: formData.companyWhatsappNumber,
         privacyMessage: formData.privacyMessage,
+        contactsViewPassword: formData.contactsViewPassword,
         
         // Send URLs to clear them if preview is null
         adminLogoUrl: adminLogoPreview ? (adminLogoPreview.startsWith('blob:') ? undefined : adminLogoPreview) : "",
@@ -444,15 +447,28 @@ const GlobalApplicationSettings = () => {
                  <InputField label="Company Support Number" name="companySupportNumber" value={formData.companySupportNumber} onChange={handleChange} placeholder="+91XXXXXXXXXX" />
                  <InputField label="Company WhatsApp Number" name="companyWhatsappNumber" value={formData.companyWhatsappNumber} onChange={handleChange} placeholder="+91XXXXXXXXXX" />
               </div>
-              <div className="mt-4">
-                 <label className="block text-xs font-semibold text-gray-500 mb-1.5">Privacy Message for Riders</label>
-                 <textarea 
-                    name="privacyMessage" 
-                    value={formData.privacyMessage || ''} 
-                    onChange={(e) => handleChange('privacyMessage', e.target.value)} 
-                    placeholder="Customer contact is protected. Please contact ItzoFood Support."
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors shadow-sm min-h-[100px]"
-                 />
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-gray-500 mb-1.5">Privacy Message (Shown to Customers)</label>
+                <textarea
+                  name="privacyMessage"
+                  value={formData.privacyMessage || ''}
+                  onChange={(e) => handleChange('privacyMessage', e.target.value)}
+                  rows={3}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors shadow-sm resize-none"
+                  placeholder="Enter privacy message shown when contacts are protected"
+                />
+              </div>
+            
+              <div className="md:col-span-2 pt-4 border-t border-gray-100 mt-2">
+                <h4 className="text-sm font-semibold text-gray-800 mb-3">Admin Security Features</h4>
+                <InputField
+                  label="Customer Contacts Viewer Password"
+                  name="contactsViewPassword"
+                  value={formData.contactsViewPassword}
+                  onChange={handleChange}
+                  placeholder="Enter password required to view customer contacts"
+                />
+                <p className="text-[11px] text-gray-500 mt-1">This password will be required by any subadmin trying to view customer contacts in the ECS Panel.</p>
               </div>
            </div>
         </SectionCard>

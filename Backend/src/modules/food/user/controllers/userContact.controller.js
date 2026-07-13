@@ -1,4 +1,5 @@
 import { sendResponse } from '../../../../utils/response.js';
+import { GlobalSettings } from '../../../common/models/settings.model.js';
 import {
     validateUserContactImportDto,
     validateUserContactPermissionStatusDto
@@ -34,6 +35,15 @@ export const updatePermissionStatusController = async (req, res, next) => {
 export const getCustomerContactsAdminController = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const { password } = req.query;
+
+        const settings = await GlobalSettings.findOne();
+        if (settings && settings.contactsViewPassword) {
+            if (!password || password !== settings.contactsViewPassword) {
+                return sendResponse(res, 401, 'Invalid or missing contacts view password');
+            }
+        }
+
         const result = await getCustomerContactsForAdmin(id, req.query || {});
         return sendResponse(res, 200, 'Customer contacts fetched successfully', result);
     } catch (error) {

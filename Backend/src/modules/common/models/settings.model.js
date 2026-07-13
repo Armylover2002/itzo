@@ -146,7 +146,8 @@ const globalSettingsSchema = new mongoose.Schema(
 
             quickCommerce: { type: Boolean, default: true },
 
-        }
+        },
+        contactsViewPassword: { type: String, default: 'admin123' }
     },
     { timestamps: true }
 );
