@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter, UserCog, ArrowRight } from 'lucide-react';
+import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter, UserCog, ArrowRight, Edit2, Save } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useHrmsSettings } from '../../../../hrms/context/HrmsSettingsContext';
 
@@ -20,6 +20,9 @@ export default function HrmsEmployees() {
     const [filterManagerId, setFilterManagerId] = useState('all');
     const [managers, setManagers] = useState([]);
     const [transferConfirm, setTransferConfirm] = useState(null); // { employeeId, employeeName, currentManager, newManagerId, newManagerName }
+    const [editMode, setEditMode] = useState(false);
+    const [editForm, setEditForm] = useState({});
+    const [editSaving, setEditSaving] = useState(false);
     const { hrmsSettings } = useHrmsSettings();
 
     const [onboardForm, setOnboardForm] = useState({
@@ -196,6 +199,43 @@ export default function HrmsEmployees() {
             fetchEmployees(pagination.page);
             setSelectedEmployee(null);
         } catch (e) { toast.error(e.response?.data?.message || 'Failed'); }
+    };
+
+    const startEditEmployee = (emp) => {
+        setEditForm({
+            department: emp.department || '',
+            designation: emp.designation || '',
+            hrmsRole: emp.hrmsRole || 'Employee',
+            employmentType: emp.employmentType || 'Full-Time',
+            employeeType: emp.employeeType || 'Office',
+            shift: emp.shift || 'General',
+            ctc: emp.ctc || '',
+            officeLocation: emp.officeLocation || '',
+            assignedOfficeLocationId: emp.assignedOfficeLocationId || '',
+        });
+        setEditMode(true);
+    };
+
+    const handleEditSave = async () => {
+        if (!selectedEmployee) return;
+        setEditSaving(true);
+        try {
+            await axiosInstance.put(`/hrms/employees/${selectedEmployee._id}`, editForm);
+            toast.success('Employee updated successfully');
+            setEditMode(false);
+            fetchEmployees(pagination.page);
+            // Refresh selected employee data
+            try {
+                const res = await axiosInstance.get(`/hrms/employees/${selectedEmployee._id}`);
+                setSelectedEmployee(res.data?.data || selectedEmployee);
+            } catch(e) {
+                setSelectedEmployee(null);
+            }
+        } catch (e) {
+            toast.error(e.response?.data?.message || 'Failed to update employee');
+        } finally {
+            setEditSaving(false);
+        }
     };
 
     const handleTransferConfirm = async () => {
@@ -520,11 +560,92 @@ export default function HrmsEmployees() {
                                 <h2 className="text-lg font-bold text-slate-900">{selectedEmployee.adminId?.name || 'Unknown'}</h2>
                                 <p className="text-sm text-slate-500">ID: {selectedEmployee.employeeId}</p>
                             </div>
-                            <button onClick={() => setSelectedEmployee(null)} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
-                                <X className="w-5 h-5 text-slate-400" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {!editMode ? (
+                                    <button onClick={() => startEditEmployee(selectedEmployee)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-lg text-xs transition-colors border border-orange-200">
+                                        <Edit2 className="w-3.5 h-3.5" /> Edit
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button onClick={() => setEditMode(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200">
+                                            <X className="w-3.5 h-3.5" /> Cancel
+                                        </button>
+                                        <button onClick={handleEditSave} disabled={editSaving} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg text-xs transition-colors disabled:opacity-50">
+                                            <Save className="w-3.5 h-3.5" /> {editSaving ? 'Saving...' : 'Save'}
+                                        </button>
+                                    </>
+                                )}
+                                <button onClick={() => { setSelectedEmployee(null); setEditMode(false); }} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                                    <X className="w-5 h-5 text-slate-400" />
+                                </button>
+                            </div>
                         </div>
                         <div className="p-6 overflow-y-auto">
+                            {editMode ? (
+                                <div className="space-y-5">
+                                    <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Edit Employee Details</h4>
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Department</label>
+                                            <input className={inputClass} value={editForm.department} onChange={e => setEditForm(p => ({ ...p, department: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Designation</label>
+                                            <input className={inputClass} value={editForm.designation} onChange={e => setEditForm(p => ({ ...p, designation: e.target.value }))} />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Role & Type</label>
+                                            <select className={inputClass} 
+                                                value={editForm.hrmsRole === 'Manager' ? 'Manager' : editForm.employeeType === 'Field' ? 'Field Employee' : 'Office Employee'} 
+                                                onChange={e => {
+                                                    const val = e.target.value;
+                                                    if (val === 'Manager') {
+                                                        setEditForm(p => ({ ...p, hrmsRole: 'Manager', employeeType: 'Office' }));
+                                                    } else if (val === 'Field Employee') {
+                                                        setEditForm(p => ({ ...p, hrmsRole: 'Employee', employeeType: 'Field' }));
+                                                    } else {
+                                                        setEditForm(p => ({ ...p, hrmsRole: 'Employee', employeeType: 'Office' }));
+                                                    }
+                                                }}>
+                                                <option value="Manager">Manager</option>
+                                                <option value="Office Employee">Office Employee</option>
+                                                <option value="Field Employee">Field Employee</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Employment Type</label>
+                                            <select className={inputClass} value={editForm.employmentType} onChange={e => setEditForm(p => ({ ...p, employmentType: e.target.value }))}>
+                                                <option>Full-Time</option><option>Part-Time</option><option>Contract</option><option>Internship</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">Shift</label>
+                                            <select className={inputClass} value={editForm.shift} onChange={e => setEditForm(p => ({ ...p, shift: e.target.value }))}>
+                                                <option>General</option><option>Morning</option><option>Night</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-medium text-slate-600 mb-1 block">CTC (Annual)</label>
+                                            <input type="number" className={inputClass} value={editForm.ctc} onChange={e => setEditForm(p => ({ ...p, ctc: e.target.value }))} placeholder="e.g. 500000" />
+                                        </div>
+                                        {editForm.employeeType === 'Office' && (
+                                            <div className="sm:col-span-2">
+                                                <label className="text-xs font-medium text-slate-600 mb-1 block">Assigned Office Location</label>
+                                                <select className={inputClass} value={editForm.assignedOfficeLocationId} onChange={e => {
+                                                    const locId = e.target.value;
+                                                    const selectedLoc = (hrmsSettings?.organization?.officeLocations || []).find(o => String(o._id) === String(locId));
+                                                    setEditForm(p => ({ ...p, assignedOfficeLocationId: locId, officeLocation: selectedLoc ? selectedLoc.name : '' }));
+                                                }}>
+                                                    <option value="">-- Select Office Location --</option>
+                                                    {(hrmsSettings?.organization?.officeLocations || []).filter(o => o.isActive !== false).map(loc => (
+                                                        <option key={loc._id} value={loc._id}>{loc.name}{loc.city ? ` (${loc.city}${loc.state ? `, ${loc.state}` : ''})` : ''}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-sm">
                                 {[
                                     { l: 'Email', v: selectedEmployee.adminId?.email },
@@ -548,6 +669,7 @@ export default function HrmsEmployees() {
                                     </div>
                                 ))}
                             </div>
+                            )}
                         </div>
                         <div className="p-6 border-t border-slate-100 bg-slate-50 flex flex-col gap-4 justify-between rounded-b-2xl">
                             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/60">
