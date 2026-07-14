@@ -226,15 +226,25 @@ export const getEmployeeTrack = async (req, res, next) => {
         const normDate = new Date(date);
         normDate.setHours(0, 0, 0, 0);
 
-        const track = await HrmsLocationTrack.findOne({
-            employeeId,
-            date: normDate
-        }).lean();
-
         const attendance = await HrmsAttendance.findOne({
             employeeId,
             date: normDate
         }).lean();
+
+        // Primary lookup: by date (matches most cases)
+        let track = await HrmsLocationTrack.findOne({
+            employeeId,
+            date: normDate
+        }).lean();
+
+        // Fallback: if no track found by date but we have an attendance record,
+        // try by attendanceId (handles night shifts where track date may differ)
+        if (!track && attendance) {
+            track = await HrmsLocationTrack.findOne({
+                employeeId,
+                attendanceId: attendance._id
+            }).lean();
+        }
 
         return sendResponse(res, 200, 'Employee track retrieved', {
             employee: {
@@ -265,10 +275,25 @@ export const getMyTrack = async (req, res, next) => {
         const normDate = new Date(date);
         normDate.setHours(0, 0, 0, 0);
 
-        const track = await HrmsLocationTrack.findOne({
+        // Primary lookup: by date
+        let track = await HrmsLocationTrack.findOne({
             employeeId: employee._id,
             date: normDate
         }).lean();
+
+        // Fallback: by attendanceId (for night shifts where track date may differ)
+        if (!track) {
+            const attendance = await HrmsAttendance.findOne({
+                employeeId: employee._id,
+                date: normDate
+            }).lean();
+            if (attendance) {
+                track = await HrmsLocationTrack.findOne({
+                    employeeId: employee._id,
+                    attendanceId: attendance._id
+                }).lean();
+            }
+        }
 
         return sendResponse(res, 200, 'Track retrieved', track);
     } catch (error) {

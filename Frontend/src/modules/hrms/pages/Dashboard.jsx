@@ -68,7 +68,7 @@ const DashboardLiveMap = ({ isFieldEmployee, shouldTrack, employeeProfile, isLoa
     }, []);
 
     const pathCoordinates = trackingData?.points?.map(p => ({
-        lat: p.location.coordinates[1], lng: p.location.coordinates[0]
+        lat: p.latitude, lng: p.longitude
     })) || [];
 
     useEffect(() => {

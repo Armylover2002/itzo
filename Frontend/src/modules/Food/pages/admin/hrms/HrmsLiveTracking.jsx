@@ -44,12 +44,12 @@ const MemoizedGoogleMap = React.memo(({ pathCoordinates, points, isLive, isMock,
 
             {selectedPoint && (
                 <InfoWindow
-                    position={{ lat: selectedPoint.location.coordinates[1], lng: selectedPoint.location.coordinates[0] }}
+                    position={{ lat: selectedPoint.latitude, lng: selectedPoint.longitude }}
                     onCloseClick={() => setSelectedPoint(null)}
                 >
                     <div className="p-1 max-w-[200px]">
                         <p className="text-xs font-bold text-slate-900 mb-1">{new Date(selectedPoint.timestamp).toLocaleTimeString()}</p>
-                        <p className="text-[10px] text-slate-500 mb-2 font-mono break-all">{selectedPoint.location.coordinates[1]}, {selectedPoint.location.coordinates[0]}</p>
+                        <p className="text-[10px] text-slate-500 mb-2 font-mono break-all">{selectedPoint.latitude}, {selectedPoint.longitude}</p>
                         <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
                             <span className="text-slate-500">Accuracy:</span><span className="font-medium">{Math.round(selectedPoint.accuracy)}m</span>
                             <span className="text-slate-500">Speed:</span><span className="font-medium">{selectedPoint.speed ? Math.round(selectedPoint.speed * 3.6) + ' km/h' : '0 km/h'}</span>
@@ -299,10 +299,10 @@ function EmployeeTrackMap({ employeeId }) {
             const res = await axiosInstance.get(`/hrms/location-tracks/${employeeId}/${date}`);
             setTrackingData(res.data?.data || null);
 
-            if (!isPolling && res.data?.data?.points?.length > 0 && mapInstance) {
+            if (!isPolling && res.data?.data?.track?.points?.length > 0 && mapInstance) {
                 const bounds = new window.google.maps.LatLngBounds();
-                res.data.data.points.forEach(p => {
-                    bounds.extend({ lat: p.location.coordinates[1], lng: p.location.coordinates[0] });
+                res.data.data.track.points.forEach(p => {
+                    bounds.extend({ lat: p.latitude, lng: p.longitude });
                 });
                 mapInstance.fitBounds(bounds);
             }
@@ -331,10 +331,10 @@ function EmployeeTrackMap({ employeeId }) {
 
     const onLoadMap = useCallback((map) => {
         setMapInstance(map);
-        if (trackingData?.points?.length > 0) {
+        if (trackingData?.track?.points?.length > 0) {
             const bounds = new window.google.maps.LatLngBounds();
-            trackingData.points.forEach(p => {
-                bounds.extend({ lat: p.location.coordinates[1], lng: p.location.coordinates[0] });
+            trackingData.track.points.forEach(p => {
+                bounds.extend({ lat: p.latitude, lng: p.longitude });
             });
             map.fitBounds(bounds);
         }
@@ -342,8 +342,8 @@ function EmployeeTrackMap({ employeeId }) {
 
     if (loadError) return <div className="p-8 text-center text-red-500">Error loading Google Maps</div>;
 
-    const points = trackingData?.points || [];
-    const pathCoordinates = points.map(p => ({ lat: p.location.coordinates[1], lng: p.location.coordinates[0] }));
+    const points = trackingData?.track?.points || [];
+    const pathCoordinates = points.map(p => ({ lat: p.latitude, lng: p.longitude }));
     const latestPoint = points[points.length - 1];
     const isLive = polling;
     const isMock = latestPoint?.isMocked;
@@ -377,7 +377,7 @@ function EmployeeTrackMap({ employeeId }) {
                             </span>
                             <span className="flex items-center gap-1.5">
                                 <Navigation className="w-3.5 h-3.5" />
-                                {trackingData?.totalDistance ? (trackingData.totalDistance / 1000).toFixed(2) + ' km' : '0 km'}
+                                {trackingData?.track?.totalDistance ? (trackingData.track.totalDistance / 1000).toFixed(2) + ' km' : '0 km'}
                             </span>
                         </div>
                     </div>
@@ -492,7 +492,7 @@ function EmployeeTrackMap({ employeeId }) {
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-slate-500">Est. Distance</span>
-                                <span className="font-medium text-orange-600">{trackingData?.totalDistance ? (trackingData.totalDistance / 1000).toFixed(2) : '0'} km</span>
+                                <span className="font-medium text-orange-600">{trackingData?.track?.totalDistance ? (trackingData.track.totalDistance / 1000).toFixed(2) : '0'} km</span>
                             </div>
                         </div>
                     </div>
