@@ -46,6 +46,9 @@ const Footer = () => {
         logoUrl = '/itzo-logo-transparent.png';
     }
 
+    // Force override for quick commerce footer logo to use the uploaded Itzo logo
+    logoUrl = '/itzo-quick-logo.png';
+
     const primaryColor = settings?.primaryColor || '#0c831f';
 
     return (
