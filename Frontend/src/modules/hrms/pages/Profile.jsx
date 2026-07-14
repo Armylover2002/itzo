@@ -198,7 +198,7 @@ export default function Profile() {
                                 <input type="text" className={inputClass} value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
                             </div>
                         ) : <Field label="Phone" value={admin?.phone} />}
-                        <Field label="Role" value={emp.hrmsRole} />
+                        <Field label="Role" value={emp.hrmsRole === 'Manager' ? 'Manager' : emp.employeeType ? `${emp.employeeType} Employee` : emp.hrmsRole} />
                         <Field label="Status" value={emp.status} />
                     </div>
                 </Section>

@@ -57,7 +57,7 @@ export default function HrmsLayout() {
     };
 
     const dynamicNavItems = [...navItems];
-    if (employeeProfile?.hrmsRole === 'Manager' || employeeProfile?.hrmsRole === 'HR' || employeeProfile?.hrmsRole === 'Admin') {
+    if (employeeProfile?.hrmsRole === 'Manager') {
         dynamicNavItems.splice(2, 0, { 
             label: 'Manager Portal (Team)', 
             icon: Building2, 

@@ -202,7 +202,7 @@ export const createEmployee = async (req, res, next) => {
             const teamEmps = await HrmsEmployee.find({
                 _id: { $in: req.body.assignedTeamMembers },
                 status: 'Active',
-                hrmsRole: { $nin: ['Manager', 'HR'] }
+                hrmsRole: { $ne: 'Manager' }
             }).session(session);
 
             for (const teamEmp of teamEmps) {
@@ -703,7 +703,7 @@ export const approveProfileEdit = async (req, res, next) => {
  */
 export const getActiveManagers = async (req, res, next) => {
     try {
-        const managers = await HrmsEmployee.find({ hrmsRole: { $in: ['Manager', 'HR'] }, status: 'Active' })
+        const managers = await HrmsEmployee.find({ hrmsRole: 'Manager', status: 'Active' })
             .populate('adminId', 'name email profileImage')
             .select('adminId employeeId department designation')
             .lean();
@@ -731,7 +731,7 @@ export const transferEmployee = async (req, res, next) => {
         }
 
         // Edge case: role check
-        if (newManagerId && (employee.hrmsRole === 'Manager' || employee.hrmsRole === 'HR')) {
+        if (newManagerId && employee.hrmsRole === 'Manager') {
             return sendError(res, 400, 'Manager accounts cannot be added as team members.');
         }
 

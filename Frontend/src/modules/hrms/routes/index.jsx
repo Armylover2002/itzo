@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import HrmsGuard from '../guards/HrmsGuard';
+import ManagerGuard from '../guards/ManagerGuard';
 import { HrmsSettingsProvider } from '../context/HrmsSettingsContext';
 
 const Login = lazy(() => import('../pages/Login'));
@@ -73,21 +74,22 @@ export default function HrmsEmployeeApp() {
                         <Route path="reports/create" element={<CreateReport />} />
                         <Route path="reports/:id" element={<ReportDetails />} />
 
-                        {/* Manager Module - Using exact ECS Admin UI components scoped to Manager's team */}
-                        <Route path="team" element={<Navigate to="/hrms/team/employees" replace />} />
-                        <Route path="team/dashboard" element={<ManagerDashboard />} />
-                        <Route path="team/my-team" element={<MyTeam />} />
-                        <Route path="team/employees" element={<HrmsEmployeesAdmin />} />
-                        <Route path="team/attendance" element={<HrmsAttendanceAdmin />} />
-                        <Route path="team/leaves" element={<HrmsAttendanceAdmin defaultTab="leaves" />} />
-                        <Route path="team/expenses" element={<HrmsPayrollAdmin defaultTab="expenses" hidePayroll={true} />} />
+                        {/* Manager Module - Protected specifically for Manager role */}
+                        <Route path="team" element={<ManagerGuard><Outlet /></ManagerGuard>}>
+                            <Route index element={<Navigate to="/hrms/team/employees" replace />} />
+                            <Route path="dashboard" element={<ManagerDashboard />} />
+                            <Route path="my-team" element={<MyTeam />} />
+                            <Route path="employees" element={<HrmsEmployeesAdmin />} />
+                            <Route path="attendance" element={<HrmsAttendanceAdmin />} />
+                            <Route path="leaves" element={<HrmsAttendanceAdmin defaultTab="leaves" />} />
+                            <Route path="expenses" element={<HrmsPayrollAdmin defaultTab="expenses" hidePayroll={true} />} />
+                            <Route path="live-tracking" element={<HrmsLiveTrackingAdmin />} />
+                            <Route path="reports" element={<TeamReports />} />
+                            <Route path="performance" element={<TeamPerformance />} />
+                        </Route>
 
-
-                        <Route path="team/live-tracking" element={<HrmsLiveTrackingAdmin />} />
-                        <Route path="team/reports" element={<TeamReports />} />
-                        {/* Performance Module */}
+                        {/* Employee Performance */}
                         <Route path="performance" element={<EmployeePerformance />} />
-                        <Route path="team/performance" element={<TeamPerformance />} />
                     </Route>
 
                     {/* Fallback */}

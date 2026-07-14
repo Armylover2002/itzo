@@ -37,7 +37,7 @@ export const requireHrmsEmployee = async (req, res, next) => {
 };
 
 /**
- * Ensures the authenticated user is a Manager (hrmsRole = 'Manager' or 'HR').
+ * Ensures the authenticated user is a Manager (hrmsRole = 'Manager').
  * Must be used after requireHrmsEmployee.
  */
 export const requireHrmsManager = async (req, res, next) => {
