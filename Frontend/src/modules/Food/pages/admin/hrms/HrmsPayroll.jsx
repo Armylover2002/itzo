@@ -161,8 +161,8 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                     setPayrollRecords(data.records || []);
                     setSummary(data.summary || null);
                 } else {
-                    const res = await axiosInstance.get('/hrms/expenses?status=Pending');
-                    setExpenses(res.data?.data?.expenses || []);
+                    const res = await axiosInstance.get('/hrms/expenses/monthly?status=Pending');
+                    setExpenses(res.data?.data?.batches || []);
                 }
             } catch (e) { console.error(e); }
             finally { setLoading(false); }
@@ -207,9 +207,10 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
             if (action === 'Rejected') {
                 rejectionReason = window.prompt("Please provide a reason for rejection:");
                 if (rejectionReason === null) return; // User cancelled
+                if (!rejectionReason.trim()) return toast.error('Rejection reason is required');
             }
-            await axiosInstance.post(`/hrms/expenses/${id}/action`, { action, approvedAmount, rejectionReason });
-            toast.success(`Expense ${action.toLowerCase()}`);
+            await axiosInstance.post(`/hrms/expenses/monthly/${id}/action`, { action, approvedAmount, rejectionReason });
+            toast.success(`Expense batch ${action.toLowerCase()}`);
             setExpenses(prev => prev.filter(e => e._id !== id));
         } catch (e) { toast.error(e.response?.data?.message || 'Action failed'); }
     };
@@ -382,22 +383,30 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                     )
                 ) : (
                     expenses.length === 0 ? (
-                        <div className="text-center p-12"><Receipt className="w-12 h-12 text-slate-300 mx-auto mb-3" /><p className="text-slate-500">No pending expenses</p></div>
+                        <div className="text-center p-12"><Receipt className="w-12 h-12 text-slate-300 mx-auto mb-3" /><p className="text-slate-500">No pending monthly expenses</p></div>
                     ) : (
                         <div className="divide-y divide-slate-100">
-                            {expenses.map(e => (
-                                <div key={e._id} className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                    <div>
-                                        <p className="font-medium text-slate-900">{e.employeeId?.adminId?.name || 'Employee'}</p>
-                                        <p className="text-sm text-slate-500">{e.purpose} · {new Date(e.visitDate).toLocaleDateString('en-IN')}</p>
-                                        <p className="text-xs text-slate-400">Travel: ₹{e.travelCost} | Hotel: ₹{e.hotelCost} | Food: ₹{e.foodCost} | Other: ₹{e.otherExpenses} | <strong>Total: ₹{e.totalAmount}</strong></p>
+                            {expenses.map(batch => {
+                                const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                const monthLabel = monthNames[(batch.month || 1) - 1];
+                                return (
+                                    <div key={batch._id} className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                        <div>
+                                            <p className="font-medium text-slate-900">{batch.employeeId?.adminId?.name || 'Employee'}</p>
+                                            <p className="text-sm text-slate-500">{monthLabel} {batch.year} · {batch.entries?.length || 0} entries</p>
+                                            <p className="text-xs text-slate-400">
+                                                {(batch.entries || []).slice(0, 3).map(e => e.purpose).join(', ')}
+                                                {(batch.entries?.length || 0) > 3 && ` +${batch.entries.length - 3} more`}
+                                                {' | '}<strong>Total: ₹{(batch.totalAmount || 0).toLocaleString()}</strong>
+                                            </p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => handleExpenseAction(batch._id, 'Approved', batch.totalAmount)} className="px-4 h-9 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium">Approve</button>
+                                            <button onClick={() => handleExpenseAction(batch._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium">Reject</button>
+                                        </div>
                                     </div>
-                                    <div className="flex gap-2">
-                                        <button onClick={() => handleExpenseAction(e._id, 'Approved', e.totalAmount)} className="px-4 h-9 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium">Approve</button>
-                                        <button onClick={() => handleExpenseAction(e._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium">Reject</button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )
                 )}
