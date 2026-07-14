@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import axiosInstance from '@core/api/axios';
-import { Loader2, ArrowLeft, Plus, X, Upload, FileText, Save, Send, AlertCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, Plus, X, Upload, FileText, Save, Send, AlertCircle, Search, Store } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CreateReport() {
@@ -20,8 +20,7 @@ export default function CreateReport() {
         reportDate: new Date().toISOString().split('T')[0],
         tasks: [{ title: '', category: 'General', status: 'Completed' }],
         workSummary: '',
-        metrics: { restaurantsVisited: 0, meetingsConducted: 0, callsMade: 0, leadsGenerated: 0, ordersCompleted: 0 },
-        travelSummary: { distanceKm: 0, vehicleUsed: '', travelCost: 0, foodExpense: 0, hotelExpense: 0, otherExpense: 0 },
+        metrics: { restaurantsVisited: 0, restaurantsVisitedNames: [], meetingsConducted: 0, callsMade: 0, leadsGenerated: 0, ordersCompleted: 0 },
         problemsFaced: '',
         achievements: '',
         pendingWork: '',
@@ -29,6 +28,14 @@ export default function CreateReport() {
         remarks: '',
         attachments: []
     });
+
+    // Restaurant dropdown state
+    const [restaurantQuery, setRestaurantQuery] = useState('');
+    const [restaurantOptions, setRestaurantOptions] = useState([]);
+    const [restaurantSearchLoading, setRestaurantSearchLoading] = useState(false);
+    const [showRestaurantDropdown, setShowRestaurantDropdown] = useState(false);
+    const restaurantDropdownRef = useRef(null);
+    const searchTimeoutRef = useRef(null);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -44,8 +51,14 @@ export default function CreateReport() {
                             reportDate: r.reportDate.split('T')[0],
                             tasks: r.tasks?.length > 0 ? r.tasks : [{ title: '', category: 'General', status: 'Completed' }],
                             workSummary: r.workSummary || '',
-                            metrics: { ...formData.metrics, ...r.metrics },
-                            travelSummary: { ...formData.travelSummary, ...r.travelSummary },
+                            metrics: {
+                                restaurantsVisited: r.metrics?.restaurantsVisited || 0,
+                                restaurantsVisitedNames: r.metrics?.restaurantsVisitedNames || [],
+                                meetingsConducted: r.metrics?.meetingsConducted || 0,
+                                callsMade: r.metrics?.callsMade || 0,
+                                leadsGenerated: r.metrics?.leadsGenerated || 0,
+                                ordersCompleted: r.metrics?.ordersCompleted || 0
+                            },
                             problemsFaced: r.problemsFaced || '',
                             achievements: r.achievements || '',
                             pendingWork: r.pendingWork || '',
@@ -64,6 +77,87 @@ export default function CreateReport() {
         };
         fetchInitialData();
     }, [id]);
+
+    // Close restaurant dropdown on outside click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (restaurantDropdownRef.current && !restaurantDropdownRef.current.contains(event.target)) {
+                setShowRestaurantDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Debounced restaurant search
+    const searchRestaurants = useCallback(async (query) => {
+        if (!query || query.trim().length < 2) {
+            setRestaurantOptions([]);
+            return;
+        }
+        setRestaurantSearchLoading(true);
+        try {
+            const res = await axiosInstance.get(`/hrms/daily-reports/restaurants/search?q=${encodeURIComponent(query.trim())}`);
+            setRestaurantOptions(res.data?.data?.restaurants || []);
+        } catch (err) {
+            console.error('Restaurant search failed:', err);
+            setRestaurantOptions([]);
+        } finally {
+            setRestaurantSearchLoading(false);
+        }
+    }, []);
+
+    const handleRestaurantQueryChange = (value) => {
+        setRestaurantQuery(value);
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = setTimeout(() => searchRestaurants(value), 300);
+    };
+
+    const addRestaurant = (name) => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        // Avoid duplicates (case-insensitive)
+        const exists = formData.metrics.restaurantsVisitedNames.some(
+            n => n.toLowerCase() === trimmed.toLowerCase()
+        );
+        if (exists) {
+            toast.error('Restaurant already added');
+            return;
+        }
+        const newNames = [...formData.metrics.restaurantsVisitedNames, trimmed];
+        setFormData({
+            ...formData,
+            metrics: {
+                ...formData.metrics,
+                restaurantsVisitedNames: newNames,
+                restaurantsVisited: newNames.length
+            }
+        });
+        setRestaurantQuery('');
+        setRestaurantOptions([]);
+    };
+
+    const removeRestaurant = (index) => {
+        const newNames = [...formData.metrics.restaurantsVisitedNames];
+        newNames.splice(index, 1);
+        setFormData({
+            ...formData,
+            metrics: {
+                ...formData.metrics,
+                restaurantsVisitedNames: newNames,
+                restaurantsVisited: newNames.length
+            }
+        });
+    };
+
+    const handleRestaurantKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (restaurantQuery.trim()) {
+                addRestaurant(restaurantQuery);
+            }
+        }
+    };
 
     const handleTaskChange = (index, field, value) => {
         const newTasks = [...formData.tasks];
@@ -154,6 +248,9 @@ export default function CreateReport() {
     const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400";
     const labelClass = "block text-xs font-semibold text-slate-500 mb-1.5";
 
+    // Metrics to render as simple number inputs (excluding restaurantsVisited which gets special treatment)
+    const numericMetrics = ['meetingsConducted', 'callsMade', 'leadsGenerated', 'ordersCompleted'];
+
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
             <div className="flex items-center gap-3 mb-2">
@@ -162,7 +259,7 @@ export default function CreateReport() {
                 </button>
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">{id ? 'Edit Daily Report' : 'New Daily Report'}</h1>
-                    <p className="text-sm text-slate-500">Document your day's work and expenses</p>
+                    <p className="text-sm text-slate-500">Document your day's work</p>
                 </div>
             </div>
 
@@ -210,8 +307,97 @@ export default function CreateReport() {
                 {(settings?.requireMetrics !== false) && (
                     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
                         <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b pb-2">Performance Metrics</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                            {['restaurantsVisited', 'meetingsConducted', 'callsMade', 'leadsGenerated', 'ordersCompleted'].map((metric) => (
+                        
+                        {/* Restaurant Visited — Multi-select dropdown */}
+                        <div className="mb-5">
+                            <label className={labelClass}>
+                                <span className="flex items-center gap-1.5">
+                                    <Store className="w-3.5 h-3.5 text-orange-500" />
+                                    Restaurants Visited ({formData.metrics.restaurantsVisitedNames.length})
+                                </span>
+                            </label>
+                            
+                            {/* Selected restaurant chips */}
+                            {formData.metrics.restaurantsVisitedNames.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                    {formData.metrics.restaurantsVisitedNames.map((name, i) => (
+                                        <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
+                                            <Store className="w-3 h-3" />
+                                            {name}
+                                            <button type="button" onClick={() => removeRestaurant(i)} className="text-orange-400 hover:text-red-500 transition-colors">
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Search input with dropdown */}
+                            <div className="relative" ref={restaurantDropdownRef}>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search or type restaurant name & press Enter..."
+                                        value={restaurantQuery}
+                                        onChange={e => {
+                                            handleRestaurantQueryChange(e.target.value);
+                                            setShowRestaurantDropdown(true);
+                                        }}
+                                        onFocus={() => setShowRestaurantDropdown(true)}
+                                        onKeyDown={handleRestaurantKeyDown}
+                                        className={`${inputClass} pl-9 pr-10`}
+                                    />
+                                    {restaurantSearchLoading && (
+                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-500 animate-spin" />
+                                    )}
+                                </div>
+
+                                {/* Dropdown results */}
+                                {showRestaurantDropdown && (restaurantOptions.length > 0 || (restaurantQuery.trim().length >= 2 && !restaurantSearchLoading)) && (
+                                    <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-52 overflow-y-auto">
+                                        {restaurantOptions.map((r, i) => {
+                                            const alreadyAdded = formData.metrics.restaurantsVisitedNames.some(
+                                                n => n.toLowerCase() === r.name.toLowerCase()
+                                            );
+                                            return (
+                                                <button
+                                                    key={r._id || i}
+                                                    type="button"
+                                                    disabled={alreadyAdded}
+                                                    onClick={() => { addRestaurant(r.name); setShowRestaurantDropdown(false); }}
+                                                    className={`w-full text-left px-4 py-2.5 hover:bg-orange-50 flex items-center justify-between text-sm transition-colors border-b border-slate-50 last:border-0 ${alreadyAdded ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                                >
+                                                    <span className="flex flex-col">
+                                                        <span className="font-medium text-slate-700">{r.name}</span>
+                                                        {r.city && <span className="text-[11px] text-slate-400">{r.city}</span>}
+                                                    </span>
+                                                    {alreadyAdded && <span className="text-[10px] text-slate-400 font-bold">ADDED</span>}
+                                                </button>
+                                            );
+                                        })}
+                                        {/* Free-form option */}
+                                        {restaurantQuery.trim().length >= 2 && !restaurantOptions.some(r => r.name.toLowerCase() === restaurantQuery.trim().toLowerCase()) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { addRestaurant(restaurantQuery); setShowRestaurantDropdown(false); }}
+                                                className="w-full text-left px-4 py-2.5 hover:bg-emerald-50 flex items-center gap-2 text-sm font-medium text-emerald-700 border-t border-slate-100"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Add "{restaurantQuery.trim()}" as custom entry
+                                            </button>
+                                        )}
+                                        {restaurantOptions.length === 0 && restaurantQuery.trim().length >= 2 && !restaurantSearchLoading && (
+                                            <div className="px-4 py-2 text-xs text-slate-400">No matching restaurants found. Press Enter or click above to add as custom entry.</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Other numeric metrics */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {numericMetrics.map((metric) => (
                                 <div key={metric}>
                                     <label className={labelClass}>{metric.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</label>
                                     <input type="number" min="0" value={formData.metrics[metric]} onChange={e => setFormData({...formData, metrics: {...formData.metrics, [metric]: Number(e.target.value)}})} className={inputClass} />
@@ -220,38 +406,6 @@ export default function CreateReport() {
                         </div>
                     </div>
                 )}
-
-                {/* Travel & Expenses */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b pb-2">Travel & Expenses</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className={labelClass}>Distance (KM)</label>
-                            <input type="number" min="0" value={formData.travelSummary.distanceKm} onChange={e => setFormData({...formData, travelSummary: {...formData.travelSummary, distanceKm: Number(e.target.value)}})} className={inputClass} />
-                        </div>
-                        <div>
-                            <label className={labelClass}>Vehicle Used</label>
-                            <input type="text" placeholder="e.g. Personal Bike" value={formData.travelSummary.vehicleUsed} onChange={e => setFormData({...formData, travelSummary: {...formData.travelSummary, vehicleUsed: e.target.value}})} className={inputClass} />
-                        </div>
-                        <div>
-                            <label className={labelClass}>Travel Cost</label>
-                            <input type="number" min="0" value={formData.travelSummary.travelCost} onChange={e => setFormData({...formData, travelSummary: {...formData.travelSummary, travelCost: Number(e.target.value)}})} className={inputClass} />
-                        </div>
-                        <div>
-                            <label className={labelClass}>Food Expense</label>
-                            <input type="number" min="0" value={formData.travelSummary.foodExpense} onChange={e => setFormData({...formData, travelSummary: {...formData.travelSummary, foodExpense: Number(e.target.value)}})} className={inputClass} />
-                        </div>
-                        <div>
-                            <label className={labelClass}>Hotel Expense</label>
-                            <input type="number" min="0" value={formData.travelSummary.hotelExpense} onChange={e => setFormData({...formData, travelSummary: {...formData.travelSummary, hotelExpense: Number(e.target.value)}})} className={inputClass} />
-                        </div>
-                        <div>
-                            <label className={labelClass}>Other Expense</label>
-                            <input type="number" min="0" value={formData.travelSummary.otherExpense} onChange={e => setFormData({...formData, travelSummary: {...formData.travelSummary, otherExpense: Number(e.target.value)}})} className={inputClass} />
-                        </div>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-3 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5"/> Submitting this report will automatically create an Expense claim if costs are entered.</p>
-                </div>
 
                 {/* Additional Info */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">

@@ -3,7 +3,6 @@ import { HrmsDailyReport } from '../models/dailyReport.model.js';
 import { HrmsDailyReportSettings } from '../models/dailyReportSettings.model.js';
 import { HrmsDailyReportComment } from '../models/dailyReportComment.model.js';
 import { HrmsEmployee } from '../models/employee.model.js';
-import { HrmsExpense } from '../models/expense.model.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 
 // ==========================================
@@ -85,59 +84,35 @@ export const createOrUpdateReport = async (req, res, next) => {
         // Update fields
         report.tasks = tasks || [];
         report.workSummary = workSummary || '';
-        report.metrics = metrics || {};
         report.problemsFaced = problemsFaced || '';
         report.achievements = achievements || '';
         report.pendingWork = pendingWork || '';
         report.tomorrowPlan = tomorrowPlan || '';
         report.remarks = remarks || '';
         if (attachments) report.attachments = attachments;
-        
-        // Travel Summary Integration
-        if (travelSummary) {
+
+        // Metrics — auto-calculate restaurantsVisited count from names array
+        if (metrics) {
+            const names = Array.isArray(metrics.restaurantsVisitedNames)
+                ? metrics.restaurantsVisitedNames.filter(n => typeof n === 'string' && n.trim())
+                : [];
+            report.metrics = {
+                ...metrics,
+                restaurantsVisited: names.length,
+                restaurantsVisitedNames: names.map(n => n.trim())
+            };
+        } else {
+            report.metrics = {};
+        }
+
+        // Preserve travelSummary from existing reports for backward compatibility (read-only)
+        // New reports will not have travelSummary data
+        if (travelSummary && report.travelSummary) {
             report.travelSummary = travelSummary;
         }
 
         const finalStatus = status === 'Submitted' ? 'Submitted' : 'Draft';
         report.status = finalStatus;
-
-        // Auto-create/update Draft Expense if submitting travel data
-        if (finalStatus === 'Submitted' && travelSummary) {
-            const hasTravelExpense = travelSummary.distanceKm > 0 || travelSummary.travelCost > 0 || travelSummary.foodExpense > 0 || travelSummary.hotelExpense > 0 || travelSummary.otherExpense > 0;
-            
-            if (hasTravelExpense) {
-                if (report.travelSummary.expenseId) {
-                    // Update existing draft expense
-                    const expense = await HrmsExpense.findById(report.travelSummary.expenseId).session(session);
-                    if (expense && expense.status === 'Pending') {
-                        expense.travelDistanceKm = travelSummary.distanceKm;
-                        expense.travelCost = travelSummary.travelCost;
-                        expense.foodCost = travelSummary.foodExpense;
-                        expense.hotelCost = travelSummary.hotelExpense;
-                        expense.otherExpenses = travelSummary.otherExpense;
-                        expense.purpose = `Auto-generated from Daily Report (${targetDate.toISOString().split('T')[0]})`;
-                        expense.attachments = attachments || [];
-                        await expense.save({ session });
-                    }
-                } else {
-                    // Create new draft expense
-                    const expense = new HrmsExpense({
-                        employeeId: employee._id,
-                        visitDate: targetDate,
-                        purpose: `Auto-generated from Daily Report (${targetDate.toISOString().split('T')[0]})`,
-                        travelDistanceKm: travelSummary.distanceKm || 0,
-                        travelCost: travelSummary.travelCost || 0,
-                        foodCost: travelSummary.foodExpense || 0,
-                        hotelCost: travelSummary.hotelExpense || 0,
-                        otherExpenses: travelSummary.otherExpense || 0,
-                        attachments: attachments || [],
-                        status: 'Pending'
-                    });
-                    await expense.save({ session });
-                    report.travelSummary.expenseId = expense._id;
-                }
-            }
-        }
 
         await report.save({ session });
         await session.commitTransaction();
@@ -436,6 +411,77 @@ export const getAdminDashboardStats = async (req, res, next) => {
             approved,
             rejected,
             todaySubmitted
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// ==========================================
+// RESTAURANT SEARCH & REPORT PENDING CHECK
+// ==========================================
+
+/**
+ * EMPLOYEE: Search restaurants for dropdown (system + allows free-form)
+ */
+export const searchRestaurants = async (req, res, next) => {
+    try {
+        const { q } = req.query;
+        if (!q || q.trim().length < 2) {
+            return sendResponse(res, 200, 'Provide at least 2 characters to search', { restaurants: [] });
+        }
+
+        // Dynamically import FoodRestaurant to avoid tight coupling
+        const { FoodRestaurant } = await import('../../food/restaurant/models/restaurant.model.js');
+
+        const regex = new RegExp(q.trim(), 'i');
+        const restaurants = await FoodRestaurant.find(
+            { restaurantName: regex },
+            { restaurantName: 1, restaurantId: 1, city: 1 }
+        )
+            .limit(15)
+            .lean();
+
+        return sendResponse(res, 200, 'Restaurants retrieved', {
+            restaurants: restaurants.map(r => ({
+                _id: r._id,
+                name: r.restaurantName,
+                id: r.restaurantId,
+                city: r.city || ''
+            }))
+        });
+    } catch (error) {
+        // If FoodRestaurant model doesn't exist or import fails, return empty
+        if (error.code === 'MODULE_NOT_FOUND' || error.message?.includes('Cannot find module')) {
+            return sendResponse(res, 200, 'Restaurant search not available', { restaurants: [] });
+        }
+        next(error);
+    }
+};
+
+/**
+ * EMPLOYEE: Check if today's daily report is submitted (for checkout popup)
+ */
+export const checkPendingReport = async (req, res, next) => {
+    try {
+        const employee = await HrmsEmployee.findOne({ adminId: req.user.userId });
+        if (!employee) return sendError(res, 404, 'Employee not found');
+
+        // Build today's date at midnight UTC
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+
+        const report = await HrmsDailyReport.findOne({
+            employeeId: employee._id,
+            reportDate: today,
+            status: { $in: ['Submitted', 'Under Review', 'Approved'] }
+        }).lean();
+
+        return sendResponse(res, 200, 'Pending report check', {
+            hasPendingReport: !report,
+            date: today.toISOString().split('T')[0],
+            reportExists: !!report,
+            reportStatus: report?.status || null
         });
     } catch (error) {
         next(error);

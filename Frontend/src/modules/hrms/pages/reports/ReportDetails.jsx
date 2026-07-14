@@ -163,11 +163,28 @@ export default function ReportDetails() {
                     </section>
 
                     {/* Performance */}
-                    {(report.metrics?.restaurantsVisited > 0 || report.metrics?.callsMade > 0) && (
+                    {(report.metrics?.restaurantsVisited > 0 || report.metrics?.callsMade > 0 || report.metrics?.meetingsConducted > 0) && (
                         <section>
                             <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs border-b pb-2 mb-4">Performance</h3>
+                            
+                            {/* Restaurant names */}
+                            {report.metrics?.restaurantsVisitedNames?.length > 0 && (
+                                <div className="mb-4">
+                                    <p className="text-xs text-slate-500 mb-2 font-semibold">Restaurants Visited ({report.metrics.restaurantsVisitedNames.length})</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {report.metrics.restaurantsVisitedNames.map((name, i) => (
+                                            <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 border border-orange-200 rounded-lg text-xs font-medium text-orange-700">
+                                                {name}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                {Object.entries(report.metrics).map(([key, val]) => (
+                                {Object.entries(report.metrics)
+                                    .filter(([key]) => key !== 'restaurantsVisitedNames' && key !== 'restaurantsVisited')
+                                    .map(([key, val]) => (
                                     <div key={key} className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                         <p className="text-xs text-slate-500 mb-1">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</p>
                                         <p className="font-bold text-slate-800">{val || 0}</p>
@@ -177,29 +194,7 @@ export default function ReportDetails() {
                         </section>
                     )}
 
-                    {/* Travel */}
-                    {(report.travelSummary?.distanceKm > 0 || report.travelSummary?.travelCost > 0) && (
-                        <section>
-                            <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs border-b pb-2 mb-4">Travel & Expenses</h3>
-                            <div className="bg-slate-50 rounded-xl border border-slate-100 overflow-hidden">
-                                <div className="grid grid-cols-3 divide-x divide-slate-100 border-b border-slate-100">
-                                    <div className="p-3 text-center"><p className="text-[10px] uppercase text-slate-400 font-bold">Distance</p><p className="text-sm font-semibold">{report.travelSummary.distanceKm} km</p></div>
-                                    <div className="p-3 text-center"><p className="text-[10px] uppercase text-slate-400 font-bold">Vehicle</p><p className="text-sm font-semibold">{report.travelSummary.vehicleUsed || '-'}</p></div>
-                                    <div className="p-3 text-center"><p className="text-[10px] uppercase text-slate-400 font-bold">Travel Cost</p><p className="text-sm font-semibold">₹{report.travelSummary.travelCost}</p></div>
-                                </div>
-                                <div className="grid grid-cols-3 divide-x divide-slate-100 bg-slate-100/50">
-                                    <div className="p-3 text-center"><p className="text-[10px] uppercase text-slate-400 font-bold">Food</p><p className="text-sm font-semibold">₹{report.travelSummary.foodExpense}</p></div>
-                                    <div className="p-3 text-center"><p className="text-[10px] uppercase text-slate-400 font-bold">Hotel</p><p className="text-sm font-semibold">₹{report.travelSummary.hotelExpense}</p></div>
-                                    <div className="p-3 text-center"><p className="text-[10px] uppercase text-slate-400 font-bold">Other</p><p className="text-sm font-semibold">₹{report.travelSummary.otherExpense}</p></div>
-                                </div>
-                            </div>
-                            {report.travelSummary?.expenseId && (
-                                <div className="mt-3 text-xs text-orange-600 flex items-center gap-1.5 p-2 bg-orange-50 rounded-lg">
-                                    <FileText className="w-4 h-4" /> Expense claim automatically generated (Ref: {String(report.travelSummary.expenseId).slice(-6).toUpperCase()})
-                                </div>
-                            )}
-                        </section>
-                    )}
+
 
                     {/* Text fields */}
                     <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">

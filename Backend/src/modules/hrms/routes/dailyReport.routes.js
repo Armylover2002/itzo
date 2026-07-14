@@ -10,7 +10,9 @@ import {
     getAllReports,
     updateReportStatus,
     updateSettings,
-    getAdminDashboardStats
+    getAdminDashboardStats,
+    searchRestaurants,
+    checkPendingReport
 } from '../controllers/dailyReport.controller.js';
 
 const router = express.Router();
@@ -23,6 +25,8 @@ router.get('/settings', authMiddleware, getSettings);
 // =====================================
 // EMPLOYEE ROUTES
 // =====================================
+router.get('/pending-check', authMiddleware, requireHrmsEmployee, checkPendingReport);
+router.get('/restaurants/search', authMiddleware, requireHrmsEmployee, searchRestaurants);
 router.post('/', authMiddleware, requireHrmsEmployee, createOrUpdateReport);
 router.get('/me', authMiddleware, requireHrmsEmployee, getMyReports);
 
@@ -41,3 +45,4 @@ router.get('/:id', authMiddleware, getReportDetails);
 router.post('/:id/reply', authMiddleware, replyToReport);
 
 export default router;
+

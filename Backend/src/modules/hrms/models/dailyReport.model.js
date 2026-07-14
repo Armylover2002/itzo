@@ -23,6 +23,7 @@ const hrmsDailyReportSchema = new mongoose.Schema(
         // Metrics & KPI (Useful for sales/field agents)
         metrics: {
             restaurantsVisited: { type: Number, default: 0 },
+            restaurantsVisitedNames: [{ type: String, trim: true }],
             meetingsConducted: { type: Number, default: 0 },
             callsMade: { type: Number, default: 0 },
             leadsGenerated: { type: Number, default: 0 },

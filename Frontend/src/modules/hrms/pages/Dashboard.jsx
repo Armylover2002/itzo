@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
 import { useLocationTracker } from '../hooks/useLocationTracker';
-import { Clock, CalendarDays, Wallet, FileCheck, LogIn, LogOut, Loader2, TrendingUp, Timer, MapPin, Building2, Navigation, AlertTriangle, Briefcase, Map as MapIcon } from 'lucide-react';
+import { Clock, CalendarDays, Wallet, FileCheck, LogIn, LogOut, Loader2, TrendingUp, Timer, MapPin, Building2, Navigation, AlertTriangle, Briefcase, Map as MapIcon, ClipboardList, X as XIcon } from 'lucide-react';
 import { GoogleMap, useJsApiLoader, Polyline, Marker } from '@react-google-maps/api';
 
 const mapLibraries = ['places'];
@@ -143,6 +143,8 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [locationStatus, setLocationStatus] = useState(''); // 'fetching', 'success', 'error'
+    const [showReportPopup, setShowReportPopup] = useState(false);
+    const [pendingCheckoutAction, setPendingCheckoutAction] = useState(false); // true when checkout was intercepted
 
     const { isLoaded, loadError } = useJsApiLoader({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
@@ -216,6 +218,25 @@ export default function Dashboard() {
     };
 
     const handleCheckOut = async () => {
+        // First check if today's report is pending
+        try {
+            const pendingRes = await axiosInstance.get('/hrms/daily-reports/pending-check');
+            const pending = pendingRes.data?.data;
+            if (pending?.hasPendingReport) {
+                // Show popup instead of proceeding with checkout
+                setShowReportPopup(true);
+                setPendingCheckoutAction(true);
+                return;
+            }
+        } catch (err) {
+            // If check fails, allow checkout to proceed (non-blocking)
+            console.error('Pending report check failed:', err);
+        }
+
+        await performCheckOut();
+    };
+
+    const performCheckOut = async () => {
         setActionLoading(true);
         setLocationStatus('fetching');
         try {
@@ -250,6 +271,12 @@ export default function Dashboard() {
         finally { setActionLoading(false); }
     };
 
+    const handleDismissPopupAndCheckout = async () => {
+        setShowReportPopup(false);
+        setPendingCheckoutAction(false);
+        await performCheckOut();
+    };
+
     const firstName = user?.name?.split(' ')[0] || 'Employee';
 
     if (loading) {
@@ -258,6 +285,53 @@ export default function Dashboard() {
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+            {/* Pending Report Popup Modal */}
+            {showReportPopup && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5">
+                            <div className="flex items-center gap-3 text-white">
+                                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+                                    <ClipboardList className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold">Daily Report Pending</h3>
+                                    <p className="text-amber-100 text-sm">Report not submitted for today</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="px-6 py-5">
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                                You haven't submitted your daily report for today. It is recommended to submit your report before checking out.
+                            </p>
+                            <div className="mt-2 flex items-center gap-2 text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                                <AlertTriangle className="w-4 h-4 shrink-0" />
+                                <span>Missing reports for 2 consecutive days will result in attendance being marked as Absent.</span>
+                            </div>
+                        </div>
+                        <div className="px-6 pb-5 flex flex-col gap-2.5">
+                            <button
+                                onClick={() => { setShowReportPopup(false); navigate('/hrms/reports/create'); }}
+                                className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                            >
+                                <ClipboardList className="w-4 h-4" /> Submit Report Now
+                            </button>
+                            <button
+                                onClick={handleDismissPopupAndCheckout}
+                                className="w-full h-11 border border-slate-200 text-slate-600 font-semibold rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <LogOut className="w-4 h-4" /> Check Out Anyway
+                            </button>
+                            <button
+                                onClick={() => { setShowReportPopup(false); setPendingCheckoutAction(false); }}
+                                className="text-xs text-slate-400 hover:text-slate-600 transition-colors py-1"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Welcome Banner */}
             <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-orange-500/15">
                 <div className="flex items-center justify-between">
