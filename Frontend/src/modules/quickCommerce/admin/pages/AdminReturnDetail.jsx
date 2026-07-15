@@ -5,7 +5,7 @@ import { adminApi } from '../services/adminApi';
 import Loader from '@food/components/Loader';
 import dayjs from 'dayjs';
 import io from 'socket.io-client';
-import { API_BASE_URL } from '@core/api/axios';
+import { API_BASE_URL } from '@food/api/config';
 
 export default function AdminReturnDetail() {
   const { id } = useParams();

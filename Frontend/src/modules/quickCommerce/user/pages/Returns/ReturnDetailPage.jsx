@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Clock, XCircle, Package, Truck, Store, Receipt } from 'lucide-react';
 import { returnApi } from '../../services/returnApi';
 import Loader from '@food/components/Loader';
-import { socket } from '../../../../../core/services/socket';
+import { socketService } from '../../../../../core/services/socket';
 
 const TIMELINE_STEPS = [
   { id: 'RETURN_REQUESTED', label: 'Requested', icon: Package },
@@ -24,7 +24,7 @@ export default function ReturnDetailPage() {
     fetchDetail();
     
     // Socket listener for real-time updates
-    if (socket) {
+    if (socketService) {
       const handleStatusUpdate = (data) => {
         if (data.returnRequestId === returnRequestId) {
           setReturnDetails(prev => {
@@ -42,9 +42,9 @@ export default function ReturnDetailPage() {
         }
       };
 
-      socket.on('return_status_updated', handleStatusUpdate);
+      socketService.on('return_status_updated', handleStatusUpdate);
       return () => {
-        socket.off('return_status_updated', handleStatusUpdate);
+        socketService.off('return_status_updated', handleStatusUpdate);
       };
     }
   }, [returnRequestId]);
