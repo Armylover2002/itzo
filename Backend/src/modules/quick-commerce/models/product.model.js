@@ -36,6 +36,7 @@ const quickProductSchema = new mongoose.Schema({
   deliveryTime: { type: String, default: '10 mins' },
   badge: { type: String, default: '' },
   rating: { type: Number, default: 4.2 },
+  returnable: { type: Boolean, default: true },
   isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 

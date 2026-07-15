@@ -12,11 +12,14 @@ const FIREBASE_MESSAGING_SCOPE = 'https://www.googleapis.com/auth/firebase.messa
 const OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const FCM_SEND_URL = (projectId) =>
     `https://fcm.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/messages:send`;
+import { Seller } from '../../modules/quick-commerce/seller/models/seller.model.js';
+
 const OWNER_MODELS = {
     USER: FoodUser,
     RESTAURANT: FoodRestaurant,
     DELIVERY_PARTNER: FoodDeliveryPartner,
-    ADMIN: FoodAdmin
+    ADMIN: FoodAdmin,
+    SELLER: Seller
 };
 const OWNER_TOKEN_FIELDS = {
     web: 'fcmTokens',
