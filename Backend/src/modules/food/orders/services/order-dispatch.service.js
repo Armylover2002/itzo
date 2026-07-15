@@ -105,7 +105,7 @@ export async function filterEligiblePartners(partners) {
   return partners.filter(p => eligibleIds.has(p.partnerId.toString()));
 }
 
-async function listNearbyOnlineDeliveryPartners(
+export async function listNearbyOnlineDeliveryPartners(
   sourceId,
   { maxKm = 15, limit = 25, sourceType = "food" } = {},
 ) {

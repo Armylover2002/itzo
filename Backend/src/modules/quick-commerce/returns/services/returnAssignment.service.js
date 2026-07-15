@@ -10,14 +10,14 @@ import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
 import { ReturnRequest } from '../models/returnRequest.model.js';
 import { QuickOrder } from '../../models/order.model.js';
 import { FoodDeliveryPartner } from '../../../food/delivery/models/deliveryPartner.model.js';
-import { findEligiblePartners } from '../../../food/orders/services/order-dispatch.service.js';
+import { listNearbyOnlineDeliveryPartners } from '../../../food/orders/services/order-dispatch.service.js';
 import { updateLegStatus } from './return.service.js';
 import {
   LEG_STATUS,
   ACTOR_ROLES,
   DEFAULT_RETURN_SETTINGS,
 } from '../constants/returnStateMachine.js';
-import { getSettingsSync } from '../../../../common/utils/settingsCache.js';
+import { getSettingsSync } from '../../../common/utils/settingsCache.js';
 import { logger } from '../../../../utils/logger.js';
 import { emitReturnAssignmentSocket } from './returnSocket.service.js';
 
@@ -45,7 +45,7 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
       location: order.deliveryAddress?.location || { coordinates: [] }
     };
 
-    const { partners } = await findEligiblePartners(searchSource, {
+    const { partners } = await listNearbyOnlineDeliveryPartners(searchSource, {
       maxKm: attempt * 5 + 5, // Expand radius on each attempt
       limit: 10,
       sourceType: 'quick',

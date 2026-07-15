@@ -6,7 +6,7 @@
  */
 
 import { sendPushNotification } from '../../../../core/notifications/firebase.service.js';
-import { FoodUser } from '../../../food/user/models/user.model.js';
+import { FoodUser } from '../../../../core/users/user.model.js';
 import { Seller } from '../../seller/models/seller.model.js';
 import { FoodDeliveryPartner } from '../../../food/delivery/models/deliveryPartner.model.js';
 import { logger } from '../../../../utils/logger.js';

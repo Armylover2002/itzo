@@ -7,9 +7,9 @@
 import { Router } from 'express';
 
 // Middleware
-import { authMiddleware, requireRoles, deliveryPartnerAuthMiddleware } from '../../../../middleware/auth.js';
-import { uploadMiddleware } from '../../../../middleware/upload.js'; // Assuming standard upload middleware
-import { rateLimiter } from '../../../../middleware/rateLimit.js';
+import { authMiddleware } from '../../../../core/auth/auth.middleware.js';
+import { requireRoles } from '../../../../core/roles/role.middleware.js';
+import { generalApiRateLimiter } from '../../../../middleware/rateLimit.js';
 
 // Controllers
 import * as returnUserController from '../controllers/returnUser.controller.js';
@@ -25,7 +25,7 @@ userRouter.use(authMiddleware, requireRoles('USER'));
 // Create return request
 userRouter.post(
   '/',
-  rateLimiter(5, 60), // Max 5 requests per minute
+  generalApiRateLimiter,
   returnUserController.createReturn
 );
 
@@ -41,7 +41,7 @@ userRouter.post('/:returnRequestId/cancel', returnUserController.cancelReturn);
 // Resend pickup OTP
 userRouter.post(
   '/legs/:sellerReturnId/resend-otp',
-  rateLimiter(3, 60), // Max 3 resends per minute
+  generalApiRateLimiter,
   returnUserController.requestPickupOtpResend
 );
 
@@ -75,7 +75,7 @@ router.use('/admin', adminRouter);
 
 // ─── DELIVERY PARTNER ROUTES (Rider App) ────────────────────────────────────
 const deliveryRouter = Router();
-deliveryRouter.use(deliveryPartnerAuthMiddleware);
+deliveryRouter.use(authMiddleware, requireRoles('DELIVERY_PARTNER'));
 
 // Get assigned returns
 deliveryRouter.get('/assignments', returnDeliveryController.getAssignedReturns);
