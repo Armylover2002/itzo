@@ -20,10 +20,19 @@ export const useOrderManager = () => {
     }
 
     try {
-      const response = await deliveryAPI.acceptOrder(
-        orderId,
-        order?.dispatchLeg?.legId ? { legId: order.dispatchLeg.legId } : {},
-      );
+      let response;
+      
+      if (order?.isReturn) {
+        // Return Workflow
+        const legId = order.orderId || order._id || order.id;
+        response = await deliveryAPI.acceptReturnAssignment(legId);
+      } else {
+        // Normal Order Workflow
+        response = await deliveryAPI.acceptOrder(
+          orderId,
+          order?.dispatchLeg?.legId ? { legId: order.dispatchLeg.legId } : {},
+        );
+      }
       
       if (response?.data?.success) {
         const fullOrder = response.data.data?.order || order;
@@ -54,10 +63,12 @@ export const useOrderManager = () => {
         console.log('[OrderManager] Raw Full Order Data:', fullOrder);
 
         const resLoc = getLoc(fullOrder.restaurantId, ['latitude', 'lat'], ['longitude', 'lng']) || 
-                       getLoc(fullOrder, ['restaurant_lat', 'restaurantLat', 'latitude'], ['restaurant_lng', 'restaurantLng', 'longitude']);
+                       getLoc(fullOrder, ['restaurant_lat', 'restaurantLat', 'latitude'], ['restaurant_lng', 'restaurantLng', 'longitude']) ||
+                       getLoc(fullOrder.pickupAddress, ['latitude', 'lat'], ['longitude', 'lng']);
                        
         const cusLoc = getLoc(fullOrder.deliveryAddress, ['latitude', 'lat'], ['longitude', 'lng']) || 
-                       getLoc(fullOrder, ['customer_lat', 'customerLat', 'latitude'], ['customer_lng', 'customerLng', 'longitude']);
+                       getLoc(fullOrder, ['customer_lat', 'customerLat', 'latitude'], ['customer_lng', 'customerLng', 'longitude']) ||
+                       getLoc(fullOrder.dropoffAddress, ['latitude', 'lat'], ['longitude', 'lng']);
         const pickupPoints = normalizePickupPoints(fullOrder);
         const primaryPickupLocation =
           getPrimaryPickupLocation(fullOrder) ||
@@ -106,7 +117,10 @@ export const useOrderManager = () => {
   const reachPickup = async () => {
     const orderId = activeOrder?.orderId;
     try {
-      const response = await deliveryAPI.confirmReachedPickup(orderId);
+      const response = activeOrder?.isReturn 
+        ? await deliveryAPI.markReturnReachedUser(orderId)
+        : await deliveryAPI.confirmReachedPickup(orderId);
+        
       if (response?.data?.success) {
         updateTripStatus('REACHED_PICKUP');
         // toast.info('Arrived at Restaurant');
@@ -122,16 +136,22 @@ export const useOrderManager = () => {
   /**
    * Mark "Picked Up" (Confirm order ID & start delivery)
    */
-  const pickUpOrder = async (billImageUrl) => {
+  const pickUpOrder = async (billImageUrlOrOtp) => {
     const orderId = activeOrder?.orderId;
     try {
-      // confirmOrderId(orderId, confirmedOrderId, location, data)
-      const response = await deliveryAPI.confirmOrderId(
-        orderId, 
-        activeOrder.displayOrderId || orderId, 
-        riderLocation || {},
-        { billImageUrl }
-      );
+      let response;
+      if (activeOrder?.isReturn) {
+        response = await deliveryAPI.verifyReturnPickupOtp(orderId, billImageUrlOrOtp);
+        // Once verified, we should logically also mark it as heading to seller
+        // but backend might do that or we can do it after pickUpOrder.
+      } else {
+        response = await deliveryAPI.confirmOrderId(
+          orderId, 
+          activeOrder.displayOrderId || orderId, 
+          riderLocation || {},
+          { billImageUrl: billImageUrlOrOtp }
+        );
+      }
       
       if (response?.data?.success) {
         updateTripStatus('PICKED_UP');
@@ -151,7 +171,16 @@ export const useOrderManager = () => {
   const reachDrop = async () => {
     const orderId = activeOrder?.orderId;
     try {
-      const response = await deliveryAPI.confirmReachedDrop(orderId);
+      // For returns, we first notify that we're heading to seller (usually done when picked up, but can be done here as a safeguard)
+      // then we mark reached seller.
+      if (activeOrder?.isReturn) {
+        await deliveryAPI.markReturnHeadingToSeller(orderId).catch(() => {});
+      }
+      
+      const response = activeOrder?.isReturn
+        ? await deliveryAPI.markReturnReachedSeller(orderId)
+        : await deliveryAPI.confirmReachedDrop(orderId);
+        
       if (response?.data?.success) {
         updateTripStatus('REACHED_DROP');
         // toast.info('Arrived at Customer Location');
@@ -172,24 +201,27 @@ export const useOrderManager = () => {
     const orderId = activeOrder?.orderId;
     try {
       // 1. Verify OTP first
-      const verifyRes = await deliveryAPI.verifyDropOtp(orderId, otp);
+      const verifyRes = activeOrder?.isReturn
+        ? await deliveryAPI.verifyReturnSellerOtp(orderId, otp)
+        : await deliveryAPI.verifyDropOtp(orderId, otp);
       
       if (verifyRes?.data?.success) {
-        let finalOrder = verifyRes.data?.data?.order || activeOrder;
+        let finalOrder = verifyRes.data?.data?.order || verifyRes.data?.data?.sellerReturn || activeOrder;
         
-        try {
-          // 2. Mark as complete
-          const completeRes = await deliveryAPI.completeDelivery(orderId, { 
-            otp, 
-            rating: 5,
-            paymentMode
-          });
-          if (completeRes.data?.success && completeRes.data?.data?.order) {
-            finalOrder = completeRes.data.data.order;
+        if (!activeOrder?.isReturn) {
+          try {
+            // 2. Mark as complete (Only for normal orders, Return OTP verification completes it on backend)
+            const completeRes = await deliveryAPI.completeDelivery(orderId, { 
+              otp, 
+              rating: 5,
+              paymentMode
+            });
+            if (completeRes.data?.success && completeRes.data?.data?.order) {
+              finalOrder = completeRes.data.data.order;
+            }
+          } catch (completeErr) {
+            console.warn('Complete call failed, but OTP was verified.', completeErr);
           }
-        } catch (completeErr) {
-          console.warn('Complete call failed, but OTP was verified.', completeErr);
-          // If already completed, we proceed to show the summary with whatever we have
         }
         
         // Update local order state so Summary Modal shows 'delivered' status

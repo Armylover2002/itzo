@@ -429,4 +429,12 @@ export const adminApi = {
   updateSellerCommission: (id, payload) => axiosInstance.put(`/quick-commerce/admin/seller-commissions/${id}`, payload),
   deleteSellerCommission: (id) => axiosInstance.delete(`/quick-commerce/admin/seller-commissions/${id}`),
   toggleSellerCommissionStatus: (id) => axiosInstance.patch(`/quick-commerce/admin/seller-commissions/${id}/toggle-status`),
+
+  // Returns Management
+  getReturns: (params) => axiosInstance.get('/quick-commerce/returns/admin', { params }),
+  getReturnDetails: (returnRequestId) => axiosInstance.get(`/quick-commerce/returns/admin/${returnRequestId}`),
+  approveReturn: (returnRequestId, approvals) => axiosInstance.post(`/quick-commerce/returns/admin/${returnRequestId}/approve`, { approvals }),
+  cancelReturn: (returnRequestId, reason) => axiosInstance.post(`/quick-commerce/returns/admin/${returnRequestId}/cancel`, { reason }),
+  refundReturnLeg: (sellerReturnId) => axiosInstance.post(`/quick-commerce/returns/admin/legs/${sellerReturnId}/refund`),
+  triggerAutoAssign: (sellerReturnId) => axiosInstance.post(`/quick-commerce/returns/admin/legs/${sellerReturnId}/auto-assign`),
 };

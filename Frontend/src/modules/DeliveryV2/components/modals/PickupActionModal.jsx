@@ -29,9 +29,12 @@ export const PickupActionModal = ({
   const [isUploadingBill, setIsUploadingBill] = useState(false);
   const [billImageUploaded, setBillImageUploaded] = useState(false);
   const [billImageUrl, setBillImageUrl] = useState(null);
+  const [returnOtp, setReturnOtp] = useState(['', '', '', '']);
+  const returnOtpRefs = useRef([]);
   const cameraInputRef = useRef(null);
 
   if (!order) return null;
+  const isReturn = !!order?.isReturn;
 
   const handleBillImageSelect = async (file) => {
     if (!file) return;
@@ -71,6 +74,19 @@ export const PickupActionModal = ({
     cameraInputRef.current?.click()
   }
 
+  const handleReturnOtpChange = (index, value) => {
+    if (value && !/^\d+$/.test(value)) return;
+    const newOtp = [...returnOtp];
+    newOtp[index] = value.substring(value.length - 1);
+    setReturnOtp(newOtp);
+    if (value && index < 3) returnOtpRefs.current[index + 1]?.focus();
+  };
+
+  const handleReturnOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !returnOtp[index] && index > 0)
+      returnOtpRefs.current[index - 1]?.focus();
+  };
+
   const isAtPickup = status === 'REACHED_PICKUP';
   const isQuickOrder = String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick';
   const restaurantName = isQuickOrder
@@ -101,10 +117,10 @@ export const PickupActionModal = ({
       ];
   const primaryStop = pickupStops[0] || null;
   const primaryPickupType = primaryStop?.pickupType === 'quick' ? 'quick' : 'food';
-  const primaryName = primaryStop?.sourceName || restaurantName;
-  const primaryAddress = primaryStop?.address || restaurantAddress;
+  const primaryName = primaryStop?.sourceName || (isReturn ? 'Customer' : restaurantName);
+  const primaryAddress = primaryStop?.address || (isReturn ? (order.pickupAddress?.address || 'Customer Address') : restaurantAddress);
   const primaryPhone = primaryStop?.phone || restaurantPhone;
-  const primaryDestinationLabel = primaryPickupType === 'quick' ? 'Store' : 'Restaurant';
+  const primaryDestinationLabel = isReturn ? 'Customer' : (primaryPickupType === 'quick' ? 'Store' : 'Restaurant');
 
   return (
     <div className="absolute inset-x-0 bottom-0 z-[110] p-0 sm:p-2 sm:mb-2 flex items-end justify-center">
@@ -214,59 +230,80 @@ export const PickupActionModal = ({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex justify-center items-center gap-3 w-full">
-                 {!billImageUploaded && !isUploadingBill && (
-                   <>
-                      <button
-                        onClick={handleTakeCameraPhoto}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#FE5502] text-white font-bold text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-[#FE5502]/90"
-                      >
-                        <Camera className="w-5 h-5" />
-                        <span>Camera</span>
-                      </button>
-                      <button
-                        onClick={handlePickFromGallery}
-                        className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-orange-50 text-orange-600 border border-orange-100 font-bold text-xs uppercase tracking-widest active:scale-95 transition-all"
-                      >
-                        <ImageIcon className="w-5 h-5" />
-                        <span>Gallery</span>
-                      </button>
-                   </>
-                 )}
-
-                 {isUploadingBill && (
-                    <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gray-50 text-gray-400 font-bold text-xs uppercase tracking-widest">
-                       <Loader2 className="w-4 h-4 animate-spin" />
-                       <span>Uploading...</span>
-                    </div>
-                 )}
-
-                 {billImageUploaded && (
-                    <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-green-100 text-green-700 font-bold text-xs uppercase tracking-widest">
-                       <CheckCircle2 className="w-4 h-4" />
-                       <span>Bill Uploaded</span>
-                    </div>
-                 )}
-
-                 <input
-                   ref={cameraInputRef}
-                   type="file"
-                   accept="image/*"
-                   onChange={(e) => handleBillImageSelect(e.target.files[0])}
-                   className="hidden"
-                 />
-              </div>
+              {isReturn ? (
+                <div className="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col items-center">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Ask Customer for Pickup OTP</p>
+                  <div className="flex justify-center gap-3">
+                    {returnOtp.map((digit, i) => (
+                      <input
+                        key={i}
+                        ref={(el) => (returnOtpRefs.current[i] = el)}
+                        type="number"
+                        value={digit}
+                        onChange={(e) => handleReturnOtpChange(i, e.target.value)}
+                        onKeyDown={(e) => handleReturnOtpKeyDown(i, e)}
+                        className={`w-12 h-14 bg-white border-2 rounded-xl text-center text-2xl font-bold transition-all focus:border-primary text-gray-700 border-gray-200`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex justify-center items-center gap-3 w-full">
+                   {!billImageUploaded && !isUploadingBill && (
+                     <>
+                        <button
+                          onClick={handleTakeCameraPhoto}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#FE5502] text-white font-bold text-xs uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-[#FE5502]/90"
+                        >
+                          <Camera className="w-5 h-5" />
+                          <span>Camera</span>
+                        </button>
+                        <button
+                          onClick={handlePickFromGallery}
+                          className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl bg-orange-50 text-orange-600 border border-orange-100 font-bold text-xs uppercase tracking-widest active:scale-95 transition-all"
+                        >
+                          <ImageIcon className="w-5 h-5" />
+                          <span>Gallery</span>
+                        </button>
+                     </>
+                   )}
+  
+                   {isUploadingBill && (
+                      <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-gray-50 text-gray-400 font-bold text-xs uppercase tracking-widest">
+                         <Loader2 className="w-4 h-4 animate-spin" />
+                         <span>Uploading...</span>
+                      </div>
+                   )}
+  
+                   {billImageUploaded && (
+                      <div className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-green-100 text-green-700 font-bold text-xs uppercase tracking-widest">
+                         <CheckCircle2 className="w-4 h-4" />
+                         <span>Bill Uploaded</span>
+                      </div>
+                   )}
+  
+                   <input
+                     ref={cameraInputRef}
+                     type="file"
+                     accept="image/*"
+                     onChange={(e) => handleBillImageSelect(e.target.files[0])}
+                     className="hidden"
+                   />
+                </div>
+              )}
 
               <div>
-                <p className={`text-center text-[10px] font-bold uppercase tracking-widest mb-3 ${billImageUploaded ? 'text-green-600' : 'text-gray-400'}`}>
-                  {billImageUploaded ? "Check the restaurant logo - Swipe to pick up" : "Capture bill to unlock swipe"}
+                <p className={`text-center text-[10px] font-bold uppercase tracking-widest mb-3 ${(isReturn ? returnOtp.every(d => d) : billImageUploaded) ? 'text-green-600' : 'text-gray-400'}`}>
+                  {isReturn 
+                    ? (returnOtp.every(d => d) ? "OTP entered - Swipe to verify" : "Enter OTP to unlock swipe")
+                    : (billImageUploaded ? "Check the restaurant logo - Swipe to pick up" : "Capture bill to unlock swipe")}
                 </p>
                 <ActionSlider 
                   key="action-pickup"
-                  label="Slide to Pick Up" 
-                  successLabel="Picked Up!"
-                  disabled={!billImageUploaded}
-                  onConfirm={() => onPickedUp(billImageUrl)}
+                  label={isReturn ? "Slide to Verify OTP" : "Slide to Pick Up"}
+                  successLabel={isReturn ? "Verified!" : "Picked Up!"}
+                  disabled={isReturn ? !returnOtp.every(d => d) : !billImageUploaded}
+                  onConfirm={() => onPickedUp(isReturn ? returnOtp.join('') : billImageUrl)}
                   color="bg-primary"
                 />
               </div>

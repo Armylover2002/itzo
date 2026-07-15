@@ -101,7 +101,10 @@ const OtpModal = ({ order, onVerified, onClose }) => {
     if (otpString.length < 4) return;
     setIsVerifyingOtp(true);
     try {
-      const res = await deliveryAPI.verifyDropOtp(orderId, otpString);
+      const res = order?.isReturn
+        ? await deliveryAPI.verifyReturnSellerOtp(orderId, otpString)
+        : await deliveryAPI.verifyDropOtp(orderId, otpString);
+        
       if (res?.data?.success) {
         setIsOtpVerified(true);
         // toast.success("OTP Verified Successfully");
@@ -514,7 +517,7 @@ export const DeliveryVerificationModal = ({ order, onComplete, onClose }) => {
   // Determine initial step: skip OTP if already verified
   const [step, setStep] = useState(() => {
     if (alreadyVerified) {
-      return isCod ? "payment" : "complete";
+      return isCod && !order?.isReturn ? "payment" : "complete";
     }
     return "otp";
   });
@@ -525,12 +528,12 @@ export const DeliveryVerificationModal = ({ order, onComplete, onClose }) => {
   const handleOtpVerified = (otpValue) => {
     setVerifiedOtp(otpValue);
     // After OTP is verified: COD → show payment panel, Online → show complete button
-    setStep(isCod ? "payment" : "complete");
+    setStep(isCod && !order?.isReturn ? "payment" : "complete");
   };
 
   // If OTP was already verified on mount and it's a non-COD order, auto-complete
   useEffect(() => {
-    if (step === "complete" && !isCod) {
+    if (step === "complete" && (!isCod || order?.isReturn)) {
       onComplete(verifiedOtp);
     }
   }, []); // only on mount

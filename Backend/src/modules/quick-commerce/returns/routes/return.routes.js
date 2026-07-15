@@ -10,6 +10,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../../../../core/auth/auth.middleware.js';
 import { requireRoles } from '../../../../core/roles/role.middleware.js';
 import { generalApiRateLimiter } from '../../../../middleware/rateLimit.js';
+import { upload } from '../../../../middleware/upload.js';
 
 // Controllers
 import * as returnUserController from '../controllers/returnUser.controller.js';
@@ -43,6 +44,13 @@ userRouter.post(
   '/legs/:sellerReturnId/resend-otp',
   generalApiRateLimiter,
   returnUserController.requestPickupOtpResend
+);
+
+// Upload return evidence images
+userRouter.post(
+  '/upload-images',
+  upload.array('images', 5), // Max 5 images
+  returnUserController.uploadImages
 );
 
 router.use('/user', userRouter);

@@ -914,6 +914,15 @@ export const useDeliveryNotifications = () => {
       handleIncomingOrderAlert(orderData);
     });
 
+    socketRef.current.on('new_return_assignment', (assignmentData) => {
+      debugLog('New return assignment received via socket', {
+        orderId: assignmentData?.orderId,
+      });
+      // Treat returns as a regular incoming order request for the UI
+      setNewOrder(assignmentData);
+      handleIncomingOrderAlert(assignmentData);
+    });
+
     socketRef.current.on('play_notification_sound', (data) => {
       const normalizedData = {
         orderId: data?.orderId || data?.order_id,

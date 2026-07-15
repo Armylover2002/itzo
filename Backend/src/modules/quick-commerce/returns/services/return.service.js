@@ -23,7 +23,6 @@ import {
 import { buildOrderIdentityFilter } from '../../../food/orders/services/order.helpers.js';
 import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js';
 import { logger } from '../../../../utils/logger.js';
-// We'll import these once created
 import * as returnNotificationService from './returnNotification.service.js';
 import { emitReturnStatusUpdate } from './returnSocket.service.js';
 
@@ -371,6 +370,23 @@ export async function updateLegStatus({
     await syncMasterStatus(leg.returnRequestId, session);
 
     await session.commitTransaction();
+    
+    // Notifications after commit
+    if (nextStatus === LEG_STATUS.PICKUP_EN_ROUTE) {
+      returnNotificationService.notifyPickupAssigned(leg).catch(err => logger.error(err));
+    } else if (nextStatus === LEG_STATUS.PICKUP_REACHED) {
+      returnNotificationService.notifyRiderArrivedAtUser(leg).catch(err => logger.error(err));
+    } else if (nextStatus === LEG_STATUS.PICKED_UP) {
+      returnNotificationService.notifyPickedUp(leg).catch(err => logger.error(err));
+    } else if (nextStatus === LEG_STATUS.RETURN_REACHED_SELLER) {
+      returnNotificationService.notifyRiderArrivedAtSeller(leg).catch(err => logger.error(err));
+    } else if (nextStatus === LEG_STATUS.RETURN_COMPLETED) {
+      returnNotificationService.notifyReturnCompleted(leg).catch(err => logger.error(err));
+    }
+    
+    // Emit socket event for specific leg status change
+    emitReturnStatusUpdate(leg.userId, leg.returnRequestId, nextStatus);
+
     return leg;
   } catch (error) {
     await session.abortTransaction();
@@ -471,6 +487,12 @@ export async function adminApproveReturn({
     await syncMasterStatus(returnRequestId, session);
 
     await session.commitTransaction();
+    
+    // Send notifications
+    const isApproved = returnReq.status === MASTER_STATUS.APPROVED || returnReq.status === MASTER_STATUS.PARTIALLY_APPROVED;
+    const isPartial = returnReq.status === MASTER_STATUS.PARTIALLY_APPROVED;
+    returnNotificationService.notifyReturnReviewed(returnReq, isApproved, isPartial).catch(err => logger.error(err));
+    
     return returnReq;
   } catch (error) {
     await session.abortTransaction();

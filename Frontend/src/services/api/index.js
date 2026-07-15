@@ -2165,12 +2165,31 @@ export const deliveryAPI = {
           },
         },
       })),
-  /** Zone discovery */
   getZonesInRadius: (lat, lng, radiusKm = 10) =>
     apiClient.get("/food/zones/nearby", {
       params: { lat, lng, radius: radiusKm },
       contextModule: "delivery",
     }),
+
+  /** Returns Management (Quick Commerce) */
+  getAssignedReturns: () =>
+    apiClient.get("/quick-commerce/returns/delivery/assignments", { contextModule: "delivery" }),
+  acceptReturnAssignment: (legId) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/accept`, {}, { contextModule: "delivery" }),
+  rejectReturnAssignment: (legId, reason = '') =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/reject`, { reason }, { contextModule: "delivery" }),
+  markReturnReachedUser: (legId) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/reached-user`, {}, { contextModule: "delivery" }),
+  verifyReturnPickupOtp: (legId, otp) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/verify-pickup-otp`, { otp }, { contextModule: "delivery" }),
+  markReturnHeadingToSeller: (legId) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/heading-to-seller`, {}, { contextModule: "delivery" }),
+  markReturnReachedSeller: (legId) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/reached-seller`, {}, { contextModule: "delivery" }),
+  verifyReturnSellerOtp: (legId, otp) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/verify-seller-otp`, { otp }, { contextModule: "delivery" }),
+  markReturnFailed: (legId, reason = '') =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/fail`, { reason }, { contextModule: "delivery" }),
 };
 
 export const userAPI = {

@@ -18,6 +18,7 @@ import {
 } from '../constants/returnStateMachine.js';
 import { logger } from '../../../../utils/logger.js';
 import { NotFoundError, ValidationError } from '../../../../core/auth/errors.js';
+import * as returnNotificationService from './returnNotification.service.js';
 
 /**
  * Recalculates the estimated refund amount based on approved quantities
@@ -137,6 +138,9 @@ export async function processLegRefund(sellerReturnId, actorId) {
       await returnReq.save({ session });
 
       await session.commitTransaction();
+      
+      returnNotificationService.notifyRefundProcessed(returnReq, refundAmount).catch(err => logger.error(err));
+      
       return { success: true, amount: refundAmount, refundId: gatewayResult.refundId };
     } else {
       await updateLegStatus({

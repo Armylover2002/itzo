@@ -16,6 +16,7 @@ import {
 import { sendResponse, sendError } from '../../../../utils/response.js';
 import { ACTOR_ROLES } from '../constants/returnStateMachine.js';
 import { logger } from '../../../../utils/logger.js';
+import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
 
 export const createReturn = async (req, res) => {
   try {
@@ -152,5 +153,26 @@ export const requestPickupOtpResend = async (req, res) => {
     });
   } catch (error) {
     return sendError(res, 500, error.message);
+  }
+};
+
+export const uploadImages = async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return sendError(res, 400, 'No images provided');
+    }
+
+    const uploadedUrls = [];
+    for (const file of req.files) {
+      const url = await uploadImageBuffer(file.buffer, 'quick-commerce/returns');
+      uploadedUrls.push(url);
+    }
+
+    return sendResponse(res, 200, 'Images uploaded successfully', {
+      images: uploadedUrls,
+    });
+  } catch (error) {
+    logger.error(`[UserReturn] Image upload error: ${error.message}`);
+    return sendError(res, 500, 'Failed to upload images');
   }
 };

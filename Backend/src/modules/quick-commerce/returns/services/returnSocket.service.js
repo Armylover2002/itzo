@@ -27,13 +27,20 @@ export function emitReturnStatusUpdate(userId, returnRequestId, newStatus) {
 
 /**
  * Emit a new assignment alert to a delivery partner.
+ * Include the populated sellerReturn so the rider UI can render NewOrderModal.
  */
-export function emitReturnAssignmentSocket(partnerId, sellerReturnId) {
+export function emitReturnAssignmentSocket(partnerId, sellerReturn) {
   try {
     const io = getIO();
     const room = rooms.delivery(partnerId);
+    
+    // Convert to plain object if it's a mongoose document
+    const returnData = sellerReturn.toObject ? sellerReturn.toObject() : sellerReturn;
+    
     io.to(room).emit('new_return_assignment', {
-      sellerReturnId,
+      ...returnData,
+      isReturn: true,
+      orderId: returnData._id,
       assignedAt: new Date(),
     });
   } catch (err) {

@@ -67,17 +67,20 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
 
   const earnings = order.earnings || order.riderEarning || (order.orderAmount ? order.orderAmount * 0.1 : 0);
   const isQuickOrder = String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick';
-  const restaurantName =
-    order?.dispatchLeg?.sourceName ||
+  const isQuickOrder = String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick' || order?.isReturn;
+  const restaurantName = order?.isReturn 
+    ? order?.user?.name || order?.pickupAddress?.name || 'Customer'
+    : order?.dispatchLeg?.sourceName ||
     (isQuickOrder
       ? order?.storeName || order?.sellerName || order?.seller?.shopName || order?.seller?.name || 'Seller store'
       : order?.restaurantName || order?.restaurant_name || order?.restaurantId?.restaurantName || order?.restaurantId?.name || 'Restaurant');
-  const restaurantAddress =
-    (isQuickOrder
+  const restaurantAddress = order?.isReturn
+    ? order?.pickupAddress?.address || order?.pickupAddress?.formattedAddress || 'Customer Address'
+    : (isQuickOrder
       ? order?.storeAddress || order?.sellerAddress || order?.seller?.location?.address || order?.seller?.location?.formattedAddress
       : order?.restaurantAddress || order?.restaurant_address || order?.restaurantId?.location?.address) ||
     'Address not available';
-  const deliveryAddress = order?.deliveryAddress || {};
+  const deliveryAddress = order?.isReturn ? order?.dropoffAddress : (order?.deliveryAddress || {});
 
   const geoCoords =
     Array.isArray(deliveryAddress?.location?.coordinates) &&
@@ -100,8 +103,9 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
     .map((v) => String(v || '').trim())
     .filter(Boolean);
 
-  const customerAddress =
-    order.customerAddress ||
+  const customerAddress = order?.isReturn 
+    ? order?.dropoffAddress?.address || order?.dropoffAddress?.formattedAddress || 'Store Address'
+    : order.customerAddress ||
     order.customer_address ||
     (addressPartsFromSchema.length ? addressPartsFromSchema.join(', ') : '') ||
     (customerLocation?.lat != null && customerLocation?.lng != null
@@ -149,7 +153,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
         {/* Header Ribbon */}
         <div className="bg-[#FE5502] p-5 flex justify-between items-center text-white border-b border-[#FE5502]/20">
           <div>
-            <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-0.5">Incoming Request</p>
+            <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-0.5">{order?.isReturn ? 'Incoming Return Request' : 'Incoming Request'}</p>
             {mixedOrder && (
               <div className="mb-2 inline-flex items-center rounded-full border border-white/30 bg-white/15 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-white">
                 Mixed Order
@@ -174,8 +178,8 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
               <div className="space-y-4">
                 {pickupStops.map((pickup, index) => {
                   const isQuickStore = pickup.pickupType === 'quick';
-                  const pickupLabel = isQuickStore ? 'Store Pickup' : 'Restaurant Pickup';
-                  const pickupAccent = isQuickStore ? 'text-orange-600' : 'text-green-600';
+                  const pickupLabel = order?.isReturn ? 'Customer Pickup' : (isQuickStore ? 'Store Pickup' : 'Restaurant Pickup');
+                  const pickupAccent = order?.isReturn ? 'text-blue-600' : (isQuickStore ? 'text-orange-600' : 'text-green-600');
                   const pickupAddress = pickup.address || 'Address not available';
                   return (
                     <div key={pickup.id || `${pickup.pickupType}-${index}`}>
@@ -183,7 +187,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
                         <ChefHat className="w-3.5 h-3.5" />
                         <span>{pickupStops.length > 1 ? `${pickupLabel} ${index + 1}` : pickupLabel}</span>
                       </div>
-                      <p className="text-gray-950 font-bold text-lg leading-tight">{pickup.sourceName || (isQuickStore ? 'Seller store' : 'Restaurant')}</p>
+                      <p className="text-gray-950 font-bold text-lg leading-tight">{pickup.sourceName || (order?.isReturn ? 'Customer' : (isQuickStore ? 'Seller store' : 'Restaurant'))}</p>
                       <p className="text-gray-500 text-xs font-medium leading-relaxed line-clamp-1">{pickupAddress}</p>
                     </div>
                   );
@@ -192,9 +196,9 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
               <div>
                 <div className="flex items-center gap-2 mb-1.5 font-bold text-[9px] uppercase tracking-widest text-primary">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>Customer Drop</span>
+                  <span>{order?.isReturn ? 'Store Drop' : 'Customer Drop'}</span>
                 </div>
-                <p className="text-gray-950 font-bold text-lg leading-tight">Customer Location</p>
+                <p className="text-gray-950 font-bold text-lg leading-tight">{order?.isReturn ? (order?.seller?.shopName || order?.seller?.name || 'Seller Store') : 'Customer Location'}</p>
                 <p className="text-gray-500 text-xs font-medium line-clamp-1">{customerAddress}</p>
                 {mapsLink && (
                   <a

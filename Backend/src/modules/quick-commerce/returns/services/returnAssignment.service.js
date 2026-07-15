@@ -82,7 +82,7 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
 
     logger.info(`[ReturnDispatch] Assigned leg ${leg._id} to partner ${selectedPartner.partnerId}`);
     
-    emitReturnAssignmentSocket(selectedPartner.partnerId, leg._id);
+    emitReturnAssignmentSocket(selectedPartner.partnerId, leg);
 
     return { success: true, partnerId: selectedPartner.partnerId };
   } catch (error) {
