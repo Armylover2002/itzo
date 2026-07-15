@@ -143,10 +143,10 @@ export default function UserOrderDetails() {
   }
 
   const orderIdDisplay = order.orderId || order._id || orderId
-  // Use fetched restaurant data if available, otherwise use order.restaurantId or order.restaurant
-  const restaurantObj = restaurant || order.restaurantId || order.restaurant || {}
+  // Use fetched restaurant data if available, otherwise use order.restaurantId, order.restaurant, order.seller, or order.sellerId
+  const restaurantObj = restaurant || order.restaurantId || order.restaurant || order.seller || order.sellerId || {}
   const restaurantName =
-    order.restaurantName || restaurantObj.name || "Restaurant"
+    order.restaurantName || restaurantObj.name || restaurantObj.shopName || "Store"
 
   // Build restaurant address (try restaurant fields first, then fall back)
   const restaurantLocation = (() => {
@@ -194,8 +194,9 @@ export default function UserOrderDetails() {
   const pricing = order.pricing || {}
   const sendsCutlery = order.sendCutlery !== false
 
-  const userName = order.userName || ""
-  const userPhone = order.userPhone || ""
+  const userObj = order.userId || order.user || {}
+  const userName = order.userName || userObj.name || userObj.firstName || ""
+  const userPhone = order.userPhone || userObj.phone?.number || userObj.phone || userObj.phoneNumber || order.deliveryAddress?.phone || order.address?.phone || ""
   const paymentMethod = order.payment?.method || "Online"
   const paymentDate = order.createdAt
     ? new Date(order.createdAt).toLocaleString("en-IN", {
@@ -207,9 +208,11 @@ export default function UserOrderDetails() {
     })
     : ""
 
+  const deliveryAddress = order.deliveryAddress || order.address || {}
   const addressText =
-    order.address?.formattedAddress ||
-    [order.address?.street, order.address?.city, order.address?.state, order.address?.zipCode]
+    deliveryAddress.formattedAddress ||
+    deliveryAddress.address ||
+    [deliveryAddress.street, deliveryAddress.city, deliveryAddress.state, deliveryAddress.zipCode]
       .filter(Boolean)
       .join(", ")
 
@@ -241,7 +244,7 @@ export default function UserOrderDetails() {
           ).trim(),
           address:
             buildPickupPointAddress(point) ||
-            (pickupType === "food" ? restaurantLocation : "") ||
+            restaurantLocation ||
             "Address not available",
           phone:
             pickupType === "food"

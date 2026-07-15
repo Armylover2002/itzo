@@ -529,13 +529,14 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
     restaurantId: apiOrder?.restaurantId || previousOrder?.restaurantId || null,
     userId: apiOrder?.userId || previousOrder?.userId || null,
     userName: apiOrder?.userName || apiOrder?.userId?.name || apiOrder?.userId?.fullName || previousOrder?.userName || '',
-    userPhone: apiOrder?.userPhone || apiOrder?.userId?.phone || previousOrder?.userPhone || '',
+    userPhone: apiOrder?.userPhone || apiOrder?.userId?.phone || addr?.phone || apiOrder?.deliveryAddress?.phone || previousOrder?.userPhone || '',
     address: {
       street: addr?.street || previousOrder?.address?.street || '',
       city: addr?.city || previousOrder?.address?.city || '',
       state: addr?.state || previousOrder?.address?.state || '',
       zipCode: addr?.zipCode || previousOrder?.address?.zipCode || '',
       additionalDetails: addr?.additionalDetails || previousOrder?.address?.additionalDetails || '',
+      phone: addr?.phone || apiOrder?.deliveryAddress?.phone || previousOrder?.address?.phone || '',
       formattedAddress: addr?.formattedAddress ||
         (addr?.street && addr?.city
           ? `${addr.street}${addr.additionalDetails ? `, ${addr.additionalDetails}` : ''}, ${addr.city}${addr.state ? `, ${addr.state}` : ''}${addr.zipCode ? ` ${addr.zipCode}` : ''}`
@@ -724,6 +725,8 @@ function normalizeQuickOrderForTracking(rawOrder) {
       seller?.location?.address ||
       seller?.address ||
       rawOrder.restaurantAddress ||
+      rawOrder.storeAddress ||
+      rawOrder.pickupAddress ||
       "",
   ).trim()
 
@@ -2307,13 +2310,21 @@ export default function OrderTracking() {
               order?.userName ||
               order?.userId?.fullName ||
               order?.userId?.name ||
+              order?.user?.name ||
+              order?.user?.firstName ||
               profile?.fullName ||
               profile?.name ||
               'Customer'
             }
             subtitle={
               order?.userPhone ||
+              order?.userId?.phone?.number ||
               order?.userId?.phone ||
+              order?.user?.phone?.number ||
+              order?.user?.phone ||
+              order?.user?.phoneNumber ||
+              order?.deliveryAddress?.phone ||
+              order?.address?.phone ||
               profile?.phone ||
               defaultAddress?.phone ||
               'Phone number not available'
