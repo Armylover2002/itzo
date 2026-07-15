@@ -193,6 +193,18 @@ const sellerReturnSchema = new mongoose.Schema(
     /** Admin notes and failure tracking */
     adminNotes: { type: String, default: '', trim: true },
     failureReason: { type: String, default: '', trim: true },
+
+    /** Proof of Pickup images uploaded by rider */
+    pickupProofImages: {
+      type: [String],
+      default: [],
+    },
+
+    /** Concurrency lock for refund processing */
+    refundProcessing: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     collection: 'quick_seller_returns',

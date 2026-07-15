@@ -14,6 +14,7 @@ import {
   getSellerProductByIdController,
   getSellerProductsController,
   getSellerProfileController,
+  getSellerReturnOtpController,
   getSellerReturnsController,
   getSellerStatsController,
   getSellerStockHistoryController,
@@ -84,6 +85,7 @@ router.put("/orders/:orderId/status", ...sellerOnly, updateSellerOrderStatusCont
 router.post("/orders/:orderId/resend-dispatch", ...sellerOnly, resendSellerOrderDispatchController);
 
 router.get("/returns", ...sellerOnly, getSellerReturnsController);
+router.get("/returns/:sellerReturnId/otp", ...sellerOnly, getSellerReturnOtpController);
 router.put("/returns/:orderId/approve", ...sellerOnly, approveSellerReturnController);
 router.put("/returns/:orderId/reject", ...sellerOnly, rejectSellerReturnController);
 

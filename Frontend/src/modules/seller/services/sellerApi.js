@@ -105,6 +105,9 @@ export const sellerApi = {
     call(
       axiosInstance.put(`/seller/returns/${String(orderId)}/reject`, data),
     ),
+    
+  getReturnOtp: (sellerReturnId) =>
+    call(axiosInstance.get(`/seller/returns/${String(sellerReturnId)}/otp`)),
 };
 
 export default sellerApi;

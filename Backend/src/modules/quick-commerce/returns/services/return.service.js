@@ -24,7 +24,7 @@ import { buildOrderIdentityFilter } from '../../../food/orders/services/order.he
 import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js';
 import { logger } from '../../../../utils/logger.js';
 import * as returnNotificationService from './returnNotification.service.js';
-import { emitReturnStatusUpdate } from './returnSocket.service.js';
+import { emitReturnStatusUpdate, emitAdminTrackingUpdate } from './returnSocket.service.js';
 
 // ─── Utilities ──────────────────────────────────────────────────────────────
 
@@ -386,6 +386,7 @@ export async function updateLegStatus({
     
     // Emit socket event for specific leg status change
     emitReturnStatusUpdate(leg.userId, leg.returnRequestId, nextStatus);
+    emitAdminTrackingUpdate(leg._id, nextStatus);
 
     return leg;
   } catch (error) {

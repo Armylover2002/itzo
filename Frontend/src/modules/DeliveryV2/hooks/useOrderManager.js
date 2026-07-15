@@ -141,7 +141,10 @@ export const useOrderManager = () => {
     try {
       let response;
       if (activeOrder?.isReturn) {
-        response = await deliveryAPI.verifyReturnPickupOtp(orderId, billImageUrlOrOtp);
+        response = await deliveryAPI.verifyReturnPickupOtp(orderId, {
+          otp: billImageUrlOrOtp.otp,
+          pickupProofImages: billImageUrlOrOtp.pickupProofImages
+        });
         // Once verified, we should logically also mark it as heading to seller
         // but backend might do that or we can do it after pickUpOrder.
       } else {

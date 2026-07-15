@@ -70,11 +70,19 @@ export async function processLegRefund(sellerReturnId, actorId) {
   session.startTransaction();
 
   try {
-    const leg = await SellerReturn.findById(sellerReturnId).session(session);
-    if (!leg) throw new NotFoundError('Seller return leg not found');
+    // Idempotency Lock: Use findOneAndUpdate to atomically acquire lock
+    const leg = await SellerReturn.findOneAndUpdate(
+      { 
+        _id: sellerReturnId, 
+        returnStatus: { $in: [LEG_STATUS.REFUND_PENDING, LEG_STATUS.REFUND_FAILED] },
+        refundProcessing: { $ne: true } 
+      },
+      { $set: { refundProcessing: true } },
+      { new: true, session }
+    );
 
-    if (leg.returnStatus !== LEG_STATUS.REFUND_PENDING) {
-      throw new ValidationError(`Cannot refund leg in status ${leg.returnStatus}`);
+    if (!leg) {
+      throw new ValidationError(`Cannot process refund. Leg is either locked, already processed, or invalid status.`);
     }
 
     const returnReq = await ReturnRequest.findById(leg.returnRequestId).session(session);
@@ -107,6 +115,7 @@ export async function processLegRefund(sellerReturnId, actorId) {
         actorId,
         note: 'Cash order - refunded to wallet or handled manually',
       });
+      await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
       return { success: true, amount: refundAmount, method: 'wallet_or_manual' };
     }
@@ -137,6 +146,7 @@ export async function processLegRefund(sellerReturnId, actorId) {
         : gatewayResult.refundId;
       await returnReq.save({ session });
 
+      await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
       
       returnNotificationService.notifyRefundProcessed(returnReq, refundAmount).catch(err => logger.error(err));
@@ -150,12 +160,18 @@ export async function processLegRefund(sellerReturnId, actorId) {
         actorId,
         note: `Gateway refund failed: ${gatewayResult.error}`,
       });
+      await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
+      
+      // Auto-retry via Notification or Admin Alert could be queued here
+      logger.error(`[ReturnRefund] Gateway refund failed for leg ${leg._id}: ${gatewayResult.error}`);
       return { success: false, error: gatewayResult.error };
     }
   } catch (error) {
     await session.abortTransaction();
     logger.error(`[ReturnRefund] Error processing refund for leg ${sellerReturnId}: ${error.message}`);
+    // Unlock if it failed before commit
+    await SellerReturn.updateOne({ _id: sellerReturnId }, { $set: { refundProcessing: false } }).catch(() => {});
     throw error;
   } finally {
     session.endSession();

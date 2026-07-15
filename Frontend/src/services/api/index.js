@@ -2172,16 +2172,16 @@ export const deliveryAPI = {
     }),
 
   /** Returns Management (Quick Commerce) */
-  getAssignedReturns: () =>
-    apiClient.get("/quick-commerce/returns/delivery/assignments", { contextModule: "delivery" }),
+  getAssignedReturns: (params = {}) =>
+    apiClient.get("/quick-commerce/returns/delivery/assignments", { params, contextModule: "delivery" }),
   acceptReturnAssignment: (legId) =>
     apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/accept`, {}, { contextModule: "delivery" }),
   rejectReturnAssignment: (legId, reason = '') =>
     apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/reject`, { reason }, { contextModule: "delivery" }),
   markReturnReachedUser: (legId) =>
     apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/reached-user`, {}, { contextModule: "delivery" }),
-  verifyReturnPickupOtp: (legId, otp) =>
-    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/verify-pickup-otp`, { otp }, { contextModule: "delivery" }),
+  verifyReturnPickupOtp: (legId, payload) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/verify-pickup-otp`, typeof payload === 'string' ? { otp: payload } : payload, { contextModule: "delivery" }),
   markReturnHeadingToSeller: (legId) =>
     apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/heading-to-seller`, {}, { contextModule: "delivery" }),
   markReturnReachedSeller: (legId) =>

@@ -4,11 +4,19 @@ import Badge from "@shared/components/ui/Badge";
 import Button from "@shared/components/ui/Button";
 import { sellerApi } from "../services/sellerApi";
 import { useToast } from "@shared/components/ui/Toast";
+import { useAuth } from "@core/context/AuthContext";
+import { onSellerReturnUpdate } from "@core/services/orderSocket";
 import {
     HiOutlineArrowPath,
     HiOutlineInboxStack,
     HiOutlineEye,
     HiOutlineCalendarDays,
+    HiOutlineCheckCircle,
+    HiOutlineTruck,
+    HiOutlineDocumentText,
+    HiOutlineXCircle,
+    HiOutlineMapPin,
+    HiOutlineKey
 } from "react-icons/hi2";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { MagicCard } from "@/components/ui/magic-card";
@@ -18,58 +26,74 @@ import { Loader2 } from "lucide-react";
 
 const Returns = () => {
     const { showToast } = useToast();
+    const { getToken } = useAuth();
     const [returns, setReturns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("All");
     const [selectedReturn, setSelectedReturn] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    
+    // Lightbox & OTP State
+    const [activeImage, setActiveImage] = useState(null);
+    const [handoffOtp, setHandoffOtp] = useState(null);
+    const [loadingOtp, setLoadingOtp] = useState(false);
 
     const tabs = [
         "All",
         "Requested",
         "Approved",
-        "Rejected",
-        "Pickup Assigned",
-        "In Transit",
+        "Pickup",
+        "OTP Pending",
         "Completed",
+        "Rejected"
     ];
 
     const mapReturnStatusLabel = (status) => {
+        if (!status) return "Unknown";
         switch (status) {
             case "return_requested":
+            case "under_review":
                 return "Requested";
             case "return_approved":
+            case "partially_approved":
                 return "Approved";
             case "return_rejected":
                 return "Rejected";
             case "return_pickup_assigned":
-                return "Pickup Assigned";
+            case "pickup_pending":
+            case "pickup_en_route":
+            case "pickup_reached":
+            case "pickup_otp_pending":
+            case "picked_up":
+            case "return_en_route":
             case "return_in_transit":
-                return "In Transit";
+                return "Pickup";
+            case "return_reached_seller":
+            case "seller_otp_pending":
+                return "OTP Pending";
             case "returned":
+            case "return_completed":
+            case "refund_pending":
             case "refund_completed":
                 return "Completed";
+            case "cancelled":
+                return "Cancelled";
             default:
-                return status || "Unknown";
+                return "Unknown";
         }
     };
 
     const getStatusVariant = (status) => {
-        switch (status) {
-            case "return_requested":
-                return "warning";
-            case "return_approved":
-                return "info";
-            case "return_rejected":
-                return "error";
-            case "return_pickup_assigned":
-            case "return_in_transit":
-                return "secondary";
-            case "refund_completed":
-            case "returned":
-                return "success";
-            default:
-                return "secondary";
+        const label = mapReturnStatusLabel(status);
+        switch (label) {
+            case "Requested": return "warning";
+            case "Approved": return "info";
+            case "Rejected": return "error";
+            case "Cancelled": return "error";
+            case "Pickup": return "secondary";
+            case "OTP Pending": return "warning";
+            case "Completed": return "success";
+            default: return "secondary";
         }
     };
 
@@ -94,6 +118,57 @@ const Returns = () => {
         fetchReturns();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Socket Real-time listener
+    useEffect(() => {
+        const cleanup = onSellerReturnUpdate(getToken, (payload) => {
+            console.log("Seller Return Socket Update:", payload);
+            if (payload && payload._id) {
+                setReturns(prev => {
+                    const existingIdx = prev.findIndex(r => String(r._id) === String(payload._id));
+                    if (existingIdx !== -1) {
+                        const newReturns = [...prev];
+                        // Merge the updated fields
+                        newReturns[existingIdx] = { ...newReturns[existingIdx], ...payload };
+                        
+                        // Update selected return if open
+                        if (selectedReturn && String(selectedReturn._id) === String(payload._id)) {
+                            setSelectedReturn(newReturns[existingIdx]);
+                        }
+                        
+                        return newReturns;
+                    } else {
+                        return [payload, ...prev];
+                    }
+                });
+            }
+        });
+        return cleanup;
+    }, [getToken, selectedReturn]);
+
+    // Fetch OTP when status is seller_otp_pending
+    useEffect(() => {
+        if (selectedReturn && selectedReturn.returnStatus === 'seller_otp_pending' && isDetailsOpen) {
+            fetchDropOtp(selectedReturn._id);
+        } else {
+            setHandoffOtp(null);
+        }
+    }, [selectedReturn?.returnStatus, isDetailsOpen]);
+
+    const fetchDropOtp = async (id) => {
+        try {
+            setLoadingOtp(true);
+            const res = await sellerApi.getReturnOtp(id);
+            if (res.data?.result?.otp) {
+                setHandoffOtp(res.data.result.otp);
+            }
+        } catch (error) {
+            console.error("Failed to fetch OTP", error);
+            // Don't toast to avoid spamming if not ready
+        } finally {
+            setLoadingOtp(false);
+        }
+    };
 
     const filteredReturns = useMemo(() => {
         if (activeTab === "All") return returns;
@@ -139,6 +214,60 @@ const Returns = () => {
             );
         }
     };
+    
+    const renderTimeline = (ret) => {
+        const milestones = [
+            { label: "Requested", status: "return_requested", time: ret.returnRequestedAt, icon: HiOutlineDocumentText },
+            { label: "Approved", status: "return_approved", time: ret.itemApprovals?.length > 0 ? ret.itemApprovals[0].decidedAt : null, icon: HiOutlineCheckCircle },
+            { label: "Pickup Started", status: "pickup_en_route", time: ret.pickupEnRouteAt, icon: HiOutlineTruck },
+            { label: "Items Picked Up", status: "picked_up", time: ret.pickedUpAt, icon: HiOutlineInboxStack },
+            { label: "Heading to Store", status: "return_en_route", time: ret.returnEnRouteAt, icon: HiOutlineMapPin },
+            { label: "Completed", status: "return_completed", time: ret.returnCompletedAt, icon: HiOutlineCheckCircle },
+        ];
+        
+        return (
+            <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent mt-4">
+                {milestones.map((m, idx) => {
+                    const isPassed = !!m.time || (ret.returnStatus === 'return_completed' && idx < milestones.length);
+                    const isRejected = ret.returnStatus === 'return_rejected' || ret.returnStatus === 'cancelled';
+                    const isCurrent = ret.returnStatus === m.status;
+                    
+                    if (isRejected && idx > 0 && !m.time) return null; // Don't show future steps if rejected
+
+                    return (
+                        <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                            <div className={cn(
+                                "flex items-center justify-center w-6 h-6 rounded-full border-4 border-white shadow shrink-0 absolute -left-6",
+                                isPassed ? "bg-primary text-white" : "bg-slate-200 text-slate-400",
+                                isRejected && idx === 1 ? "bg-rose-500" : ""
+                            )}>
+                                <m.icon className="w-3 h-3" />
+                            </div>
+                            <div className={cn(
+                                "pl-4 w-full",
+                                !isPassed ? "opacity-50" : ""
+                            )}>
+                                <h4 className="text-sm font-bold text-slate-900">
+                                    {isRejected && idx === 1 ? "Rejected" : m.label}
+                                </h4>
+                                {m.time ? (
+                                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+                                        {new Date(m.time).toLocaleString('en-IN', {
+                                            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                                        })}
+                                    </span>
+                                ) : (
+                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                                        Pending
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-16">
@@ -164,14 +293,14 @@ const Returns = () => {
                             variant="outline"
                             className="flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 border-slate-200"
                         >
-                            <HiOutlineArrowPath className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <HiOutlineArrowPath className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", loading && "animate-spin")} />
                             <span className="hidden sm:inline">REFRESH</span>
                         </Button>
                     </div>
                 </div>
             </BlurFade>
 
-            {loading ? (
+            {loading && returns.length === 0 ? (
                 <div className="min-h-[320px] flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-100 shadow-sm">
                     <Loader2 className="h-10 w-10 text-primary animate-spin" />
                     <p className="text-slate-600 font-bold mt-4 uppercase tracking-widest text-xs">
@@ -181,10 +310,11 @@ const Returns = () => {
             ) : (
                 <>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                        {["Requested", "Approved", "Rejected", "Completed"].map(
+                        {["Requested", "Approved", "Pickup", "Completed"].map(
                             (label, i) => {
                                 const count = returns.filter(
-                                    (r) => mapReturnStatusLabel(r.returnStatus) === label
+                                    (r) => mapReturnStatusLabel(r.returnStatus) === label || 
+                                           (label === "Pickup" && mapReturnStatusLabel(r.returnStatus) === "OTP Pending")
                                 ).length;
                                 return (
                                     <BlurFade key={label} delay={0.1 + i * 0.05}>
@@ -263,9 +393,20 @@ const Returns = () => {
                                                     className="min-w-0 flex-1 cursor-pointer"
                                                     onClick={() => openDetails(ret)}
                                                 >
-                                                    <p className="text-xs font-black text-slate-900 truncate">
-                                                        #{ret.orderId}
-                                                    </p>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <p className="text-xs font-black text-slate-900 truncate">
+                                                            #{ret.orderId}
+                                                        </p>
+                                                        {ret.returnStatus === 'seller_otp_pending' && (
+                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-widest">
+                                                                <span className="relative flex h-2 w-2">
+                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                                                </span>
+                                                                Rider Waiting
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
                                                         <HiOutlineCalendarDays className="h-3 w-3 shrink-0" />
                                                         {ret.returnRequestedAt
@@ -289,18 +430,13 @@ const Returns = () => {
                                                 </div>
                                                 <div className="flex flex-col items-end gap-2 shrink-0">
                                                     <Badge
-                                                        variant={getStatusVariant(
-                                                            ret.returnStatus
-                                                        )}
+                                                        variant={getStatusVariant(ret.returnStatus)}
                                                         className="text-[10px] font-black uppercase px-2 py-0"
                                                     >
                                                         {mapReturnStatusLabel(ret.returnStatus)}
                                                     </Badge>
                                                     <p className="text-xs font-black text-slate-900">
-                                                        ₹
-                                                        {ret.returnRefundAmount ||
-                                                            ret.pricing?.subtotal ||
-                                                            0}
+                                                        ₹{ret.returnRefundAmount || ret.pricing?.subtotal || 0}
                                                     </p>
                                                     <button
                                                         onClick={() => openDetails(ret)}
@@ -335,142 +471,184 @@ const Returns = () => {
                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
                             className="w-full max-w-lg sm:max-w-2xl relative z-10 bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                         >
-                            <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-100 bg-slate-50">
                                 <div>
                                     <h3 className="text-base font-black text-slate-900">
                                         Return for Order #{selectedReturn.orderId}
                                     </h3>
-                                    <div className="flex items-center space-x-2 mt-0.5">
+                                    <div className="flex items-center space-x-2 mt-1">
                                         <Badge
-                                            variant={getStatusVariant(
-                                                selectedReturn.returnStatus
-                                            )}
+                                            variant={getStatusVariant(selectedReturn.returnStatus)}
                                             className="text-[10px] font-black uppercase tracking-widest px-1.5 py-0"
                                         >
-                                            {mapReturnStatusLabel(
-                                                selectedReturn.returnStatus
-                                            )}
+                                            {mapReturnStatusLabel(selectedReturn.returnStatus)}
                                         </Badge>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => setIsDetailsOpen(false)}
-                                    className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-600"
+                                    className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-600 shrink-0 self-end sm:self-auto"
                                 >
                                     ✕
                                 </button>
                             </div>
 
-                            <div className="px-4 py-4 sm:px-6 sm:py-5 overflow-y-auto scrollbar-hide flex-1 space-y-4">
-                                <div className="space-y-2">
-                                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
-                                        Customer
-                                    </p>
-                                    <p className="text-sm font-bold text-slate-900">
-                                        {selectedReturn.customer?.name || "Customer"}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                        {selectedReturn.customer?.phone || ""}
-                                    </p>
-                                </div>
+                            <div className="px-4 py-4 sm:px-6 sm:py-5 overflow-y-auto scrollbar-hide flex-1 space-y-6">
+                                
+                                {selectedReturn.returnStatus === 'seller_otp_pending' && (
+                                    <motion.div 
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="bg-amber-50 rounded-2xl p-4 border border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-4"
+                                    >
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <HiOutlineKey className="h-5 w-5 text-amber-600" />
+                                                <h4 className="text-sm font-black text-amber-900">Rider arrived!</h4>
+                                            </div>
+                                            <p className="text-xs text-amber-700 font-medium">Provide this OTP to the delivery partner to receive the return items.</p>
+                                        </div>
+                                        <div className="bg-white px-6 py-3 rounded-xl shadow-sm border border-amber-100 flex items-center justify-center min-w-[120px]">
+                                            {loadingOtp ? (
+                                                <Loader2 className="h-5 w-5 animate-spin text-amber-600" />
+                                            ) : handoffOtp ? (
+                                                <span className="text-2xl font-black text-amber-600 tracking-[0.2em]">{handoffOtp}</span>
+                                            ) : (
+                                                <span className="text-xs font-bold text-slate-400">Failed</span>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                )}
 
-                                <div className="space-y-2">
-                                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
-                                        Return Reason
-                                    </p>
-                                    <p className="text-sm text-slate-800 bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                                        {selectedReturn.returnReason ||
-                                            "No reason provided by customer."}
-                                    </p>
-                                    {selectedReturn.returnRejectedReason && (
-                                        <p className="text-xs text-rose-600 font-semibold">
-                                            Rejection reason:{" "}
-                                            {selectedReturn.returnRejectedReason}
-                                        </p>
-                                    )}
-                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                    {/* Left Column */}
+                                    <div className="space-y-6">
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                                                Customer
+                                            </p>
+                                            <p className="text-sm font-bold text-slate-900">
+                                                {selectedReturn.customer?.name || "Customer"}
+                                            </p>
+                                            <p className="text-xs text-slate-500">
+                                                {selectedReturn.customer?.phone || ""}
+                                            </p>
+                                        </div>
 
-                                <div className="space-y-2">
-                                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
-                                        Items
-                                    </p>
-                                    <div className="space-y-2">
-                                        {(selectedReturn.returnItems || []).map(
-                                            (item, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-100"
-                                                >
-                                                    <div>
-                                                        <p className="text-xs font-bold text-slate-900">
-                                                            {item.name}
-                                                        </p>
-                                                        <p className="text-xs text-slate-500">
-                                                            Qty: {item.quantity}
-                                                        </p>
-                                                    </div>
-                                                    <p className="text-xs font-black text-slate-900">
-                                                        ₹{item.price * item.quantity}
-                                                    </p>
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                                                Return Reason
+                                            </p>
+                                            <p className="text-sm text-slate-800 bg-slate-50 rounded-xl p-3 border border-slate-100">
+                                                {selectedReturn.returnReason || "No reason provided by customer."}
+                                            </p>
+                                            {selectedReturn.returnRejectedReason && (
+                                                <p className="text-xs text-rose-600 font-semibold bg-rose-50 p-2 rounded-lg">
+                                                    Rejection reason: {selectedReturn.returnRejectedReason}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {selectedReturn.returnRequestId?.evidenceImages && selectedReturn.returnRequestId.evidenceImages.length > 0 && (
+                                            <div className="space-y-2">
+                                                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                                                    Customer Images
+                                                </p>
+                                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                                    {selectedReturn.returnRequestId.evidenceImages.map((img, idx) => (
+                                                        <div 
+                                                            key={idx} 
+                                                            className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border border-slate-200 shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                                                            onClick={() => setActiveImage(img)}
+                                                        >
+                                                            <img src={img} alt={`Evidence ${idx + 1}`} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            )
+                                            </div>
                                         )}
-                                    </div>
-                                </div>
 
-                                <div className="space-y-1">
-                                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
-                                        Payment Breakdown
-                                    </p>
-                                    <p className="text-xs text-slate-700">
-                                        Product refund:{" "}
-                                        <span className="font-black">
-                                            ₹
-                                            {selectedReturn.returnRefundAmount ||
-                                                selectedReturn.pricing?.subtotal ||
-                                                0}
-                                        </span>
-                                    </p>
-                                    <p className="text-xs text-slate-700">
-                                        Return delivery commission:{" "}
-                                        <span className="font-black">
-                                            ₹
-                                            {selectedReturn.returnDeliveryCommission ||
-                                                0}
-                                        </span>
-                                    </p>
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                                                Items to Return
+                                            </p>
+                                            <div className="space-y-2">
+                                                {(selectedReturn.returnItems || []).map(
+                                                    (item, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100"
+                                                        >
+                                                            <div>
+                                                                <p className="text-xs font-bold text-slate-900">
+                                                                    {item.name}
+                                                                </p>
+                                                                <p className="text-xs text-slate-500">
+                                                                    Qty: {item.quantity}
+                                                                </p>
+                                                            </div>
+                                                            <p className="text-xs font-black text-slate-900">
+                                                                ₹{item.price * item.quantity}
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Column: Timeline & Rider info */}
+                                    <div className="space-y-6">
+                                        {selectedReturn.assignment?.deliveryPartnerId && (
+                                            <div className="space-y-2">
+                                                <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                                                    Delivery Partner
+                                                </p>
+                                                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center gap-3">
+                                                    <div className="h-10 w-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                                                        <HiOutlineTruck className="h-5 w-5" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold text-slate-900">{selectedReturn.assignment.deliveryPartnerId.name}</p>
+                                                        <p className="text-[10px] text-slate-500">{selectedReturn.assignment.deliveryPartnerId.phone}</p>
+                                                        {selectedReturn.assignment.deliveryPartnerId.vehicleNumber && (
+                                                            <Badge variant="outline" className="mt-1 text-[9px] px-1 py-0">{selectedReturn.assignment.deliveryPartnerId.vehicleNumber}</Badge>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">
+                                                Return Timeline
+                                            </p>
+                                            {renderTimeline(selectedReturn)}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row gap-3 sm:gap-0 sm:items-center justify-end">
+                            <div className="px-4 py-3 sm:px-6 sm:py-4 border-t border-slate-100 bg-white flex flex-col sm:flex-row gap-3 sm:gap-0 sm:items-center justify-end">
                                 <div className="flex gap-2 items-center">
                                     <button
                                         onClick={() => setIsDetailsOpen(false)}
-                                        className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition-all"
+                                        className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 border border-slate-200 transition-all"
                                     >
                                         Close
                                     </button>
-                                    {selectedReturn.returnStatus ===
-                                        "return_requested" && (
+                                    {(selectedReturn.returnStatus === "return_requested" || selectedReturn.returnStatus === "under_review") && (
                                         <>
                                             <Button
                                                 variant="outline"
-                                                className="text-xs font-bold"
-                                                onClick={() =>
-                                                    handleReject(
-                                                        selectedReturn.orderId
-                                                    )
-                                                }
+                                                className="text-xs font-bold border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
+                                                onClick={() => handleReject(selectedReturn.orderId)}
                                             >
                                                 Reject
                                             </Button>
                                             <Button
-                                                className="text-xs font-bold"
-                                                onClick={() =>
-                                                    handleApprove(
-                                                        selectedReturn.orderId
-                                                    )
-                                                }
+                                                className="text-xs font-bold bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20"
+                                                onClick={() => handleApprove(selectedReturn.orderId)}
                                             >
                                                 Approve
                                             </Button>
@@ -482,9 +660,37 @@ const Returns = () => {
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* Lightbox for Images */}
+            <AnimatePresence>
+                {activeImage && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm cursor-pointer"
+                            onClick={() => setActiveImage(null)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="relative z-10 max-w-3xl max-h-[80vh] rounded-2xl overflow-hidden shadow-2xl"
+                        >
+                            <img src={activeImage} alt="Evidence Full" className="w-full h-full object-contain" />
+                            <button 
+                                onClick={() => setActiveImage(null)}
+                                className="absolute top-4 right-4 h-8 w-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 backdrop-blur-md"
+                            >
+                                ✕
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
 
 export default Returns;
-

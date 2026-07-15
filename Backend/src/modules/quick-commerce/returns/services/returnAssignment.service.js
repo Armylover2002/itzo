@@ -214,3 +214,55 @@ export async function tryAutoReassign(sellerReturnId) {
 
   await tryAssignReturnLeg(leg._id, { attempt: attempts + 1 });
 }
+
+/**
+ * Cron Job function to check and reassign stale return assignments based on ECS settings.
+ * Should be called periodically (e.g., every 1-2 minutes).
+ */
+export async function checkStaleReturnAssignments() {
+  const settings = getSettingsSync();
+  const acceptanceTimeoutSec = settings.quickReturnAcceptanceTimeoutSec || 300; // 5 mins
+  const movementTimeoutSec = settings.quickReturnMovementTimeoutSec || 900; // 15 mins
+
+  try {
+    // 1. Check Acceptance Timeout (status: return_pickup_assigned)
+    const acceptanceThreshold = new Date(Date.now() - acceptanceTimeoutSec * 1000);
+    const staleAssigned = await SellerReturn.find({
+      returnStatus: LEG_STATUS.RETURN_PICKUP_ASSIGNED,
+      'assignment.assignedAt': { $lt: acceptanceThreshold },
+      'assignment.status': 'assigned'
+    });
+
+    for (const leg of staleAssigned) {
+      logger.warn(`[ReturnDispatch] Auto-reassigning leg ${leg._id} due to acceptance timeout`);
+      await handleAssignmentTimeout(leg._id);
+    }
+
+    // 2. Check Movement Timeout (status: pickup_en_route)
+    // If a rider accepted it but hasn't reached the pickup in X minutes
+    const movementThreshold = new Date(Date.now() - movementTimeoutSec * 1000);
+    const staleEnRoute = await SellerReturn.find({
+      returnStatus: LEG_STATUS.PICKUP_EN_ROUTE,
+      pickupEnRouteAt: { $lt: movementThreshold }
+    });
+
+    for (const leg of staleEnRoute) {
+      logger.warn(`[ReturnDispatch] Auto-reassigning leg ${leg._id} due to movement timeout`);
+      // We push a 'timeout' action for movement timeout
+      leg.assignment.history.push({
+        partnerId: leg.assignment.deliveryPartnerId,
+        action: 'timeout',
+        reason: 'Movement timeout exceeded',
+        at: new Date(),
+      });
+      leg.assignment.deliveryPartnerId = null;
+      leg.assignment.status = 'timeout';
+      leg.returnStatus = LEG_STATUS.PICKUP_PENDING;
+      await leg.save();
+
+      await tryAutoReassign(leg._id);
+    }
+  } catch (error) {
+    logger.error(`[ReturnDispatch] Error checking stale return assignments: ${error.message}`);
+  }
+}

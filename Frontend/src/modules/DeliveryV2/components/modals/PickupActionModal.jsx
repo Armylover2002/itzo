@@ -29,6 +29,10 @@ export const PickupActionModal = ({
   const [isUploadingBill, setIsUploadingBill] = useState(false);
   const [billImageUploaded, setBillImageUploaded] = useState(false);
   const [billImageUrl, setBillImageUrl] = useState(null);
+  
+  // Return Proof Images
+  const [uploadedReturnImages, setUploadedReturnImages] = useState([]);
+  
   const [returnOtp, setReturnOtp] = useState(['', '', '', '']);
   const returnOtpRefs = useRef([]);
   const cameraInputRef = useRef(null);
@@ -43,21 +47,32 @@ export const PickupActionModal = ({
       toast.error('Image size should be less than 5MB');
       return;
     }
+    
+    if (isReturn && uploadedReturnImages.length >= 5) {
+      toast.error('Maximum 5 images allowed');
+      return;
+    }
 
     setIsUploadingBill(true);
     try {
-      const res = await uploadAPI.uploadMedia(file, { folder: 'appzeto/delivery/bills' });
+      const res = await uploadAPI.uploadMedia(file, { folder: 'appzeto/delivery/proofs' });
       if (res?.data?.success && res?.data?.data) {
-        setBillImageUrl(res.data.data.url || res.data.data.secure_url);
-        setBillImageUploaded(true);
-        // toast.success('Bill image uploaded!');
+        const url = res.data.data.url || res.data.data.secure_url;
+        if (isReturn) {
+          setUploadedReturnImages(prev => [...prev, url]);
+        } else {
+          setBillImageUrl(url);
+          setBillImageUploaded(true);
+        }
       } else {
         throw new Error('Upload failed');
       }
     } catch (err) {
-      toast.error('Failed to upload bill image');
-      setBillImageUploaded(false);
-      setBillImageUrl(null);
+      toast.error('Failed to upload image');
+      if (!isReturn) {
+        setBillImageUploaded(false);
+        setBillImageUrl(null);
+      }
     } finally {
       setIsUploadingBill(false);
     }
@@ -232,20 +247,57 @@ export const PickupActionModal = ({
             <div className="space-y-4">
               {isReturn ? (
                 <div className="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col items-center">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Ask Customer for Pickup OTP</p>
-                  <div className="flex justify-center gap-3">
-                    {returnOtp.map((digit, i) => (
-                      <input
-                        key={i}
-                        ref={(el) => (returnOtpRefs.current[i] = el)}
-                        type="number"
-                        value={digit}
-                        onChange={(e) => handleReturnOtpChange(i, e.target.value)}
-                        onKeyDown={(e) => handleReturnOtpKeyDown(i, e)}
-                        className={`w-12 h-14 bg-white border-2 rounded-xl text-center text-2xl font-bold transition-all focus:border-primary text-gray-700 border-gray-200`}
-                      />
-                    ))}
+                  <div className="w-full mb-4">
+                     <div className="flex justify-between items-center mb-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Proof of Pickup ({uploadedReturnImages.length}/5)</p>
+                     </div>
+                     <div className="flex gap-2 overflow-x-auto pb-2">
+                        {uploadedReturnImages.map((img, i) => (
+                           <div key={i} className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-gray-200">
+                             <img src={img} alt="Proof" className="w-full h-full object-cover" />
+                           </div>
+                        ))}
+                        {uploadedReturnImages.length < 5 && (
+                          <button 
+                            onClick={handleTakeCameraPhoto}
+                            disabled={isUploadingBill}
+                            className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center shrink-0 hover:border-[#FE5502] transition-colors"
+                          >
+                            {isUploadingBill ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" /> : <Camera className="w-5 h-5 text-gray-400" />}
+                          </button>
+                        )}
+                        <input
+                          ref={cameraInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleBillImageSelect(e.target.files[0])}
+                          className="hidden"
+                        />
+                     </div>
                   </div>
+                  
+                  {uploadedReturnImages.length > 0 ? (
+                    <>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">Ask Customer for Pickup OTP</p>
+                      <div className="flex justify-center gap-3">
+                        {returnOtp.map((digit, i) => (
+                          <input
+                            key={i}
+                            ref={(el) => (returnOtpRefs.current[i] = el)}
+                            type="number"
+                            value={digit}
+                            onChange={(e) => handleReturnOtpChange(i, e.target.value)}
+                            onKeyDown={(e) => handleReturnOtpKeyDown(i, e)}
+                            className={`w-12 h-14 bg-white border-2 rounded-xl text-center text-2xl font-bold transition-all focus:border-primary text-gray-700 border-gray-200`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-sm font-semibold text-orange-500 bg-orange-50 px-4 py-2 rounded-lg border border-orange-100 text-center">
+                      Upload at least 1 image of the item to enter OTP
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex justify-center items-center gap-3 w-full">
@@ -293,17 +345,17 @@ export const PickupActionModal = ({
               )}
 
               <div>
-                <p className={`text-center text-[10px] font-bold uppercase tracking-widest mb-3 ${(isReturn ? returnOtp.every(d => d) : billImageUploaded) ? 'text-green-600' : 'text-gray-400'}`}>
+                <p className={`text-center text-[10px] font-bold uppercase tracking-widest mb-3 ${(isReturn ? returnOtp.every(d => d) && uploadedReturnImages.length > 0 : billImageUploaded) ? 'text-green-600' : 'text-gray-400'}`}>
                   {isReturn 
-                    ? (returnOtp.every(d => d) ? "OTP entered - Swipe to verify" : "Enter OTP to unlock swipe")
+                    ? (returnOtp.every(d => d) && uploadedReturnImages.length > 0 ? "Verified - Swipe to confirm pickup" : "Complete requirements to unlock swipe")
                     : (billImageUploaded ? "Check the restaurant logo - Swipe to pick up" : "Capture bill to unlock swipe")}
                 </p>
                 <ActionSlider 
                   key="action-pickup"
-                  label={isReturn ? "Slide to Verify OTP" : "Slide to Pick Up"}
-                  successLabel={isReturn ? "Verified!" : "Picked Up!"}
-                  disabled={isReturn ? !returnOtp.every(d => d) : !billImageUploaded}
-                  onConfirm={() => onPickedUp(isReturn ? returnOtp.join('') : billImageUrl)}
+                  label={isReturn ? "Slide to Confirm Pickup" : "Slide to Pick Up"}
+                  successLabel={isReturn ? "Picked Up!" : "Picked Up!"}
+                  disabled={isReturn ? !(returnOtp.every(d => d) && uploadedReturnImages.length > 0) : !billImageUploaded}
+                  onConfirm={() => onPickedUp(isReturn ? { otp: returnOtp.join(''), pickupProofImages: uploadedReturnImages } : billImageUrl)}
                   color="bg-primary"
                 />
               </div>

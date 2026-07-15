@@ -1887,12 +1887,49 @@ export const resendSellerOrderDispatchController = async (req, res) => {
 export const getSellerReturnsController = async (req, res) => {
   try {
     const items = await SellerReturn.find({ sellerId: sellerScope(req) })
+      .populate('returnRequestId', 'evidenceImages returnReason adminNotes')
+      .populate('assignment.deliveryPartnerId', 'name phone vehicleType vehicleNumber')
       .sort({ returnRequestedAt: -1 })
       .lean();
 
     return res.json({ success: true, result: { items } });
   } catch (error) {
     return sendError(res, 500, error.message || "Failed to load returns");
+  }
+};
+
+export const getSellerReturnOtpController = async (req, res) => {
+  try {
+    const { sellerReturnId } = req.params;
+    const sellerId = sellerScope(req);
+    
+    // Verify ownership
+    const sellerReturn = await SellerReturn.findOne({ _id: sellerReturnId, sellerId });
+    if (!sellerReturn) {
+      return sendError(res, 404, "Return request not found");
+    }
+
+    if (sellerReturn.returnStatus !== 'seller_otp_pending') {
+      return sendError(res, 400, "OTP is not available yet or has already been used");
+    }
+
+    // Since returnOtp.service isn't imported here directly, I will query the ReturnOtp model
+    // Wait, let's import the model directly.
+    const ReturnOtp = mongoose.model('ReturnOtp');
+    const otpDoc = await ReturnOtp.findOne({ 
+      sellerReturnId, 
+      type: 'seller', 
+      isUsed: false,
+      expiresAt: { $gt: new Date() }
+    }).sort({ createdAt: -1 });
+
+    if (!otpDoc) {
+      return sendError(res, 404, "Active OTP not found. The delivery partner may need to resend it.");
+    }
+
+    return res.json({ success: true, result: { otp: otpDoc.code, expiresAt: otpDoc.expiresAt } });
+  } catch (error) {
+    return sendError(res, 500, error.message || "Failed to fetch return OTP");
   }
 };
 

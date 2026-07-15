@@ -164,3 +164,12 @@ export function onOrderCancelled(getToken, handler) {
     s.off("order:cancelled", handler);
   };
 }
+
+export function onSellerReturnUpdate(getToken, handler) {
+  const s = getOrderSocket(getToken);
+  if (!s || typeof handler !== "function") return () => {};
+  s.on("seller_return_update", handler);
+  return () => {
+    s.off("seller_return_update", handler);
+  };
+}

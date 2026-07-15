@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X, CreditCard, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Check, X, CreditCard, ExternalLink, Image as ImageIcon, RefreshCcw } from 'lucide-react';
 import { adminApi } from '../services/adminApi';
 import Loader from '@food/components/Loader';
 import dayjs from 'dayjs';
+import io from 'socket.io-client';
+import { API_BASE_URL } from '@core/api/axios';
 
 export default function AdminReturnDetail() {
   const { id } = useParams();
@@ -15,6 +17,25 @@ export default function AdminReturnDetail() {
 
   useEffect(() => {
     fetchDetail();
+    
+    // Connect to Admin Socket for Live Updates
+    const token = localStorage.getItem('admin_accessToken') || localStorage.getItem('accessToken');
+    const socketOrigin = new URL(API_BASE_URL).origin;
+    
+    const socket = io(socketOrigin, {
+      path: '/socket.io/',
+      transports: ['polling'],
+      auth: { token },
+    });
+
+    socket.on('return_leg_updated', (data) => {
+      // Could check if data.sellerReturnId is in our legs, but for simplicity we'll just refetch
+      fetchDetail();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [id]);
 
   const fetchDetail = async () => {
@@ -92,7 +113,21 @@ export default function AdminReturnDetail() {
     }
   };
 
-  if (loading) return <div className="p-10 flex justify-center"><Loader /></div>;
+  const reassignRider = async (legId) => {
+    if (!window.confirm('Force re-assignment of rider for this leg?')) return;
+    try {
+      setSubmitting(true);
+      await adminApi.triggerAutoAssign(legId);
+      alert('Rider reassignment triggered');
+      fetchDetail();
+    } catch (error) {
+      alert(error?.message || 'Failed to reassign rider');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading && !data) return <div className="p-10 flex justify-center"><Loader /></div>;
   if (!data || !data.returnRequest) return <div className="p-10 text-center text-red-500">Return request not found</div>;
 
   const { returnRequest, legs, history, user } = data;
@@ -209,7 +244,30 @@ export default function AdminReturnDetail() {
                     <p className="text-sm text-gray-500">Status: <strong className="text-gray-700">{leg.returnStatus}</strong></p>
                     <p className="text-sm text-gray-500">Refund Amount: ₹{leg.returnRefundAmount || 0}</p>
                     {leg.assignment?.deliveryPartnerId && (
-                      <p className="text-sm text-blue-600 mt-1">Assigned Rider: {leg.assignment.deliveryPartnerId}</p>
+                      <div className="mt-2 flex items-center gap-3">
+                        <p className="text-sm text-blue-600 font-medium">Assigned Rider: {leg.assignment.deliveryPartnerId}</p>
+                        {['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED'].includes(leg.returnStatus) && (
+                          <button 
+                            onClick={() => reassignRider(leg._id)}
+                            disabled={submitting}
+                            className="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors flex items-center gap-1"
+                          >
+                            <RefreshCcw className="w-3 h-3" /> Reassign
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {leg.pickupProofImages && leg.pickupProofImages.length > 0 && (
+                      <div className="mt-3">
+                        <p className="text-xs font-bold text-gray-500 uppercase mb-1">Rider Pickup Proof</p>
+                        <div className="flex gap-2">
+                          {leg.pickupProofImages.map((img, idx) => (
+                            <a key={idx} href={img} target="_blank" rel="noreferrer">
+                              <img src={img} className="w-12 h-12 rounded object-cover border border-gray-200" alt="proof" />
+                            </a>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
                   <div>

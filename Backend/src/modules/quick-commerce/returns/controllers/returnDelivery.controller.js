@@ -21,11 +21,15 @@ import { logger } from '../../../../utils/logger.js';
 export const getAssignedReturns = async (req, res) => {
   try {
     const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const { status } = req.query;
 
-    // A rider can have multiple assignments, but typically one active at a time
-    const returns = await SellerReturn.find({
-      'assignment.deliveryPartnerId': partnerId,
-      returnStatus: { 
+    let query = { 'assignment.deliveryPartnerId': partnerId };
+    
+    if (status && status !== 'all' && status !== 'active') {
+      query.returnStatus = status;
+    } else if (status !== 'all') {
+      // Default behavior: active returns
+      query.returnStatus = { 
         $in: [
           LEG_STATUS.RETURN_PICKUP_ASSIGNED,
           LEG_STATUS.PICKUP_EN_ROUTE,
@@ -36,11 +40,15 @@ export const getAssignedReturns = async (req, res) => {
           LEG_STATUS.RETURN_REACHED_SELLER,
           LEG_STATUS.SELLER_OTP_PENDING
         ]
-      }
-    })
-      .populate('userId', 'name phone')
+      };
+    }
+
+    // A rider can have multiple assignments, but typically one active at a time
+    const returns = await SellerReturn.find(query)
+      .populate('userId', 'name phone location')
       .populate('sellerId', 'shopName name phone location address')
       .populate('returnRequestId', 'images reason notes returnId')
+      .sort({ createdAt: -1 })
       .lean();
 
     return sendResponse(res, 200, 'Assigned returns fetched', { returns });
@@ -125,17 +133,33 @@ export const verifyPickupOtp = async (req, res) => {
   try {
     const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
     const { sellerReturnId } = req.params;
-    const validatedData = validateOtpVerify(req.body);
+    
+    // Add custom validation for images here to avoid refactoring validation schemas deeply
+    const { otp, pickupProofImages } = req.body;
+    
+    if (!otp) return sendError(res, 400, 'OTP is required');
+    if (!Array.isArray(pickupProofImages) || pickupProofImages.length < 1) {
+      return sendError(res, 400, 'At least 1 proof of pickup image is required');
+    }
+    if (pickupProofImages.length > 5) {
+      return sendError(res, 400, 'Maximum 5 proof of pickup images allowed');
+    }
 
     const verifyResult = await returnOtpService.verifyReturnOtp({
       sellerReturnId,
       type: 'pickup',
-      submittedOtp: validatedData.otp,
+      submittedOtp: otp,
     });
 
     if (!verifyResult.success) {
       return sendError(res, 400, verifyResult.message, { attemptsRemaining: verifyResult.attemptsRemaining });
     }
+    
+    // Save the images directly to the SellerReturn
+    await SellerReturn.updateOne(
+      { _id: sellerReturnId },
+      { $set: { pickupProofImages } }
+    );
 
     const leg = await returnService.updateLegStatus({
       sellerReturnId,
