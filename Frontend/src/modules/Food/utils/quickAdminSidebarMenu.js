@@ -64,7 +64,7 @@ export const quickAdminSidebarMenu = [
         subItems: [
           { label: "Active Sellers", path: "/ecs/quick-commerce/sellers/active", permissionKey: "active" },
           { label: "Waiting for Review", path: "/ecs/quick-commerce/sellers/pending", permissionKey: "pending" },
-          { label: "Seller Locations", path: "/ecs/quick-commerce/seller-locations", permissionKey: "locations" },
+          // { label: "Seller Locations", path: "/ecs/quick-commerce/seller-locations", permissionKey: "locations" },
           { label: "Seller Commission", path: "/ecs/quick-commerce/sellers/commission", permissionKey: "commission" },
         ],
       },
