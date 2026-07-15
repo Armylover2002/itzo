@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Wallet,
   Tag,
+  Bookmark,
   User,
   Leaf,
   Palette,
