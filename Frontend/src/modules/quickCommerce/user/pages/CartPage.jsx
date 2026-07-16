@@ -576,7 +576,7 @@ const CartPage = () => {
             )}
           </div>
         </section>
-
+        {/*
         <Link
           to={checkoutPath}
           state={{ selectedPayment }}
@@ -601,6 +601,7 @@ const CartPage = () => {
             </div>
           </section>
         </Link>
+        */}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-[520] border-t border-slate-200 bg-white px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
