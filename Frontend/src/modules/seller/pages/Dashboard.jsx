@@ -5,6 +5,7 @@ import PageHeader from "@shared/components/ui/PageHeader";
 import Badge from "@shared/components/ui/Badge";
 import {
   DollarSign,
+  IndianRupee,
   Truck,
   Package,
   TrendingUp,
@@ -101,7 +102,7 @@ const Dashboard = () => {
       value: statsData?.overview?.totalSales || "₹0",
       change: "+12.5%",
       changeType: "increase",
-      icon: DollarSign,
+      icon: IndianRupee,
       iconBg: "bg-emerald-50",
       iconColor: "text-emerald-600",
       description: "vs last month",
@@ -156,7 +157,7 @@ const Dashboard = () => {
     {
       title: "View Earnings",
       description: "Check your revenue and payouts",
-      icon: DollarSign,
+      icon: IndianRupee,
       path: "/seller/earnings",
       variant: "outline-emerald", // white bg, border, emerald accent
     },
