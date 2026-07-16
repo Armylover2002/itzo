@@ -266,7 +266,7 @@ const Dashboard = () => {
                 <p className="text-2xl font-bold text-slate-900 mt-2">
                   {stat.value}
                 </p>
-                <div className="flex items-center gap-2 mt-2">
+                {/* <div className="flex items-center gap-2 mt-2">
                   <span
                     className={cn(
                       "text-xs font-semibold flex items-center gap-1",
@@ -285,7 +285,7 @@ const Dashboard = () => {
                   <span className="text-sm text-slate-600">
                     {stat.description}
                   </span>
-                </div>
+                </div> */}
               </div>
               <div className={cn("p-3 rounded-lg", stat.iconBg)}>
                 <stat.icon className={cn("h-6 w-6", stat.iconColor)} />
