@@ -1908,7 +1908,7 @@ const CheckoutPage = () => {
               </motion.div>
             )}
 
-            {/* You might also like */}
+            {/* You might also like 
             <motion.div className="bg-white dark:bg-card rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 transition-colors">
               <h3 className="font-black text-slate-800 text-lg mb-4">
                 You might also like
@@ -1923,6 +1923,7 @@ const CheckoutPage = () => {
                 ))}
               </div>
             </motion.div>
+            */}
           </div>
 
           {/* Right Column: Order Summary & Payment - Sticky on Desktop */}
