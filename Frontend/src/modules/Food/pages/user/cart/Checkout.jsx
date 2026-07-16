@@ -114,7 +114,7 @@ export default function Checkout() {
                 <ArrowLeft className="h-5 w-5 md:h-6 md:w-6" />
               </Button>
             </Link>
-            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold dark:text-white">Checkout</h1>
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold dark:text-white">Checkin</h1>
           </div>
         </ScrollReveal>
 

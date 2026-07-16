@@ -1973,7 +1973,7 @@ const CheckoutPage = () => {
               </div>
             </motion.div>
 
-            {/* Tip for Partner */}
+            {/* Tip for Partner
             <motion.div className="bg-gradient-to-r from-pink-50 to-purple-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-4 border border-pink-100 dark:border-white/5">
               <div className="flex items-center gap-2 mb-3">
                 <Heart size={18} className="text-pink-500 fill-pink-500" />
@@ -2024,6 +2024,7 @@ const CheckoutPage = () => {
                 )}
               </div>
             </motion.div>
+            */}
 
             {/* Payment Method */}
             <motion.div className="bg-white dark:bg-card rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 transition-colors">
