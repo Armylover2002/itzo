@@ -514,6 +514,7 @@ export default function RestaurantOnboarding() {
   const placesAutocompleteRef = useRef(null)
   const mapsScriptLoadedRef = useRef(false)
   const hasRestoredDraftStepRef = useRef(false)
+  const hasRestoredImagesRef = useRef(false)
   const menuImagesInputRef = useRef(null)
   const profileImageInputRef = useRef(null)
   const panImageInputRef = useRef(null)
@@ -661,24 +662,66 @@ export default function RestaurantOnboarding() {
         })
       }
       if (localData.step2) {
-        const restoredMenuImages = (localData.step2.menuImages || [])
-          .map((img, index) => restoreDraftImage(img, `menu-image-${index + 1}`))
-          .filter(Boolean)
-        const cachedMenuImages = onboardingFileCache.step2.menuImages || []
-        const restoredProfileImage = restoreDraftImage(
-          localData.step2.profileImage,
-          "restaurant-profile",
-        )
-        const cachedProfileImage = onboardingFileCache.step2.profileImage || null
+        if (!hasRestoredImagesRef.current) {
+          hasRestoredImagesRef.current = true
+          const restoredMenuImages = (localData.step2.menuImages || [])
+            .map((img, index) => restoreDraftImage(img, `menu-image-${index + 1}`))
+            .filter(Boolean)
+          const cachedMenuImages = onboardingFileCache.step2.menuImages || []
 
-        setStep2({
-          menuImages: [...restoredMenuImages, ...cachedMenuImages],
-          profileImage: cachedProfileImage || restoredProfileImage,
-          cuisines: localData.step2.cuisines || [],
-          openingTime: normalizeTimeValue(localData.step2.openingTime),
-          closingTime: normalizeTimeValue(localData.step2.closingTime),
-          openDays: localData.step2.openDays || [],
-        })
+          // Deduplicate: prefer cached File objects (real files) over restored ones
+          // (reconstructed from base64). Use name+size as stable composite key.
+          const getImageKey = (img) => {
+            if (!img) return null
+            if (typeof img === 'string') return img // URL string
+            if (img?.url) return img.url // URL object
+            const name = img?.name || ''
+            const size = img?.size || 0
+            return name ? `${name}::${size}` : null
+          }
+
+          const seenKeys = new Set()
+          const deduplicatedImages = []
+          // Add cached images first (they are real File objects from current session)
+          for (const img of cachedMenuImages) {
+            const key = getImageKey(img)
+            if (key && seenKeys.has(key)) continue
+            if (key) seenKeys.add(key)
+            deduplicatedImages.push(img)
+          }
+          // Then add restored images only if not already present from cache
+          for (const img of restoredMenuImages) {
+            const key = getImageKey(img)
+            if (key && seenKeys.has(key)) continue
+            if (key) seenKeys.add(key)
+            deduplicatedImages.push(img)
+          }
+
+          const restoredProfileImage = restoreDraftImage(
+            localData.step2.profileImage,
+            "restaurant-profile",
+          )
+          const cachedProfileImage = onboardingFileCache.step2.profileImage || null
+
+          setStep2({
+            menuImages: deduplicatedImages,
+            profileImage: cachedProfileImage || restoredProfileImage,
+            cuisines: localData.step2.cuisines || [],
+            openingTime: normalizeTimeValue(localData.step2.openingTime),
+            closingTime: normalizeTimeValue(localData.step2.closingTime),
+            openDays: localData.step2.openDays || [],
+          })
+        } else {
+          // Images already restored — only update non-image fields to avoid
+          // re-concatenating localStorage + cache and creating duplicates.
+          setStep2((prev) => ({
+            ...prev,
+            cuisines: localData.step2.cuisines || prev.cuisines,
+            openingTime: normalizeTimeValue(localData.step2.openingTime) || prev.openingTime,
+            closingTime: normalizeTimeValue(localData.step2.closingTime) || prev.closingTime,
+            openDays: localData.step2.openDays || prev.openDays,
+          }))
+        }
       }
       if (localData.step3) {
         setStep3({
@@ -1796,10 +1839,15 @@ export default function RestaurantOnboarding() {
                   fallbackInputRef: menuImagesInputRef,
                   fileNamePrefix: "menu-image",
                   onSelectFile: (file) =>
-                    setStep2((prev) => ({
-                      ...prev,
-                      menuImages: [...(prev.menuImages || []), file],
-                    })),
+                    setStep2((prev) => {
+                      const existing = prev.menuImages || []
+                      // Deduplicate: skip if a file with same name+size already exists
+                      const isDuplicate = file?.name && existing.some(f =>
+                        f?.name === file.name && f?.size === file.size
+                      )
+                      if (isDuplicate) return prev
+                      return { ...prev, menuImages: [...existing, file] }
+                    }),
                 })
               }
             >
@@ -1817,10 +1865,15 @@ export default function RestaurantOnboarding() {
                 const files = Array.from(e.target.files || [])
                 if (!files.length) return
                 debugLog('?? Menu images selected:', files.length, 'files')
-                setStep2((prev) => ({
-                  ...prev,
-                  menuImages: [...(prev.menuImages || []), ...files], // Append new files to existing ones
-                }))
+                setStep2((prev) => {
+                  const existing = prev.menuImages || []
+                  // Deduplicate: only add files not already in the list (by name+size)
+                  const newFiles = files.filter(newFile =>
+                    !existing.some(f => f?.name === newFile.name && f?.size === newFile.size)
+                  )
+                  if (!newFiles.length) return prev // Skip state update if all duplicates
+                  return { ...prev, menuImages: [...existing, ...newFiles] }
+                })
                 // Reset input to allow selecting same file again
                 e.target.value = ''
               }}

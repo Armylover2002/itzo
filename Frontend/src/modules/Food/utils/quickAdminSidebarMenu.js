@@ -53,7 +53,7 @@ export const quickAdminSidebarMenu = [
         icon: "MessageSquare",
         subItems: [
           { label: "Help Tickets", path: "/ecs/quick-commerce/support-tickets", permissionKey: "tickets" },
-          { label: "Review Content", path: "/ecs/quick-commerce/moderation", permissionKey: "moderation" },
+          // { label: "Review Content", path: "/ecs/quick-commerce/moderation", permissionKey: "moderation" },
         ],
       },
       {
