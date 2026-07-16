@@ -3,5 +3,5 @@
   "ext": "js,mjs,cjs,json",
   "ignore": ["node_modules", "logs"],
   "signal": "SIGTERM",
-  "delay": "1000"
+  "delay": "2500"
 }
