@@ -150,9 +150,11 @@ export function LiveLocationProvider({ children }) {
         const { latitude, longitude } = position.coords;
         setCurrentLocation(prev => ({ ...prev, latitude, longitude }));
         
+        let addressStr = "";
         try {
           const loc = await reverseGeocode(latitude, longitude);
           if (loc && loc.formattedAddress) {
+            addressStr = loc.formattedAddress;
             setCurrentLocation(prev => ({
               latitude: prev?.latitude || latitude,
               longitude: prev?.longitude || longitude,
@@ -163,7 +165,7 @@ export function LiveLocationProvider({ children }) {
           console.warn("LiveLocationContext reverse geocode failed:", err);
         }
 
-        processNewLocation(latitude, longitude, restaurantId);
+        processNewLocation(latitude, longitude, restaurantId, addressStr);
       },
       (error) => {
         console.error("Error watching location:", error);
@@ -185,7 +187,7 @@ export function LiveLocationProvider({ children }) {
     }
   };
 
-  const processNewLocation = async (lat, lng, restaurantId) => {
+  const processNewLocation = async (lat, lng, restaurantId, address) => {
     const now = Date.now();
     
     // Throttling (10s max)
@@ -203,20 +205,20 @@ export function LiveLocationProvider({ children }) {
 
     // If offline, queue it and return
     if (!navigator.onLine) {
-      queueOfflineLocation(lat, lng);
+      queueOfflineLocation(lat, lng, address);
       return;
     }
 
-    await syncLocationToServer(lat, lng, restaurantId);
+    await syncLocationToServer(lat, lng, restaurantId, address);
   };
 
-  const syncLocationToServer = async (lat, lng, restaurantId) => {
+  const syncLocationToServer = async (lat, lng, restaurantId, address) => {
     if (isUpdatingLocation) return;
     try {
       setIsUpdatingLocation(true);
       
       // 1. Send to Backend API
-      await restaurantAPI.updateLiveLocation(lat, lng);
+      await restaurantAPI.updateLiveLocation(lat, lng, address);
       
       // 2. Fast-path write to Firebase RTDB for customers
       if (restaurantId) {
@@ -248,9 +250,9 @@ export function LiveLocationProvider({ children }) {
   };
 
   // ─── OFFLINE QUEUE ────────────────────────────────────────────────────
-  const queueOfflineLocation = (lat, lng) => {
+  const queueOfflineLocation = (lat, lng, address) => {
     try {
-      sessionStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify({ lat, lng, ts: Date.now() }));
+      sessionStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify({ lat, lng, address, ts: Date.now() }));
     } catch (e) {
       // ignore quota errors
     }
@@ -261,11 +263,11 @@ export function LiveLocationProvider({ children }) {
     try {
       const stored = sessionStorage.getItem(OFFLINE_QUEUE_KEY);
       if (!stored) return;
-      const { lat, lng, ts } = JSON.parse(stored);
+      const { lat, lng, address, ts } = JSON.parse(stored);
       
       // Only flush if it's less than 30 mins old
       if (Date.now() - ts < 30 * 60 * 1000) {
-        await syncLocationToServer(lat, lng, restaurantData._id || restaurantData.id);
+        await syncLocationToServer(lat, lng, restaurantData._id || restaurantData.id, address);
       }
       sessionStorage.removeItem(OFFLINE_QUEUE_KEY);
     } catch (e) {

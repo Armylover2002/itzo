@@ -1022,8 +1022,8 @@ export const restaurantAPI = {
       contextModule: "restaurant",
     }),
   /** Update live location for Street Food Vendors */
-  updateLiveLocation: (latitude, longitude) =>
-    apiClient.put("/food/restaurant/live-location", { latitude, longitude }, {
+  updateLiveLocation: (latitude, longitude, address) =>
+    apiClient.put("/food/restaurant/live-location", { latitude, longitude, address }, {
       contextModule: "restaurant",
     }),
   /** Update live tracking status for Street Food Vendors */

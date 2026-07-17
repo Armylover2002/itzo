@@ -22,7 +22,7 @@ const MIN_MOVEMENT_METRES = 10;
 
 export const updateLiveLocationController = async (req, res) => {
     try {
-        const { latitude, longitude, locationSource } = req.body;
+        const { latitude, longitude, locationSource, address } = req.body;
 
         // ── 1. Input validation ──────────────────────────────────────────────
         const lat = Number(latitude);
@@ -89,6 +89,7 @@ export const updateLiveLocationController = async (req, res) => {
             coordinates: [lng, lat],
             latitude: lat,
             longitude: lng,
+            formattedAddress: address || restaurant.currentLocation?.formattedAddress,
         };
         restaurant.lastLocationUpdate = new Date();
         restaurant.locationSource = src;
@@ -102,7 +103,7 @@ export const updateLiveLocationController = async (req, res) => {
         // ── 6. Push to Firebase RTDB (fire-and-forget) ───────────────────────
         // This keeps Firebase in sync with MongoDB so customer-side real-time
         // subscriptions see the latest position immediately.
-        void writeVendorLocationToRtdb(String(req.user.userId), { lat, lng, locationSource: src });
+        void writeVendorLocationToRtdb(String(req.user.userId), { lat, lng, locationSource: src, address });
 
         return sendResponse(res, 200, 'Location updated successfully', {
             currentLocation: restaurant.currentLocation,

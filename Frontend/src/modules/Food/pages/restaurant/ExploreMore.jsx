@@ -40,6 +40,7 @@ import { restaurantAPI } from "@food/api"
 import { firebaseAuth, ensureFirebaseInitialized } from "@food/firebase"
 import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
 import RestaurantProfile from "@food/pages/restaurant/RestaurantProfile"
+import { useLiveLocation } from "@food/contexts/LiveLocationContext"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -342,6 +343,7 @@ export default function ExploreMore() {
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+  const { liveTrackingEnabled, currentLocation } = useLiveLocation()
 
   // Schedule off states
   const [scheduleOffOpen, setScheduleOffOpen] = useState(false)
@@ -478,7 +480,11 @@ export default function ExploreMore() {
 
   // Get restaurant display data
   const restaurantDisplayName = restaurantData?.name || "Loading..."
-  const restaurantDisplayAddress = restaurantData?.location ? formatAddress(restaurantData.location) : ""
+  
+  let restaurantDisplayAddress = restaurantData?.location ? formatAddress(restaurantData.location) : ""
+  if (liveTrackingEnabled && currentLocation?.latitude && currentLocation?.longitude) {
+    restaurantDisplayAddress = currentLocation.address || `${Number(currentLocation.latitude).toFixed(6)}, ${Number(currentLocation.longitude).toFixed(6)}`
+  }
 
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
@@ -947,8 +953,11 @@ export default function ExploreMore() {
                     <Store className="w-5 h-5 text-gray-900" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h2 className="text-base font-semibold text-gray-900 mb-0.5">
+                    <h2 className="text-base font-semibold text-gray-900 mb-0.5 flex items-center gap-2">
                       {restaurantDisplayName}
+                      {liveTrackingEnabled && (
+                        <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded-full uppercase">Live</span>
+                      )}
                     </h2>
                     {restaurantDisplayAddress && (
                       <p className="text-sm text-gray-500 break-words text-wrap">
