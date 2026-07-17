@@ -73,7 +73,10 @@ const CustomerAuth = () => {
     const { login } = useAuth();
     const { settings } = useSettings();
     const appName = settings?.appName || 'App';
-    const logoUrl = settings?.logoUrl || '';
+    let logoUrl = settings?.logoUrl || '';
+    if (!logoUrl || logoUrl.includes('itzo-logo.jpg') || logoUrl.includes('logo')) {
+        logoUrl = '/itzo-food-logo.jpg';
+    }
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({

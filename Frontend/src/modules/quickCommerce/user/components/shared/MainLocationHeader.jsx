@@ -20,7 +20,7 @@ import {
   getQuickSearchPath,
   getQuickWishlistPath,
 } from "../../utils/routes";
-import LogoImage from "@/assets/Logo.png";
+import LogoImage from "../../assets/Logo.png";
 import shoppingCartAnimation from "@/assets/lottie/shopping-cart.json";
 import { Sparkles } from "lucide-react";
 import { customerApi } from "../../services/customerApi";

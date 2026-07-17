@@ -23,7 +23,10 @@ const AdminAuth = () => {
     const { settings } = useSettings();
     const navigate = useNavigate();
     const appName = settings?.appName || 'App';
-    const logoUrl = settings?.logoUrl || '';
+    let logoUrl = settings?.logoUrl || '';
+    if (!logoUrl || logoUrl.includes('itzo-logo.jpg') || logoUrl.includes('logo')) {
+        logoUrl = '/itzo-food-logo.jpg';
+    }
 
     const [formData, setFormData] = useState({
         email: '',

@@ -250,12 +250,14 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
     return () => window.removeEventListener('businessSettingsUpdated', handleUpdate);
   }, [appType]);
 
+  const displayLogoUrl = isSellerPanel ? '/itzo-food-logo.jpg' : logoUrl;
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div className="flex-shrink-0 flex h-16 items-center justify-between px-5 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent z-10">
         <div className="flex items-center space-x-2.5">
-          {logoUrl ? (
-            <img src={logoUrl} alt={companyName} className="h-9 md:h-12 w-auto object-contain" />
+          {displayLogoUrl ? (
+            <img src={displayLogoUrl} alt={companyName} className="h-9 md:h-12 w-auto object-contain" />
           ) : (
             <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transform -rotate-6 hover:rotate-0 transition-all duration-500 ease-out">
               <span className="text-lg font-black italic">{companyName?.charAt(0) || 'Z'}</span>
