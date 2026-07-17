@@ -16,6 +16,7 @@ import {
   Trash2,
   AlertCircle,
   Navigation,
+  Store,
 } from "lucide-react"
 import {
   Dialog,
@@ -346,7 +347,10 @@ export default function OutletInfo() {
     if (isFlutterBridgeAvailable()) {
       setActivePicker({ type, ref, title, multiple })
     } else {
-      ref.current?.click()
+      if (ref && ref.current) {
+        ref.current.value = null // Fix: allow selecting the same file again
+        ref.current.click()
+      }
     }
   }
 
@@ -447,7 +451,13 @@ export default function OutletInfo() {
 
         {/* Main Image Section */}
         <div className="relative w-full h-[200px] overflow-visible">
-          <img src={mainImage} alt="Restaurant banner" className="w-full h-full object-cover" />
+          {mainImage ? (
+            <img src={mainImage} alt="Restaurant banner" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <Store className="w-12 h-12 text-gray-300" />
+            </div>
+          )}
           
           <button
             onClick={() => handleImageClick('cover', menuImageInputRef, "Add Cover Image", true)}
@@ -507,11 +517,17 @@ export default function OutletInfo() {
           <div className="flex items-end gap-4">
             <div className="relative group">
               <div className="w-24 h-24 rounded-2xl border-4 border-white bg-white shadow-lg overflow-hidden">
-                <img 
-                  src={thumbnailImage} 
-                  alt="Restaurant thumbnail" 
-                  className="w-full h-full object-cover" 
-                />
+                {thumbnailImage ? (
+                  <img 
+                    src={thumbnailImage} 
+                    alt="Restaurant thumbnail" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                    <Store className="w-8 h-8 text-gray-300" />
+                  </div>
+                )}
                 {uploadingImage && imageType === 'profile' && (
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                     <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />

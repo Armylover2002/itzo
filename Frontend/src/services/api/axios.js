@@ -189,6 +189,11 @@ apiClient.interceptors.request.use(
       config.headers['x-context-module'] = config.contextModule;
     }
 
+    // Let the browser automatically set the Content-Type with boundaries for FormData
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (err) => Promise.reject(err)

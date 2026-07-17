@@ -130,57 +130,62 @@ export const isFlutterBridgeAvailable = () => {
 /**
  * Open camera via Flutter bridge or browser fallback
  */
-export const openCamera = async ({ onSelectFile, fileNamePrefix = "camera-photo", quality = 0.8 }) => {
-  try {
-    if (!isFlutterBridgeAvailable()) {
-      openBrowserCameraFallback(onSelectFile)
-      return
-    }
+export const openCamera = ({ onSelectFile, fileNamePrefix = "camera-photo", quality = 0.8 }) => {
+  if (!isFlutterBridgeAvailable()) {
+    openBrowserCameraFallback(onSelectFile)
+    return Promise.resolve()
+  }
 
-    const result = await window.flutter_inappwebview.callHandler("openCamera", {
+  return new Promise((resolve) => {
+    window.flutter_inappwebview.callHandler("openCamera", {
       source: "camera",
       accept: "image/*",
       multiple: false,
       quality: quality,
+    }).then(async (result) => {
+      const isSuccess = result?.success === true || Boolean(result?.base64 || result?.base64String || result?.data?.base64)
+      if (!result || !isSuccess) return resolve()
+
+      let selectedFile = null
+      const base64Value = result?.base64 || result?.base64String || result?.data?.base64
+      const mimeType = result?.mimeType || result?.type || result?.data?.mimeType || "image/jpeg"
+      const originalFileName = result?.fileName || result?.name || result?.data?.fileName || ""
+
+      if (base64Value) {
+        selectedFile = convertBase64ToFile(
+          base64Value,
+          mimeType,
+          fileNamePrefix,
+          originalFileName,
+        )
+      } else if (result.file instanceof File || result.file instanceof Blob) {
+        selectedFile = result.file
+      }
+
+      if (!selectedFile || !String(selectedFile.type || "").startsWith("image/")) {
+        toast.error("Failed to capture image")
+        return resolve()
+      }
+
+      try {
+        const compressed = await compressImage(selectedFile)
+        onSelectFile(compressed)
+      } catch (err) {
+        onSelectFile(selectedFile)
+      }
+      resolve()
+    }).catch((error) => {
+      console.error("Camera capture failed:", error)
+      openBrowserCameraFallback(onSelectFile)
+      resolve()
     })
-
-    const isSuccess = result?.success === true || Boolean(result?.base64 || result?.base64String || result?.data?.base64)
-    if (!result || !isSuccess) return
-
-    let selectedFile = null
-    const base64Value = result?.base64 || result?.base64String || result?.data?.base64
-    const mimeType = result?.mimeType || result?.type || result?.data?.mimeType || "image/jpeg"
-    const originalFileName = result?.fileName || result?.name || result?.data?.fileName || ""
-
-    if (base64Value) {
-      selectedFile = convertBase64ToFile(
-        base64Value,
-        mimeType,
-        fileNamePrefix,
-        originalFileName,
-      )
-    } else if (result.file instanceof File || result.file instanceof Blob) {
-      selectedFile = result.file
-    }
-
-    if (!selectedFile || !String(selectedFile.type || "").startsWith("image/")) {
-      toast.error("Failed to capture image")
-      return
-    }
-
-    const compressed = await compressImage(selectedFile)
-    onSelectFile(compressed)
-  } catch (error) {
-    console.error("Camera capture failed:", error)
-    // Try fallback on bridge failure
-    openBrowserCameraFallback(onSelectFile)
-  }
+  })
 }
 
 /**
  * Open gallery via Flutter bridge or browser fallback
  */
-export const openGallery = async ({ onSelectFile, fileNamePrefix = "gallery-photo" }) => {
+export const openGallery = ({ onSelectFile, fileNamePrefix = "gallery-photo" }) => {
   try {
     // For Gallery, we use the standard browser input.
     // Why? Because the browser's native file picker on Android/iOS

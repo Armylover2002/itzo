@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@food/components/ui/dialog"
-import { isFlutterBridgeAvailable, openCamera, openGallery } from "@food/utils/imageUploadUtils"
+import { isFlutterBridgeAvailable, openCamera, openGallery, openBrowserCameraFallback } from "@food/utils/imageUploadUtils"
 
 /**
  * ImageSourcePicker component to choose between Camera and Gallery
@@ -22,21 +22,24 @@ export const ImageSourcePicker = ({
   galleryInputRef = null
 }) => {
   
-  const handleOpenCamera = async () => {
-    const openPromise = openCamera({
-      onSelectFile: onFileSelect,
-      fileNamePrefix: fileNamePrefix
-    })
+  const handleOpenCamera = () => {
     onClose()
-    await openPromise
+    if (isFlutterBridgeAvailable()) {
+      openCamera({
+        onSelectFile: onFileSelect,
+        fileNamePrefix: fileNamePrefix
+      })
+    } else {
+      openBrowserCameraFallback(onSelectFile)
+    }
   }
 
-  const handlePickFromDevice = async () => {
+  const handlePickFromDevice = () => {
     onClose()
     
     // 1. Try Bridge first
     if (isFlutterBridgeAvailable()) {
-      await openGallery({
+      openGallery({
         onSelectFile: onFileSelect,
         fileNamePrefix: fileNamePrefix
       })
@@ -45,6 +48,7 @@ export const ImageSourcePicker = ({
 
     // 2. Try provided ref (Standard browser behavior)
     if (galleryInputRef && galleryInputRef.current) {
+      galleryInputRef.current.value = null // Reset value to allow selecting same file
       galleryInputRef.current.click()
     } else {
       // 3. Last resort - generic browser input
