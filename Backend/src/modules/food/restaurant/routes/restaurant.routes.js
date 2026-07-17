@@ -59,6 +59,7 @@ import { createTopupOrderController, verifyTopupController } from '../../subscri
 import { updateLiveLocationController, toggleLiveTrackingController } from '../controllers/vendorLocation.controller.js';
 
 import { cacheResponse, invalidateCache } from '../../../../middleware/cache.js';
+import { vendorLocationRateLimiter } from '../../../../middleware/rateLimit.js';
 
 const router = express.Router();
 
@@ -102,7 +103,7 @@ router.patch('/availability', authMiddleware, requireRestaurant, async (req, res
 }, updateRestaurantAcceptingOrdersController);
 
 // Street Food Vendor specific endpoints
-router.put('/live-location', authMiddleware, requireRestaurant, async (req, res, next) => {
+router.put('/live-location', authMiddleware, requireRestaurant, vendorLocationRateLimiter, async (req, res, next) => {
     await invalidateCache('restaurants:*');
     await invalidateCache('restaurant_detail:*');
     next();

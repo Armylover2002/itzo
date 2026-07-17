@@ -82,7 +82,34 @@ export const authRateLimiter = rateLimit({
 });
 
 /**
- * 5. General API Rate Limiter
+ * 5. Vendor Live Location Rate Limiter
+ * Applied only to PUT /food/restaurant/live-location.
+ * Keyed by authenticated user ID so each vendor has an independent budget.
+ * Normal GPS usage (10m threshold + 10s throttle) → ~6 req/min.
+ * Hard cap of 30 req/min gives 5× headroom and blocks buggy clients.
+ */
+export const vendorLocationRateLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: config.nodeEnv === 'development' ? 200 : 30,
+    keyGenerator: (req) => {
+        // Prefer authenticated user id so multi-device vendors share one budget per account
+        return (req.user?.id || req.user?.userId || getClientIp(req));
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (req, res, next, options) => {
+        logger.warn(
+            `[VendorLocation] Rate limit hit: userId=${req.user?.id || 'unknown'} IP=${getClientIp(req)}`
+        );
+        res.status(options.statusCode).json({
+            success: false,
+            message: 'Too many location updates. Please slow down.',
+        });
+    },
+});
+
+/**
+ * 6. General API Rate Limiter
  * Standard limiter for customers and general routes. Skips paths that have dedicated limiters.
  */
 export const generalApiRateLimiter = rateLimit({

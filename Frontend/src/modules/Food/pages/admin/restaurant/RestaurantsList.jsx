@@ -1659,13 +1659,31 @@ export default function RestaurantsList() {
                               </span>
                               <span className="text-[11px] text-slate-500 font-medium">
                                 {restaurant.businessType === "Street Food Vendor" ? (
-                                  <span className="text-emerald-600 flex items-center gap-1 mt-0.5">
-                                    <MapPin className="w-3 h-3" />
-                                    Street Vendor
-                                    {restaurant.liveTrackingEnabled && (
-                                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse ml-1" title="Live tracking active" />
+                                  <div className="flex flex-col gap-1 mt-0.5">
+                                    <span className="text-emerald-600 flex items-center gap-1">
+                                      <MapPin className="w-3 h-3" />
+                                      Street Vendor
+                                      {restaurant.liveTrackingEnabled && (
+                                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse ml-1" title="Live tracking active" />
+                                      )}
+                                    </span>
+                                    {(restaurant.currentLocation?.latitude || restaurant.currentLocation?.coordinates?.length >= 2) && (
+                                      <div className="flex items-center gap-1.5 text-[10px]">
+                                        <span className="text-slate-400">
+                                          Upd: {restaurant.lastLocationUpdate ? new Date(restaurant.lastLocationUpdate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A'}
+                                        </span>
+                                        <span className="text-slate-300">•</span>
+                                        <a 
+                                          href={`https://www.google.com/maps?q=${restaurant.currentLocation?.latitude || restaurant.currentLocation?.coordinates?.[1]},${restaurant.currentLocation?.longitude || restaurant.currentLocation?.coordinates?.[0]}`}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="text-primary hover:underline font-semibold"
+                                        >
+                                          Map ↗
+                                        </a>
+                                      </div>
                                     )}
-                                  </span>
+                                  </div>
                                 ) : (
                                   "Fixed Restaurant"
                                 )}

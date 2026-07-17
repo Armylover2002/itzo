@@ -144,3 +144,32 @@ export async function writeOrderTracking(orderId, payload = {}) {
   await update(ref(firebaseRealtimeDb, getOrderTrackingPath(orderId)), toWrite);
   return true;
 }
+
+/**
+ * Write Street Food Vendor live GPS location to Firebase RTDB.
+ *
+ * Path: restaurant/{restaurantId}/location
+ * Used by the frontend as an optimistic fast-path write immediately after a
+ * successful PUT /live-location API call.  This ensures customer-side
+ * subscribeRestaurantLocation() listeners fire in real-time without waiting
+ * for a full page re-fetch.
+ *
+ * @param {string} restaurantId
+ * @param {{ lat: number, lng: number, isLive?: boolean, locationSource?: string, timestamp?: number }} payload
+ */
+export async function writeRestaurantLocation(restaurantId, payload = {}) {
+  if (!restaurantId || typeof payload.lat !== 'number' || typeof payload.lng !== 'number') return false;
+  ensureFirebaseInitialized({ enableAuth: true, enableGoogleProvider: false, enableRealtimeDb: true });
+  const path = getRestaurantLocationPath(restaurantId);
+  const toWrite = {
+    lat: toFiniteNumber(payload.lat),
+    lng: toFiniteNumber(payload.lng),
+    timestamp: toFiniteNumber(payload.timestamp) || Date.now(),
+    last_updated: Date.now(),
+    isLive: payload.isLive !== false, // default true
+    locationSource: payload.locationSource || 'gps',
+  };
+  await set(ref(firebaseRealtimeDb, path), toWrite);
+  return true;
+}
+
