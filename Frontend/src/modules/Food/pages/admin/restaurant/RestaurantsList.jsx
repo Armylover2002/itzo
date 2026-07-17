@@ -2090,13 +2090,20 @@ export default function RestaurantsList() {
                         ) : null}
                       </div>
                       <div className="space-y-3">
-                        {!isEditingLocation && (r?.location || hasFlatAddress) && (
+                        {!isEditingLocation && (r?.location || hasFlatAddress || r?.currentLocation?.formattedAddress) && (
                           <div className="flex items-start gap-3">
                             <MapPin className="w-5 h-5 text-slate-400 mt-0.5" />
                             <div>
-                              <p className="text-xs text-slate-500">Address</p>
+                              <p className="text-xs text-slate-500 flex items-center gap-2">
+                                Address
+                                {r?.liveTrackingEnabled && (
+                                  <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded-full uppercase shrink-0 tracking-wider">Live</span>
+                                )}
+                              </p>
                               <p className="text-sm font-medium text-slate-900">
-                                {r?.location ? formatLocationAddress(r.location, selectedRestaurant?.zone) : flatAddress}
+                                {r?.liveTrackingEnabled && r?.currentLocation?.formattedAddress
+                                  ? r.currentLocation.formattedAddress
+                                  : r?.location ? formatLocationAddress(r.location, selectedRestaurant?.zone) : flatAddress}
                               </p>
                             </div>
                           </div>
