@@ -283,7 +283,7 @@ export default function RestaurantLogin() {
         <div id="login-content" className="w-full max-w-[400px] flex flex-col items-center mt-[30vh] lg:mt-0 relative z-10">
           <div className="w-24 h-24 sm:w-28 sm:h-28 bg-white rounded-full shadow-xl flex items-center justify-center border-4 border-slate-50 mb-6 -mt-20 lg:-mt-0 lg:mb-8 overflow-hidden p-1.5">
             <img 
-              src="/itzo-logo.jpg" 
+              src="/itzo-logo-login.jpg" 
               alt="Itzo Logo" 
               className="w-full h-full object-contain scale-110"
             />
