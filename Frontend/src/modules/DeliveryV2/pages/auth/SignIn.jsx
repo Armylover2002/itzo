@@ -364,7 +364,7 @@ export default function DeliverySignIn() {
             <div className="flex flex-col items-center pb-6 lg:pb-8">
               <div className="w-20 h-20 sm:w-28 sm:h-28 bg-white rounded-full shadow-xl flex items-center justify-center border-4 border-slate-50 mb-3 -mt-16 lg:-mt-0 lg:mb-6 overflow-hidden p-1.5">
                 <img 
-                  src="/itzo-logo.jpg" 
+                  src="/itzo-delivery-logo.png" 
                   alt="Itzo Logo" 
                   className="w-full h-full object-contain scale-110"
                 />
