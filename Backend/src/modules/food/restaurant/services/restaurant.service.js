@@ -207,7 +207,19 @@ const toRestaurantProfile = (doc) => {
         createdAt: doc.createdAt,
         updatedAt: doc.updatedAt,
         rating: normalizeRatingValue(doc.rating),
-        totalRatings: normalizeTotalRatingsValue(doc.totalRatings)
+        totalRatings: normalizeTotalRatingsValue(doc.totalRatings),
+        businessType: doc.businessType || 'Fixed Restaurant',
+        liveTrackingEnabled: Boolean(doc.liveTrackingEnabled),
+        lastLocationUpdate: doc.lastLocationUpdate || null,
+        locationSource: doc.locationSource || null,
+        currentLocation: doc.currentLocation && typeof doc.currentLocation === 'object'
+            ? {
+                type: doc.currentLocation.type || 'Point',
+                coordinates: Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates : undefined,
+                latitude: typeof doc.currentLocation.latitude === 'number' ? doc.currentLocation.latitude : (Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates[1] : undefined),
+                longitude: typeof doc.currentLocation.longitude === 'number' ? doc.currentLocation.longitude : (Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates[0] : undefined)
+            }
+            : null
     };
 };
 
@@ -615,6 +627,11 @@ export const getCurrentRestaurantProfile = async (restaurantId) => {
                 'fssaiImage',
                 'gstImage',
                 'panImage',
+                'businessType',
+                'currentLocation',
+                'lastLocationUpdate',
+                'liveTrackingEnabled',
+                'locationSource',
                 'createdAt',
                 'updatedAt'
             ].join(' ')

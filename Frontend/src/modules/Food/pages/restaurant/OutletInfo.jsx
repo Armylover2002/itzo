@@ -15,6 +15,7 @@ import {
   X,
   Trash2,
   AlertCircle,
+  Navigation,
 } from "lucide-react"
 import {
   Dialog,
@@ -609,6 +610,64 @@ export default function OutletInfo() {
               </div>
             </div>
           </section>
+
+          {/* Current Operating Location — Street Food Vendors only */}
+          {restaurantData?.businessType === "Street Food Vendor" && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2 ml-1">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Current Operating Location</h3>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                {/* Movable Location */}
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <Navigation className="w-3.5 h-3.5 text-emerald-500" />
+                        <p className="text-xs text-emerald-600 font-semibold">Movable Location</p>
+                        {restaurantData?.liveTrackingEnabled && (
+                          <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded-full uppercase">Live</span>
+                        )}
+                      </div>
+                      <p className="text-sm font-semibold text-gray-800 leading-relaxed">
+                        {restaurantData?.currentLocation?.latitude && restaurantData?.currentLocation?.longitude
+                          ? `${Number(restaurantData.currentLocation.latitude).toFixed(6)}, ${Number(restaurantData.currentLocation.longitude).toFixed(6)}`
+                          : "Not set — tap to set your operating location"
+                        }
+                      </p>
+                      {restaurantData?.lastLocationUpdate && (
+                        <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Last updated: {new Date(restaurantData.lastLocationUpdate).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => navigate("/food/restaurant/move-location")}
+                      className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full transition-colors flex items-center gap-1.5"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      Move
+                    </button>
+                  </div>
+                </div>
+
+                {/* Zone Info */}
+                <div className="p-4 bg-blue-50/40">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                    <p className="text-xs text-blue-700 font-medium">
+                      You are operating in <span className="font-bold">{restaurantData?.zoneName || "your assigned zone"}</span>
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-blue-500 mt-1 ml-4">
+                    You can move your location anywhere within this zone
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Owner Details */}
           <section className="space-y-3">
