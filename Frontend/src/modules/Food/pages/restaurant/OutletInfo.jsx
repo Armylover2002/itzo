@@ -30,8 +30,11 @@ import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
 import { restaurantAPI } from "@food/api"
 import { toast } from "sonner"
+import { Switch } from "@food/components/ui/switch"
+import { useLiveLocation } from "@food/contexts/LiveLocationContext"
 import { ImageSourcePicker } from "@food/components/ImageSourcePicker"
 import { isFlutterBridgeAvailable, convertBase64ToFile } from "@food/utils/imageUploadUtils"
+import { getCurrentUser } from "@food/utils/auth"
 
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -43,6 +46,7 @@ const CUISINES_STORAGE_KEY = "restaurant_cuisines"
 export default function OutletInfo() {
   const navigate = useNavigate()
   const goBack = useRestaurantBackNavigation()
+  const { liveTrackingEnabled, currentLocation, handleToggleTracking } = useLiveLocation()
   
   // State management
   const [restaurantData, setRestaurantData] = useState(null)
@@ -607,8 +611,15 @@ export default function OutletInfo() {
                   <div className="flex items-center gap-2 mb-1">
                     <MapPin className="w-3.5 h-3.5 text-gray-400" />
                     <p className="text-xs text-gray-400 font-medium">Outlet Address</p>
+                    {liveTrackingEnabled && (
+                      <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded-full uppercase">Live</span>
+                    )}
                   </div>
-                  <p className="text-sm font-semibold text-gray-800 leading-relaxed">{address || "Address not set"}</p>
+                  <p className="text-sm font-semibold text-gray-800 leading-relaxed">
+                    {liveTrackingEnabled && currentLocation?.latitude && currentLocation?.longitude
+                      ? (currentLocation.address || `${Number(currentLocation.latitude).toFixed(6)}, ${Number(currentLocation.longitude).toFixed(6)}`)
+                      : address || "Address not set"}
+                  </p>
                 </div>
                 <button onClick={() => navigate("/food/restaurant/edit-address")} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
                   <Pencil className="w-4 h-4 text-[#FE5502]" />
@@ -628,11 +639,23 @@ export default function OutletInfo() {
           </section>
 
           {/* Current Operating Location — Street Food Vendors only */}
-          {restaurantData?.businessType === "Street Food Vendor" && (
+          {(restaurantData?.businessType === "Street Food Vendor" || 
+            getCurrentUser("restaurant")?.businessType === "Street Food Vendor" || 
+            restaurantData?.restaurantName?.toLowerCase().includes("street food")) && (
             <section className="space-y-3">
-              <div className="flex items-center gap-2 ml-1">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Current Operating Location</h3>
+              <div className="flex items-center justify-between ml-1">
+                <div className="flex items-center gap-2">
+                  <div className={`w-1.5 h-1.5 rounded-full ${liveTrackingEnabled ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                  <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Current Operating Location</h3>
+                </div>
+                <div className="flex items-center gap-2 mr-2">
+                  <span className="text-xs font-semibold text-gray-600">{liveTrackingEnabled ? 'Live' : 'Off'}</span>
+                  <Switch
+                    checked={liveTrackingEnabled}
+                    onCheckedChange={handleToggleTracking}
+                    className="data-[state=checked]:bg-emerald-500 scale-75 origin-right"
+                  />
+                </div>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 {/* Movable Location */}
@@ -640,16 +663,16 @@ export default function OutletInfo() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <Navigation className="w-3.5 h-3.5 text-emerald-500" />
-                        <p className="text-xs text-emerald-600 font-semibold">Movable Location</p>
-                        {restaurantData?.liveTrackingEnabled && (
+                        <Navigation className={`w-3.5 h-3.5 ${liveTrackingEnabled ? 'text-emerald-500' : 'text-gray-400'}`} />
+                        <p className={`text-xs font-semibold ${liveTrackingEnabled ? 'text-emerald-600' : 'text-gray-500'}`}>Movable Location</p>
+                        {liveTrackingEnabled && (
                           <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded-full uppercase">Live</span>
                         )}
                       </div>
                       <p className="text-sm font-semibold text-gray-800 leading-relaxed">
-                        {restaurantData?.currentLocation?.latitude && restaurantData?.currentLocation?.longitude
-                          ? `${Number(restaurantData.currentLocation.latitude).toFixed(6)}, ${Number(restaurantData.currentLocation.longitude).toFixed(6)}`
-                          : "Not set — tap to set your operating location"
+                        {currentLocation?.latitude && currentLocation?.longitude
+                          ? (currentLocation.address || `${Number(currentLocation.latitude).toFixed(6)}, ${Number(currentLocation.longitude).toFixed(6)}`)
+                          : "Not set — turn on live tracking or set manually"
                         }
                       </p>
                       {restaurantData?.lastLocationUpdate && (

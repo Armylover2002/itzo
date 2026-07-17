@@ -747,6 +747,9 @@ export default function ExploreMore() {
     { id: 3, label: "Delivery settings", icon: Truck, route: "/restaurant/delivery-settings" },
     { id: 4, label: "Zone Setup", icon: MapPin, route: "/restaurant/zone-setup" },
     { id: 10, label: "Refer & Earn", icon: Gift, route: "/restaurant/refer-earn" },
+    ...(restaurantData?.businessType === "Street Food Vendor" 
+      ? [{ id: 11, label: "Live Location Control", icon: MapPin, route: "/food/restaurant/live-location" }] 
+      : [])
   ]
 
   const ordersItems = [

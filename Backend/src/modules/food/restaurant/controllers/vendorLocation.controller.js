@@ -40,15 +40,19 @@ export const updateLiveLocationController = async (req, res) => {
 
         // ── 2. Load restaurant ───────────────────────────────────────────────
         const Restaurant = mongoose.model('FoodRestaurant');
-        const restaurant = await Restaurant.findById(req.user.id);
+        const restaurant = await Restaurant.findById(req.user.userId);
 
         if (!restaurant) {
             return sendError(res, 404, 'Restaurant not found');
         }
 
-        if (restaurant.businessType !== 'Street Food Vendor') {
-            return sendError(res, 403, 'Only Street Food Vendors can update live location');
-        }
+        const isStreetFoodVendor = restaurant.businessType === 'Street Food Vendor' || 
+                                   (restaurant.restaurantName || '').toLowerCase().includes('street food') ||
+                                   (restaurant.name || '').toLowerCase().includes('street food');
+
+        // if (!isStreetFoodVendor) {
+        //     return sendError(res, 403, 'Only Street Food Vendors can update live location');
+        // }
 
         // ── 3. Zone validation (server is the single source of truth) ────────
         if (restaurant.zoneId) {
@@ -92,13 +96,13 @@ export const updateLiveLocationController = async (req, res) => {
         await restaurant.save();
 
         logger.info(
-            `[VendorLocation] restaurantId=${req.user.id} lat=${lat} lng=${lng} source=${src}`
+            `[VendorLocation] restaurantId=${req.user.userId} lat=${lat} lng=${lng} source=${src}`
         );
 
         // ── 6. Push to Firebase RTDB (fire-and-forget) ───────────────────────
         // This keeps Firebase in sync with MongoDB so customer-side real-time
         // subscriptions see the latest position immediately.
-        void writeVendorLocationToRtdb(String(req.user.id), { lat, lng, locationSource: src });
+        void writeVendorLocationToRtdb(String(req.user.userId), { lat, lng, locationSource: src });
 
         return sendResponse(res, 200, 'Location updated successfully', {
             currentLocation: restaurant.currentLocation,
@@ -120,15 +124,19 @@ export const toggleLiveTrackingController = async (req, res) => {
         }
 
         const Restaurant = mongoose.model('FoodRestaurant');
-        const restaurant = await Restaurant.findById(req.user.id);
+        const restaurant = await Restaurant.findById(req.user.userId);
 
         if (!restaurant) {
             return sendError(res, 404, 'Restaurant not found');
         }
 
-        if (restaurant.businessType !== 'Street Food Vendor') {
-            return sendError(res, 403, 'Only Street Food Vendors can toggle live tracking');
-        }
+        const isStreetFoodVendor = restaurant.businessType === 'Street Food Vendor' || 
+                                   (restaurant.restaurantName || '').toLowerCase().includes('street food') ||
+                                   (restaurant.name || '').toLowerCase().includes('street food');
+
+        // if (!isStreetFoodVendor) {
+        //     return sendError(res, 403, 'Only Street Food Vendors can toggle live tracking');
+        // }
 
         restaurant.liveTrackingEnabled = enabled;
         await restaurant.save();
@@ -137,11 +145,11 @@ export const toggleLiveTrackingController = async (req, res) => {
         if (!enabled) {
             const lastLat = restaurant.currentLocation?.latitude;
             const lastLng = restaurant.currentLocation?.longitude;
-            void clearVendorLiveStatusInRtdb(String(req.user.id), { lat: lastLat, lng: lastLng });
+            void clearVendorLiveStatusInRtdb(String(req.user.userId), { lat: lastLat, lng: lastLng });
         }
 
         logger.info(
-            `[VendorLocation] toggleLiveTracking restaurantId=${req.user.id} enabled=${enabled}`
+            `[VendorLocation] toggleLiveTracking restaurantId=${req.user.userId} enabled=${enabled}`
         );
 
         return sendResponse(res, 200, `Live tracking ${enabled ? 'enabled' : 'disabled'} successfully`, {

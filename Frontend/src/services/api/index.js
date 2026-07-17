@@ -1023,12 +1023,12 @@ export const restaurantAPI = {
     }),
   /** Update live location for Street Food Vendors */
   updateLiveLocation: (latitude, longitude) =>
-    apiClient.put("/food/vendor-location/live-location", { latitude, longitude }, {
+    apiClient.put("/food/restaurant/live-location", { latitude, longitude }, {
       contextModule: "restaurant",
     }),
   /** Update live tracking status for Street Food Vendors */
   updateLiveTrackingStatus: (enabled) =>
-    apiClient.put("/food/vendor-location/live-tracking-status", { enabled }, {
+    apiClient.put("/food/restaurant/live-tracking-status", { enabled }, {
       contextModule: "restaurant",
     }),
   /** Finance dashboard for `hub-finance`. */
