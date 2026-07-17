@@ -340,6 +340,17 @@ export const registerRestaurant = async (payload, files) => {
         throw new ValidationError('Restaurant name is required to register a restaurant');
     }
 
+    // Strict validation for onboarding images to prevent partial records
+    if (!files?.profileImage?.[0]) {
+        logger.warn(`[ONBOARDING] Registration failed for ${ownerPhoneDigits || 'unknown'}: Missing profile image`);
+        throw new ValidationError('Restaurant profile image is required');
+    }
+
+    if (!files?.menuImages?.length) {
+        logger.warn(`[ONBOARDING] Registration failed for ${ownerPhoneDigits || 'unknown'}: Missing menu images`);
+        throw new ValidationError('At least one menu image is required');
+    }
+
     const images = {};
 
     const uploadTasks = [];
