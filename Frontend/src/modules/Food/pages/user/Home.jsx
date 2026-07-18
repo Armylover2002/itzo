@@ -39,6 +39,7 @@ import {
   Plus,
   Check,
   Share2,
+  MapPinOff,
 } from "lucide-react";
 
 import {
@@ -184,7 +185,7 @@ export default function Home() {
 
   // --- Location Logic ---
   const { location } = useLocation();
-  const { zoneId: liveZoneId, isInService: isLiveInService } = useZone(location);
+  const { zoneId: liveZoneId, isInService: isLiveInService, isOutOfService: isLiveOutOfService } = useZone(location);
   const defaultSavedAddress = useMemo(() => getDefaultAddress?.() || null, [getDefaultAddress]);
   const defaultSavedAddressLocation = useMemo(() => {
     if (!defaultSavedAddress) return null;
@@ -200,11 +201,12 @@ export default function Home() {
       postalCode: defaultSavedAddress.postalCode || defaultSavedAddress.zipCode || "",
     };
   }, [defaultSavedAddress]);
-  const { zoneId: savedZoneId, isInService: isSavedInService } = useZone(defaultSavedAddressLocation);
+  const { zoneId: savedZoneId, isInService: isSavedInService, isOutOfService: isSavedOutOfService } = useZone(defaultSavedAddressLocation);
 
   const deliveryAddressMode = getStoredDeliveryAddressMode();
   const effectiveZoneId = (deliveryAddressMode === "current" ? liveZoneId : savedZoneId) || liveZoneId;
   const effectiveLocation = (deliveryAddressMode === "current" ? location : defaultSavedAddressLocation) || location;
+  const isEffectiveOutOfService = (deliveryAddressMode === "current" ? isLiveOutOfService : isSavedOutOfService) ?? isLiveOutOfService;
 
   // --- Core Data Hook ---
   const {
@@ -348,95 +350,117 @@ export default function Home() {
           <QuickWishlistProvider>
             <QuickCartAnimationProvider>
               <QuickProductDetailProvider>
-                <div className={activeTab === "food" ? "block" : "hidden"}>
-                  <div className="bg-white dark:bg-[#0a0a0a]">
-                    <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
-                      <CategoryRail
-                        displayCategories={categories.display}
-                        showCategorySkeleton={categories.loading}
-                        navigate={navigate}
-                        setShowAllCategoriesModal={setShowAllCategoriesModal}
-                        backendOrigin={BACKEND_ORIGIN}
-                      />
-                    </Suspense>
-
-                    <Suspense fallback={null}>
-                      <RecommendedSection recommendedForYouRestaurants={meta.recommended} />
-                    </Suspense>
-
-
-                    <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
-                      <section className="content-auto px-4 py-4 sm:py-6 lg:py-8">
-                        <div className="overflow-hidden rounded-2xl h-48 sm:h-64 md:h-72 lg:h-[350px] shadow-lg border border-gray-100">
-                          <BannerSection
-                            showBannerSkeleton={banners.loading}
-                            heroBannerImages={banners.images}
-                            heroBannersData={banners.data}
-                            currentBannerIndex={currentBannerIndex}
-                            setCurrentBannerIndex={setCurrentBannerIndex}
-                            heroShellRef={heroShellRef}
+                {isEffectiveOutOfService && state.isBootstrapped ? (
+                  <div className="flex flex-col items-center justify-center py-24 px-6 text-center min-h-[60vh] bg-white dark:bg-[#0a0a0a]">
+                    <div className="bg-red-50 dark:bg-red-500/10 p-6 rounded-full mb-6">
+                      <MapPinOff className="w-16 h-16 text-red-500" strokeWidth={1.5} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3 tracking-tight">
+                      Service Not Available
+                    </h2>
+                    <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-sm mx-auto leading-relaxed text-sm md:text-base">
+                      We're sorry, but we don't currently deliver to this location. Please change your location to explore our restaurants and products.
+                    </p>
+                    <Button 
+                      onClick={() => openLocationSelector()}
+                      className="rounded-full px-8 py-6 bg-primary hover:bg-primary/90 text-white font-semibold text-base shadow-lg hover:shadow-xl transition-all active:scale-95"
+                    >
+                      Change Location
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className={activeTab === "food" ? "block" : "hidden"}>
+                      <div className="bg-white dark:bg-[#0a0a0a]">
+                        <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
+                          <CategoryRail
+                            displayCategories={categories.display}
+                            showCategorySkeleton={categories.loading}
                             navigate={navigate}
+                            setShowAllCategoriesModal={setShowAllCategoriesModal}
                             backendOrigin={BACKEND_ORIGIN}
-                            hideOverlay={true}
                           />
-                        </div>
-                      </section>
-                    </Suspense>
+                        </Suspense>
 
-                    <Suspense fallback={null}>
-                      <SortFilterSection
-                        activeFilters={state.activeFilters}
-                        toggleFilter={actions.toggleFilter}
-                        setIsFilterOpen={(val) => { }} // Hook handles internal apply
-                      />
-                    </Suspense>
+                        <Suspense fallback={null}>
+                          <RecommendedSection recommendedForYouRestaurants={meta.recommended} />
+                        </Suspense>
 
-                    <Suspense fallback={null}>
-                      <ExploreMoreSection
-                        exploreMoreHeading={landing.heading}
-                        showExploreSkeleton={landing.loading}
-                        finalExploreItems={landing.exploreMore}
-                        backendOrigin={BACKEND_ORIGIN}
-                      />
-                    </Suspense>
 
-                    <Suspense fallback={<RestaurantGridSkeleton count={3} />}>
-                      <RestaurantGrid
-                        filteredRestaurants={restaurants.visible}
-                        visibleRestaurants={restaurants.visible}
-                        showRestaurantSkeleton={restaurants.loading}
-                        isLoadingFilterResults={restaurants.isLoadingFilterResults}
-                        loadingRestaurants={restaurants.loading}
-                        availabilityTick={availabilityTick}
-                        isFavorite={isFavorite}
-                        onFavoriteToggle={(e, restaurant, slug, favorite) => {
-                          if (favorite) removeFavorite(slug);
-                          else {
-                            addFavorite({ ...restaurant, slug });
-                            setShowToast(true);
-                            setTimeout(() => setShowToast(false), 2000);
-                          }
-                        }}
-                        backendOrigin={BACKEND_ORIGIN}
-                        hasMoreRestaurants={restaurants.hasMore}
-                        loadMoreRestaurants={actions.loadMoreRestaurants}
-                        restaurantLoadMoreRef={restaurantLoadMoreRef}
-                      />
-                    </Suspense>
-                  </div>
-                </div>
+                        <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
+                          <section className="content-auto px-4 py-4 sm:py-6 lg:py-8">
+                            <div className="overflow-hidden rounded-2xl h-48 sm:h-64 md:h-72 lg:h-[350px] shadow-lg border border-gray-100">
+                              <BannerSection
+                                showBannerSkeleton={banners.loading}
+                                heroBannerImages={banners.images}
+                                heroBannersData={banners.data}
+                                currentBannerIndex={currentBannerIndex}
+                                setCurrentBannerIndex={setCurrentBannerIndex}
+                                heroShellRef={heroShellRef}
+                                navigate={navigate}
+                                backendOrigin={BACKEND_ORIGIN}
+                                hideOverlay={true}
+                              />
+                            </div>
+                          </section>
+                        </Suspense>
 
-                <div className={activeTab === "quick" ? "block" : "hidden"}>
-                  <div className="bg-white dark:bg-[#0a0a0a]">
-                    <Suspense fallback={<div className="h-screen w-full bg-white dark:bg-[#0a0a0a]" />}>
-                      <QuickCommerceHomePage
-                        embedded
-                        onThemeChange={({ color }) => color && setQuickThemeColor(color)}
-                        embeddedHeaderColor={quickThemeColor}
-                      />
-                    </Suspense>
-                  </div>
-                </div>
+                        <Suspense fallback={null}>
+                          <SortFilterSection
+                            activeFilters={state.activeFilters}
+                            toggleFilter={actions.toggleFilter}
+                            setIsFilterOpen={(val) => { }} // Hook handles internal apply
+                          />
+                        </Suspense>
+
+                        <Suspense fallback={null}>
+                          <ExploreMoreSection
+                            exploreMoreHeading={landing.heading}
+                            showExploreSkeleton={landing.loading}
+                            finalExploreItems={landing.exploreMore}
+                            backendOrigin={BACKEND_ORIGIN}
+                          />
+                        </Suspense>
+
+                        <Suspense fallback={<RestaurantGridSkeleton count={3} />}>
+                          <RestaurantGrid
+                            filteredRestaurants={restaurants.visible}
+                            visibleRestaurants={restaurants.visible}
+                            showRestaurantSkeleton={restaurants.loading}
+                            isLoadingFilterResults={restaurants.isLoadingFilterResults}
+                            loadingRestaurants={restaurants.loading}
+                            availabilityTick={availabilityTick}
+                            isFavorite={isFavorite}
+                            onFavoriteToggle={(e, restaurant, slug, favorite) => {
+                              if (favorite) removeFavorite(slug);
+                              else {
+                                addFavorite({ ...restaurant, slug });
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 2000);
+                              }
+                            }}
+                            backendOrigin={BACKEND_ORIGIN}
+                            hasMoreRestaurants={restaurants.hasMore}
+                            loadMoreRestaurants={actions.loadMoreRestaurants}
+                            restaurantLoadMoreRef={restaurantLoadMoreRef}
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+
+                    <div className={activeTab === "quick" ? "block" : "hidden"}>
+                      <div className="bg-white dark:bg-[#0a0a0a]">
+                        <Suspense fallback={<div className="h-screen w-full bg-white dark:bg-[#0a0a0a]" />}>
+                          <QuickCommerceHomePage
+                            embedded
+                            onThemeChange={({ color }) => color && setQuickThemeColor(color)}
+                            embeddedHeaderColor={quickThemeColor}
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+                  </>
+                )}
               </QuickProductDetailProvider>
             </QuickCartAnimationProvider>
           </QuickWishlistProvider>
