@@ -121,7 +121,7 @@ const CategoriesPage = () => {
 
     return (
         <div className="min-h-screen bg-background transition-colors duration-500">
-            <MainLocationHeader showCategories={false} />
+            <MainLocationHeader showCategories={false} hideDeliveryTime={true} hideLogo={true} />
 
             <div className="max-w-[1400px] mx-auto px-3 pt-[206px] md:pt-[240px] pb-20">
                 <AnimatePresence mode='wait'>

@@ -234,6 +234,8 @@ const MainLocationHeader = ({
   showTopContent = true,
   showSearchBar = true,
   showCategories = true,
+  hideDeliveryTime = false,
+  hideLogo = false,
 }) => {
   const { scrollY } = useScroll();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -484,26 +486,30 @@ const MainLocationHeader = ({
             <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-4 mt-1">
               {/* Left Section: Logo + Location row */}
               <div className="flex items-center gap-4 lg:gap-8">
-                <div
-                  onClick={() => navigate(homePath)}
-                  className="flex items-center gap-3 cursor-pointer group shrink-0">
-                  <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
-                    <img
-                      src={logoUrl}
-                      alt={`${appName} Logo`}
-                      className="h-10 md:h-16 w-auto object-contain"
-                    />
+                {!hideLogo && (
+                  <div
+                    onClick={() => navigate(homePath)}
+                    className="flex items-center gap-3 cursor-pointer group shrink-0">
+                    <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                      <img
+                        src={logoUrl}
+                        alt={`${appName} Logo`}
+                        className="h-10 md:h-16 w-auto object-contain"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Location Block (Desktop inline row) */}
-                <div className="flex flex-col border-l border-black/10 pl-4 lg:pl-8 h-10 justify-center">
-                  <div className="flex items-center gap-1.5 opacity-70">
-                    <AccessTimeIcon sx={{ fontSize: 13, color: iconColor }} />
-                    <span className={`text-[11px] font-black ${textColorClass} uppercase tracking-widest leading-none`}>
-                      {currentLocation.time}
-                    </span>
-                  </div>
+                <div className={cn("flex flex-col h-10 justify-center", hideLogo ? "" : "border-l border-black/10 pl-4 lg:pl-8")}>
+                  {!hideDeliveryTime && (
+                    <div className="flex items-center gap-1.5 opacity-70">
+                      <AccessTimeIcon sx={{ fontSize: 13, color: iconColor }} />
+                      <span className={`text-[11px] font-black ${textColorClass} uppercase tracking-widest leading-none`}>
+                        {currentLocation.time}
+                      </span>
+                    </div>
+                  )}
                   <button
                     type="button"
                     data-lenis-prevent
@@ -511,15 +517,18 @@ const MainLocationHeader = ({
                     onClick={() => {
                       setIsLocationOpen(true);
                     }}
-                    className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left`}>
-                    <LocationOnIcon sx={{ fontSize: 14, color: "inherit" }} />
-                    <div className="text-[13px] font-bold leading-tight max-w-[250px] lg:max-w-[320px] truncate">
+                    className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? '' : 'mt-0'}`}>
+                    <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: "inherit" }} />
+                    <div className={cn(
+                      "leading-tight max-w-[250px] lg:max-w-[320px] truncate",
+                      hideDeliveryTime ? "text-[16px] font-black" : "text-[13px] font-bold"
+                    )}>
                       {isFetchingLocation
                         ? "Detecting location..."
                         : currentLocation.name}
                     </div>
                     <ChevronDownIcon
-                      sx={{ fontSize: 12, opacity: 0.5, color: iconColor }}
+                      sx={{ fontSize: hideDeliveryTime ? 16 : 12, opacity: 0.5, color: iconColor }}
                     />
                   </button>
                 </div>
@@ -593,19 +602,23 @@ const MainLocationHeader = ({
                 overflow: "hidden",
               }}
               className="relative z-10">
-              <div className="mb-1">
-                <span className={`inline-flex items-center rounded-full border ${appNameBorderClass} bg-white/18 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.24em] ${textColorClass} backdrop-blur-sm`}>
-                  {appName}
-                </span>
-              </div>
+              {!hideLogo && (
+                <div className="mb-1">
+                  <span className={`inline-flex items-center rounded-full border ${appNameBorderClass} bg-white/18 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.24em] ${textColorClass} backdrop-blur-sm`}>
+                    {appName}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <AccessTimeIcon sx={{ fontSize: 16, color: iconColor }} />
-                    <span className={`text-base font-bold ${textColorClass} tracking-tight leading-none`}>
-                      {currentLocation.time}
-                    </span>
-                  </div>
+                  {!hideDeliveryTime && (
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                      <AccessTimeIcon sx={{ fontSize: 16, color: iconColor }} />
+                      <span className={`text-base font-bold ${textColorClass} tracking-tight leading-none`}>
+                        {currentLocation.time}
+                      </span>
+                    </div>
+                  )}
                   <button
                     type="button"
                     data-lenis-prevent
@@ -613,15 +626,18 @@ const MainLocationHeader = ({
                     onClick={() => {
                       setIsLocationOpen(true);
                     }}
-                    className={`flex items-center gap-1 ${subTextColorClass} cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left`}>
-                    <LocationOnIcon sx={{ fontSize: 14, color: iconColor }} />
-                    <div className="text-[10px] font-medium leading-tight max-w-[280px] truncate">
+                    className={`flex items-center gap-1.5 ${hideDeliveryTime ? textColorClass : subTextColorClass} cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? 'mt-1' : ''}`}>
+                    <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: iconColor }} />
+                    <div className={cn(
+                      "leading-tight max-w-[280px] truncate",
+                      hideDeliveryTime ? "text-[14px] font-black" : "text-[10px] font-medium"
+                    )}>
                       {isFetchingLocation
                         ? "Detecting location..."
                         : currentLocation.name}
                     </div>
                     <ChevronDownIcon
-                      sx={{ fontSize: 12, opacity: 0.5, color: iconColor }}
+                      sx={{ fontSize: hideDeliveryTime ? 16 : 12, opacity: 0.5, color: iconColor }}
                     />
                   </button>
                 </div>
