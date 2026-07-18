@@ -145,7 +145,9 @@ export default function CreateReturnPage() {
           <h3 className="font-bold text-gray-900 mb-4">Select Items to Return</h3>
           <div className="space-y-4">
             {order.items.map((item, idx) => {
-              const selectedQty = selectedItems[item.productId] || 0;
+              const id = item.itemId || item.productId || item._id;
+              const selectedQty = selectedItems[id] || 0;
+              
               return (
                 <div key={idx} className="flex gap-4">
                   <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
@@ -157,14 +159,14 @@ export default function CreateReturnPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <button 
-                      onClick={() => handleQuantityChange(item.productId, selectedQty - 1)}
+                      onClick={() => handleQuantityChange((item.itemId || item.productId || item._id), selectedQty - 1)}
                       className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold ${selectedQty > 0 ? 'border-green-600 text-green-600' : 'border-gray-200 text-gray-300'}`}
                     >
                       -
                     </button>
                     <span className="w-4 text-center font-bold text-gray-900">{selectedQty}</span>
                     <button 
-                      onClick={() => handleQuantityChange(item.productId, Math.min(item.quantity, selectedQty + 1))}
+                      onClick={() => handleQuantityChange((item.itemId || item.productId || item._id), Math.min(item.quantity, selectedQty + 1))}
                       className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold ${selectedQty < item.quantity ? 'border-green-600 text-green-600 bg-green-50' : 'border-gray-200 text-gray-300'}`}
                     >
                       +

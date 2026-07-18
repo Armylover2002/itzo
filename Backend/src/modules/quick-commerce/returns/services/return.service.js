@@ -112,7 +112,7 @@ export async function createReturnRequest({
     for (const reqItem of items) {
       // Find in order
       const orderItem = order.items.find(
-        (i) => i.productId.toString() === reqItem.productId.toString()
+        (i) => (i.itemId || i.productId || i._id).toString() === reqItem.productId.toString()
       );
       if (!orderItem) throw new ValidationError(`Product ${reqItem.productId} not found in this order.`);
       if (reqItem.quantity > orderItem.quantity) {
