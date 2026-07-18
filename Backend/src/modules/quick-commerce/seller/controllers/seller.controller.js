@@ -415,8 +415,19 @@ const objectIdOrNull = (value) =>
     ? new mongoose.Types.ObjectId(value)
     : null;
 
-const toDataUrl = (file) =>
-  file ? `data:${file.mimetype};base64,${file.buffer.toString("base64")}` : "";
+const uploadFileOrBase64ToCloudinary = async (fileOrUrl, folder) => {
+  if (fileOrUrl && fileOrUrl.buffer) {
+    return await uploadImageBuffer(fileOrUrl.buffer, folder);
+  }
+  if (typeof fileOrUrl === "string" && fileOrUrl.startsWith("data:image/")) {
+    const match = fileOrUrl.match(/^data:([^;]+);base64,(.+)$/);
+    if (match && match[2]) {
+      const buffer = Buffer.from(match[2], "base64");
+      return await uploadImageBuffer(buffer, folder);
+    }
+  }
+  return typeof fileOrUrl === "string" ? fileOrUrl : "";
+};
 
 const parseTags = (value) => {
   if (Array.isArray(value)) {
@@ -609,7 +620,7 @@ const reconcileSellerDeliveredOrders = async (sellerId) => {
   }
 };
 
-const parseProductPayload = (req, existingProduct = null) => {
+const parseProductPayloadAsync = async (req, existingProduct = null) => {
   const mainUpload = arr(req.files?.mainImage)[0];
   const galleryUploads = arr(req.files?.galleryImages);
   const variants = parseVariants(req.body?.variants, {
@@ -620,6 +631,31 @@ const parseProductPayload = (req, existingProduct = null) => {
     weight: req.body?.weight,
   });
   const firstVariant = variants[0] || {};
+
+  let mainImageUrl = existingProduct?.mainImage || "";
+  const mainImageInput = mainUpload || str(req.body?.mainImage);
+  if (mainImageInput) {
+    const uploadedUrl = await uploadFileOrBase64ToCloudinary(mainImageInput, "quick-commerce/products/main");
+    if (uploadedUrl) mainImageUrl = uploadedUrl;
+  }
+
+  let finalGalleryUrls = arr(existingProduct?.galleryImages);
+  if (galleryUploads.length > 0) {
+    const uploadedGallery = await Promise.all(
+      galleryUploads.map(file => uploadFileOrBase64ToCloudinary(file, "quick-commerce/products/gallery"))
+    );
+    finalGalleryUrls = uploadedGallery.filter(Boolean);
+  } else if (req.body?.galleryImages) {
+    const bodyGallery = arr(req.body.galleryImages);
+    if (bodyGallery.length > 0) {
+      const uploadedGallery = await Promise.all(
+        bodyGallery.map(img => uploadFileOrBase64ToCloudinary(img, "quick-commerce/products/gallery"))
+      );
+      if (uploadedGallery.some(Boolean)) {
+         finalGalleryUrls = uploadedGallery.filter(Boolean);
+      }
+    }
+  }
 
   return {
     name: str(req.body?.name) || existingProduct?.name || "Untitled Product",
@@ -653,21 +689,9 @@ const parseProductPayload = (req, existingProduct = null) => {
     brand: str(req.body?.brand) || existingProduct?.brand || "",
     weight: str(req.body?.weight) || existingProduct?.weight || "",
     tags: parseTags(req.body?.tags ?? existingProduct?.tags),
-    mainImage:
-      toDataUrl(mainUpload) ||
-      str(req.body?.mainImage) ||
-      existingProduct?.mainImage ||
-      "",
-    image:
-      toDataUrl(mainUpload) ||
-      str(req.body?.mainImage) ||
-      existingProduct?.mainImage ||
-      existingProduct?.image ||
-      "",
-    galleryImages:
-      galleryUploads.length > 0
-        ? galleryUploads.map(toDataUrl).filter(Boolean)
-        : arr(existingProduct?.galleryImages),
+    mainImage: mainImageUrl,
+    image: mainImageUrl || existingProduct?.image || "",
+    galleryImages: finalGalleryUrls,
     mrp: num(
       req.body?.mrp,
       req.body?.salePrice ??
@@ -978,7 +1002,7 @@ export const getSellerProductByIdController = async (req, res) => {
 export const createSellerProductController = async (req, res) => {
   try {
     const sellerId = sellerScope(req);
-    const basePayload = parseProductPayload(req);
+    const basePayload = await parseProductPayloadAsync(req);
     const categoryIds = await resolveSellerCategoryIds({
       headerId: req.body?.headerId,
       categoryId: req.body?.categoryId,
@@ -1023,7 +1047,7 @@ export const updateSellerProductController = async (req, res) => {
       subcategoryId: req.body?.subcategoryId || existing.subcategoryId,
     });
 
-    const payload = parseProductPayload(req, existing);
+    const payload = await parseProductPayloadAsync(req, existing);
 
     Object.assign(existing, {
       ...payload,
@@ -1270,21 +1294,12 @@ export const updateSellerProfileController = async (req, res) => {
     if (req.body?.upiId !== undefined || bankInfoBody.upiId !== undefined) {
       seller.bankInfo.upiId = str(bankInfoBody.upiId ?? req.body.upiId, "");
     }
-    if (
-      req.body?.upiQrImage !== undefined ||
-      req.body?.upiQrCode !== undefined ||
-      bankInfoBody.upiQrImage !== undefined
-    ) {
-      seller.bankInfo.upiQrImage = str(
-        bankInfoBody.upiQrImage ?? req.body.upiQrImage ?? req.body.upiQrCode,
-        "",
-      );
-    }
-    if (files?.upiQrImage?.[0]) {
-      seller.bankInfo.upiQrImage = await uploadImageBuffer(
-        files.upiQrImage[0].buffer,
-        "seller/upi-qr",
-      );
+    const upiQrImageInput = files?.upiQrImage?.[0] || bankInfoBody.upiQrImage || req.body?.upiQrImage || req.body?.upiQrCode;
+    if (upiQrImageInput !== undefined) {
+      const uploadedUrl = await uploadFileOrBase64ToCloudinary(upiQrImageInput, "seller/upi-qr");
+      if (uploadedUrl || typeof upiQrImageInput === "string") {
+        seller.bankInfo.upiQrImage = uploadedUrl;
+      }
     }
 
     seller.documents = seller.documents || {};
@@ -1350,20 +1365,12 @@ export const updateSellerProfileController = async (req, res) => {
         "",
       );
     }
-    if (
-      req.body?.shopLicenseImage !== undefined ||
-      documentsBody.shopLicenseImage !== undefined
-    ) {
-      seller.documents.shopLicenseImage = str(
-        documentsBody.shopLicenseImage ?? req.body.shopLicenseImage,
-        "",
-      );
-    }
-    if (files?.shopLicenseImage?.[0]) {
-      seller.documents.shopLicenseImage = await uploadImageBuffer(
-        files.shopLicenseImage[0].buffer,
-        "seller/shop-license",
-      );
+    const shopLicenseImageInput = files?.shopLicenseImage?.[0] || documentsBody.shopLicenseImage || req.body?.shopLicenseImage;
+    if (shopLicenseImageInput !== undefined) {
+      const uploadedUrl = await uploadFileOrBase64ToCloudinary(shopLicenseImageInput, "seller/shop-license");
+      if (uploadedUrl || typeof shopLicenseImageInput === "string") {
+        seller.documents.shopLicenseImage = uploadedUrl;
+      }
     }
     if (
       req.body?.shopLicenseExpiry !== undefined ||
