@@ -14,6 +14,16 @@ import {
   buildSearchBarBackgroundColor,
   shiftHex,
 } from "../../utils/headerTheme";
+
+const getLuminance = (hex) => {
+  if (!hex) return 0;
+  const color = hex.replace("#", "");
+  const rgb = parseInt(color, 16);
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = (rgb >> 0) & 0xff;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
 import {
   getQuickCartPath,
   getQuickHomePath,
@@ -403,6 +413,13 @@ const MainLocationHeader = ({
   const searchBarBg = buildSearchBarBackgroundColor(baseHeaderColor || "#1e293b");
   const categoryAccent = "#ffffff";
 
+  const luminance = getLuminance(baseHeaderColor || "#0f172a");
+  const isDarkBackground = luminance < 128;
+  const textColorClass = isDarkBackground ? "text-white" : "text-slate-900";
+  const subTextColorClass = isDarkBackground ? "text-white/90" : "text-slate-800";
+  const iconColor = isDarkBackground ? "#ffffff" : "#111827";
+  const appNameBorderClass = isDarkBackground ? "border-white/20" : "border-black/10";
+
   useEffect(() => {
     const c = buildMiniCartColor(baseHeaderColor || "#1e293b");
     document.documentElement.style.setProperty("--customer-mini-cart-color", c);
@@ -482,8 +499,8 @@ const MainLocationHeader = ({
                 {/* Location Block (Desktop inline row) */}
                 <div className="flex flex-col border-l border-black/10 pl-4 lg:pl-8 h-10 justify-center">
                   <div className="flex items-center gap-1.5 opacity-70">
-                    <AccessTimeIcon sx={{ fontSize: 13, color: "#111827" }} />
-                    <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-none">
+                    <AccessTimeIcon sx={{ fontSize: 13, color: iconColor }} />
+                    <span className={`text-[11px] font-black ${textColorClass} uppercase tracking-widest leading-none`}>
                       {currentLocation.time}
                     </span>
                   </div>
@@ -494,7 +511,7 @@ const MainLocationHeader = ({
                     onClick={() => {
                       setIsLocationOpen(true);
                     }}
-                    className="flex items-center gap-1 text-slate-900 hover:text-slate-700 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
+                    className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left`}>
                     <LocationOnIcon sx={{ fontSize: 14, color: "inherit" }} />
                     <div className="text-[13px] font-bold leading-tight max-w-[250px] lg:max-w-[320px] truncate">
                       {isFetchingLocation
@@ -502,7 +519,7 @@ const MainLocationHeader = ({
                         : currentLocation.name}
                     </div>
                     <ChevronDownIcon
-                      sx={{ fontSize: 12, opacity: 0.5, color: "#111827" }}
+                      sx={{ fontSize: 12, opacity: 0.5, color: iconColor }}
                     />
                   </button>
                 </div>
@@ -541,7 +558,7 @@ const MainLocationHeader = ({
                   whileHover={{ scale: 1.15, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => navigate(wishlistPath)}
-                  className="text-slate-900 hover:text-red-500 transition-all">
+                  className={`${textColorClass} hover:text-red-500 transition-all`}>
                   <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
                 </motion.button>
 
@@ -549,7 +566,7 @@ const MainLocationHeader = ({
                   whileHover={{ scale: 1.15, rotate: -5 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => navigate(cartPath)}
-                  className="text-slate-900 hover:text-slate-700 transition-all relative group">
+                  className={`${textColorClass} hover:opacity-80 transition-all relative group`}>
                   <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-[#FE5502] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-red-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
@@ -577,15 +594,15 @@ const MainLocationHeader = ({
               }}
               className="relative z-10">
               <div className="mb-1">
-                <span className="inline-flex items-center rounded-full border border-black/10 bg-white/18 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-slate-900 backdrop-blur-sm">
+                <span className={`inline-flex items-center rounded-full border ${appNameBorderClass} bg-white/18 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.24em] ${textColorClass} backdrop-blur-sm`}>
                   {appName}
                 </span>
               </div>
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <AccessTimeIcon sx={{ fontSize: 16, color: "#111827" }} />
-                    <span className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                    <AccessTimeIcon sx={{ fontSize: 16, color: iconColor }} />
+                    <span className={`text-base font-bold ${textColorClass} tracking-tight leading-none`}>
                       {currentLocation.time}
                     </span>
                   </div>
@@ -596,15 +613,15 @@ const MainLocationHeader = ({
                     onClick={() => {
                       setIsLocationOpen(true);
                     }}
-                    className="flex items-center gap-1 text-slate-800 cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left">
-                    <LocationOnIcon sx={{ fontSize: 14, color: "#111827" }} />
+                    className={`flex items-center gap-1 ${subTextColorClass} cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left`}>
+                    <LocationOnIcon sx={{ fontSize: 14, color: iconColor }} />
                     <div className="text-[10px] font-medium leading-tight max-w-[280px] truncate">
                       {isFetchingLocation
                         ? "Detecting location..."
                         : currentLocation.name}
                     </div>
                     <ChevronDownIcon
-                      sx={{ fontSize: 12, opacity: 0.5, color: "#111827" }}
+                      sx={{ fontSize: 12, opacity: 0.5, color: iconColor }}
                     />
                   </button>
                 </div>
