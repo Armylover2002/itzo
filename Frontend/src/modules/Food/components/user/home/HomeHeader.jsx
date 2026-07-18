@@ -325,31 +325,24 @@ export default function HomeHeader({
           className="flex items-start gap-2 cursor-pointer flex-1 min-w-0 bg-transparent border-0 p-0 text-left outline-none"
           onClick={handleLocationClick}
         >
-          {isFood ? (
-            <>
-              <Navigation
-                className="h-[14px] w-[14px] rotate-[15deg] mt-[5px] shrink-0"
-                style={{ color: theme.accent, fill: theme.accent }}
-                strokeWidth={2.5}
-              />
-              <div className="flex min-w-0 max-w-[190px] flex-col">
-                <div className="flex items-center gap-[3px]">
-                  <span className="truncate text-[16px] font-extrabold tracking-[-0.3px]">
-                    {locationTitle}
-                  </span>
-                  <ChevronDown className="h-[14px] w-[14px] shrink-0 opacity-80" strokeWidth={3} />
-                </div>
-                <span className="max-w-[190px] truncate text-[11px] font-medium text-white/75">
-                  {locationSubtitle}
+          <>
+            <Navigation
+              className="h-[14px] w-[14px] rotate-[15deg] mt-[5px] shrink-0"
+              style={{ color: theme.accent, fill: theme.accent }}
+              strokeWidth={2.5}
+            />
+            <div className="flex min-w-0 max-w-[190px] flex-col">
+              <div className="flex items-center gap-[3px]">
+                <span className="truncate text-[16px] font-extrabold tracking-[-0.3px]">
+                  {locationTitle}
                 </span>
+                <ChevronDown className="h-[14px] w-[14px] shrink-0 opacity-80" strokeWidth={3} />
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col min-w-0">
-              <span className="text-[20px] font-black tracking-tighter leading-none mb-0.5">15 mins</span>
-              <span className="text-[10px] font-bold truncate opacity-70">To {locationTitle}</span>
+              <span className="max-w-[190px] truncate text-[11px] font-medium text-white/75">
+                {locationSubtitle}
+              </span>
             </div>
-          )}
+          </>
         </button>
 
         <div className="flex items-center gap-2 shrink-0">
