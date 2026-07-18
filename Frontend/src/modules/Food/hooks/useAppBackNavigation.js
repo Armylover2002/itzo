@@ -6,6 +6,8 @@ const toFoodPath = (value) => {
   if (typeof value !== "string") return null
   const trimmed = value.trim()
   if (!trimmed) return null
+  if (trimmed.startsWith("/quick/")) return trimmed
+  if (trimmed === "/quick") return trimmed
   if (trimmed.startsWith("/food/")) return trimmed
   if (trimmed === "/food") return trimmed
   if (trimmed.startsWith("/user/")) return `/food${trimmed}`
@@ -109,7 +111,7 @@ const resolveBackPath = ({ pathname, search, state }) => {
     normalizedPath === "/user/cart/select-address" ||
     normalizedPath === "/user/cart/address-selector"
   ) {
-    return "/cart"
+    return explicitBackPath || "/cart"
   }
 
   if (normalizedPath === "/user/address-selector") {

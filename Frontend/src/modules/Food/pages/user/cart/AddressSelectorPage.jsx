@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation as useRouterLocation } from "react-router-dom"
 import { ChevronLeft, ChevronRight, Plus, MapPin, MoreHorizontal, Navigation, Home, Building2, Briefcase, Phone, X, Crosshair, Search } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
@@ -99,6 +99,7 @@ const persistSelectedLocation = (locationData) => {
 
 export default function AddressSelectorPage() {
   const navigate = useNavigate()
+  const routerLocation = useRouterLocation()
   const goBack = useAppBackNavigation()
   const { location, loading, requestLocation, reverseGeocode } = useGeoLocation()
   const { addresses = [], addAddress, updateAddress, setDefaultAddress, userProfile } = useProfile()
@@ -342,7 +343,8 @@ export default function AddressSelectorPage() {
           toast.success("Location updated", { id: "geo" })
           // Redirect if they are on the main selection page
           setTimeout(() => {
-            navigate("/food/user")
+            const from = routerLocation?.state?.from || "/food/user"
+            navigate(from, { replace: true })
           }, 800)
         }
       } else {
@@ -362,7 +364,7 @@ export default function AddressSelectorPage() {
       toast.success("Address selected")
       
       // Use "from" state if available, otherwise default to home page
-      const from = location?.state?.from || "/food/user"
+      const from = routerLocation?.state?.from || "/food/user"
       setTimeout(() => {
         navigate(from, { replace: true })
       }, 500)
@@ -465,23 +467,29 @@ export default function AddressSelectorPage() {
         latitude: mapPosition[0],
         longitude: mapPosition[1]
       }
-      const created = await addAddress(payload)
-      if (created) {
-        const id = getAddressId(created)
-        if (id) await setDefaultAddress(id)
-        persistSelectedLocation(buildLocationPayloadFromAddress(created || payload))
-        try { localStorage.setItem("deliveryAddressMode", "saved") } catch {}
-        toast.success("Address saved")
-        setShowAddressForm(false)
-        setAddressAutocompleteValue("")
-        setKeywordAddressSuggestions([])
-        
-        // Use "from" state if available, otherwise default to home page
-        const from = location?.state?.from || "/food/user"
-        setTimeout(() => {
-          navigate(from, { replace: true })
-        }, 500)
+      
+      let created = payload;
+      if (userProfile) {
+        created = await addAddress(payload)
+        if (created) {
+          const id = getAddressId(created)
+          if (id) await setDefaultAddress(id)
+        }
       }
+      
+      persistSelectedLocation(buildLocationPayloadFromAddress(created || payload))
+      try { localStorage.setItem("deliveryAddressMode", userProfile ? "saved" : "current") } catch {}
+      toast.success(userProfile ? "Address saved" : "Location set")
+      setShowAddressForm(false)
+      setAddressAutocompleteValue("")
+      setKeywordAddressSuggestions([])
+      
+      // Use "from" state if available, otherwise default to home page
+      const from = routerLocation?.state?.from || "/food/user"
+      setTimeout(() => {
+        navigate(from, { replace: true })
+      }, 500)
+      
     } catch (error) {
       toast.error("Failed to save address")
     } finally {
