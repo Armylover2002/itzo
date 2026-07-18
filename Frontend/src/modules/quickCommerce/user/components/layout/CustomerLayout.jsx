@@ -15,18 +15,18 @@ const CustomerLayout = ({ children, showHeader: showHeaderProp, fullHeight = fal
     // Route-based visibility logic with module prefix stripping
     const path = location.pathname.replace(/^\/quick(?:-commerce(?:\/user)?)?/, '') || '/';
 
-    const hideHeaderRoutes = ['/categories', '/category', '/orders', '/transactions', '/profile', '/profile/edit', '/wishlist', '/addresses', '/wallet', '/support', '/privacy', '/about', '/terms', '/checkout', '/search', '/chat', '/product', '/cart'];
+    const hideHeaderRoutes = ['/categories', '/category', '/orders', '/transactions', '/profile', '/profile/edit', '/wishlist', '/addresses', '/wallet', '/support', '/privacy', '/about', '/terms', '/checkout', '/search', '/chat', '/product', '/cart', '/returns'];
     const hideBottomNavRoutes = ['/cart', '/checkout', '/search', '/chat'];
     const hideCartRoutes = ['/cart', '/checkout', '/search', '/chat'];
     const matchesRoutePrefix = (routePrefix) =>
         path === routePrefix || path.startsWith(`${routePrefix}/`);
 
-    const showBottomNav = showBottomNavProp !== undefined ? showBottomNavProp : !hideBottomNavRoutes.includes(path);
+    const showBottomNav = showBottomNavProp !== undefined ? showBottomNavProp : (!hideBottomNavRoutes.includes(path) && !matchesRoutePrefix('/returns'));
     const showCart = showCartProp !== undefined ? showCartProp : (!hideCartRoutes.includes(path) && !matchesRoutePrefix('/orders'));
 
     // Condition to hide the MobileFooterMessage ("India's last minute app") on specific pages
     const hideFooterMessageRoutes = ['/profile', '/profile/edit'];
-    const showFooterMessage = showBottomNav && !hideFooterMessageRoutes.includes(path) && !matchesRoutePrefix('/category');
+    const showFooterMessage = showBottomNav && !hideFooterMessageRoutes.includes(path) && !matchesRoutePrefix('/category') && !matchesRoutePrefix('/returns');
 
     const finalShowBottomNavMobile = showBottomNav && !isProductDetailOpen;
     const finalShowFooterMessageMobile = showFooterMessage && !isProductDetailOpen;
