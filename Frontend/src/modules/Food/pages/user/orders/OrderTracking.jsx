@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from "react"
-import { useParams, Link, useSearchParams, useLocation } from "react-router-dom"
+import { useParams, Link, useSearchParams, useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import {
@@ -805,6 +805,7 @@ function normalizeQuickOrderForTracking(rawOrder) {
 }
 
 export default function OrderTracking() {
+  const navigate = useNavigate()
   const companyName = useCompanyName()
   const { orderId } = useParams()
   const [searchParams] = useSearchParams()
