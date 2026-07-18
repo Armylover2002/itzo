@@ -19,7 +19,8 @@ import {
   Receipt,
   CircleSlash,
   Loader2,
-  Star
+  Star,
+  Package
 } from "lucide-react"
 import AnimatedPage from "@food/components/user/AnimatedPage"
 import { Card, CardContent } from "@food/components/ui/card"
@@ -611,7 +612,8 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
         }
       }
       return merged
-    })()
+    })(),
+    returnRequest: apiOrder?.returnRequest || previousOrder?.returnRequest || null
   }
 }
 
@@ -2501,6 +2503,31 @@ export default function OrderTracking() {
               subtitle=""
               onClick={handleCancelOrder}
             />
+          </motion.div>
+        )}
+
+        {isQuickOrder && isDeliveredOrder && (
+          <motion.div
+            className="bg-white rounded-xl shadow-sm overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            {order.returnRequest ? (
+              <SectionItem
+                icon={RefreshCw}
+                title="View Return Request"
+                subtitle="Check the status of your return request"
+                onClick={() => navigate(`/quick/returns/${order.returnRequest._id}`)}
+              />
+            ) : (
+              <SectionItem
+                icon={Package}
+                title="Return Order"
+                subtitle="Request a return for this delivered order"
+                onClick={() => navigate(`/quick/returns/create/${orderId}`)}
+              />
+            )}
           </motion.div>
         )}
 

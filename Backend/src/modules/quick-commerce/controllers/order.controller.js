@@ -6,6 +6,7 @@ import { QuickCart } from '../models/cart.model.js';
 import { QuickProduct } from '../models/product.model.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
+import { ReturnRequest } from '../returns/models/returnRequest.model.js';
 import { getSellerCommissionSnapshot } from '../admin/services/commission.service.js';
 import {
   createRazorpayOrder,
@@ -600,6 +601,9 @@ export const getOrderById = async (req, res) => {
         ? await Seller.findById(sellerOrder.sellerId).select('_id name shopName location').lean()
         : null;
 
+    const returnRequest = await ReturnRequest.findOne({ orderId: order.orderId }).lean();
+
+
     const deliveryAddress = order.deliveryAddress || {};
     const deliveryCoords = Array.isArray(deliveryAddress.location?.coordinates)
       ? {
@@ -653,6 +657,12 @@ export const getOrderById = async (req, res) => {
         ...(dropOtp.required && !dropOtp.verified && handoverOtp
           ? { handoverOtp }
           : {}),
+        returnRequest: returnRequest
+          ? {
+              _id: returnRequest._id,
+              status: returnRequest.status,
+            }
+          : null,
       },
     });
   } catch (error) {
