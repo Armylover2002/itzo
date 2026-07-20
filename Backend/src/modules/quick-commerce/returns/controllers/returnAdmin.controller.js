@@ -107,6 +107,7 @@ export const approveReturn = async (req, res) => {
     });
   } catch (error) {
     logger.error(`[AdminReturn] Approve error: ${error.message}`);
+    import('fs').then(fs => fs.writeFileSync('approve_error_log.txt', error.stack || error.toString()));
     return sendError(res, error.statusCode || 500, error.message);
   }
 };

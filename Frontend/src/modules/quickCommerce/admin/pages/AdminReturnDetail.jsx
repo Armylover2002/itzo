@@ -42,7 +42,7 @@ export default function AdminReturnDetail() {
     try {
       setLoading(true);
       const res = await adminApi.getReturnDetails(id);
-      const details = res?.data?.result || res?.data;
+      const details = res?.data?.data || res?.data?.result || res?.data;
       setData(details);
       
       // Initialize approvals state
@@ -240,12 +240,16 @@ export default function AdminReturnDetail() {
               {legs.map(leg => (
                 <div key={leg._id} className="p-4 border rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
-                    <h4 className="font-bold text-gray-800">Seller ID: {leg.sellerId}</h4>
+                    <h4 className="font-bold text-gray-800">
+                      Seller: {leg.sellerId?.shopName || leg.sellerId?.name || (typeof leg.sellerId === 'string' ? leg.sellerId : 'Unknown')}
+                    </h4>
                     <p className="text-sm text-gray-500">Status: <strong className="text-gray-700">{leg.returnStatus}</strong></p>
                     <p className="text-sm text-gray-500">Refund Amount: ₹{leg.returnRefundAmount || 0}</p>
                     {leg.assignment?.deliveryPartnerId && (
                       <div className="mt-2 flex items-center gap-3">
-                        <p className="text-sm text-blue-600 font-medium">Assigned Rider: {leg.assignment.deliveryPartnerId}</p>
+                        <p className="text-sm text-blue-600 font-medium">
+                          Assigned Rider: {leg.assignment.deliveryPartnerId?.name || (typeof leg.assignment.deliveryPartnerId === 'string' ? leg.assignment.deliveryPartnerId : 'Unknown')}
+                        </p>
                         {['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED'].includes(leg.returnStatus) && (
                           <button 
                             onClick={() => reassignRider(leg._id)}

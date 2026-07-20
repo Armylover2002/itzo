@@ -22,7 +22,9 @@ export default function AdminReturnsList() {
       const params = {};
       if (statusFilter !== 'all') params.status = statusFilter;
       const res = await adminApi.getReturns(params);
-      if (res?.data?.returns) {
+      if (res?.data?.data?.returns) {
+        setReturns(res.data.data.returns);
+      } else if (res?.data?.returns) {
         setReturns(res.data.returns);
       }
     } catch (error) {
