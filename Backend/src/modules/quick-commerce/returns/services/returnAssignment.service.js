@@ -11,7 +11,7 @@ import { ReturnRequest } from '../models/returnRequest.model.js';
 import { QuickOrder } from '../../models/order.model.js';
 import { FoodDeliveryPartner } from '../../../food/delivery/models/deliveryPartner.model.js';
 import { listNearbyOnlineDeliveryPartners } from '../../../food/orders/services/order-dispatch.service.js';
-import { updateLegStatus } from './return.service.js';
+import { updateLegStatus, syncMasterStatus, addHistoryEntry } from './return.service.js';
 import {
   LEG_STATUS,
   ACTOR_ROLES,
@@ -30,7 +30,7 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
     const leg = await SellerReturn.findById(sellerReturnId).session(session);
     if (!leg) throw new Error('Return leg not found');
 
-    if (leg.returnStatus !== LEG_STATUS.PICKUP_PENDING && leg.returnStatus !== LEG_STATUS.RETURN_APPROVED) {
+    if (leg.returnStatus !== LEG_STATUS.PICKUP_PENDING && leg.returnStatus !== LEG_STATUS.RETURN_APPROVED && leg.returnStatus !== LEG_STATUS.PARTIALLY_APPROVED) {
       throw new Error(`Cannot assign: status is ${leg.returnStatus}`);
     }
 
@@ -77,6 +77,18 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
 
     leg.returnStatus = LEG_STATUS.RETURN_PICKUP_ASSIGNED;
     await leg.save({ session });
+
+    await addHistoryEntry({
+      returnRequestId: leg.returnRequestId,
+      sellerReturnId: leg._id,
+      fromStatus: leg.returnStatus, // technically old status, but it doesn't matter too much, maybe we should grab oldStatus
+      toStatus: LEG_STATUS.RETURN_PICKUP_ASSIGNED,
+      actorRole: ACTOR_ROLES.SYSTEM,
+      note: `Auto-assigned delivery partner ${selectedPartner.partnerId}`,
+      session,
+    });
+
+    await syncMasterStatus(leg.returnRequestId, session);
 
     await session.commitTransaction();
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X, CreditCard, ExternalLink, Image as ImageIcon, RefreshCcw, CheckCircle2, Clock, XCircle, Package, Truck, Store, Receipt } from 'lucide-react';
+import { ArrowLeft, Check, X, CreditCard, ExternalLink, Image as ImageIcon, RefreshCcw, CheckCircle2, Clock, XCircle, Package, Truck, Store, Receipt, FastForward } from 'lucide-react';
 
 const TIMELINE_STEPS = [
   { id: 'RETURN_REQUESTED', label: 'Requested', icon: Package },
@@ -280,6 +280,17 @@ export default function AdminReturnDetail() {
                             <RefreshCcw className="w-3 h-3" /> Reassign
                           </button>
                         )}
+                      </div>
+                    )}
+                    {(!leg.assignment?.deliveryPartnerId && ['RETURN_APPROVED', 'PARTIALLY_APPROVED', 'PICKUP_PENDING'].includes(leg.returnStatus)) && (
+                      <div className="mt-2">
+                        <button 
+                          onClick={() => reassignRider(leg._id)}
+                          disabled={submitting}
+                          className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
+                        >
+                          <FastForward className="w-3 h-3" /> Request Pickup
+                        </button>
                       </div>
                     )}
                     {leg.pickupProofImages && leg.pickupProofImages.length > 0 && (

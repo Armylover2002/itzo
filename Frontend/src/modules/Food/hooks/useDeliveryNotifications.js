@@ -132,6 +132,10 @@ const buildDeliveryOrderNotification = (orderData = {}) => {
 }
 
 const isActionableDeliveryOffer = (orderData = {}) => {
+  if (orderData?.isReturn) {
+    return true;
+  }
+
   const orderStatus = String(
     orderData?.orderStatus || orderData?.status || ''
   ).trim().toLowerCase();

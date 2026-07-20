@@ -16,7 +16,7 @@ import {
   validateCancelReturn,
 } from '../validators/return.validator.js';
 import { sendResponse, sendError } from '../../../../utils/response.js';
-import { ACTOR_ROLES } from '../constants/returnStateMachine.js';
+import { ACTOR_ROLES, LEG_STATUS } from '../constants/returnStateMachine.js';
 import { logger } from '../../../../utils/logger.js';
 
 export const getAdminReturns = async (req, res) => {
@@ -93,8 +93,11 @@ export const approveReturn = async (req, res) => {
       approvals: validatedData.approvals,
     });
     
-    // Automatically attempt dispatch for any legs that moved to PICKUP_PENDING
-    const legs = await SellerReturn.find({ returnRequestId, returnStatus: 'pickup_pending' });
+    // Automatically attempt dispatch for any legs that were approved
+    const legs = await SellerReturn.find({ 
+      returnRequestId, 
+      returnStatus: { $in: [LEG_STATUS.RETURN_APPROVED, LEG_STATUS.PARTIALLY_APPROVED, LEG_STATUS.PICKUP_PENDING] } 
+    });
     for (const leg of legs) {
       // Fire and forget auto-assign
       returnAssignmentService.tryAutoReassign(leg._id).catch((err) => {
