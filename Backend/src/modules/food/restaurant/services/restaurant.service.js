@@ -217,7 +217,9 @@ const toRestaurantProfile = (doc) => {
                 type: doc.currentLocation.type || 'Point',
                 coordinates: Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates : undefined,
                 latitude: typeof doc.currentLocation.latitude === 'number' ? doc.currentLocation.latitude : (Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates[1] : undefined),
-                longitude: typeof doc.currentLocation.longitude === 'number' ? doc.currentLocation.longitude : (Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates[0] : undefined)
+                longitude: typeof doc.currentLocation.longitude === 'number' ? doc.currentLocation.longitude : (Array.isArray(doc.currentLocation.coordinates) ? doc.currentLocation.coordinates[0] : undefined),
+                formattedAddress: doc.currentLocation.formattedAddress || doc.currentLocation.address || '',
+                address: doc.currentLocation.address || doc.currentLocation.formattedAddress || '',
             }
             : null
     };

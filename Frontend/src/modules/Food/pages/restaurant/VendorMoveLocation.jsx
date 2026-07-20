@@ -471,7 +471,7 @@ export default function VendorMoveLocation() {
     try {
       setSaving(true)
       // Uses existing updateLiveLocation API which validates zone on backend
-      await restaurantAPI.updateLiveLocation(lat, lng)
+      await restaurantAPI.updateLiveLocation(lat, lng, address)
 
       toast.success("Location updated successfully!", { duration: 2500 })
 

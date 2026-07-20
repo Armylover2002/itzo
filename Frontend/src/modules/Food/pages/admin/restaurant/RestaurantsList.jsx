@@ -2090,7 +2090,7 @@ export default function RestaurantsList() {
                         ) : null}
                       </div>
                       <div className="space-y-3">
-                        {!isEditingLocation && (r?.location || hasFlatAddress || r?.currentLocation?.formattedAddress) && (
+                        {!isEditingLocation && (r?.location || hasFlatAddress || r?.currentLocation?.formattedAddress || r?.currentLocation?.address || r?.currentLocation?.coordinates?.length >= 2) && (
                           <div className="flex items-start gap-3">
                             <MapPin className="w-5 h-5 text-slate-400 mt-0.5" />
                             <div>
@@ -2101,9 +2101,13 @@ export default function RestaurantsList() {
                                 )}
                               </p>
                               <p className="text-sm font-medium text-slate-900">
-                                {r?.liveTrackingEnabled && r?.currentLocation?.formattedAddress
-                                  ? r.currentLocation.formattedAddress
-                                  : r?.location ? formatLocationAddress(r.location, selectedRestaurant?.zone) : flatAddress}
+                                {(() => {
+                                  if (r?.liveTrackingEnabled && r?.currentLocation) {
+                                    const liveAddr = r.currentLocation.formattedAddress || r.currentLocation.address || formatLocationAddress(r.currentLocation);
+                                    if (liveAddr && liveAddr !== "N/A") return liveAddr;
+                                  }
+                                  return r?.location ? formatLocationAddress(r.location, selectedRestaurant?.zone) : flatAddress;
+                                })()}
                               </p>
                             </div>
                           </div>

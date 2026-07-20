@@ -348,7 +348,7 @@ export async function getRestaurants(query) {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .select('restaurantId restaurantName location area city profileImage coverImages menuImages status ownerName ownerPhone zoneId')
+            .select('restaurantId restaurantName location area city profileImage coverImages menuImages status ownerName ownerPhone zoneId businessType liveTrackingEnabled currentLocation lastLocationUpdate')
             .populate('zoneId', 'name zoneName')
             .lean(),
         FoodRestaurant.countDocuments(filter)
@@ -2278,10 +2278,56 @@ export async function getRestaurantReviews(query = {}) {
 
 export async function getRestaurantById(id) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-    return FoodRestaurant.findById(id)
+    const restaurant = await FoodRestaurant.findById(id)
         .select('-__v')
         .populate('zoneId', 'name zoneName serviceLocation isActive')
         .lean();
+    if (!restaurant) return null;
+
+    // ── Normalize live-tracking vendor locations for admin display ──
+    // Ensures the admin panel can always display the live address even for
+    // vendors who moved before the backend sync was deployed.
+    if (restaurant.liveTrackingEnabled && restaurant.currentLocation) {
+        const cl = restaurant.currentLocation;
+        const loc = restaurant.location || {};
+
+        // 1. Ensure currentLocation has formattedAddress / address populated
+        if (!cl.formattedAddress && !cl.address) {
+            // Fall back to the canonical location's address fields
+            const fallbackAddr = loc.formattedAddress || loc.address || '';
+            if (fallbackAddr) {
+                cl.formattedAddress = fallbackAddr;
+                cl.address = fallbackAddr;
+            }
+        } else {
+            if (!cl.formattedAddress) cl.formattedAddress = cl.address;
+            if (!cl.address) cl.address = cl.formattedAddress;
+        }
+
+        // 2. If currentLocation has coordinates but location doesn't match,
+        //    mirror currentLocation into location for display consistency.
+        if (cl.coordinates?.length >= 2 && cl.formattedAddress) {
+            const clLat = cl.latitude || cl.coordinates[1];
+            const clLng = cl.longitude || cl.coordinates[0];
+            const locLat = loc.latitude || loc.coordinates?.[1];
+            const locLng = loc.longitude || loc.coordinates?.[0];
+
+            // Only override if the coordinates actually differ (pre-sync data)
+            if (clLat !== locLat || clLng !== locLng) {
+                restaurant.location = {
+                    ...loc,
+                    type: 'Point',
+                    coordinates: cl.coordinates,
+                    latitude: clLat,
+                    longitude: clLng,
+                    formattedAddress: cl.formattedAddress || loc.formattedAddress,
+                    address: cl.address || loc.address,
+                };
+            }
+        }
+    }
+
+    return restaurant;
 }
 
 export async function getRestaurantAnalytics(restaurantId) {

@@ -196,7 +196,10 @@ export function LiveLocationProvider({ children }) {
     }
 
     // Movement threshold (15m)
-    if (lastSentLocRef.current) {
+    // BYPASS threshold if we have an address but the backend is missing it
+    const hasMissingAddress = address && !restaurantData?.currentLocation?.formattedAddress;
+    
+    if (lastSentLocRef.current && !hasMissingAddress) {
       const dist = getDistance(lastSentLocRef.current.lat, lastSentLocRef.current.lng, lat, lng);
       if (dist < MIN_MOVEMENT_METERS) {
         return; 

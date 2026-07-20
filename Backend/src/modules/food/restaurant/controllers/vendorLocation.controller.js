@@ -69,7 +69,10 @@ export const updateLiveLocationController = async (req, res) => {
         const prevLat = restaurant.currentLocation?.latitude;
         const prevLng = restaurant.currentLocation?.longitude;
 
+        const hasMissingAddress = address && !restaurant.currentLocation?.formattedAddress;
+
         if (
+            !hasMissingAddress &&
             Number.isFinite(prevLat) &&
             Number.isFinite(prevLng) &&
             haversineDistance(prevLat, prevLng, lat, lng) < MIN_MOVEMENT_METRES
@@ -92,6 +95,7 @@ export const updateLiveLocationController = async (req, res) => {
             latitude: lat,
             longitude: lng,
             formattedAddress: resolvedAddress,
+            address: resolvedAddress,
         };
         restaurant.lastLocationUpdate = new Date();
         restaurant.locationSource = src;
@@ -162,6 +166,23 @@ export const toggleLiveTrackingController = async (req, res) => {
         // }
 
         restaurant.liveTrackingEnabled = enabled;
+
+        // Sync canonical `location` immediately when live tracking is turned ON
+        if (enabled && restaurant.currentLocation?.latitude && restaurant.currentLocation?.longitude) {
+            restaurant.location = {
+                type: 'Point',
+                coordinates: [restaurant.currentLocation.longitude, restaurant.currentLocation.latitude],
+                latitude: restaurant.currentLocation.latitude,
+                longitude: restaurant.currentLocation.longitude,
+                formattedAddress: restaurant.currentLocation.formattedAddress || restaurant.currentLocation.address || '',
+                address: restaurant.currentLocation.address || restaurant.currentLocation.formattedAddress || '',
+                ...(restaurant.location?.city ? { city: restaurant.location.city } : {}),
+                ...(restaurant.location?.state ? { state: restaurant.location.state } : {}),
+                ...(restaurant.location?.pincode ? { pincode: restaurant.location.pincode } : {}),
+                ...(restaurant.location?.area ? { area: restaurant.location.area } : {}),
+            };
+        }
+
         await restaurant.save();
 
         // When tracking is disabled, update RTDB isLive flag without wiping coordinates.
