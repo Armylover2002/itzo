@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, X, CreditCard, ExternalLink, Image as ImageIcon, RefreshCcw } from 'lucide-react';
+import { ArrowLeft, Check, X, CreditCard, ExternalLink, Image as ImageIcon, RefreshCcw, CheckCircle2, Clock, XCircle, Package, Truck, Store, Receipt } from 'lucide-react';
+
+const TIMELINE_STEPS = [
+  { id: 'RETURN_REQUESTED', label: 'Requested', icon: Package },
+  { id: 'UNDER_ADMIN_REVIEW', label: 'Under Review', icon: Clock },
+  { id: 'APPROVED', label: 'Approved', icon: CheckCircle2 },
+  { id: 'IN_PROGRESS', label: 'In Progress', icon: Truck },
+  { id: 'COMPLETED', label: 'Completed', icon: Store },
+  { id: 'REFUND_COMPLETED', label: 'Refunded', icon: Receipt },
+];
 import { adminApi } from '../services/adminApi';
 import Loader from '@food/components/Loader';
 import dayjs from 'dayjs';
@@ -132,6 +141,18 @@ export default function AdminReturnDetail() {
 
   const { returnRequest, legs, history, user } = data;
   const isReviewPending = ['RETURN_REQUESTED', 'UNDER_ADMIN_REVIEW'].includes(returnRequest.status);
+
+  // Calculate current active step index based on status
+  let currentStepIndex = 0;
+  const status = returnRequest.status;
+  
+  if (status === 'RETURN_REQUESTED') currentStepIndex = 0;
+  if (status === 'UNDER_ADMIN_REVIEW') currentStepIndex = 1;
+  if (status === 'APPROVED' || status === 'PARTIALLY_APPROVED') currentStepIndex = 2;
+  if (status === 'IN_PROGRESS') currentStepIndex = 3;
+  if (status === 'COMPLETED' || status === 'PARTIALLY_COMPLETED' || status === 'REFUND_PENDING') currentStepIndex = 4;
+  if (status === 'REFUND_COMPLETED') currentStepIndex = 5;
+  if (status === 'CANCELLED' || status === 'REJECTED' || status === 'EXPIRED') currentStepIndex = -1;
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
@@ -299,6 +320,46 @@ export default function AdminReturnDetail() {
 
         {/* Right Col */}
         <div className="space-y-6">
+          {/* Status Tracking */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <h2 className="text-base font-bold text-gray-900 mb-3">Return Status Tracking</h2>
+            {currentStepIndex >= 0 ? (
+              <div className="relative pl-3 space-y-6 mt-4 mb-2">
+                <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-gray-100"></div>
+                {TIMELINE_STEPS.map((step, idx) => {
+                  const isActive = idx === currentStepIndex;
+                  const isPast = idx < currentStepIndex;
+                  const Icon = step.icon;
+                  
+                  return (
+                    <div key={step.id} className="relative flex items-start gap-4">
+                      <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 
+                        ${isPast || isActive ? 'bg-green-50 border-green-500 text-green-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="pt-1">
+                        <p className={`text-sm font-medium ${isPast || isActive ? 'text-gray-900' : 'text-gray-400'}`}>
+                          {step.label}
+                        </p>
+                        {isActive && (
+                          <p className="text-xs text-green-600 mt-0.5 font-medium">Currently active</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-red-50 text-red-700 p-4 rounded-xl flex items-center gap-3">
+                <XCircle className="w-6 h-6" />
+                <div>
+                  <p className="font-bold">Return {status.replace('_', ' ')}</p>
+                  <p className="text-sm mt-0.5 opacity-90">{returnRequest.cancellationReason || 'This return request has been closed.'}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Customer Info */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <h2 className="text-base font-bold text-gray-900 mb-3">Customer Information</h2>
