@@ -86,7 +86,9 @@ console.error = (...args) => {
     args[0].includes('chrome-extension://') ||
     args[0].includes('_$initialUrl') ||
     args[0].includes('_$onReInit') ||
-    args[0].includes('_$bindListeners')
+    args[0].includes('_$bindListeners') ||
+    args[0].includes('google.maps.DirectionsService is deprecated') ||
+    args[0].includes('google.maps.DirectionsRenderer is deprecated')
   )) return
 
   if (
@@ -116,7 +118,24 @@ console.error = (...args) => {
     (errorStr.includes('WebSocket connection to') && errorStr.includes('socket.io') && errorStr.includes('failed'))
   ) return
 
+  if (errorStr.includes('google.maps.DirectionsService is deprecated') || errorStr.includes('google.maps.DirectionsRenderer is deprecated')) {
+    return
+  }
+
   originalError.apply(console, args)
+}
+
+const originalWarn = console.warn
+console.warn = (...args) => {
+  const warnStr = args.join(' ')
+  if (
+    warnStr.includes('google.maps.DirectionsService is deprecated') ||
+    warnStr.includes('google.maps.DirectionsRenderer is deprecated') ||
+    warnStr.includes('google.maps.DistanceMatrixService is deprecated')
+  ) {
+    return
+  }
+  originalWarn.apply(console, args)
 }
 
 window.addEventListener('unhandledrejection', (event) => {

@@ -124,13 +124,22 @@ export function onDeliveryOtpGenerated(getToken, handler) {
   
   const wrappedHandler = (payload) => {
     console.log('[orderSocket] delivery:otp:generated event received:', payload);
+    // Map missing fields if this came from `delivery_drop_otp`
+    if (!payload.expiresAt) {
+      payload.expiresAt = Date.now() + 10 * 60 * 1000;
+    }
+    if (payload.deliveryPersonNearby === undefined) {
+      payload.deliveryPersonNearby = true;
+    }
     handler(payload);
   };
   
   s.on("delivery:otp:generated", wrappedHandler);
+  s.on("delivery_drop_otp", wrappedHandler);
   return () => {
     console.log('[orderSocket] Unregistering delivery:otp:generated listener');
     s.off("delivery:otp:generated", wrappedHandler);
+    s.off("delivery_drop_otp", wrappedHandler);
   };
 }
 
@@ -147,11 +156,20 @@ export function onDeliveryOtpValidated(getToken, handler) {
     console.log('[orderSocket] delivery:otp:validated event received:', payload);
     handler(payload);
   };
+
+  const statusHandler = (payload) => {
+    if (payload?.orderStatus === 'delivered' || payload?.status === 'delivered') {
+      console.log('[orderSocket] mapped order_status_update to otp validated');
+      handler(payload);
+    }
+  };
   
   s.on("delivery:otp:validated", wrappedHandler);
+  s.on("order_status_update", statusHandler);
   return () => {
     console.log('[orderSocket] Unregistering delivery:otp:validated listener');
     s.off("delivery:otp:validated", wrappedHandler);
+    s.off("order_status_update", statusHandler);
   };
 }
 export function onOrderCancelled(getToken, handler) {

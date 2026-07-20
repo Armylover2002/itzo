@@ -36,7 +36,7 @@ const ExploreMoreSection = memo(({
           <div className="relative z-10 flex justify-between items-start gap-1 px-1 sm:px-2">
             {finalExploreItems.map((item, index) => (
               <Link
-                key={item.id}
+                key={item.id || `explore-item-${index}`}
                 to={item.href}
                 className="flex flex-col items-center gap-1.5 group w-[30%]"
               >

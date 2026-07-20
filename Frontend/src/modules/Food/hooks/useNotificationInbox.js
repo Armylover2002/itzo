@@ -28,6 +28,19 @@ export default function useNotificationInbox(module, options = {}) {
   const fetchInbox = useCallback(async () => {
     if (!module) return;
 
+    // Check if user is logged in before fetching to prevent 403 Forbidden
+    const hasToken = localStorage.getItem('user_accessToken') || 
+                     localStorage.getItem('accessToken') || 
+                     localStorage.getItem('admin_accessToken') ||
+                     localStorage.getItem('auth_customer');
+                     
+    if (!hasToken) {
+      setItems([]);
+      setUnreadCount(0);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await notificationAPI.getInbox(
