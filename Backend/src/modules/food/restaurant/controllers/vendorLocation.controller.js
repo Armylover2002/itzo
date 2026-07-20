@@ -84,15 +84,37 @@ export const updateLiveLocationController = async (req, res) => {
 
         // ── 5. Persist to MongoDB ────────────────────────────────────────────
         const src = locationSource === 'manual' ? 'manual' : 'gps';
+        const resolvedAddress = address || restaurant.currentLocation?.formattedAddress;
+
         restaurant.currentLocation = {
             type: 'Point',
             coordinates: [lng, lat],
             latitude: lat,
             longitude: lng,
-            formattedAddress: address || restaurant.currentLocation?.formattedAddress,
+            formattedAddress: resolvedAddress,
         };
         restaurant.lastLocationUpdate = new Date();
         restaurant.locationSource = src;
+
+        // ── 5b. Sync canonical `location` for street vendors with live tracking ──
+        // This ensures admin panel, delivery payloads, user listings, nearby search,
+        // and all other consumers see the same live coordinates without needing to
+        // check `currentLocation` separately. Fixed restaurants are unaffected.
+        if (restaurant.liveTrackingEnabled) {
+            restaurant.location = {
+                type: 'Point',
+                coordinates: [lng, lat],
+                latitude: lat,
+                longitude: lng,
+                formattedAddress: resolvedAddress,
+                address: resolvedAddress,
+                // Preserve existing structured address fields if no new address provided
+                ...(restaurant.location?.city ? { city: restaurant.location.city } : {}),
+                ...(restaurant.location?.state ? { state: restaurant.location.state } : {}),
+                ...(restaurant.location?.pincode ? { pincode: restaurant.location.pincode } : {}),
+                ...(restaurant.location?.area ? { area: restaurant.location.area } : {}),
+            };
+        }
 
         await restaurant.save();
 

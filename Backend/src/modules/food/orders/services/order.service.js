@@ -1002,7 +1002,15 @@ async function applyAggregateRating(model, entityId, newRating) {
 function buildDeliverySocketPayload(orderDoc, restaurantDoc = null) {
   const order = orderDoc?.toObject ? orderDoc.toObject() : orderDoc || {};
   const restaurant = restaurantDoc || order?.restaurantId || null;
-  const restaurantLocation = restaurant?.location || {};
+
+  // For street vendors with live tracking, prefer currentLocation (live GPS)
+  // over the static location field. Fixed restaurants always use location.
+  const isLiveVendor = restaurant?.liveTrackingEnabled === true &&
+    restaurant?.currentLocation &&
+    (restaurant.currentLocation.latitude || restaurant.currentLocation.coordinates?.length >= 2);
+  const restaurantLocation = isLiveVendor
+    ? restaurant.currentLocation
+    : (restaurant?.location || {});
   const pickupPoints = Array.isArray(order?.pickupPoints) ? order.pickupPoints : [];
 
   const userGender = order?.userId?.gender || "";
