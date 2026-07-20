@@ -1834,6 +1834,7 @@ export const resendSellerOrderDispatchController = async (req, res) => {
       ...buildDeliverySocketPayload(quickOrder, seller),
       orderId: quickOrder.orderId,
       orderMongoId: quickOrder._id?.toString?.(),
+      orderStatus: String(quickOrder.orderStatus || "pending").toLowerCase(),
       restaurantName:
         seller?.shopName || seller?.name || "Quick Commerce Seller",
       restaurantPhone: seller?.phone || "",

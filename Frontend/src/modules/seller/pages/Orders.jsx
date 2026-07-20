@@ -456,10 +456,10 @@ const Orders = () => {
     const sellerStatus = String(order?.status || "").toLowerCase();
     const dispatchStatus = String(order?.dispatchStatus || "").toLowerCase();
 
-    if (order?.deliveryPartner && dispatchStatus === "accepted") return false;
+    if (dispatchStatus === "accepted" || dispatchStatus === "completed" || dispatchStatus === "delivered") return false;
     if (["delivered", "cancelled"].includes(sellerStatus)) return false;
 
-    return ["confirmed", "packed", "out_for_delivery"].includes(sellerStatus);
+    return ["pending", "confirmed", "packed", "ready_for_pickup", "out_for_delivery"].includes(sellerStatus);
   };
 
   const exportOrders = () => {

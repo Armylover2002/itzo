@@ -139,7 +139,10 @@ const isActionableDeliveryOffer = (orderData = {}) => {
     orderData?.dispatch?.status || orderData?.dispatchStatus || ''
   ).trim().toLowerCase();
 
-  const actionableStatuses = ['confirmed', 'preparing', 'ready_for_pickup'];
+  // "pending" and "packed" are valid Quick Commerce states where a rider must be assigned.
+  // "confirmed" and "preparing" are valid Food module states.
+  // "ready_for_pickup" is valid for both modules.
+  const actionableStatuses = ['pending', 'confirmed', 'packed', 'preparing', 'ready_for_pickup'];
   const actionableDispatchStatuses = ['unassigned', 'assigned'];
 
   if (orderStatus && !actionableStatuses.includes(orderStatus)) {
