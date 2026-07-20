@@ -60,9 +60,6 @@ export const returnApi = {
   uploadImages: async (formData) => {
     try {
       const response = await axiosInstance.post(`${RETURN_API_URL}/upload-images`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
         contextModule: 'customer'
       });
       return response.data;

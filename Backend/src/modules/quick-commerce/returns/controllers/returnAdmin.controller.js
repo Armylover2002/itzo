@@ -83,7 +83,7 @@ export const getAdminReturnDetails = async (req, res) => {
 
 export const approveReturn = async (req, res) => {
   try {
-    const adminId = req.admin.id || req.admin._id;
+    const adminId = req.user.userId;
     const { returnRequestId } = req.params;
     const validatedData = validateAdminApproveReturn(req.body);
 
@@ -113,7 +113,7 @@ export const approveReturn = async (req, res) => {
 
 export const adminCancelReturn = async (req, res) => {
   try {
-    const adminId = req.admin.id || req.admin._id;
+    const adminId = req.user.userId;
     const { returnRequestId } = req.params;
     const validatedData = validateCancelReturn(req.body);
 
@@ -134,7 +134,7 @@ export const adminCancelReturn = async (req, res) => {
 
 export const processRefund = async (req, res) => {
   try {
-    const adminId = req.admin.id || req.admin._id;
+    const adminId = req.user.userId;
     const { sellerReturnId } = req.params;
 
     const result = await returnRefundService.processLegRefund(sellerReturnId, adminId);

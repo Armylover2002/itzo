@@ -91,7 +91,7 @@ export async function createReturnRequest({
     }).session(session);
 
     if (!order) throw new NotFoundError('Order not found or does not belong to you.');
-    if (order.status !== 'delivered') throw new ValidationError('Only delivered orders can be returned.');
+    if (order.orderStatus !== 'delivered') throw new ValidationError('Only delivered orders can be returned.');
 
     // 2. Validate Return Window
     const settings = getSettingsSync();
@@ -115,6 +115,9 @@ export async function createReturnRequest({
         (i) => (i.itemId || i.productId || i._id).toString() === reqItem.productId.toString()
       );
       if (!orderItem) throw new ValidationError(`Product ${reqItem.productId} not found in this order.`);
+      if (reqItem.quantity <= 0) {
+        throw new ValidationError(`Return quantity must be greater than 0 for product ${reqItem.productId}.`);
+      }
       if (reqItem.quantity > orderItem.quantity) {
         throw new ValidationError(`Cannot return more than ordered quantity for product ${reqItem.productId}.`);
       }

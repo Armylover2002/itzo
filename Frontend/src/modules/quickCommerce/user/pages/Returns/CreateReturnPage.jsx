@@ -90,11 +90,13 @@ export default function CreateReturnPage() {
   };
 
   const handleSubmit = async () => {
-    const itemsList = Object.keys(selectedItems).map(productId => ({
-      productId,
-      quantity: selectedItems[productId],
-      reason: mainReason
-    }));
+    const itemsList = Object.keys(selectedItems)
+      .filter(productId => selectedItems[productId] > 0)
+      .map(productId => ({
+        productId,
+        quantity: selectedItems[productId],
+        reason: mainReason
+      }));
     
     if (itemsList.length === 0) {
       return alert('Please select at least one item to return');

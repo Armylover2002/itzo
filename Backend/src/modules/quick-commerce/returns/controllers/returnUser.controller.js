@@ -20,7 +20,7 @@ import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
 
 export const createReturn = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id;
+    const userId = req.user.userId;
     const validatedData = validateCreateReturnRequest(req.body);
 
     const returnRequest = await returnService.createReturnRequest({
@@ -43,7 +43,7 @@ export const createReturn = async (req, res) => {
 
 export const getUserReturns = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id;
+    const userId = req.user.userId;
     const { page = 1, limit = 10, status } = req.query;
 
     const query = { userId };
@@ -72,7 +72,7 @@ export const getUserReturns = async (req, res) => {
 
 export const getReturnDetails = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id;
+    const userId = req.user.userId;
     const { returnRequestId } = req.params;
 
     const returnRequest = await ReturnRequest.findOne({
@@ -101,7 +101,7 @@ export const getReturnDetails = async (req, res) => {
 
 export const cancelReturn = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id;
+    const userId = req.user.userId;
     const { returnRequestId } = req.params;
     const validatedData = validateCancelReturn(req.body);
 
@@ -125,7 +125,7 @@ export const cancelReturn = async (req, res) => {
 
 export const requestPickupOtpResend = async (req, res) => {
   try {
-    const userId = req.user.id || req.user._id;
+    const userId = req.user.userId;
     const { sellerReturnId } = req.params;
 
     const leg = await SellerReturn.findOne({ _id: sellerReturnId, userId }).lean();

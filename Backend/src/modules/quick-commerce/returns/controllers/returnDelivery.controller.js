@@ -20,7 +20,7 @@ import { logger } from '../../../../utils/logger.js';
 
 export const getAssignedReturns = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { status } = req.query;
 
     let query = { 'assignment.deliveryPartnerId': partnerId };
@@ -59,7 +59,7 @@ export const getAssignedReturns = async (req, res) => {
 
 export const acceptAssignment = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
 
     const leg = await returnAssignmentService.acceptReturnAssignment(sellerReturnId, partnerId);
@@ -73,7 +73,7 @@ export const acceptAssignment = async (req, res) => {
 
 export const rejectAssignment = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
     const validatedData = validateRejectAssignment(req.body);
 
@@ -92,7 +92,7 @@ export const rejectAssignment = async (req, res) => {
 
 export const markReachedUser = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
 
     // 1. Update status to PICKUP_REACHED
@@ -131,7 +131,7 @@ export const markReachedUser = async (req, res) => {
 
 export const verifyPickupOtp = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
     
     // Add custom validation for images here to avoid refactoring validation schemas deeply
@@ -177,7 +177,7 @@ export const verifyPickupOtp = async (req, res) => {
 
 export const markHeadingToSeller = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
 
     const leg = await returnService.updateLegStatus({
@@ -196,7 +196,7 @@ export const markHeadingToSeller = async (req, res) => {
 
 export const markReachedSeller = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
 
     let leg = await returnService.updateLegStatus({
@@ -232,7 +232,7 @@ export const markReachedSeller = async (req, res) => {
 
 export const verifySellerOtp = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
     const validatedData = validateOtpVerify(req.body);
 
@@ -265,7 +265,7 @@ export const verifySellerOtp = async (req, res) => {
 
 export const markFailed = async (req, res) => {
   try {
-    const partnerId = req.deliveryPartner.id || req.deliveryPartner._id;
+    const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
     const validatedData = validateFailedLeg(req.body);
 
