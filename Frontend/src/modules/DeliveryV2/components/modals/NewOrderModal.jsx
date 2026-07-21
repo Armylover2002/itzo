@@ -41,7 +41,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
     }
 
     // B. Calculate from locations (Local calculation fallback)
-    const rest = primaryPickup?.location || order.restaurantLocation || order.restaurantId?.location || {};
+    const rest = primaryPickup?.location || order.restaurantLocation || order.pickupAddress?.location || order.restaurantId?.location || {};
     const resLat = parseFloat(order.restaurant_lat || order.restaurantLat || rest.latitude || rest.lat);
     const resLng = parseFloat(order.restaurant_lng || order.restaurantLng || rest.longitude || rest.lng);
 
@@ -65,7 +65,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
 
   if (!order) return null;
 
-  const earnings = order.earnings || order.riderEarning || (order.orderAmount ? order.orderAmount * 0.1 : 0);
+  const earnings = order.earnings || order.returnDeliveryCommission || order.riderEarning || (order.orderAmount ? order.orderAmount * 0.1 : 0);
   const isQuickOrder = String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick' || order?.isReturn;
   const restaurantName = order?.isReturn 
     ? order?.user?.name || order?.pickupAddress?.name || 'Customer'

@@ -8,6 +8,7 @@
 import { getIO, rooms } from '../../../../config/socket.js';
 import { logger } from '../../../../utils/logger.js';
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
+import { QuickOrder } from '../../models/order.model.js';
 
 /**
  * Emit a general status update to a user for a specific return.
@@ -59,8 +60,13 @@ export async function emitReturnAssignmentSocket(partnerId, sellerReturn) {
     const seller = returnData.sellerId || {};
     const returnReq = returnData.returnRequestId || {};
 
+    // Fetch original QuickOrder to guarantee deliveryAddress contains proper location/coordinates
+    let originalOrder = null;
+    if (returnReq.orderMongoId) {
+      originalOrder = await QuickOrder.findById(returnReq.orderMongoId).lean();
+    }
     // Pickup = user's address (from original order's delivery address)
-    const pickupAddress = returnReq.deliveryAddress || {};
+    const pickupAddress = originalOrder?.deliveryAddress || returnReq.deliveryAddress || {};
     
     // Dropoff = seller's location
     const dropoffAddress = {
@@ -94,9 +100,27 @@ export async function emitReturnAssignmentSocket(partnerId, sellerReturn) {
       returnReason: returnData.returnReason || returnReq.reason || '',
       returnId: returnReq.returnId || '',
       returnItems: returnData.returnItems || [],
+      returnDeliveryCommission: returnData.returnDeliveryCommission || 0,
     });
   } catch (err) {
     logger.error(`[ReturnSocket] Failed to emit new_return_assignment: ${err.message}`);
+  }
+}
+
+/**
+ * Emit a return pickup OTP to the user.
+ * Reuses the 'delivery_drop_otp' event so the user app catches it instantly.
+ */
+export function emitReturnPickupOtpToUser(userId, otp, orderId) {
+  try {
+    const io = getIO();
+    io.to(rooms.user(userId)).emit('delivery_drop_otp', {
+      orderId: orderId,
+      otp: otp,
+      message: 'Your return pickup OTP is'
+    });
+  } catch (err) {
+    logger.error(`[ReturnSocket] Failed to emit return pickup OTP: ${err.message}`);
   }
 }
 

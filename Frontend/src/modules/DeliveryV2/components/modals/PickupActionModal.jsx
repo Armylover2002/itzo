@@ -125,9 +125,9 @@ export const PickupActionModal = ({
         {
           id: 'food:primary',
           pickupType: isQuickOrder ? 'quick' : 'food',
-          sourceName: restaurantName,
-          address: restaurantAddress,
-          phone: restaurantPhone,
+          sourceName: isReturn ? (order?.user?.name || order?.pickupAddress?.name || 'Customer') : restaurantName,
+          address: isReturn ? (order?.pickupAddress?.address || order?.pickupAddress?.formattedAddress || 'Customer Address') : restaurantAddress,
+          phone: isReturn ? (order?.user?.phone || '') : restaurantPhone,
         },
       ];
   const primaryStop = pickupStops[0] || null;

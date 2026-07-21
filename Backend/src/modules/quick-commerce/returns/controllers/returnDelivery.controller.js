@@ -17,7 +17,11 @@ import {
 import { sendResponse, sendError } from '../../../../utils/response.js';
 import { LEG_STATUS, ACTOR_ROLES } from '../constants/returnStateMachine.js';
 import { logger } from '../../../../utils/logger.js';
-import { emitReturnLegTrackingUpdate } from '../services/returnSocket.service.js';
+import {
+  emitReturnStatusUpdate,
+  emitReturnLegTrackingUpdate,
+  emitReturnPickupOtpToUser,
+} from '../services/returnSocket.service.js';
 
 export const getAssignedReturns = async (req, res) => {
   try {
@@ -127,6 +131,10 @@ export const markReachedUser = async (req, res) => {
       recipientId: leg.userId,
       recipientPhone: leg.customer?.phone || '',
     });
+
+    if (otpResult?.plainOtp && leg.userId) {
+      emitReturnPickupOtpToUser(leg.userId, otpResult.plainOtp, leg.orderId);
+    }
 
     // 3. Move status to PICKUP_OTP_PENDING
     leg = await returnService.updateLegStatus({
