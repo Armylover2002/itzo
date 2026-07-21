@@ -320,7 +320,7 @@ export default function AdminReturnDetail() {
   // Leg statuses that allow assignment (lowercase to match MongoDB values)
   const assignableStatuses = ['return_approved', 'partially_approved', 'pickup_pending', 'failed_pickup'];
   // Leg statuses where reassignment is possible
-  const reassignableStatuses = ['return_pickup_assigned', 'pickup_en_route', 'pickup_reached'];
+  const reassignableStatuses = ['return_pickup_assigned', 'pickup_en_route', 'pickup_reached', 'pickup_otp_pending'];
 
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">

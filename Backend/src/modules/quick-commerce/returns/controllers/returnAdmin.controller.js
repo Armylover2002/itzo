@@ -168,7 +168,13 @@ export const triggerAutoAssign = async (req, res) => {
       leg.assignment.autoReassignAttempts = 0;
       
       // If a rider is already assigned, unassign them gracefully to allow reassignment
-      if (leg.assignment.deliveryPartnerId && leg.returnStatus === LEG_STATUS.RETURN_PICKUP_ASSIGNED) {
+      const reassignableStatuses = [
+        LEG_STATUS.RETURN_PICKUP_ASSIGNED,
+        LEG_STATUS.PICKUP_EN_ROUTE,
+        LEG_STATUS.PICKUP_REACHED,
+        LEG_STATUS.PICKUP_OTP_PENDING,
+      ];
+      if (leg.assignment.deliveryPartnerId && reassignableStatuses.includes(leg.returnStatus)) {
         leg.assignment.history.push({
           partnerId: leg.assignment.deliveryPartnerId,
           action: 'reassigned',
