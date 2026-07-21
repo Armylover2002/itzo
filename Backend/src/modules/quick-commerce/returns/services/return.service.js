@@ -338,9 +338,13 @@ export async function updateLegStatus({
   actorName = '',
   note = '',
   metadata = {},
+  session: providedSession,
 }) {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const isExternalSession = !!providedSession;
+  const session = providedSession || await mongoose.startSession();
+  if (!isExternalSession) {
+    session.startTransaction();
+  }
   
   try {
     const leg = await SellerReturn.findById(sellerReturnId).session(session);
@@ -392,7 +396,9 @@ export async function updateLegStatus({
     // Sync Master Status
     await syncMasterStatus(leg.returnRequestId, session);
 
-    await session.commitTransaction();
+    if (!isExternalSession) {
+      await session.commitTransaction();
+    }
     
     // Notifications after commit
     if (nextStatus === LEG_STATUS.PICKUP_EN_ROUTE) {
@@ -413,10 +419,14 @@ export async function updateLegStatus({
 
     return leg;
   } catch (error) {
-    await session.abortTransaction();
+    if (!isExternalSession) {
+      await session.abortTransaction();
+    }
     throw error;
   } finally {
-    session.endSession();
+    if (!isExternalSession) {
+      session.endSession();
+    }
   }
 }
 

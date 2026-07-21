@@ -99,6 +99,7 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
         actorRole: ACTOR_ROLES.SYSTEM,
         actorId,
         note: 'Refund amount was zero',
+        session,
       });
       await session.commitTransaction();
       return { success: true, amount: 0 };
@@ -119,6 +120,7 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
         actorRole: ACTOR_ROLES.SYSTEM,
         actorId,
         note: 'Cash/Wallet order - refunded to user wallet successfully',
+        session,
       });
       
       // Update master refund info
@@ -147,6 +149,7 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
         actorId,
         note: `Gateway refund successful (ID: ${gatewayResult.refundId})`,
         metadata: { refundId: gatewayResult.refundId },
+        session,
       });
       
       // Update master refund info
@@ -170,6 +173,7 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
         actorRole: ACTOR_ROLES.SYSTEM,
         actorId,
         note: `Gateway refund failed: ${gatewayResult.error}`,
+        session,
       });
       await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
