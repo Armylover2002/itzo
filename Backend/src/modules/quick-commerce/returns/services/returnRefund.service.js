@@ -19,6 +19,7 @@ import {
 import { logger } from '../../../../utils/logger.js';
 import { NotFoundError, ValidationError } from '../../../../core/auth/errors.js';
 import * as returnNotificationService from './returnNotification.service.js';
+import { refundWalletBalance } from '../../../food/user/services/userWallet.service.js';
 
 /**
  * Recalculates the estimated refund amount based on approved quantities
@@ -104,24 +105,32 @@ export async function processLegRefund(sellerReturnId, actorId) {
     }
 
     // Check payment method
-    const paymentMethod = order.paymentMethod;
-    if (paymentMethod === 'cash') {
-      // Cash orders can't be refunded to gateway. Usually refunded to wallet.
-      // Assuming manual or wallet refund for now.
+    const paymentMethod = String(order.payment?.method || order.paymentMethod || 'cash').toLowerCase();
+    
+    // Automatically intercept any cash, cod, or wallet order and refund to wallet
+    if (['cash', 'cod', 'cash_on_delivery', 'wallet'].includes(paymentMethod)) {
+      await refundWalletBalance(order.userId, refundAmount, `Refund for Returned Order ${order.orderId}`, { sellerReturnId: leg._id });
+
       await updateLegStatus({
         sellerReturnId: leg._id,
         nextStatus: LEG_STATUS.REFUND_COMPLETED,
         actorRole: ACTOR_ROLES.SYSTEM,
         actorId,
-        note: 'Cash order - refunded to wallet or handled manually',
+        note: 'Cash/Wallet order - refunded to user wallet successfully',
       });
+      
+      // Update master refund info
+      returnReq.refund.actualAmount = (returnReq.refund.actualAmount || 0) + refundAmount;
+      returnReq.refund.status = 'processed';
+      await returnReq.save({ session });
+
       await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
-      return { success: true, amount: refundAmount, method: 'wallet_or_manual' };
+      return { success: true, amount: refundAmount, method: 'wallet' };
     }
 
     // Gateway refund
-    const paymentId = order.paymentId;
+    const paymentId = order.payment?.razorpay?.paymentId || order.paymentId;
     if (!paymentId) {
       throw new ValidationError('Original payment ID missing for gateway refund');
     }
