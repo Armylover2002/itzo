@@ -17,6 +17,7 @@ import {
 import { sendResponse, sendError } from '../../../../utils/response.js';
 import { LEG_STATUS, ACTOR_ROLES } from '../constants/returnStateMachine.js';
 import { logger } from '../../../../utils/logger.js';
+import { emitReturnLegTrackingUpdate } from '../services/returnSocket.service.js';
 
 export const getAssignedReturns = async (req, res) => {
   try {
@@ -64,7 +65,17 @@ export const acceptAssignment = async (req, res) => {
 
     const leg = await returnAssignmentService.acceptReturnAssignment(sellerReturnId, partnerId);
 
-    return sendResponse(res, 200, 'Assignment accepted successfully', { leg });
+    // Emit live tracking to admin & user
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.PICKUP_EN_ROUTE);
+
+    // Re-fetch with populated data for the response
+    const populated = await SellerReturn.findById(sellerReturnId)
+      .populate('userId', 'name phone location deliveryAddresses')
+      .populate('sellerId', 'shopName name phone location address')
+      .populate('returnRequestId', 'images reason notes returnId orderId deliveryAddress')
+      .lean();
+
+    return sendResponse(res, 200, 'Assignment accepted successfully', { leg: populated || leg });
   } catch (error) {
     logger.error(`[DeliveryReturn] Accept error: ${error.message}`);
     return sendError(res, 400, error.message);
@@ -82,6 +93,9 @@ export const rejectAssignment = async (req, res) => {
       partnerId,
       validatedData.reason
     );
+
+    // Emit tracking update
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.PICKUP_PENDING);
 
     return sendResponse(res, 200, 'Assignment rejected successfully', { leg });
   } catch (error) {
@@ -122,6 +136,9 @@ export const markReachedUser = async (req, res) => {
       actorId: partnerId,
       note: 'Pickup OTP generated',
     });
+
+    // Emit live tracking
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.PICKUP_OTP_PENDING);
 
     return sendResponse(res, 200, 'Reached user and OTP sent', { leg });
   } catch (error) {
@@ -169,6 +186,9 @@ export const verifyPickupOtp = async (req, res) => {
       note: 'Pickup OTP verified',
     });
 
+    // Emit live tracking
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.PICKED_UP);
+
     return sendResponse(res, 200, 'OTP verified, items picked up', { leg });
   } catch (error) {
     return sendError(res, error.statusCode || 500, error.message);
@@ -187,6 +207,9 @@ export const markHeadingToSeller = async (req, res) => {
       actorId: partnerId,
       note: 'Rider heading to seller',
     });
+
+    // Emit live tracking
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.RETURN_EN_ROUTE);
 
     return sendResponse(res, 200, 'Heading to seller', { leg });
   } catch (error) {
@@ -224,6 +247,9 @@ export const markReachedSeller = async (req, res) => {
       note: 'Seller handoff OTP generated',
     });
 
+    // Emit live tracking
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.SELLER_OTP_PENDING);
+
     return sendResponse(res, 200, 'Reached seller and OTP sent', { leg });
   } catch (error) {
     return sendError(res, error.statusCode || 500, error.message);
@@ -257,6 +283,9 @@ export const verifySellerOtp = async (req, res) => {
     // Automatically calculate refunds after successful return to seller
     await returnService.syncMasterStatus(leg.returnRequestId);
 
+    // Emit live tracking — return completed
+    emitReturnLegTrackingUpdate(leg, LEG_STATUS.RETURN_COMPLETED);
+
     return sendResponse(res, 200, 'Handover complete', { leg });
   } catch (error) {
     return sendError(res, error.statusCode || 500, error.message);
@@ -284,6 +313,9 @@ export const markFailed = async (req, res) => {
       actorId: partnerId,
       note: validatedData.reason,
     });
+
+    // Emit live tracking — failure
+    emitReturnLegTrackingUpdate(updatedLeg, nextStatus);
 
     return sendResponse(res, 200, 'Return leg marked as failed', { leg: updatedLeg });
   } catch (error) {

@@ -25,7 +25,7 @@ import {
   Bell, HelpCircle, AlertTriangle, 
   Wallet, History, User as UserIcon, LayoutGrid,
   Plus, Minus, Navigation2, Target, Play, CheckCircle2, Clock, ChevronDown,
-  Contact, Package, ShieldCheck, Loader2, Zap, Phone
+  Contact, Package, ShieldCheck, Loader2, Zap, Phone, RotateCcw
 } from 'lucide-react';
 import { subscriptionAPI } from '@food/api';
 
@@ -1208,18 +1208,21 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       )}
 
       {/* ─── 3. BOTTOM NAV (Fixed - Compact Pro) ─── */}
-      <div className="bg-white border-t border-gray-100 px-8 py-3 pb-6 flex justify-between items-center z-[200] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+      <div className="bg-white border-t border-gray-100 px-4 py-3 pb-6 flex justify-between items-center z-[200] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
          <button onClick={() => navigate('/food/delivery/feed')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'feed' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
-            <LayoutGrid className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Feed</span>
+            <LayoutGrid className="w-5 h-5" /><span className="text-[10px] font-medium font-sans">Feed</span>
          </button>
          <button onClick={() => navigate('/food/delivery/pocket')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'pocket' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
-            <Wallet className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Pocket</span>
+            <Wallet className="w-5 h-5" /><span className="text-[10px] font-medium font-sans">Pocket</span>
          </button>
          <button onClick={() => navigate('/food/delivery/history')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'history' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
-            <History className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Trip History</span>
+            <History className="w-5 h-5" /><span className="text-[10px] font-medium font-sans">History</span>
+         </button>
+         <button onClick={() => navigate('/food/delivery/returns')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'returns' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
+            <RotateCcw className="w-5 h-5" /><span className="text-[10px] font-medium font-sans">Returns</span>
          </button>
          <button onClick={() => navigate('/food/delivery/profile')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'profile' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
-            <UserIcon className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Profile</span>
+            <UserIcon className="w-5 h-5" /><span className="text-[10px] font-medium font-sans">Profile</span>
          </button>
       </div>
       <SubscriptionConfirmationModal 
