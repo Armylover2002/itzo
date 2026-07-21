@@ -35,6 +35,19 @@ export default function CreateReturnPage() {
 
   const fetchOrder = async () => {
     try {
+      // 1. Check if a return already exists for this order
+      const returnsRes = await returnApi.getReturns();
+      if (returnsRes?.data?.returns) {
+        const existingReturn = returnsRes.data.returns.find(
+          r => String(r.orderId) === String(orderId) || String(r.orderMongoId) === String(orderId)
+        );
+        if (existingReturn) {
+          navigate(`/quick/returns/${existingReturn._id}`, { replace: true });
+          return; // Stop rendering this page
+        }
+      }
+
+      // 2. Fetch order details
       const res = await customerApi.getOrderDetails(orderId);
       const data = res?.data?.result || res?.data;
       setOrder(data);
