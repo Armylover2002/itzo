@@ -21,6 +21,7 @@ import {
   emitReturnStatusUpdate,
   emitReturnLegTrackingUpdate,
   emitReturnPickupOtpToUser,
+  emitReturnHandoffOtpToSeller,
 } from '../services/returnSocket.service.js';
 
 export const getAssignedReturns = async (req, res) => {
@@ -246,6 +247,8 @@ export const markReachedSeller = async (req, res) => {
       recipientRole: ACTOR_ROLES.SELLER,
       recipientId: leg.sellerId,
     });
+
+    emitReturnHandoffOtpToSeller(leg.sellerId, otpResult.plainOtp, leg._id);
 
     leg = await returnService.updateLegStatus({
       sellerReturnId,

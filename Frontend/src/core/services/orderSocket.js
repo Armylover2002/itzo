@@ -187,7 +187,18 @@ export function onSellerReturnUpdate(getToken, handler) {
   const s = getOrderSocket(getToken);
   if (!s || typeof handler !== "function") return () => {};
   s.on("seller_return_update", handler);
+  s.on("return_leg_tracking", handler);
   return () => {
     s.off("seller_return_update", handler);
+    s.off("return_leg_tracking", handler);
+  };
+}
+
+export function onSellerHandoffOtp(getToken, handler) {
+  const s = getOrderSocket(getToken);
+  if (!s || typeof handler !== "function") return () => {};
+  s.on("seller_handoff_otp", handler);
+  return () => {
+    s.off("seller_handoff_otp", handler);
   };
 }

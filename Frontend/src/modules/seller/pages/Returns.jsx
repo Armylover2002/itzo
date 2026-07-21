@@ -5,7 +5,7 @@ import Button from "@shared/components/ui/Button";
 import { sellerApi } from "../services/sellerApi";
 import { useToast } from "@shared/components/ui/Toast";
 import { useAuth } from "@core/context/AuthContext";
-import { onSellerReturnUpdate } from "@core/services/orderSocket";
+import { onSellerReturnUpdate, onSellerHandoffOtp } from "@core/services/orderSocket";
 import {
     HiOutlineArrowPath,
     HiOutlineInboxStack,
@@ -145,6 +145,18 @@ const Returns = () => {
         });
         return cleanup;
     }, [getToken, selectedReturn]);
+
+    // Socket listener for real-time OTP updates
+    useEffect(() => {
+        const cleanup = onSellerHandoffOtp(getToken, (payload) => {
+            console.log("Seller Handoff OTP Socket:", payload);
+            if (payload && payload.otp) {
+                // Set it directly, and optionally check if it belongs to the active return
+                setHandoffOtp(payload.otp);
+            }
+        });
+        return cleanup;
+    }, [getToken]);
 
     // Fetch OTP when status is seller_otp_pending
     useEffect(() => {

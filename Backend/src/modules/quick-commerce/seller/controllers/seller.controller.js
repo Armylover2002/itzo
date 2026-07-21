@@ -30,6 +30,7 @@ import {
 } from "../../../food/orders/services/order.helpers.js";
 import { getSellerCommissionSnapshot } from "../../admin/services/commission.service.js";
 import * as quickOrderService from "../../services/quickOrder.service.js";
+import * as returnOtpService from "../../returns/services/returnOtp.service.js";
 import {
   buildSellerCategoryTree,
   ensureSellerCategoriesSeeded,
@@ -1921,21 +1922,19 @@ export const getSellerReturnOtpController = async (req, res) => {
       return sendError(res, 400, "OTP is not available yet or has already been used");
     }
 
-    // Since returnOtp.service isn't imported here directly, I will query the ReturnOtp model
-    // Wait, let's import the model directly.
-    const ReturnOtp = mongoose.model('ReturnOtp');
-    const otpDoc = await ReturnOtp.findOne({ 
-      sellerReturnId, 
-      type: 'seller', 
-      isUsed: false,
-      expiresAt: { $gt: new Date() }
-    }).sort({ createdAt: -1 });
+    const result = await returnOtpService.resendReturnOtp({
+      sellerReturnId: sellerReturn._id,
+      type: 'seller',
+      returnRequestId: sellerReturn.returnRequestId,
+      recipientRole: 'SELLER',
+      recipientId: sellerId,
+    });
 
-    if (!otpDoc) {
-      return sendError(res, 404, "Active OTP not found. The delivery partner may need to resend it.");
+    if (!result.success) {
+      return sendError(res, 400, result.message);
     }
 
-    return res.json({ success: true, result: { otp: otpDoc.code, expiresAt: otpDoc.expiresAt } });
+    return res.json({ success: true, result: { otp: result.plainOtp, expiresAt: result.otpDoc?.expiresAt } });
   } catch (error) {
     return sendError(res, 500, error.message || "Failed to fetch return OTP");
   }

@@ -125,6 +125,22 @@ export function emitReturnPickupOtpToUser(userId, otp, orderId) {
 }
 
 /**
+ * Emit a return handoff OTP to the seller.
+ */
+export function emitReturnHandoffOtpToSeller(sellerId, otp, sellerReturnId) {
+  try {
+    const io = getIO();
+    io.to(rooms.seller(sellerId)).emit('seller_handoff_otp', {
+      sellerReturnId: sellerReturnId,
+      otp: otp,
+      message: 'Your return handoff OTP is'
+    });
+  } catch (err) {
+    logger.error(`[ReturnSocket] Failed to emit return handoff OTP: ${err.message}`);
+  }
+}
+
+/**
  * Emit a leg status update to the admin tracking room.
  */
 export function emitAdminTrackingUpdate(sellerReturnId, legStatus) {
