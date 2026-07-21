@@ -47,7 +47,14 @@ const returnOtpSchema = new mongoose.Schema(
       required: true,
     },
 
-    // SHA-256(otp + salt) — plain OTP is never stored
+    // The plain OTP is stored (hidden by default) to allow authorized users to recover it on refresh
+    plainOtp: {
+      type: String,
+      select: false,
+      default: '',
+    },
+
+    // SHA-256(otp + salt)
     otpHash: {
       type: String,
       required: true,

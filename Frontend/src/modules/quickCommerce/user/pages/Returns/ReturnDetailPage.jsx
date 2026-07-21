@@ -62,6 +62,9 @@ export default function ReturnDetailPage() {
     try {
       const res = await returnApi.getReturnDetail(returnRequestId);
       setReturnDetails(res.data);
+      if (res.data?.pickupOtp) {
+        setPickupOtp(res.data.pickupOtp);
+      }
     } catch (error) {
       console.error('Failed to fetch return details', error);
     } finally {

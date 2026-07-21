@@ -161,11 +161,15 @@ const Returns = () => {
     // Fetch OTP when status is seller_otp_pending
     useEffect(() => {
         if (selectedReturn && selectedReturn.returnStatus === 'seller_otp_pending' && isDetailsOpen) {
-            fetchDropOtp(selectedReturn._id);
+            if (selectedReturn.handoffOtp) {
+                setHandoffOtp(selectedReturn.handoffOtp);
+            } else {
+                fetchDropOtp(selectedReturn._id);
+            }
         } else {
             setHandoffOtp(null);
         }
-    }, [selectedReturn?.returnStatus, isDetailsOpen]);
+    }, [selectedReturn?.returnStatus, selectedReturn?.handoffOtp, isDetailsOpen, selectedReturn?._id]);
 
     const fetchDropOtp = async (id) => {
         try {

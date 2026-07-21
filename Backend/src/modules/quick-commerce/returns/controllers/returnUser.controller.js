@@ -7,6 +7,7 @@
 import { ReturnRequest } from '../models/returnRequest.model.js';
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
 import { ReturnStatusHistory } from '../models/returnStatusHistory.model.js';
+import { ReturnOtp } from '../models/returnOtp.model.js';
 import * as returnService from '../services/return.service.js';
 import * as returnOtpService from '../services/returnOtp.service.js';
 import {
@@ -89,10 +90,26 @@ export const getReturnDetails = async (req, res) => {
       .sort({ timestamp: -1 })
       .lean();
 
+    let pickupOtp = null;
+    const activePickupLeg = legs.find(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'].includes(l.returnStatus));
+    if (activePickupLeg) {
+      const otpDoc = await ReturnOtp.findOne({ 
+        sellerReturnId: activePickupLeg._id, 
+        type: 'pickup', 
+        verified: false,
+        expiresAt: { $gt: new Date() }
+      }).select('+plainOtp').sort({ createdAt: -1 }).lean();
+      
+      if (otpDoc?.plainOtp) {
+        pickupOtp = otpDoc.plainOtp;
+      }
+    }
+
     return sendResponse(res, 200, 'Return details fetched', {
       returnRequest,
       legs,
       history,
+      pickupOtp,
     });
   } catch (error) {
     return sendError(res, 500, error.message);

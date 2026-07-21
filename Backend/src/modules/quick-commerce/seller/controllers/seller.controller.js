@@ -22,6 +22,7 @@ import { SellerReturn } from "../models/sellerReturn.model.js";
 import { SellerStockAdjustment } from "../models/sellerStockAdjustment.model.js";
 import { SellerTransaction } from "../models/sellerTransaction.model.js";
 import { QuickOrder } from "../../models/order.model.js";
+import { ReturnOtp } from "../../returns/models/returnOtp.model.js";
 import { FoodDeliveryPartner } from "../../../food/delivery/models/deliveryPartner.model.js";
 import {
   buildDeliverySocketPayload,
@@ -1895,11 +1896,26 @@ export const resendSellerOrderDispatchController = async (req, res) => {
 
 export const getSellerReturnsController = async (req, res) => {
   try {
-    const items = await SellerReturn.find({ sellerId: sellerScope(req) })
+    let items = await SellerReturn.find({ sellerId: sellerScope(req) })
       .populate('returnRequestId', 'evidenceImages returnReason adminNotes')
       .populate('assignment.deliveryPartnerId', 'name phone vehicleType vehicleNumber')
       .sort({ returnRequestedAt: -1 })
       .lean();
+
+    items = await Promise.all(items.map(async (item) => {
+      if (item.returnStatus === 'seller_otp_pending') {
+        const otpDoc = await ReturnOtp.findOne({ 
+          sellerReturnId: item._id, 
+          type: 'seller', 
+          verified: false,
+          expiresAt: { $gt: new Date() }
+        }).select('+plainOtp').sort({ createdAt: -1 }).lean();
+        if (otpDoc?.plainOtp) {
+          item.handoffOtp = otpDoc.plainOtp;
+        }
+      }
+      return item;
+    }));
 
     return res.json({ success: true, result: { items } });
   } catch (error) {
@@ -1922,19 +1938,18 @@ export const getSellerReturnOtpController = async (req, res) => {
       return sendError(res, 400, "OTP is not available yet or has already been used");
     }
 
-    const result = await returnOtpService.resendReturnOtp({
-      sellerReturnId: sellerReturn._id,
-      type: 'seller',
-      returnRequestId: sellerReturn.returnRequestId,
-      recipientRole: 'SELLER',
-      recipientId: sellerId,
-    });
+    const otpDoc = await ReturnOtp.findOne({ 
+      sellerReturnId: sellerReturn._id, 
+      type: 'seller', 
+      verified: false,
+      expiresAt: { $gt: new Date() }
+    }).select('+plainOtp').sort({ createdAt: -1 }).lean();
 
-    if (!result.success) {
-      return sendError(res, 400, result.message);
+    if (!otpDoc || !otpDoc.plainOtp) {
+      return sendError(res, 400, "OTP has expired or does not exist. Please wait for the rider to trigger a resend.");
     }
 
-    return res.json({ success: true, result: { otp: result.plainOtp, expiresAt: result.otpDoc?.expiresAt } });
+    return res.json({ success: true, result: { otp: otpDoc.plainOtp, expiresAt: otpDoc.expiresAt } });
   } catch (error) {
     return sendError(res, 500, error.message || "Failed to fetch return OTP");
   }

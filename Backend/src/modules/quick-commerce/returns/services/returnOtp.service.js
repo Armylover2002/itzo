@@ -125,6 +125,7 @@ export async function generateReturnOtp({
     type,
     otpHash,
     salt,
+    plainOtp,
     expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000),
     attempts: 0,
     maxAttempts: config.maxAttempts,
