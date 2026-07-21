@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import SellerOrdersContext from '@/modules/seller/context/SellerOrdersContext';
 import SellerEarningsContext, { defaultEarnings } from '@/modules/seller/context/SellerEarningsContext';
-import { getOrderSocket, onSellerOrderNew, onOrderStatusUpdate, onOrderCancelled } from '@/core/services/orderSocket';
+import { getOrderSocket, onSellerOrderNew, onOrderStatusUpdate, onOrderCancelled, onSellerHandoffOtp } from '@/core/services/orderSocket';
 import alertSound from '@/modules/Food/assets/audio/alert.mp3';
 
 const POLL_INTERVAL_MS = 15000;
@@ -204,10 +204,23 @@ const DashboardLayout = ({ children, navItems, title }) => {
             if (fetchOrdersRef.current) fetchOrdersRef.current();
         });
 
+        const offHandoffOtp = onSellerHandoffOtp(getToken, (payload) => {
+            if (payload && payload.otp) {
+                toast.success(`Return Rider Arrived! Handoff OTP: ${payload.otp}`, {
+                    description: "Share this OTP with the rider to receive the return items.",
+                    duration: 30000,
+                });
+                
+                const audio = new Audio(resolveAudioSource(alertSound));
+                audio.play().catch(() => {});
+            }
+        });
+
         return () => {
             offNew?.();
             offStatus?.();
             offCancel?.();
+            offHandoffOtp?.();
         };
     }, [role]);
 
