@@ -165,11 +165,10 @@ export async function verifyReturnOtp({ sellerReturnId, type, submittedOtp }) {
     return { success: false, message: 'OTP must be a 4-digit code.' };
   }
 
-  // Find the latest non-expired, non-verified OTP for this leg + type
+  // Find the latest non-expired OTP for this leg + type
   const otpDoc = await ReturnOtp.findOne({
     sellerReturnId: new mongoose.Types.ObjectId(sellerReturnId),
     type,
-    verified: false,
     expiresAt: { $gt: new Date() },
   }).sort({ createdAt: -1 });
 
@@ -178,6 +177,11 @@ export async function verifyReturnOtp({ sellerReturnId, type, submittedOtp }) {
       success: false,
       message: 'OTP has expired or does not exist. Please request a new one.',
     };
+  }
+
+  // Idempotency check: If already verified, succeed immediately.
+  if (otpDoc.verified) {
+    return { success: true, message: 'OTP already verified.', otpDoc };
   }
 
   // Check attempt lockout
