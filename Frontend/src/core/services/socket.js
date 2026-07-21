@@ -27,9 +27,12 @@ class SocketService {
     connect() {
         if (this.socket) return this.socket;
 
+        const token = localStorage.getItem('user_accessToken') || localStorage.getItem('accessToken') || localStorage.getItem('admin_accessToken');
+
         this.socket = io(SOCKET_URL, {
             transports: ["websocket"],
             reconnection: true,
+            auth: token ? { token } : undefined
         });
 
         this.socket.on("connect", () => {

@@ -26,6 +26,8 @@ export default function ReturnDetailPage() {
     
     // Socket listener for real-time updates
     if (socketService) {
+      socketService.connect();
+      
       const handleStatusUpdate = (data) => {
         if (data.returnRequestId === returnRequestId) {
           setReturnDetails(prev => {

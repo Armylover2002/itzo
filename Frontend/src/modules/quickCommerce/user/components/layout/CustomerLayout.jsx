@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Footer from './Footer';
 import BottomNav from './BottomNav';
 import MiniCart from '../shared/MiniCart';
@@ -7,10 +7,16 @@ import MobileFooterMessage from './MobileFooterMessage';
 import { useProductDetail } from '../../context/ProductDetailContext';
 import { cn } from '@/lib/utils';
 import { useLocation } from 'react-router-dom';
+import { socketService } from '../../../../../core/services/socket';
 
 const CustomerLayout = ({ children, showHeader: showHeaderProp, fullHeight = false, showCart: showCartProp, showBottomNav: showBottomNavProp }) => {
     const location = useLocation();
     const { isOpen: isProductDetailOpen } = useProductDetail();
+
+    useEffect(() => {
+        // Initialize global socket connection for Quick Commerce
+        socketService.connect();
+    }, []);
 
     // Route-based visibility logic with module prefix stripping
     const path = location.pathname.replace(/^\/quick(?:-commerce(?:\/user)?)?/, '') || '/';
