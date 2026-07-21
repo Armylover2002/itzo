@@ -2041,6 +2041,14 @@ export const deliveryAPI = {
         contextModule: "delivery",
       },
     ),
+  resendDropOtp: (orderId) =>
+    apiClient.post(
+      `/food/delivery/orders/${String(orderId)}/resend-drop-otp`,
+      {},
+      {
+        contextModule: "delivery",
+      },
+    ),
   /** POST /food/delivery/orders/:orderId/collect/qr - create Razorpay payment link (COD collection) */
   createCollectQr: (orderId, body = {}) =>
     apiClient.post(

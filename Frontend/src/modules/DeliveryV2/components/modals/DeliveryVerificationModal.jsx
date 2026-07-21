@@ -75,7 +75,12 @@ const OtpModal = ({ order, onVerified, onClose }) => {
     if (cooldown > 0 || resendingOtp) return;
     try {
       setResendingOtp(true);
-      const res = await deliveryAPI.resendReturnOtp(order._id);
+      let res;
+      if (order?.isReturn) {
+        res = await deliveryAPI.resendReturnOtp(order._id);
+      } else {
+        res = await deliveryAPI.resendDropOtp(order._id);
+      }
       toast.success('OTP resent successfully!');
       if (res.data?.cooldownRemaining) {
         setCooldown(res.data.cooldownRemaining);
@@ -202,27 +207,25 @@ const OtpModal = ({ order, onVerified, onClose }) => {
           ))}
         </div>
 
-        {order?.isReturn && (
-          <div className="flex justify-center mb-8 mt-[-1rem]">
-            <button
-              onClick={handleResendOtp}
-              disabled={resendingOtp || cooldown > 0 || isOtpVerified}
-              className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
-                cooldown > 0 || isOtpVerified
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                  : "bg-green-50 text-green-600 hover:bg-green-100 active:scale-95"
-              }`}
-            >
-              {resendingOtp ? (
-                <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</>
-              ) : cooldown > 0 ? (
-                `Resend OTP in ${cooldown}s`
-              ) : (
-                "Resend OTP"
-              )}
-            </button>
-          </div>
-        )}
+        <div className="flex justify-center mb-8 mt-[-1rem]">
+          <button
+            onClick={handleResendOtp}
+            disabled={resendingOtp || cooldown > 0 || isOtpVerified}
+            className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
+              cooldown > 0 || isOtpVerified
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                : "bg-green-50 text-green-600 hover:bg-green-100 active:scale-95"
+            }`}
+          >
+            {resendingOtp ? (
+              <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</>
+            ) : cooldown > 0 ? (
+              `Resend OTP in ${cooldown}s`
+            ) : (
+              "Resend OTP"
+            )}
+          </button>
+        </div>
 
         <ActionSlider
           key="action-otp"

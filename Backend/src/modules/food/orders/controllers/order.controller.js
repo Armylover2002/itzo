@@ -244,6 +244,17 @@ export async function confirmReachedDropDeliveryController(req, res, next) {
     }
 }
 
+export async function resendDropOtpDeliveryController(req, res, next) {
+    try {
+        const deliveryPartnerId = req.user?.userId;
+        const orderId = req.params.orderId;
+        const result = await orderService.resendDropOtpDelivery(orderId, deliveryPartnerId);
+        return sendResponse(res, 200, 'Drop OTP resent successfully', result);
+    } catch (err) {
+        next(err);
+    }
+}
+
 export async function verifyDropOtpDeliveryController(req, res, next) {
     try {
         const deliveryPartnerId = req.user?.userId;

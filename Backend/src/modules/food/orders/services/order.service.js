@@ -4341,6 +4341,37 @@ export async function confirmReachedDropDelivery(orderId, deliveryPartnerId) {
     return sanitizeOrderForExternal(order);
 }
 
+export async function resendDropOtpDelivery(orderId, deliveryPartnerId) {
+  const identity = buildOrderIdentityFilter(orderId);
+  if (!identity) throw new ValidationError("Order id required");
+
+  const order = await FoodOrder.findOne(identity).select("+deliveryOtp");
+  if (!order) throw new NotFoundError("Order not found");
+  if (!isOrderAssignedToDeliveryPartner(order, deliveryPartnerId)) {
+    throw new ForbiddenError("Not your order");
+  }
+
+  const alreadyAtDrop =
+    order.deliveryState?.currentPhase === "at_drop" ||
+    order.deliveryState?.status === "reached_drop";
+
+  if (!alreadyAtDrop) {
+    throw new ValidationError("You must reach the drop location before resending the OTP.");
+  }
+
+  if (order.deliveryVerification?.dropOtp?.verified) {
+    throw new ValidationError("OTP already verified.");
+  }
+
+  const plainOtp = String(order.deliveryOtp || "").trim();
+  if (!plainOtp) {
+    throw new ValidationError("No OTP found. Please mark reached again.");
+  }
+
+  emitDeliveryDropOtpToUser(order, plainOtp);
+  return { success: true, cooldownRemaining: 60 };
+}
+
 export async function verifyDropOtpDelivery(orderId, deliveryPartnerId, otp) {
   const identity = buildOrderIdentityFilter(orderId);
   const order = await FoodOrder.findOne(identity).select("+deliveryOtp");
