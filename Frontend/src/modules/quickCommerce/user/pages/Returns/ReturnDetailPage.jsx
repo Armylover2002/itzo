@@ -19,6 +19,7 @@ export default function ReturnDetailPage() {
   const navigate = useNavigate();
   const [returnDetails, setReturnDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pickupOtp, setPickupOtp] = useState(null);
 
   useEffect(() => {
     fetchDetail();
@@ -42,9 +43,17 @@ export default function ReturnDetailPage() {
         }
       };
 
+      const handleDeliveryOtp = (data) => {
+        if (data && data.otp) {
+          setPickupOtp(data.otp);
+        }
+      };
+
       socketService.on('return_status_updated', handleStatusUpdate);
+      socketService.on('delivery_drop_otp', handleDeliveryOtp);
       return () => {
         socketService.off('return_status_updated', handleStatusUpdate);
+        socketService.off('delivery_drop_otp', handleDeliveryOtp);
       };
     }
   }, [returnRequestId]);
@@ -158,17 +167,28 @@ export default function ReturnDetailPage() {
         </div>
 
         {/* OTP Section for active pickup */}
-        {status === 'IN_PROGRESS' && legs.some(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED'].includes(l.returnStatus)) && (
+        {status === 'IN_PROGRESS' && legs.some(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'].includes(l.returnStatus)) && (
           <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 shadow-sm">
             <h3 className="font-bold text-orange-800 mb-2">Delivery Partner Assigned</h3>
             <p className="text-sm text-orange-700 mb-3">Please keep your items packed and ready. Share the pickup OTP with the agent when they arrive.</p>
+            
+            {pickupOtp && (
+              <div className="mb-4 bg-white border border-orange-200 rounded-xl p-4 text-center">
+                <p className="text-xs text-orange-600 font-bold uppercase tracking-wider mb-1">Your Pickup OTP</p>
+                <p className="text-4xl tracking-[0.5em] font-mono text-gray-900">{pickupOtp}</p>
+              </div>
+            )}
+            
             <button 
               onClick={async () => {
-                const activeLeg = legs.find(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED'].includes(l.returnStatus));
+                const activeLeg = legs.find(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'].includes(l.returnStatus));
                 if (activeLeg) {
                    try {
-                     await returnApi.resendOtp(activeLeg._id);
-                     alert('OTP sent successfully');
+                     const res = await returnApi.resendOtp(activeLeg._id);
+                     if (res.data?.otp) {
+                       setPickupOtp(res.data.otp);
+                     }
+                     alert('OTP generated and sent.');
                    } catch (err) {
                      alert(err.message || 'Failed to resend OTP');
                    }
@@ -176,7 +196,7 @@ export default function ReturnDetailPage() {
               }}
               className="text-sm font-medium bg-orange-500 text-white px-4 py-2 rounded-lg shadow-sm"
             >
-              Resend OTP via SMS
+              Get / Resend OTP
             </button>
           </div>
         )}
