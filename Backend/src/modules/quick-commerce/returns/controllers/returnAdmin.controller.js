@@ -8,12 +8,14 @@
 import { ReturnRequest } from '../models/returnRequest.model.js';
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
 import { ReturnStatusHistory } from '../models/returnStatusHistory.model.js';
+import { FoodDeliveryPartner } from '../../../food/delivery/models/deliveryPartner.model.js';
 import * as returnService from '../services/return.service.js';
 import * as returnRefundService from '../services/returnRefund.service.js';
 import * as returnAssignmentService from '../services/returnAssignment.service.js';
 import {
   validateAdminApproveReturn,
   validateCancelReturn,
+  validateManualAssign,
 } from '../validators/return.validator.js';
 import { sendResponse, sendError } from '../../../../utils/response.js';
 import { ACTOR_ROLES, LEG_STATUS } from '../constants/returnStateMachine.js';
@@ -170,5 +172,49 @@ export const triggerAutoAssign = async (req, res) => {
     return sendResponse(res, 200, 'Auto assignment triggered');
   } catch (error) {
     return sendError(res, 500, error.message);
+  }
+};
+
+export const getDeliveryPartnersList = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    const filter = { status: 'approved', isDeleted: { $ne: true } };
+    if (search && search.trim()) {
+      const term = search.trim();
+      filter.$or = [
+        { name: { $regex: term, $options: 'i' } },
+        { phone: { $regex: term, $options: 'i' } },
+      ];
+    }
+
+    const partners = await FoodDeliveryPartner.find(filter)
+      .select('name phone availabilityStatus vehicleType profilePhoto city')
+      .sort({ availabilityStatus: 1, name: 1 }) // online first, then alphabetical
+      .limit(100)
+      .lean();
+
+    return sendResponse(res, 200, 'Delivery partners fetched', { partners });
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+};
+
+export const manualAssignDeliveryBoy = async (req, res) => {
+  try {
+    const adminId = req.user.userId;
+    const { sellerReturnId } = req.params;
+    const validatedData = validateManualAssign(req.body);
+
+    const leg = await returnAssignmentService.manualAssignReturnLeg(
+      sellerReturnId,
+      validatedData.deliveryPartnerId,
+      adminId
+    );
+
+    return sendResponse(res, 200, 'Delivery boy assigned successfully', { leg });
+  } catch (error) {
+    logger.error(`[AdminReturn] Manual assign error: ${error.message}`);
+    return sendError(res, error.statusCode || 400, error.message);
   }
 };

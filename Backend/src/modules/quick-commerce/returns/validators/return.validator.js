@@ -56,6 +56,18 @@ export const validateAdminApproveReturn = (body) => {
   return result.data;
 };
 
+// ─── Admin Manual Assignment Validator ──────────────────────────────────────
+
+const manualAssignSchema = z.object({
+  deliveryPartnerId: objectIdSchema,
+});
+
+export const validateManualAssign = (body) => {
+  const result = manualAssignSchema.safeParse(body);
+  if (!result.success) throw new ValidationError(result.error.errors[0].message);
+  return result.data;
+};
+
 // ─── Delivery Partner Endpoint Validators ───────────────────────────────────
 
 const otpVerifySchema = z.object({

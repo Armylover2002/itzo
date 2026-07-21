@@ -302,6 +302,26 @@ export async function syncMasterStatus(returnRequestId, session = null) {
     });
 
     emitReturnStatusUpdate(returnReq.userId, returnReq._id, newMasterStatus);
+
+    // Auto-transition completed legs to refund_pending so admin can process refunds
+    if (newMasterStatus === MASTER_STATUS.COMPLETED || newMasterStatus === MASTER_STATUS.PARTIALLY_COMPLETED) {
+      const completedStatuses = [LEG_STATUS.RETURN_COMPLETED, LEG_STATUS.RETURNED];
+      for (const leg of legs) {
+        if (completedStatuses.includes(leg.returnStatus)) {
+          const oldLegStatus = leg.returnStatus;
+          leg.returnStatus = LEG_STATUS.REFUND_PENDING;
+          await leg.save({ session });
+          await addHistoryEntry({
+            returnRequestId,
+            sellerReturnId: leg._id,
+            fromStatus: oldLegStatus,
+            toStatus: LEG_STATUS.REFUND_PENDING,
+            actorRole: ACTOR_ROLES.SYSTEM,
+            note: 'Auto-transitioned to refund pending after return completion',
+          });
+        }
+      }
+    }
   }
 
   return returnReq;
@@ -415,7 +435,14 @@ export async function adminApproveReturn({
     const returnReq = await ReturnRequest.findById(returnRequestId).session(session);
     if (!returnReq) throw new NotFoundError('Return request not found.');
 
-    assertTransition('master', returnReq.status, MASTER_STATUS.APPROVED); // Check if we can move forward
+    // Validate that we can move from current status to ANY review outcome
+    const allowedReviewStatuses = [MASTER_STATUS.RETURN_REQUESTED, MASTER_STATUS.UNDER_ADMIN_REVIEW];
+    if (!allowedReviewStatuses.includes(returnReq.status)) {
+      const err = new Error(`Cannot review return: current status '${returnReq.status}' does not allow review.`);
+      err.statusCode = 400;
+      err.code = 'INVALID_STATUS_TRANSITION';
+      throw err;
+    }
 
     let someApproved = false;
     let someRejected = false;

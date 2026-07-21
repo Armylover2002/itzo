@@ -437,4 +437,6 @@ export const adminApi = {
   cancelReturn: (returnRequestId, reason) => axiosInstance.post(`/quick-commerce/returns/admin/${returnRequestId}/cancel`, { reason }),
   refundReturnLeg: (sellerReturnId) => axiosInstance.post(`/quick-commerce/returns/admin/legs/${sellerReturnId}/refund`),
   triggerAutoAssign: (sellerReturnId) => axiosInstance.post(`/quick-commerce/returns/admin/legs/${sellerReturnId}/auto-assign`),
+  getDeliveryPartnersForReturn: (params) => axiosInstance.get('/quick-commerce/returns/admin/delivery-partners', { params }),
+  manualAssignDeliveryBoy: (sellerReturnId, deliveryPartnerId) => axiosInstance.post(`/quick-commerce/returns/admin/legs/${sellerReturnId}/manual-assign`, { deliveryPartnerId }),
 };

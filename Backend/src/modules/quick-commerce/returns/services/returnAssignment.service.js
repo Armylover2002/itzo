@@ -30,7 +30,13 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
     const leg = await SellerReturn.findById(sellerReturnId).session(session);
     if (!leg) throw new Error('Return leg not found');
 
-    if (leg.returnStatus !== LEG_STATUS.PICKUP_PENDING && leg.returnStatus !== LEG_STATUS.RETURN_APPROVED && leg.returnStatus !== LEG_STATUS.PARTIALLY_APPROVED) {
+    const assignableStatuses = [
+      LEG_STATUS.PICKUP_PENDING,
+      LEG_STATUS.RETURN_APPROVED,
+      LEG_STATUS.PARTIALLY_APPROVED,
+      LEG_STATUS.FAILED_PICKUP,
+    ];
+    if (!assignableStatuses.includes(leg.returnStatus)) {
       throw new Error(`Cannot assign: status is ${leg.returnStatus}`);
     }
 
@@ -64,6 +70,21 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
     // Pick the closest available partner
     const selectedPartner = availablePartners[0];
 
+    // Transition to PICKUP_PENDING first if not already there
+    const oldStatus = leg.returnStatus;
+    if (leg.returnStatus !== LEG_STATUS.PICKUP_PENDING) {
+      leg.returnStatus = LEG_STATUS.PICKUP_PENDING;
+      await leg.save({ session });
+      await addHistoryEntry({
+        returnRequestId: leg.returnRequestId,
+        sellerReturnId: leg._id,
+        fromStatus: oldStatus,
+        toStatus: LEG_STATUS.PICKUP_PENDING,
+        actorRole: ACTOR_ROLES.SYSTEM,
+        note: 'Transitioned to pickup pending for assignment',
+      });
+    }
+
     if (!leg.assignment) leg.assignment = {};
     leg.assignment.deliveryPartnerId = selectedPartner.partnerId;
     leg.assignment.assignedAt = new Date();
@@ -81,11 +102,10 @@ export async function tryAssignReturnLeg(sellerReturnId, options = {}) {
     await addHistoryEntry({
       returnRequestId: leg.returnRequestId,
       sellerReturnId: leg._id,
-      fromStatus: leg.returnStatus, // technically old status, but it doesn't matter too much, maybe we should grab oldStatus
+      fromStatus: LEG_STATUS.PICKUP_PENDING,
       toStatus: LEG_STATUS.RETURN_PICKUP_ASSIGNED,
       actorRole: ACTOR_ROLES.SYSTEM,
       note: `Auto-assigned delivery partner ${selectedPartner.partnerId}`,
-      session,
     });
 
     await syncMasterStatus(leg.returnRequestId, session);
@@ -276,5 +296,110 @@ export async function checkStaleReturnAssignments() {
     }
   } catch (error) {
     logger.error(`[ReturnDispatch] Error checking stale return assignments: ${error.message}`);
+  }
+}
+
+/**
+ * Manually assign a delivery partner to a return leg (admin action).
+ * This bypasses the geo-based auto-assignment and lets admin pick any approved partner.
+ */
+export async function manualAssignReturnLeg(sellerReturnId, deliveryPartnerId, adminId) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const leg = await SellerReturn.findById(sellerReturnId).session(session);
+    if (!leg) throw new Error('Return leg not found');
+
+    const assignableStatuses = [
+      LEG_STATUS.RETURN_APPROVED,
+      LEG_STATUS.PARTIALLY_APPROVED,
+      LEG_STATUS.PICKUP_PENDING,
+      LEG_STATUS.FAILED_PICKUP,
+      LEG_STATUS.RETURN_PICKUP_ASSIGNED, // Allow reassignment
+    ];
+    if (!assignableStatuses.includes(leg.returnStatus)) {
+      throw new Error(`Cannot assign: current status '${leg.returnStatus}' does not allow assignment.`);
+    }
+
+    // Validate delivery partner exists and is approved
+    const partner = await FoodDeliveryPartner.findById(deliveryPartnerId)
+      .select('name phone status isDeleted')
+      .lean();
+    if (!partner) throw new Error('Delivery partner not found');
+    if (partner.status !== 'approved') throw new Error('Delivery partner is not approved');
+    if (partner.isDeleted) throw new Error('Delivery partner account is deleted');
+
+    const oldStatus = leg.returnStatus;
+
+    // If currently assigned to someone else, record the reassignment
+    if (leg.assignment?.deliveryPartnerId && leg.assignment.deliveryPartnerId.toString() !== deliveryPartnerId) {
+      leg.assignment.history = leg.assignment.history || [];
+      leg.assignment.history.push({
+        partnerId: leg.assignment.deliveryPartnerId,
+        action: 'reassigned',
+        at: new Date(),
+        reason: 'Admin manual reassignment',
+      });
+    }
+
+    // Transition to PICKUP_PENDING first if not already there
+    if (leg.returnStatus !== LEG_STATUS.PICKUP_PENDING) {
+      leg.returnStatus = LEG_STATUS.PICKUP_PENDING;
+      await leg.save({ session });
+      await addHistoryEntry({
+        returnRequestId: leg.returnRequestId,
+        sellerReturnId: leg._id,
+        fromStatus: oldStatus,
+        toStatus: LEG_STATUS.PICKUP_PENDING,
+        actorRole: ACTOR_ROLES.ADMIN,
+        actorId: adminId,
+        note: 'Admin initiated manual assignment',
+      });
+    }
+
+    // Set assignment
+    if (!leg.assignment) leg.assignment = {};
+    leg.assignment.deliveryPartnerId = deliveryPartnerId;
+    leg.assignment.assignedAt = new Date();
+    leg.assignment.status = 'assigned';
+    leg.assignment.history = leg.assignment.history || [];
+    leg.assignment.history.push({
+      partnerId: deliveryPartnerId,
+      action: 'assigned',
+      at: new Date(),
+      reason: 'Manual assignment by admin',
+    });
+
+    // Transition to RETURN_PICKUP_ASSIGNED
+    leg.returnStatus = LEG_STATUS.RETURN_PICKUP_ASSIGNED;
+    await leg.save({ session });
+
+    await addHistoryEntry({
+      returnRequestId: leg.returnRequestId,
+      sellerReturnId: leg._id,
+      fromStatus: LEG_STATUS.PICKUP_PENDING,
+      toStatus: LEG_STATUS.RETURN_PICKUP_ASSIGNED,
+      actorRole: ACTOR_ROLES.ADMIN,
+      actorId: adminId,
+      note: `Admin manually assigned delivery partner ${partner.name} (${partner.phone})`,
+    });
+
+    await syncMasterStatus(leg.returnRequestId, session);
+
+    await session.commitTransaction();
+
+    logger.info(`[ReturnDispatch] Admin ${adminId} manually assigned leg ${leg._id} to partner ${deliveryPartnerId}`);
+
+    // Notify the assigned rider
+    emitReturnAssignmentSocket(deliveryPartnerId, leg);
+
+    return leg;
+  } catch (error) {
+    await session.abortTransaction();
+    logger.error(`[ReturnDispatch] Manual assign error for leg ${sellerReturnId}: ${error.message}`);
+    throw error;
+  } finally {
+    session.endSession();
   }
 }

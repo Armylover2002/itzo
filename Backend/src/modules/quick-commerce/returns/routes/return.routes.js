@@ -63,20 +63,18 @@ adminRouter.use(authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'));
 // Get all returns
 adminRouter.get('/', returnAdminController.getAdminReturns);
 
-// Get details
-adminRouter.get('/:returnRequestId', returnAdminController.getAdminReturnDetails);
+// List delivery partners for manual assignment dropdown (MUST be before /:returnRequestId)
+adminRouter.get('/delivery-partners', returnAdminController.getDeliveryPartnersList);
 
-// Approve/Reject items
-adminRouter.post('/:returnRequestId/approve', returnAdminController.approveReturn);
-
-// Cancel return
-adminRouter.post('/:returnRequestId/cancel', returnAdminController.adminCancelReturn);
-
-// Process refund
+// Leg-level operations (static prefix /legs/ - safe from param conflicts)
 adminRouter.post('/legs/:sellerReturnId/refund', returnAdminController.processRefund);
-
-// Manually trigger auto-assign
 adminRouter.post('/legs/:sellerReturnId/auto-assign', returnAdminController.triggerAutoAssign);
+adminRouter.post('/legs/:sellerReturnId/manual-assign', returnAdminController.manualAssignDeliveryBoy);
+
+// Dynamic param routes (MUST be after all static paths)
+adminRouter.get('/:returnRequestId', returnAdminController.getAdminReturnDetails);
+adminRouter.post('/:returnRequestId/approve', returnAdminController.approveReturn);
+adminRouter.post('/:returnRequestId/cancel', returnAdminController.adminCancelReturn);
 
 router.use('/admin', adminRouter);
 
