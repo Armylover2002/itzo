@@ -6,7 +6,7 @@ import {
   Navigation, CheckCircle2, Camera, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import { ActionSlider } from '@/modules/DeliveryV2/components/ui/ActionSlider';
-import { uploadAPI } from '@food/api';
+import { uploadAPI, deliveryAPI } from '@food/api';
 import { toast } from 'sonner';
 import { openCamera } from "@food/utils/imageUploadUtils";
 import { isMixedOrder, normalizePickupPoints } from '@/modules/DeliveryV2/utils/orderRouting';
@@ -36,6 +36,39 @@ export const PickupActionModal = ({
   const [returnOtp, setReturnOtp] = useState(['', '', '', '']);
   const returnOtpRefs = useRef([]);
   const cameraInputRef = useRef(null);
+
+  const [resendingOtp, setResendingOtp] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  // Handle cooldown timer
+  React.useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
+  const handleResendOtp = async () => {
+    if (cooldown > 0 || resendingOtp) return;
+    try {
+      setResendingOtp(true);
+      const res = await deliveryAPI.resendReturnOtp(order._id);
+      toast.success('OTP resent successfully!');
+      if (res.data?.cooldownRemaining) {
+        setCooldown(res.data.cooldownRemaining);
+      } else {
+        setCooldown(60);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to resend OTP';
+      toast.error(msg);
+      if (err.response?.data?.cooldownRemaining) {
+        setCooldown(err.response.data.cooldownRemaining);
+      }
+    } finally {
+      setResendingOtp(false);
+    }
+  };
 
   if (!order) return null;
   const isReturn = !!order?.isReturn;
@@ -291,6 +324,26 @@ export const PickupActionModal = ({
                             className={`w-12 h-14 bg-white border-2 rounded-xl text-center text-2xl font-bold transition-all focus:border-primary text-gray-700 border-gray-200`}
                           />
                         ))}
+                      </div>
+                      
+                      <div className="mt-4 flex justify-center">
+                        <button
+                          onClick={handleResendOtp}
+                          disabled={resendingOtp || cooldown > 0}
+                          className={`text-xs font-bold px-4 py-2 rounded-full transition-all flex items-center gap-2 ${
+                            cooldown > 0 
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                              : "bg-orange-50 text-orange-600 hover:bg-orange-100 active:scale-95"
+                          }`}
+                        >
+                          {resendingOtp ? (
+                            <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</>
+                          ) : cooldown > 0 ? (
+                            `Resend OTP in ${cooldown}s`
+                          ) : (
+                            "Resend OTP"
+                          )}
+                        </button>
                       </div>
                     </>
                   ) : (

@@ -110,6 +110,9 @@ deliveryRouter.post('/legs/:sellerReturnId/verify-seller-otp', returnDeliveryCon
 // Status: Failed
 deliveryRouter.post('/legs/:sellerReturnId/fail', returnDeliveryController.markFailed);
 
+// Resend OTP (dynamic based on current leg status)
+deliveryRouter.post('/legs/:sellerReturnId/resend-otp', returnDeliveryController.resendOtp);
+
 router.use('/delivery', deliveryRouter);
 
 export default router;

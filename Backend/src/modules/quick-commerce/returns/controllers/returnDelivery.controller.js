@@ -333,3 +333,52 @@ export const markFailed = async (req, res) => {
     return sendError(res, error.statusCode || 500, error.message);
   }
 };
+
+export const resendOtp = async (req, res) => {
+  try {
+    const partnerId = req.user.userId;
+    const { sellerReturnId } = req.params;
+
+    const leg = await SellerReturn.findOne({ _id: sellerReturnId, 'assignment.deliveryPartnerId': partnerId }).lean();
+    if (!leg) return sendError(res, 404, 'Leg not found or not assigned to you');
+
+    if (leg.returnStatus === LEG_STATUS.PICKUP_OTP_PENDING) {
+      const result = await returnOtpService.resendReturnOtp({
+        sellerReturnId: leg._id,
+        type: 'pickup',
+        returnRequestId: leg.returnRequestId,
+        recipientRole: ACTOR_ROLES.USER,
+        recipientId: leg.userId,
+        recipientPhone: req.user.phone || leg.customer?.phone || '',
+      });
+
+      if (!result.success) {
+        return sendError(res, 400, result.message, { cooldownRemaining: result.cooldownRemaining });
+      }
+
+      emitReturnPickupOtpToUser(leg.userId, result.plainOtp, leg.orderId);
+      return sendResponse(res, 200, 'Pickup OTP resent successfully', { cooldownRemaining: 60 });
+    }
+
+    if (leg.returnStatus === LEG_STATUS.SELLER_OTP_PENDING) {
+      const result = await returnOtpService.resendReturnOtp({
+        sellerReturnId: leg._id,
+        type: 'seller',
+        returnRequestId: leg.returnRequestId,
+        recipientRole: ACTOR_ROLES.SELLER,
+        recipientId: leg.sellerId,
+      });
+
+      if (!result.success) {
+        return sendError(res, 400, result.message, { cooldownRemaining: result.cooldownRemaining });
+      }
+
+      emitReturnHandoffOtpToSeller(leg.sellerId, result.plainOtp, leg._id);
+      return sendResponse(res, 200, 'Seller handoff OTP resent successfully', { cooldownRemaining: 60 });
+    }
+
+    return sendError(res, 400, 'Cannot resend OTP at this stage');
+  } catch (error) {
+    return sendError(res, 500, error.message);
+  }
+};

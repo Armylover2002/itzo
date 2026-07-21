@@ -2190,6 +2190,8 @@ export const deliveryAPI = {
     apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/verify-seller-otp`, { otp }, { contextModule: "delivery" }),
   markReturnFailed: (legId, reason = '') =>
     apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/fail`, { reason }, { contextModule: "delivery" }),
+  resendReturnOtp: (legId) =>
+    apiClient.post(`/quick-commerce/returns/delivery/legs/${legId}/resend-otp`, {}, { contextModule: "delivery" }),
 };
 
 export const userAPI = {
