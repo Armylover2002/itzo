@@ -142,8 +142,9 @@ export const processRefund = async (req, res) => {
   try {
     const adminId = req.user.userId;
     const { sellerReturnId } = req.params;
+    const { method: requestedMethod } = req.body || {};
 
-    const result = await returnRefundService.processLegRefund(sellerReturnId, adminId);
+    const result = await returnRefundService.processLegRefund(sellerReturnId, adminId, requestedMethod);
 
     if (result.success) {
       return sendResponse(res, 200, 'Refund processed successfully', result);

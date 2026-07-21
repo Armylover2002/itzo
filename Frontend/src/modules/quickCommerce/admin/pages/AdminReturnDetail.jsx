@@ -269,10 +269,24 @@ export default function AdminReturnDetail() {
   };
 
   const processRefund = async (legId) => {
-    if (!window.confirm('Process refund for this seller leg?')) return;
+    let method = 'wallet';
+    const isOnline = data?.returnRequest?.originalPaymentMethod === 'razorpay' || data?.returnRequest?.originalPaymentMethod === 'razorpay_qr';
+
+    if (isOnline) {
+      if (!window.confirm('Was this order paid ONLINE via Razorpay?\n\n(Click OK for Yes/Razorpay, Click Cancel for No/COD)')) {
+        // Fallback if they click Cancel
+        method = 'wallet';
+      } else {
+        const wantWallet = window.confirm('Refund to User Wallet instead of original bank account?\n\n(Click OK for Wallet, Cancel for Original Source)');
+        method = wantWallet ? 'wallet' : 'gateway';
+      }
+    } else {
+      if (!window.confirm('Process refund to User Wallet for this COD order?')) return;
+    }
+
     try {
       setSubmitting(true);
-      await adminApi.refundReturnLeg(legId);
+      await adminApi.refundReturnLeg(legId, { method });
       alert('Refund processed successfully');
       fetchDetail();
     } catch (error) {

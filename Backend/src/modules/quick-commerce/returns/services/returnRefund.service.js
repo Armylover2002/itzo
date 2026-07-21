@@ -66,7 +66,7 @@ export async function calculateRefundAmount(returnRequestId) {
 /**
  * Processes a refund for a specific seller leg.
  */
-export async function processLegRefund(sellerReturnId, actorId) {
+export async function processLegRefund(sellerReturnId, actorId, requestedMethod = null) {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -106,9 +106,11 @@ export async function processLegRefund(sellerReturnId, actorId) {
 
     // Check payment method
     const paymentMethod = String(order.payment?.method || order.paymentMethod || 'cash').toLowerCase();
+    const isOnline = paymentMethod === 'razorpay' || paymentMethod === 'razorpay_qr';
     
     // Automatically intercept any cash, cod, or wallet order and refund to wallet
-    if (['cash', 'cod', 'cash_on_delivery', 'wallet'].includes(paymentMethod)) {
+    // ALSO route online orders to wallet if the admin explicitly requested it
+    if (['cash', 'cod', 'cash_on_delivery', 'wallet'].includes(paymentMethod) || (isOnline && requestedMethod === 'wallet')) {
       await refundWalletBalance(order.userId, refundAmount, `Refund for Returned Order ${order.orderId}`, { sellerReturnId: leg._id });
 
       await updateLegStatus({
@@ -121,7 +123,7 @@ export async function processLegRefund(sellerReturnId, actorId) {
       
       // Update master refund info
       returnReq.refund.actualAmount = (returnReq.refund.actualAmount || 0) + refundAmount;
-      returnReq.refund.status = 'processed';
+      returnReq.refund.status = 'completed';
       await returnReq.save({ session });
 
       await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
