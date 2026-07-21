@@ -164,13 +164,30 @@ export const triggerAutoAssign = async (req, res) => {
     const leg = await SellerReturn.findById(sellerReturnId);
     if (!leg) return sendError(res, 404, 'Leg not found');
     
-    if (leg.assignment) leg.assignment.autoReassignAttempts = 0;
+    if (leg.assignment) {
+      leg.assignment.autoReassignAttempts = 0;
+      
+      // If a rider is already assigned, unassign them gracefully to allow reassignment
+      if (leg.assignment.deliveryPartnerId && leg.returnStatus === LEG_STATUS.RETURN_PICKUP_ASSIGNED) {
+        leg.assignment.history.push({
+          partnerId: leg.assignment.deliveryPartnerId,
+          action: 'reassigned',
+          at: new Date(),
+          reason: 'Admin forced reassignment'
+        });
+        leg.assignment.deliveryPartnerId = null;
+        leg.assignment.status = 'unassigned';
+        leg.returnStatus = LEG_STATUS.PICKUP_PENDING;
+      }
+    }
+
     await leg.save();
     
     await returnAssignmentService.tryAutoReassign(sellerReturnId);
     
     return sendResponse(res, 200, 'Auto assignment triggered');
   } catch (error) {
+    logger.error(`[AdminReturn] triggerAutoAssign error: ${error.message}`);
     return sendError(res, 500, error.message);
   }
 };
