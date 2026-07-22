@@ -165,6 +165,7 @@ export const requestPickupOtpResend = async (req, res) => {
     // await sendReturnSms(phone, `Your return pickup OTP is ${result.plainOtp}`);
 
     return sendResponse(res, 200, 'Pickup OTP resent successfully', {
+      otp: result.plainOtp, // For frontend testing/display if applicable
       message: result.message,
     });
   } catch (error) {

@@ -89,7 +89,10 @@ export const requestUserOtp = async (phone) => {
 
   const otp = await createOrUpdateOtp(phone);
   // TODO: integrate SMS provider here
-  return {};
+  const shouldExposeOtp =
+    config.nodeEnv !== "production" || config.useDefaultOtp;
+
+  return shouldExposeOtp ? { otp } : {};
 };
 
 export const verifyUserOtpAndLogin = async (
@@ -338,7 +341,10 @@ export const requestRestaurantOtp = async (phone) => {
     throw new ValidationError("Phone is required");
   }
   const otp = await createOrUpdateOtp(phone);
-  return {};
+  const shouldExposeOtp =
+    config.nodeEnv !== "production" || config.useDefaultOtp;
+
+  return shouldExposeOtp ? { otp } : {};
 };
 
 export const verifyRestaurantOtpAndLogin = async (phone, otp, fcmToken, platform) => {
@@ -442,7 +448,10 @@ export const requestDeliveryOtp = async (phone) => {
   }
   const otp = await createOrUpdateOtp(phone);
   // Only expose OTP in response when in default/dev mode — never in production with real SMS
-  return {};
+  const shouldExposeOtp =
+    config.nodeEnv !== "production" || config.useDefaultOtp;
+
+  return shouldExposeOtp ? { otp } : {};
 };
 
 const getPhoneCandidates = (phone) => {
