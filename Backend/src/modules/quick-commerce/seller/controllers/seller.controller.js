@@ -855,18 +855,10 @@ export const requestSellerOtpController = async (req, res) => {
 
     const otp = await createOrUpdateOtp(phone);
     const hasSmsProvider = Boolean(config.smsApiKey && config.smsSenderId);
-    const isLocalRequest = ["localhost", "127.0.0.1", "::1"].includes(
-      String(req.hostname || "").toLowerCase(),
-    );
-    const shouldExposeOtp =
-      config.nodeEnv !== "production" ||
-      config.useDefaultOtp ||
-      (!hasSmsProvider && isLocalRequest);
 
     return sendResponse(res, 200, "OTP sent successfully", {
       phone,
-      deliveryMode: shouldExposeOtp && !hasSmsProvider ? "debug" : "sms",
-      ...(shouldExposeOtp ? { otp } : {}),
+      deliveryMode: config.useDefaultOtp && !hasSmsProvider ? "debug" : "sms",
     });
   } catch (error) {
     return sendError(res, 400, error.message || "Failed to send OTP");
