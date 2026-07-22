@@ -203,28 +203,32 @@ export const useOrderManager = () => {
     const { paymentMode } = options;
     const orderId = activeOrder?.orderId;
     try {
-      // 1. Verify OTP first
-      const verifyRes = activeOrder?.isReturn
-        ? await deliveryAPI.verifyReturnSellerOtp(orderId, otp)
-        : await deliveryAPI.verifyDropOtp(orderId, otp);
+      // For return orders: OTP was already verified AND the backend already
+      // completed the return (seller_otp_pending → return_completed → refund_pending)
+      // during the OtpModal step, so we just update local state.
+      if (activeOrder?.isReturn) {
+        updateTripStatus('COMPLETED');
+        return;
+      }
+
+      // 1. Verify OTP first (normal orders only)
+      const verifyRes = await deliveryAPI.verifyDropOtp(orderId, otp);
       
       if (verifyRes?.data?.success) {
-        let finalOrder = verifyRes.data?.data?.order || verifyRes.data?.data?.sellerReturn || activeOrder;
+        let finalOrder = verifyRes.data?.data?.order || activeOrder;
         
-        if (!activeOrder?.isReturn) {
-          try {
-            // 2. Mark as complete (Only for normal orders, Return OTP verification completes it on backend)
-            const completeRes = await deliveryAPI.completeDelivery(orderId, { 
-              otp, 
-              rating: 5,
-              paymentMode
-            });
-            if (completeRes.data?.success && completeRes.data?.data?.order) {
-              finalOrder = completeRes.data.data.order;
-            }
-          } catch (completeErr) {
-            console.warn('Complete call failed, but OTP was verified.', completeErr);
+        try {
+          // 2. Mark as complete
+          const completeRes = await deliveryAPI.completeDelivery(orderId, { 
+            otp, 
+            rating: 5,
+            paymentMode
+          });
+          if (completeRes.data?.success && completeRes.data?.data?.order) {
+            finalOrder = completeRes.data.data.order;
           }
+        } catch (completeErr) {
+          console.warn('Complete call failed, but OTP was verified.', completeErr);
         }
         
         // Update local order state so Summary Modal shows 'delivered' status

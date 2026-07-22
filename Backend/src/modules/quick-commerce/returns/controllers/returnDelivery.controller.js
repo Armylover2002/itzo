@@ -271,6 +271,22 @@ export const verifySellerOtp = async (req, res) => {
   try {
     const partnerId = req.user.userId;
     const { sellerReturnId } = req.params;
+
+    // Idempotency guard: if leg already completed/refund phase, return success
+    // This prevents errors from network retries or double-taps
+    const currentLeg = await SellerReturn.findById(sellerReturnId).lean();
+    if (!currentLeg) return sendError(res, 404, 'Seller return leg not found');
+
+    const alreadyCompletedStatuses = [
+      LEG_STATUS.RETURN_COMPLETED,
+      LEG_STATUS.RETURNED,
+      LEG_STATUS.REFUND_PENDING,
+      LEG_STATUS.REFUND_COMPLETED,
+    ];
+    if (alreadyCompletedStatuses.includes(currentLeg.returnStatus)) {
+      return sendResponse(res, 200, 'Handover already completed', { leg: currentLeg });
+    }
+
     const validatedData = validateOtpVerify(req.body);
 
     const verifyResult = await returnOtpService.verifyReturnOtp({
