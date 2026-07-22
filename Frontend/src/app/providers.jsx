@@ -23,30 +23,44 @@ function shouldUseHashRouter() {
   )
 }
 
+import { useLocation } from 'react-router-dom'
+
+function ThemeWrapper({ children }) {
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/ecs') || location.pathname.startsWith('/admin')
+
+  return (
+    <ThemeProvider 
+      attribute="class" 
+      defaultTheme="light" 
+      storageKey="appTheme"
+      enableSystem={false}
+      forcedTheme={isAdmin ? 'light' : undefined}
+    >
+      {children}
+    </ThemeProvider>
+  )
+}
+
 export function AppProviders({ children }) {
   const Router = shouldUseHashRouter() ? HashRouter : BrowserRouter
 
   return (
     <StrictMode>
-      <ThemeProvider 
-        attribute="class" 
-        defaultTheme="light" 
-        storageKey="appTheme"
-        enableSystem={false}
-      >
-        <AuthProvider>
-          <SettingsProvider>
-            <ToastProvider>
-              <ReduxProvider store={store}>
-                <Router>
+      <AuthProvider>
+        <SettingsProvider>
+          <ToastProvider>
+            <ReduxProvider store={store}>
+              <Router>
+                <ThemeWrapper>
                   {children}
                   <Toaster position="top-center" richColors offset="80px" />
-                </Router>
-              </ReduxProvider>
-            </ToastProvider>
-          </SettingsProvider>
-        </AuthProvider>
-      </ThemeProvider>
+                </ThemeWrapper>
+              </Router>
+            </ReduxProvider>
+          </ToastProvider>
+        </SettingsProvider>
+      </AuthProvider>
     </StrictMode>
   )
 }
