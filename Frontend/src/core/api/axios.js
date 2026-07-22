@@ -16,7 +16,7 @@ const getCustomerToken = () =>
 
 // Request interceptor for API calls
 axiosInstance.interceptors.request.use(
-    (config) => {
+    async (config) => {
         let token = null;
         const url = config.url;
         const pagePath = window.location.pathname;
@@ -59,6 +59,35 @@ axiosInstance.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Let the browser automatically set the Content-Type with boundaries for FormData
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type'];
+
+            try {
+                const { compressImage } = await import("@shared/utils/imageCompression");
+                const newFormData = new FormData();
+                
+                for (const [key, value] of config.data.entries()) {
+                    if ((value instanceof File || value instanceof Blob) && value.type && value.type.startsWith("image/")) {
+                        try {
+                            // Preserve original file type to respect backend strict mimetype validations
+                            const compressed = await compressImage(value, { fileType: value.type });
+                            newFormData.append(key, compressed, value.name || "image.jpg");
+                        } catch (err) {
+                            console.error("Global image compression failed, falling back to original:", err);
+                            newFormData.append(key, value);
+                        }
+                    } else {
+                        newFormData.append(key, value);
+                    }
+                }
+                config.data = newFormData;
+            } catch (importErr) {
+                console.error("Failed to load image compressor:", importErr);
+            }
+        }
+
         return config;
     },
     (error) => {
