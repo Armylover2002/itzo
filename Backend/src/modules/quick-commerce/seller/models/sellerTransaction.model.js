@@ -39,7 +39,7 @@ const sellerTransactionSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["bank_transfer", "upi", ""],
+      enum: ["bank_transfer", "upi", "qr", ""],
       default: "",
     },
     bankDetails: {
@@ -48,6 +48,7 @@ const sellerTransactionSchema = new mongoose.Schema(
       accountNumberLast4: { type: String, trim: true, default: "" },
       ifscCode: { type: String, trim: true, uppercase: true, default: "" },
       upiId: { type: String, trim: true, default: "" },
+      qrCodeImage: { type: String, trim: true, default: "" },
     },
     adminNote: {
       type: String,

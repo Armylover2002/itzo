@@ -33,6 +33,14 @@ const Withdrawals = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [paymentMethod, setPaymentMethod] = useState('upi');
+    const [upiId, setUpiId] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [accountHolderName, setAccountHolderName] = useState('');
+    const [accountNumber, setAccountNumber] = useState('');
+    const [ifscCode, setIfscCode] = useState('');
+    const [qrPreview, setQrPreview] = useState('');
+    const [qrBase64, setQrBase64] = useState('');
 
     const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
     const withdrawalHistory = ledger.filter((t) => (t.type || '').toString() === 'Withdrawal');
@@ -90,6 +98,36 @@ const Withdrawals = () => {
         toast.success('Receipt downloaded');
     };
 
+    const handleQrUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please upload a valid image file');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('Image must be under 5MB');
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            setQrPreview(ev.target.result);
+            setQrBase64(ev.target.result);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const resetPaymentFields = () => {
+        setPaymentMethod('upi');
+        setUpiId('');
+        setBankName('');
+        setAccountHolderName('');
+        setAccountNumber('');
+        setIfscCode('');
+        setQrPreview('');
+        setQrBase64('');
+    };
+
     const handleSubmitRequest = async (e) => {
         e.preventDefault();
         const settled = Number(data?.balances?.settledBalance ?? 0);
@@ -100,13 +138,41 @@ const Withdrawals = () => {
             return;
         }
 
+        if (paymentMethod === 'upi' && !upiId.trim()) {
+            toast.error('Please enter your UPI ID');
+            return;
+        }
+        if (paymentMethod === 'qr' && !qrBase64) {
+            toast.error('Please upload your QR code image');
+            return;
+        }
+        if (paymentMethod === 'bank_transfer') {
+            if (!bankName.trim() || !accountHolderName.trim() || !accountNumber.trim() || !ifscCode.trim()) {
+                toast.error('Please fill all bank details');
+                return;
+            }
+        }
+
         try {
             setIsSubmitting(true);
-            const response = await sellerApi.requestWithdrawal({ amount: parseFloat(amount) });
+            const payload = {
+                amount: parseFloat(amount),
+                paymentMethod,
+                ...(paymentMethod === 'upi' && { upiId: upiId.trim() }),
+                ...(paymentMethod === 'qr' && { qrCodeImage: qrBase64 }),
+                ...(paymentMethod === 'bank_transfer' && {
+                    bankName: bankName.trim(),
+                    accountHolderName: accountHolderName.trim(),
+                    accountNumber: accountNumber.trim(),
+                    ifscCode: ifscCode.trim().toUpperCase(),
+                }),
+            };
+            const response = await sellerApi.requestWithdrawal(payload);
             if (response.data.success) {
                 toast.success('Withdrawal request submitted successfully!');
                 setIsModalOpen(false);
                 setAmount('');
+                resetPaymentFields();
                 refreshEarnings();
             }
         } catch (error) {
@@ -238,6 +304,12 @@ const Withdrawals = () => {
                                         </td>
                                         <td className="px-8 py-5 text-right">
                                             <p className="text-xs font-bold text-slate-600">{item.customer}</p>
+                                            {(item.status === 'Settled' || item.status === 'Rejected') && (item.adminNote || item.orderId) && (
+                                                <div className="mt-1.5 text-left bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                                    {item.orderId && <p className="text-[9px] font-bold text-emerald-600 uppercase">Txn: {item.orderId}</p>}
+                                                    {item.adminNote && <p className="text-[9px] font-medium text-slate-500 mt-0.5 italic">{item.adminNote}</p>}
+                                                </div>
+                                            )}
                                             <button
                                                 type="button"
                                                 onClick={() => handleDownloadReceipt(item)}
@@ -303,19 +375,106 @@ const Withdrawals = () => {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Transfer Destination</p>
-                            <div className="flex items-center gap-4">
-                                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                                    <Building2 className="h-5 w-5 text-orange-400" />
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-xs font-black text-slate-900 uppercase">HDFC Bank Limited</p>
-                                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter">Acct Ending in **** 4589</p>
-                                </div>
-                                <ArrowRight className="h-4 w-4 text-slate-300" />
+                        {/* Payment Method Selector */}
+                        <div>
+                            <label className="text-xs font-black text-slate-600 uppercase tracking-widest mb-3 block ml-1">Payment Method</label>
+                            <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-2xl">
+                                {[
+                                    { key: 'upi', label: 'UPI ID' },
+                                    { key: 'qr', label: 'QR Code' },
+                                    { key: 'bank_transfer', label: 'Bank' },
+                                ].map((m) => (
+                                    <button
+                                        key={m.key}
+                                        type="button"
+                                        onClick={() => setPaymentMethod(m.key)}
+                                        className={cn(
+                                            "py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                            paymentMethod === m.key
+                                                ? "bg-white text-slate-900 shadow-sm"
+                                                : "text-slate-400 hover:text-slate-600"
+                                        )}
+                                    >
+                                        {m.label}
+                                    </button>
+                                ))}
                             </div>
                         </div>
+
+                        {/* UPI Details */}
+                        {paymentMethod === 'upi' && (
+                            <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
+                                <p className="text-[10px] font-black text-primary uppercase tracking-widest">UPI Details</p>
+                                <input
+                                    type="text"
+                                    value={upiId}
+                                    onChange={(e) => setUpiId(e.target.value)}
+                                    placeholder="e.g. seller@upi or 9876543210@paytm"
+                                    className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                />
+                            </div>
+                        )}
+
+                        {/* QR Code Upload */}
+                        {paymentMethod === 'qr' && (
+                            <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
+                                <p className="text-[10px] font-black text-primary uppercase tracking-widest">Upload QR Code</p>
+                                {qrPreview ? (
+                                    <div className="relative">
+                                        <img src={qrPreview} alt="QR Preview" className="w-full max-w-[200px] mx-auto rounded-xl border border-slate-200 shadow-sm" />
+                                        <button
+                                            type="button"
+                                            onClick={() => { setQrPreview(''); setQrBase64(''); }}
+                                            className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors"
+                                        >
+                                            <XCircle className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <label className="flex flex-col items-center justify-center w-full h-32 bg-white border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary/40 transition-colors">
+                                        <ArrowUpRight className="h-6 w-6 text-slate-300 mb-2" />
+                                        <span className="text-xs font-bold text-slate-400">Click to upload QR image</span>
+                                        <span className="text-[10px] text-slate-300 mt-0.5">PNG, JPG up to 5MB</span>
+                                        <input type="file" accept="image/*" onChange={handleQrUpload} className="hidden" />
+                                    </label>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Bank Details */}
+                        {paymentMethod === 'bank_transfer' && (
+                            <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
+                                <p className="text-[10px] font-black text-primary uppercase tracking-widest">Bank Details</p>
+                                <input
+                                    type="text"
+                                    value={bankName}
+                                    onChange={(e) => setBankName(e.target.value)}
+                                    placeholder="Bank Name (e.g. HDFC Bank)"
+                                    className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                />
+                                <input
+                                    type="text"
+                                    value={accountHolderName}
+                                    onChange={(e) => setAccountHolderName(e.target.value)}
+                                    placeholder="Account Holder Name"
+                                    className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                />
+                                <input
+                                    type="text"
+                                    value={accountNumber}
+                                    onChange={(e) => setAccountNumber(e.target.value)}
+                                    placeholder="Account Number"
+                                    className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                />
+                                <input
+                                    type="text"
+                                    value={ifscCode}
+                                    onChange={(e) => setIfscCode(e.target.value)}
+                                    placeholder="IFSC Code (e.g. HDFC0001234)"
+                                    className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300 uppercase"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col gap-3 pt-4">
@@ -328,7 +487,7 @@ const Withdrawals = () => {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setIsModalOpen(false)}
+                            onClick={() => { setIsModalOpen(false); resetPaymentFields(); }}
                             className="w-full py-2 text-xs font-black text-slate-600 uppercase tracking-widest hover:text-slate-600 transition-colors"
                         >
                             Nevermind, keep funds

@@ -35,6 +35,8 @@ const WithdrawalRequests = () => {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [loading, setLoading] = useState(true);
     const [actionModal, setActionModal] = useState({ isOpen: false, type: null, request: null });
+    const [settleTxnId, setSettleTxnId] = useState('');
+    const [settleAdminNote, setSettleAdminNote] = useState('');
 
     const [sellerRequests, setSellerRequests] = useState([]);
     const [deliveryRequests, setDeliveryRequests] = useState([]);
@@ -135,11 +137,24 @@ const WithdrawalRequests = () => {
         try {
             setLoading(true);
             const status = actionModal.type === 'approve' ? 'Settled' : 'Rejected';
-            const res = await adminApi.updateWithdrawalStatus(actionModal.request._id, { status });
+
+            if (actionModal.type === 'approve' && !settleTxnId.trim()) {
+                toast.error('Please enter the Transaction ID / UTR before approving');
+                setLoading(false);
+                return;
+            }
+
+            const res = await adminApi.updateWithdrawalStatus(actionModal.request._id, {
+                status,
+                transactionId: settleTxnId.trim(),
+                adminNote: settleAdminNote.trim(),
+            });
             if (res.data.success) {
                 toast.success(`Request ${status} successfully`);
                 fetchData(sellerPage, deliveryPage);
                 setActionModal({ isOpen: false, type: null, request: null });
+                setSettleTxnId('');
+                setSettleAdminNote('');
             }
         } catch (error) {
             toast.error("Action failed");
@@ -401,6 +416,34 @@ const WithdrawalRequests = () => {
                                 <h4 className="text-2xl font-black text-slate-900">₹{Math.abs(selectedRequest.amount).toLocaleString()}</h4>
                                 <p className="text-[10px] font-semibold text-slate-400 mt-1">Reference: {selectedRequest.reference}</p>
                             </Card>
+
+                            {/* Seller Payment Details */}
+                            <Card className="p-5 border-none bg-blue-50/50 ring-1 ring-blue-100 rounded-xl">
+                                <p className="ds-label mb-3 text-blue-700">Seller's Payment Details</p>
+                                {selectedRequest.paymentMethod === 'qr' && selectedRequest.bankDetails?.qrCodeImage ? (
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">QR Code</p>
+                                        <img src={selectedRequest.bankDetails.qrCodeImage} alt="Seller QR Code" className="w-full max-w-[220px] mx-auto rounded-xl border border-slate-200 shadow-sm" />
+                                    </div>
+                                ) : selectedRequest.paymentMethod === 'upi' && selectedRequest.bankDetails?.upiId ? (
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">UPI ID</p>
+                                        <p className="text-sm font-black text-slate-900 bg-white px-4 py-2.5 rounded-xl ring-1 ring-slate-100">{selectedRequest.bankDetails.upiId}</p>
+                                    </div>
+                                ) : selectedRequest.bankDetails?.bankName ? (
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Bank Transfer</p>
+                                        <div className="bg-white p-4 rounded-xl ring-1 ring-slate-100 space-y-1.5">
+                                            <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Bank</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.bankName}</span></div>
+                                            <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Holder</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.accountHolderName}</span></div>
+                                            <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Acct</span><span className="text-xs font-black text-slate-900">****{selectedRequest.bankDetails.accountNumberLast4}</span></div>
+                                            <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">IFSC</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.ifscCode}</span></div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs font-medium text-slate-400 italic">No payment details provided by seller.</p>
+                                )}
+                            </Card>
                         </div>
 
                         <div className="flex gap-3 pt-2">
@@ -410,7 +453,7 @@ const WithdrawalRequests = () => {
                                         onClick={() => { setSelectedRequest(null); handleAction('approve', selectedRequest); }}
                                         className="flex-1 py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
                                     >
-                                        Authorize Transfer
+                                        Mark as Settled
                                     </button>
                                     <button
                                         onClick={() => { setSelectedRequest(null); handleAction('reject', selectedRequest); }}
@@ -424,7 +467,7 @@ const WithdrawalRequests = () => {
                                     onClick={() => setSelectedRequest(null)}
                                     className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest"
                                 >
-                                    Close Intelligence
+                                    Close
                                 </button>
                             )}
                         </div>
@@ -435,24 +478,65 @@ const WithdrawalRequests = () => {
             {/* Action Confirmation Modal */}
             <Modal
                 isOpen={actionModal.isOpen}
-                onClose={() => !loading && setActionModal({ isOpen: false, type: null, request: null })}
+                onClose={() => { if (!loading) { setActionModal({ isOpen: false, type: null, request: null }); setSettleTxnId(''); setSettleAdminNote(''); } }}
                 title="Confirm Financial Action"
                 size="sm"
             >
                 {actionModal.request && (
-                    <div className="text-center space-y-6">
-                        <div className={cn(
-                            "h-16 w-16 rounded-xl flex items-center justify-center mx-auto",
-                            actionModal.type === 'approve' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
-                        )}>
-                            {actionModal.type === 'approve' ? <CheckCircle className="h-8 w-8" /> : <XCircle className="h-8 w-8" />}
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-black text-slate-900">Are you sure?</h3>
-                            <p className="text-sm font-medium text-slate-500 mt-2 px-6">
-                                You are about to {actionModal.type === 'approve' ? 'approve' : 'reject'} the withdrawal request for <b className="text-slate-900">₹{Math.abs(actionModal.request.amount).toLocaleString()}</b>.
+                    <div className="space-y-6">
+                        <div className="text-center">
+                            <div className={cn(
+                                "h-16 w-16 rounded-xl flex items-center justify-center mx-auto",
+                                actionModal.type === 'approve' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                            )}>
+                                {actionModal.type === 'approve' ? <CheckCircle className="h-8 w-8" /> : <XCircle className="h-8 w-8" />}
+                            </div>
+                            <h3 className="text-xl font-black text-slate-900 mt-4">{actionModal.type === 'approve' ? 'Mark as Settled' : 'Reject Request'}</h3>
+                            <p className="text-sm font-medium text-slate-500 mt-2 px-4">
+                                {actionModal.type === 'approve'
+                                    ? <>Ensure you have <b className="text-slate-900">manually transferred ₹{Math.abs(actionModal.request.amount).toLocaleString()}</b> to the seller before marking as settled.</>
+                                    : <>You are about to reject the withdrawal request for <b className="text-slate-900">₹{Math.abs(actionModal.request.amount).toLocaleString()}</b>.</>}
                             </p>
                         </div>
+
+                        {actionModal.type === 'approve' && (
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1.5 block">Transaction ID / UTR *</label>
+                                    <input
+                                        type="text"
+                                        value={settleTxnId}
+                                        onChange={(e) => setSettleTxnId(e.target.value)}
+                                        placeholder="e.g. UTR123456789 or NEFT ref"
+                                        className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1.5 block">Admin Remark (optional)</label>
+                                    <input
+                                        type="text"
+                                        value={settleAdminNote}
+                                        onChange={(e) => setSettleAdminNote(e.target.value)}
+                                        placeholder="e.g. Paid via NEFT on 22 Jul"
+                                        className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {actionModal.type === 'reject' && (
+                            <div>
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1.5 block">Rejection Reason (optional)</label>
+                                <input
+                                    type="text"
+                                    value={settleAdminNote}
+                                    onChange={(e) => setSettleAdminNote(e.target.value)}
+                                    placeholder="e.g. Incorrect bank details"
+                                    className="w-full px-4 py-3 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-rose-100 rounded-xl text-sm font-bold outline-none transition-all placeholder:text-slate-300"
+                                />
+                            </div>
+                        )}
+
                         <div className="space-y-3">
                             <button
                                 onClick={confirmAction}
@@ -463,10 +547,10 @@ const WithdrawalRequests = () => {
                                 )}
                             >
                                 {loading && <RotateCw className="h-4 w-4 animate-spin" />}
-                                {loading ? 'PROCESSING...' : `YES, ${actionModal.type.toUpperCase()}`}
+                                {loading ? 'PROCESSING...' : actionModal.type === 'approve' ? 'CONFIRM SETTLEMENT' : 'CONFIRM REJECTION'}
                             </button>
                             <button
-                                onClick={() => setActionModal({ isOpen: false, type: null, request: null })}
+                                onClick={() => { setActionModal({ isOpen: false, type: null, request: null }); setSettleTxnId(''); setSettleAdminNote(''); }}
                                 disabled={loading}
                                 className="w-full py-4 bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all"
                             >

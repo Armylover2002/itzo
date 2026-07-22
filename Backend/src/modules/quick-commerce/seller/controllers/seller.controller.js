@@ -2126,37 +2126,36 @@ export const requestSellerWithdrawalController = async (req, res) => {
       return sendError(res, 400, "Enter a valid withdrawal amount");
     }
 
-    const [seller, transactions, deliveredOrders] = await Promise.all([
-      Seller.findById(sellerId).select("bankInfo").lean(),
+    // Validate the requested payment method and its required fields
+    if (!["qr", "upi", "bank_transfer"].includes(requestedMethod)) {
+      return sendError(res, 400, "Select a payment method: QR Code, UPI, or Bank Transfer");
+    }
+
+    const bodyUpiId = str(req.body?.upiId).trim();
+    const bodyBankName = str(req.body?.bankName).trim();
+    const bodyAccountHolder = str(req.body?.accountHolderName).trim();
+    const bodyAccountNumber = str(req.body?.accountNumber).trim();
+    const bodyIfsc = str(req.body?.ifscCode).trim().toUpperCase();
+    const bodyQrImage = str(req.body?.qrCodeImage).trim();
+
+    if (requestedMethod === "qr" && !bodyQrImage) {
+      return sendError(res, 400, "Please upload your QR code image");
+    }
+    if (requestedMethod === "upi" && !bodyUpiId) {
+      return sendError(res, 400, "Please enter your UPI ID");
+    }
+    if (requestedMethod === "bank_transfer") {
+      if (!bodyBankName || !bodyAccountHolder || !bodyAccountNumber || !bodyIfsc) {
+        return sendError(res, 400, "Please fill all bank details (Bank Name, Account Holder, Account Number, IFSC)");
+      }
+    }
+
+    const [transactions, deliveredOrders] = await Promise.all([
       SellerTransaction.find({ sellerId }).lean(),
       SellerOrder.find({ sellerId, status: "delivered" })
         .select("pricing")
         .lean(),
     ]);
-
-    const bankInfo = seller?.bankInfo || {};
-    const hasUpi = Boolean(str(bankInfo.upiId));
-    const hasBank =
-      Boolean(str(bankInfo.bankName)) &&
-      Boolean(str(bankInfo.accountHolderName)) &&
-      Boolean(str(bankInfo.accountNumber)) &&
-      Boolean(str(bankInfo.ifscCode));
-    const paymentMethod =
-      requestedMethod === "upi" && hasUpi
-        ? "upi"
-        : hasBank
-          ? "bank_transfer"
-          : hasUpi
-            ? "upi"
-            : "";
-
-    if (!paymentMethod) {
-      return sendError(
-        res,
-        400,
-        "Add a bank account or UPI ID before requesting withdrawal",
-      );
-    }
 
     const orderNetEarnings = (deliveredOrders || []).reduce((sum, o) => {
       const receivable =
@@ -2204,20 +2203,25 @@ export const requestSellerWithdrawalController = async (req, res) => {
       );
     }
 
+    const customerLabel =
+      requestedMethod === "qr" ? "QR Code" :
+      requestedMethod === "upi" ? "UPI Transfer" : "Bank Transfer";
+
     const created = await SellerTransaction.create({
       sellerId,
       type: "Withdrawal",
       amount: -amount,
       status: "Pending",
       reference: `WDR-${Date.now()}`,
-      customer: paymentMethod === "upi" ? "UPI Transfer" : "Bank Transfer",
-      paymentMethod,
+      customer: customerLabel,
+      paymentMethod: requestedMethod,
       bankDetails: {
-        bankName: bankInfo.bankName || "",
-        accountHolderName: bankInfo.accountHolderName || "",
-        accountNumberLast4: String(bankInfo.accountNumber || "").slice(-4),
-        ifscCode: bankInfo.ifscCode || "",
-        upiId: bankInfo.upiId || "",
+        bankName: bodyBankName,
+        accountHolderName: bodyAccountHolder,
+        accountNumberLast4: bodyAccountNumber ? bodyAccountNumber.slice(-4) : "",
+        ifscCode: bodyIfsc,
+        upiId: bodyUpiId,
+        qrCodeImage: bodyQrImage,
       },
     });
 
