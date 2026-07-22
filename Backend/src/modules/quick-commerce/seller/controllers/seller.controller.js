@@ -2026,6 +2026,14 @@ export const getSellerEarningsController = async (req, res) => {
     const totalNetEarnings =
       orderNetEarnings > 0 ? orderNetEarnings : txnNetEarnings;
 
+    // Sum all refund deductions (stored as negative amounts) and apply to
+    // net earnings so the seller's balance correctly reflects money owed back.
+    const totalRefundDeductions = transactions
+      .filter((item) => item.type === 'Refund')
+      .reduce((sum, item) => sum + Math.abs(num(item.amount)), 0);
+
+    const netEarningsAfterRefunds = totalNetEarnings - totalRefundDeductions;
+
     const grossSales = orders.reduce(
       (sum, o) => sum + num(o.pricing?.total),
       0,
@@ -2041,20 +2049,20 @@ export const getSellerEarningsController = async (req, res) => {
     const deliveryFees = grossSales - subtotal;
 
     const totalWithdrawn = transactions
-      .filter((item) => item.type === "Withdrawal" && item.status === "Settled")
+      .filter((item) => item.type === 'Withdrawal' && item.status === 'Settled')
       .reduce((sum, item) => sum + Math.abs(num(item.amount)), 0);
     const pendingPayouts = transactions
       .filter(
         (item) =>
-          item.type === "Withdrawal" &&
-          ["Pending", "Processing"].includes(String(item.status || "")),
+          item.type === 'Withdrawal' &&
+          ['Pending', 'Processing'].includes(String(item.status || '')),
       )
       .reduce((sum, item) => sum + Math.abs(num(item.amount)), 0);
 
-    const settledBalance = Math.max(
-      0,
-      totalNetEarnings - totalWithdrawn - pendingPayouts,
-    );
+    // settledBalance: what the seller can actually withdraw.
+    // May be negative if refunds exceed earnings — seller owes the platform.
+    // The frontend uses Math.max(0, ...) for the withdrawable amount separately.
+    const settledBalance = netEarningsAfterRefunds - totalWithdrawn - pendingPayouts;
 
     // Ledger: merge "Order Payment" entries from transactions with synthetic ones from delivered orders.
     // Avoid duplicates by (type + orderId/reference).
@@ -2088,14 +2096,15 @@ export const getSellerEarningsController = async (req, res) => {
     );
 
     const balances = {
-      totalRevenue: totalNetEarnings, // Keeping field name for backward compatibility
-      totalNetEarnings,
+      totalRevenue: netEarningsAfterRefunds, // Keeping field name for backward compatibility
+      totalNetEarnings: netEarningsAfterRefunds,
       grossSales,
       totalCommission,
       deliveryFees,
       totalWithdrawn,
-      settledBalance,
+      settledBalance: Math.max(0, settledBalance), // Clamp to 0 for display; raw negative tracked in netEarningsAfterRefunds
       pendingPayouts,
+      totalRefundDeductions,                       // Exposed so frontend can display "Total Refunds" stat
     };
 
     return res.json({
@@ -2165,27 +2174,35 @@ export const requestSellerWithdrawalController = async (req, res) => {
     }, 0);
 
     const txnNetEarnings = transactions
-      .filter((item) => item.type === "Order Payment")
+      .filter((item) => item.type === 'Order Payment')
       .reduce((sum, item) => sum + num(item.amount), 0);
 
     const netEarnings =
       orderNetEarnings > 0 ? orderNetEarnings : txnNetEarnings;
 
+    // Subtract all refund deductions so sellers cannot withdraw money they owe
+    // back to the platform as a result of customer returns.
+    const totalRefundDeductions = transactions
+      .filter((item) => item.type === 'Refund')
+      .reduce((sum, item) => sum + Math.abs(num(item.amount)), 0);
+
+    const netEarningsAfterRefunds = netEarnings - totalRefundDeductions;
+
     const totalWithdrawn = transactions
-      .filter((item) => item.type === "Withdrawal" && item.status === "Settled")
+      .filter((item) => item.type === 'Withdrawal' && item.status === 'Settled')
       .reduce((sum, item) => sum + Math.abs(num(item.amount)), 0);
 
     const pendingPayouts = transactions
       .filter(
         (item) =>
-          item.type === "Withdrawal" &&
-          ["Pending", "Processing"].includes(String(item.status || "")),
+          item.type === 'Withdrawal' &&
+          ['Pending', 'Processing'].includes(String(item.status || '')),
       )
       .reduce((sum, item) => sum + Math.abs(num(item.amount)), 0);
 
     const available = Math.max(
       0,
-      netEarnings - totalWithdrawn - pendingPayouts,
+      netEarningsAfterRefunds - totalWithdrawn - pendingPayouts,
     );
     if (amount > available) {
       return sendError(

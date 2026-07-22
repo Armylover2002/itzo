@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import { ReturnRequest } from '../models/returnRequest.model.js';
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
 import { QuickOrder } from '../../models/order.model.js';
+import { SellerTransaction } from '../../seller/models/sellerTransaction.model.js';
 import { updateLegStatus } from './return.service.js';
 import { initiateRazorpayRefund } from '../../../food/orders/helpers/razorpay.helper.js';
 import {
@@ -20,6 +21,66 @@ import { logger } from '../../../../utils/logger.js';
 import { NotFoundError, ValidationError } from '../../../../core/auth/errors.js';
 import * as returnNotificationService from './returnNotification.service.js';
 import { refundWalletBalance } from '../../../food/user/services/userWallet.service.js';
+
+/**
+ * Records a refund deduction in the seller's transaction ledger.
+ *
+ * This is called ONLY after the customer refund has successfully been
+ * processed (wallet credit or Razorpay gateway). The deduction amount
+ * equals the full refund amount the customer received, so the seller
+ * bears the entire cost — not the admin/platform.
+ *
+ * Works correctly for:
+ *  - Full returns          — entire receivable deducted
+ *  - Partial returns       — only approved qty × price deducted
+ *  - Multi-item orders     — per-leg amounts already scoped to approved items
+ *  - Multi-seller orders   — each leg has its own sellerId, so each seller
+ *                            is charged independently
+ *  - Multiple refund legs  — one SellerTransaction per leg (idempotent via
+ *                            the refundProcessing lock in processLegRefund)
+ *
+ * @param {object} params
+ * @param {mongoose.Types.ObjectId|string} params.sellerId
+ * @param {number}  params.refundAmount   The exact amount refunded to the customer
+ * @param {string}  params.orderId        Human-readable orderId (e.g. "ORD-123")
+ * @param {string}  params.sellerReturnId The SellerReturn leg _id (used as reference for deduplication)
+ * @param {object}  [params.session]      Optional Mongoose session for atomicity
+ */
+async function recordSellerRefundDeduction({ sellerId, refundAmount, orderId, sellerReturnId, session }) {
+  if (!sellerId) {
+    logger.warn(`[ReturnRefund] No sellerId on leg ${sellerReturnId} — skipping deduction record`);
+    return;
+  }
+  if (!refundAmount || refundAmount <= 0) return;
+
+  try {
+    const txnData = {
+      sellerId,
+      type: 'Refund',
+      // Stored as negative so the earnings calculation can simply sum all
+      // transactions of type 'Refund' to get the total deductions.
+      amount: -Math.abs(refundAmount),
+      status: 'Settled',
+      orderId: String(orderId || ''),
+      // Use the SellerReturn leg _id as the reference so admin/seller
+      // can trace exactly which return triggered this deduction.
+      reference: String(sellerReturnId),
+      reason: 'Refund deduction for returned items',
+    };
+
+    if (session) {
+      await SellerTransaction.create([txnData], { session });
+    } else {
+      await SellerTransaction.create(txnData);
+    }
+
+    logger.info(`[ReturnRefund] Seller ${sellerId} deducted ₹${refundAmount} for return leg ${sellerReturnId} (order ${orderId})`);
+  } catch (err) {
+    // Non-fatal — the customer refund already succeeded. Log and alert but
+    // do not roll back the customer refund.
+    logger.error(`[ReturnRefund] Failed to record seller deduction for leg ${sellerReturnId}: ${err.message}`);
+  }
+}
 
 /**
  * Recalculates the estimated refund amount based on approved quantities
@@ -130,6 +191,17 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
 
       await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
+
+      // Deduct the full refund amount from seller earnings AFTER the customer
+      // refund has committed. Runs outside the transaction so a deduction
+      // failure never rolls back the customer's money.
+      await recordSellerRefundDeduction({
+        sellerId: leg.sellerId,
+        refundAmount,
+        orderId: leg.orderId,
+        sellerReturnId: leg._id,
+      });
+
       return { success: true, amount: refundAmount, method: 'wallet' };
     }
 
@@ -162,6 +234,16 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
 
       await SellerReturn.updateOne({ _id: leg._id }, { $set: { refundProcessing: false } }, { session });
       await session.commitTransaction();
+
+      // Deduct the full refund amount from seller earnings AFTER the gateway
+      // refund has committed. Runs outside the transaction so a deduction
+      // failure never rolls back the customer's gateway refund.
+      await recordSellerRefundDeduction({
+        sellerId: leg.sellerId,
+        refundAmount,
+        orderId: leg.orderId,
+        sellerReturnId: leg._id,
+      });
       
       returnNotificationService.notifyRefundProcessed(returnReq, refundAmount).catch(err => logger.error(err));
       
