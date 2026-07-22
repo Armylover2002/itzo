@@ -517,7 +517,16 @@ export const getMyOrders = async (req, res) => {
     return res.status(400).json({ success: false, message: 'sessionId or userId is required' });
   }
 
-  const orders = await QuickOrder.find({ ...idQuery, orderType: 'quick' }).sort({ createdAt: -1 }).lean();
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const limit = Math.max(parseInt(req.query.limit, 10) || 10, 1);
+  const skip = (page - 1) * limit;
+
+  const totalOrders = await QuickOrder.countDocuments({ ...idQuery, orderType: 'quick' });
+  const orders = await QuickOrder.find({ ...idQuery, orderType: 'quick' })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
 
   const sellerIds = [
     ...new Set(
@@ -562,6 +571,12 @@ export const getMyOrders = async (req, res) => {
     success: true,
     result: mappedOrders,
     results: mappedOrders,
+    pagination: {
+      total: totalOrders,
+      page,
+      limit,
+      hasMore: (page * limit) < totalOrders,
+    }
   });
 };
 

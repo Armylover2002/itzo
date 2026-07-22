@@ -17,6 +17,9 @@ const OrdersPage = () => {
   const categoriesPath = getQuickCategoriesPath();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const getToken = () =>
     localStorage.getItem("auth_customer") ||
@@ -25,36 +28,51 @@ const OrdersPage = () => {
     localStorage.getItem("token") ||
     "";
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await customerApi.getMyOrders();
-        const rawList = response?.data?.result || response?.data?.results || [];
-        
-        // Filter to keep only quick commerce orders in this module
-        const list = Array.isArray(rawList) ? rawList.filter(order => {
-          const type = order.orderType || order.module || 'quick'
-          const orderId = String(order.orderId || order.id || order._id || '')
-          // Include quick commerce orders (type 'quick' or prefix 'QC')
-          // and exclude food orders (prefix 'FOD' or 'ORD')
-          return type === 'quick' || orderId.startsWith('QC') || (!orderId.startsWith('FOD') && !orderId.startsWith('ORD') && type !== 'food')
-        }) : [];
-        
-        setOrders(list);
-        // Join tracking rooms so status updates work even when userId is missing on the order.
-        list.forEach((order) => {
-          const orderId = String(order?.orderId || order?.orderNumber || order?.id || order?._id || "").trim();
-          if (orderId) joinOrderRoom(orderId, getToken);
-        });
-      } catch (error) {
-        console.error("Failed to fetch orders:", error);
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchOrders = async (pageNum = 1) => {
+    try {
+      if (pageNum === 1) setLoading(true);
+      else setLoadingMore(true);
 
-    fetchOrders();
+      const response = await customerApi.getMyOrders({ page: pageNum, limit: 10 });
+      const rawList = response?.data?.result || response?.data?.results || [];
+      const pagination = response?.data?.pagination;
+      
+      // Filter to keep only quick commerce orders in this module
+      const list = Array.isArray(rawList) ? rawList.filter(order => {
+        const type = order.orderType || order.module || 'quick'
+        const orderId = String(order.orderId || order.id || order._id || '')
+        return type === 'quick' || orderId.startsWith('QC') || (!orderId.startsWith('FOD') && !orderId.startsWith('ORD') && type !== 'food')
+      }) : [];
+      
+      if (pageNum === 1) {
+        setOrders(list);
+      } else {
+        setOrders((prev) => [...prev, ...list]);
+      }
+
+      if (pagination) {
+        setHasMore(pagination.hasMore);
+      } else {
+        setHasMore(list.length === 10);
+      }
+      setPage(pageNum);
+
+      // Join tracking rooms so status updates work even when userId is missing on the order.
+      list.forEach((order) => {
+        const orderId = String(order?.orderId || order?.orderNumber || order?.id || order?._id || "").trim();
+        if (orderId) joinOrderRoom(orderId, getToken);
+      });
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+      if (pageNum === 1) setOrders([]);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders(1);
   }, []);
 
   useEffect(() => {
@@ -250,6 +268,19 @@ const OrdersPage = () => {
               </article>
             );
           })
+        )}
+
+        {hasMore && orders.length > 0 && (
+          <div className="flex justify-center mt-6 mb-8">
+            <button
+              onClick={() => fetchOrders(page + 1)}
+              disabled={loadingMore}
+              className="px-6 py-2.5 rounded-full bg-white dark:bg-card border border-slate-200 dark:border-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {loadingMore && <Loader2 className="animate-spin text-emerald-600" size={16} />}
+              {loadingMore ? "Loading more..." : "Load More"}
+            </button>
+          </div>
         )}
       </div>
     </div>
