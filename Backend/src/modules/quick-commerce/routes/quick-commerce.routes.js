@@ -44,6 +44,7 @@ import {
   approveAdminSellerRequest,
   getAdminSellerRequests,
   createCategory,
+  createCategoryHierarchy,
   createProduct,
   getAdminCategories,
   getAdminOrders,
@@ -184,6 +185,16 @@ router.post(
   ...adminOnly,
   upload.single("image"),
   createCategory,
+);
+router.post(
+  "/admin/categories/hierarchy",
+  ...adminOnly,
+  upload.fields([
+    { name: "headerImage", maxCount: 1 },
+    { name: "level2Image", maxCount: 1 },
+    { name: "subImage", maxCount: 1 },
+  ]),
+  createCategoryHierarchy,
 );
 router.put(
   "/admin/categories/:categoryId",

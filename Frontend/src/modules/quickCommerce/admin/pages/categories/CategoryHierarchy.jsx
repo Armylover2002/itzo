@@ -11,16 +11,19 @@ import {
   Layers,
   ArrowRight,
   Package,
+  Plus,
 } from "lucide-react";
 import { adminApi } from "../../services/adminApi";
 import Card from "@shared/components/ui/Card";
 import Badge from "@shared/components/ui/Badge";
 import { toast } from "sonner";
+import CategoryHierarchyModal from "./CategoryHierarchyModal";
 
 const CategoryHierarchy = () => {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Selection State for Miller Columns
   const [selectedHeader, setSelectedHeader] = useState(null);
@@ -179,6 +182,14 @@ const CategoryHierarchy = () => {
         </div>
 
         <div className="flex items-center gap-6">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Create Category Hierarchy
+          </button>
+          
           <div className="flex items-center gap-4 text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-xl">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-primary"></span>
@@ -361,6 +372,12 @@ const CategoryHierarchy = () => {
           )}
         </div>
       </div>
+
+      <CategoryHierarchyModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        onSuccess={fetchCategories} 
+      />
     </div>
   );
 };

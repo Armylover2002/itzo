@@ -227,13 +227,6 @@ const SubCategories = () => {
           <p className="text-gray-500 mt-1">
             Manage level 3 categories linked to secondary categories
           </p>
-        </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors">
-          <Plus className="w-5 h-5" />
-          Add New Subcategory
-        </button>
       </div>
 
       <Card className="border-none shadow-sm">

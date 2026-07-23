@@ -279,6 +279,10 @@ export const adminApi = {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 
+  createCategoryHierarchy: (formData) => axiosInstance.post('/quick-commerce/admin/categories/hierarchy', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+
   updateCategory: (id, formData) => axiosInstance.put(`/quick-commerce/admin/categories/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),

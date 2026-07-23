@@ -477,6 +477,126 @@ export const createCategory = async (req, res) => {
   });
 
   return res.status(201).json({ success: true, result: toCategory(category) });
+}
+
+export const createCategoryHierarchy = async (req, res) => {
+  try {
+    const { headerData, level2Data, subData } = req.body;
+    if (!headerData || !level2Data || !subData) {
+      return res.status(400).json({ success: false, message: 'headerData, level2Data, and subData are required' });
+    }
+
+    const header = JSON.parse(headerData);
+    const level2 = JSON.parse(level2Data);
+    const sub = JSON.parse(subData);
+
+    if (!header.name || !level2.name || !sub.name) {
+      return res.status(400).json({ success: false, message: 'Name is required for all three category levels' });
+    }
+
+    // Helper for generating unique slug
+    const generateUniqueSlug = async (name) => {
+      const baseSlug = slugify(name);
+      const count = await QuickCategory.countDocuments({ slug: { $regex: `^${baseSlug}` } });
+      return count > 0 ? `${baseSlug}-${count + 1}` : baseSlug;
+    };
+
+    const headerSlug = await generateUniqueSlug(header.name);
+    const level2Slug = await generateUniqueSlug(level2.name);
+    const subSlug = await generateUniqueSlug(sub.name);
+
+    // Process images
+    const getUploadedImage = async (fieldName) => {
+      const file = req.files?.[fieldName]?.[0];
+      if (file?.buffer) {
+        return uploadImageBuffer(file.buffer, 'quick-commerce/categories');
+      }
+      return '';
+    };
+
+    const headerImage = await getUploadedImage('headerImage') || header.image || '';
+    const level2Image = await getUploadedImage('level2Image') || level2.image || '';
+    const subImage = await getUploadedImage('subImage') || sub.image || '';
+
+    // Step 1: Create Header
+    const createdHeader = await QuickCategory.create({
+      name: header.name,
+      slug: headerSlug,
+      image: headerImage,
+      description: header.description || '',
+      type: 'header',
+      status: header.status || 'active',
+      approvalStatus: 'approved',
+      approvedAt: new Date(),
+      parentId: null,
+      iconId: header.iconId || '',
+      adminCommission: parseNumber(header.adminCommission, 0),
+      handlingFees: parseNumber(header.handlingFees, 0),
+      headerColor: header.headerColor || header.accentColor || '#0c831f',
+      accentColor: header.accentColor || '#0c831f',
+      sortOrder: Number(header.sortOrder || 0),
+      isActive: (header.status || 'active') === 'active',
+    });
+
+    let createdLevel2, createdSub;
+
+    try {
+      // Step 2: Create Level 2
+      createdLevel2 = await QuickCategory.create({
+        name: level2.name,
+        slug: level2Slug,
+        image: level2Image,
+        description: level2.description || '',
+        type: 'category',
+        status: level2.status || 'active',
+        approvalStatus: 'approved',
+        approvedAt: new Date(),
+        parentId: createdHeader._id,
+        adminCommission: parseNumber(level2.adminCommission, 0),
+        handlingFees: parseNumber(level2.handlingFees, 0),
+        headerColor: level2.headerColor || level2.accentColor || '#0c831f',
+        accentColor: level2.accentColor || '#0c831f',
+        sortOrder: Number(level2.sortOrder || 0),
+        isActive: (level2.status || 'active') === 'active',
+      });
+
+      // Step 3: Create Subcategory
+      createdSub = await QuickCategory.create({
+        name: sub.name,
+        slug: subSlug,
+        image: subImage,
+        description: sub.description || '',
+        type: 'subcategory',
+        status: sub.status || 'active',
+        approvalStatus: 'approved', // Admin creating them directly
+        approvedAt: new Date(),
+        parentId: createdLevel2._id,
+        adminCommission: parseNumber(sub.adminCommission, 0),
+        handlingFees: parseNumber(sub.handlingFees, 0),
+        headerColor: sub.headerColor || sub.accentColor || '#0c831f',
+        accentColor: sub.accentColor || '#0c831f',
+        sortOrder: Number(sub.sortOrder || 0),
+        isActive: (sub.status || 'active') === 'active',
+      });
+
+      return res.status(201).json({
+        success: true,
+        result: {
+          header: toCategory(createdHeader),
+          level2: toCategory(createdLevel2),
+          sub: toCategory(createdSub)
+        }
+      });
+    } catch (error) {
+      // Manual rollback if any step fails
+      if (createdHeader) await QuickCategory.findByIdAndDelete(createdHeader._id);
+      if (createdLevel2) await QuickCategory.findByIdAndDelete(createdLevel2._id);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error in createCategoryHierarchy:', error);
+    return res.status(500).json({ success: false, message: 'Failed to create category hierarchy' });
+  }
 };
 
 export const updateCategory = async (req, res) => {

@@ -249,13 +249,6 @@ const Level2Categories = () => {
           <p className="text-gray-500 mt-1">
             Manage secondary categories linked to headers
           </p>
-        </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-hover transition-colors">
-          <Plus className="w-5 h-5" />
-          Add New Category
-        </button>
       </div>
 
       <Card className="border-none shadow-sm">
