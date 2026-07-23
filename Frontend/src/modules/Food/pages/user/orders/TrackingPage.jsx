@@ -1,7 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, RefreshCcw, Home, UtensilsCrossed, ChevronRight, Shield, Phone } from 'lucide-react';
 
 const TrackingPage = () => {
+  const navigate = useNavigate();
 
   return (
     <div className="relative min-h-screen bg-gray-900 font-sans overflow-hidden">
@@ -61,7 +63,10 @@ const TrackingPage = () => {
           </div>
 
           {/* Delivery Partner Safety Card */}
-          <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-sm">
+          <div 
+            className="bg-gray-800 rounded-xl p-4 border border-gray-700 shadow-sm cursor-pointer hover:bg-gray-700 transition-colors"
+            onClick={() => navigate('/food/user/profile/report-safety-emergency')}
+          >
             <div className="flex items-center gap-3">
               <Shield className="w-6 h-6 text-gray-400" />
               <span className="flex-1 text-left font-medium text-white">

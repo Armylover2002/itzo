@@ -2277,6 +2277,7 @@ export default function OrderTracking() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
             whileTap={{ scale: 0.99 }}
+            onClick={() => navigate('/food/user/profile/report-safety-emergency')}
           >
             <Shield className="w-6 h-6 text-gray-600" />
             <span className="flex-1 text-left font-medium text-gray-900">
