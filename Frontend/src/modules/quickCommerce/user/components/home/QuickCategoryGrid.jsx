@@ -21,14 +21,16 @@ const QuickCategoryGrid = ({ categories = [], isLoading = false }) => {
     );
   }
 
-  // Filter out the 'All' category if it exists to strictly show actual product categories
-  const displayCategories = categories.filter(c => String(c.id || c._id) !== "all").slice(0, 8);
+  // Display all categories without limiting or filtering 'All'
+  const displayCategories = categories;
 
   return (
     <div className="w-full px-4 pt-4 pb-2 bg-white dark:bg-background">
       <div className="grid grid-cols-4 gap-x-3 gap-y-5">
         {displayCategories.map((cat, idx) => {
           const imageSrc = resolveQuickImageUrl(cat.image);
+          const IconComp = cat.icon;
+
           return (
             <div
               key={cat._id || cat.id || idx}
@@ -43,6 +45,12 @@ const QuickCategoryGrid = ({ categories = [], isLoading = false }) => {
                     loading="lazy"
                     className="w-10 h-10 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-300"
                   />
+                ) : IconComp ? (
+                  typeof IconComp === "function" || (typeof IconComp === "object" && IconComp.$$typeof) ? (
+                    <IconComp sx={{ fontSize: 28, color: "#475569" }} className="w-7 h-7 text-slate-600 drop-shadow-sm group-hover:scale-110 transition-transform duration-300" />
+                  ) : (
+                    <img src={IconComp} alt={cat.name} className="w-8 h-8 object-contain drop-shadow-sm group-hover:scale-110 transition-transform duration-300" />
+                  )
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700" />
                 )}
