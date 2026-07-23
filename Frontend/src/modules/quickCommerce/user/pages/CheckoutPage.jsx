@@ -486,13 +486,26 @@ const CheckoutPage = () => {
   const handlingFee = pricingPreview?.handlingFeeCharged || 0;
   const platformFee = pricingPreview?.platformFeeCharged || 0;
   const gstAmount = pricingPreview?.gstAmount || 0;
-  const discountAmount = selectedCoupon
-    ? selectedCoupon.discountAmount || selectedCoupon.discount || 0
-    : 0;
   const discountedItemsTotal = cart.reduce((sum, item) => {
     const unitPrice = Number(item.salePrice || item.price || 0);
     return sum + unitPrice * Number(item.quantity || 0);
   }, 0);
+
+  const discountAmount = selectedCoupon ? (() => {
+    const total = discountedItemsTotal;
+    const discountType = String(selectedCoupon.discountType || 'flat').toLowerCase();
+    const discountValue = Number(selectedCoupon.discountValue || selectedCoupon.discount || 0);
+    const maxDiscount = Number(selectedCoupon.maxDiscount || selectedCoupon.maxDiscountValue || 0);
+
+    let amount = 0;
+    if (discountType === 'percent' || discountType === 'percentage') {
+      amount = Math.round((total * discountValue) / 100);
+      if (maxDiscount > 0) amount = Math.min(amount, maxDiscount);
+    } else {
+      amount = discountValue;
+    }
+    return Math.min(amount, total);
+  })() : 0;
   const originalItemsTotal = cart.reduce((sum, item) => {
     const originalUnitPrice = Number(
       item.originalPrice || item.mrp || item.price || item.salePrice || 0,
@@ -1176,6 +1189,16 @@ const CheckoutPage = () => {
     selectedTip,
     showRecipientForm,
   ]);
+
+  useEffect(() => {
+    if (selectedCoupon) {
+      const minOrder = Number(selectedCoupon.minOrderValue || selectedCoupon.minOrder || 0);
+      if (minOrder > 0 && discountedItemsTotal < minOrder) {
+        setSelectedCoupon(null);
+        showToast(`Coupon ${selectedCoupon.code} removed because minimum order value is not met`, "error");
+      }
+    }
+  }, [discountedItemsTotal, selectedCoupon]);
 
   useEffect(() => {
     if (cart.length === 0) {

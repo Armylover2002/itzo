@@ -268,7 +268,15 @@ export const getOfferSectionsOnly = async (_req, res) => {
 export const getCoupons = async (_req, res) => {
   setNoCache(res);
   const coupons = await getQuickCoupons();
-  return res.json({ success: true, results: coupons });
+  
+  const now = new Date();
+  const validCoupons = coupons.filter(c => {
+    if (c.expiryDate && new Date(c.expiryDate) < now) return false;
+    if (c.startDate && new Date(c.startDate) > now) return false;
+    return true;
+  });
+
+  return res.json({ success: true, results: validCoupons });
 };
 
 export const applyCoupon = async (req, res) => {
