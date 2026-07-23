@@ -11,7 +11,6 @@ const axiosInstance = axios.create({
 const getCustomerToken = () =>
     localStorage.getItem('auth_customer') ||
     localStorage.getItem('user_accessToken') ||
-    localStorage.getItem('accessToken') ||
     null;
 
 // Request interceptor for API calls
@@ -21,19 +20,36 @@ axiosInstance.interceptors.request.use(
         const url = config.url;
         const pagePath = window.location.pathname;
 
+        // 0. Explicit Context Module overriding everything else
+        if (config.contextModule) {
+            const moduleKeys = {
+                seller: 'auth_seller',
+                admin: 'auth_admin',
+                delivery: 'auth_delivery',
+                hrms: 'auth_hrms'
+            };
+            if (config.contextModule === 'customer') {
+                token = getCustomerToken();
+            } else if (moduleKeys[config.contextModule]) {
+                token = localStorage.getItem(moduleKeys[config.contextModule]);
+            }
+        }
+
         // Determination strategy: 
         // 1. If we are on a module-specific page (e.g. /seller/dashboard), prioritize that module's token
         // This is crucial for shared APIs like /products or /admin/categories
-        if (pagePath.startsWith('/seller')) {
-            token = localStorage.getItem('auth_seller');
-        } else if (pagePath.startsWith('/ecs')) {
-            token = localStorage.getItem('auth_admin');
-        } else if (pagePath.startsWith('/delivery')) {
-            token = localStorage.getItem('auth_delivery');
-        } else if (pagePath.startsWith('/hrms')) {
-            token = localStorage.getItem('auth_hrms');
-        } else if (pagePath.startsWith('/customer') || pagePath.startsWith('/quick') || pagePath === '/') {
-            token = getCustomerToken();
+        if (!token) {
+            if (pagePath.startsWith('/seller')) {
+                token = localStorage.getItem('auth_seller');
+            } else if (pagePath.startsWith('/ecs')) {
+                token = localStorage.getItem('auth_admin');
+            } else if (pagePath.startsWith('/delivery')) {
+                token = localStorage.getItem('auth_delivery');
+            } else if (pagePath.startsWith('/hrms')) {
+                token = localStorage.getItem('auth_hrms');
+            } else if (pagePath.startsWith('/customer') || pagePath.startsWith('/quick') || pagePath === '/') {
+                token = getCustomerToken();
+            }
         }
 
         // 2. Fallback to URL-based detection
@@ -49,11 +65,6 @@ axiosInstance.interceptors.request.use(
         // 3. Final default: if we are on a general page and STILL no token, try customer token
         if (!token && !pagePath.startsWith('/ecs') && !pagePath.startsWith('/seller') && !pagePath.startsWith('/delivery') && !pagePath.startsWith('/hrms')) {
             token = getCustomerToken();
-        }
-
-        // 3. Last fallback: Check common 'token' key if implemented
-        if (!token) {
-            token = localStorage.getItem('token');
         }
 
         if (token) {
