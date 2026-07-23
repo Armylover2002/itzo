@@ -3228,6 +3228,31 @@ export async function submitOrderRatings(orderId, userId, dto) {
     });
 }
 
+/**
+ * Update delivery instructions (note) for an order.
+ * Called by the user from the order tracking page.
+ */
+export async function updateOrderInstructions(orderId, userId, instructions) {
+  const identity = buildOrderIdentityFilter(orderId);
+  if (!identity) throw new ValidationError("Order id is required");
+
+  const order = await FoodOrder.findOne({
+    ...identity,
+    userId: new mongoose.Types.ObjectId(userId),
+  });
+  if (!order) throw new NotFoundError("Order not found");
+
+  const terminalStatuses = ["delivered", "cancelled", "refunded", "failed"];
+  if (terminalStatuses.includes(order.orderStatus)) {
+    throw new ValidationError("Cannot update instructions for a completed order");
+  }
+
+  order.note = typeof instructions === "string" ? instructions.trim() : "";
+  await order.save();
+
+  return sanitizeOrderForExternal(order);
+}
+
 // ----- Restaurant -----
 export async function listOrdersRestaurant(restaurantId, query) {
   const { page, limit, skip } = buildPaginationOptions(query);
