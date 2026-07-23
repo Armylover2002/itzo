@@ -669,40 +669,6 @@ const MainLocationHeader = ({
                 </motion.div>
               </div>
 
-              <motion.div
-                layout
-                transition={{
-                  layout: {
-                    type: "spring",
-                    stiffness: 420,
-                    damping: 34,
-                    mass: 0.6,
-                  },
-                }}
-                style={{
-                  height: navHeight,
-                  opacity: navOpacity,
-                  marginTop: categorySpacing,
-                  display: displayNav,
-                  overflowY: "hidden",
-                }}
-                className={cn(
-                  "relative flex items-end md:justify-center gap-1 overflow-x-auto no-scrollbar -mx-2 px-2 md:mx-0 md:px-0 z-10 snap-x min-h-[64px] md:min-h-[72px] pb-1",
-                  embedded ? "pt-1" : "pt-2",
-                )}>
-                {categories.slice(0, 10).map((cat, idx) => {
-                  const isActive = activeCategory?.id === cat.id;
-                  return (
-                    <CategoryNavColumn
-                      key={cat.id || cat._id || `hcat-${idx}`}
-                      cat={cat}
-                      isActive={isActive}
-                      categoryAccent={categoryAccent}
-                      onCategorySelect={onCategorySelect}
-                    />
-                  );
-                })}
-              </motion.div>
             </div>
           )}
 
