@@ -55,12 +55,14 @@ export default function SellerAuth() {
       const deliveryMode = payload?.deliveryMode || "sms";
       const resolvedPhone = String(payload?.phone || fullPhone).trim();
 
+      if (devOtp) {
+        console.log(`[DEV ONLY] OTP for ${fullPhone} is: ${devOtp}`);
+      }
+
       toast.success(
-        devOtp
-          ? `OTP ready for localhost testing. Use OTP: ${devOtp}`
-          : deliveryMode === "sms"
-            ? "OTP sent to your seller number."
-            : "OTP generated, but no debug code was returned.",
+        deliveryMode === "sms"
+          ? "OTP sent to your seller number."
+          : "OTP sent successfully."
       );
       setOtpPhone(resolvedPhone);
       setOtp("");
