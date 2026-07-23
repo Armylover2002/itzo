@@ -448,6 +448,12 @@ export async function adminApproveReturn({
     // Validate that we can move from current status to ANY review outcome
     const allowedReviewStatuses = [MASTER_STATUS.RETURN_REQUESTED, MASTER_STATUS.UNDER_ADMIN_REVIEW];
     if (!allowedReviewStatuses.includes(returnReq.status)) {
+      // If already processed, return idempotently
+      if ([MASTER_STATUS.APPROVED, MASTER_STATUS.PARTIALLY_APPROVED, MASTER_STATUS.REJECTED].includes(returnReq.status)) {
+        await session.abortTransaction();
+        return returnReq;
+      }
+
       const err = new Error(`Cannot review return: current status '${returnReq.status}' does not allow review.`);
       err.statusCode = 400;
       err.code = 'INVALID_STATUS_TRANSITION';
