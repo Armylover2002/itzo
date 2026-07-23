@@ -7,7 +7,7 @@ import { QuickProduct } from '../models/product.model.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { ReturnRequest } from '../returns/models/returnRequest.model.js';
-import { SellerReturn } from '../returns/models/sellerReturn.model.js';
+import { SellerReturn } from '../seller/models/sellerReturn.model.js';
 import { ReturnOtp } from '../returns/models/returnOtp.model.js';
 import { getSellerCommissionSnapshot } from '../admin/services/commission.service.js';
 import {
