@@ -55,6 +55,12 @@ const WalletPage = () => {
             }
         };
         fetchData();
+
+        const handleWalletUpdated = () => {
+            fetchData();
+        };
+        window.addEventListener('walletUpdated', handleWalletUpdated);
+        return () => window.removeEventListener('walletUpdated', handleWalletUpdated);
     }, []);
 
     return (

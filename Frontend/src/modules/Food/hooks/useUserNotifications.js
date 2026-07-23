@@ -146,6 +146,15 @@ export const useUserNotifications = () => {
       dispatchNotificationInboxRefresh();
     });
 
+    socketRef.current.on('wallet_updated', (payload) => {
+      debugLog('💰 Wallet updated:', payload);
+      window.dispatchEvent(
+        new CustomEvent('walletUpdated', {
+          detail: { balance: payload.balance }
+        })
+      );
+    });
+
     socketRef.current.on('connect_error', (error) => {
       if (import.meta.env.DEV) {
         // debugLog('❌ Socket connection error:', error.message);

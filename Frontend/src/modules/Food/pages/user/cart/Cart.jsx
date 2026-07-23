@@ -980,6 +980,16 @@ export default function Cart() {
     calculatePricing()
   }, [cart, defaultAddress, appliedCoupon, couponCode, restaurantId])
 
+  useEffect(() => {
+    const handleWalletUpdated = (e) => {
+      if (e.detail?.balance !== undefined) {
+        setWalletBalance(e.detail.balance);
+      }
+    };
+    window.addEventListener('walletUpdated', handleWalletUpdated);
+    return () => window.removeEventListener('walletUpdated', handleWalletUpdated);
+  }, []);
+
   // Fetch wallet balance
   useEffect(() => {
     const fetchWalletBalance = async () => {

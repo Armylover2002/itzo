@@ -3,6 +3,7 @@ import { ValidationError } from '../../../../core/auth/errors.js';
 import { FoodUser } from '../../../../core/users/user.model.js';
 import { FoodUserWallet } from '../models/userWallet.model.js';
 import { createRazorpayOrder, getRazorpayKeyId, isRazorpayConfigured, verifyPaymentSignature } from '../../orders/helpers/razorpay.helper.js';
+import { getIO, rooms } from '../../../../config/socket.js';
 
 const syncUserWalletBalance = async (userId, balance) => {
     const numericBalance = Math.max(0, Number(balance) || 0);
@@ -10,6 +11,12 @@ const syncUserWalletBalance = async (userId, balance) => {
         { _id: userId },
         { $set: { walletBalance: numericBalance } }
     );
+    const io = getIO();
+    if (io && rooms) {
+        io.to(rooms.user(userId)).emit('wallet_updated', {
+            balance: numericBalance
+        });
+    }
 };
 
 const ensureWallet = async (userId) => {

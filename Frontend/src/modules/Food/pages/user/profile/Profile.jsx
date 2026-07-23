@@ -188,7 +188,6 @@ export default function Profile() {
 
       return false;
     };
-
     // Check name - must have value
     const hasName = !!(
       userProfile.name &&

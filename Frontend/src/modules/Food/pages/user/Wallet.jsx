@@ -57,6 +57,14 @@ export default function Wallet() {
     fetchWalletData()
   }, [])
 
+  useEffect(() => {
+    const handleWalletUpdated = () => {
+      fetchWalletData()
+    }
+    window.addEventListener('walletUpdated', handleWalletUpdated)
+    return () => window.removeEventListener('walletUpdated', handleWalletUpdated)
+  }, [])
+
   const currentBalance = wallet?.balance || 0
 
   const referralEarnings = useMemo(() => {

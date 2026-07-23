@@ -24,10 +24,12 @@ import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
 import { CartAnimationProvider } from '../context/CartAnimationContext';
 import { LocationProvider } from '../context/LocationContext';
+import { useUserNotifications } from '../../../Food/hooks/useUserNotifications';
 
 import ProtectedRoute from '@core/guards/ProtectedRoute';
 
 const CustomerRoutes = () => {
+    useUserNotifications();
     return (
         <LocationProvider>
             <WishlistProvider>
