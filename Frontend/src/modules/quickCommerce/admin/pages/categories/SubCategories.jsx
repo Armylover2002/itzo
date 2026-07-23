@@ -227,6 +227,7 @@ const SubCategories = () => {
           <p className="text-gray-500 mt-1">
             Manage level 3 categories linked to secondary categories
           </p>
+        </div>
       </div>
 
       <Card className="border-none shadow-sm">

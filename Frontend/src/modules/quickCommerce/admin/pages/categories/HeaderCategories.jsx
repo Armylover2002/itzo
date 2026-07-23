@@ -258,6 +258,7 @@ const HeaderCategories = () => {
             Header Categories
           </h1>
           <p className="text-gray-500 mt-1">Manage top-level categories</p>
+        </div>
       </div>
 
       <Card className="border-none shadow-sm">

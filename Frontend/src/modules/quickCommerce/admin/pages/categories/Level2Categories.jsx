@@ -249,6 +249,7 @@ const Level2Categories = () => {
           <p className="text-gray-500 mt-1">
             Manage secondary categories linked to headers
           </p>
+        </div>
       </div>
 
       <Card className="border-none shadow-sm">
