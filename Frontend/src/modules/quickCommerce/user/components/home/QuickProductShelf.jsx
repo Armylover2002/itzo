@@ -35,7 +35,7 @@ const QuickProductShelf = ({ category, products = [], isLoading = false }) => {
         </h3>
         {category && category.id !== "all" && category._id !== "all" && (
           <button
-            onClick={() => navigate(getQuickCategoryPath(category))}
+            onClick={() => navigate(getQuickCategoryPath(category._id || category.id))}
             className="flex items-center text-sm font-semibold text-emerald-600 dark:text-emerald-400 active:scale-95 transition-transform"
           >
             See all

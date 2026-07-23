@@ -34,7 +34,7 @@ const QuickCategoryGrid = ({ categories = [], isLoading = false }) => {
           return (
             <div
               key={cat._id || cat.id || idx}
-              onClick={() => navigate(getQuickCategoryPath(cat))}
+              onClick={() => navigate(getQuickCategoryPath(cat._id || cat.id))}
               className="group flex flex-col items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
             >
               <div className="relative w-16 h-16 rounded-[20px] bg-slate-50 dark:bg-slate-800 flex items-center justify-center shadow-sm border border-slate-100 dark:border-white/5 overflow-hidden group-hover:shadow-md transition-shadow">
