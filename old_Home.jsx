@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
+﻿import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Star,
@@ -11,8 +11,30 @@ import {
   Dog,
 } from "lucide-react";
 
-// Import static constants
-import { CATEGORY_METADATA, ALL_CATEGORY } from "../constants/homeData";
+// MUI Icons (shared with admin & icon selector)
+import HomeIcon from "@mui/icons-material/Home";
+import DevicesIcon from "@mui/icons-material/Devices";
+import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
+import KitchenIcon from "@mui/icons-material/Kitchen";
+import ChildCareIcon from "@mui/icons-material/ChildCare";
+import PetsIcon from "@mui/icons-material/Pets";
+import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import CardGiftcardIcon from "@mui/icons-material/CardGiftcard";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import SpaIcon from "@mui/icons-material/Spa";
+import ToysIcon from "@mui/icons-material/Toys";
+import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import YardIcon from "@mui/icons-material/Yard";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import CheckroomIcon from "@mui/icons-material/Checkroom";
+import LocalCafeIcon from "@mui/icons-material/LocalCafe";
+import DiamondIcon from "@mui/icons-material/Diamond";
+import ColorLensIcon from "@mui/icons-material/ColorLens";
+import BuildIcon from "@mui/icons-material/Build";
+import LuggageIcon from "@mui/icons-material/Luggage";
+
 import SearchIcon from "@mui/icons-material/Search";
 import MicIcon from "@mui/icons-material/Mic";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -37,8 +59,6 @@ import MobileFooterMessage from "../components/layout/MobileFooterMessage";
 import { useProductDetail } from "../context/ProductDetailContext";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@food/components/ui/skeleton";
-import QuickCategorySlider from "../components/home/QuickCategorySlider";
-import QuickProductShelf from "../components/home/QuickProductShelf";
 import CardBanner from "@/assets/CardBanner.jpg";
 import SectionRenderer from "../components/experience/SectionRenderer";
 import ExperienceBannerCarousel from "../components/experience/ExperienceBannerCarousel";
@@ -57,10 +77,331 @@ import {
   getQuickCategoryPath,
 } from "../utils/routes";
 
+const DEFAULT_CATEGORY_THEME = {
+  gradient: "linear-gradient(to bottom, #F7C332, #F7E08F)",
+  shadow: "shadow-yellow-500/20",
+  accent: "text-[#1A1A1A]",
+};
+
+const CATEGORY_METADATA = {
+  All: {
+    icon: HomeIcon,
+    theme: DEFAULT_CATEGORY_THEME,
+    banner: {
+      title: "HOUSEFULL",
+      subtitle: "SALE",
+      floatingElements: "sparkles",
+    },
+  },
+  Grocery: {
+    icon: LocalGroceryStoreIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #FE5502, #ff5252)",
+      shadow: "shadow-red-500/20",
+      accent: "text-red-900",
+    },
+    banner: {
+      title: "SUPERSAVER",
+      subtitle: "FRESH & FAST",
+      floatingElements: "leaves",
+    },
+  },
+  Wedding: {
+    icon: CardGiftcardIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)",
+      shadow: "shadow-rose-500/20",
+      accent: "text-rose-900",
+    },
+    banner: { title: "WEDDING", subtitle: "BLISS", floatingElements: "hearts" },
+  },
+  "Home & Kitchen": {
+    icon: KitchenIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
+      shadow: "shadow-amber-500/20",
+      accent: "text-amber-900",
+    },
+    banner: { title: "HOME", subtitle: "KITCHEN", floatingElements: "smoke" },
+  },
+  Electronics: {
+    icon: DevicesIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #7209B7, #B5179E)",
+      shadow: "shadow-purple-500/20",
+      accent: "text-orange-900",
+    },
+    banner: {
+      title: "TECH FEST",
+      subtitle: "GADGETS",
+      floatingElements: "tech",
+    },
+  },
+  Kids: {
+    icon: ChildCareIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)",
+      shadow: "shadow-blue-500/20",
+      accent: "text-orange-900",
+    },
+    banner: {
+      title: "LITTLE ONE",
+      subtitle: "CARE",
+      floatingElements: "bubbles",
+    },
+  },
+  "Pet Supplies": {
+    icon: PetsIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #FB8500, #FFB703)",
+      shadow: "shadow-yellow-500/20",
+      accent: "text-yellow-900",
+    },
+    banner: { title: "PAWSOME", subtitle: "DEALS", floatingElements: "bones" },
+  },
+  Sports: {
+    icon: SportsSoccerIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #4361EE, #4895EF)",
+      shadow: "shadow-indigo-500/20",
+      accent: "text-orange-900",
+    },
+    banner: { title: "SPORTS", subtitle: "GEAR", floatingElements: "confetti" },
+  },
+};
+
+const ALL_CATEGORY = {
+  id: "all",
+  _id: "all",
+  name: "All",
+  icon: HomeIcon,
+  theme: DEFAULT_CATEGORY_THEME,
+  headerColor: "#ffdb3a",
+  banner: {
+    title: "HOUSEFULL",
+    subtitle: "SALE",
+    floatingElements: "sparkles",
+    textColor: "text-black",
+  },
+};
+
+const categories = [
+  {
+    id: 1,
+    name: "All",
+    icon: HomeIcon,
+    theme: DEFAULT_CATEGORY_THEME,
+    banner: {
+      title: "HOUSEFULL",
+      subtitle: "SALE",
+      floatingElements: "sparkles",
+      textColor: "text-black",
+    },
+  },
+  {
+    id: 5,
+    name: "Electronics",
+    icon: DevicesIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #7209B7, #B5179E)",
+      shadow: "shadow-purple-500/20",
+      accent: "text-orange-900",
+    },
+    banner: {
+      title: "TECH FEST",
+      subtitle: "GADGETS",
+      floatingElements: "tech",
+      textColor: "text-white",
+    },
+  },
+  {
+    id: 2,
+    name: "Grocery",
+    icon: LocalGroceryStoreIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #FE5502, #ff5252)",
+      shadow: "shadow-red-500/20",
+      accent: "text-red-900",
+    },
+    banner: {
+      title: "SUPERSAVER",
+      subtitle: "FRESH & FAST",
+      floatingElements: "leaves",
+      textColor: "text-white",
+    },
+  },
+  {
+    id: 10,
+    name: "Home & Kitchen",
+    icon: KitchenIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #BC6C25, #DDA15E)",
+      shadow: "shadow-amber-500/20",
+      accent: "text-amber-900",
+    },
+    banner: {
+      title: "HOME",
+      subtitle: "KITCHEN",
+      floatingElements: "smoke",
+      textColor: "text-white",
+    },
+  },
+  {
+    id: 7,
+    name: "Kids",
+    icon: ChildCareIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)",
+      shadow: "shadow-blue-500/20",
+      accent: "text-orange-900",
+    },
+    banner: {
+      title: "LITTLE ONE",
+      subtitle: "CARE",
+      floatingElements: "bubbles",
+      textColor: "text-white",
+    },
+  },
+  {
+    id: 8,
+    name: "Pet Supplies",
+    icon: PetsIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #FB8500, #FFB703)",
+      shadow: "shadow-yellow-500/20",
+      accent: "text-yellow-900",
+    },
+    banner: {
+      title: "PAWSOME",
+      subtitle: "DEALS",
+      floatingElements: "bones",
+      textColor: "text-white",
+    },
+  },
+  {
+    id: 11,
+    name: "Sports",
+    icon: SportsSoccerIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #4361EE, #4895EF)",
+      shadow: "shadow-indigo-500/20",
+      accent: "text-orange-900",
+    },
+    banner: {
+      title: "SPORTS",
+      subtitle: "GEAR",
+      floatingElements: "confetti",
+      textColor: "text-white",
+    },
+  },
+  {
+    id: 3,
+    name: "Wedding",
+    icon: CardGiftcardIcon,
+    theme: {
+      gradient: "linear-gradient(to bottom, #FF4D6D, #FF8FA3)",
+      shadow: "shadow-rose-500/20",
+      accent: "text-rose-900",
+    },
+    banner: {
+      title: "WEDDING",
+      subtitle: "BLISS",
+      floatingElements: "hearts",
+      textColor: "text-white",
+    },
+  },
+];
+
+// Map icon ids saved from admin/category icon selector to MUI icons
+const ICON_COMPONENTS = {
+  electronics: DevicesIcon,
+  fashion: CheckroomIcon,
+  home: HomeIcon,
+  food: LocalCafeIcon,
+  sports: SportsSoccerIcon,
+  books: MenuBookIcon,
+  beauty: SpaIcon,
+  toys: ToysIcon,
+  automotive: DirectionsCarIcon,
+  pets: PetsIcon,
+  health: LocalHospitalIcon,
+  garden: YardIcon,
+  office: BusinessCenterIcon,
+  music: MusicNoteIcon,
+  jewelry: DiamondIcon,
+  baby: ChildCareIcon,
+  tools: BuildIcon,
+  luggage: LuggageIcon,
+  art: ColorLensIcon,
+  grocery: LocalGroceryStoreIcon,
+};
+
+const bestsellerCategories = [
+  {
+    id: 1,
+    name: "Chips & Namkeen",
+    images: [
+      "https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1613919113640-25732ec5e61f?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1599490659223-e1539e76926a?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1621444541669-451006c1103d?auto=format&fit=crop&q=80&w=200&h=200",
+    ],
+  },
+  {
+    id: 2,
+    name: "Bakery & Biscuits",
+    images: [
+      "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1550617931-e17a7b70dce2?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1581339399838-2a120c18bba3?auto=format&fit=crop&q=80&w=200&h=200",
+    ],
+  },
+  {
+    id: 3,
+    name: "Vegetable & Fruits",
+    images: [
+      "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1518843025960-d70213740685?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1490818387583-1baba5e638af?auto=format&fit=crop&q=80&w=200&h=200",
+    ],
+  },
+  {
+    id: 4,
+    name: "Oil, Ghee & Masala",
+    images: [
+      "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1596797038558-9c50f16ee64b?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1506368249639-73a05d6f6488?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1472141521881-95d0e87e2e39?auto=format&fit=crop&q=80&w=200&h=200",
+    ],
+  },
+  {
+    id: 5,
+    name: "Sweet & Chocolates",
+    images: [
+      "https://images.unsplash.com/photo-1581798459219-318e76aecc7b?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1481391243133-f96216dcb5d2?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1526081347589-7fa3cb419ee7?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1542841791-192d99906b27?auto=format&fit=crop&q=80&w=200&h=200",
+    ],
+  },
+  {
+    id: 6,
+    name: "Drinks & Juices",
+    images: [
+      "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1625772290748-39126cdd9fe9?auto=format&fit=crop&q=80&w=200&h=200",
+      "https://images.unsplash.com/photo-1544145945-f904253db0ad?auto=format&fit=crop&q=80&w=200&h=200",
+    ],
+  },
+];
 
 const MARQUEE_MESSAGES = [
   "24/7 Delivery",
-  "Minimum Order ₹99",
+  "Minimum Order Γé╣99",
   "Save Big on Essentials!",
 ];
 
@@ -382,7 +723,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                                 </span>
                                 <div className="bg-[#0c831f] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
                                   <VerifiedIcon sx={{ fontSize: 16 }} />
-                                  <span className="text-xl font-[1000]">₹0</span>
+                                  <span className="text-xl font-[1000]">Γé╣0</span>
                                 </div>
                                 <span className="text-sm font-[1000] text-gray-700">
                                   Fee
@@ -435,7 +776,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                                 </span>
                                 <div className="bg-[#0c831f] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
                                   <VerifiedIcon sx={{ fontSize: 16 }} />
-                                  <span className="text-xl font-[1000]">₹0</span>
+                                  <span className="text-xl font-[1000]">Γé╣0</span>
                                 </div>
                                 <span className="text-sm font-[1000] text-gray-700">
                                   Fee
@@ -498,19 +839,181 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                 {[...MARQUEE_MESSAGES, ...MARQUEE_MESSAGES].map((message, idx) => (
                   <React.Fragment key={`${message}-${idx}`}>
                     <span className="whitespace-nowrap">{message}</span>
-                    <span className="text-[#8a7f66]">•</span>
+                    <span className="text-[#8a7f66]">ΓÇó</span>
                   </React.Fragment>
                 ))}
-                <span className="whitespace-nowrap">❤️</span>
-                <span className="whitespace-nowrap">🎁</span>
+                <span className="whitespace-nowrap">Γ¥ñ∩╕Å</span>
+                <span className="whitespace-nowrap">≡ƒÄü</span>
               </div>
             </div>
           </div>
 
-          {/* 4. Quick Category Slider (Colorful horizontal list) */}
-          <QuickCategorySlider categories={effectiveQuickCategories} activeCategory={activeCategory} embedded={embedded} />
+          {/* Quick Navigation Category Slider (admin-configured or global fallback) */}
+          {effectiveQuickCategories.length > 0 && (
+            <div
+              className={cn(
+                "w-full mb-5 overflow-hidden relative group z-20 md:mt-3",
+                embedded ? "mt-2" : "mt-4 md:mt-6",
+              )}>
+              <div
+                className={cn(
+                  "relative overflow-hidden bg-white dark:bg-card",
+                  embedded ? "shadow-none" : "shadow-[0_14px_28px_rgba(15,23,42,0.09)]",
+                )}>
 
-          {/* Offer Sections (admin-configured: Trending, etc.) – show on Home so user sees them */}
+                <div className="relative z-10 px-4 pt-3 pb-1 md:px-8 md:pt-4">
+                  <h2 className="text-center text-[18px] md:text-[20px] font-bold tracking-tight text-[#132018] leading-none">
+                    Quick categories
+                  </h2>
+                </div>
+
+                {/* Left Scroll Button */}
+                <div className="absolute left-4 lg:left-10 top-[58%] -translate-y-1/2 z-20 hidden md:flex">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => scrollQuickCats("left")}
+                    className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#0c831f] transition-all">
+                    <ChevronLeft size={22} strokeWidth={3} />
+                  </motion.button>
+                </div>
+
+                <div
+                  ref={quickCatsRef}
+                  className="relative z-10 flex items-start gap-2.5 md:gap-3 lg:gap-4 overflow-x-auto no-scrollbar px-4 pb-3 pt-1 md:px-8 md:pb-4 snap-x scroll-smooth">
+                  {effectiveQuickCategories.map((cat, idx) => {
+                    const palette =
+                      quickCategoryPalettes[idx % quickCategoryPalettes.length];
+                    const categoryImage = getQuickCategoryImage(cat);
+                    return (
+                      <motion.div
+                        key={cat.id || cat._id || `cat-${idx}`}
+                        whileHover={{ y: -4 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          if (typeof window !== "undefined") {
+                            window.sessionStorage.setItem(
+                              QUICK_HEADER_RETURN_STORAGE_KEY,
+                              JSON.stringify({
+                                headerId:
+                                  activeCategory?._id ||
+                                  activeCategory?.id ||
+                                  ALL_CATEGORY._id,
+                                color:
+                                  activeCategory?.headerColor ||
+                                  ALL_CATEGORY.headerColor,
+                                name:
+                                  activeCategory?.name || ALL_CATEGORY.name,
+                              }),
+                            );
+                          }
+                          navigate(getQuickCategoryPath(cat.id));
+                        }}
+                        className="flex flex-col items-center gap-1 min-w-[84px] md:min-w-[112px] lg:min-w-[128px] cursor-pointer group/item snap-start">
+                        <div
+                          className="relative w-[84px] h-[96px] md:w-[112px] md:h-[126px] lg:w-[128px] lg:h-[140px] rounded-t-full rounded-b-[24px] shadow-[0_10px_22px_rgba(15,23,42,0.10)] border flex items-start justify-center p-2 transition-all duration-300 group-hover/item:-translate-y-1 group-hover/item:shadow-[0_16px_30px_rgba(15,23,42,0.14)] overflow-hidden"
+                          style={{
+                            backgroundImage: `linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.6) 24%, rgba(255,255,255,0.15) 100%), linear-gradient(135deg, ${palette.bgFrom}, ${palette.bgVia}, ${palette.bgTo})`,
+                            borderColor: palette.frameColor,
+                          }}>
+                          <div
+                            className="absolute inset-0 opacity-40 pointer-events-none"
+                            style={{ backgroundColor: palette.glowColor }}
+                          />
+                          {categoryImage ? (
+                            <img
+                              src={categoryImage}
+                              alt={cat.name}
+                              className="absolute left-1/2 top-3 z-10 h-[68px] w-[68px] -translate-x-1/2 object-contain drop-shadow-[0_5px_12px_rgba(0,0,0,0.10)] mix-blend-multiply group-hover/item:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            <div className="absolute left-1/2 top-3 z-10 flex h-[68px] w-[68px] -translate-x-1/2 items-center justify-center rounded-[20px] bg-white/55 text-2xl font-black uppercase text-slate-400">
+                              {(cat.name || "?").charAt(0)}
+                            </div>
+                          )}
+                          <div className="absolute inset-x-2 bottom-1.5 z-20 text-center">
+                            <span className="block text-[10px] md:text-[11px] lg:text-[12px] font-semibold text-[#1f2b20] leading-tight whitespace-nowrap overflow-hidden text-ellipsis drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] group-hover/item:text-[#0c831f] transition-colors">
+                              {cat.name}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Right Scroll Button */}
+                <div className="absolute right-4 lg:right-10 top-[58%] -translate-y-1/2 z-20 hidden md:flex">
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => scrollQuickCats("right")}
+                    className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#0c831f] transition-all">
+                    <ChevronRight size={22} strokeWidth={3} />
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Lowest Price ever Section  (kept as static for now) */}
+          <div
+            className={cn(
+              "mb-4 md:mb-6",
+              embedded ? "mt-4 md:mt-5" : "mt-6 md:mt-10",
+            )}>
+            <div className="relative overflow-hidden bg-[#e7f3ff] pt-6 md:pt-8 pb-0 rounded-none md:rounded-[32px] mx-0 md:mx-8 lg:mx-[50px] shadow-sm">
+              <div className="relative z-10 px-4 md:px-8">
+                <div className="flex justify-between items-center mb-3 md:mb-5 px-1">
+                  <div className="flex flex-col">
+                    <h3 className="text-lg md:text-3xl font-[1000] text-[#004b91] tracking-tighter uppercase leading-none">
+                      Lowest Price <span className="text-[#004b91]">ever</span>
+                    </h3>
+                    <div className="flex items-center gap-1.5 md:gap-2 mt-1 md:mt-2">
+                      <div className="h-1 w-1 md:h-1.5 md:w-1.5 bg-[#004b91] rounded-full animate-pulse" />
+                      <span className="text-[9px] md:text-[10px] font-black text-[#004b91] uppercase tracking-wider opacity-80">
+                        Unbeatable Savings ΓÇó Updated hourly
+                      </span>
+                    </div>
+                  </div>
+                  <motion.div
+                    onClick={() => navigate(getQuickCategoriesPath())}
+                    whileHover={{ x: 5, scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex items-center gap-1 md:gap-1.5 bg-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-[#004b91] font-bold text-[9px] md:text-xs cursor-pointer shadow-sm border border-[#004b91]/5 transition-all shrink-0 whitespace-nowrap">
+                    See all{" "}
+                    <ArrowRightIcon
+                      sx={{ fontSize: 10, ml: 0.5 }}
+                    />
+                  </motion.div>
+                </div>
+
+                <div className="relative z-10 flex overflow-x-auto gap-3 md:gap-4 pb-5 md:pb-6 no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory scroll-smooth">
+                  {products.slice(0, 12).map((product, idx) => (
+                    <div
+                      key={product.id || product._id || `prod-${idx}`}
+                      className="w-[125px] md:w-[155px] lg:w-[175px] shrink-0 snap-start">
+                      <ProductCard
+                        product={product}
+                        className="bg-white rounded-[20px] shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] border-orange-50/50 transition-all"
+                        compact={true}
+                        curvedInfo={true}
+                      />
+                    </div>
+                  ))}
+                  {filteredProducts.length === 0 && !isLoading && (
+                    <div className="w-full py-10 md:py-20 text-center text-slate-400 font-black italic md:text-xl">
+                      {activeCategory && activeCategory._id !== "all"
+                        ? `No products found in ${activeCategory.name}`
+                        : "Curating the best deals for you..."}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Offer Sections (admin-configured: Trending, etc.) ΓÇô show on Home so user sees them */}
           {offerSections.length > 0 && (
             <div className="w-full px-0 pt-0 pb-2 md:pb-4">
               {[...offerSections]
@@ -668,7 +1171,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
             </div>
           )}
 
-          {/* Main Content Area – show admin-configured sections (hero/categories already shown above are skipped) */}
+          {/* Main Content Area ΓÇô show admin-configured sections (hero/categories already shown above are skipped) */}
           {sectionsForRenderer.length > 0 && (
             <div
               className={cn(

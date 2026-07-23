@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import MainLocationHeader from '../components/shared/MainLocationHeader';
 import { customerApi } from '../services/customerApi';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { getQuickCategoryPath } from '../utils/routes';
 const COLORS = [
     "#FDF2F2", "#F2F9F2", "#F2F2FD", "#FDFDF2",
     "#F2FDFD", "#FDF2FD", "#FFF8F0", "#F0FFF8"
@@ -156,7 +156,7 @@ const CategoriesPage = () => {
                                         {group.categories.map((category) => (
                                             <Link
                                                 key={category.id}
-                                                to={`/quick/categories/${category.id}`}
+                                                to={getQuickCategoryPath(category.id)}
                                                 className="block"
                                             >
                                                 <CategoryCard

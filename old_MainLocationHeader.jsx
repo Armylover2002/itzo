@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+﻿import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useLocation as useRouterLocation, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Lottie from "lottie-react";
@@ -14,23 +14,13 @@ import {
   buildSearchBarBackgroundColor,
   shiftHex,
 } from "../../utils/headerTheme";
-
-const getLuminance = (hex) => {
-  if (!hex) return 0;
-  const color = hex.replace("#", "");
-  const rgb = parseInt(color, 16);
-  const r = (rgb >> 16) & 0xff;
-  const g = (rgb >> 8) & 0xff;
-  const b = (rgb >> 0) & 0xff;
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-};
 import {
   getQuickCartPath,
   getQuickHomePath,
   getQuickSearchPath,
   getQuickWishlistPath,
 } from "../../utils/routes";
-import LogoImage from "../../assets/Logo.png";
+import LogoImage from "@/assets/Logo.png";
 import shoppingCartAnimation from "@/assets/lottie/shopping-cart.json";
 import { Sparkles } from "lucide-react";
 import { customerApi } from "../../services/customerApi";
@@ -111,7 +101,7 @@ const lightenHex = (hex, amount = 0.18) => {
   return `#${toHex(mix(r))}${toHex(mix(g))}${toHex(mix(b))}`;
 };
 
-/** Full-width bottom stroke + tab curve; l/r are 0–100% of column where the inner bump sits. */
+/** Full-width bottom stroke + tab curve; l/r are 0ΓÇô100% of column where the inner bump sits. */
 function buildActiveTabPath(l, r) {
   const y = 20;
   const mapX = (x) => l + ((x - 1.5) / (98.5 - 1.5)) * (r - l);
@@ -162,18 +152,18 @@ function CategoryNavColumn({
         layout: { type: "spring", stiffness: 520, damping: 38, mass: 0.55 },
       }}
       onClick={() => onCategorySelect && onCategorySelect(cat)}
-      className={cn(
-        "relative z-[2] flex min-w-[48px] shrink-0 cursor-pointer flex-col items-center gap-0.5 px-2 pb-0.5 pt-0.5 snap-start md:min-w-[58px] transition-all duration-300 border-b-2",
-        isActive ? "border-white" : "border-transparent"
-      )}>
+      style={{
+        borderBottomColor: isActive ? "transparent" : categoryAccent,
+      }}
+      className="relative z-[2] flex min-w-[48px] shrink-0 cursor-pointer flex-col items-center gap-0.5 border-b-2 px-2 pb-0.5 pt-0.5 snap-start md:min-w-[58px]">
       <div className="relative z-10 flex h-9 w-9 items-center justify-center md:h-11 md:w-11">
         {typeof cat.icon === "function" ||
           (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
           <cat.icon
             sx={{
               fontSize: { xs: 20, md: 24 },
-              color: "#ffffff",
-              opacity: isActive ? 1 : 0.8,
+              color: iconColor,
+              opacity: isActive ? 1 : 0.92,
               transition: "opacity 0.2s, transform 0.2s",
             }}
           />
@@ -181,7 +171,8 @@ function CategoryNavColumn({
           <img
             src={cat.icon}
             alt={cat.name}
-            className={cn("h-4 w-4 object-contain md:h-5 md:w-5", isActive ? "opacity-100 brightness-200" : "opacity-80 brightness-0 invert")}
+            className="h-4 w-4 object-contain md:h-5 md:w-5"
+            style={{ opacity: isActive ? 1 : 0.92 }}
           />
         )}
       </div>
@@ -200,10 +191,25 @@ function CategoryNavColumn({
         </span>
       </div>
       {isActive && (
-        <motion.div
-          layoutId="active-nav-glow"
-          className="absolute inset-0 bg-white/10 rounded-xl -z-10"
-        />
+        <motion.svg
+          layoutId="active-category-curve"
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-0 right-0 z-[6] h-[22px] w-full overflow-visible"
+          viewBox="0 0 100 20"
+          preserveAspectRatio="none"
+          shapeRendering="geometricPrecision"
+          transition={{
+            layout: { type: "spring", stiffness: 560, damping: 40, mass: 0.5 },
+          }}>
+          <path
+            d={pathD}
+            fill="none"
+            stroke={categoryAccent}
+            strokeWidth="2"
+            strokeLinecap="butt"
+            strokeLinejoin="round"
+          />
+        </motion.svg>
       )}
     </motion.div>
   );
@@ -218,8 +224,6 @@ const MainLocationHeader = ({
   showTopContent = true,
   showSearchBar = true,
   showCategories = true,
-  hideDeliveryTime = false,
-  hideLogo = false,
 }) => {
   const { scrollY } = useScroll();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
@@ -399,13 +403,6 @@ const MainLocationHeader = ({
   const searchBarBg = buildSearchBarBackgroundColor(baseHeaderColor || "#1e293b");
   const categoryAccent = "#ffffff";
 
-  const luminance = getLuminance(baseHeaderColor || "#0f172a");
-  const isDarkBackground = luminance < 128;
-  const textColorClass = isDarkBackground ? "text-white" : "text-slate-900";
-  const subTextColorClass = isDarkBackground ? "text-white/90" : "text-slate-800";
-  const iconColor = isDarkBackground ? "#ffffff" : "#111827";
-  const appNameBorderClass = isDarkBackground ? "border-white/20" : "border-black/10";
-
   useEffect(() => {
     const c = buildMiniCartColor(baseHeaderColor || "#1e293b");
     document.documentElement.style.setProperty("--customer-mini-cart-color", c);
@@ -470,30 +467,26 @@ const MainLocationHeader = ({
             <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-4 mt-1">
               {/* Left Section: Logo + Location row */}
               <div className="flex items-center gap-4 lg:gap-8">
-                {!hideLogo && (
-                  <div
-                    onClick={() => navigate(homePath)}
-                    className="flex items-center gap-3 cursor-pointer group shrink-0">
-                    <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
-                      <img
-                        src={logoUrl}
-                        alt={`${appName} Logo`}
-                        className="h-10 md:h-16 w-auto object-contain"
-                      />
-                    </div>
+                <div
+                  onClick={() => navigate(homePath)}
+                  className="flex items-center gap-3 cursor-pointer group shrink-0">
+                  <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                    <img
+                      src={logoUrl}
+                      alt={`${appName} Logo`}
+                      className="h-10 md:h-16 w-auto object-contain"
+                    />
                   </div>
-                )}
+                </div>
 
                 {/* Location Block (Desktop inline row) */}
-                <div className={cn("flex flex-col h-10 justify-center", hideLogo ? "" : "border-l border-black/10 pl-4 lg:pl-8")}>
-                  {!hideDeliveryTime && (
-                    <div className="flex items-center gap-1.5 opacity-70">
-                      <AccessTimeIcon sx={{ fontSize: 13, color: iconColor }} />
-                      <span className={`text-[11px] font-black ${textColorClass} uppercase tracking-widest leading-none`}>
-                        {currentLocation.time}
-                      </span>
-                    </div>
-                  )}
+                <div className="flex flex-col border-l border-black/10 pl-4 lg:pl-8 h-10 justify-center">
+                  <div className="flex items-center gap-1.5 opacity-70">
+                    <AccessTimeIcon sx={{ fontSize: 13, color: "#111827" }} />
+                    <span className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-none">
+                      {currentLocation.time}
+                    </span>
+                  </div>
                   <button
                     type="button"
                     data-lenis-prevent
@@ -501,18 +494,15 @@ const MainLocationHeader = ({
                     onClick={() => {
                       setIsLocationOpen(true);
                     }}
-                    className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? '' : 'mt-0'}`}>
-                    <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: "inherit" }} />
-                    <div className={cn(
-                      "leading-tight max-w-[250px] lg:max-w-[320px] truncate",
-                      hideDeliveryTime ? "text-[16px] font-black" : "text-[13px] font-bold"
-                    )}>
+                    className="flex items-center gap-1 text-slate-900 hover:text-slate-700 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
+                    <LocationOnIcon sx={{ fontSize: 14, color: "inherit" }} />
+                    <div className="text-[13px] font-bold leading-tight max-w-[250px] lg:max-w-[320px] truncate">
                       {isFetchingLocation
                         ? "Detecting location..."
                         : currentLocation.name}
                     </div>
                     <ChevronDownIcon
-                      sx={{ fontSize: hideDeliveryTime ? 16 : 12, opacity: 0.5, color: iconColor }}
+                      sx={{ fontSize: 12, opacity: 0.5, color: "#111827" }}
                     />
                   </button>
                 </div>
@@ -551,7 +541,7 @@ const MainLocationHeader = ({
                   whileHover={{ scale: 1.15, rotate: 5 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => navigate(wishlistPath)}
-                  className={`${textColorClass} hover:text-red-500 transition-all`}>
+                  className="text-slate-900 hover:text-red-500 transition-all">
                   <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
                 </motion.button>
 
@@ -559,7 +549,7 @@ const MainLocationHeader = ({
                   whileHover={{ scale: 1.15, rotate: -5 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => navigate(cartPath)}
-                  className={`${textColorClass} hover:opacity-80 transition-all relative group`}>
+                  className="text-slate-900 hover:text-slate-700 transition-all relative group">
                   <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-[#FE5502] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-red-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
@@ -586,23 +576,19 @@ const MainLocationHeader = ({
                 overflow: "hidden",
               }}
               className="relative z-10">
-              {!hideLogo && (
-                <div className="mb-1">
-                  <span className={`inline-flex items-center rounded-full border ${appNameBorderClass} bg-white/18 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.24em] ${textColorClass} backdrop-blur-sm`}>
-                    {appName}
-                  </span>
-                </div>
-              )}
+              <div className="mb-1">
+                <span className="inline-flex items-center rounded-full border border-black/10 bg-white/18 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-slate-900 backdrop-blur-sm">
+                  {appName}
+                </span>
+              </div>
               <div className="flex justify-between items-start">
                 <div className="flex flex-col">
-                  {!hideDeliveryTime && (
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <AccessTimeIcon sx={{ fontSize: 16, color: iconColor }} />
-                      <span className={`text-base font-bold ${textColorClass} tracking-tight leading-none`}>
-                        {currentLocation.time}
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1.5 mb-0.5">
+                    <AccessTimeIcon sx={{ fontSize: 16, color: "#111827" }} />
+                    <span className="text-base font-bold text-slate-900 tracking-tight leading-none">
+                      {currentLocation.time}
+                    </span>
+                  </div>
                   <button
                     type="button"
                     data-lenis-prevent
@@ -610,18 +596,15 @@ const MainLocationHeader = ({
                     onClick={() => {
                       setIsLocationOpen(true);
                     }}
-                    className={`flex items-center gap-1.5 ${hideDeliveryTime ? textColorClass : subTextColorClass} cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? 'mt-1' : ''}`}>
-                    <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: iconColor }} />
-                    <div className={cn(
-                      "leading-tight max-w-[280px] truncate",
-                      hideDeliveryTime ? "text-[14px] font-black" : "text-[10px] font-medium"
-                    )}>
+                    className="flex items-center gap-1 text-slate-800 cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left">
+                    <LocationOnIcon sx={{ fontSize: 14, color: "#111827" }} />
+                    <div className="text-[10px] font-medium leading-tight max-w-[280px] truncate">
                       {isFetchingLocation
                         ? "Detecting location..."
                         : currentLocation.name}
                     </div>
                     <ChevronDownIcon
-                      sx={{ fontSize: hideDeliveryTime ? 16 : 12, opacity: 0.5, color: iconColor }}
+                      sx={{ fontSize: 12, opacity: 0.5, color: "#111827" }}
                     />
                   </button>
                 </div>
@@ -653,6 +636,40 @@ const MainLocationHeader = ({
                 </motion.div>
               </div>
 
+              <motion.div
+                layout
+                transition={{
+                  layout: {
+                    type: "spring",
+                    stiffness: 420,
+                    damping: 34,
+                    mass: 0.6,
+                  },
+                }}
+                style={{
+                  height: navHeight,
+                  opacity: navOpacity,
+                  marginTop: categorySpacing,
+                  display: displayNav,
+                  overflowY: "hidden",
+                }}
+                className={cn(
+                  "relative flex items-end md:justify-center gap-1 overflow-x-auto no-scrollbar -mx-2 px-2 md:mx-0 md:px-0 z-10 snap-x min-h-[64px] md:min-h-[72px] pb-1",
+                  embedded ? "pt-1" : "pt-2",
+                )}>
+                {categories.slice(0, 10).map((cat, idx) => {
+                  const isActive = activeCategory?.id === cat.id;
+                  return (
+                    <CategoryNavColumn
+                      key={cat.id || cat._id || `hcat-${idx}`}
+                      cat={cat}
+                      isActive={isActive}
+                      categoryAccent={categoryAccent}
+                      onCategorySelect={onCategorySelect}
+                    />
+                  );
+                })}
+              </motion.div>
             </div>
           )}
 
