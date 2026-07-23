@@ -173,6 +173,9 @@ export default function Cart() {
   const hasQuickItems = cart.some((item) => (item?.orderType || "food") === "quick")
   const hasFoodItems = cart.some((item) => (item?.orderType || "food") === "food")
   const isQuickCart = cart.length > 0 && cart.every((item) => (item?.orderType || "food") === "quick")
+  // Filter to food-only items for this cart view (quick items belong in /quick/cart)
+  const foodOnlyCart = useMemo(() => cart.filter((item) => (item?.orderType || "food") === "food"), [cart])
+  const quickItemCount = useMemo(() => cart.filter((item) => (item?.orderType || "food") === "quick").reduce((sum, item) => sum + (item.quantity || 1), 0), [cart])
 
   const { getDefaultAddress, getDefaultPaymentMethod, setDefaultAddress, addresses, paymentMethods, userProfile } = useProfile()
   const { createOrder } = useOrders()
@@ -930,15 +933,15 @@ export default function Cart() {
   // Calculate pricing from backend whenever cart, address, or coupon changes
   useEffect(() => {
     const calculatePricing = async () => {
-      // Don't calculate here if it's a mixed or quick cart - those components handle their own pricing
-      if (cart.length === 0 || !hasSavedAddress || (hasQuickItems && hasFoodItems) || isQuickCart) {
+      // Don't calculate pricing if there are no food items or no address
+      if (foodOnlyCart.length === 0 || !hasSavedAddress) {
         setPricing(null)
         return
       }
 
       try {
         setLoadingPricing(true)
-        const items = cart.map(mapOrderItem)
+        const items = foodOnlyCart.map(mapOrderItem)
 
         const resolvedRestaurantId = restaurantData?.restaurantId || restaurantData?._id || restaurantId || undefined
         const resolvedCouponCode = appliedCoupon?.code || couponCode || undefined
@@ -1053,7 +1056,7 @@ export default function Cart() {
   }, [])
 
   // Use backend pricing if available, otherwise fallback to database fee settings
-  const subtotal = pricing?.subtotal || cart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0)
+  const subtotal = pricing?.subtotal || foodOnlyCart.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0)
   const fallbackDeliveryFee = (() => {
     if (appliedCoupon?.freeDelivery) {
       return 0
@@ -1079,7 +1082,7 @@ export default function Cart() {
   const total = pricing?.total ?? (totalBeforeDiscount - discount)
   
   // Calculate other platform total for comparison
-  const otherPlatformSubtotal = cart.reduce((sum, item) => {
+  const otherPlatformSubtotal = foodOnlyCart.reduce((sum, item) => {
     const itemOtherPrice = item.otherPrice || item.price || 0;
     return sum + (itemOtherPrice * (item.quantity || 1));
   }, 0);
@@ -1345,9 +1348,9 @@ export default function Cart() {
     }
 
     // Validate with backend first; only set applied if backend accepts
-    if (cart.length > 0 && hasSavedAddress) {
+    if (foodOnlyCart.length > 0 && hasSavedAddress) {
       try {
-        const items = cart.map(mapOrderItem)
+        const items = foodOnlyCart.map(mapOrderItem)
 
         const response = await orderAPI.calculateOrder({
           items,
@@ -1381,7 +1384,7 @@ export default function Cart() {
       return
     }
 
-    if (cart.length === 0 || !hasSavedAddress) {
+    if (foodOnlyCart.length === 0 || !hasSavedAddress) {
       toast.error("Add items and delivery address first")
       return
     }
@@ -1397,7 +1400,7 @@ export default function Cart() {
     }
 
     try {
-      const items = cart.map(mapOrderItem)
+      const items = foodOnlyCart.map(mapOrderItem)
 
       const response = await orderAPI.calculateOrder({
         items,
@@ -1443,9 +1446,9 @@ export default function Cart() {
     setManualCouponCode("")
 
     // Recalculate pricing without coupon
-    if (cart.length > 0 && hasSavedAddress) {
+    if (foodOnlyCart.length > 0 && hasSavedAddress) {
       try {
-        const items = cart.map(mapOrderItem)
+        const items = foodOnlyCart.map(mapOrderItem)
 
         const response = await orderAPI.calculateOrder({
           items,
@@ -1484,7 +1487,7 @@ export default function Cart() {
       }
     }
 
-    if (cart.length === 0) {
+    if (foodOnlyCart.length === 0) {
       alert("Your cart is empty")
       return
     }
@@ -1504,7 +1507,7 @@ export default function Cart() {
       if (!resolvedPricing) {
         const pricingResponse = await orderAPI.calculateOrder({
           orderType: "food",
-          items: cart.map(mapOrderItem),
+          items: foodOnlyCart.map(mapOrderItem),
           restaurantId: restaurantData?.restaurantId || restaurantData?._id || restaurantId || undefined,
           address: defaultAddress,
           couponCode: appliedCoupon?.code || couponCode || undefined,
@@ -1536,9 +1539,9 @@ export default function Cart() {
         orderPricing.couponCode = appliedCoupon.code;
       }
 
-      // Include all cart items (main items + addons)
+      // Include food cart items only (main items + addons)
       // Note: Addons are added as separate cart items when user clicks the + button
-      const orderItems = cart.map(mapOrderItem)
+      const orderItems = foodOnlyCart.map(mapOrderItem)
 
       debugLog("?? Order items to send:", orderItems)
       debugLog("?? Order pricing:", orderPricing)
@@ -1989,26 +1992,14 @@ export default function Cart() {
     })
   }
 
-  if (hasQuickItems && hasFoodItems) {
-    return (
-      <MixedSharedCart 
-        initialAddress={defaultAddress} 
-        addressMode={deliveryAddressMode} 
-      />
-    )
-  }
-
+  // Quick-only cart: redirect to /quick/cart
   if (isQuickCart) {
-    return (
-      <QuickSharedCart 
-        initialAddress={defaultAddress} 
-        addressMode={deliveryAddressMode} 
-      />
-    )
+    navigate("/quick/cart", { replace: true })
+    return null
   }
 
-  // Empty cart state - but don't show if order success or placing order modal is active
-  if (cart.length === 0 && !showOrderSuccess && !showPlacingOrder) {
+  // Empty food cart state - but don't show if order success or placing order modal is active
+  if (foodOnlyCart.length === 0 && !showOrderSuccess && !showPlacingOrder) {
     return (
       <AnimatedPage className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a]">
         <div className="bg-white dark:bg-[#1a1a1a] border-b dark:border-gray-800 sticky top-0 z-10">
@@ -2075,6 +2066,22 @@ export default function Cart() {
 
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden pb-28 md:pb-32">
+        {/* Quick Cart Banner - shown when user also has quick items */}
+        {hasQuickItems && (
+          <Link
+            to="/quick/cart"
+            className="flex items-center justify-between gap-3 bg-emerald-50 dark:bg-emerald-900/20 px-4 md:px-6 py-3 border-b border-emerald-200 dark:border-emerald-800/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">
+                You have {quickItemCount} quick commerce {quickItemCount === 1 ? 'item' : 'items'} in your quick cart
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+          </Link>
+        )}
+
         {/* Savings Banner */}
         {otherPlatformSavings > 0 && (
           <div className="bg-green-100 dark:bg-green-900/20 px-4 md:px-6 py-2 md:py-3 flex-shrink-0 border-b border-green-200 dark:border-green-800/30">
@@ -2094,7 +2101,7 @@ export default function Cart() {
               {/* Cart Items */}
               <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-4 md:py-5 rounded-2xl md:rounded-3xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="space-y-3 md:space-y-4">
-                  {cart.map((item) => (
+                  {foodOnlyCart.map((item) => (
                     <div key={item.id} className="flex min-w-0 items-start gap-2 md:gap-4">
                       {/* Veg/Non-veg indicator */}
                       <div className={`w-4 h-4 md:w-5 md:h-5 border-2 ${item.isVeg !== false ? 'border-green-600' : 'border-red-600'} flex items-center justify-center mt-1 flex-shrink-0`}>
