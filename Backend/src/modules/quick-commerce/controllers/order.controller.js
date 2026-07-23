@@ -7,6 +7,8 @@ import { QuickProduct } from '../models/product.model.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { ReturnRequest } from '../returns/models/returnRequest.model.js';
+import { SellerReturn } from '../returns/models/sellerReturn.model.js';
+import { ReturnOtp } from '../returns/models/returnOtp.model.js';
 import { getSellerCommissionSnapshot } from '../admin/services/commission.service.js';
 import {
   createRazorpayOrder,
@@ -617,7 +619,26 @@ export const getOrderById = async (req, res) => {
         : null;
 
     const returnRequest = await ReturnRequest.findOne({ orderId: order.orderId }).lean();
+    let pickupOtp = null;
+    if (returnRequest) {
+      const activePickupLeg = await SellerReturn.findOne({
+        returnRequestId: returnRequest._id,
+        returnStatus: { $in: ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'] }
+      }).lean();
 
+      if (activePickupLeg) {
+        const otpDoc = await ReturnOtp.findOne({ 
+          sellerReturnId: activePickupLeg._id, 
+          type: 'pickup', 
+          verified: false,
+          expiresAt: { $gt: new Date() }
+        }).select('+plainOtp').sort({ createdAt: -1 }).lean();
+        
+        if (otpDoc?.plainOtp) {
+          pickupOtp = otpDoc.plainOtp;
+        }
+      }
+    }
 
     const deliveryAddress = order.deliveryAddress || {};
     const deliveryCoords = Array.isArray(deliveryAddress.location?.coordinates)
@@ -676,6 +697,7 @@ export const getOrderById = async (req, res) => {
           ? {
               _id: returnRequest._id,
               status: returnRequest.status,
+              ...(pickupOtp ? { pickupOtp } : {}),
             }
           : null,
       },

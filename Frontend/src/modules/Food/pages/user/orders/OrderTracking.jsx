@@ -1265,6 +1265,7 @@ export default function OrderTracking() {
         ? rawDropOtp
         : null
     const codeFromOrder =
+      order?.returnRequest?.pickupOtp ??
       order?.deliveryVerification?.dropOtp?.code ??
       order?.handoverOtp ??
       order?.deliveryOtp ??
@@ -1272,6 +1273,7 @@ export default function OrderTracking() {
     const code = codeFromOrder ?? socketDropOtpCode
     return code ? String(code) : null
   }, [
+    order?.returnRequest?.pickupOtp,
     order?.deliveryVerification?.dropOtp?.code,
     order?.deliveryVerification?.dropOtp,
     order?.handoverOtp,
@@ -2118,16 +2120,22 @@ export default function OrderTracking() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 space-y-4 md:space-y-6 pb-24 md:pb-32">
 
 
-        {customerDeliveryOtp && orderStatus !== 'delivered' && orderStatus !== 'cancelled' && (
+        {customerDeliveryOtp && (orderStatus !== 'delivered' || order?.returnRequest?.pickupOtp) && orderStatus !== 'cancelled' && (
           <motion.div
             className="bg-orange-50 rounded-xl p-4 shadow-sm border border-orange-100"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.28 }}
           >
-            <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Delivery OTP</p>
+            <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+              {order?.returnRequest?.pickupOtp ? 'Return Pickup OTP' : 'Delivery OTP'}
+            </p>
             <p className="text-2xl font-extrabold text-orange-900 mt-1 tracking-widest">{customerDeliveryOtp}</p>
-            <p className="text-xs text-orange-700 mt-1">Share this 4-digit OTP with your delivery partner at drop-off.</p>
+            <p className="text-xs text-orange-700 mt-1">
+              {order?.returnRequest?.pickupOtp 
+                ? 'Share this 4-digit OTP with your delivery partner at return pickup.' 
+                : 'Share this 4-digit OTP with your delivery partner at drop-off.'}
+            </p>
           </motion.div>
         )}
 
