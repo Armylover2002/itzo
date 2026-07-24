@@ -39,6 +39,9 @@ const productUpload = upload.fields([
 const sellerProfileUpload = upload.fields([
   { name: "upiQrImage", maxCount: 1 },
   { name: "shopLicenseImage", maxCount: 1 },
+  { name: "panImage", maxCount: 1 },
+  { name: "gstImage", maxCount: 1 },
+  { name: "fssaiImage", maxCount: 1 },
 ]);
 
 router.post("/auth/request-otp", requestSellerOtpController);

@@ -391,10 +391,13 @@ const serializeSellerProfile = (seller) => ({
   },
   documents: {
     panNumber: seller.documents?.panNumber || "",
+    panImage: seller.documents?.panImage || "",
     gstRegistered: seller.documents?.gstRegistered === true,
     gstNumber: seller.documents?.gstNumber || "",
     gstLegalName: seller.documents?.gstLegalName || "",
+    gstImage: seller.documents?.gstImage || "",
     fssaiNumber: seller.documents?.fssaiNumber || "",
+    fssaiImage: seller.documents?.fssaiImage || "",
     fssaiExpiry: seller.documents?.fssaiExpiry || null,
     shopLicenseNumber: seller.documents?.shopLicenseNumber || "",
     shopLicenseImage: seller.documents?.shopLicenseImage || "",
@@ -1372,6 +1375,27 @@ export const updateSellerProfileController = async (req, res) => {
       const uploadedUrl = await uploadFileOrBase64ToCloudinary(shopLicenseImageInput, "seller/shop-license");
       if (uploadedUrl || typeof shopLicenseImageInput === "string") {
         seller.documents.shopLicenseImage = uploadedUrl;
+      }
+    }
+    const panImageInput = files?.panImage?.[0] || documentsBody.panImage || req.body?.panImage;
+    if (panImageInput !== undefined) {
+      const uploadedUrl = await uploadFileOrBase64ToCloudinary(panImageInput, "seller/pan");
+      if (uploadedUrl || typeof panImageInput === "string") {
+        seller.documents.panImage = uploadedUrl;
+      }
+    }
+    const gstImageInput = files?.gstImage?.[0] || documentsBody.gstImage || req.body?.gstImage;
+    if (gstImageInput !== undefined) {
+      const uploadedUrl = await uploadFileOrBase64ToCloudinary(gstImageInput, "seller/gst");
+      if (uploadedUrl || typeof gstImageInput === "string") {
+        seller.documents.gstImage = uploadedUrl;
+      }
+    }
+    const fssaiImageInput = files?.fssaiImage?.[0] || documentsBody.fssaiImage || req.body?.fssaiImage;
+    if (fssaiImageInput !== undefined) {
+      const uploadedUrl = await uploadFileOrBase64ToCloudinary(fssaiImageInput, "seller/fssai");
+      if (uploadedUrl || typeof fssaiImageInput === "string") {
+        seller.documents.fssaiImage = uploadedUrl;
       }
     }
     if (

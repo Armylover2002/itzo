@@ -56,6 +56,12 @@ const SellerProfile = () => {
   const [qrPreview, setQrPreview] = useState(null);
   const [licenseFile, setLicenseFile] = useState(null);
   const [licensePreview, setLicensePreview] = useState(null);
+  const [panFile, setPanFile] = useState(null);
+  const [panPreview, setPanPreview] = useState(null);
+  const [gstFile, setGstFile] = useState(null);
+  const [gstPreview, setGstPreview] = useState(null);
+  const [fssaiFile, setFssaiFile] = useState(null);
+  const [fssaiPreview, setFssaiPreview] = useState(null);
 
   useEffect(() => {
     fetchProfile();
@@ -81,23 +87,26 @@ const SellerProfile = () => {
         lng: (data.location?.coordinates && data.location.coordinates[0] !== undefined) ? data.location.coordinates[0] : null,
         radius: data.serviceRadius || 5,
         address: data.address || "",
-        bankName: data.bankName || "",
-        accountHolderName: data.accountHolderName || "",
-        accountNumber: data.accountNumber || "",
-        ifscCode: data.ifscCode || "",
-        accountType: data.accountType || "",
-        upiId: data.upiId || "",
-        panNumber: data.panNumber || "",
-        gstRegistered: data.gstRegistered || false,
-        gstNumber: data.gstNumber || "",
-        gstLegalName: data.gstLegalName || "",
-        fssaiNumber: data.fssaiNumber || "",
-        fssaiExpiry: data.fssaiExpiry ? new Date(data.fssaiExpiry).toISOString().split('T')[0] : "",
-        shopLicenseNumber: data.shopLicenseNumber || "",
-        shopLicenseExpiry: data.shopLicenseExpiry ? new Date(data.shopLicenseExpiry).toISOString().split('T')[0] : "",
+        bankName: data.bankInfo?.bankName || "",
+        accountHolderName: data.bankInfo?.accountHolderName || "",
+        accountNumber: data.bankInfo?.accountNumber || "",
+        ifscCode: data.bankInfo?.ifscCode || "",
+        accountType: data.bankInfo?.accountType || "",
+        upiId: data.bankInfo?.upiId || "",
+        panNumber: data.documents?.panNumber || "",
+        gstRegistered: data.documents?.gstRegistered || false,
+        gstNumber: data.documents?.gstNumber || "",
+        gstLegalName: data.documents?.gstLegalName || "",
+        fssaiNumber: data.documents?.fssaiNumber || "",
+        fssaiExpiry: data.documents?.fssaiExpiry ? new Date(data.documents.fssaiExpiry).toISOString().split('T')[0] : "",
+        shopLicenseNumber: data.documents?.shopLicenseNumber || "",
+        shopLicenseExpiry: data.documents?.shopLicenseExpiry ? new Date(data.documents.shopLicenseExpiry).toISOString().split('T')[0] : "",
       });
-      if (data.upiQrImage) setQrPreview(data.upiQrImage);
-      if (data.shopLicenseImage) setLicensePreview(data.shopLicenseImage);
+      if (data.bankInfo?.upiQrImage) setQrPreview(data.bankInfo.upiQrImage);
+      if (data.documents?.shopLicenseImage) setLicensePreview(data.documents.shopLicenseImage);
+      if (data.documents?.panImage) setPanPreview(data.documents.panImage);
+      if (data.documents?.gstImage) setGstPreview(data.documents.gstImage);
+      if (data.documents?.fssaiImage) setFssaiPreview(data.documents.fssaiImage);
     } catch (error) {
       if (error?.response?.status !== 401) {
         toast.error("Failed to fetch profile");
@@ -270,6 +279,9 @@ const SellerProfile = () => {
 
       if (qrFile) payload.append("upiQrImage", qrFile);
       if (licenseFile) payload.append("shopLicenseImage", licenseFile);
+      if (panFile) payload.append("panImage", panFile);
+      if (gstFile) payload.append("gstImage", gstFile);
+      if (fssaiFile) payload.append("fssaiImage", fssaiFile);
 
       await sellerApi.updateProfile(payload);
       toast.success("Profile updated successfully");
@@ -774,6 +786,92 @@ const SellerProfile = () => {
                   <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Expiry Date</label>
                   <input type="date" name="shopLicenseExpiry" value={formData.shopLicenseExpiry} min={new Date().toISOString().split("T")[0]} onChange={handleChange} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.shopLicenseExpiry && formData.shopLicenseExpiry < new Date().toISOString().split("T")[0] ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
                 </div>
+              </div>
+
+              {/* PAN Image */}
+              <div className="space-y-3 pt-4 border-t border-slate-50">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">PAN Document Image</label>
+                {isEditing ? (
+                  <div className="flex flex-col items-start gap-4">
+                    {panPreview && <img src={panPreview} alt="PAN Document" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                      <UploadCloud size={16} /> Upload New PAN
+                      <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setPanFile(file);
+                          setPanPreview(URL.createObjectURL(file));
+                        }
+                      }} />
+                    </label>
+                  </div>
+                ) : (
+                  <div>
+                    {panPreview ? (
+                      <img src={panPreview} alt="PAN Document" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
+                    ) : (
+                      <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* GST Image */}
+              {formData.gstRegistered && (
+                <div className="space-y-3 pt-4 border-t border-slate-50">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">GST Certificate Image</label>
+                  {isEditing ? (
+                    <div className="flex flex-col items-start gap-4">
+                      {gstPreview && <img src={gstPreview} alt="GST Certificate" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
+                      <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                        <UploadCloud size={16} /> Upload New GST Certificate
+                        <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setGstFile(file);
+                            setGstPreview(URL.createObjectURL(file));
+                          }
+                        }} />
+                      </label>
+                    </div>
+                  ) : (
+                    <div>
+                      {gstPreview ? (
+                        <img src={gstPreview} alt="GST Certificate" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
+                      ) : (
+                        <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* FSSAI Image */}
+              <div className="space-y-3 pt-4 border-t border-slate-50">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">FSSAI License Image</label>
+                {isEditing ? (
+                  <div className="flex flex-col items-start gap-4">
+                    {fssaiPreview && <img src={fssaiPreview} alt="FSSAI License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                      <UploadCloud size={16} /> Upload New FSSAI License
+                      <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFssaiFile(file);
+                          setFssaiPreview(URL.createObjectURL(file));
+                        }
+                      }} />
+                    </label>
+                  </div>
+                ) : (
+                  <div>
+                    {fssaiPreview ? (
+                      <img src={fssaiPreview} alt="FSSAI License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
+                    ) : (
+                      <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Shop License Image */}

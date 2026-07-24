@@ -101,6 +101,9 @@ export default function SellerOnboarding() {
   const [form, setForm] = useState(initialState);
   const [qrFile, setQrFile] = useState(null);
   const [licenseFile, setLicenseFile] = useState(null);
+  const [panFile, setPanFile] = useState(null);
+  const [gstFile, setGstFile] = useState(null);
+  const [fssaiFile, setFssaiFile] = useState(null);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [zones, setZones] = useState([]);
@@ -351,6 +354,9 @@ export default function SellerOnboarding() {
       payload.append("submitForApproval", "true");
       if (qrFile) payload.append("upiQrImage", qrFile);
       if (licenseFile) payload.append("shopLicenseImage", licenseFile);
+      if (panFile) payload.append("panImage", panFile);
+      if (gstFile) payload.append("gstImage", gstFile);
+      if (fssaiFile) payload.append("fssaiImage", fssaiFile);
 
       await sellerApi.updateProfile(payload);
       await refreshUser();
@@ -697,6 +703,17 @@ export default function SellerOnboarding() {
                     <p className="text-xs font-semibold text-red-500 px-1">Invalid PAN format. Must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)</p>
                   )}
                 </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-slate-500">PAN image <span className="text-red-500">*</span></label>
+                  <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
+                    <span>{panFile?.name || "Upload PAN image"}</span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                      <UploadCloud className="h-3.5 w-3.5" />
+                      Choose
+                    </span>
+                    <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setPanFile(e.target.files?.[0] || null)} />
+                  </label>
+                </div>
                 <label className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 font-semibold text-slate-700">
                   <input type="checkbox" checked={form.gstRegistered} onChange={(e) => updateField("gstRegistered", e.target.checked)} />
                   GST registered
@@ -717,9 +734,20 @@ export default function SellerOnboarding() {
                         <p className="text-xs font-semibold text-red-500 px-1">Invalid GST format. Must be 15 chars: 2 digits + PAN (10) + entity + Z + check (e.g. 22ABCDE1234F1Z5)</p>
                       )}
                     </div>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 md:col-span-2">
                       <label className="text-xs font-bold text-slate-500">GST legal name <span className="text-red-500">*</span></label>
                       <input required className="rounded-2xl border border-slate-200 px-4 py-3 font-semibold outline-none focus:border-slate-900" placeholder="GST legal name" value={form.gstLegalName} onChange={(e) => updateField("gstLegalName", e.target.value.replace(/[^a-zA-Z\s]/g, ""))} />
+                    </div>
+                    <div className="flex flex-col gap-1 md:col-span-2">
+                      <label className="text-xs font-bold text-slate-500">GST certificate image <span className="text-red-500">*</span></label>
+                      <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
+                        <span>{gstFile?.name || "Upload GST image"}</span>
+                        <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                          <UploadCloud className="h-3.5 w-3.5" />
+                          Choose
+                        </span>
+                        <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setGstFile(e.target.files?.[0] || null)} />
+                      </label>
                     </div>
                   </>
                 )}
@@ -736,6 +764,17 @@ export default function SellerOnboarding() {
                   {form.fssaiNumber && !/^\d{14}$/.test(form.fssaiNumber) && (
                     <p className="text-xs font-semibold text-red-500 px-1">FSSAI number must be exactly 14 digits (numbers only)</p>
                   )}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-bold text-slate-500">FSSAI license image <span className="text-red-500">*</span></label>
+                  <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
+                    <span>{fssaiFile?.name || "Upload FSSAI image"}</span>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                      <UploadCloud className="h-3.5 w-3.5" />
+                      Choose
+                    </span>
+                    <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => setFssaiFile(e.target.files?.[0] || null)} />
+                  </label>
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-slate-500">FSSAI expiry date <span className="text-red-500">*</span></label>

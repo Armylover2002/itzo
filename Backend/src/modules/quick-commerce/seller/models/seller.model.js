@@ -42,10 +42,13 @@ const sellerBankInfoSchema = new mongoose.Schema(
 const sellerDocumentsSchema = new mongoose.Schema(
   {
     panNumber: { type: String, trim: true, uppercase: true, default: "" },
+    panImage: { type: String, trim: true, default: "" },
     gstRegistered: { type: Boolean, default: false },
     gstNumber: { type: String, trim: true, uppercase: true, default: "" },
     gstLegalName: { type: String, trim: true, default: "" },
+    gstImage: { type: String, trim: true, default: "" },
     fssaiNumber: { type: String, trim: true, default: "" },
+    fssaiImage: { type: String, trim: true, default: "" },
     fssaiExpiry: { type: Date, default: null },
     shopLicenseNumber: { type: String, trim: true, default: "" },
     shopLicenseImage: { type: String, trim: true, default: "" },
