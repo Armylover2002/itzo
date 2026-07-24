@@ -13,6 +13,7 @@ import {
   Globe,
   MapPin,
   UploadCloud,
+  ArrowLeft,
 } from "lucide-react";
 import { sellerApi } from "../services/sellerApi";
 import { adminApi } from "../../quickCommerce/admin/services/adminApi";
