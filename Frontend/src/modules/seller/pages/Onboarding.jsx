@@ -365,79 +365,13 @@ export default function SellerOnboarding() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.18),_transparent_28%),linear-gradient(180deg,#f8fafc_0%,#fffaf2_100%)] px-4 py-8 font-['Outfit'] md:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-8 lg:grid-cols-[1.05fr_1.4fr]">
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-[34px] bg-[linear-gradient(160deg,#0f172a_0%,#0f766e_55%,#f59e0b_130%)] p-8 text-white shadow-[0_35px_90px_rgba(15,23,42,0.22)]"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.3em]">
-              <ShieldCheck className="h-4 w-4" />
-              Seller Onboarding
-            </div>
-            <h1 className="mt-8 text-4xl font-black leading-tight">
-              Set up your store once and send it straight for approval.
-            </h1>
-            <p className="mt-4 max-w-lg text-sm font-medium leading-7 text-white/78">
-              We&apos;ll save your banking, compliance, and shop details together,
-              then raise a real joining request in quick-commerce admin.
-            </p>
-
-            <div className="mt-10 space-y-4">
-              {[
-                {
-                  icon: Store,
-                  title: "Store Identity",
-                  text: "Owner, shop, location, and operational details.",
-                },
-                {
-                  icon: CreditCard,
-                  title: "Bank & UPI",
-                  text: "Settlement-ready bank account and QR image.",
-                },
-                {
-                  icon: FileBadge2,
-                  title: "Compliance",
-                  text: "PAN, GST, FSSAI, and shop license details.",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className="rounded-3xl border border-white/12 bg-white/10 p-5 backdrop-blur-sm"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="rounded-2xl bg-white/12 p-3">
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-black">{item.title}</p>
-                      <p className="mt-1 text-xs font-medium leading-6 text-white/72">
-                        {item.text}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 rounded-3xl border border-white/12 bg-white/10 p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-white/60">
-                Progress Signal
-              </p>
-              <p className="mt-2 text-2xl font-black">{completionText}</p>
-              <p className="mt-2 text-xs font-semibold text-white/70">
-                Add the missing core details and submit. Admin will see the
-                request inside quick-commerce.
-              </p>
-            </div>
-          </motion.div>
-
+      <div className="mx-auto max-w-4xl">
+        <div className="flex justify-center">
           <motion.form
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             onSubmit={handleSubmit}
-            className="space-y-6 rounded-[34px] border border-white/70 bg-white/90 p-6 shadow-[0_35px_90px_rgba(15,23,42,0.08)] backdrop-blur xl:p-8"
+            className="w-full space-y-6 rounded-[34px] border border-white/70 bg-white/90 p-6 shadow-[0_35px_90px_rgba(15,23,42,0.08)] backdrop-blur xl:p-8"
           >
             <section className="space-y-5">
               <div className="flex items-center gap-3">
