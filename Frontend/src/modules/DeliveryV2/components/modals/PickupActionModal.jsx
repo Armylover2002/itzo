@@ -136,7 +136,7 @@ export const PickupActionModal = ({
   };
 
   const isAtPickup = status === 'REACHED_PICKUP';
-  const isQuickOrder = String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick';
+  const isQuickOrder = !!order?.isReturn || String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick';
   const restaurantName = isQuickOrder
     ? order?.storeName || order?.sellerName || order?.seller?.shopName || order?.seller?.name || 'Seller store'
     : order?.restaurantName || order?.restaurant_name || order?.restaurantId?.restaurantName || order?.restaurantId?.name || 'Restaurant';
@@ -168,7 +168,7 @@ export const PickupActionModal = ({
   const primaryName = primaryStop?.sourceName || (isReturn ? 'Customer' : restaurantName);
   const primaryAddress = primaryStop?.address || (isReturn ? (order.pickupAddress?.address || 'Customer Address') : restaurantAddress);
   const primaryPhone = primaryStop?.phone || restaurantPhone;
-  const primaryDestinationLabel = isReturn ? 'Customer' : (primaryPickupType === 'quick' ? 'Store' : 'Restaurant');
+  const primaryDestinationLabel = isReturn ? 'Customer' : (primaryPickupType === 'quick' ? 'Seller' : 'Restaurant');
 
   return (
     <div className="absolute inset-x-0 bottom-0 z-[110] p-0 sm:p-2 sm:mb-2 flex items-end justify-center">
@@ -237,10 +237,12 @@ export const PickupActionModal = ({
         <div className="mb-4 space-y-2">
           {pickupStops.map((pickup, index) => {
             const isQuickStore = pickup.pickupType === 'quick';
-            const label = isQuickStore ? 'Store Pickup' : 'Restaurant Pickup';
-            const accentClasses = isQuickStore
-              ? 'text-orange-600 bg-orange-50 border-orange-100'
-              : 'text-green-600 bg-green-50 border-green-100';
+            const label = isReturn ? 'Customer Pickup' : (isQuickStore ? 'Seller Pickup' : 'Restaurant Pickup');
+            const accentClasses = isReturn
+              ? 'text-blue-600 bg-blue-50 border-blue-100'
+              : (isQuickStore
+                ? 'text-orange-600 bg-orange-50 border-orange-100'
+                : 'text-green-600 bg-green-50 border-green-100');
 
             return (
               <div
@@ -251,7 +253,7 @@ export const PickupActionModal = ({
                   <MapPin className="w-3.5 h-3.5" />
                   <span>{pickupStops.length > 1 ? `${label} ${index + 1}` : label}</span>
                 </div>
-                <p className="mt-3 text-base font-bold text-gray-950">{pickup.sourceName || (isQuickStore ? 'Seller store' : 'Restaurant')}</p>
+                <p className="mt-3 text-base font-bold text-gray-950">{pickup.sourceName || (isReturn ? 'Customer' : (isQuickStore ? 'Seller store' : 'Restaurant'))}</p>
                 <p className="mt-1 text-sm font-medium leading-relaxed text-gray-500">{pickup.address || 'Address not available'}</p>
               </div>
             );

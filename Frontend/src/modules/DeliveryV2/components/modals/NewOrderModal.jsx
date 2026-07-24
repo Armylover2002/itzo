@@ -177,7 +177,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
               <div className="space-y-4">
                 {pickupStops.map((pickup, index) => {
                   const isQuickStore = pickup.pickupType === 'quick';
-                  const pickupLabel = order?.isReturn ? 'Customer Pickup' : (isQuickStore ? 'Store Pickup' : 'Restaurant Pickup');
+                  const pickupLabel = order?.isReturn ? 'Customer Pickup' : (isQuickStore ? 'Seller Pickup' : 'Restaurant Pickup');
                   const pickupAccent = order?.isReturn ? 'text-blue-600' : (isQuickStore ? 'text-orange-600' : 'text-green-600');
                   const pickupAddress = pickup.address || 'Address not available';
                   return (
@@ -195,7 +195,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
               <div>
                 <div className="flex items-center gap-2 mb-1.5 font-bold text-[9px] uppercase tracking-widest text-primary">
                   <MapPin className="w-3.5 h-3.5" />
-                  <span>{order?.isReturn ? 'Store Drop' : 'Customer Drop'}</span>
+                  <span>{order?.isReturn ? 'Seller Drop' : 'Customer Drop'}</span>
                 </div>
                 <p className="text-gray-950 font-bold text-lg leading-tight">{order?.isReturn ? (order?.seller?.shopName || order?.seller?.name || 'Seller Store') : 'Customer Location'}</p>
                 <p className="text-gray-500 text-xs font-medium line-clamp-1">{customerAddress}</p>

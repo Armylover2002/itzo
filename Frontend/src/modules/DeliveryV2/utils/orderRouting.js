@@ -29,7 +29,7 @@ export const normalizeLocationPoint = (value) => {
 export const normalizePickupPoints = (order) => {
   const raw = Array.isArray(order?.pickupPoints) ? order.pickupPoints : [];
   const explicitOrderType = String(
-    order?.orderType || order?.serviceType || order?.type || "",
+    order?.orderType || order?.serviceType || order?.type || (order?.isReturn ? 'quick' : "")
   )
     .trim()
     .toLowerCase();
