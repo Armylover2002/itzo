@@ -597,19 +597,6 @@ const SellerProfile = () => {
                   <div className="pt-6 border-t border-slate-200/60 grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-8">
                     <div className="space-y-2">
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                        Service Radius
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-black text-slate-900">
-                          {formData.radius}
-                        </span>
-                        <span className="text-xs font-bold text-slate-500 bg-slate-200/50 px-2 py-0.5 rounded-md">
-                          KM
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
                         Latitude
                       </span>
                       <span className="text-sm font-bold text-slate-700 tabular-nums">
@@ -631,7 +618,7 @@ const SellerProfile = () => {
               <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
                 <Shield size={16} className="text-amber-600 mt-0.5" />
                 <p className="text-xs text-amber-700 font-medium leading-relaxed">
-                  Your shop location and service radius determine which
+                  Your shop location determines which
                   customers can view your products. Ensure the marker is placed
                   exactly at your physical storefront for accurate delivery
                   assignments.

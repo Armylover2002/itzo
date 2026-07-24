@@ -569,17 +569,12 @@ export default function SellerOnboarding() {
                       {form.lat && form.lng ? "Change Pin" : "Pick On Map"}
                     </button>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-[1.4fr_0.8fr]">
+                  <div className="grid gap-4 md:grid-cols-1">
                     <div className="rounded-2xl border border-slate-200 bg-white p-4">
                       <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Selected address</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-slate-700">
                         {form.address || "Choose your store location on the map to auto-fill the address."}
                       </p>
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                      <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">Coverage</p>
-                      <p className="mt-2 text-2xl font-black text-slate-900">{(form.radius !== null && form.radius !== undefined) ? form.radius : 5} km</p>
-                      <p className="mt-1 text-xs font-medium text-slate-500">Adjust this inside the map picker.</p>
                     </div>
                   </div>
                   <div className="mt-4 grid gap-3 md:grid-cols-2">
