@@ -653,6 +653,37 @@ const MainLocationHeader = ({
                 </motion.div>
               </div>
 
+              {/* Categories horizontal nav */}
+              <motion.div
+                style={{
+                  height: navHeight,
+                  opacity: navOpacity,
+                  display: displayNav,
+                }}
+                className="flex items-end gap-1 overflow-x-auto px-2 pb-0 no-scrollbar"
+              >
+                <CategoryNavColumn
+                  key="all"
+                  cat={{ _id: "all", name: "ALL", icon: HomeIcon }}
+                  isActive={!activeCategory || activeCategory._id === "all" || activeCategory.id === "all"}
+                  categoryAccent={categoryAccent}
+                  onCategorySelect={() => onCategorySelect && onCategorySelect({ _id: "all", name: "All", id: "all" })}
+                />
+                {categories.map((cat) => {
+                  const isActive =
+                    activeCategory &&
+                    (activeCategory._id === cat._id || activeCategory.id === cat.id);
+                  return (
+                    <CategoryNavColumn
+                      key={cat._id || cat.id}
+                      cat={cat}
+                      isActive={isActive}
+                      categoryAccent={categoryAccent}
+                      onCategorySelect={onCategorySelect}
+                    />
+                  );
+                })}
+              </motion.div>
             </div>
           )}
 
