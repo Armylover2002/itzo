@@ -285,9 +285,15 @@ export default function SellerOnboarding() {
       return;
     }
 
-    if (form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber)) {
-      toast.error("Invalid GST format. Must be 15 characters (e.g. 22ABCDE1234F1Z5)");
-      return;
+    if (form.gstRegistered) {
+      if (!form.gstNumber || !form.gstLegalName) {
+        toast.error("GST number and GST legal name are required when GST is registered");
+        return;
+      }
+      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber)) {
+        toast.error("Invalid GST format. Must be 15 characters (e.g. 22ABCDE1234F1Z5)");
+        return;
+      }
     }
 
     if (form.fssaiExpiry && form.fssaiExpiry < new Date().toISOString().split("T")[0]) {
@@ -331,6 +337,10 @@ export default function SellerOnboarding() {
       const nextForm = {
         ...form,
         zoneName: selectedZone?.label || "",
+        ...(form.gstRegistered === false && {
+          gstNumber: "",
+          gstLegalName: "",
+        }),
       };
       Object.entries(nextForm).forEach(([key, value]) => {
         payload.append(
@@ -696,24 +706,28 @@ export default function SellerOnboarding() {
                   <input type="checkbox" checked={form.gstRegistered} onChange={(e) => updateField("gstRegistered", e.target.checked)} />
                   GST registered
                 </label>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-500">GST number <span className="text-red-500">*</span></label>
-                  <input
-                    required
-                    className={`rounded-2xl border px-4 py-3 font-semibold uppercase outline-none focus:border-slate-900 ${form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber) ? "border-red-400 bg-red-50" : "border-slate-200"}`}
-                    placeholder="GST number (e.g. 22ABCDE1234F1Z5)"
-                    value={form.gstNumber}
-                    maxLength={15}
-                    onChange={(e) => updateField("gstNumber", e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 15))}
-                  />
-                  {form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber) && (
-                    <p className="text-xs font-semibold text-red-500 px-1">Invalid GST format. Must be 15 chars: 2 digits + PAN (10) + entity + Z + check (e.g. 22ABCDE1234F1Z5)</p>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-bold text-slate-500">GST legal name <span className="text-red-500">*</span></label>
-                  <input required className="rounded-2xl border border-slate-200 px-4 py-3 font-semibold outline-none focus:border-slate-900" placeholder="GST legal name" value={form.gstLegalName} onChange={(e) => updateField("gstLegalName", e.target.value.replace(/[^a-zA-Z\s]/g, ""))} />
-                </div>
+                {form.gstRegistered && (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500">GST number <span className="text-red-500">*</span></label>
+                      <input
+                        required
+                        className={`rounded-2xl border px-4 py-3 font-semibold uppercase outline-none focus:border-slate-900 ${form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber) ? "border-red-400 bg-red-50" : "border-slate-200"}`}
+                        placeholder="GST number (e.g. 22ABCDE1234F1Z5)"
+                        value={form.gstNumber}
+                        maxLength={15}
+                        onChange={(e) => updateField("gstNumber", e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 15))}
+                      />
+                      {form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber) && (
+                        <p className="text-xs font-semibold text-red-500 px-1">Invalid GST format. Must be 15 chars: 2 digits + PAN (10) + entity + Z + check (e.g. 22ABCDE1234F1Z5)</p>
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-bold text-slate-500">GST legal name <span className="text-red-500">*</span></label>
+                      <input required className="rounded-2xl border border-slate-200 px-4 py-3 font-semibold outline-none focus:border-slate-900" placeholder="GST legal name" value={form.gstLegalName} onChange={(e) => updateField("gstLegalName", e.target.value.replace(/[^a-zA-Z\s]/g, ""))} />
+                    </div>
+                  </>
+                )}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-slate-500">FSSAI number <span className="text-red-500">*</span></label>
                   <input
