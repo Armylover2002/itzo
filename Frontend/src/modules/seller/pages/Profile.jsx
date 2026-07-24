@@ -452,7 +452,6 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
                   {profile?.shopName || "My Store"}
                 </p>
               </div>
-                </div>
               </div>
               <div className="pb-2 flex-shrink-0">
                 {!isEditing ? (

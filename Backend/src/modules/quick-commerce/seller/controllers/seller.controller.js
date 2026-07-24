@@ -1211,7 +1211,7 @@ export const updateSellerProfileData = async (seller, req) => {
       req.body?.shopInfo && typeof req.body.shopInfo === "object"
         ? req.body.shopInfo
         : {};
-    const files = req.files && typeof req.files === "object" ? req.files : {};
+
     const submitForApproval = optionalBoolean(
       req.body?.submitForApproval,
       false,
