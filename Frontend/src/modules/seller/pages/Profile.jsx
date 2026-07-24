@@ -12,7 +12,7 @@ import {
   Rocket,
   Globe,
   MapPin,
-  CheckCircle,
+  UploadCloud,
 } from "lucide-react";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
@@ -36,7 +36,26 @@ const SellerProfile = () => {
     lng: null,
     radius: 5,
     address: "",
+    bankName: "",
+    accountHolderName: "",
+    accountNumber: "",
+    ifscCode: "",
+    accountType: "",
+    upiId: "",
+    panNumber: "",
+    gstRegistered: false,
+    gstNumber: "",
+    gstLegalName: "",
+    fssaiNumber: "",
+    fssaiExpiry: "",
+    shopLicenseNumber: "",
+    shopLicenseExpiry: "",
   });
+
+  const [qrFile, setQrFile] = useState(null);
+  const [qrPreview, setQrPreview] = useState(null);
+  const [licenseFile, setLicenseFile] = useState(null);
+  const [licensePreview, setLicensePreview] = useState(null);
 
   useEffect(() => {
     fetchProfile();
@@ -62,7 +81,23 @@ const SellerProfile = () => {
         lng: (data.location?.coordinates && data.location.coordinates[0] !== undefined) ? data.location.coordinates[0] : null,
         radius: data.serviceRadius || 5,
         address: data.address || "",
+        bankName: data.bankName || "",
+        accountHolderName: data.accountHolderName || "",
+        accountNumber: data.accountNumber || "",
+        ifscCode: data.ifscCode || "",
+        accountType: data.accountType || "",
+        upiId: data.upiId || "",
+        panNumber: data.panNumber || "",
+        gstRegistered: data.gstRegistered || false,
+        gstNumber: data.gstNumber || "",
+        gstLegalName: data.gstLegalName || "",
+        fssaiNumber: data.fssaiNumber || "",
+        fssaiExpiry: data.fssaiExpiry ? new Date(data.fssaiExpiry).toISOString().split('T')[0] : "",
+        shopLicenseNumber: data.shopLicenseNumber || "",
+        shopLicenseExpiry: data.shopLicenseExpiry ? new Date(data.shopLicenseExpiry).toISOString().split('T')[0] : "",
       });
+      if (data.upiQrImage) setQrPreview(data.upiQrImage);
+      if (data.shopLicenseImage) setLicensePreview(data.shopLicenseImage);
     } catch (error) {
       if (error?.response?.status !== 401) {
         toast.error("Failed to fetch profile");
@@ -165,16 +200,77 @@ const SellerProfile = () => {
       return;
     }
 
+    if (formData.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber)) {
+      toast.error("Invalid PAN format. Must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)");
+      return;
+    }
+
+    if (formData.gstRegistered) {
+      if (!formData.gstNumber || !formData.gstLegalName) {
+        toast.error("GST number and GST legal name are required when GST is registered");
+        return;
+      }
+      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber)) {
+        toast.error("Invalid GST format. Must be 15 characters (e.g. 22ABCDE1234F1Z5)");
+        return;
+      }
+    }
+
+    if (formData.fssaiExpiry && formData.fssaiExpiry < new Date().toISOString().split("T")[0]) {
+      toast.error("FSSAI expiry date cannot be a past date");
+      return;
+    }
+
+    if (formData.shopLicenseNumber && !/^[A-Za-z0-9\/\-]{5,20}$/.test(formData.shopLicenseNumber)) {
+      toast.error("Shop license number must be 5–20 characters (letters, numbers, / and - only)");
+      return;
+    }
+
+    if (formData.shopLicenseExpiry && formData.shopLicenseExpiry < new Date().toISOString().split("T")[0]) {
+      toast.error("Shop license expiry date cannot be a past date");
+      return;
+    }
+
+    if (formData.accountNumber && !/^\d{6,20}$/.test(formData.accountNumber)) {
+      toast.error("Account number must be 6–20 digits (numbers only)");
+      return;
+    }
+
+    if (formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode)) {
+      toast.error("Invalid IFSC code. Format: 4 letters + 0 + 6 alphanumeric (e.g. ABCD0EF1234)");
+      return;
+    }
+
+    if (formData.upiId && !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(formData.upiId)) {
+      toast.error("Invalid UPI ID. Format: username@bankhandle (e.g. name@okhdfcbank)");
+      return;
+    }
+
     setIsSaving(true);
     try {
-      const payload = {
+      const payload = new FormData();
+      const finalForm = {
         ...formData,
         phone: normalizedPhone,
         email: trimmedEmail,
-        lat: formData.lat,
-        lng: formData.lng,
-        radius: formData.radius,
+        ...(formData.gstRegistered === false && {
+          gstNumber: "",
+          gstLegalName: "",
+        }),
       };
+      
+      Object.entries(finalForm).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          payload.append(
+            key,
+            typeof value === "boolean" ? String(value) : String(value)
+          );
+        }
+      });
+
+      if (qrFile) payload.append("upiQrImage", qrFile);
+      if (licenseFile) payload.append("shopLicenseImage", licenseFile);
+
       await sellerApi.updateProfile(payload);
       toast.success("Profile updated successfully");
       setIsEditing(false);
@@ -540,6 +636,185 @@ const SellerProfile = () => {
                   exactly at your physical storefront for accurate delivery
                   assignments.
                 </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Banking & UPI Card */}
+          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl mt-6 sm:mt-8">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
+              Banking & UPI
+            </h3>
+            <div className="space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
+                {/* Bank Name */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Bank Name</label>
+                  <input type="text" name="bankName" value={formData.bankName} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
+                </div>
+                {/* Account Holder Name */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Account Holder Name</label>
+                  <input type="text" name="accountHolderName" value={formData.accountHolderName} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
+                </div>
+                {/* Account Number */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Account Number</label>
+                  <input type="text" name="accountNumber" value={formData.accountNumber} onChange={(e) => setFormData({...formData, accountNumber: e.target.value.replace(/\D/g, "").slice(0, 20)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.accountNumber && !/^\d{6,20}$/.test(formData.accountNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                  {isEditing && formData.accountNumber && !/^\d{6,20}$/.test(formData.accountNumber) && (
+                    <p className="text-[10px] font-black text-red-500 ml-1">Must be 6–20 digits</p>
+                  )}
+                </div>
+                {/* IFSC Code */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">IFSC Code</label>
+                  <input type="text" name="ifscCode" value={formData.ifscCode} onChange={(e) => setFormData({...formData, ifscCode: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 11)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                  {isEditing && formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode) && (
+                    <p className="text-[10px] font-black text-red-500 ml-1">Invalid IFSC format</p>
+                  )}
+                </div>
+                {/* Account Type */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Account Type</label>
+                  <select name="accountType" value={formData.accountType} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70 appearance-none">
+                    <option value="">Select type</option>
+                    <option value="Savings">Savings Account</option>
+                    <option value="Current">Current Account</option>
+                  </select>
+                </div>
+                {/* UPI ID */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">UPI ID</label>
+                  <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
+                </div>
+              </div>
+              {/* UPI QR Code */}
+              <div className="space-y-3 pt-4 border-t border-slate-50">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">UPI QR Code</label>
+                {isEditing ? (
+                  <div className="flex flex-col items-start gap-4">
+                    {qrPreview && <img src={qrPreview} alt="UPI QR" className="h-32 w-32 object-contain rounded-xl border-2 border-slate-100" />}
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                      <UploadCloud size={16} /> Upload New QR
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setQrFile(file);
+                          setQrPreview(URL.createObjectURL(file));
+                        }
+                      }} />
+                    </label>
+                  </div>
+                ) : (
+                  <div>
+                    {qrPreview ? (
+                      <img src={qrPreview} alt="UPI QR" className="h-32 w-32 object-contain rounded-xl border-2 border-slate-100" />
+                    ) : (
+                      <p className="text-sm font-bold text-slate-400">No QR Code uploaded</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+
+          {/* Compliance & Licenses Card */}
+          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl mt-6 sm:mt-8">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
+              Compliance & Licenses
+            </h3>
+            <div className="space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
+                {/* PAN Number */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">PAN Number</label>
+                  <input type="text" name="panNumber" value={formData.panNumber} onChange={(e) => setFormData({...formData, panNumber: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                  {isEditing && formData.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber) && (
+                    <p className="text-[10px] font-black text-red-500 ml-1">Invalid PAN format</p>
+                  )}
+                </div>
+                
+                {/* GST Logic */}
+                <div className="space-y-3 sm:col-span-2">
+                  <label className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 w-fit cursor-pointer disabled:opacity-70">
+                    <input type="checkbox" checked={formData.gstRegistered} onChange={(e) => setFormData({...formData, gstRegistered: e.target.checked})} disabled={!isEditing} className="accent-slate-900 w-4 h-4 disabled:opacity-70" />
+                    <span className="text-xs font-black uppercase tracking-widest text-slate-700">GST Registered</span>
+                  </label>
+                </div>
+                
+                {formData.gstRegistered && (
+                  <>
+                    {/* GST Number */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">GST Number</label>
+                      <input type="text" name="gstNumber" value={formData.gstNumber} onChange={(e) => setFormData({...formData, gstNumber: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 15)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                      {isEditing && formData.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber) && (
+                        <p className="text-[10px] font-black text-red-500 ml-1">Invalid GST format</p>
+                      )}
+                    </div>
+                    {/* GST Legal Name */}
+                    <div className="space-y-3">
+                      <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">GST Legal Name</label>
+                      <input type="text" name="gstLegalName" value={formData.gstLegalName} onChange={(e) => setFormData({...formData, gstLegalName: e.target.value.replace(/[^a-zA-Z\s]/g, "")})} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
+                    </div>
+                  </>
+                )}
+
+                {/* FSSAI Number */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">FSSAI Number</label>
+                  <input type="text" name="fssaiNumber" value={formData.fssaiNumber} onChange={(e) => setFormData({...formData, fssaiNumber: e.target.value.replace(/\D/g, "").slice(0, 14)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.fssaiNumber && !/^\d{14}$/.test(formData.fssaiNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                  {isEditing && formData.fssaiNumber && !/^\d{14}$/.test(formData.fssaiNumber) && (
+                    <p className="text-[10px] font-black text-red-500 ml-1">Must be exactly 14 digits</p>
+                  )}
+                </div>
+                {/* FSSAI Expiry */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">FSSAI Expiry Date</label>
+                  <input type="date" name="fssaiExpiry" value={formData.fssaiExpiry} min={new Date().toISOString().split("T")[0]} onChange={handleChange} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.fssaiExpiry && formData.fssaiExpiry < new Date().toISOString().split("T")[0] ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                </div>
+
+                {/* Shop License Number */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Number</label>
+                  <input type="text" name="shopLicenseNumber" value={formData.shopLicenseNumber} onChange={(e) => setFormData({...formData, shopLicenseNumber: e.target.value.toUpperCase().replace(/[^A-Z0-9\/\-]/g, "").slice(0, 20)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.shopLicenseNumber && !/^[A-Z0-9\/\-]{5,20}$/.test(formData.shopLicenseNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                  {isEditing && formData.shopLicenseNumber && !/^[A-Z0-9\/\-]{5,20}$/.test(formData.shopLicenseNumber) && (
+                    <p className="text-[10px] font-black text-red-500 ml-1">Must be 5-20 characters</p>
+                  )}
+                </div>
+                {/* Shop License Expiry */}
+                <div className="space-y-3">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Expiry Date</label>
+                  <input type="date" name="shopLicenseExpiry" value={formData.shopLicenseExpiry} min={new Date().toISOString().split("T")[0]} onChange={handleChange} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.shopLicenseExpiry && formData.shopLicenseExpiry < new Date().toISOString().split("T")[0] ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
+                </div>
+              </div>
+
+              {/* Shop License Image */}
+              <div className="space-y-3 pt-4 border-t border-slate-50">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Document</label>
+                {isEditing ? (
+                  <div className="flex flex-col items-start gap-4">
+                    {licensePreview && <img src={licensePreview} alt="Shop License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
+                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
+                      <UploadCloud size={16} /> Upload New License
+                      <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setLicenseFile(file);
+                          setLicensePreview(URL.createObjectURL(file));
+                        }
+                      }} />
+                    </label>
+                  </div>
+                ) : (
+                  <div>
+                    {licensePreview ? (
+                      <img src={licensePreview} alt="Shop License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
+                    ) : (
+                      <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </Card>
