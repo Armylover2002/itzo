@@ -271,8 +271,8 @@ export const getCoupons = async (_req, res) => {
   
   const now = new Date();
   const validCoupons = coupons.filter(c => {
-    if (c.expiryDate && new Date(c.expiryDate) < now) return false;
-    if (c.startDate && new Date(c.startDate) > now) return false;
+    if (c.validTill && new Date(c.validTill) < now) return false;
+    if (c.validFrom && new Date(c.validFrom) > now) return false;
     return true;
   });
 
@@ -297,11 +297,11 @@ export const applyCoupon = async (req, res) => {
   }
 
   const now = new Date();
-  if (coupon.expiryDate && new Date(coupon.expiryDate) < now) {
+  if (coupon.validTill && new Date(coupon.validTill) < now) {
     return res.status(400).json({ success: false, message: 'This coupon has expired' });
   }
 
-  if (coupon.startDate && new Date(coupon.startDate) > now) {
+  if (coupon.validFrom && new Date(coupon.validFrom) > now) {
     return res.status(400).json({ success: false, message: 'This coupon is not active yet' });
   }
 
