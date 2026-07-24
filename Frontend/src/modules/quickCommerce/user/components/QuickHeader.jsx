@@ -243,7 +243,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
   const displayContent = useTransform(scrollY, (value) => value > 160 ? "none" : "block");
   const displayNav = useTransform(scrollY, (value) => value > 200 ? "none" : "flex");
 
-  const baseHeaderColor = activeCategory?.headerColor || "#0c831f";
+  const baseHeaderColor = activeCategory?.headerColor || "#FE5502";
   const headerGradient = buildHeaderGradient(baseHeaderColor);
   const searchBarBg = buildSearchBarBackgroundColor(baseHeaderColor);
   const categoryAccent = "#ffffff";
@@ -323,7 +323,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                   onClick={handleVoiceSearch}
                   className={cn(
                     "p-1.5 rounded-full transition-all",
-                    isListening ? "bg-white text-[#0c831f] scale-110 animate-pulse" : "text-white hover:bg-white/10"
+                    isListening ? "bg-white text-[#FE5502] scale-110 animate-pulse" : "text-white hover:bg-white/10"
                   )}
                 >
                   <MicIcon sx={{ color: "inherit", fontSize: 20 }} />
@@ -436,7 +436,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                 onClick={handleVoiceSearch}
                 className={cn(
                   "p-1 rounded-full transition-all",
-                  isListening ? "bg-white text-[#0c831f] scale-110 animate-pulse" : "text-white hover:bg-white/10"
+                  isListening ? "bg-white text-[#FE5502] scale-110 animate-pulse" : "text-white hover:bg-white/10"
                 )}
               >
                 <MicIcon sx={{ color: "inherit", fontSize: 18 }} />

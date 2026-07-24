@@ -183,7 +183,7 @@ const SupportPage = () => {
                                             value={ticketData.subject}
                                             onChange={(e) => setTicketData({ ...ticketData, subject: e.target.value })}
                                             placeholder="What's the issue about?"
-                                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold outline-none ring-1 ring-transparent focus:ring-[#0c831f]/20 transition-all"
+                                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold outline-none ring-1 ring-transparent focus:ring-[#FE5502]/20 transition-all"
                                         />
                                     </div>
 
@@ -196,7 +196,7 @@ const SupportPage = () => {
                                                 className={cn(
                                                     "py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
                                                     ticketData.priority === p
-                                                        ? "bg-[#0c831f] text-white border-[#0c831f] shadow-lg shadow-green-100"
+                                                        ? "bg-[#FE5502] text-white border-[#FE5502] shadow-lg shadow-orange-100"
                                                         : "bg-white text-slate-400 border-slate-100 hover:bg-slate-50"
                                                 )}
                                             >
@@ -212,14 +212,14 @@ const SupportPage = () => {
                                             value={ticketData.description}
                                             onChange={(e) => setTicketData({ ...ticketData, description: e.target.value })}
                                             placeholder="Please explain the issue clearly..."
-                                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold min-h-[150px] outline-none ring-1 ring-transparent focus:ring-[#0c831f]/20 transition-all"
+                                            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold min-h-[150px] outline-none ring-1 ring-transparent focus:ring-[#FE5502]/20 transition-all"
                                         />
                                     </div>
 
                                     <Button
                                         type="submit"
                                         disabled={ticketLoading}
-                                        className="w-full h-14 bg-[#0c831f] hover:bg-[#0b721b] text-white text-lg font-black rounded-2xl shadow-xl shadow-green-100 transition-all active:scale-95"
+                                        className="w-full h-14 bg-[#FE5502] hover:bg-[#ea580c] text-white text-lg font-black rounded-2xl shadow-xl shadow-orange-100 transition-all active:scale-95"
                                     >
                                         {ticketLoading ? (
                                             <div className="flex items-center gap-2 text-center w-full justify-center">

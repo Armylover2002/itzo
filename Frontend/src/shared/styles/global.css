@@ -83,18 +83,18 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Blinkit Brand Colors */
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-200: #bbf7d0;
-  --color-brand-300: #86efac;
-  --color-brand-400: #2e7d32;
-  --color-brand-500: #15803d;
-  --color-brand-600: #0c831f;
-  --color-brand-700: #0a6919;
-  --color-brand-800: #085013;
-  --color-brand-900: #06390e;
-  --color-brand-950: #021e07;
+  /* Quick Commerce Brand Colors - Food Orange Scale */
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb923c;
+  --color-brand-500: #f97316;
+  --color-brand-600: #FE5502;
+  --color-brand-700: #ea580c;
+  --color-brand-800: #c2410c;
+  --color-brand-900: #7c2d12;
+  --color-brand-950: #431407;
   
   --color-page-bg: #ffffff;
   --color-primary-orange: #FE5502;

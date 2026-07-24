@@ -19,7 +19,7 @@ const Categories = () => {
         <section className="py-8 bg-white">
             <div className="container w-full max-w-[1920px] mx-auto px-4 md:px-[50px]">
                 <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0c831f]">Shop by Category</h2>
+                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-[#FE5502]">Shop by Category</h2>
                     <a href="/categories" className="text-sm font-bold text-brand-600 hover:text-brand-700 flex items-center gap-1 transition-colors">
                         See All <ArrowRight size={16} />
                     </a>

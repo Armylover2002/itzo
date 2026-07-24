@@ -54,7 +54,7 @@ const Hero = () => {
     }, []);
 
     return (
-        <section className="relative w-full overflow-hidden bg-[#0c831f] pt-12 pb-12 md:pb-24 lg:pt-16">
+        <section className="relative w-full overflow-hidden bg-[#FE5502] pt-12 pb-12 md:pb-24 lg:pt-16">
 
             {/* --- Corner Decorations (Leaves/Flowers) --- */}
             <div className="absolute top-0 left-0 w-64 h-64 -translate-x-1/2 -translate-y-1/2 opacity-20 pointer-events-none">
@@ -106,7 +106,7 @@ const Hero = () => {
                                             {banner.subtitle}
                                         </p>
 
-                                        <Button className="bg-white text-[#0c831f] hover:bg-[#f0fdf4] hover:scale-105 active:scale-95 font-bold px-6 py-5 md:px-8 md:py-7 rounded-xl md:rounded-2xl text-sm md:text-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all w-auto">
+                                        <Button className="bg-white text-[#FE5502] hover:bg-[#f0fdf4] hover:scale-105 active:scale-95 font-bold px-6 py-5 md:px-8 md:py-7 rounded-xl md:rounded-2xl text-sm md:text-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all w-auto">
                                             {banner.cta} <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:translate-x-1" />
                                         </Button>
                                     </div>

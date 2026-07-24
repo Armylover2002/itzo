@@ -115,7 +115,7 @@ export default function QuickHomeView({
         
         {/* Cinematic Hero Section */}
         <section className="mb-14 overflow-hidden rounded-[48px] bg-white dark:bg-[#111] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.12)] border border-white dark:border-white/5 relative">
-          <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-[#0c831f]/10 to-transparent pointer-events-none" />
+          <div className="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-[#FE5502]/10 to-transparent pointer-events-none" />
           
           <div className="grid grid-cols-1 lg:grid-cols-12">
             {/* Carousel Content */}
@@ -128,7 +128,7 @@ export default function QuickHomeView({
             <div className="lg:col-span-4 flex flex-col justify-center p-10 lg:p-14 border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
                <div className="mb-10">
                   <h1 className="text-[38px] lg:text-[46px] font-black leading-[1.1] tracking-tight mb-4 uppercase italic">
-                    The <span className="text-[#0c831f] underline decoration-4 underline-offset-8">Fastest</span><br />Grocery <span className="opacity-40">Store</span>
+                    The <span className="text-[#FE5502] underline decoration-4 underline-offset-8">Fastest</span><br />Grocery <span className="opacity-40">Store</span>
                   </h1>
                   <p className="text-lg font-medium text-slate-500 dark:text-slate-400">Experience premium shopping with doorstep delivery in 9 minutes flat.</p>
                </div>
@@ -145,7 +145,7 @@ export default function QuickHomeView({
                       className={cn(
                         "flex items-center gap-4 p-4 rounded-2xl border transition-all duration-500",
                         activeStat === i 
-                          ? "bg-white dark:bg-[#1a1a1a] border-[#0c831f]/20 shadow-xl shadow-[#0c831f]/5" 
+                          ? "bg-white dark:bg-[#1a1a1a] border-[#FE5502]/20 shadow-xl shadow-[#FE5502]/5" 
                           : "bg-transparent border-transparent opacity-60"
                       )}
                     >
@@ -153,7 +153,7 @@ export default function QuickHomeView({
                         {stat.icon}
                       </div>
                       <div>
-                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#0c831f]">{stat.label}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-widest text-[#FE5502]">{stat.label}</div>
                         <div className="text-xl font-black">{stat.value}</div>
                       </div>
                     </motion.div>
@@ -170,7 +170,7 @@ export default function QuickHomeView({
 
         {/* Premium Marquee */}
         <div className="mt-20 overflow-hidden py-4 -mx-[10vw]">
-          <div className="flex bg-[#0c831f] shadow-lg py-5 px-4 transform -rotate-1 relative z-20 overflow-hidden border-y-4 border-emerald-300/30">
+          <div className="flex bg-[#FE5502] shadow-lg py-5 px-4 transform -rotate-1 relative z-20 overflow-hidden border-y-4 border-emerald-300/30">
             {/* Gloss wave */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_infinite] -skew-x-12" />
             
@@ -203,14 +203,14 @@ export default function QuickHomeView({
             >
               <div className="mb-10 flex items-center justify-between px-2">
                 <div className="flex items-center gap-5">
-                   <div className="h-10 w-3 rounded-full bg-gradient-to-b from-[#0c831f] to-emerald-300" />
+                   <div className="h-10 w-3 rounded-full bg-gradient-to-b from-[#FE5502] to-emerald-300" />
                    <h2 className="text-3xl font-black uppercase tracking-tight md:text-4xl italic">
                     {rail.title}
                    </h2>
                 </div>
                 <motion.button 
                   whileHover={{ x: 5 }}
-                  className="group flex items-center gap-2 text-base font-bold text-[#0c831f] hover:text-[#0b6d19] transition-colors"
+                  className="group flex items-center gap-2 text-base font-bold text-[#FE5502] hover:text-[#0b6d19] transition-colors"
                 >
                   View All <ArrowRight size={18} className="transition-transform group-hover:rotate-[-45deg]" />
                 </motion.button>
@@ -227,7 +227,7 @@ export default function QuickHomeView({
         {/* Premium Member Upsell Section */}
         <section className="mb-32 overflow-hidden rounded-[60px] bg-[#111] p-12 lg:p-20 relative text-white">
            {/* Abstract blurs */}
-           <div className="absolute top-0 right-0 w-96 h-96 bg-[#0c831f] rounded-full blur-[140px] opacity-30" />
+           <div className="absolute top-0 right-0 w-96 h-96 bg-[#FE5502] rounded-full blur-[140px] opacity-30" />
            <div className="absolute bottom-0 left-0 w-80 h-80 bg-primary rounded-full blur-[120px] opacity-20" />
            
            <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -235,7 +235,7 @@ export default function QuickHomeView({
                  <Star className="text-yellow-400 fill-yellow-400" size={16} />
                  <span className="text-xs font-black uppercase tracking-[0.3em]">Exclusive Membership</span>
               </div>
-              <h2 className="text-5xl lg:text-7xl font-black mb-8 leading-tight tracking-tight uppercase">Unlock the <span className="text-[#0c831f]">Golden</span> Standard</h2>
+              <h2 className="text-5xl lg:text-7xl font-black mb-8 leading-tight tracking-tight uppercase">Unlock the <span className="text-[#FE5502]">Golden</span> Standard</h2>
               <p className="text-xl text-white/60 mb-12 font-medium">Join 2M+ members and get unlimited free deliveries, surprise gifts, and early access to drops.</p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-16">
@@ -245,7 +245,7 @@ export default function QuickHomeView({
                    { label: "Surprise Drops", val: "Bimonthly", desc: "Exclusive curated boxes" },
                  ].map((box) => (
                    <div key={box.label} className="p-8 rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-sm group hover:bg-white/[0.08] transition-all">
-                      <div className="text-[10px] font-bold text-[#0c831f] uppercase tracking-widest mb-2">{box.label}</div>
+                      <div className="text-[10px] font-bold text-[#FE5502] uppercase tracking-widest mb-2">{box.label}</div>
                       <div className="text-3xl font-black mb-2">{box.val}</div>
                       <div className="text-xs text-white/40">{box.desc}</div>
                    </div>
@@ -255,7 +255,7 @@ export default function QuickHomeView({
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="group relative flex items-center gap-4 rounded-full bg-[#0c831f] px-12 py-6 text-xl font-black shadow-2xl shadow-[#0c831f]/40 hover:bg-[#0b6d19] transition-all"
+                className="group relative flex items-center gap-4 rounded-full bg-[#FE5502] px-12 py-6 text-xl font-black shadow-2xl shadow-[#FE5502]/40 hover:bg-[#0b6d19] transition-all"
               >
                 Become a Member <ArrowUpRight className="transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
               </motion.button>

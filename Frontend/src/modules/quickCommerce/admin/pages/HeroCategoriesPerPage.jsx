@@ -273,7 +273,7 @@ export default function HeroCategoriesPerPage() {
                       <button
                         type="button"
                         onClick={() => openEdit(row)}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0c831f] hover:underline"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#FE5502] hover:underline"
                       >
                         <HiOutlinePencilSquare className="w-3.5 h-3.5" />
                         Edit
@@ -311,7 +311,7 @@ export default function HeroCategoriesPerPage() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-4 py-2 rounded-xl text-sm font-bold bg-[#0c831f] text-white hover:opacity-90 disabled:opacity-50"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-[#FE5502] text-white hover:opacity-90 disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save"}
             </button>
@@ -328,7 +328,7 @@ export default function HeroCategoriesPerPage() {
                 <button
                   type="button"
                   onClick={addBannerItem}
-                  className="flex items-center gap-1 text-[10px] font-bold text-[#0c831f]"
+                  className="flex items-center gap-1 text-[10px] font-bold text-[#FE5502]"
                 >
                   <HiOutlinePlus className="h-3 w-3" />
                   Add banner
@@ -410,7 +410,7 @@ export default function HeroCategoriesPerPage() {
                       className={cn(
                         "px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all",
                         isSelected
-                          ? "bg-[#0c831f] text-white border-[#0c831f]"
+                          ? "bg-[#FE5502] text-white border-[#FE5502]"
                           : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-white"
                       )}
                     >

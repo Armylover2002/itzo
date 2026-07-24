@@ -49,7 +49,7 @@ const Footer = () => {
     // Force override for quick commerce footer logo to use the uploaded Itzo logo
     logoUrl = '/itzo-quick-logo.png';
 
-    const primaryColor = settings?.primaryColor || '#0c831f';
+    const primaryColor = settings?.primaryColor || '#FE5502';
 
     return (
         <footer className="relative bg-[#051108] pt-20 pb-10 mt-20 text-slate-300 md:bg-gradient-to-br md:from-emerald-700 md:via-green-800 md:to-emerald-900 md:pt-32 md:pb-16 md:mt-32 overflow-hidden">

@@ -18,8 +18,10 @@ const mapBusinessSettings = (raw = {}) => ({
   timezone: 'Asia/Kolkata',
   logoUrl: raw.logo?.url || '',
   faviconUrl: raw.favicon?.url || '',
-  primaryColor: '#0c831f',
-  secondaryColor: '#64748b',
+  primaryColor: '#FE5502',
+  secondaryColor: '#f59e0b',
+  dangerColor: '#ef4444',
+  successColor: '#10b981',
   companyName: raw.companyName || '',
   taxId: '',
   address: raw.address || '',
@@ -93,7 +95,7 @@ async function getQuickStatsPayload() {
   const categoryData = categories.slice(0, 5).map((category, index) => ({
     name: category.name,
     value: index + 1,
-    color: category.headerColor || category.accentColor || ['#0c831f', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6'][index % 5],
+    color: category.headerColor || category.accentColor || ['#FE5502', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6'][index % 5],
   }));
 
   const recentOrders = orders.slice(0, 5).map((order) => ({

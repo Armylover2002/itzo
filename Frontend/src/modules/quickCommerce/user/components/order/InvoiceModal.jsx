@@ -6,7 +6,7 @@ import { useSettings } from '@core/context/SettingsContext';
 const InvoiceModal = ({ isOpen, onClose, order }) => {
     const { settings } = useSettings();
     const appName = settings?.appName || 'App';
-    const primaryColor = settings?.primaryColor || '#0c831f';
+    const primaryColor = settings?.primaryColor || '#FE5502';
     if (!order) return null;
 
     const handlePrint = () => {

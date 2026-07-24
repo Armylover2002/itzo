@@ -284,7 +284,7 @@ const ProductDetailPage = () => {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-[1920px] items-center justify-center px-4 md:px-[50px]">
         <div className="flex items-center gap-3 rounded-2xl bg-card border border-border px-6 py-4 shadow-sm">
-          <Loader2 className="animate-spin text-[#0c831f]" size={22} />
+          <Loader2 className="animate-spin text-[#FE5502]" size={22} />
           <span className="font-bold text-slate-600 dark:text-slate-400">Loading product...</span>
         </div>
       </div>
@@ -300,7 +300,7 @@ const ProductDetailPage = () => {
         </p>
         <Button
           onClick={() => navigate(-1)}
-          className="mt-6 rounded-2xl bg-[#0c831f] px-6 py-3 text-white hover:bg-[#0b721b]"
+          className="mt-6 rounded-2xl bg-[#FE5502] px-6 py-3 text-white hover:bg-[#ea580c]"
         >
           Go back
         </Button>
@@ -312,7 +312,7 @@ const ProductDetailPage = () => {
     <div className="relative z-10 mx-auto w-full max-w-[1920px] animate-in px-4 py-4 fade-in duration-700 md:px-[50px] md:py-8">
       <button
         onClick={() => navigate(-1)}
-        className="group mb-6 inline-flex items-center gap-2 font-bold text-slate-500 dark:text-slate-400 transition-colors hover:text-[#0c831f] dark:hover:text-emerald-400"
+        className="group mb-6 inline-flex items-center gap-2 font-bold text-slate-500 dark:text-slate-400 transition-colors hover:text-[#FE5502] dark:hover:text-orange-400"
       >
         <ArrowLeft
           size={20}
@@ -350,7 +350,7 @@ const ProductDetailPage = () => {
                 className={cn(
                   "h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border-2 transition-all md:h-24 md:w-24",
                   activeImage === image
-                    ? "scale-95 border-[#0c831f] shadow-lg"
+                    ? "scale-95 border-[#FE5502] shadow-lg"
                     : "border-transparent opacity-70 hover:opacity-100",
                 )}
               >
@@ -367,7 +367,7 @@ const ProductDetailPage = () => {
         <div className="space-y-6 md:space-y-8 lg:w-[55%] xl:w-[60%]">
           <div>
             <div className="mb-4 flex items-center gap-3">
-              <span className="rounded-full border border-[#0c831f]/20 bg-[#0c831f]/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#0c831f]">
+              <span className="rounded-full border border-[#FE5502]/20 bg-[#FE5502]/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#FE5502]">
                 {product.category}
               </span>
               <div className="flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/30 px-3 py-1 text-xs font-bold text-red-500">
@@ -381,20 +381,19 @@ const ProductDetailPage = () => {
             </h1>
 
             <div className="mb-6 flex items-center gap-2">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                <ShieldCheck size={14} />
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-[#FE5502]">
+                <Store size={12} />
               </div>
-              <span className="text-sm font-black uppercase tracking-tighter text-slate-500 dark:text-slate-400">
-                Sold by:
-                {" "}
-                <span className="text-foreground underline decoration-emerald-500/30 decoration-2 underline-offset-4">
+              <span className="text-xs font-bold text-slate-500">
+                Sold by{" "}
+                <span className="text-foreground underline decoration-orange-500/30 decoration-2 underline-offset-4">
                   {product.storeName}
                 </span>
               </span>
             </div>
 
             <div className="mb-5 flex items-baseline gap-4">
-              <span className="text-4xl font-black text-[#0c831f] dark:text-emerald-500">
+              <span className="text-4xl font-black text-[#FE5502] dark:text-orange-500">
                 {"\u20B9"}
                 {product.price}
               </span>
@@ -424,7 +423,7 @@ const ProductDetailPage = () => {
           <div className="flex flex-col items-center gap-6 rounded-[2.5rem] border border-border bg-card dark:bg-slate-900/50 p-6 sm:flex-row transition-colors">
             <div className="w-full sm:w-72">
               {quantity > 0 ? (
-                <div className="flex h-16 w-full items-center rounded-2xl bg-[#0c831f] px-2 text-white shadow-xl shadow-green-100">
+                <div className="flex h-16 w-full items-center rounded-2xl bg-[#FE5502] px-2 text-white shadow-xl">
                   <button
                     onClick={() =>
                       quantity === 1
@@ -462,7 +461,7 @@ const ProductDetailPage = () => {
                       await addToCart(product);
                       showToast(`${product.name} added to cart`, "success");
                     }}
-                    className="h-16 w-full rounded-2xl bg-[#0c831f] text-lg font-black text-white shadow-xl shadow-green-100 transition-all hover:-translate-y-1 hover:bg-[#0b721b]"
+                    className="h-16 w-full rounded-2xl bg-[#FE5502] text-lg font-black text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-[#ea580c]"
                   >
                   <Plus className="mr-2" size={24} strokeWidth={3} />
                   ADD TO CART
@@ -471,7 +470,7 @@ const ProductDetailPage = () => {
             </div>
 
             <div className="flex flex-col gap-1 text-center sm:text-left">
-              <span className="flex items-center justify-center gap-1 text-xs font-black uppercase tracking-widest text-[#0c831f] sm:justify-start">
+              <span className="flex items-center justify-center gap-1 text-xs font-black uppercase tracking-widest text-[#FE5502] sm:justify-start">
                 <ShieldCheck size={14} />
                 Hygiene Guaranteed
               </span>
@@ -546,14 +545,14 @@ const ProductDetailPage = () => {
                       }))
                     }
                     placeholder="What did you like or dislike?"
-                    className="min-h-[120px] w-full rounded-2xl bg-card dark:bg-background border border-border p-4 text-sm font-bold outline-none ring-1 ring-transparent transition-all focus:ring-[#0c831f]/20 dark:text-white"
+                    className="min-h-[120px] w-full rounded-2xl bg-card dark:bg-background border border-border p-4 text-sm font-bold outline-none ring-1 ring-transparent transition-all focus:ring-[#FE5502]/20 dark:text-white"
                   />
                 </div>
 
                 <Button
-                  type="submit"
+                  onClick={handleReviewSubmit}
                   disabled={isSubmittingReview}
-                  className="h-14 w-full rounded-2xl bg-foreground font-black text-background shadow-xl shadow-slate-100 dark:shadow-none transition-all hover:bg-slate-800 active:scale-95"
+                  className="h-14 rounded-2xl bg-[#FE5502] font-black text-white hover:bg-[#ea580c]"
                 >
                   {isSubmittingReview ? "SUBMITTING..." : "SUBMIT REVIEW"}
                 </Button>
@@ -565,19 +564,17 @@ const ProductDetailPage = () => {
           </div>
 
           <div className="space-y-8 lg:w-[60%]">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-3xl font-black text-foreground">Customer Reviews</h3>
-              <div className="flex items-center gap-2 rounded-xl border border-[#0c831f]/10 bg-[#0c831f]/5 px-4 py-2">
-                <MessageSquare size={18} className="text-[#0c831f]" />
-                <span className="font-black text-[#0c831f]">
-                  {reviews.length} Verified
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 rounded-xl border border-[#FE5502]/10 bg-[#FE5502]/5 px-4 py-2">
+                <MessageSquare size={18} className="text-[#FE5502]" />
+                <span className="font-black text-[#FE5502]">
+                  {reviews.length} Review{reviews.length === 1 ? "" : "s"}
                 </span>
               </div>
-            </div>
 
-            {reviewLoading ? (
-              <div className="flex justify-center p-20">
-                <Loader2 className="animate-spin text-[#0c831f]" size={32} />
+              {reviewLoading ? (
+                <div className="flex justify-center p-8">
+                  <Loader2 className="animate-spin text-[#FE5502]" size={32} />
               </div>
             ) : reviews.length > 0 ? (
               <div className="space-y-6">

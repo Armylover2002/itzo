@@ -120,7 +120,7 @@ export const ALL_CATEGORY = {
   name: "All",
   icon: HomeIcon,
   theme: DEFAULT_CATEGORY_THEME,
-  headerColor: "#ffdb3a",
+  headerColor: "#FE5502",
   banner: {
     title: "HOUSEFULL",
     subtitle: "SALE",

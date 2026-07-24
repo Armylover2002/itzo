@@ -45,21 +45,21 @@ const HelpModal = ({ isOpen, onClose }) => {
                                     {issues.map((item, idx) => (
                                         <button key={idx} className="w-full flex items-center justify-between p-4 rounded-2xl border border-slate-100 hover:border-primary/20 hover:bg-primary/5 transition-all group">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-[#0c831f] transition-colors">
+                                                <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-[#FE5502] transition-colors">
                                                     <item.icon size={20} />
                                                 </div>
                                                 <div className="text-left">
-                                                    <h3 className="font-bold text-slate-800 text-sm group-hover:text-[#0c831f] transition-colors">{item.label}</h3>
+                                                    <h3 className="font-bold text-slate-800 text-sm group-hover:text-[#FE5502] transition-colors">{item.label}</h3>
                                                     <p className="text-xs text-slate-400 font-medium">{item.sub}</p>
                                                 </div>
                                             </div>
-                                            <ChevronRight size={18} className="text-slate-300 group-hover:text-[#0c831f] transition-colors" />
+                                            <ChevronRight size={18} className="text-slate-300 group-hover:text-[#FE5502] transition-colors" />
                                         </button>
                                     ))}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <Link to="/support" className="col-span-2 py-3.5 rounded-xl border-2 border-[#0c831f] text-[#0c831f] font-bold flex items-center justify-center gap-2 hover:bg-green-50 transition-colors shadow-lg shadow-green-50">
+                                    <Link to="/support" className="col-span-2 py-3.5 rounded-xl border-2 border-[#FE5502] text-[#FE5502] font-bold flex items-center justify-center gap-2 hover:bg-green-50 transition-colors shadow-lg shadow-green-50">
                                         <PlusCircle size={18} /> Raise a Ticket
                                     </Link>
                                     <Link to="/chat" className="py-3.5 rounded-xl bg-slate-900 text-white font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors">

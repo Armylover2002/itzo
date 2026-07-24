@@ -5,7 +5,7 @@ const SettingsPage = () => {
     return (
         <div className="min-h-screen bg-slate-50 pb-24 font-sans">
             {/* Header */}
-            <div className="bg-gradient-to-br from-[#0c831f] to-[#149d29] px-5 pt-10 pb-20 relative z-10 rounded-b-[2.5rem] shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-br from-[#FE5502] to-[#149d29] px-5 pt-10 pb-20 relative z-10 rounded-b-[2.5rem] shadow-lg overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-32 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
                 <h1 className="text-3xl font-black text-white tracking-tight relative z-10">Settings</h1>
@@ -63,7 +63,7 @@ const SettingItem = ({ icon: Icon, label, value, hasToggle }) => (
         <div className="flex items-center gap-2">
             {value && <span className="text-slate-400 text-sm font-medium">{value}</span>}
             {hasToggle ? (
-                <ToggleRight size={32} className="text-[#0c831f] fill-current" />
+                <ToggleRight size={32} className="text-[#FE5502] fill-current" />
             ) : (
                 <ChevronRight size={20} className="text-slate-300" />
             )}

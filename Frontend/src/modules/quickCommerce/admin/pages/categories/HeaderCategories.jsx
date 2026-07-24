@@ -69,7 +69,7 @@ const HeaderCategories = () => {
     iconId: "",
     adminCommission: 0,
     handlingFees: 0,
-    headerColor: "#FF1E1E",
+    headerColor: "#FE5502",
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -225,7 +225,7 @@ const HeaderCategories = () => {
       iconId: "",
       adminCommission: 0,
       handlingFees: 0,
-      headerColor: "#FF1E1E",
+      headerColor: "#FE5502",
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -244,7 +244,7 @@ const HeaderCategories = () => {
       iconId: item.iconId || "",
       adminCommission: item.adminCommission || 0,
       handlingFees: item.handlingFees || 0,
-      headerColor: item.headerColor || "#FF1E1E",
+      headerColor: item.headerColor || "#FE5502",
     });
     setPreviewUrl(item.image?.url || null);
     setIsAddModalOpen(true);
@@ -543,12 +543,12 @@ const HeaderCategories = () => {
                       className="flex-1 h-10 rounded-lg border border-gray-200 shadow-inner"
                       style={{
                         background:
-                          formData.headerColor || "#FF1E1E",
+                          formData.headerColor || "#FE5502",
                       }}
                     />
                     <input
                       type="color"
-                      value={formData.headerColor || "#FF1E1E"}
+                      value={formData.headerColor || "#FE5502"}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -559,7 +559,7 @@ const HeaderCategories = () => {
                     />
                     <input
                       type="text"
-                      value={formData.headerColor || "#FF1E1E"}
+                      value={formData.headerColor || "#FE5502"}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -567,7 +567,7 @@ const HeaderCategories = () => {
                         })
                       }
                       className="w-28 px-2 py-2 rounded-lg border border-gray-300 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="#FF1E1E"
+                      placeholder="#FE5502"
                     />
                   </div>
                 </div>

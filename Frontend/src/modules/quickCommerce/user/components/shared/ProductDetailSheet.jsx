@@ -261,7 +261,7 @@ const ProductDetailSheet = () => {
                                                 initial={{ scale: 0, rotate: -10 }}
                                                 animate={{ scale: 1, rotate: 0 }}
                                                 transition={{ type: 'spring', delay: 0.2 }}
-                                                className="bg-gradient-to-r from-[#0c831f] to-[#15a835] text-white text-[10px] font-[800] px-3 py-1.5 rounded-xl uppercase tracking-wider shadow-md shadow-green-200/40"
+                                                className="bg-gradient-to-r from-[#FE5502] to-[#15a835] text-white text-[10px] font-[800] px-3 py-1.5 rounded-xl uppercase tracking-wider shadow-md shadow-green-200/40"
                                             >
                                                 {Math.round(((selectedProduct.originalPrice - selectedProduct.price) / selectedProduct.originalPrice) * 100)}% OFF
                                             </motion.div>
@@ -297,7 +297,7 @@ const ProductDetailSheet = () => {
                                                         className={cn(
                                                             'w-[52px] h-[52px] lg:w-14 lg:h-14 rounded-xl overflow-hidden flex-shrink-0 transition-all duration-300 border-2',
                                                             i === activeImageIndex
-                                                                ? 'border-[#0c831f] shadow-lg shadow-green-100/60 dark:shadow-none ring-2 ring-green-100 dark:ring-green-900/30 bg-white dark:bg-slate-800'
+                                                                ? 'border-[#FE5502] shadow-lg shadow-green-100/60 dark:shadow-none ring-2 ring-green-100 dark:ring-green-900/30 bg-white dark:bg-slate-800'
                                                                 : 'border-gray-200/60 dark:border-white/5 opacity-50 hover:opacity-90 bg-white/60 dark:bg-slate-800/60'
                                                         )}
                                                     >
@@ -333,7 +333,7 @@ const ProductDetailSheet = () => {
                                                     onClick={() => setActiveImageIndex(i)}
                                                     className={cn(
                                                         'rounded-full transition-all duration-400',
-                                                        i === activeImageIndex ? 'w-8 h-2 bg-[#0c831f]' : 'w-2 h-2 bg-gray-300/60 dark:bg-slate-700/60 hover:bg-gray-400'
+                                                        i === activeImageIndex ? 'w-8 h-2 bg-[#FE5502]' : 'w-2 h-2 bg-gray-300/60 dark:bg-slate-700/60 hover:bg-gray-400'
                                                     )}
                                                 />
                                             ))}
@@ -353,7 +353,7 @@ const ProductDetailSheet = () => {
                                                 transition={{ delay: 0.1 }}
                                                 className="inline-flex items-center gap-1.5 bg-[#f0fdf4] dark:bg-emerald-950/30 border border-green-200/50 dark:border-emerald-800/30 text-[#15803d] dark:text-emerald-400 px-3 py-1.5 rounded-lg text-[10px] font-[700] uppercase tracking-wider"
                                             >
-                                                <Clock size={12} strokeWidth={2.5} className="text-[#0c831f] dark:text-emerald-500" />
+                                                <Clock size={12} strokeWidth={2.5} className="text-[#FE5502] dark:text-emerald-500" />
                                                 {selectedProduct.deliveryTime || '8-15 MINS'}
                                             </motion.div>
                                             {selectedProduct.originalPrice > selectedProduct.price && (
@@ -361,7 +361,7 @@ const ProductDetailSheet = () => {
                                                     initial={{ opacity: 0, x: -10 }}
                                                     animate={{ opacity: 1, x: 0 }}
                                                     transition={{ delay: 0.15 }}
-                                                    className="text-[10px] font-[700] text-[#0c831f] dark:text-emerald-500 bg-green-50 dark:bg-green-950/30 px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-emerald-800/30 uppercase tracking-wider"
+                                                    className="text-[10px] font-[700] text-[#FE5502] dark:text-emerald-500 bg-green-50 dark:bg-green-950/30 px-3 py-1.5 rounded-lg border border-green-200/50 dark:border-emerald-800/30 uppercase tracking-wider"
                                                 >
                                                     💰 Save ₹{selectedProduct.originalPrice - selectedProduct.price}
                                                 </motion.div>
@@ -396,7 +396,7 @@ const ProductDetailSheet = () => {
                                                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
                                                         Sold by: <span className="text-foreground">{selectedProduct.storeName || selectedProduct.restaurantName || "Fresh Mart"}</span>
                                                     </span>
-                                                    <div className="flex items-center justify-center w-3 h-3 bg-[#0c831f] rounded-full text-white">
+                                                    <div className="flex items-center justify-center w-3 h-3 bg-[#FE5502] rounded-full text-white">
                                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-2 h-2"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                                     </div>
                                                 </div>
@@ -417,7 +417,7 @@ const ProductDetailSheet = () => {
                                             <div className="relative flex items-center justify-between py-4 px-5">
                                                 <div className="flex flex-col gap-1">
                                                     <div className="flex items-baseline gap-2">
-                                                        <span className="text-[28px] lg:text-[32px] font-[800] text-[#0c831f] tracking-tight leading-none">
+                                                        <span className="text-[28px] lg:text-[32px] font-[800] text-[#FE5502] tracking-tight leading-none">
                                                             ₹{selectedVariant ? (selectedVariant.salePrice || selectedVariant.price) : selectedProduct.price}
                                                         </span>
                                                         {(selectedVariant ? (selectedVariant.price > selectedVariant.salePrice && selectedVariant.salePrice > 0) : (selectedProduct.originalPrice > selectedProduct.price)) && (
@@ -441,7 +441,7 @@ const ProductDetailSheet = () => {
                                                                 <Minus size={16} strokeWidth={2.5} />
                                                             </motion.button>
                                                             <span className="font-[800] text-base text-gray-800 dark:text-slate-200 w-8 text-center">{quantity}</span>
-                                                            <motion.button whileTap={{ scale: 0.85 }} onClick={handleIncrement} className="w-9 h-9 bg-[#0c831f] rounded-lg flex items-center justify-center text-white hover:bg-[#0a7019] transition-colors shadow-sm">
+                                                            <motion.button whileTap={{ scale: 0.85 }} onClick={handleIncrement} className="w-9 h-9 bg-[#FE5502] rounded-lg flex items-center justify-center text-white hover:bg-[#0a7019] transition-colors shadow-sm">
                                                                 <Plus size={16} strokeWidth={2.5} />
                                                             </motion.button>
                                                         </div>
@@ -450,7 +450,7 @@ const ProductDetailSheet = () => {
                                                             whileHover={{ scale: 1.02 }}
                                                             whileTap={{ scale: 0.98 }}
                                                             onClick={handleAddToCart}
-                                                            className="bg-gradient-to-r from-[#0c831f] to-[#0a7519] text-white h-11 px-6 rounded-xl font-[800] text-[13px] flex items-center gap-2 shadow-md shadow-green-200/50 hover:shadow-lg transition-all uppercase tracking-wide border border-green-700/20"
+                                                            className="bg-gradient-to-r from-[#FE5502] to-[#0a7519] text-white h-11 px-6 rounded-xl font-[800] text-[13px] flex items-center gap-2 shadow-md shadow-green-200/50 hover:shadow-lg transition-all uppercase tracking-wide border border-green-700/20"
                                                         >
                                                             <ShoppingBag size={15} strokeWidth={2.5} />
                                                             Add to Cart
@@ -470,7 +470,7 @@ const ProductDetailSheet = () => {
                                                 <Link
                                                     to={cartPath}
                                                     onClick={closeProduct}
-                                                    className="w-[80%] bg-gradient-to-r from-[#0c831f] to-[#0a7519] text-white h-[40px] rounded-xl flex items-center justify-between px-4 shadow-md shadow-green-200/40 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98]"
+                                                    className="w-[80%] bg-gradient-to-r from-[#FE5502] to-[#0a7519] text-white h-[40px] rounded-xl flex items-center justify-between px-4 shadow-md shadow-green-200/40 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98]"
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <ShoppingBag size={14} strokeWidth={2.0} />
@@ -503,7 +503,7 @@ const ProductDetailSheet = () => {
                                                             className={cn(
                                                                 'px-4 py-2 font-[600] rounded-lg text-[13px] transition-all border-2',
                                                                 selectedVariant?.sku === v.sku
-                                                                    ? 'bg-green-50 dark:bg-green-950/30 border-[#0c831f] text-[#0c831f] shadow-md shadow-green-100/50 dark:shadow-none'
+                                                                    ? 'bg-green-50 dark:bg-green-950/30 border-[#FE5502] text-[#FE5502] shadow-md shadow-green-100/50 dark:shadow-none'
                                                                     : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-white/5 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-white/10 hover:shadow-sm'
                                                             )}
                                                         >
@@ -529,7 +529,7 @@ const ProductDetailSheet = () => {
                                                 className="rounded-[16px] p-5 pb-7 border border-gray-100/70 dark:border-white/5 -mt-1 mb-6 shadow-sm bg-slate-50 dark:bg-slate-900 transition-colors"
                                             >
                                                 <h3 className="font-[800] text-gray-900 dark:text-slate-100 mb-3 text-[14px] tracking-tight flex items-center gap-2">
-                                                    <span className="w-1 h-3.5 bg-[#0c831f] rounded-full" />
+                                                    <span className="w-1 h-3.5 bg-[#FE5502] rounded-full" />
                                                     About this product
                                                 </h3>
                                                 <div
@@ -546,7 +546,7 @@ const ProductDetailSheet = () => {
                                             transition={{ delay: 0.35 }}
                                         >
                                             <h3 className="font-[700] text-gray-900 dark:text-slate-100 mb-2.5 text-[14px] tracking-tight flex items-center gap-2">
-                                                <span className="w-0.5 h-4 bg-[#0c831f] rounded-full" />
+                                                <span className="w-0.5 h-4 bg-[#FE5502] rounded-full" />
                                                 Product Details
                                             </h3>
                                             <div className="grid grid-cols-2 gap-2.5">
@@ -623,7 +623,7 @@ const ProductDetailSheet = () => {
                                             {/* Review Form */}
                                             <div className="bg-gradient-to-br from-slate-50/80 to-gray-50/80 dark:from-slate-900/80 dark:to-slate-950/80 p-4 rounded-xl border border-slate-100/70 dark:border-white/5 transition-colors">
                                                 <h4 className="font-[700] text-gray-800 dark:text-slate-200 text-[13px] mb-2.5 flex items-center gap-2">
-                                                    <MessageSquare size={13} className="text-[#0c831f]" />
+                                                    <MessageSquare size={13} className="text-[#FE5502]" />
                                                     Rate this product
                                                 </h4>
                                                 <form onSubmit={handleReviewSubmit} className="space-y-2.5">
@@ -644,7 +644,7 @@ const ProductDetailSheet = () => {
                                                             </motion.button>
                                                         ))}
                                                     </div>
-                                                    <textarea value={newReview.comment} onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} placeholder="Share your experience..." className="w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/5 rounded-lg p-3 text-[12px] font-[500] min-h-[70px] outline-none focus:border-[#0c831f]/40 focus:ring-2 focus:ring-green-50 dark:focus:ring-green-900/20 transition-all resize-none dark:text-slate-200" />
+                                                    <textarea value={newReview.comment} onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} placeholder="Share your experience..." className="w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/5 rounded-lg p-3 text-[12px] font-[500] min-h-[70px] outline-none focus:border-[#FE5502]/40 focus:ring-2 focus:ring-green-50 dark:focus:ring-green-900/20 transition-all resize-none dark:text-slate-200" />
                                                     <Button type="submit" disabled={isSubmittingReview} className="w-full h-9 bg-gray-900 dark:bg-foreground hover:bg-gray-800 dark:text-background font-[700] rounded-lg text-[10px] uppercase tracking-widest transition-all hover:shadow-md active:scale-[0.98]">
                                                         {isSubmittingReview ? 'Submitting...' : 'Post Review'}
                                                     </Button>
@@ -654,7 +654,7 @@ const ProductDetailSheet = () => {
                                             {/* Reviews List */}
                                             <div className="space-y-2.5">
                                                 {reviewLoading ? (
-                                                    <div className="flex justify-center py-6"><Loader2 className="animate-spin text-[#0c831f]" size={20} /></div>
+                                                    <div className="flex justify-center py-6"><Loader2 className="animate-spin text-[#FE5502]" size={20} /></div>
                                                 ) : reviews.length > 0 ? (
                                                     reviews.map((r, rIdx) => (
                                                         <motion.div
@@ -666,7 +666,7 @@ const ProductDetailSheet = () => {
                                                         >
                                                             <div className="flex justify-between items-start">
                                                                 <div className="flex items-center gap-2">
-                                                                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-green-100 to-emerald-50 dark:from-emerald-900 dark:to-green-950 flex items-center justify-center text-[9px] font-[800] text-[#0c831f] dark:text-emerald-400 ring-1 ring-green-50 dark:ring-white/5">{r.userId?.name?.[0] || 'A'}</div>
+                                                                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-green-100 to-emerald-50 dark:from-emerald-900 dark:to-green-950 flex items-center justify-center text-[9px] font-[800] text-[#FE5502] dark:text-emerald-400 ring-1 ring-green-50 dark:ring-white/5">{r.userId?.name?.[0] || 'A'}</div>
                                                                     <div>
                                                                         <p className="text-[11px] font-[700] text-gray-800 dark:text-slate-200">{r.userId?.name || 'Anonymous'}</p>
                                                                         <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={9} className={cn(i < r.rating ? 'text-orange-400 fill-orange-400' : 'text-gray-200 dark:text-slate-800')} />)}</div>
@@ -749,7 +749,7 @@ const ProductDetailSheet = () => {
                                 whileTap={{ scale: 0.9 }}
                                 className="w-10 h-10 bg-white dark:bg-slate-800 shadow-lg rounded-full flex items-center justify-center border border-gray-100 dark:border-white/10 pointer-events-auto"
                             >
-                                <ArrowLeft size={24} className="text-[#0c831f] dark:text-emerald-500" strokeWidth={3} />
+                                <ArrowLeft size={24} className="text-[#FE5502] dark:text-emerald-500" strokeWidth={3} />
                             </motion.button>
                             <div className="flex gap-3 pointer-events-auto invisible">
                                 {/* Hidden as per request to simplify the view */}
@@ -797,7 +797,7 @@ const ProductDetailSheet = () => {
                                                 key={i}
                                                 className={cn(
                                                     "h-1.5 rounded-full transition-all duration-300",
-                                                    i === activeImageIndex ? "w-6 bg-[#0c831f]" : "w-1.5 bg-gray-300"
+                                                    i === activeImageIndex ? "w-6 bg-[#FE5502]" : "w-1.5 bg-gray-300"
                                                 )}
                                             />
                                         ))}
@@ -817,8 +817,8 @@ const ProductDetailSheet = () => {
                                     {selectedProduct.name}
                                 </h2>
                                 <div className="flex items-center gap-1.5 mb-4">
-                                    <div className="w-4 h-4 bg-[#0c831f]/10 rounded flex items-center justify-center">
-                                        <div className="w-1.5 h-1.5 bg-[#0c831f] rounded-full" />
+                                    <div className="w-4 h-4 bg-[#FE5502]/10 rounded flex items-center justify-center">
+                                        <div className="w-1.5 h-1.5 bg-[#FE5502] rounded-full" />
                                     </div>
                                     <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                                         Sold by: <span className="text-[#1A1A1A]">{selectedProduct.storeName || selectedProduct.restaurantName || "Fresh Mart"}</span>
@@ -1004,7 +1004,7 @@ const ProductDetailSheet = () => {
                                             <motion.button
                                                 whileTap={{ scale: 0.9 }}
                                                 onClick={handleIncrement}
-                                                className="w-10 h-10 bg-[#0c831f] rounded-lg flex items-center justify-center text-white hover:bg-[#0b721b] transition-colors shadow-md shadow-green-100"
+                                                className="w-10 h-10 bg-[#FE5502] rounded-lg flex items-center justify-center text-white hover:bg-[#ea580c] transition-colors shadow-md shadow-green-100"
                                             >
                                                 <Plus size={18} strokeWidth={3} />
                                             </motion.button>
@@ -1013,7 +1013,7 @@ const ProductDetailSheet = () => {
                                         <motion.button
                                             whileTap={{ scale: 0.95 }}
                                             onClick={handleAddToCart}
-                                            className="flex-1 bg-[#0c831f] text-white h-[52px] rounded-xl font-black text-base flex items-center justify-center gap-2 shadow-xl shadow-green-100 hover:bg-[#0b721b] transition-all"
+                                            className="flex-1 bg-[#FE5502] text-white h-[52px] rounded-xl font-black text-base flex items-center justify-center gap-2 shadow-xl shadow-green-100 hover:bg-[#ea580c] transition-all"
                                         >
                                             ADD TO CART
                                         </motion.button>
@@ -1030,7 +1030,7 @@ const ProductDetailSheet = () => {
                                         <Link
                                             to={cartPath}
                                             onClick={closeProduct}
-                                            className="w-full bg-[#0c831f] text-white h-[56px] rounded-xl flex items-center justify-between px-5 shadow-lg shadow-green-100/50 hover:bg-[#0b721b] transition-all active:scale-[0.98]"
+                                            className="w-full bg-[#FE5502] text-white h-[56px] rounded-xl flex items-center justify-between px-5 shadow-lg shadow-green-100/50 hover:bg-[#ea580c] transition-all active:scale-[0.98]"
                                         >
                                             <div className="flex flex-col items-start leading-none">
                                                 <span className="text-[13px] font-[1000] uppercase tracking-wide">View cart</span>

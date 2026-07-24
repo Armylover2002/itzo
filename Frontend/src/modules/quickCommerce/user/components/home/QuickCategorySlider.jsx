@@ -70,7 +70,7 @@ const QuickCategorySlider = ({ categories = [], activeCategory, embedded = false
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => scrollQuickCats("left")}
-            className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#0c831f] transition-all"
+            className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#FE5502] transition-all"
           >
             <ChevronLeft size={22} strokeWidth={3} />
           </motion.button>
@@ -126,7 +126,7 @@ const QuickCategorySlider = ({ categories = [], activeCategory, embedded = false
                     </div>
                   )}
                   <div className="absolute inset-x-2 bottom-1.5 z-20 text-center">
-                    <span className="block text-[10px] md:text-[11px] lg:text-[12px] font-semibold text-[#1f2b20] leading-tight whitespace-nowrap overflow-hidden text-ellipsis drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] group-hover/item:text-[#0c831f] transition-colors">
+                    <span className="block text-[10px] md:text-[11px] lg:text-[12px] font-semibold text-[#1f2b20] leading-tight whitespace-nowrap overflow-hidden text-ellipsis drop-shadow-[0_1px_0_rgba(255,255,255,0.65)] group-hover/item:text-[#FE5502] transition-colors">
                       {cat.name}
                     </span>
                   </div>
@@ -142,7 +142,7 @@ const QuickCategorySlider = ({ categories = [], activeCategory, embedded = false
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => scrollQuickCats("right")}
-            className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#0c831f] transition-all"
+            className="h-10 w-10 bg-white/90 backdrop-blur-md shadow-xl rounded-full flex items-center justify-center border border-gray-100 cursor-pointer hover:bg-white text-[#FE5502] transition-all"
           >
             <ChevronRight size={22} strokeWidth={3} />
           </motion.button>

@@ -29,7 +29,7 @@ export default function QuickCommerceCategories() {
             <h1 className="text-xl font-black tracking-tight text-slate-900">Quick Commerce Categories</h1>
             <p className="text-sm text-slate-500">Manage all category tiles used in quick-commerce.</p>
           </div>
-          <Link to="/ecs/quick-commerce/categories/add" className="rounded-xl bg-[#0c831f] px-3 py-2 text-sm font-bold text-white">
+          <Link to="/ecs/quick-commerce/categories/add" className="rounded-xl bg-[#FE5502] px-3 py-2 text-sm font-bold text-white">
             Add Category
           </Link>
         </div>

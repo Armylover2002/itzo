@@ -23,7 +23,7 @@ const PrivacyPage = () => {
             <div className="p-5 max-w-3xl mx-auto space-y-6">
                 <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="h-12 w-12 rounded-2xl bg-green-50 flex items-center justify-center text-[#0c831f]">
+                        <div className="h-12 w-12 rounded-2xl bg-green-50 flex items-center justify-center text-[#FE5502]">
                             <Shield size={24} />
                         </div>
                         <div>

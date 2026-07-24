@@ -21,7 +21,7 @@ const ProductCard = memo(({ product, quantity, onAdd, onIncrement, onDecrement, 
       )}>
         <div className="relative p-2.5">
           {discount > 0 && (
-            <span className="absolute left-2.5 top-2.5 z-10 rounded-lg bg-[#0c831f] px-2 py-1 text-[9px] font-black uppercase tracking-wide text-white">
+            <span className="absolute left-2.5 top-2.5 z-10 rounded-lg bg-[#FE5502] px-2 py-1 text-[9px] font-black uppercase tracking-wide text-white">
               {discount}% OFF
             </span>
           )}
@@ -47,7 +47,7 @@ const ProductCard = memo(({ product, quantity, onAdd, onIncrement, onDecrement, 
         </div>
 
         <div className="flex flex-1 flex-col px-3.5 pb-3.5">
-          <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold text-[#0c831f]">
+          <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold text-[#FE5502]">
             <Clock className="h-3 w-3" />
             {product.deliveryTime || '10 MINS'}
           </div>
@@ -70,17 +70,17 @@ const ProductCard = memo(({ product, quantity, onAdd, onIncrement, onDecrement, 
 
             <div className="flex flex-shrink-0">
               {quantity > 0 ? (
-                <div className="flex items-center rounded-xl border border-[#0c831f] bg-white p-0.5 shadow-sm w-[72px] justify-between h-[32px]">
+                <div className="flex items-center rounded-xl border border-[#FE5502] bg-white p-0.5 shadow-sm w-[72px] justify-between h-[32px]">
                   <button 
                     onClick={(e) => { e.stopPropagation(); onDecrement(product); }} 
-                    className="flex-1 flex items-center justify-center text-[#0c831f] transition-transform active:scale-90"
+                    className="flex-1 flex items-center justify-center text-[#FE5502] transition-transform active:scale-90"
                   >
                     <Minus className="h-3.5 w-3.5 stroke-[3.5px]" />
                   </button>
-                  <span className="text-[12px] font-black text-[#0c831f] px-0.5">{quantity}</span>
+                  <span className="text-[12px] font-black text-[#FE5502] px-0.5">{quantity}</span>
                   <button 
                     onClick={(e) => { e.stopPropagation(); onIncrement(product); }} 
-                    className="flex-1 flex items-center justify-center text-[#0c831f] transition-transform active:scale-90"
+                    className="flex-1 flex items-center justify-center text-[#FE5502] transition-transform active:scale-90"
                   >
                     <Plus className="h-3.5 w-3.5 stroke-[3.5px]" />
                   </button>
@@ -89,7 +89,7 @@ const ProductCard = memo(({ product, quantity, onAdd, onIncrement, onDecrement, 
                 <motion.button
                   whileTap={{ scale: 0.94 }}
                   onClick={(e) => { e.stopPropagation(); onAdd(product); }}
-                  className="flex items-center justify-center rounded-xl border border-[#0c831f] bg-white w-[72px] h-[32px] text-[11px] font-black uppercase tracking-wide text-[#0c831f] shadow-sm transition-all hover:bg-[#0c831f]/5"
+                  className="flex items-center justify-center rounded-xl border border-[#FE5502] bg-white w-[72px] h-[32px] text-[11px] font-black uppercase tracking-wide text-[#FE5502] shadow-sm transition-all hover:bg-[#FE5502]/5"
                 >
                   ADD
                 </motion.button>

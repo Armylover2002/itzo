@@ -17,7 +17,7 @@ import { useLocation as useAppLocation } from '../context/LocationContext';
 
 const QUICK_THEME_STORAGE_KEY = "food.quick.headerColor";
 const QUICK_HEADER_RETURN_STORAGE_KEY = "food.quick.headerReturn";
-const FALLBACK_HEADER_COLOR = "#0c831f";
+const FALLBACK_HEADER_COLOR = "#FE5502";
 
 const CategoryProductsPage = () => {
     const { categoryId: catId } = useParams();
@@ -232,7 +232,7 @@ const CategoryProductsPage = () => {
                                 className={cn(
                                     "flex flex-col items-center py-4 px-1 gap-2 transition-all relative border-l-4",
                                     selectedSubCategory === cat.id
-                                        ? "bg-[#F7FCF5] dark:bg-emerald-950/20 border-[#0c831f]"
+                                        ? "bg-[#F7FCF5] dark:bg-emerald-950/20 border-[#FE5502]"
                                         : "border-transparent hover:bg-gray-50 dark:hover:bg-white/5"
                                 )}
                             >
@@ -244,7 +244,7 @@ const CategoryProductsPage = () => {
                                 </div>
                                 <span className={cn(
                                     "text-[10px] text-center font-bold font-sans leading-tight px-1",
-                                    selectedSubCategory === cat.id ? "text-[#0c831f]" : "text-gray-500"
+                                    selectedSubCategory === cat.id ? "text-[#FE5502]" : "text-gray-500"
                                 )}>
                                     {cat.name}
                                 </span>

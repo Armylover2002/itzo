@@ -167,7 +167,7 @@ const SectionRenderer = ({ sections = [], productsById = {}, categoriesById = {}
                         }
                       }}
                     >
-                      <div className="relative aspect-square w-full rounded-2xl bg-card dark:bg-background border border-border flex items-center justify-center overflow-hidden p-1 transition-all duration-200 group-hover:border-[#0c831f]/40 group-hover:bg-accent group-hover:shadow-[0_10px_25px_rgba(15,23,42,0.08)]">
+                      <div className="relative aspect-square w-full rounded-2xl bg-card dark:bg-background border border-border flex items-center justify-center overflow-hidden p-1 transition-all duration-200 group-hover:border-[#FE5502]/40 group-hover:bg-accent group-hover:shadow-[0_10px_25px_rgba(15,23,42,0.08)]">
                         {cat.image ? (
                           <img
                             src={resolveQuickImageUrl(cat.image)}
@@ -181,7 +181,7 @@ const SectionRenderer = ({ sections = [], productsById = {}, categoriesById = {}
                           <div className="h-6 w-6 rounded-full bg-slate-100" />
                         )}
                       </div>
-                      <div className="text-[11px] font-semibold text-foreground text-center leading-snug line-clamp-2 group-hover:text-[#0c831f]">
+                      <div className="text-[11px] font-semibold text-foreground text-center leading-snug line-clamp-2 group-hover:text-[#FE5502]">
                         {cat.name}
                       </div>
                     </button>

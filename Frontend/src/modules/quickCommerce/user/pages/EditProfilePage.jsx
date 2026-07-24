@@ -58,11 +58,11 @@ const EditProfilePage = () => {
                         <div className="h-28 w-28 rounded-full bg-slate-200 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
                             <User size={48} className="text-slate-400" />
                         </div>
-                        <button className="absolute bottom-0 right-0 p-2 bg-[#0c831f] text-white rounded-full border-2 border-white shadow-sm hover:bg-[#0a701a] transition-colors">
+                        <button className="absolute bottom-0 right-0 p-2 bg-[#FE5502] text-white rounded-full border-2 border-white shadow-sm hover:bg-[#ea580c] transition-colors">
                             <Camera size={18} />
                         </button>
                     </div>
-                    <p className="mt-3 text-sm font-bold text-[#0c831f]">Change Photo</p>
+                    <p className="mt-3 text-sm font-bold text-[#FE5502]">Change Photo</p>
                 </div>
 
                 {/* Edit Form */}
@@ -70,7 +70,7 @@ const EditProfilePage = () => {
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-5">
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Full Name</label>
-                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus-within:border-[#0c831f] focus-within:ring-4 focus-within:ring-[#0c831f]/10 transition-all">
+                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus-within:border-[#FE5502] focus-within:ring-4 focus-within:ring-[#FE5502]/10 transition-all">
                                 <User size={20} className="text-slate-400" />
                                 <input
                                     type="text"
@@ -85,7 +85,7 @@ const EditProfilePage = () => {
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Phone Number</label>
-                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus-within:border-[#0c831f] focus-within:ring-4 focus-within:ring-[#0c831f]/10 transition-all">
+                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus-within:border-[#FE5502] focus-within:ring-4 focus-within:ring-[#FE5502]/10 transition-all">
                                 <Phone size={20} className="text-slate-400" />
                                 <input
                                     type="tel"
@@ -100,7 +100,7 @@ const EditProfilePage = () => {
 
                         <div>
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">User Id</label>
-                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus-within:border-[#0c831f] focus-within:ring-4 focus-within:ring-[#0c831f]/10 transition-all">
+                            <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus-within:border-[#FE5502] focus-within:ring-4 focus-within:ring-[#FE5502]/10 transition-all">
                                 <Mail size={20} className="text-slate-400" />
                                 <input
                                     type="email"
@@ -120,7 +120,7 @@ const EditProfilePage = () => {
                                 value={formData.bio}
                                 onChange={handleChange}
                                 rows="3"
-                                className="w-full bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus:border-[#0c831f] focus:ring-4 focus:ring-[#0c831f]/10 transition-all outline-none text-slate-800 font-medium resize-none"
+                                className="w-full bg-slate-50 px-4 py-3 rounded-xl border border-slate-200 focus:border-[#FE5502] focus:ring-4 focus:ring-[#FE5502]/10 transition-all outline-none text-slate-800 font-medium resize-none"
                                 placeholder="Tell us about yourself..."
                             ></textarea>
                         </div>
@@ -129,7 +129,7 @@ const EditProfilePage = () => {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full py-4 bg-[#0c831f] text-white font-bold rounded-2xl shadow-lg shadow-green-200 hover:bg-[#0a701a] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full py-4 bg-[#FE5502] text-white font-bold rounded-2xl shadow-lg shadow-orange-200 hover:bg-[#ea580c] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                         {isLoading ? (
                             <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

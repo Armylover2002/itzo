@@ -59,7 +59,7 @@ export default function QuickCategories({ categories = [] }) {
         <div className="mb-12 flex items-end justify-between px-2">
           <div className="flex flex-col gap-1">
             <h2 className="text-[32px] font-black tracking-tight text-[#111827] dark:text-white md:text-[42px] font-outfit uppercase">
-               Shop by <span className="text-[#0c831f]">Category</span>
+               Shop by <span className="text-[#FE5502]">Category</span>
             </h2>
             <p className="text-base font-semibold text-slate-400 dark:text-slate-500">Discover our meticulously curated selections.</p>
           </div>
@@ -95,7 +95,7 @@ export default function QuickCategories({ categories = [] }) {
                     
                     <CategoryTileImage name={cat.name} image={cat.image} />
                 </div>
-                <span className="text-center text-[10px] font-black leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 md:text-[12px] uppercase tracking-[0.14em] font-outfit px-1 group-hover:text-[#0c831f] transition-colors">
+                <span className="text-center text-[10px] font-black leading-tight text-slate-800 dark:text-slate-200 line-clamp-2 md:text-[12px] uppercase tracking-[0.14em] font-outfit px-1 group-hover:text-[#FE5502] transition-colors">
                   {cat.name}
                 </span>
               </motion.button>

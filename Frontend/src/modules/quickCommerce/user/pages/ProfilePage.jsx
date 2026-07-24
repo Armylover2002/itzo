@@ -60,8 +60,8 @@ const ProfilePage = () => {
                                 label="Your Orders"
                                 sub="Track, return or buy things again"
                                 path="/quick/orders"
-                                color="#0c831f"
-                                bg="rgba(16,185,129,0.10)"
+                                color="#FE5502"
+                                bg="rgba(254,85,2,0.10)"
                             />
                             <MenuItem
                                 icon={RefreshCw}

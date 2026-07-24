@@ -58,7 +58,7 @@ export default function ZoneSetup() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex items-center gap-3 mb-4 md:mb-0">
-            <div className="w-10 h-10 rounded-lg bg-[#0c831f] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[#FE5502] flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <div>

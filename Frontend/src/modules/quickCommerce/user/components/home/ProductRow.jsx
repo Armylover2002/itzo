@@ -10,17 +10,17 @@ const ProductRow = ({ title, subtitle, products, badge }) => {
                 <div className="flex items-center justify-between mb-6 group cursor-pointer">
                     <div className="text-left">
                         {badge && (
-                            <span className="text-[10px] font-black text-white bg-[#0c831f] px-2 py-0.5 rounded uppercase tracking-widest mb-1 inline-block">
+                            <span className="text-[10px] font-black text-white bg-[#FE5502] px-2 py-0.5 rounded uppercase tracking-widest mb-1 inline-block">
                                 {badge}
                             </span>
                         )}
                         <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-2">
                             {title}
-                            <ChevronRight size={24} className="text-[#0c831f] group-hover:translate-x-1 transition-transform" />
+                            <ChevronRight size={24} className="text-[#FE5502] group-hover:translate-x-1 transition-transform" />
                         </h2>
                         {subtitle && <p className="text-slate-500 font-medium text-sm md:text-base">{subtitle}</p>}
                     </div>
-                    <Link to="/categories" className="text-sm font-bold text-[#0c831f] hover:underline whitespace-nowrap">
+                    <Link to="/categories" className="text-sm font-bold text-[#FE5502] hover:underline whitespace-nowrap">
                         See All
                     </Link>
                 </div>

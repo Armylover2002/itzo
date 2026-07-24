@@ -113,7 +113,7 @@ function QuickHomeLoadingState({ embedded }) {
       </div>
 
       <div className="px-4 pb-4 md:px-8 lg:px-[50px]">
-        <div className="rounded-[28px] border border-[#0c831f]/10 bg-white/80 dark:bg-card/80 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] md:p-6">
+        <div className="rounded-[28px] border border-[#FE5502]/10 bg-white/80 dark:bg-card/80 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] md:p-6">
           <div className="mb-5 flex items-center justify-between">
             <div className="space-y-2">
               <Skeleton className="h-4 w-28 rounded-full" />
@@ -371,17 +371,17 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                         onClick={() => navigate(getQuickCategoriesPath())}
                         whileTap={{ scale: 0.96 }}
                         className="min-w-full">
-                        <div className="w-full h-[190px] bg-[#E6F5EC] p-6 relative overflow-hidden flex items-center border-y border-[#0c831f]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]">
+                        <div className="w-full h-[190px] bg-[#FFF3EC] p-6 relative overflow-hidden flex items-center border-y border-[#FE5502]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]">
                           <div className="relative z-10 w-3/5 flex flex-col items-start gap-2">
                             <div className="flex flex-col gap-0.5">
                               <h4 className="text-2xl font-[1000] text-[#1A1A1A] tracking-tighter leading-none">
-                                Get <span className="text-[#0c831f]">Products</span>
+                                Get <span className="text-[#FE5502]">Products</span>
                               </h4>
                               <div className="flex items-center gap-1.5 mt-1">
                                 <span className="text-sm font-black text-gray-700">
                                   at
                                 </span>
-                                <div className="bg-[#0c831f] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
+                                <div className="bg-[#FE5502] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
                                   <VerifiedIcon sx={{ fontSize: 16 }} />
                                   <span className="text-xl font-[1000]">₹0</span>
                                 </div>
@@ -404,7 +404,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                               className="w-full h-full object-contain rotate-3 scale-110"
                             />
                           </div>
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-[#0c831f]/5 rounded-full blur-2xl -mt-12 -mr-12" />
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FE5502]/5 rounded-full blur-2xl -mt-12 -mr-12" />
                         </div>
                       </motion.div>
                       <motion.div
@@ -424,17 +424,17 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                         onClick={() => navigate(getQuickCategoriesPath())}
                         whileTap={{ scale: 0.96 }}
                         className="min-w-full">
-                        <div className="w-full h-[190px] bg-[#E6F5EC] p-6 relative overflow-hidden flex items-center border-y border-[#0c831f]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]">
+                        <div className="w-full h-[190px] bg-[#FFF3EC] p-6 relative overflow-hidden flex items-center border-y border-[#FE5502]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]">
                           <div className="relative z-10 w-3/5 flex flex-col items-start gap-2">
                             <div className="flex flex-col gap-0.5">
                               <h4 className="text-2xl font-[1000] text-[#1A1A1A] tracking-tighter leading-none">
-                                Get <span className="text-[#0c831f]">Products</span>
+                                Get <span className="text-[#FE5502]">Products</span>
                               </h4>
                               <div className="flex items-center gap-1.5 mt-1">
                                 <span className="text-sm font-black text-gray-700">
                                   at
                                 </span>
-                                <div className="bg-[#0c831f] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
+                                <div className="bg-[#FE5502] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
                                   <VerifiedIcon sx={{ fontSize: 16 }} />
                                   <span className="text-xl font-[1000]">₹0</span>
                                 </div>
@@ -457,7 +457,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                               className="w-full h-full object-contain rotate-3 scale-110"
                             />
                           </div>
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-[#0c831f]/5 rounded-full blur-2xl -mt-12 -mr-12" />
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FE5502]/5 rounded-full blur-2xl -mt-12 -mr-12" />
                         </div>
                       </motion.div>
                     </div>

@@ -261,7 +261,7 @@ const CartPage = () => {
     return (
       <div className="min-h-screen bg-[#f7f7f7] px-4 py-6">
         <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-[28px] bg-white px-6 py-16 text-center shadow-sm">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-[#0c831f]" />
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-[#FE5502]" />
           <h2 className="mt-5 text-xl font-bold text-slate-900">Loading your cart</h2>
           <p className="mt-2 text-sm text-slate-500">Pulling in your saved items...</p>
         </div>
@@ -296,7 +296,7 @@ const CartPage = () => {
               Pick a few essentials and they&apos;ll show up here.
             </p>
             <Link to={categoriesPath} className="mt-6 inline-flex w-full">
-              <Button className="h-12 w-full rounded-2xl bg-[#0c831f] text-white hover:bg-[#0b721b]">
+              <Button className="h-12 w-full rounded-2xl bg-[#FE5502] text-white hover:bg-[#ea580c]">
                 Start Shopping
               </Button>
             </Link>
@@ -368,7 +368,7 @@ const CartPage = () => {
         <section className="mb-4 rounded-[24px] bg-[#e9f7ec] p-4 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#0c831f]">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-[#FE5502]">
                 Delivery in 10 minutes
               </p>
               <h2 className="mt-1 text-lg font-bold text-slate-900">
@@ -378,7 +378,7 @@ const CartPage = () => {
                 Fast doorstep delivery with live seller-side processing.
               </p>
             </div>
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#0c831f] shadow-sm">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-[#FE5502] shadow-sm">
               <Timer size={20} />
             </div>
           </div>
@@ -477,7 +477,7 @@ const CartPage = () => {
                 Price breakdown
               </h2>
             </div>
-            <span className="rounded-full bg-[#f0fdf4] px-3 py-1 text-xs font-bold text-[#0c831f]">
+            <span className="rounded-full bg-[#f0fdf4] px-3 py-1 text-xs font-bold text-[#FE5502]">
               {itemCount} item{itemCount === 1 ? "" : "s"}
             </span>
           </div>
@@ -539,7 +539,7 @@ const CartPage = () => {
                     onClick={() => setSelectedPayment(method.id)}
                     className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all ${
                       isSelected
-                        ? "border-[#0c831f] bg-green-50"
+                        ? "border-[#FE5502] bg-green-50"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
@@ -550,18 +550,18 @@ const CartPage = () => {
                     >
                       <Icon
                         size={18}
-                        className={isSelected ? "text-[#0c831f]" : "text-slate-600"}
+                        className={isSelected ? "text-[#FE5502]" : "text-slate-600"}
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`text-sm font-bold ${isSelected ? "text-[#0c831f]" : "text-slate-800"}`}>
+                      <p className={`text-sm font-bold ${isSelected ? "text-[#FE5502]" : "text-slate-800"}`}>
                         {method.label}
                       </p>
                       <p className="text-xs text-slate-500">{method.sublabel}</p>
                     </div>
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                        isSelected ? "border-[#0c831f] bg-[#0c831f]" : "border-slate-300"
+                        isSelected ? "border-[#FE5502] bg-[#FE5502]" : "border-slate-300"
                       }`}
                     >
                       {isSelected ? <Check size={12} className="text-white" /> : null}
@@ -595,7 +595,7 @@ const CartPage = () => {
                   Review delivery details on the next screen and place the order to push it into the matched seller dashboard.
                 </p>
               </div>
-              <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0c831f]/10 text-[#0c831f]">
+              <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FE5502]/10 text-[#FE5502]">
                 <ChevronRight size={18} />
               </div>
             </div>
@@ -624,7 +624,7 @@ const CartPage = () => {
             state={{ selectedPayment }}
             className="block w-full flex-1 sm:min-w-[220px]"
           >
-            <Button className="h-12 w-full rounded-2xl bg-[#0c831f] px-4 text-sm text-white whitespace-normal sm:whitespace-nowrap hover:bg-[#0b721b]">
+            <Button className="h-12 w-full rounded-2xl bg-[#FE5502] px-4 text-sm text-white whitespace-normal sm:whitespace-nowrap hover:bg-[#ea580c]">
               <ShoppingBag size={18} className="mr-2" />
               Proceed to Checkout
             </Button>

@@ -115,7 +115,7 @@ const OrdersPage = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="flex items-center gap-3 rounded-2xl border border-slate-100 dark:border-white/5 bg-white dark:bg-card px-4 py-3 shadow-sm transition-colors">
-          <Loader2 className="animate-spin text-emerald-600" size={22} />
+          <Loader2 className="animate-spin text-[#FE5502]" size={22} />
           <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
             Loading your orders...
           </span>
@@ -151,7 +151,7 @@ const OrdersPage = () => {
             </p>
             <Link
               to={categoriesPath}
-              className="rounded-full bg-[#0c831f] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#0a6d19]"
+              className="rounded-full bg-[#FE5502] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#ea580c]"
             >
               Start Shopping
             </Link>
@@ -189,7 +189,7 @@ const OrdersPage = () => {
                     });
                   }
                 }}
-                className="cursor-pointer rounded-2xl border border-slate-100/80 dark:border-white/5 bg-white dark:bg-card px-4 py-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-[#0c831f]/20"
+                className="cursor-pointer rounded-2xl border border-slate-100/80 dark:border-white/5 bg-white dark:bg-card px-4 py-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(15,23,42,0.1)] focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20"
               >
                 <div className="mb-3.5 flex items-start justify-between gap-3">
                   <div className="flex min-w-0 flex-1 gap-3.5">
@@ -277,7 +277,7 @@ const OrdersPage = () => {
               disabled={loadingMore}
               className="px-6 py-2.5 rounded-full bg-white dark:bg-card border border-slate-200 dark:border-slate-800 text-sm font-medium text-slate-700 dark:text-slate-200 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {loadingMore && <Loader2 className="animate-spin text-emerald-600" size={16} />}
+              {loadingMore && <Loader2 className="animate-spin text-[#FE5502]" size={16} />}
               {loadingMore ? "Loading more..." : "Load More"}
             </button>
           </div>

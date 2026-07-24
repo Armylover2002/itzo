@@ -2,7 +2,7 @@ import React from 'react';
 
 const stories = [
     { id: 1, title: 'Big Savings', image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=150&auto=format&fit=crop', color: 'border-orange-500' },
-    { id: 2, title: 'New Arrival', image: 'https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=150&auto=format&fit=crop', color: 'border-[#0c831f]' },
+    { id: 2, title: 'New Arrival', image: 'https://images.unsplash.com/photo-1615485290382-441e4d019cb5?q=80&w=150&auto=format&fit=crop', color: 'border-[#FE5502]' },
     { id: 3, title: 'Organic', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=150&auto=format&fit=crop', color: 'border-green-400' },
     { id: 4, title: 'Under ₹99', image: 'https://images.unsplash.com/photo-1580913182749-51b1b1ae4e12?q=80&w=150&auto=format&fit=crop', color: 'border-primary' },
     { id: 5, title: 'Snacks', image: 'https://images.unsplash.com/photo-1599490659213-e2b9527bb087?q=80&w=150&auto=format&fit=crop', color: 'border-primary' },
@@ -23,7 +23,7 @@ const CategoryStories = () => {
                                     <img src={story.image} alt={story.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                 </div>
                             </div>
-                            <span className="text-[10px] md:text-xs font-black text-slate-700 tracking-tight uppercase group-hover:text-[#0c831f] transition-colors">{story.title}</span>
+                            <span className="text-[10px] md:text-xs font-black text-slate-700 tracking-tight uppercase group-hover:text-[#FE5502] transition-colors">{story.title}</span>
                         </div>
                     ))}
                 </div>

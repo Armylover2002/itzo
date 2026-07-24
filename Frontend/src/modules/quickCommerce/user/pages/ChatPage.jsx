@@ -95,7 +95,7 @@ const ChatPage = () => {
                     </button>
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <div className="h-10 w-10 bg-[#0c831f] rounded-full flex items-center justify-center text-white font-black text-sm shadow-sm ring-2 ring-white">
+                            <div className="h-10 w-10 bg-[#FE5502] rounded-full flex items-center justify-center text-white font-black text-sm shadow-sm ring-2 ring-white">
                                 AS
                             </div>
                             <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
@@ -122,7 +122,7 @@ const ChatPage = () => {
                     <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] relative group ${msg.sender === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
                             <div className={`px-4 py-3 rounded-2xl shadow-sm border text-sm leading-relaxed ${msg.sender === 'user'
-                                ? 'bg-[#0c831f] text-white border-transparent rounded-tr-none'
+                                ? 'bg-[#FE5502] text-white border-transparent rounded-tr-none'
                                 : 'bg-white text-slate-700 border-slate-100 rounded-tl-none'
                                 }`}>
                                 {msg.image && (
@@ -204,10 +204,10 @@ const ChatPage = () => {
                     )}
                 </AnimatePresence>
 
-                <div className="flex items-end gap-2 bg-slate-50 p-2 rounded-[1.5rem] border border-slate-200 focus-within:border-green-300 focus-within:shadow-[0_0_0_4px_rgba(12,131,31,0.1)] transition-all">
+                <div className="flex items-end gap-2 bg-slate-50 p-2 rounded-[1.5rem] border border-slate-200 focus-within:border-orange-300 focus-within:shadow-[0_0_0_4px_rgba(254,85,2,0.1)] transition-all">
                     <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className={`p-2.5 rounded-full hover:text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0 ${showEmojiPicker ? 'text-[#0c831f] bg-green-50' : 'text-slate-400'}`}
+                        className={`p-2.5 rounded-full hover:text-slate-600 hover:bg-slate-200 transition-colors flex-shrink-0 ${showEmojiPicker ? 'text-[#FE5502] bg-orange-50' : 'text-slate-400'}`}
                     >
                         <Smile size={22} />
                     </button>
@@ -237,7 +237,7 @@ const ChatPage = () => {
                     <button
                         onClick={handleSend}
                         disabled={!inputText.trim() && !selectedImage}
-                        className="p-2.5 rounded-full bg-[#0c831f] text-white hover:bg-[#0a701a] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-green-200 flex-shrink-0"
+                        className="p-2.5 rounded-full bg-[#FE5502] text-white hover:bg-[#ea580c] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-orange-200 flex-shrink-0"
                     >
                         <Send size={20} className="ml-0.5" />
                     </button>
