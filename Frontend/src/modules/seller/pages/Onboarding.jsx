@@ -193,7 +193,7 @@ export default function SellerOnboarding() {
   );
 
   const updateField = (field, value) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const { openingTime, closingTime } = useMemo(
