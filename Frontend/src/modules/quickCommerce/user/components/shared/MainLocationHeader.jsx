@@ -162,10 +162,8 @@ function CategoryNavColumn({
         layout: { type: "spring", stiffness: 520, damping: 38, mass: 0.55 },
       }}
       onClick={() => onCategorySelect && onCategorySelect(cat)}
-      className={cn(
-        "relative z-[2] flex min-w-[48px] shrink-0 cursor-pointer flex-col items-center gap-0.5 px-2 pb-0.5 pt-0.5 snap-start md:min-w-[58px] transition-all duration-300 border-b-2",
-        isActive ? "border-white" : "border-transparent"
-      )}>
+      className="relative z-[2] flex min-w-[48px] shrink-0 cursor-pointer flex-col items-center gap-0.5 px-2 pb-0.5 pt-0.5 snap-start md:min-w-[58px] transition-all duration-300"
+    >
       <div className="relative z-10 flex h-9 w-9 items-center justify-center md:h-11 md:w-11">
         {typeof cat.icon === "function" ||
           (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
@@ -199,10 +197,27 @@ function CategoryNavColumn({
           {cat.name}
         </span>
       </div>
+      
+      {isActive && pathD && (
+        <svg
+          className="pointer-events-none absolute bottom-0 left-0 h-[20px] w-[100%] drop-shadow-[0_1px_2px_rgba(255,255,255,0.3)]"
+          preserveAspectRatio="none"
+          viewBox="0 0 100 20"
+        >
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2.5"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      )}
+
       {isActive && (
         <motion.div
           layoutId="active-nav-glow"
-          className="absolute inset-0 bg-white/10 rounded-xl -z-10"
+          className="absolute inset-0 bg-white/10 rounded-t-2xl rounded-b-sm -z-10"
         />
       )}
     </motion.div>
@@ -662,13 +677,15 @@ const MainLocationHeader = ({
                 }}
                 className="flex items-end gap-1 overflow-x-auto px-2 pb-0 no-scrollbar"
               >
-                <CategoryNavColumn
-                  key="all"
-                  cat={{ _id: "all", name: "ALL", icon: HomeIcon }}
-                  isActive={!activeCategory || activeCategory._id === "all" || activeCategory.id === "all"}
-                  categoryAccent={categoryAccent}
-                  onCategorySelect={() => onCategorySelect && onCategorySelect({ _id: "all", name: "All", id: "all" })}
-                />
+                {!categories.some(c => String(c._id || c.id) === "all" || c.name?.toLowerCase() === "all") && (
+                  <CategoryNavColumn
+                    key="all"
+                    cat={{ _id: "all", name: "ALL", icon: HomeIcon }}
+                    isActive={!activeCategory || activeCategory._id === "all" || activeCategory.id === "all"}
+                    categoryAccent={categoryAccent}
+                    onCategorySelect={() => onCategorySelect && onCategorySelect({ _id: "all", name: "All", id: "all" })}
+                  />
+                )}
                 {categories.map((cat) => {
                   const isActive =
                     activeCategory &&
