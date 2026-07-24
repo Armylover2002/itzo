@@ -5,6 +5,7 @@
 import apiClient from "./axios.js";
 import { API_ENDPOINTS } from "./config.js";
 import * as authService from "./auth.js";
+import imageCompression from "browser-image-compression";
 
 const stub = () =>
   Promise.resolve({
@@ -2406,13 +2407,29 @@ export const uploadAPI = {
    * @param {File|Blob} file
    * @param {{ folder?: string }} options
    */
-  uploadMedia: (file, options = {}) => {
+  uploadMedia: async (file, options = {}) => {
     if (!file) {
       return Promise.reject(new Error("File is required for upload"));
     }
 
+    let fileToUpload = file;
+    // Only compress if it's an image
+    if (file.type && file.type.startsWith('image/')) {
+      try {
+        const compressionOptions = {
+          maxSizeMB: 1, // Compress to ~1MB max without losing visible quality
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+          fileType: file.type
+        };
+        fileToUpload = await imageCompression(file, compressionOptions);
+      } catch (err) {
+        console.warn("Image compression failed, using original file:", err);
+      }
+    }
+
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", fileToUpload);
     if (options.folder) {
       formData.append("folder", options.folder);
     }
