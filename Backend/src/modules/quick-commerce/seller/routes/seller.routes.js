@@ -36,7 +36,7 @@ const productUpload = upload.fields([
   { name: "mainImage", maxCount: 1 },
   { name: "galleryImages", maxCount: 8 },
 ]);
-const sellerProfileUpload = upload.fields([
+export const sellerProfileUpload = upload.fields([
   { name: "upiQrImage", maxCount: 1 },
   { name: "shopLicenseImage", maxCount: 1 },
   { name: "panImage", maxCount: 1 },

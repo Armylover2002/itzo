@@ -5,6 +5,7 @@ import { QuickProduct } from '../models/product.model.js';
 import { QuickOrder } from '../models/order.model.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
+import { updateSellerProfileData } from '../seller/controllers/seller.controller.js';
 import { QuickZone } from '../models/quick_zone.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { uploadImageBuffer } from '../../../services/cloudinary.service.js';
@@ -1310,6 +1311,31 @@ export const rejectAdminSellerRequest = async (req, res) => {
     message: 'Seller request rejected',
     result: toSellerRequest(seller),
   });
+};
+
+export const updateAdminSellerProfile = async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+    const seller = await Seller.findById(sellerId);
+    
+    if (!seller) {
+      return res.status(404).json({ success: false, message: 'Seller not found' });
+    }
+
+    await updateSellerProfileData(seller, req);
+    await seller.save();
+
+    return res.json({
+      success: true,
+      message: 'Seller profile updated successfully',
+      result: toSellerRequest(seller),
+    });
+  } catch (error) {
+    if (error?.code === 11000) {
+      return res.status(400).json({ success: false, message: 'Phone or email already belongs to another seller' });
+    }
+    return res.status(500).json({ success: false, message: error.message || 'Failed to update seller profile' });
+  }
 };
 
 export const getAdminZones = async (req, res) => {

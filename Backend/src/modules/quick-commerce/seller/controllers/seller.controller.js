@@ -1184,13 +1184,8 @@ export const getSellerProfileController = async (req, res) => {
   }
 };
 
-export const updateSellerProfileController = async (req, res) => {
-  try {
-    const seller = await Seller.findById(sellerScope(req));
-    if (!seller) {
-      return sendError(res, 404, "Seller not found");
-    }
-
+export const updateSellerProfileData = async (seller, req) => {
+    const files = req.files && typeof req.files === 'object' ? req.files : {};
     if (req.body?.name !== undefined)
       seller.name = str(req.body.name) || seller.name;
     if (req.body?.shopName !== undefined)
@@ -1487,6 +1482,17 @@ export const updateSellerProfileController = async (req, res) => {
       seller.approvedAt = null;
       seller.rejectedAt = null;
     }
+
+};
+
+export const updateSellerProfileController = async (req, res) => {
+  try {
+    const seller = await Seller.findById(sellerScope(req));
+    if (!seller) {
+      return sendError(res, 404, "Seller not found");
+    }
+
+    await updateSellerProfileData(seller, req);
 
     await seller.save();
 

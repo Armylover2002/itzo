@@ -15,12 +15,13 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { sellerApi } from "../services/sellerApi";
+import { adminApi } from "../../quickCommerce/admin/services/adminApi";
 import { toast } from "sonner";
 import Card from "@shared/components/ui/Card";
 import Button from "@shared/components/ui/Button";
 import MapPicker from "../../../shared/components/MapPicker";
 
-const SellerProfile = () => {
+const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, onProfileLoad = null, children = null }) => {
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,16 +69,29 @@ const SellerProfile = () => {
   }, []);
 
   const fetchProfile = async () => {
-    const sellerToken = localStorage.getItem("auth_seller");
-    if (!sellerToken) {
-      setIsLoading(false);
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      const response = await sellerApi.getProfile();
-      const data = response.data.result;
+      let data = null;
+      if (asAdmin && adminSellerId) {
+        const response = await adminApi.getSellerRequests({ status: "approved", limit: 500 });
+        const items = response?.data?.result?.items || response?.data?.data?.items || response?.data?.result || [];
+        data = Array.isArray(items) ? items.find((item) => String(item._id || item.id) === String(adminSellerId)) : null;
+        if (!data) {
+          toast.error("Seller not found");
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        const sellerToken = localStorage.getItem("auth_seller");
+        if (!sellerToken) {
+          setIsLoading(false);
+          return;
+        }
+        const response = await sellerApi.getProfile();
+        data = response.data.result;
+      }
       setProfile(data);
+      if (onProfileLoad) onProfileLoad(data);
       setFormData({
         name: data.name,
         shopName: data.shopName,
@@ -283,7 +297,11 @@ const SellerProfile = () => {
       if (gstFile) payload.append("gstImage", gstFile);
       if (fssaiFile) payload.append("fssaiImage", fssaiFile);
 
-      await sellerApi.updateProfile(payload);
+      if (asAdmin && adminSellerId) {
+        await adminApi.updateSellerProfile(adminSellerId, payload);
+      } else {
+        await sellerApi.updateProfile(payload);
+      }
       toast.success("Profile updated successfully");
       setIsEditing(false);
       await fetchProfile();
@@ -339,6 +357,15 @@ const SellerProfile = () => {
           </div>
 
           {/* Name & Shop Inside Card */}
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="absolute top-6 left-6 z-20 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 border border-white/20"
+            >
+              <ArrowLeft size={20} />
+            </button>
+          )}
           <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-1 relative z-10">
             {profile?.name || "Seller Profile"}
           </h1>
@@ -392,7 +419,17 @@ const SellerProfile = () => {
             </div>
             {/* Desktop internal text */}
             <div className="absolute bottom-8 left-64 pl-6 right-12 flex items-end justify-between gap-6 z-10">
-              <div className="flex-1 pb-2">
+              <div className="flex-1 pb-2 flex items-center gap-4">
+                {onBack && (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 border border-white/20 flex-shrink-0"
+                  >
+                    <ArrowLeft size={24} />
+                  </button>
+                )}
+                <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
                     {profile?.role || "SELLER"}
@@ -414,6 +451,8 @@ const SellerProfile = () => {
                 <p className="text-white/70 font-bold tracking-wide text-base">
                   {profile?.shopName || "My Store"}
                 </p>
+              </div>
+                </div>
               </div>
               <div className="pb-2 flex-shrink-0">
                 {!isEditing ? (

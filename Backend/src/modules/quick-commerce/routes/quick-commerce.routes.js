@@ -59,6 +59,7 @@ import {
   removeProduct,
   updateCategory,
   updateProduct,
+  updateAdminSellerProfile,
   getAdminZones,
   getAdminZoneById,
   createAdminZone,
@@ -97,6 +98,7 @@ import {
   deleteSellerCommission,
   toggleSellerCommissionStatus,
 } from "../controllers/adminCommission.controller.js";
+import { sellerProfileUpload } from "../seller/routes/seller.routes.js";
 import {
   createDeliveryCommissionRule,
   createOrUpdateFeeSettings,
@@ -288,6 +290,12 @@ router.put(
   "/admin/seller-requests/:sellerId/reject",
   ...adminOnly,
   rejectAdminSellerRequest,
+);
+router.put(
+  "/admin/seller-requests/:sellerId/profile",
+  ...adminOnly,
+  sellerProfileUpload,
+  updateAdminSellerProfile
 );
 router.get("/admin/zones", ...adminOnly, getAdminZones);
 router.get("/admin/zones/:zoneId", ...adminOnly, getAdminZoneById);

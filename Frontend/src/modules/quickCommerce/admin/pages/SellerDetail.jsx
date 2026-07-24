@@ -1,23 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import {
-  HiOutlineArrowLeft,
-  HiOutlineArrowPath,
-  HiOutlineBuildingOffice2,
-  HiOutlineCalendarDays,
-  HiOutlineCheckBadge,
-  HiOutlineClock,
-  HiOutlineDocumentText,
-  HiOutlineEnvelope,
-  HiOutlineMapPin,
-  HiOutlinePhone,
-  HiOutlineShieldCheck,
-  HiOutlineTag,
-} from 'react-icons/hi2';
-import { toast } from 'sonner';
+import React, { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import SellerProfile from '../../../seller/pages/Profile';
+import { HiOutlineCalendarDays, HiOutlineCheckBadge } from 'react-icons/hi2';
 import Card from '@shared/components/ui/Card';
-import Badge from '@shared/components/ui/Badge';
-import { adminApi } from '../services/adminApi';
 
 const formatDate = (value) => {
   if (!value) return 'N/A';
@@ -42,287 +27,50 @@ const SellerDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [seller, setSeller] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const loadSeller = async () => {
-    setIsLoading(true);
-    try {
-      const response = await adminApi.getSellerRequests({ status: 'approved', limit: 500 });
-      const items =
-        response?.data?.result?.items ||
-        response?.data?.data?.items ||
-        response?.data?.result ||
-        [];
-
-      const matchedSeller = Array.isArray(items)
-        ? items.find((item) => String(item?._id || item?.id) === String(id))
-        : null;
-
-      setSeller(matchedSeller || null);
-
-      if (!matchedSeller) {
-        toast.error('Approved seller not found');
-      }
-    } catch (error) {
-      setSeller(null);
-      toast.error('Failed to load seller details');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSeller();
-  }, [id]);
-
-  const documentItems = useMemo(() => {
-    if (!seller?.documents) return [];
-
-    return [
-      { label: 'GST Number', value: seller.documents.gstNumber },
-      { label: 'PAN Number', value: seller.documents.panNumber },
-      { label: 'FSSAI Number', value: seller.documents.fssaiNumber },
-      { label: 'Shop License', value: seller.documents.shopLicenseNumber },
-    ].filter((item) => item.value);
-  }, [seller]);
-
-  const detailCards = useMemo(() => {
-    if (!seller) return [];
-
-    return [
-      {
-        label: 'Business type',
-        value: seller.category || seller?.shopInfo?.businessType,
-        icon: HiOutlineTag,
-      },
-      {
-        label: 'Service zone',
-        value: seller?.shopInfo?.zoneName,
-        icon: HiOutlineMapPin,
-      },
-      {
-        label: 'Opening hours',
-        value: seller?.shopInfo?.openingHours,
-        icon: HiOutlineClock,
-      },
-      {
-        label: 'Service radius',
-        value: seller?.serviceRadius ? `${seller.serviceRadius} km` : '',
-        icon: HiOutlineShieldCheck,
-      },
-    ];
-  }, [seller]);
 
   return (
-    <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-start gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/ecs/quick-commerce/sellers/active')}
-            className="mt-1 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 transition hover:bg-slate-50"
-          >
-            <HiOutlineArrowLeft className="h-5 w-5" />
-          </button>
-          <div>
-            <h1 className="ds-h1">Seller Store View</h1>
-            <p className="ds-description mt-0.5">
-              Quick-commerce store details only, without extra finance or platform data.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={loadSeller}
-          className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
-        >
-          <HiOutlineArrowPath className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-      </div>
-
-      {isLoading ? (
-        <Card className="border-none p-10 text-center shadow-xl ring-1 ring-slate-100">
-          <div className="flex flex-col items-center gap-3 text-slate-400">
-            <HiOutlineArrowPath className="h-10 w-10 animate-spin" />
-            <p className="text-sm font-semibold text-slate-500">Loading seller store details...</p>
-          </div>
-        </Card>
-      ) : !seller ? (
-        <Card className="border-none p-10 text-center shadow-xl ring-1 ring-slate-100">
-          <div className="flex flex-col items-center gap-3 text-slate-400">
-            <HiOutlineBuildingOffice2 className="h-10 w-10" />
-            <p className="text-sm font-semibold text-slate-600">This approved seller could not be found.</p>
-            <button
-              type="button"
-              onClick={() => navigate('/ecs/quick-commerce/sellers/active')}
-              className="mt-2 rounded-xl bg-slate-900 px-4 py-2 text-[11px] font-bold text-white"
-            >
-              Back to active sellers
-            </button>
-          </div>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-          <div className="space-y-6">
-            <Card className="border-none p-6 shadow-xl ring-1 ring-slate-100">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
-                    <HiOutlineBuildingOffice2 className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-2xl font-black text-slate-900">
-                        {seller.shopName || 'Unnamed store'}
-                      </h2>
-                      <Badge variant="success" className="text-[10px] font-bold uppercase">
-                        {seller.status || 'approved'}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm font-semibold text-slate-500">
-                      Owner: {infoValue(seller.ownerName)}
-                    </p>
-                    <p className="mt-2 text-sm text-slate-500">
-                      {infoValue(seller.location, 'Store address not added yet')}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-emerald-50 px-4 py-3 ring-1 ring-emerald-100">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
-                    Approved on
-                  </p>
-                  <p className="mt-1 text-sm font-bold text-emerald-900">
-                    {formatDate(seller.approvedAt || seller.applicationDate)}
-                  </p>
-                </div>
+    <SellerProfile 
+      asAdmin={true} 
+      adminSellerId={id} 
+      onBack={() => navigate('/ecs/quick-commerce/sellers/active')}
+      onProfileLoad={(data) => setSeller(data)}
+    >
+      {seller && (
+        <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl mt-6 sm:mt-8">
+          <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
+            Approval Summary
+          </h3>
+          <div className="space-y-4">
+            <div className="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
+              <div className="flex items-center gap-2">
+                <HiOutlineCheckBadge className="h-5 w-5 text-emerald-700" />
+                <p className="text-sm font-black text-emerald-900">Seller approved</p>
               </div>
-            </Card>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {detailCards.map((item) => (
-                <Card key={item.label} className="border-none p-5 shadow-sm ring-1 ring-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-600">
-                      <item.icon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="ds-label">{item.label}</p>
-                      <p className="mt-1 text-sm font-bold text-slate-900">
-                        {infoValue(item.value)}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+              <p className="mt-2 text-sm font-semibold text-emerald-800">
+                This store can access the quick seller dashboard.
+              </p>
             </div>
 
-            <Card className="border-none p-6 shadow-xl ring-1 ring-slate-100">
-              <div className="flex items-center gap-2">
-                <HiOutlineDocumentText className="h-5 w-5 text-slate-500" />
-                <h3 className="text-lg font-black text-slate-900">Store documents</h3>
-              </div>
-
-              {documentItems.length ? (
-                <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {documentItems.map((doc) => (
-                    <div key={doc.label} className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                        {doc.label}
-                      </p>
-                      <p className="mt-1 break-all text-sm font-bold text-slate-800">{doc.value}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-4 text-sm font-semibold text-slate-500">
-                  No store verification documents were added yet.
+            <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100 flex items-start gap-3">
+              <HiOutlineCalendarDays className="mt-0.5 h-5 w-5 text-slate-500" />
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">Application date</p>
+                <p className="mt-1 text-sm font-bold text-slate-900">
+                  {formatDate(seller.applicationDate || seller.createdAt)}
                 </p>
-              )}
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card className="border-none p-6 shadow-xl ring-1 ring-slate-100">
-              <h3 className="text-lg font-black text-slate-900">Contact details</h3>
-              <div className="mt-5 space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
-                    <HiOutlineEnvelope className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="ds-label">User Id</p>
-                    <p className="mt-1 text-sm font-bold text-slate-900">
-                      {infoValue(seller.email)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
-                    <HiOutlinePhone className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="ds-label">Phone</p>
-                    <p className="mt-1 text-sm font-bold text-slate-900">
-                      {infoValue(seller.phone)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
-                    <HiOutlineMapPin className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="ds-label">Store address</p>
-                    <p className="mt-1 text-sm font-bold leading-6 text-slate-900">
-                      {infoValue(seller.location, 'Location not added')}
-                    </p>
-                  </div>
-                </div>
               </div>
-            </Card>
+            </div>
 
-            <Card className="border-none p-6 shadow-xl ring-1 ring-slate-100">
-              <h3 className="text-lg font-black text-slate-900">Approval summary</h3>
-              <div className="mt-5 space-y-4">
-                <div className="rounded-2xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
-                  <div className="flex items-center gap-2">
-                    <HiOutlineCheckBadge className="h-5 w-5 text-emerald-700" />
-                    <p className="text-sm font-black text-emerald-900">Seller approved</p>
-                  </div>
-                  <p className="mt-2 text-sm font-semibold text-emerald-800">
-                    This store can access the quick seller dashboard.
-                  </p>
-                </div>
-
-                <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-                  <div className="flex items-start gap-3">
-                    <HiOutlineCalendarDays className="mt-0.5 h-5 w-5 text-slate-500" />
-                    <div>
-                      <p className="ds-label">Application date</p>
-                      <p className="mt-1 text-sm font-bold text-slate-900">
-                        {formatDate(seller.applicationDate)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
-                  <p className="ds-label">ECS notes</p>
-                  <p className="mt-1 text-sm font-semibold leading-6 text-slate-700">
-                    {infoValue(seller.approvalNotes, 'No approval notes added.')}
-                  </p>
-                </div>
-              </div>
-            </Card>
+            <div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-100">
+              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">ECS notes</p>
+              <p className="mt-1 text-sm font-semibold leading-6 text-slate-700">
+                {infoValue(seller.approvalNotes, 'No approval notes added.')}
+              </p>
+            </div>
           </div>
-        </div>
+        </Card>
       )}
-    </div>
+    </SellerProfile>
   );
 };
 
