@@ -9,6 +9,7 @@ const quickVariantSchema = new mongoose.Schema({
 }, { _id: true });
 
 const quickProductSchema = new mongoose.Schema({
+  sellerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', default: null, index: true },
   name: { type: String, required: true, trim: true },
   slug: { type: String, required: true, unique: true, index: true },
   image: { type: String, default: '' },

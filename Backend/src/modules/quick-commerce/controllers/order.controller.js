@@ -296,7 +296,14 @@ export const placeOrder = async (req, res) => {
     const sellerBuckets = new Map();
     items.forEach((item) => {
       const sellerId = item.sellerId ? String(item.sellerId) : '';
-      if (!sellerId) return;
+      if (!sellerId) {
+        logger.warn(`Quick placeOrder fan-out skipped: Product has no sellerId.`, {
+          productId: item.productId,
+          name: item.name,
+          isPlatformFulfilled: true,
+        });
+        return;
+      }
       if (!sellerBuckets.has(sellerId)) sellerBuckets.set(sellerId, []);
       sellerBuckets.get(sellerId).push(item);
     });
