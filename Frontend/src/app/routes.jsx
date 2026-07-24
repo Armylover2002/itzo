@@ -279,7 +279,6 @@ const AppRoutes = () => {
 
 
         {/* Seller Module */}
-        <Route path="/seller" element={<SellerAppWrapper />} />
         <Route path="/seller/auth" element={<SellerAuthEntry />} />
         <Route path="/seller/*" element={<SellerAppWrapper />} />
 
