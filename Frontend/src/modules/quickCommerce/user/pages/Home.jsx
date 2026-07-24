@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@food/components/ui/skeleton";
 import QuickCategorySlider from "../components/home/QuickCategorySlider";
 import QuickProductShelf from "../components/home/QuickProductShelf";
+import LowestPriceEverSection from "../components/home/LowestPriceEverSection";
 import CardBanner from "@/assets/CardBanner.jpg";
 import SectionRenderer from "../components/experience/SectionRenderer";
 import ExperienceBannerCarousel from "../components/experience/ExperienceBannerCarousel";
@@ -509,6 +510,9 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
 
           {/* 4. Quick Category Slider (Colorful horizontal list) */}
           <QuickCategorySlider categories={effectiveQuickCategories} activeCategory={activeCategory} embedded={embedded} />
+
+          {/* New LOWEST PRICE EVER section */}
+          <LowestPriceEverSection products={products} />
 
           {/* Offer Sections (admin-configured: Trending, etc.) – show on Home so user sees them */}
           {offerSections.length > 0 && (
