@@ -963,7 +963,7 @@ const Orders = () => {
                                         e.stopPropagation();
                                         handleStatusUpdate(
                                           order.id,
-                                          "Processing",
+                                          "confirmed",
                                         );
                                       }}
                                       className="p-1.5 hover:bg-primary/10 hover:text-primary rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-100">
@@ -974,7 +974,7 @@ const Orders = () => {
                                         e.stopPropagation();
                                         handleStatusUpdate(
                                           order.id,
-                                          "Cancelled",
+                                          "cancelled",
                                         );
                                       }}
                                       className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-100">
