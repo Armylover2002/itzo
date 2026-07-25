@@ -643,6 +643,8 @@ const toTripDto = (order) => {
         order?.restaurantId?.restaurantName ||
         order?.restaurantName ||
         order?.restaurant?.restaurantName ||
+        order?.pickupPoints?.[0]?.sourceName ||
+        order?.items?.[0]?.sourceName ||
         '';
 
     const paymentMethod = order?.payment?.method || order?.paymentMethod || '';
@@ -759,17 +761,20 @@ export const getDeliveryPocketDetails = async (deliveryPartnerId, query = {}) =>
 
     const trips = (orders || []).map(toTripDto);
 
-    const paymentTransactions = (orders || []).map((o) => ({
-        _id: o._id,
-        type: 'payment',
-        amount: Number(o.riderEarning) || 0,
-        status: 'Completed',
-        date: o?.deliveryState?.deliveredAt || o?.deliveredAt || o?.createdAt,
-        createdAt: o?.deliveryState?.deliveredAt || o?.deliveredAt || o?.createdAt,
-        orderId: o.orderId || String(o._id),
-        metadata: { orderId: o.orderId || String(o._id) },
-        description: o?.restaurantId?.restaurantName ? `Order earning - ${o.restaurantId.restaurantName}` : 'Order earning'
-    }));
+    const paymentTransactions = (orders || []).map((o) => {
+        const storeName = o?.restaurantId?.restaurantName || o?.restaurantName || o?.pickupPoints?.[0]?.sourceName || o?.items?.[0]?.sourceName;
+        return {
+            _id: o._id,
+            type: 'payment',
+            amount: Number(o.riderEarning) || 0,
+            status: 'Completed',
+            date: o?.deliveryState?.deliveredAt || o?.deliveredAt || o?.createdAt,
+            createdAt: o?.deliveryState?.deliveredAt || o?.deliveredAt || o?.createdAt,
+            orderId: o.orderId || String(o._id),
+            metadata: { orderId: o.orderId || String(o._id) },
+            description: storeName ? `Order earning - ${storeName}` : 'Order earning'
+        };
+    });
 
     const bonusTransactions = (bonusTxList || []).map((t) => ({
         _id: t._id,
