@@ -16,6 +16,7 @@ export const connectDB = async () => {
             family: 4, // Force IPv4
             serverSelectionTimeoutMS: 15000,
             connectTimeoutMS: 15000,
+            autoIndex: false,
         });
         logger.info(`MongoDB connected: ${conn.connection.host}`);
     } catch (error) {

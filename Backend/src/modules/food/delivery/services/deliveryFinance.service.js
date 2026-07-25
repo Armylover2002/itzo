@@ -52,7 +52,7 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
         entityType: "deliveryBoy",
         entityId: partnerId,
         category: "delivery_earning",
-        orderId: { $in: orderIds }
+        orderId: { $in: orderIds.map(String) }
       }).select("orderId").lean();
 
       const creditedOrderIds = new Set(existingTxns.map(t => String(t.orderId)));
@@ -99,17 +99,40 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
       }
 
       if (txnsToInsert.length > 0) {
-        await Transaction.insertMany(txnsToInsert);
+        const bulkTxnOps = txnsToInsert.map(txn => ({
+          updateOne: {
+            filter: { 
+              entityType: txn.entityType,
+              entityId: txn.entityId,
+              orderId: txn.orderId,
+              category: txn.category
+            },
+            update: { $setOnInsert: txn },
+            upsert: true
+          }
+        }));
+        await Transaction.bulkWrite(bulkTxnOps, { ordered: false });
         
         if (totalEarningToAdd > 0 || totalDeliveriesToAdd > 0) {
-          await FoodDeliveryWallet.updateOne(
-            { deliveryPartnerId: partnerId },
-            { 
-              $inc: { totalDeliveries: totalDeliveriesToAdd, balance: totalEarningToAdd, totalEarnings: totalEarningToAdd },
-              $setOnInsert: { subscriptionBalance: 0, lockedAmount: 0, cashInHand: 0, totalBonus: 0, totalSettled: 0 }
-            },
-            { upsert: true }
-          );
+          try {
+            await FoodDeliveryWallet.updateOne(
+              { deliveryPartnerId: partnerId },
+              { 
+                $inc: { totalDeliveries: totalDeliveriesToAdd, balance: totalEarningToAdd, totalEarnings: totalEarningToAdd },
+                $setOnInsert: { subscriptionBalance: 0, lockedAmount: 0, cashInHand: 0, totalBonus: 0, totalSettled: 0 }
+              },
+              { upsert: true }
+            );
+          } catch (updateErr) {
+            if (updateErr.code === 11000) {
+              await FoodDeliveryWallet.updateOne(
+                { deliveryPartnerId: partnerId },
+                { $inc: { totalDeliveries: totalDeliveriesToAdd, balance: totalEarningToAdd, totalEarnings: totalEarningToAdd } }
+              );
+            } else {
+              throw updateErr;
+            }
+          }
         }
         
         if (totalPlatformProfitToAdd > 0) {
