@@ -92,7 +92,7 @@ const SidebarItem = ({
               className={cn(
                 "p-1.5 rounded-lg transition-all duration-500 shadow-lg",
                 isChildActive || isOpen
-                  ? "bg-primary text-white shadow-primary/40 ring-2 ring-primary/20"
+                  ? "bg-primary-orange text-white shadow-primary-orange/40 ring-2 ring-primary-orange/20"
                   : "bg-white/5 text-gray-500 group-hover:bg-white/10 group-hover:text-gray-300",
               )}>
               {item.icon && <item.icon className="h-4 w-4" />}
@@ -109,7 +109,7 @@ const SidebarItem = ({
             className={cn(
               "transition-all duration-300 z-10",
               isOpen
-                ? "rotate-180 text-primary"
+                ? "rotate-180 text-primary-orange"
                 : "rotate-0 text-gray-600 group-hover:text-gray-400",
             )}>
             <HiChevronDown className="h-4 w-4" />
@@ -133,7 +133,7 @@ const SidebarItem = ({
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 rounded-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 rounded-full bg-primary-orange shadow-[0_0_10px_rgba(254,85,2,0.5)]" />
                     )}
                     {child.label}
                   </>
@@ -156,7 +156,7 @@ const SidebarItem = ({
         cn(
           "flex items-center space-x-2.5 rounded-lg px-3 py-2.5 transition-all duration-300 group relative overflow-hidden",
           isActive
-            ? "bg-primary text-white shadow-[0_10px_30px_rgba(var(--primary),0.3)]"
+            ? "bg-primary-orange text-white shadow-[0_10px_30px_rgba(254,85,2,0.3)]"
             : "text-gray-400 hover:text-white",
         )
       }>
@@ -267,7 +267,7 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
             <h1 className="text-base font-black tracking-tight text-white leading-none">
               {companyName || 'App'}
             </h1>
-            <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em] mt-1 block">
+            <span className="text-[9px] font-black text-primary-orange uppercase tracking-[0.2em] mt-1 block">
               {title}
             </span>
           </div>
@@ -321,13 +321,13 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
         <div className="bg-white/5 rounded-lg p-3 shadow-sm border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all group cursor-pointer">
           <div className="flex items-center space-x-2.5">
             <div className="relative group">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary via-orange-500 to-orange-600 flex items-center justify-center text-white font-black text-xs shadow-lg group-hover:scale-110 transition-all duration-500">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-orange via-orange-500 to-primary-dark flex items-center justify-center text-white font-black text-xs shadow-lg group-hover:scale-110 transition-all duration-500">
                 A
               </div>
               <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 rounded-full border-2 border-[#0a0c10] shadow-sm animate-pulse"></div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate group-hover:text-primary transition-colors">
+              <p className="text-xs font-bold text-white truncate group-hover:text-primary-orange transition-colors">
                 {title?.toLowerCase().includes('seller') ? 'Seller Console' : 'Admin Console'}
               </p>
               <p className="text-[9px] text-gray-500 truncate font-black uppercase tracking-widest">

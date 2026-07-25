@@ -569,7 +569,7 @@ export default function SellerOnboarding() {
                     <button
                       type="button"
                       onClick={() => setIsMapOpen(true)}
-                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-black"
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition-colors"
                     >
                       <MapPin className="h-4 w-4" />
                       {form.lat && form.lng ? "Change Pin" : "Pick On Map"}
@@ -840,7 +840,7 @@ export default function SellerOnboarding() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-black uppercase tracking-[0.22em] text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-6 py-4 text-sm font-black uppercase tracking-[0.22em] text-white transition-colors disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmitting ? "Submitting..." : "Submit for approval"}
                 {!isSubmitting && <ArrowRight className="h-4 w-4" />}

@@ -162,7 +162,7 @@ export default function SellerAuth() {
           >
             <div className="mb-8 flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-[#16a34a]">Partner Access</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-primary-orange">Partner Access</p>
                 <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
                   {companyName} seller login
                 </h2>
@@ -171,7 +171,7 @@ export default function SellerAuth() {
                 </p>
               </div>
               <div className="hidden h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 md:flex">
-                <ShieldCheck className="h-8 w-8 text-[#16a34a]" />
+                <ShieldCheck className="h-8 w-8 text-primary-orange" />
               </div>
             </div>
 
@@ -202,7 +202,7 @@ export default function SellerAuth() {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={isLoading}
-                    className="h-14 w-full rounded-[24px] bg-slate-900 text-sm font-black uppercase tracking-[0.22em] text-white hover:bg-black"
+                    className="h-14 w-full rounded-[24px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-sm font-black uppercase tracking-[0.22em] text-white transition-colors"
                   >
                     {isLoading ? "Sending OTP..." : "Send OTP"}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -248,7 +248,7 @@ export default function SellerAuth() {
                       type="button"
                       onClick={handleVerifyOtp}
                       disabled={isLoading}
-                      className="h-14 flex-[1.4] rounded-[24px] bg-[#16a34a] text-sm font-black uppercase tracking-[0.18em] text-white hover:bg-[#15803d]"
+                      className="h-14 flex-[1.4] rounded-[24px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-sm font-black uppercase tracking-[0.18em] text-white transition-colors"
                     >
                       {isLoading ? "Verifying..." : "Continue"}
                     </Button>

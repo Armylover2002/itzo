@@ -115,7 +115,8 @@ const Earnings = () => {
             </Button>
             <ShimmerButton
               onClick={() => navigate("/seller/withdrawals")}
-              className="px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg">
+              className="px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors"
+              background="#FE5502">
               <span className="text-white">Withdraw Funds</span>
             </ShimmerButton>
           </div>
@@ -204,7 +205,7 @@ const Earnings = () => {
                 </h2>
               </div>
               <div className="p-2 bg-orange-50 rounded-lg">
-                <Banknote className="h-5 w-5 text-primary" />
+                <Banknote className="h-5 w-5 text-primary-orange" />
               </div>
             </div>
           </Card>
@@ -233,7 +234,7 @@ const Earnings = () => {
         <Card className="p-6 border-none shadow-md bg-white">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
+              <BarChart3 className="h-5 w-5 text-primary-orange" />
               Monthly Revenue Performance
             </h3>
           </div>

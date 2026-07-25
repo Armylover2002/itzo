@@ -154,7 +154,7 @@ export default function SellerPendingApproval() {
                 type="button"
                 onClick={() => loadProfile(true)}
                 disabled={isRefreshing}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition hover:bg-black disabled:opacity-70"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-white transition-colors disabled:opacity-70"
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
                 {isRefreshing ? "Checking..." : "Refresh status"}

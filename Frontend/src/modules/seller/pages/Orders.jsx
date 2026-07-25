@@ -538,7 +538,8 @@ const Orders = () => {
             </Button>
             <ShimmerButton
               onClick={() => setIsQuickViewModalOpen(true)}
-              className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white shadow-xl flex items-center space-x-1.5 sm:space-x-2">
+              background="#FE5502"
+              className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white shadow-xl flex items-center space-x-1.5 sm:space-x-2 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors">
               <HiOutlineEye className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-0" />
               <span className="hidden sm:inline">QUICK VIEW</span>
             </ShimmerButton>

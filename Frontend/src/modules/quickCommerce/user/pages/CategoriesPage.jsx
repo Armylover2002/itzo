@@ -121,7 +121,12 @@ const CategoriesPage = () => {
 
     return (
         <div className="min-h-screen bg-background transition-colors duration-500">
-            <MainLocationHeader showCategories={false} hideDeliveryTime={true} hideLogo={true} />
+            <MainLocationHeader 
+                showCategories={false} 
+                hideDeliveryTime={true} 
+                hideLogo={true} 
+                activeCategory={{ headerColor: '#FE5502' }}
+            />
 
             <div className="max-w-[1400px] mx-auto px-3 pt-[206px] md:pt-[240px] pb-20">
                 <AnimatePresence mode='wait'>
@@ -132,7 +137,7 @@ const CategoriesPage = () => {
                             exit={{ opacity: 0 }}
                             className="flex items-center justify-center h-64"
                         >
-                            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                            <div className="w-12 h-12 border-4 border-primary-orange border-t-transparent rounded-full animate-spin" />
                         </motion.div>
                     ) : (
                         <div className="space-y-6 md:space-y-8">

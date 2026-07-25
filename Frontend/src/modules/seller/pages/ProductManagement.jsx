@@ -403,8 +403,8 @@ const ProductManagement = () => {
           </div>
           <ShimmerButton
             onClick={() => navigate("/seller/products/add")}
-            className="px-6 py-2.5 rounded-lg text-xs font-bold shadow-xl flex items-center space-x-2 text-white"
-            background="#0f172a">
+            className="px-6 py-2.5 rounded-lg text-xs font-bold shadow-xl flex items-center space-x-2 text-white bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors"
+            background="#FE5502">
             <HiOutlinePlus className="h-4 w-4 mr-2" />
             <span>ADD NEW PRODUCT</span>
           </ShimmerButton>
@@ -453,7 +453,7 @@ const ProductManagement = () => {
               className={cn(
                 "cursor-pointer rounded-lg transition-all duration-300",
                 filterStatus === stat.status
-                  ? "ring-2 ring-primary shadow-lg"
+                  ? "ring-2 ring-primary-orange shadow-lg"
                   : "hover:shadow-md",
               )}>
               <MagicCard
@@ -677,7 +677,7 @@ const ProductManagement = () => {
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="p-2 hover:bg-white hover:text-primary rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-200">
+                          className="p-2 hover:bg-white hover:text-primary-orange rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-200">
                           <HiOutlinePencilSquare className="h-4 w-4" />
                         </button>
                         <button
@@ -1230,7 +1230,7 @@ const ProductManagement = () => {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="bg-slate-900 text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all">
+                  className="bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all">
                   SAVE CHANGES
                 </button>
               </div>
@@ -1347,7 +1347,7 @@ const ProductManagement = () => {
           <div className="mt-8 flex justify-end">
             <button
               onClick={() => setIsVariantsViewModalOpen(false)}
-              className="bg-slate-900 text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+              className="bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
             >
               CLOSE VIEWER
             </button>

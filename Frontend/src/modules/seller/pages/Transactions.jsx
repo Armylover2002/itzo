@@ -193,7 +193,7 @@ const Transactions = () => {
                   setIsDownloading(false);
                 }
               }}
-              className="rounded-lg px-4 py-2 shadow-lg shadow-primary/20 disabled:opacity-50"
+              className="rounded-lg px-4 py-2 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors disabled:opacity-50"
               disabled={isDownloading || filteredTransactions.length === 0}>
               <HiOutlineDocumentText className="h-4 w-4 mr-2" />
               {isDownloading ? "DOWNLOADING..." : "DOWNLOAD STATEMENTS"}
@@ -491,7 +491,7 @@ const Transactions = () => {
               </Button>
               <Button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="rounded-lg py-4 font-black shadow-xl shadow-primary/20">
+                className="rounded-lg py-4 font-black bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
                 CLOSE
               </Button>
             </div>

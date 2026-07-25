@@ -258,7 +258,8 @@ const Analytics = () => {
             </div>
             <ShimmerButton
               onClick={handleDownloadReport}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-xs sm:text-sm sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0"
+              background="#FE5502"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-xs sm:text-sm sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors"
               disabled={isExporting}>
               <HiOutlineArrowDownTray className="h-4 w-4 shrink-0" />
               <span>{isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}</span>
@@ -727,7 +728,7 @@ const Analytics = () => {
 
             <Button
               onClick={() => setIsProductModalOpen(false)}
-              className="w-full py-4 rounded-2xl font-black shadow-xl shadow-primary/20">
+              className="w-full py-4 rounded-2xl font-black bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
               CLOSE DETAILS
             </Button>
           </div>

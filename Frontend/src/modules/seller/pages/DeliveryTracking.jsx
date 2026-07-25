@@ -239,14 +239,14 @@ const DeliveryTracking = () => {
                         className={cn(
                           "relative py-5 px-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
                           activeTab === tab
-                            ? "text-primary bg-white/50"
+                            ? "text-primary-orange bg-white/50"
                             : "text-slate-600 hover:text-slate-700",
                         )}>
                         {tab}
                         {activeTab === tab && (
                           <motion.div
                             layoutId="tab-underline-tracking"
-                            className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full mx-4"
+                            className="absolute bottom-0 left-0 right-0 h-1 bg-primary-orange rounded-t-full mx-4"
                           />
                         )}
                       </button>
@@ -375,7 +375,7 @@ const DeliveryTracking = () => {
 
                         {/* Action Button Section */}
                         <div className="lg:w-16 flex items-center justify-center p-2 sm:p-3 shrink-0">
-                          <button className="h-10 w-10 lg:h-full lg:w-full bg-primary hover:bg-primary/90 rounded-lg lg:rounded-r-lg lg:rounded-l-none flex items-center justify-center text-primary-foreground transition-all duration-500 shadow-xl shadow-primary/20 hover:shadow-primary/30">
+                          <button className="h-10 w-10 lg:h-full lg:w-full bg-primary-orange hover:bg-primary-hover active:bg-primary-dark rounded-lg lg:rounded-r-lg lg:rounded-l-none flex items-center justify-center text-white transition-all duration-500 shadow-xl">
                             <HiOutlineTruck className="h-5 w-5 group-hover:scale-125 transition-transform" />
                           </button>
                         </div>

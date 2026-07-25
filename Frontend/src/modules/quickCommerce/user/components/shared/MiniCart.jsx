@@ -63,7 +63,7 @@ const MiniCart = ({
                     >
                         <Link
                             to={resolvedLinkTo}
-                            className="flex flex-col items-center justify-center w-[72px] h-[72px] md:w-[84px] md:h-[84px] bg-black text-white rounded-full shadow-[0_15px_45px_rgba(0,0,0,0.5)] hover:scale-110 transition-all duration-300 relative group overflow-hidden border-2 border-white/10"
+                            className="flex flex-col items-center justify-center w-[72px] h-[72px] md:w-[84px] md:h-[84px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white rounded-full shadow-[0_15px_45px_rgba(0,0,0,0.5)] transition-all duration-300 relative group overflow-hidden border-2 border-white/10"
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
 
@@ -125,7 +125,7 @@ const MiniCart = ({
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
                                         whileHover={{ scale: 1.2 }}
-                                        className="absolute -top-1 -right-2.5 w-5 h-5 bg-[#FFC107] text-black text-[11px] font-[1000] rounded-full flex items-center justify-center border-2 border-black shadow-lg z-10"
+                                        className="absolute -top-1 -right-2.5 w-5 h-5 bg-[#FFC107] text-black text-[11px] font-[1000] rounded-full flex items-center justify-center border-2 border-primary-dark shadow-lg z-10"
                                     >
                                         {cartCount}
                                     </motion.span>

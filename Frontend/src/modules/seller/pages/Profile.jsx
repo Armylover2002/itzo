@@ -603,7 +603,7 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
                 <Button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="bg-slate-900 text-white hover:bg-black rounded-lg px-6 py-2 text-[10px] font-black tracking-[2px]">
+                  className="bg-primary-orange text-white hover:bg-primary-hover active:bg-primary-dark rounded-lg px-6 py-2 text-[10px] font-black tracking-[2px] transition-colors">
                   MANAGE
                 </Button>
               )}

@@ -40,7 +40,7 @@ const BottomNav = ({ navItems }) => {
                     end={item.end}
                     className={({ isActive }) => cn(
                         "flex flex-col items-center justify-center space-y-1 w-16 transition-all duration-300",
-                        isActive ? "text-primary" : "text-gray-500 hover:text-gray-300"
+                        isActive ? "text-primary-orange" : "text-gray-500 hover:text-primary-hover active:text-primary-dark"
                     )}
                 >
                     <item.icon className="h-5 w-5" />

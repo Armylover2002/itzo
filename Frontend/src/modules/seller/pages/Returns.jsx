@@ -377,7 +377,7 @@ const Returns = () => {
                                             {activeTab === tab && (
                                                 <motion.div
                                                     layoutId="returns-tab-underline"
-                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full mx-2 sm:mx-4"
+                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-orange rounded-full mx-2 sm:mx-4"
                                                 />
                                             )}
                                         </button>
@@ -663,7 +663,7 @@ const Returns = () => {
                                                 Reject
                                             </Button>
                                             <Button
-                                                className="text-xs font-bold bg-primary text-white hover:bg-primary/90 shadow-md shadow-primary/20"
+                                                className="text-xs font-bold bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors shadow-md"
                                                 onClick={() => handleApprove(selectedReturn.orderId)}
                                             >
                                                 Approve

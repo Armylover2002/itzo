@@ -308,9 +308,9 @@ const Dashboard = () => {
               className={cn(
                 "p-6 rounded-xl text-left transition-all duration-200 shadow-sm hover:shadow-md border-2",
                 isPrimary &&
-                  "bg-primary border-primary text-white hover:bg-primary/90 hover:border-primary/90",
+                  "bg-primary-orange border-primary-orange text-white hover:bg-primary-hover active:bg-primary-dark hover:border-primary-hover",
                 action.variant === "outline" &&
-                  "bg-white border-slate-200 text-slate-900 hover:border-primary hover:bg-primary/5",
+                  "bg-white border-slate-200 text-slate-900 hover:border-primary-orange hover:bg-primary-orange/5",
                 isEmerald &&
                   "bg-white border-slate-200 text-slate-900 hover:border-emerald-500 hover:bg-emerald-50",
               )}>
@@ -480,7 +480,7 @@ const Dashboard = () => {
         actions={
           <button
             onClick={() => navigate("/seller/orders")}
-            className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1">
+            className="text-sm font-medium text-primary-orange hover:text-primary-hover active:text-primary-dark flex items-center gap-1">
             View All
             <ArrowUpRight className="h-4 w-4" />
           </button>
