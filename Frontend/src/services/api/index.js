@@ -2099,8 +2099,29 @@ export const deliveryAPI = {
       { contextModule: "delivery" },
     ),
   /** GET /food/delivery/wallet - wallet for Pocket/requests page (backend) */
-  getWallet: () =>
-    apiClient.get("/food/delivery/wallet", { contextModule: "delivery" }),
+  getWallet: (() => {
+    let inFlight = null;
+    let cached = null;
+    let cacheTime = 0;
+    const CACHE_MS = 3000;
+    return () => {
+      const now = Date.now();
+      if (cached && now - cacheTime < CACHE_MS) return Promise.resolve(cached);
+      if (!inFlight) {
+        inFlight = apiClient
+          .get("/food/delivery/wallet", { contextModule: "delivery" })
+          .then((res) => {
+            cached = res;
+            cacheTime = Date.now();
+            return res;
+          })
+          .finally(() => {
+            inFlight = null;
+          });
+      }
+      return inFlight;
+    };
+  })(),
   /** GET /food/delivery/earnings - earnings summary for Pocket/requests page */
   getEarnings: (params) =>
     apiClient.get("/food/delivery/earnings", {
