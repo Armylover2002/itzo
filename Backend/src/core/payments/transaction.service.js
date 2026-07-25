@@ -149,7 +149,14 @@ export async function recordTransaction(payload) {
                 await Model.updateOne(filter, { $set: { balance: newBalance } }, { session });
             }
         } else {
-            await Model.updateOne(filter, { $set: { balance: newBalance } }, { session });
+            if (category === 'settlement_payout' && (entityType === 'restaurant' || entityType === 'deliveryBoy')) {
+                await Model.updateOne(filter, { 
+                    $set: { balance: newBalance },
+                    $inc: { totalSettled: amount }
+                }, { session });
+            } else {
+                await Model.updateOne(filter, { $set: { balance: newBalance } }, { session });
+            }
         }
 
         await session.commitTransaction();

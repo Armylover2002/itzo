@@ -182,6 +182,7 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
     cashCollectedAgg,
     totalDepositedCashAgg,
     pendingWithdrawalsAgg,
+    completedWithdrawalsAgg,
     transactionsResult,
     totalDeliveries,
   ] = await Promise.all([
@@ -255,6 +256,10 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
       { $match: { deliveryPartnerId: partnerId, status: "pending" } },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ]),
+    FoodDeliveryWithdrawal.aggregate([
+      { $match: { deliveryPartnerId: partnerId, status: { $in: ["completed", "approved", "processed"] } } },
+      { $group: { _id: null, total: { $sum: "$amount" } } },
+    ]),
     getTransactionsByEntity("deliveryBoy", partnerId, { page: 1, limit: 50 }),
     FoodOrder.countDocuments({
       "dispatch.deliveryPartnerId": partnerId,
@@ -272,6 +277,10 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
   const aggregatedBonus = Number(totalBonusAgg?.[0]?.total) || 0;
   const effectiveBonus = Math.max(recordedBonus, aggregatedBonus);
   const missingBonusBalance = Math.max(0, effectiveBonus - recordedBonus);
+
+  const recordedSettled = Number(wallet.totalSettled || 0);
+  const aggregatedSettled = Number(completedWithdrawalsAgg?.[0]?.total) || 0;
+  const effectiveSettled = Math.max(recordedSettled, aggregatedSettled);
 
   const grossCashCollected = Number(cashCollectedAgg?.[0]?.cashCollected) || 0;
   const totalDepositedCash =
@@ -315,7 +324,7 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
     totalBalance: (wallet.totalEarnings || 0) + effectiveBonus,
     pocketBalance,
     cashInHand,
-    totalWithdrawn: wallet.totalSettled || 0,
+    totalWithdrawn: effectiveSettled,
     pendingWithdrawals,
     totalEarned: wallet.totalEarnings || 0,
     totalBonus: effectiveBonus,
