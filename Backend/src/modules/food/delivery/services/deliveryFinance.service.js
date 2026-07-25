@@ -41,10 +41,14 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
 
   // 1. Self-heal completed deliveries that missed wallet credits (e.g., due to disabled queues in local dev)
   try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const completedOrders = await FoodOrder.find({
       "dispatch.deliveryPartnerId": partnerId,
       orderStatus: "delivered",
-    }).lean();
+      updatedAt: { $gte: sevenDaysAgo }
+    })
+    .select('_id pricing zoneId orderStatus')
+    .lean();
 
     if (completedOrders.length > 0) {
       const orderIds = completedOrders.map(o => o._id);
