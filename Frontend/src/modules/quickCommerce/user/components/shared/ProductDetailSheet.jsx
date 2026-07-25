@@ -441,7 +441,7 @@ const ProductDetailSheet = () => {
                                                                 <Minus size={16} strokeWidth={2.5} />
                                                             </motion.button>
                                                             <span className="font-[800] text-base text-gray-800 dark:text-slate-200 w-8 text-center">{quantity}</span>
-                                                            <motion.button whileTap={{ scale: 0.85 }} onClick={handleIncrement} className="w-9 h-9 bg-[#FE5502] rounded-lg flex items-center justify-center text-white hover:bg-[#0a7019] transition-colors shadow-sm">
+                                                            <motion.button whileTap={{ scale: 0.85 }} onClick={handleIncrement} className="w-9 h-9 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark rounded-lg flex items-center justify-center text-white transition-colors shadow-sm">
                                                                 <Plus size={16} strokeWidth={2.5} />
                                                             </motion.button>
                                                         </div>
@@ -450,7 +450,7 @@ const ProductDetailSheet = () => {
                                                             whileHover={{ scale: 1.02 }}
                                                             whileTap={{ scale: 0.98 }}
                                                             onClick={handleAddToCart}
-                                                            className="bg-gradient-to-r from-[#FE5502] to-[#0a7519] text-white h-11 px-6 rounded-xl font-[800] text-[13px] flex items-center gap-2 shadow-md shadow-green-200/50 hover:shadow-lg transition-all uppercase tracking-wide border border-green-700/20"
+                                                            className="bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white h-11 px-6 rounded-xl font-[800] text-[13px] flex items-center gap-2 shadow-md transition-all uppercase tracking-wide border border-primary-orange/20"
                                                         >
                                                             <ShoppingBag size={15} strokeWidth={2.5} />
                                                             Add to Cart
@@ -470,7 +470,7 @@ const ProductDetailSheet = () => {
                                                 <Link
                                                     to={cartPath}
                                                     onClick={closeProduct}
-                                                    className="w-[80%] bg-gradient-to-r from-[#FE5502] to-[#0a7519] text-white h-[40px] rounded-xl flex items-center justify-between px-4 shadow-md shadow-green-200/40 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98]"
+                                                    className="w-[80%] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white h-[40px] rounded-xl flex items-center justify-between px-4 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98]"
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <ShoppingBag size={14} strokeWidth={2.0} />
@@ -503,7 +503,7 @@ const ProductDetailSheet = () => {
                                                             className={cn(
                                                                 'px-4 py-2 font-[600] rounded-lg text-[13px] transition-all border-2',
                                                                 selectedVariant?.sku === v.sku
-                                                                    ? 'bg-green-50 dark:bg-green-950/30 border-[#FE5502] text-[#FE5502] shadow-md shadow-green-100/50 dark:shadow-none'
+                                                                    ? 'bg-orange-50 dark:bg-orange-950/30 border-primary-orange text-primary-orange shadow-md'
                                                                     : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-white/5 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-white/10 hover:shadow-sm'
                                                             )}
                                                         >

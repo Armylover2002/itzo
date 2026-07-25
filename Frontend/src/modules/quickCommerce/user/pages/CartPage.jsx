@@ -296,7 +296,7 @@ const CartPage = () => {
               Pick a few essentials and they&apos;ll show up here.
             </p>
             <Link to={categoriesPath} className="mt-6 inline-flex w-full">
-              <Button className="h-12 w-full rounded-2xl bg-[#FE5502] text-white hover:bg-[#ea580c]">
+              <Button className="h-12 w-full rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
                 Start Shopping
               </Button>
             </Link>
@@ -561,7 +561,7 @@ const CartPage = () => {
                     </div>
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
-                        isSelected ? "border-[#FE5502] bg-[#FE5502]" : "border-slate-300"
+                        isSelected ? "border-primary-orange bg-primary-orange" : "border-slate-300"
                       }`}
                     >
                       {isSelected ? <Check size={12} className="text-white" /> : null}
@@ -595,7 +595,7 @@ const CartPage = () => {
                   Review delivery details on the next screen and place the order to push it into the matched seller dashboard.
                 </p>
               </div>
-              <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FE5502]/10 text-[#FE5502]">
+              <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-orange/10 text-primary-orange">
                 <ChevronRight size={18} />
               </div>
             </div>
@@ -624,7 +624,7 @@ const CartPage = () => {
             state={{ selectedPayment }}
             className="block w-full flex-1 sm:min-w-[220px]"
           >
-            <Button className="h-12 w-full rounded-2xl bg-[#FE5502] px-4 text-sm text-white whitespace-normal sm:whitespace-nowrap hover:bg-[#ea580c]">
+            <Button className="h-12 w-full rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-4 text-sm text-white whitespace-normal sm:whitespace-nowrap transition-colors">
               <ShoppingBag size={18} className="mr-2" />
               Proceed to Checkout
             </Button>

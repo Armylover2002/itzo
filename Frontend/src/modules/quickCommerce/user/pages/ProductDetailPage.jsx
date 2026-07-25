@@ -300,7 +300,7 @@ const ProductDetailPage = () => {
         </p>
         <Button
           onClick={() => navigate(-1)}
-          className="mt-6 rounded-2xl bg-[#FE5502] px-6 py-3 text-white hover:bg-[#ea580c]"
+          className="mt-6 rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-6 py-3 text-white transition-colors"
         >
           Go back
         </Button>
@@ -367,7 +367,7 @@ const ProductDetailPage = () => {
         <div className="space-y-6 md:space-y-8 lg:w-[55%] xl:w-[60%]">
           <div>
             <div className="mb-4 flex items-center gap-3">
-              <span className="rounded-full border border-[#FE5502]/20 bg-[#FE5502]/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[#FE5502]">
+              <span className="rounded-full border border-primary-orange/20 bg-primary-orange/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-primary-orange">
                 {product.category}
               </span>
               <div className="flex items-center gap-1 rounded-full bg-red-50 dark:bg-red-950/30 px-3 py-1 text-xs font-bold text-red-500">
@@ -381,7 +381,7 @@ const ProductDetailPage = () => {
             </h1>
 
             <div className="mb-6 flex items-center gap-2">
-              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-[#FE5502]">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-orange-100 text-primary-orange">
                 <Store size={12} />
               </div>
               <span className="text-xs font-bold text-slate-500">
@@ -423,7 +423,7 @@ const ProductDetailPage = () => {
           <div className="flex flex-col items-center gap-6 rounded-[2.5rem] border border-border bg-card dark:bg-slate-900/50 p-6 sm:flex-row transition-colors">
             <div className="w-full sm:w-72">
               {quantity > 0 ? (
-                <div className="flex h-16 w-full items-center rounded-2xl bg-[#FE5502] px-2 text-white shadow-xl">
+                <div className="flex h-16 w-full items-center rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-2 text-white shadow-xl transition-colors">
                   <button
                     onClick={() =>
                       quantity === 1
@@ -461,7 +461,7 @@ const ProductDetailPage = () => {
                       await addToCart(product);
                       showToast(`${product.name} added to cart`, "success");
                     }}
-                    className="h-16 w-full rounded-2xl bg-[#FE5502] text-lg font-black text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-[#ea580c]"
+                    className="h-16 w-full rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-lg font-black text-white shadow-xl transition-all hover:-translate-y-1"
                   >
                   <Plus className="mr-2" size={24} strokeWidth={3} />
                   ADD TO CART
@@ -552,7 +552,7 @@ const ProductDetailPage = () => {
                 <Button
                   onClick={handleReviewSubmit}
                   disabled={isSubmittingReview}
-                  className="h-14 rounded-2xl bg-[#FE5502] font-black text-white hover:bg-[#ea580c]"
+                  className="h-14 rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark font-black text-white transition-colors"
                 >
                   {isSubmittingReview ? "SUBMITTING..." : "SUBMIT REVIEW"}
                 </Button>
@@ -565,16 +565,16 @@ const ProductDetailPage = () => {
 
           <div className="space-y-8 lg:w-[60%]">
             <div className="space-y-4">
-              <div className="flex items-center gap-2 rounded-xl border border-[#FE5502]/10 bg-[#FE5502]/5 px-4 py-2">
-                <MessageSquare size={18} className="text-[#FE5502]" />
-                <span className="font-black text-[#FE5502]">
+              <div className="flex items-center gap-2 rounded-xl border border-primary-orange/10 bg-primary-orange/5 px-4 py-2">
+                <MessageSquare size={18} className="text-primary-orange" />
+                <span className="font-black text-primary-orange">
                   {reviews.length} Review{reviews.length === 1 ? "" : "s"}
                 </span>
               </div>
 
               {reviewLoading ? (
                 <div className="flex justify-center p-8">
-                  <Loader2 className="animate-spin text-[#FE5502]" size={32} />
+                  <Loader2 className="animate-spin text-primary-orange" size={32} />
               </div>
             ) : reviews.length > 0 ? (
               <div className="space-y-6">
