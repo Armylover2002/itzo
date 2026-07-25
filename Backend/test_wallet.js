@@ -21,21 +21,35 @@ async function test() {
   
   console.log('Found partner ID:', pId);
   
-  const { getDeliveryPartnerWalletEnhanced } = await import('./src/modules/food/delivery/services/deliveryFinance.service.js');
-  
+  console.log('Calling getDeliveryPartnerEarnings...');
+  const { getDeliveryPartnerEarnings } = await import('./src/modules/food/delivery/services/delivery.service.js');
+  console.time('earningsAPI');
   try {
-    console.log('Calling getDeliveryPartnerWalletEnhanced...');
-    console.time('walletAPI');
-    try {
-      const res = await getDeliveryPartnerWalletEnhanced(pId);
-      console.timeEnd('walletAPI');
-      console.log('SUCCESS');
-    } catch (e) {
-      console.timeEnd('walletAPI');
-      console.log('ERROR occurred in getDeliveryPartnerWalletEnhanced:', e);
-    }
-  } catch(e) {
-    console.error('ERROR occurred in getDeliveryPartnerWalletEnhanced:', e);
+    const res = await getDeliveryPartnerEarnings(pId, { period: 'week' });
+    console.timeEnd('earningsAPI');
+    console.log('SUCCESS');
+  } catch (e) {
+    console.timeEnd('earningsAPI');
+    console.log('ERROR', e);
+  }
+  console.log('Calling getProfileController...');
+  console.time('profileAPI');
+  try {
+    const { FoodDeliveryPartner } = await import('./src/modules/food/delivery/models/deliveryPartner.model.js');
+    await FoodDeliveryPartner.findById(pId).lean();
+    console.timeEnd('profileAPI');
+  } catch (e) {
+    console.timeEnd('profileAPI');
+  }
+
+  console.log('Calling getActiveEarningAddonsForPartner...');
+  const { getActiveEarningAddonsForPartner } = await import('./src/modules/food/delivery/services/delivery.service.js');
+  console.time('addonsAPI');
+  try {
+    await getActiveEarningAddonsForPartner(pId);
+    console.timeEnd('addonsAPI');
+  } catch (e) {
+    console.timeEnd('addonsAPI');
   }
   process.exit(0);
 }

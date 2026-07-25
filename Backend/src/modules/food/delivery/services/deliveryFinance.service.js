@@ -279,9 +279,9 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
   const cashInHand = Math.max(0, grossCashCollected - totalDepositedCash);
 
   const pendingWithdrawals = Number(pendingWithdrawalsAgg?.[0]?.total) || 0;
-  const totalCashLimit = Number(cashLimitSettings.deliveryCashLimit) || 0;
+  const totalCashLimit = Number(cashLimitSettings?.deliveryCashLimit) || 0;
   const deliveryWithdrawalLimit =
-    Number(cashLimitSettings.deliveryWithdrawalLimit) || 100;
+    Number(cashLimitSettings?.deliveryWithdrawalLimit) || 100;
 
   const effectiveWalletBalance =
     Number(wallet.balance || 0) + missingBonusBalance;

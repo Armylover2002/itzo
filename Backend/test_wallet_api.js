@@ -16,27 +16,37 @@ async function test() {
 
   // Generate token
   const token = jwt.sign(
-    { userId: partner._id, role: 'DELIVERY' },
-    process.env.ACCESS_TOKEN_SECRET || 'itzo_secret_key_2024_secure_@123',
+    { userId: partner._id, role: 'DELIVERY_PARTNER' },
+    process.env.JWT_ACCESS_SECRET || 'ndjdhjhdasdjdhasdjadaskdjasndaskdjadasndaskdjsndaskdjasdkasnddjkdndkjdnda',
     { expiresIn: '1d' }
   );
 
   console.log(`Making request for partner ${partner._id}...`);
-  const startTime = Date.now();
-
   try {
-    const res = await fetch('http://localhost:5000/api/v1/food/delivery/wallet', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    const endpoints = [
+      '/api/v1/food/delivery/wallet',
+      '/api/v1/food/delivery/profile',
+      '/api/v1/food/delivery/earnings?period=week',
+      '/api/v1/food/delivery/cash-limit'
+    ];
 
-    const timeTaken = Date.now() - startTime;
-    console.log(`Status: ${res.status}`);
-    console.log(`Time taken: ${timeTaken}ms`);
-    
-    const text = await res.text();
-    console.log('Response:', text.substring(0, 500));
+    for (const ep of endpoints) {
+      console.log(`\nTesting ${ep}...`);
+      const start = Date.now();
+      const response = await fetch(`http://localhost:5000${ep}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      console.log(`Status: ${response.status}`);
+      console.log(`Time taken: ${Date.now() - start}ms`);
+      if (response.status !== 200) {
+        console.log(`Response:`, JSON.stringify(data));
+      } else {
+        console.log(`SUCCESS`);
+      }
+    }
   } catch (err) {
     console.error('Fetch error:', err.message);
   }
