@@ -57,45 +57,72 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
 
       const creditedOrderIds = new Set(existingTxns.map(t => String(t.orderId)));
 
+      let totalDeliveriesToAdd = 0;
+      let totalEarningToAdd = 0;
+      let totalPlatformProfitToAdd = 0;
+      const txnsToInsert = [];
+
       for (const order of completedOrders) {
         if (!creditedOrderIds.has(String(order._id))) {
           const riderEarning = order.riderEarning || order.pricing?.deliveryFee || 0;
           const platformProfit = order.platformProfit || 0;
 
           if (riderEarning > 0) {
-            await creditWallet({
+            txnsToInsert.push({
               entityType: 'deliveryBoy',
               entityId: partnerId,
+              type: 'credit',
               amount: riderEarning,
               description: `Order ${order.orderId || order._id} - delivery earning (self-heal)`,
               category: 'delivery_earning',
-              orderId: order._id,
+              orderId: String(order._id),
               metadata: { orderId: order.orderId, paymentMethod: order.payment?.method }
             });
-
-            await FoodDeliveryWallet.updateOne(
-              { deliveryPartnerId: partnerId },
-              { $inc: { totalDeliveries: 1 } }
-            );
-            logger.info(`Self-healed credit for delivery partner ${partnerId} order ${order._id}`);
+            totalDeliveriesToAdd++;
+            totalEarningToAdd += riderEarning;
           }
 
           if (platformProfit > 0) {
-            try {
-              await creditWallet({
-                entityType: 'admin',
-                entityId: 'platform',
-                amount: platformProfit,
-                description: `Order ${order.orderId || order._id} - platform profit (self-heal)`,
-                category: 'platform_fee',
-                orderId: order._id,
-                metadata: { orderId: order.orderId, paymentMethod: order.payment?.method, riderEarning }
-              });
-            } catch (err) {
-              logger.error(`Self-heal platform profit failed for order ${order._id}: ${err.message}`);
-            }
+            txnsToInsert.push({
+              entityType: 'admin',
+              entityId: new mongoose.Types.ObjectId('000000000000000000000001'),
+              type: 'credit',
+              amount: platformProfit,
+              description: `Order ${order.orderId || order._id} - platform profit (self-heal)`,
+              category: 'platform_fee',
+              orderId: String(order._id),
+              metadata: { orderId: order.orderId, paymentMethod: order.payment?.method, riderEarning }
+            });
+            totalPlatformProfitToAdd += platformProfit;
           }
         }
+      }
+
+      if (txnsToInsert.length > 0) {
+        await Transaction.insertMany(txnsToInsert);
+        
+        if (totalEarningToAdd > 0 || totalDeliveriesToAdd > 0) {
+          await FoodDeliveryWallet.updateOne(
+            { deliveryPartnerId: partnerId },
+            { 
+              $inc: { totalDeliveries: totalDeliveriesToAdd, balance: totalEarningToAdd, totalEarnings: totalEarningToAdd },
+              $setOnInsert: { subscriptionBalance: 0, lockedAmount: 0, cashInHand: 0, totalBonus: 0, totalSettled: 0 }
+            },
+            { upsert: true }
+          );
+        }
+        
+        if (totalPlatformProfitToAdd > 0) {
+          const FoodAdminWallet = mongoose.models.FoodAdminWallet;
+          if (FoodAdminWallet) {
+            await FoodAdminWallet.updateOne(
+              { key: 'platform' },
+              { $inc: { balance: totalPlatformProfitToAdd } },
+              { upsert: true }
+            );
+          }
+        }
+        logger.info(`Self-healed ${txnsToInsert.length} transactions for delivery partner ${partnerId}`);
       }
     }
   } catch (err) {
