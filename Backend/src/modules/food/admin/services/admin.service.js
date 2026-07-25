@@ -2140,7 +2140,8 @@ export async function getDeliveryCashLimitSettings() {
     const settings = doc || { deliveryCashLimit: 0, deliveryWithdrawalLimit: 100, isActive: true };
     return {
         deliveryCashLimit: Number(settings.deliveryCashLimit) || 0,
-        deliveryWithdrawalLimit: Number(settings.deliveryWithdrawalLimit) || 100
+        deliveryWithdrawalLimit: Number(settings.deliveryWithdrawalLimit) || 100,
+        adminBankDetails: settings.adminBankDetails || {}
     };
 }
 
@@ -2152,22 +2153,30 @@ export async function upsertDeliveryCashLimitSettings(body = {}) {
     if (existing) {
         if (nextCashLimit !== undefined) existing.deliveryCashLimit = Math.max(0, Number(nextCashLimit) || 0);
         if (nextWithdrawalLimit !== undefined) existing.deliveryWithdrawalLimit = Math.max(0, Number(nextWithdrawalLimit) || 0);
+        
+        if (body.adminBankDetails) {
+            existing.adminBankDetails = { ...existing.adminBankDetails, ...body.adminBankDetails };
+        }
+
         await existing.save();
         return {
             deliveryCashLimit: existing.deliveryCashLimit,
-            deliveryWithdrawalLimit: existing.deliveryWithdrawalLimit
+            deliveryWithdrawalLimit: existing.deliveryWithdrawalLimit,
+            adminBankDetails: existing.adminBankDetails
         };
     }
 
     const created = await FoodDeliveryCashLimit.create({
         deliveryCashLimit: nextCashLimit !== undefined ? Math.max(0, Number(nextCashLimit) || 0) : 0,
         deliveryWithdrawalLimit: nextWithdrawalLimit !== undefined ? Math.max(0, Number(nextWithdrawalLimit) || 0) : 100,
-        isActive: true
+        isActive: true,
+        adminBankDetails: body.adminBankDetails || {}
     });
 
     return {
         deliveryCashLimit: created.deliveryCashLimit,
-        deliveryWithdrawalLimit: created.deliveryWithdrawalLimit
+        deliveryWithdrawalLimit: created.deliveryWithdrawalLimit,
+        adminBankDetails: created.adminBankDetails
     };
 }
 

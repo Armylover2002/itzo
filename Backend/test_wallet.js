@@ -1,57 +1,28 @@
 import mongoose from 'mongoose';
+import * as dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+
+dotenv.config();
 
 async function test() {
-  mongoose.set('debug', true);
-  await mongoose.connect('mongodb+srv://powersafeindustries_db_user:GYNNDp6s5oDi8ILY@cluster0.mozt5cr.mongodb.net/itzofood?appName=Cluster0', { autoIndex: false });
+  await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://powersafeindustries_db_user:GYNNDp6s5oDi8ILY@cluster0.mozt5cr.mongodb.net/itzofood?appName=Cluster0');
+  const { FoodAdmin } = await import('./src/core/admin/admin.model.js');
+  const admin = await FoodAdmin.findOne();
   
-  const { FoodOrder } = await import('./src/modules/food/orders/models/order.model.js');
-  
-  const orders = await FoodOrder.find({ 
-    orderStatus: 'delivered', 
-    'dispatch.deliveryPartnerId': { $exists: true } 
-  }).limit(1).lean();
-  
-  const pId = orders[0]?.dispatch?.deliveryPartnerId;
-  console.log('Testing with partner ID:', pId);
-  
-  if(!pId) {
-    console.log('no orders found with delivery partner');
-    process.exit(0);
-  }
-  
-  console.log('Found partner ID:', pId);
-  
-  console.log('Calling getDeliveryPartnerEarnings...');
-  const { getDeliveryPartnerEarnings } = await import('./src/modules/food/delivery/services/delivery.service.js');
-  console.time('earningsAPI');
-  try {
-    const res = await getDeliveryPartnerEarnings(pId, { period: 'week' });
-    console.timeEnd('earningsAPI');
-    console.log('SUCCESS');
-  } catch (e) {
-    console.timeEnd('earningsAPI');
-    console.log('ERROR', e);
-  }
-  console.log('Calling getProfileController...');
-  console.time('profileAPI');
-  try {
-    const { FoodDeliveryPartner } = await import('./src/modules/food/delivery/models/deliveryPartner.model.js');
-    await FoodDeliveryPartner.findById(pId).lean();
-    console.timeEnd('profileAPI');
-  } catch (e) {
-    console.timeEnd('profileAPI');
-  }
+  const token = jwt.sign(
+    { id: admin._id, role: 'admin' },
+    process.env.JWT_SECRET || 'ndjdhjhdasdjdhasdjadaskdjasndaskdjadasndaskdjsndaskdjasdkasnddjkdndkjdnda',
+    { expiresIn: '1d' }
+  );
 
-  console.log('Calling getActiveEarningAddonsForPartner...');
-  const { getActiveEarningAddonsForPartner } = await import('./src/modules/food/delivery/services/delivery.service.js');
-  console.time('addonsAPI');
+  const { FoodDeliveryCashLimit } = await import('./src/modules/food/admin/models/deliveryCashLimit.model.js');
   try {
-    await getActiveEarningAddonsForPartner(pId);
-    console.timeEnd('addonsAPI');
-  } catch (e) {
-    console.timeEnd('addonsAPI');
+    const doc = new FoodDeliveryCashLimit({ deliveryCashLimit: NaN });
+    await doc.validate();
+    console.log('Validation passed for NaN');
+  } catch(e) {
+    console.log('Validation failed for NaN:', e.message);
   }
   process.exit(0);
 }
-
 test();

@@ -157,23 +157,23 @@ export const getDeliveryPartnerWalletEnhanced = async (deliveryPartnerId) => {
   }
 
   // 2. In local development, auto-reject pending withdrawals to allow continuous testing of withdrawal flow
-  if (process.env.NODE_ENV === 'development') {
-    try {
-      const pendingWithdrawalsCount = await FoodDeliveryWithdrawal.countDocuments({
-        deliveryPartnerId: partnerId,
-        status: 'pending'
-      });
-      if (pendingWithdrawalsCount > 0) {
-        await FoodDeliveryWithdrawal.updateMany(
-          { deliveryPartnerId: partnerId, status: 'pending' },
-          { $set: { status: 'rejected', rejectionReason: 'Auto-rejected in development environment for testing' } }
-        );
-        logger.info(`Auto-rejected ${pendingWithdrawalsCount} pending withdrawals for partner ${partnerId} in development`);
-      }
-    } catch (err) {
-      logger.error(`Auto-rejecting pending withdrawals failed: ${err.message}`);
-    }
-  }
+  // if (process.env.NODE_ENV === 'development') {
+  //   try {
+  //     const pendingWithdrawalsCount = await FoodDeliveryWithdrawal.countDocuments({
+  //       deliveryPartnerId: partnerId,
+  //       status: 'pending'
+  //     });
+  //     if (pendingWithdrawalsCount > 0) {
+  //       await FoodDeliveryWithdrawal.updateMany(
+  //         { deliveryPartnerId: partnerId, status: 'pending' },
+  //         { $set: { status: 'rejected', rejectionReason: 'Auto-rejected in development environment for testing' } }
+  //       );
+  //       logger.info(`Auto-rejected ${pendingWithdrawalsCount} pending withdrawals for partner ${partnerId} in development`);
+  //     }
+  //   } catch (err) {
+  //     logger.error(`Auto-rejecting pending withdrawals failed: ${err.message}`);
+  //   }
+  // }
 
   const [
     cashLimitSettings,
