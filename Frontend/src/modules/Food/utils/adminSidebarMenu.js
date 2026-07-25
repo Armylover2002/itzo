@@ -140,6 +140,13 @@ export const adminSidebarMenu = [
       },
       {
         type: "link",
+        label: "Recovery Requests",
+        permissionKey: "recovery_requests",
+        path: "/ecs/food/recovery-requests",
+        icon: "AlertTriangle",
+      },
+      {
+        type: "link",
         label: "Support Tickets (User & Restaurant)",
         permissionKey: "support_tickets",
         path: "/ecs/food/support-tickets",

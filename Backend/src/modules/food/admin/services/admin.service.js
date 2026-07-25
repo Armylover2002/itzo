@@ -1357,6 +1357,62 @@ export async function updateCustomerStatus(id, isActive) {
     return updated;
 }
 
+export async function getRecoveryRequests(query = {}) {
+    const limit = Math.min(Math.max(parseInt(query.limit, 10) || 50, 1), 1000);
+    const page = Math.max(parseInt(query.page, 10) || 1, 1);
+    const skip = (page - 1) * limit;
+
+    const filter = {
+        role: 'USER',
+        isDeleted: true,
+        'deletionRequest.status': 'recovery_pending'
+    };
+
+    if (query.search && String(query.search).trim()) {
+        const raw = String(query.search).trim().slice(0, 80);
+        const term = raw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        filter.$or = [
+            { name: { $regex: term, $options: 'i' } },
+            { email: { $regex: term, $options: 'i' } },
+            { phone: { $regex: term, $options: 'i' } }
+        ];
+    }
+
+    const [docs, total] = await Promise.all([
+        FoodUser.find(filter)
+            .sort({ 'deletionRequest.recoveryRequestedAt': -1 })
+            .skip(skip)
+            .limit(limit)
+            .select('name email phone countryCode isDeleted isActive createdAt deletionRequest profileImage')
+            .lean(),
+        FoodUser.countDocuments(filter)
+    ]);
+
+    return {
+        items: docs || [],
+        total: total || 0,
+        page,
+        limit,
+        totalPages: Math.ceil((total || 0) / limit)
+    };
+}
+
+export async function approveRecoveryRequest(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+    const customerObjectId = new mongoose.Types.ObjectId(id);
+
+    const user = await FoodUser.findById(customerObjectId);
+    if (!user) return null;
+    if (!user.isDeleted) return null; // Only approve if actually deleted
+
+    user.isDeleted = false;
+    user.isActive = true;
+    user.deletionRequest = null;
+    await user.save();
+    
+    return user.toObject();
+}
+
 export async function updateCustomerCodAccess(id, isCodAllowed) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
     const customerObjectId = new mongoose.Types.ObjectId(id);

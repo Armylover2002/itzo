@@ -95,6 +95,34 @@ export const requestUserOtp = async (phone) => {
   return shouldExposeOtp ? { otp } : {};
 };
 
+export const requestAccountRecovery = async (phone, otp) => {
+  const result = await verifyOtp(phone, otp);
+
+  if (!result.valid) {
+    throw new AuthError(result.reason || "OTP verification failed");
+  }
+
+  const normalizedPhone = normalizePhone(phone);
+  const user = await FoodUser.findOne({ phone: normalizedPhone, role: 'USER' });
+  
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  if (!user.isDeleted) {
+    throw new ValidationError("Account is not deleted");
+  }
+
+  user.deletionRequest = {
+    ...(user.deletionRequest || {}),
+    status: 'recovery_pending',
+    recoveryRequestedAt: new Date()
+  };
+
+  await user.save();
+  return { success: true, message: "Recovery request submitted successfully" };
+};
+
 export const verifyUserOtpAndLogin = async (
   phone,
   otp,
@@ -145,9 +173,9 @@ export const verifyUserOtpAndLogin = async (
 
   // Block login for deleted users
   if (userDoc.isDeleted) {
-    throw new AuthError(
-      "Your account has been deleted.",
-    );
+    const err = new AuthError("Your account has been deleted.");
+    err.code = "ACCOUNT_DELETED";
+    throw err;
   }
 
   // Update FCM token if provided

@@ -153,6 +153,9 @@ export const authAPI = {
       platform,
     );
   },
+  requestAccountRecovery: (phone, otp) => {
+    return authService.requestAccountRecovery(phone, otp);
+  },
   getCurrentUser: () => getUserMeOnce(),
   refreshToken: (token) => authService.refreshToken(token),
   logout: (refreshToken, fcmToken = null, platform = "web") => {
@@ -582,6 +585,10 @@ export const adminAPI = {
   /** Customers (admin) */
   getCustomers: (params = {}) =>
     apiClient.get("/food/admin/customers", { params, contextModule: "admin" }),
+  getRecoveryRequests: (params = {}) =>
+    apiClient.get("/food/admin/customers/recovery-requests", { params, contextModule: "admin" }),
+  approveRecoveryRequest: (id) =>
+    apiClient.post(`/food/admin/customers/${String(id)}/approve-recovery`, {}, { contextModule: "admin" }),
   getCustomerById: (id) =>
     apiClient.get(`/food/admin/customers/${String(id)}`, {
       contextModule: "admin",

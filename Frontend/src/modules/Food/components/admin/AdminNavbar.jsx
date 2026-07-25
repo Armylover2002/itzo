@@ -531,6 +531,7 @@ export default function AdminNavbar({ onMenuClick }) {
                   {[
                     { icon: Package, label: "Orders", path: "/ecs/food/orders/all" },
                     { icon: Users, label: "Users", path: "/ecs/food/customers" },
+                    { icon: AlertCircle, label: "Recovery Requests", path: "/ecs/food/recovery-requests" },
                     { icon: UtensilsCrossed, label: "Products", path: "/ecs/food/foods" },
                     { icon: FileText, label: "Reports", path: "/ecs/food/transaction-report" },
                   ].map((action, idx) => (

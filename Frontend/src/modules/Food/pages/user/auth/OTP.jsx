@@ -23,6 +23,8 @@ export default function OTP() {
   const [contactType, setContactType] = useState("phone")
   const [deviceToken, setDeviceToken] = useState(null)
   const [activePlatform, setActivePlatform] = useState("web")
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false)
+  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
   const inputRefs = useRef([])
   const submittingRef = useRef(false)
 
@@ -265,7 +267,9 @@ export default function OTP() {
         err?.response?.data?.error ||
         err?.message ||
         "Failed to verify OTP. Please try again."
-      if (status === 401) {
+      if (err?.response?.data?.code === 'ACCOUNT_DELETED') {
+        setShowRecoveryModal(true)
+      } else if (status === 401) {
         // Friendlier copy for deactivated users or auth errors
         if (/deactivat(ed|e)/i.test(String(message))) {
           message = "Your account is deactivated. Please contact support."
@@ -277,6 +281,26 @@ export default function OTP() {
     } finally {
       setIsLoading(false)
       submittingRef.current = false
+    }
+  }
+
+  const handleRecoveryRequest = async () => {
+    if (!authData?.phone) return
+    setIsRecoveryLoading(true)
+    try {
+      const code4 = otp.join("")
+      // Call requestAccountRecovery on authAPI
+      await authAPI.requestAccountRecovery(authData.phone, code4)
+      setSuccess(true)
+      setError("")
+      setShowRecoveryModal(false)
+      // Display success message using standard DOM alert or redirect since toast is not imported here
+      alert("Account recovery request submitted. Our team will review it shortly.")
+      navigate("/user/auth/login", { replace: true })
+    } catch (error) {
+      setError(error.response?.data?.message || "Failed to submit recovery request")
+    } finally {
+      setIsRecoveryLoading(false)
     }
   }
 
@@ -551,8 +575,45 @@ export default function OTP() {
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">
                 AppZeto Food Delivery
             </p>
+            {!showNameInput && (
+              <p className="mt-2 text-[10px] text-gray-400">
+                By proceeding, you consent to get calls, WhatsApp or SMS messages, including by automated means, from
+                Itzo and its affiliates to the number provided.
+              </p>
+            )}
         </div>
       </div>
+
+      {showRecoveryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Account Deleted</h3>
+            <p className="text-gray-600 mb-6">
+              Your account was previously deleted. Would you like to submit a request to recover it?
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowRecoveryModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRecoveryRequest}
+                disabled={isRecoveryLoading}
+                className="flex-1 bg-[#ff4a4a] hover:bg-[#ff3333] text-white"
+              >
+                {isRecoveryLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                ) : (
+                  "Request Recovery"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AnimatedPage>
   )
 }

@@ -1,4 +1,5 @@
 import axiosInstance from "@core/api/axios";
+import api from "@core/api/index";
 import { getWithDedupe, invalidateCache } from "@core/api/dedupe";
 import { getQuickSessionId } from "./quickApi";
 
@@ -18,6 +19,8 @@ const quickGetWithDedupe = (url, params = {}, options = {}) =>
   getWithDedupe(url, params, withQuickSession(options));
 
 export const customerApi = {
+  verifyOtp: (data) => api.auth.verifyUserOtp(data.phone, data.otp),
+  requestAccountRecovery: (data) => api.auth.requestAccountRecovery(data.phone, data.otp),
   getProfile: () =>
     axiosInstance.get("/auth/me", withQuickSession()).then((res) => {
       const user =

@@ -49,6 +49,29 @@ export async function updateCustomerStatus(req, res, next) {
     }
 }
 
+export async function getRecoveryRequests(req, res, next) {
+    try {
+        const data = await adminService.getRecoveryRequests(req.query || {});
+        res.status(200).json({ success: true, message: 'Recovery requests fetched successfully', data });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function approveRecoveryRequest(req, res, next) {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid customer id' });
+        }
+        const updated = await adminService.approveRecoveryRequest(id);
+        if (!updated) return res.status(404).json({ success: false, message: 'Customer or request not found' });
+        res.status(200).json({ success: true, message: 'Recovery request approved successfully', data: { user: updated } });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function updateCustomerCodAccess(req, res, next) {
     try {
         const { id } = req.params;

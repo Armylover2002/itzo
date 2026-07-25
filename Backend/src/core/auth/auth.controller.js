@@ -1,6 +1,7 @@
 import {
   requestUserOtp,
   verifyUserOtpAndLogin,
+  requestAccountRecovery,
   adminLogin,
   refreshAccessToken,
   requestRestaurantOtp,
@@ -59,6 +60,16 @@ export const verifyUserOtpController = async (req, res, next) => {
       name,
     );
     return sendResponse(res, 200, "Login successful", result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requestAccountRecoveryController = async (req, res, next) => {
+  try {
+    const { phone, otp } = req.body;
+    const result = await requestAccountRecovery(phone, otp);
+    return sendResponse(res, 200, result.message, result);
   } catch (error) {
     next(error);
   }

@@ -67,6 +67,8 @@ const CATEGORIES = [
 const CustomerAuth = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [isRecoveryLoading, setIsRecoveryLoading] = useState(false);
+    const [showRecoveryModal, setShowRecoveryModal] = useState(false);
     const [showOtp, setShowOtp] = useState(false);
     const [timer, setTimer] = useState(0);
     const [carouselIndex, setCarouselIndex] = useState(0);
@@ -139,9 +141,26 @@ const CustomerAuth = () => {
             toast.success('Successfully Logged In!');
             navigate('/');
         } catch (error) {
-            toast.error('Invalid OTP');
+            if (error.response?.data?.code === 'ACCOUNT_DELETED') {
+                setShowRecoveryModal(true);
+            } else {
+                toast.error(error.response?.data?.message || 'Invalid OTP');
+            }
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleRecoveryRequest = async () => {
+        setIsRecoveryLoading(true);
+        try {
+            await customerApi.requestAccountRecovery({ phone: formData.phone, otp: formData.otp });
+            toast.success('Account recovery request submitted. Our team will review it shortly.');
+            setShowRecoveryModal(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to submit recovery request');
+        } finally {
+            setIsRecoveryLoading(false);
         }
     };
 
@@ -441,6 +460,54 @@ const CustomerAuth = () => {
 
                 </div>
             </div>
+
+            {/* Recovery Modal */}
+            <AnimatePresence>
+                {showRecoveryModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative"
+                        >
+                            <div className="p-6">
+                                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
+                                    <ShieldCheck size={24} />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">Account Deleted</h3>
+                                <p className="text-gray-600 mb-6">
+                                    Your account was previously deleted. Would you like to submit a request to recover it?
+                                </p>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setShowRecoveryModal(false)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-gray-700 bg-gray-100 font-medium hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleRecoveryRequest}
+                                        disabled={isRecoveryLoading}
+                                        className="flex-1 px-4 py-2.5 rounded-xl text-white bg-red-500 font-medium hover:bg-red-600 transition-colors disabled:opacity-70 flex items-center justify-center"
+                                    >
+                                        {isRecoveryLoading ? (
+                                            <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                        ) : (
+                                            'Request Recovery'
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Desktop Message */}
             <div className="hidden md:block absolute bottom-10 right-10 text-white/20 text-xs font-bold uppercase tracking-[4px]">
