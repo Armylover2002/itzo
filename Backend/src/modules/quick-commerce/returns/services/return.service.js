@@ -8,6 +8,7 @@
 import mongoose from 'mongoose';
 import { ReturnRequest } from '../models/returnRequest.model.js';
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
+import { SellerTransaction } from '../../seller/models/sellerTransaction.model.js';
 import { ReturnStatusHistory } from '../models/returnStatusHistory.model.js';
 import { QuickOrder } from '../../models/order.model.js';
 import { QuickProduct } from '../../models/product.model.js';
@@ -484,6 +485,10 @@ export async function adminApproveReturn({
     // Apply to seller legs
     const legs = await SellerReturn.find({ returnRequestId }).session(session);
     
+    // Fetch original order to get delivery charge
+    const originalOrder = await QuickOrder.findById(returnReq.orderMongoId).session(session);
+    const deliveryCharge = Number(originalOrder?.deliveryCharge || 0);
+
     for (const leg of legs) {
       let legHasApproved = false;
       let legHasRejected = false;
@@ -515,6 +520,26 @@ export async function adminApproveReturn({
       if (nextStatus !== oldStatus) {
         assertTransition('leg', oldStatus, nextStatus);
         leg.returnStatus = nextStatus;
+
+        // If the return was approved, charge the seller for the return delivery
+        if (nextStatus === LEG_STATUS.RETURN_APPROVED || nextStatus === LEG_STATUS.PARTIALLY_APPROVED) {
+          if (deliveryCharge > 0) {
+            leg.returnDeliveryCommission = deliveryCharge;
+            await SellerTransaction.create(
+              [{
+                sellerId: leg.sellerId,
+                type: 'Charge',
+                amount: -Math.abs(deliveryCharge),
+                status: 'Settled',
+                orderId: returnReq.orderId,
+                reference: String(leg._id),
+                reason: 'Return delivery fee deduction',
+              }],
+              { session }
+            );
+          }
+        }
+
         await leg.save({ session });
         
         await addHistoryEntry({

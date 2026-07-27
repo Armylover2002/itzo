@@ -23,6 +23,7 @@ import {
   emitReturnPickupOtpToUser,
   emitReturnHandoffOtpToSeller,
 } from '../services/returnSocket.service.js';
+import { creditWallet } from '../../../../core/payments/wallet.service.js';
 
 export const getAssignedReturns = async (req, res) => {
   try {
@@ -312,6 +313,22 @@ export const verifySellerOtp = async (req, res) => {
 
     // Emit live tracking — return completed
     emitReturnLegTrackingUpdate(leg, LEG_STATUS.RETURN_COMPLETED);
+
+    // Pay the delivery partner for the return trip
+    if (leg.returnDeliveryCommission > 0) {
+      try {
+        await creditWallet({
+          entityId: partnerId,
+          entityType: 'DeliveryPartner',
+          amount: leg.returnDeliveryCommission,
+          reason: `Earning for completed return trip: ${leg.returnRequestId}`,
+          category: 'delivery_earning',
+        });
+        logger.info(`[ReturnDelivery] Credited ₹${leg.returnDeliveryCommission} to partner ${partnerId} for return leg ${leg._id}`);
+      } catch (err) {
+        logger.error(`[ReturnDelivery] Failed to credit partner ${partnerId} for return leg ${leg._id}: ${err.message}`);
+      }
+    }
 
     return sendResponse(res, 200, 'Handover complete', { leg });
   } catch (error) {
