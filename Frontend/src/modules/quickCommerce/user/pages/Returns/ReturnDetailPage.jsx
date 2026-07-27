@@ -163,7 +163,7 @@ export default function ReturnDetailPage() {
                 return (
                   <div key={step.id} className="relative flex items-start gap-4">
                     <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center border-2 
-                      ${isPast || isActive ? 'bg-green-50 border-green-500 text-green-600' : 'bg-white border-gray-200 text-gray-400'}`}>
+                      ${isPast || isActive ? 'bg-orange-50 border-[#FE5502] text-[#FE5502]' : 'bg-white border-gray-200 text-gray-400'}`}>
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="pt-1">
@@ -171,7 +171,7 @@ export default function ReturnDetailPage() {
                         {step.label}
                       </p>
                       {isActive && (
-                        <p className="text-xs text-green-600 mt-0.5 font-medium">Currently active</p>
+                        <p className="text-xs text-[#FE5502] mt-0.5 font-medium">Currently active</p>
                       )}
                     </div>
                   </div>

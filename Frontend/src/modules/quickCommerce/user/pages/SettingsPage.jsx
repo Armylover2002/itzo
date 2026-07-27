@@ -9,7 +9,7 @@ const SettingsPage = () => {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-32 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/5 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none" />
                 <h1 className="text-3xl font-black text-white tracking-tight relative z-10">Settings</h1>
-                <p className="text-green-50 text-sm font-medium mt-1 relative z-10">Configure your app preferences</p>
+                <p className="text-orange-50 text-sm font-medium mt-1 relative z-10">Configure your app preferences</p>
             </div>
 
             <div className="max-w-2xl mx-auto px-4 -mt-10 relative z-20 space-y-6">

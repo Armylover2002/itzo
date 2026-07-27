@@ -1438,7 +1438,7 @@ const CheckoutPage = () => {
     return (
       <div className="min-h-screen bg-white dark:bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans transition-colors duration-500">
         {/* Artistic Background Elements */}
-        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-green-50/50 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-orange-50/50 via-transparent to-transparent pointer-events-none" />
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -1446,7 +1446,7 @@ const CheckoutPage = () => {
             opacity: [0.3, 0.5, 0.3],
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-20 -right-20 w-80 h-80 bg-green-100/30 rounded-full blur-3xl pointer-events-none"
+          className="absolute -top-20 -right-20 w-80 h-80 bg-orange-100/30 rounded-full blur-3xl pointer-events-none"
         />
         <motion.div
           animate={{
@@ -1455,7 +1455,7 @@ const CheckoutPage = () => {
             opacity: [0.2, 0.4, 0.2],
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-40 -left-20 w-60 h-60 bg-yellow-100/40 rounded-full blur-3xl pointer-events-none"
+          className="absolute top-40 -left-20 w-60 h-60 bg-amber-100/40 rounded-full blur-3xl pointer-events-none"
         />
 
         <motion.div className="relative z-10 flex flex-col items-center text-center max-w-sm mx-auto">
@@ -1464,7 +1464,7 @@ const CheckoutPage = () => {
             <motion.div
               animate={{ y: [-8, 8, -8] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="relative z-10 rounded-[2rem] bg-white/90 dark:bg-card/90 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-emerald-100 dark:border-white/5 transition-colors">
+              className="relative z-10 rounded-[2rem] bg-white/90 dark:bg-card/90 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-orange-100 dark:border-white/5 transition-colors">
               <Lottie
                 animationData={emptyBoxAnimation}
                 loop
@@ -1489,7 +1489,7 @@ const CheckoutPage = () => {
 
           <Link
             to={categoriesPath}
-            className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#FE5502] to-[#10b981] text-white font-bold rounded-2xl overflow-hidden shadow-xl shadow-green-600/20 transition-all hover:scale-[1.02] active:scale-95 w-full sm:w-auto">
+            className="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-[#FE5502] to-[#FF7A00] text-white font-bold rounded-2xl overflow-hidden shadow-xl shadow-orange-600/20 transition-all hover:scale-[1.02] active:scale-95 w-full sm:w-auto">
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             <span className="relative flex items-center gap-2 text-lg">
               Start Shopping <ChevronRight size={20} />
@@ -1530,9 +1530,9 @@ const CheckoutPage = () => {
   return (
     <div className="min-h-screen bg-[#f5f1e8] pb-32 font-sans">
       {/* Premium Header - Curved on mobile, integrated on desktop */}
-      <div className="bg-gradient-to-br from-[#0a5f17] via-[#ea580c] to-[#084a12] pt-6 pb-12 md:pb-24 relative z-10 shadow-lg md:rounded-b-[4rem] rounded-b-[2rem] overflow-hidden">
+      <div className="bg-gradient-to-br from-[#FE5502] via-[#ea580c] to-[#c2410c] pt-6 pb-12 md:pb-24 relative z-10 shadow-lg md:rounded-b-[4rem] rounded-b-[2rem] overflow-hidden">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-[100px] -mr-32 -mt-64 pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-green-400/10 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-orange-400/10 rounded-full blur-[80px] pointer-events-none" />
 
         {/* Header Content */}
         <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
@@ -1548,8 +1548,8 @@ const CheckoutPage = () => {
                 Checkout
               </h1>
               <div className="flex items-center gap-2 mt-1">
-                <span className="h-1.5 w-1.5 bg-green-400 rounded-full animate-pulse" />
-                <p className="text-green-100/90 text-[10px] md:text-xs font-black tracking-[0.2em] uppercase">
+                <span className="h-1.5 w-1.5 bg-orange-200 rounded-full animate-pulse" />
+                <p className="text-orange-100/90 text-[10px] md:text-xs font-black tracking-[0.2em] uppercase">
                   {cartCount} {cartCount === 1 ? "Item" : "Items"} in cart
                 </p>
               </div>
@@ -1574,7 +1574,7 @@ const CheckoutPage = () => {
             {/* Delivery Time Banner */}
             <motion.div className="bg-white dark:bg-card rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 mt-3 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-green-50 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                <div className="h-12 w-12 rounded-full bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center flex-shrink-0">
                   <Clock size={24} className="text-[#FE5502]" />
                 </div>
                 <div>
@@ -1606,9 +1606,9 @@ const CheckoutPage = () => {
               </div>
 
               {savedRecipient && !showRecipientForm && (
-                <div className="mb-4 p-4 bg-green-50 border border-green-100 rounded-2xl flex items-start justify-between">
+                <div className="mb-4 p-4 bg-orange-50 border border-orange-100 rounded-2xl flex items-start justify-between">
                   <div className="flex gap-3">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-[#FE5502] flex-shrink-0">
+                    <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FE5502] flex-shrink-0">
                       <Contact2 size={18} />
                     </div>
                     <div>
@@ -1788,7 +1788,7 @@ const CheckoutPage = () => {
               </div>
 
               {/* Address Card */}
-              <div className="border rounded-xl p-3 mb-3 relative cursor-pointer transition-all border-[#FE5502] bg-green-50/50 dark:bg-emerald-950/20">
+              <div className="border rounded-xl p-3 mb-3 relative cursor-pointer transition-all border-[#FE5502] bg-orange-50/50 dark:bg-orange-950/20">
                 <div className="flex items-start gap-3">
                   {/* Radio/Check Button */}
                   <div className="mt-1">
@@ -1844,15 +1844,15 @@ const CheckoutPage = () => {
                   : "Use current live location"}
               </button>
               {/* Manual address info banner */}
-              <motion.div className="mt-3 rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3 flex items-center gap-3 shadow-sm">
-                <div className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center shadow-emerald-500/40 shadow-md">
+              <motion.div className="mt-3 rounded-2xl border border-orange-100 bg-orange-50/70 px-4 py-3 flex items-center gap-3 shadow-sm">
+                <div className="h-8 w-8 rounded-full bg-[#FE5502] flex items-center justify-center shadow-orange-500/40 shadow-md">
                   <Check size={16} className="text-white stroke-[3]" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-semibold text-emerald-900">
+                  <p className="text-[13px] font-semibold text-orange-950">
                     Delivery address confirmed
                   </p>
-                  <p className="text-[11px] font-medium text-emerald-800/80">
+                  <p className="text-[11px] font-medium text-orange-900/80">
                     We&apos;ll deliver to the address you&apos;ve entered above.
                   </p>
                 </div>
@@ -2062,13 +2062,13 @@ const CheckoutPage = () => {
                       onClick={() => setSelectedPayment(method.id)}
                       className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
                         selectedPayment === method.id
-                          ? "border-[#FE5502] bg-green-50"
+                          ? "border-[#FE5502] bg-orange-50"
                           : "border-slate-200 bg-white hover:border-slate-300"
                       }`}>
                       <div
                         className={`h-10 w-10 rounded-full flex items-center justify-center ${
                           selectedPayment === method.id
-                            ? "bg-green-100"
+                            ? "bg-orange-100"
                             : "bg-slate-100"
                         }`}>
                         <Icon
@@ -2108,7 +2108,7 @@ const CheckoutPage = () => {
             {/* Bill Details */}
             <motion.div className="bg-white dark:bg-card rounded-[2rem] p-6 shadow-xl shadow-gray-200/50 dark:shadow-none border border-slate-100 dark:border-white/5 transition-colors">
               <div className="flex items-center gap-2 mb-6">
-                <div className="h-10 w-10 rounded-2xl bg-green-50 dark:bg-emerald-500/10 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-2xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center">
                   <Clipboard size={20} className="text-[#FE5502]" />
                 </div>
                 <h3 className="font-[1000] text-slate-800 text-xl tracking-tight uppercase">
@@ -2179,7 +2179,7 @@ const CheckoutPage = () => {
                   <motion.div
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="flex justify-between items-center px-3 py-2 bg-green-50 rounded-xl border border-green-100">
+                    className="flex justify-between items-center px-3 py-2 bg-orange-50 rounded-xl border border-orange-100">
                     <span className="text-[#FE5502] font-black text-xs flex items-center gap-2 uppercase tracking-wider">
                       <Tag size={14} />
                       Coupon Reserved
@@ -2226,7 +2226,7 @@ const CheckoutPage = () => {
                       <button
                         onClick={handlePlaceOrder}
                         disabled={isPlacingOrder || isPreviewLoading || !pricingPreview}
-                        className="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors">
+                        className="w-full py-4 rounded-2xl bg-[#FE5502] hover:bg-[#c83c00] active:bg-[#a03000] disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors shadow-lg shadow-orange-500/20">
                         {isPlacingOrder ? "Placing Order..." : `Place Order | ₹${totalAmount}`}
                       </button>
                     ) : (
@@ -2255,7 +2255,7 @@ const CheckoutPage = () => {
             <button
               onClick={handlePlaceOrder}
               disabled={isPlacingOrder || isPreviewLoading || !pricingPreview}
-              className="w-full py-4 rounded-2xl bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors">
+              className="w-full py-4 rounded-2xl bg-[#FE5502] hover:bg-[#c83c00] active:bg-[#a03000] disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors shadow-lg shadow-orange-500/20">
               {isPlacingOrder ? "Placing Order..." : `Place Order | ₹${totalAmount}`}
             </button>
           ) : (
@@ -2318,7 +2318,7 @@ const CheckoutPage = () => {
                     disabled={isResolvingAddressCoords}
                     className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
                       currentAddress.id === addr.id
-                        ? "border-[#FE5502] bg-green-50 shadow-sm"
+                        ? "border-[#FE5502] bg-orange-50 shadow-sm"
                         : "border-slate-100 bg-white hover:border-slate-200"
                     }`}
                   >
@@ -2346,7 +2346,7 @@ const CheckoutPage = () => {
                 {!showAddNewAddressForm ? (
                   <Button
                     variant="outline"
-                    className="w-full h-12 border-2 border-[#FE5502] text-[#FE5502] hover:bg-green-50 rounded-2xl font-bold"
+                    className="w-full h-12 border-2 border-[#FE5502] text-[#FE5502] hover:bg-orange-50 rounded-2xl font-bold"
                     onClick={() => setShowAddNewAddressForm(true)}
                   >
                     <Plus size={16} className="mr-2" /> Add New Address
@@ -2368,7 +2368,7 @@ const CheckoutPage = () => {
                           key={lbl}
                           type="button"
                           onClick={() => setNewAddressForm((p) => ({ ...p, label: lbl }))}
-                          className={`flex-1 py-1.5 rounded-xl text-xs font-bold border-2 transition-all ${newAddressForm.label === lbl ? "border-[#FE5502] bg-green-50 text-[#FE5502]" : "border-slate-200 text-slate-500"}`}
+                          className={`flex-1 py-1.5 rounded-xl text-xs font-bold border-2 transition-all ${newAddressForm.label === lbl ? "border-[#FE5502] bg-orange-50 text-[#FE5502]" : "border-slate-200 text-slate-500"}`}
                         >{lbl}</button>
                       ))}
                     </div>
@@ -2633,7 +2633,7 @@ const CheckoutPage = () => {
                     key={coupon.code}
                     className={`p-4 rounded-2xl border-2 transition-all relative overflow-hidden ${
                       selectedCoupon?.code === coupon.code
-                        ? "border-[#FE5502] bg-green-50 shadow-sm"
+                        ? "border-[#FE5502] bg-orange-50 shadow-sm"
                         : "border-slate-100 bg-white hover:border-slate-200"
                     }`}>
                     {selectedCoupon?.code === coupon.code && (
@@ -2724,7 +2724,7 @@ const CheckoutPage = () => {
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", damping: 12 }}
-              className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center text-[#FE5502] mb-6">
+              className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center text-[#FE5502] mb-6">
               <Check size={48} strokeWidth={4} />
             </motion.div>
             <motion.h2
@@ -2748,7 +2748,7 @@ const CheckoutPage = () => {
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
               transition={{ duration: 2.5, ease: "linear" }}
-              className="w-48 h-1.5 bg-green-100 rounded-full overflow-hidden">
+              className="w-48 h-1.5 bg-orange-100 rounded-full overflow-hidden">
               <div className="h-full bg-[#FE5502]" />
             </motion.div>
           </motion.div>

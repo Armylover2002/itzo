@@ -632,7 +632,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                           {/* Top-left pill with items count */}
                           {sectionProducts.length > 0 && (
                             <div className="absolute top-1 left-1 px-2 py-0.5 rounded-full bg-black/70 text-[9px] font-bold text-white/90 tracking-wide flex items-center gap-1">
-                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE5502]" />
                               {sectionProducts.length} items
                             </div>
                           )}

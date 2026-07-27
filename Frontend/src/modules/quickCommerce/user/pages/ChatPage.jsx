@@ -98,12 +98,12 @@ const ChatPage = () => {
                             <div className="h-10 w-10 bg-primary-orange rounded-full flex items-center justify-center text-white font-black text-sm shadow-sm ring-2 ring-white">
                                 AS
                             </div>
-                            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
+                            <div className="absolute bottom-0 right-0 h-3 w-3 bg-[#FE5502] rounded-full border-2 border-white animate-pulse"></div>
                         </div>
                         <div>
                             <h1 className="text-base font-black text-slate-800 leading-none">Support Chat</h1>
-                            <p className="text-[10px] text-green-600 font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
-                                <span className="h-1 w-1 bg-green-500 rounded-full"></span> Online
+                            <p className="text-[10px] text-primary-orange font-bold mt-1 uppercase tracking-wider flex items-center gap-1">
+                                <span className="h-1 w-1 bg-[#FE5502] rounded-full"></span> Online
                             </p>
                         </div>
                     </div>

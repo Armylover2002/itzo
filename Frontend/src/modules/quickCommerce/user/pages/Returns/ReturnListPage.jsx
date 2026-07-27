@@ -68,7 +68,7 @@ export default function ReturnListPage() {
             <p className="text-gray-500 text-sm">You haven't made any return requests.</p>
             <button 
               onClick={() => navigate('/quick/orders')}
-              className="mt-6 px-6 py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors"
+              className="mt-6 px-6 py-2.5 bg-[#FE5502] hover:bg-[#c83c00] text-white font-medium rounded-xl transition-colors shadow-md shadow-orange-500/20"
             >
               View Orders
             </button>

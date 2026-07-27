@@ -232,7 +232,7 @@ const CategoryProductsPage = () => {
                                 className={cn(
                                     "flex flex-col items-center py-4 px-1 gap-2 transition-all relative border-l-4",
                                     selectedSubCategory === cat.id
-                                        ? "bg-[#F7FCF5] dark:bg-emerald-950/20 border-[#FE5502]"
+                                        ? "bg-orange-50 dark:bg-orange-950/30 border-[#FE5502]"
                                         : "border-transparent hover:bg-gray-50 dark:hover:bg-white/5"
                                 )}
                             >

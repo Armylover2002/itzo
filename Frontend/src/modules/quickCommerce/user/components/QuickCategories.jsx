@@ -52,8 +52,8 @@ export default function QuickCategories({ categories = [] }) {
       className="mt-16 overflow-hidden rounded-[60px] border border-white/60 dark:border-white/10 bg-white/40 dark:bg-card/40 backdrop-blur-2xl shadow-[0_30px_70px_-20px_rgba(0,0,0,0.06)] relative transition-all duration-500"
     >
       {/* Decorative Blur Background */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 dark:bg-emerald-900/20 rounded-full blur-[80px] -mr-32 -mt-32 opacity-60" />
-      <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-50 dark:bg-amber-900/20 rounded-full blur-[80px] -ml-32 -mb-32 opacity-40" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-orange-100/40 dark:bg-orange-950/20 rounded-full blur-[80px] -mr-32 -mt-32 opacity-60" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-50 dark:bg-orange-900/20 rounded-full blur-[80px] -ml-32 -mb-32 opacity-40" />
 
       <div className="relative z-10 p-10 md:p-14">
         <div className="mb-12 flex items-end justify-between px-2">

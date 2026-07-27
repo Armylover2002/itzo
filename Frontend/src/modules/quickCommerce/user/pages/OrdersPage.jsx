@@ -226,7 +226,7 @@ const OrdersPage = () => {
                     <span
                       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] ${
                         legacy === "delivered"
-                          ? "border-emerald-100 bg-emerald-50 text-emerald-700"
+                          ? "border-orange-100 bg-orange-50 text-orange-700"
                           : legacy === "cancelled"
                             ? "border-rose-100 bg-rose-50 text-rose-700"
                             : "border-orange-100 bg-orange-50 text-orange-700"
@@ -237,10 +237,10 @@ const OrdersPage = () => {
                           size={9}
                           className={
                             legacy === "delivered"
-                              ? "text-emerald-600"
+                              ? "text-primary-orange"
                               : legacy === "cancelled"
                                 ? "text-rose-500"
-                                : "text-primary"
+                                : "text-primary-orange"
                           }
                         />
                       </span>

@@ -106,7 +106,7 @@ const WalletPage = () => {
                             {transactions.map((tx) => (
                                 <div key={tx._id} className="px-4 py-3.5 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                     <div className="flex items-center gap-3">
-                                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
+                                        <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${tx.type === 'credit' ? 'bg-orange-50 dark:bg-orange-500/10 text-primary-orange dark:text-orange-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
                                             {tx.type === 'credit' ? <ArrowDownLeft size={19} /> : <ArrowUpRight size={19} />}
                                         </div>
                                         <div>
@@ -117,7 +117,7 @@ const WalletPage = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <div className={`text-sm font-semibold ${tx.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>
+                                    <div className={`text-sm font-semibold ${tx.type === 'credit' ? 'text-primary-orange dark:text-orange-400' : 'text-slate-900 dark:text-white'}`}>
                                         {tx.type === 'credit' ? '+' : '-'}₹{(tx.amount || 0).toLocaleString('en-IN')}
                                     </div>
                                 </div>

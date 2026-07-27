@@ -175,14 +175,14 @@ export default function CreateReturnPage() {
                   <div className="flex items-center gap-3">
                     <button 
                       onClick={() => handleQuantityChange((item.itemId || item.productId || item._id), selectedQty - 1)}
-                      className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold ${selectedQty > 0 ? 'border-green-600 text-green-600' : 'border-gray-200 text-gray-300'}`}
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold ${selectedQty > 0 ? 'border-[#FE5502] text-[#FE5502]' : 'border-gray-200 text-gray-300'}`}
                     >
                       -
                     </button>
                     <span className="w-4 text-center font-bold text-gray-900">{selectedQty}</span>
                     <button 
                       onClick={() => handleQuantityChange((item.itemId || item.productId || item._id), Math.min(item.quantity, selectedQty + 1))}
-                      className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold ${selectedQty < item.quantity ? 'border-green-600 text-green-600 bg-green-50' : 'border-gray-200 text-gray-300'}`}
+                      className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold ${selectedQty < item.quantity ? 'border-[#FE5502] text-[#FE5502] bg-orange-50' : 'border-gray-200 text-gray-300'}`}
                     >
                       +
                     </button>
@@ -205,7 +205,7 @@ export default function CreateReturnPage() {
                   value={reason}
                   checked={mainReason === reason}
                   onChange={(e) => setMainReason(e.target.value)}
-                  className="w-4 h-4 text-green-600 focus:ring-green-500"
+                  className="w-4 h-4 text-[#FE5502] focus:ring-[#FE5502]"
                 />
                 <span className="text-sm text-gray-800">{reason}</span>
               </label>
@@ -214,7 +214,7 @@ export default function CreateReturnPage() {
           
           <div className="mt-4">
             <textarea
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FE5502]"
               rows={3}
               placeholder="Additional comments (optional)"
               value={notes}
@@ -269,7 +269,7 @@ export default function CreateReturnPage() {
         <button 
           onClick={handleSubmit}
           disabled={submitting || Object.keys(selectedItems).length === 0}
-          className="w-full py-3.5 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="w-full py-3.5 bg-[#FE5502] hover:bg-[#c83c00] active:bg-[#a03000] text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {submitting ? 'Processing...' : 'Submit Return Request'}
         </button>
