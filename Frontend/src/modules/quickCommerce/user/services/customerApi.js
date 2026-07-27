@@ -19,7 +19,25 @@ const quickGetWithDedupe = (url, params = {}, options = {}) =>
   getWithDedupe(url, params, withQuickSession(options));
 
 export const customerApi = {
-  verifyOtp: (data) => api.auth.verifyUserOtp(data.phone, data.otp),
+  verifyOtp: async (data) => {
+    const res = await api.auth.verifyUserOtp(data.phone, data.otp);
+    const resultData = res?.data?.data || res?.data?.result || res?.data || {};
+    const user = resultData.user || resultData.customer || resultData;
+    const token = resultData.accessToken || resultData.token || res?.data?.token;
+    return {
+      ...res,
+      data: {
+        ...res?.data,
+        result: {
+          token,
+          customer: user,
+          user,
+          ...resultData,
+        },
+        data: resultData,
+      },
+    };
+  },
   requestAccountRecovery: (data) => api.auth.requestAccountRecovery(data.phone, data.otp),
   getProfile: () =>
     axiosInstance.get("/auth/me", withQuickSession()).then((res) => {
