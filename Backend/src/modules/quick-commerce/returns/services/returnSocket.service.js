@@ -18,7 +18,7 @@ export function emitReturnStatusUpdate(userId, returnRequestId, newStatus) {
     const io = getIO();
     const room = rooms.user(userId);
     io.to(room).emit('return_status_updated', {
-      returnRequestId,
+      returnRequestId: String(returnRequestId),
       status: newStatus,
       updatedAt: new Date(),
     });
@@ -166,10 +166,12 @@ export function emitReturnLegTrackingUpdate(leg, newStatus) {
   try {
     const io = getIO();
     const payload = {
-      sellerReturnId: leg._id,
-      returnRequestId: leg.returnRequestId,
+      sellerReturnId: String(leg._id),
+      returnRequestId: String(leg.returnRequestId),
       status: newStatus,
-      deliveryPartnerId: leg.assignment?.deliveryPartnerId,
+      deliveryPartnerId: leg.assignment?.deliveryPartnerId
+        ? String(leg.assignment.deliveryPartnerId)
+        : null,
       updatedAt: new Date(),
     };
 

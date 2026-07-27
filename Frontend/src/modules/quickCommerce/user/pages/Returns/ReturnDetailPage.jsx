@@ -29,7 +29,7 @@ export default function ReturnDetailPage() {
       socketService.connect();
       
       const handleStatusUpdate = (data) => {
-        if (data.returnRequestId === returnRequestId) {
+        if (String(data.returnRequestId) === String(returnRequestId)) {
           setReturnDetails(prev => {
             if (!prev) return prev;
             return {
@@ -52,12 +52,16 @@ export default function ReturnDetailPage() {
       };
 
       const handleLegTracking = (data) => {
-        if (data.returnRequestId === returnRequestId) {
+        if (String(data.returnRequestId) === String(returnRequestId)) {
           setReturnDetails(prev => {
             if (!prev || !prev.legs) return prev;
             return {
               ...prev,
-              legs: prev.legs.map(l => l._id === data.sellerReturnId ? { ...l, returnStatus: data.status } : l)
+              legs: prev.legs.map(l =>
+                String(l._id) === String(data.sellerReturnId)
+                  ? { ...l, returnStatus: data.status }
+                  : l
+              )
             };
           });
         }
