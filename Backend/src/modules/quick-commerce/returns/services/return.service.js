@@ -414,7 +414,6 @@ export async function updateLegStatus({
     }
     
     // Emit socket event for specific leg status change
-    emitReturnStatusUpdate(leg.userId, leg.returnRequestId, nextStatus);
     emitAdminTrackingUpdate(leg._id, nextStatus);
 
     return leg;

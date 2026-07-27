@@ -51,11 +51,25 @@ export default function ReturnDetailPage() {
         }
       };
 
+      const handleLegTracking = (data) => {
+        if (data.returnRequestId === returnRequestId) {
+          setReturnDetails(prev => {
+            if (!prev || !prev.legs) return prev;
+            return {
+              ...prev,
+              legs: prev.legs.map(l => l._id === data.sellerReturnId ? { ...l, returnStatus: data.status } : l)
+            };
+          });
+        }
+      };
+
       socketService.on('return_status_updated', handleStatusUpdate);
       socketService.on('delivery_drop_otp', handleDeliveryOtp);
+      socketService.on('return_leg_tracking', handleLegTracking);
       return () => {
         socketService.off('return_status_updated', handleStatusUpdate);
         socketService.off('delivery_drop_otp', handleDeliveryOtp);
+        socketService.off('return_leg_tracking', handleLegTracking);
       };
     }
   }, [returnRequestId]);
