@@ -426,8 +426,8 @@ const ProductManagement = () => {
             label: "Active Items",
             val: stats.active,
             icon: HiOutlineCheckCircle,
-            color: "text-emerald-600",
-            bg: "bg-emerald-50",
+            color: "text-primary",
+            bg: "bg-orange-50",
             status: "Active",
           },
           {
@@ -878,8 +878,8 @@ const ProductManagement = () => {
                   ))}
 
                   <div className="pt-8 px-4">
-                    <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                      <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mb-1">
+                    <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                      <p className="text-[9px] font-bold text-primary-orange uppercase tracking-widest mb-1">
                         Status
                       </p>
                       <select
@@ -887,7 +887,7 @@ const ProductManagement = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, status: e.target.value })
                         }
-                        className="w-full bg-transparent border-none text-xs font-bold text-emerald-700 outline-none p-0 cursor-pointer focus:ring-0">
+                        className="w-full bg-transparent border-none text-xs font-bold text-orange-700 outline-none p-0 cursor-pointer focus:ring-0">
                         <option value="active">PUBLISHED</option>
                         <option value="inactive">DRAFT</option>
                       </select>
@@ -1007,7 +1007,7 @@ const ProductManagement = () => {
                           />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
-                          <label className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest ml-1">
+                          <label className="text-[9px] font-bold text-primary-orange uppercase tracking-widest ml-1">
                             Discounted Price (₹)
                           </label>
                           <input
@@ -1019,7 +1019,7 @@ const ProductManagement = () => {
                                 salePrice: e.target.value,
                               })
                             }
-                            className="w-full px-4 py-3 bg-emerald-50/50 shadow-sm ring-1 ring-emerald-100 border-none rounded-xl text-lg font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-200"
+                            className="w-full px-4 py-3 bg-orange-50/50 shadow-sm ring-1 ring-orange-100 border-none rounded-xl text-lg font-bold text-orange-700 outline-none focus:ring-2 focus:ring-orange-200"
                           />
                         </div>
                       </div>

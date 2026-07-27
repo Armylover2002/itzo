@@ -107,8 +107,8 @@ const Analytics = () => {
       value: statsData?.overview?.totalSales || "₹0",
       trend: statsData?.overview?.salesTrend || "0%",
       icon: HiOutlineArrowTrendingUp,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
+      color: "text-primary",
+      bg: "bg-orange-50",
     },
     {
       label: "Total Orders",

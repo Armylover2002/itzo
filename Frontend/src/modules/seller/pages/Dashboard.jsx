@@ -103,8 +103,8 @@ const Dashboard = () => {
       change: "+12.5%",
       changeType: "increase",
       icon: IndianRupee,
-      iconBg: "bg-emerald-50",
-      iconColor: "text-emerald-600",
+      iconBg: "bg-orange-50",
+      iconColor: "text-primary",
       description: "vs last month",
     },
     {
@@ -312,7 +312,7 @@ const Dashboard = () => {
                 action.variant === "outline" &&
                   "bg-white border-slate-200 text-slate-900 hover:border-primary-orange hover:bg-primary-orange/5",
                 isEmerald &&
-                  "bg-white border-slate-200 text-slate-900 hover:border-emerald-500 hover:bg-emerald-50",
+                  "bg-white border-slate-200 text-slate-900 hover:border-primary-orange hover:bg-primary-orange/5",
               )}>
               <div className="flex items-start gap-4">
                 <div

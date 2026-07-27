@@ -98,7 +98,7 @@ export default function SellerPendingApproval() {
               {
                 label: "Owner",
                 value: profile?.name || "Seller",
-                tone: "bg-emerald-50 text-emerald-700",
+                tone: "bg-orange-50 text-orange-700",
               },
               {
                 label: "Status",
@@ -119,7 +119,7 @@ export default function SellerPendingApproval() {
 
           <div className="mx-8 mb-8 rounded-[28px] border border-slate-100 bg-slate-50 p-6">
             <div className="flex items-start gap-4">
-              <div className={`rounded-2xl p-3 ${isRejected ? "bg-rose-100 text-rose-600" : "bg-emerald-100 text-emerald-600"}`}>
+              <div className={`rounded-2xl p-3 ${isRejected ? "bg-rose-100 text-rose-600" : "bg-orange-100 text-primary-orange"}`}>
                 {isRejected ? <ShieldAlert className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
               </div>
               <div>

@@ -349,7 +349,7 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
             <span
               className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
                 profile?.isActive !== false
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
                   : "bg-red-500/10 text-red-400 border-red-500/20"
               }`}
             >
@@ -438,7 +438,7 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
                   <span
                     className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
                       profile?.isActive !== false
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
                         : "bg-red-500/10 text-red-400 border-red-500/20"
                     }`}
                     style={{ backdropFilter: "blur(12px)" }}
@@ -616,7 +616,7 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
                     <div
                       className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
                         formData.lat
-                          ? "bg-emerald-100 text-emerald-600 shadow-[0_8px_20px_-6px_rgba(16,185,129,0.3)]"
+                          ? "bg-orange-100 text-primary-orange shadow-[0_8px_20px_-6px_rgba(254,85,2,0.3)]"
                           : "bg-white text-slate-400 shadow-sm"
                       }`}>
                       <MapPin size={24} />

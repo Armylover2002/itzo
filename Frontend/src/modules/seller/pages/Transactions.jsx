@@ -42,8 +42,8 @@ const Transactions = () => {
       label: "Settled Balance",
       value: `₹${(data?.balances?.settledBalance || 0).toLocaleString()}`,
       icon: HiOutlineBanknotes,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50",
+      color: "text-primary",
+      bg: "bg-orange-50",
     },
     {
       label: "Pending Payouts",
@@ -309,7 +309,7 @@ const Transactions = () => {
                             className={cn(
                               "h-10 w-10 rounded-lg flex items-center justify-center font-black transition-all group-hover:scale-110",
                               txn.amount > 0
-                                ? "bg-emerald-50 text-emerald-600"
+                                ? "bg-orange-50 text-primary-orange"
                                 : "bg-rose-50 text-rose-600",
                             )}>
                             {txn.amount > 0 ? (
@@ -346,7 +346,7 @@ const Transactions = () => {
                           className={cn(
                             "text-sm font-black tracking-tight",
                             Number(txn.amount ?? 0) > 0
-                              ? "text-emerald-600"
+                              ? "text-primary-orange"
                               : "text-rose-600",
                           )}>
                           {Number(txn.amount ?? 0) > 0 ? "+" : ""}₹
@@ -424,7 +424,7 @@ const Transactions = () => {
               <h2
                 className={cn(
                   "text-4xl font-black tracking-tight",
-                  Number(selectedTxn.amount ?? 0) > 0 ? "text-emerald-600" : "text-rose-600",
+                  Number(selectedTxn.amount ?? 0) > 0 ? "text-primary-orange" : "text-rose-600",
                 )}>
                 {Number(selectedTxn.amount ?? 0) > 0 ? "+" : ""}₹
                 {Math.abs(Number(selectedTxn.amount ?? 0)).toLocaleString()}

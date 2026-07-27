@@ -227,7 +227,7 @@ const Withdrawals = () => {
                             <div className="relative z-10">
                                 <div className={cn(
                                     "h-10 w-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110",
-                                    stat.color === 'emerald' ? 'bg-emerald-50 text-emerald-600' :
+                                    stat.color === 'emerald' ? 'bg-orange-50 text-primary' :
                                         stat.color === 'amber' ? 'bg-amber-50 text-amber-600' : 'bg-orange-50 text-primary'
                                 )}>
                                     <stat.icon className="h-5 w-5" />
@@ -306,7 +306,7 @@ const Withdrawals = () => {
                                             <p className="text-xs font-bold text-slate-600">{item.customer}</p>
                                             {(item.status === 'Settled' || item.status === 'Rejected') && (item.adminNote || item.orderId) && (
                                                 <div className="mt-1.5 text-left bg-slate-50 rounded-lg p-2 border border-slate-100">
-                                                    {item.orderId && <p className="text-[9px] font-bold text-emerald-600 uppercase">Txn: {item.orderId}</p>}
+                                                    {item.orderId && <p className="text-[9px] font-bold text-primary-orange uppercase">Txn: {item.orderId}</p>}
                                                     {item.adminNote && <p className="text-[9px] font-medium text-slate-500 mt-0.5 italic">{item.adminNote}</p>}
                                                 </div>
                                             )}
@@ -353,7 +353,7 @@ const Withdrawals = () => {
                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">Available to Withdraw</p>
-                            <h4 className="text-2xl font-black text-emerald-600">₹{balances.available.toLocaleString()}</h4>
+                            <h4 className="text-2xl font-black text-primary-orange">₹{balances.available.toLocaleString()}</h4>
                         </div>
                         <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
                             <Info className="h-6 w-6 text-slate-300" />

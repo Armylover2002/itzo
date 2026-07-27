@@ -346,8 +346,8 @@ const Orders = () => {
         value: safeOrders.filter((o) => o.status.toLowerCase() === "delivered")
           .length,
         icon: HiOutlineCheck,
-        color: "text-emerald-600",
-        bg: "bg-emerald-50",
+        color: "text-primary",
+        bg: "bg-orange-50",
       },
     ],
     [safeOrders],
@@ -1106,11 +1106,11 @@ const Orders = () => {
                             .toLocaleString()}
                         </p>
                       </div>
-                      <div className="p-3 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
-                        <p className="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase tracking-widest mb-1">
+                      <div className="p-3 sm:p-4 rounded-2xl bg-orange-50 border border-orange-100">
+                        <p className="text-[10px] sm:text-xs font-bold text-primary-orange uppercase tracking-widest mb-1">
                           Avg. Order Value
                         </p>
-                        <p className="text-base sm:text-xl font-black text-emerald-700">
+                        <p className="text-base sm:text-xl font-black text-orange-700">
                           ₹
                           {safeOrders.length
                             ? (

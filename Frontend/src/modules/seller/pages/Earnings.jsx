@@ -165,7 +165,7 @@ const Earnings = () => {
                   </div>
                   <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
                     <span className="text-slate-900 font-black">Net Payout</span>
-                    <span className="text-emerald-600 font-black">₹{Number(data?.balances?.totalNetEarnings ?? 0).toLocaleString()}</span>
+                    <span className="text-primary-orange font-black">₹{Number(data?.balances?.totalNetEarnings ?? 0).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -182,12 +182,12 @@ const Earnings = () => {
                 <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">
                   Available to Withdraw
                 </p>
-                <h2 className="text-2xl font-black text-emerald-600 tracking-tight">
+                <h2 className="text-2xl font-black text-primary-orange tracking-tight">
                   ₹{Number(data?.balances?.settledBalance ?? 0).toLocaleString()}
                 </h2>
               </div>
-              <div className="p-2 bg-emerald-50 rounded-lg">
-                <ArrowDownToLine className="h-5 w-5 text-emerald-600" />
+              <div className="p-2 bg-orange-50 rounded-lg">
+                <ArrowDownToLine className="h-5 w-5 text-primary-orange" />
               </div>
             </div>
           </Card>
@@ -301,8 +301,8 @@ const Earnings = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               className="w-full max-w-md relative z-10 bg-white rounded-lg shadow-2xl overflow-hidden p-8 text-center">
-              <div className="h-16 w-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                <Banknote className="h-8 w-8 text-emerald-600" />
+              <div className="h-16 w-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <Banknote className="h-8 w-8 text-primary-orange" />
               </div>
 
               <h2 className="text-2xl font-black text-slate-900 mb-2">
@@ -310,7 +310,7 @@ const Earnings = () => {
               </h2>
               <p className="text-sm text-slate-600 font-medium mb-8">
                 Available Balance:{" "}
-                <span className="text-emerald-600 font-bold">
+                <span className="text-primary-orange font-bold">
                   ₹{Number(data?.balances?.settledBalance ?? 0).toLocaleString()}
                 </span>
               </p>
@@ -326,7 +326,7 @@ const Earnings = () => {
                     </span>
                     <input
                       type="number"
-                      className="w-full pl-8 pr-4 py-3 rounded-lg border-slate-200 bg-slate-50 font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none"
+                      className="w-full pl-8 pr-4 py-3 rounded-lg border-slate-200 bg-slate-50 font-bold text-slate-900 focus:ring-2 focus:ring-orange-500/20 focus:border-[#FE5502] transition-all outline-none"
                       placeholder="0.00"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
@@ -338,8 +338,8 @@ const Earnings = () => {
                   <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5 block">
                     Select Bank Account
                   </label>
-                  <div className="p-4 border border-slate-200 rounded-lg flex items-center gap-4 cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/10 transition-all group">
-                    <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-600 transition-colors">
+                  <div className="p-4 border border-slate-200 rounded-lg flex items-center gap-4 cursor-pointer hover:border-[#FE5502] hover:bg-orange-50/10 transition-all group">
+                    <div className="h-10 w-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 group-hover:bg-orange-100 group-hover:text-primary-orange transition-colors">
                       <Building2 className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
@@ -350,7 +350,7 @@ const Earnings = () => {
                         Primary Account
                       </p>
                     </div>
-                    <div className="h-5 w-5 rounded-full border-2 border-slate-200 group-hover:border-emerald-500 group-hover:bg-emerald-500 transition-all"></div>
+                    <div className="h-5 w-5 rounded-full border-2 border-slate-200 group-hover:border-[#FE5502] group-hover:bg-[#FE5502] transition-all"></div>
                   </div>
                 </div>
               </div>
@@ -366,7 +366,7 @@ const Earnings = () => {
                     setIsWithdrawModalOpen(false);
                     alert("Withdrawal request submitted!");
                   }}
-                  className="py-3 rounded-lg bg-emerald-600 text-white font-black shadow-lg shadow-emerald-200 hover:bg-emerald-700 hover:shadow-emerald-300 transition-all">
+                  className="py-3 rounded-lg bg-[#FE5502] hover:bg-[#c83c00] text-white font-black shadow-lg shadow-orange-500/20 transition-all">
                   CONFIRM
                 </button>
               </div>
