@@ -87,13 +87,22 @@ export const requestUserOtp = async (phone) => {
     throw new ValidationError("Phone is required");
   }
 
-  const otp = await createOrUpdateOtp(phone);
+  // Strict Indian mobile number validation: 10 digits, starting with 6, 7, 8, or 9.
+  // Also accepts numbers prefixed with +91 or 91.
+  const digits = String(phone).replace(/^\+?91/, "").replace(/\D/g, "");
+  const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/;
+  if (!INDIAN_MOBILE_REGEX.test(digits)) {
+    throw new ValidationError("Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.");
+  }
+
+  const otp = await createOrUpdateOtp(digits);
   // TODO: integrate SMS provider here
   const shouldExposeOtp =
     config.nodeEnv !== "production" || config.useDefaultOtp;
 
   return shouldExposeOtp ? { otp } : {};
 };
+
 
 export const requestAccountRecovery = async (phone, otp) => {
   const result = await verifyOtp(phone, otp);
@@ -131,13 +140,16 @@ export const verifyUserOtpAndLogin = async (
   platform,
   name,
 ) => {
-  const result = await verifyOtp(phone, otp);
+  // Normalize to 10-digit format (same as requestUserOtp)
+  const normalizedPhone = String(phone).replace(/^\+?91/, "").replace(/\D/g, "");
+
+  const result = await verifyOtp(normalizedPhone, otp);
 
   if (!result.valid) {
     throw new AuthError(result.reason || "OTP verification failed");
   }
 
-  let userDoc = await FoodUser.findOne({ phone });
+  let userDoc = await FoodUser.findOne({ phone: normalizedPhone });
   
   // Ensure user exists and mark as verified on successful OTP.
   // Check if user is new or hasn't provided a name yet
@@ -145,9 +157,10 @@ export const verifyUserOtpAndLogin = async (
   const isNewUser = needsNamePrompt;
   const trimmedName = typeof name === "string" ? name.trim() : "";
 
+
   if (!userDoc) {
     userDoc = await FoodUser.create({
-      phone,
+      phone: normalizedPhone,
       isVerified: true,
       ...(trimmedName ? { name: trimmedName } : {}),
     });

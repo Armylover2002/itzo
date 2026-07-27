@@ -68,6 +68,8 @@ export default function UnifiedOTPFastLogin() {
   const [showNameInput, setShowNameInput] = useState(false)
   const [name, setName] = useState("")
   const [nameError, setNameError] = useState("")
+  // Holds token/user temporarily while user is on the name step (auth is not finalized yet)
+  const [pendingAuthData, setPendingAuthData] = useState(null)
   const [logoUrl, setLogoUrl] = useState(() => getAppLogo('user'))
   const [companyName, setCompanyName] = useState(() => getCompanyName())
   const location = useLocation()
@@ -163,18 +165,22 @@ export default function UnifiedOTPFastLogin() {
     setShowNameInput(false)
     setName("")
     setNameError("")
+    setPendingAuthData(null)
   }
 
+  // Strictly validates Indian mobile numbers: exactly 10 digits, starting with 6, 7, 8, or 9.
+  const INDIAN_MOBILE_REGEX = /^[6-9]\d{9}$/
+
   const normalizedPhone = () => {
-    const digits = String(phoneNumber).replace(/\D/g, "").slice(-15)
-    return digits.length >= 8 ? digits : ""
+    const digits = String(phoneNumber).replace(/\D/g, "").slice(-10)
+    return digits
   }
 
   const handleSendOTP = async (e) => {
     e.preventDefault()
     const phone = normalizedPhone()
-    if (phone.length < 8) {
-      toast.error("Please enter a valid phone number (at least 8 digits)")
+    if (!INDIAN_MOBILE_REGEX.test(phone)) {
+      toast.error("Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9")
       return
     }
     if (submitting.current) return
@@ -182,7 +188,7 @@ export default function UnifiedOTPFastLogin() {
     setLoading(true)
     try {
       clearNameFlow()
-      await authAPI.sendOTP(phoneNumber, "login", null)
+      await authAPI.sendOTP(phone, "login", null)
       setOtpSent(true)
       setOtp("")
       setStep(2)
@@ -199,8 +205,8 @@ export default function UnifiedOTPFastLogin() {
 
   const handleResendOTP = async () => {
     const phone = normalizedPhone()
-    if (phone.length < 8) {
-      toast.error("Please enter a valid phone number (at least 8 digits)")
+    if (!INDIAN_MOBILE_REGEX.test(phone)) {
+      toast.error("Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9")
       return
     }
     if (resendTimer > 0 || submitting.current) return
@@ -208,7 +214,7 @@ export default function UnifiedOTPFastLogin() {
     setLoading(true)
     try {
       clearNameFlow()
-      await authAPI.sendOTP(phoneNumber, "login", null)
+      await authAPI.sendOTP(phone, "login", null)
       setOtp("")
       setOtpSent(true)
       setResendTimer(RESEND_COOLDOWN_SECONDS)
@@ -294,8 +300,9 @@ export default function UnifiedOTPFastLogin() {
       const needsName = data.isNewUser === true || !hasName
 
       if (needsName) {
-        setAuthData("user", accessToken, user, refreshToken)
-        window.dispatchEvent(new Event("userAuthChanged"))
+        // Do NOT save tokens yet — user must provide their name first.
+        // Tokens are stored in temporary state; they will be committed after handleSubmitName succeeds.
+        setPendingAuthData({ accessToken, refreshToken, user })
         setShowNameInput(true)
         setLoading(false)
         submitting.current = false
@@ -337,35 +344,53 @@ export default function UnifiedOTPFastLogin() {
       return
     }
 
+    // Numbers-only names or mobile number as name are not allowed
+    if (/^\d+$/.test(trimmedName)) {
+      setNameError("Name cannot be a number. Please enter your real name.")
+      return
+    }
+
+    if (!pendingAuthData?.accessToken) {
+      toast.error("Session expired. Please log in again.")
+      clearNameFlow()
+      setStep(1)
+      setOtp("")
+      return
+    }
+
     if (submitting.current) return
     submitting.current = true
     setLoading(true)
     setNameError("")
 
     try {
-      const response = await userAPI.updateProfile({ name: trimmedName })
+      // Use the pending token directly in the Authorization header since the user is not
+      // officially logged in yet (setAuthData has not been called).
+      const response = await api.patch(
+        "/food/user/profile",
+        { name: trimmedName },
+        { headers: { Authorization: `Bearer ${pendingAuthData.accessToken}` } }
+      )
       const updatedUser =
         response?.data?.data?.user ||
         response?.data?.user ||
         response?.data?.data ||
         response?.data
-      const storedToken = localStorage.getItem("user_accessToken") || localStorage.getItem("accessToken")
-      const storedRefreshToken = localStorage.getItem("user_refreshToken") || null
 
-      if (!storedToken || !updatedUser) {
-        throw new Error("Invalid response from server")
-      }
-
-      setAuthData("user", storedToken, updatedUser, storedRefreshToken)
+      // Now that name is confirmed saved, finalize login.
+      setAuthData("user", pendingAuthData.accessToken, { ...(pendingAuthData.user || {}), name: trimmedName, ...(updatedUser || {}) }, pendingAuthData.refreshToken)
       window.dispatchEvent(new Event("userAuthChanged"))
       clearNameFlow()
-      toast.success("Profile saved successfully!")
+      toast.success("Welcome! Your profile is ready.")
       navigate(redirectTo, { replace: true })
     } catch (err) {
       const status = err?.response?.status
       let msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Failed to save your name."
       if (status === 401) {
-        msg = "Invalid or expired code, or account not active."
+        msg = "Session expired. Please log in again."
+        clearNameFlow()
+        setStep(1)
+        setOtp("")
       }
       toast.error(msg)
     } finally {
