@@ -499,9 +499,9 @@ export default function SellerOnboarding() {
                   )}
                 </div>
                 {selectedZone ? (
-                  <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 md:col-span-2">
-                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">Selected zone</p>
-                    <p className="mt-1 text-sm font-semibold text-emerald-900">
+                  <div className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 md:col-span-2">
+                    <p className="text-[11px] font-black uppercase tracking-[0.18em] text-primary-orange">Selected zone</p>
+                    <p className="mt-1 text-sm font-semibold text-orange-950">
                       {selectedZone.label}
                     </p>
                   </div>
@@ -553,7 +553,7 @@ export default function SellerOnboarding() {
                       type="button"
                       onClick={handleSaveOpeningHours}
                       disabled={isSavingHours}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                      className="inline-flex items-center gap-2 rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-4 py-3 text-[11px] font-black uppercase tracking-[0.18em] text-white transition disabled:cursor-not-allowed disabled:opacity-70"
                     >
                       {isSavingHours ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                       {isSavingHours ? "Saving..." : "Save Hours"}
