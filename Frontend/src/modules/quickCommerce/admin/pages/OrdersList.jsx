@@ -198,7 +198,12 @@ const OrdersList = () => {
     };
 
     const handleRefundClick = (order) => {
-        setSelectedOrderForRefund(order);
+        setSelectedOrderForRefund({
+            ...order,
+            totalAmount: order.amount,
+            payment: { method: order.paymentMethod },
+            refundPolicy: { allowPartialRefund: true }
+        });
         setRefundModalOpen(true);
     };
 
