@@ -654,7 +654,7 @@ function TableBookings() {
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 bg-[#F8FAFC] p-4 rounded-2xl border border-gray-50 mb-5">
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Calendar className="w-3.5 h-3.5 text-[#3B82F6]" />
+                    <Calendar className="w-3.5 h-3.5 text-[#FE5502]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {new Date(booking.date).toLocaleDateString("en-GB", {
@@ -665,7 +665,7 @@ function TableBookings() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Clock className="w-3.5 h-3.5 text-[#3B82F6]" />
+                    <Clock className="w-3.5 h-3.5 text-[#FE5502]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {booking.timeSlot}
@@ -673,7 +673,7 @@ function TableBookings() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Users className="w-3.5 h-3.5 text-[#3B82F6]" />
+                    <Users className="w-3.5 h-3.5 text-[#FE5502]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {booking.guests} Guests
@@ -681,7 +681,7 @@ function TableBookings() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Phone className="w-3.5 h-3.5 text-[#3B82F6]" />
+                    <Phone className="w-3.5 h-3.5 text-[#FE5502]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {booking.user?.phone || "No phone"}

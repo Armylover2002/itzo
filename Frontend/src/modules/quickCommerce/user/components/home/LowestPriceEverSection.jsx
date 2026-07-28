@@ -67,7 +67,7 @@ const LowestPriceEverSection = ({ products = [] }) => {
             LOWEST PRICE EVER
           </h2>
           <p className="text-[9px] md:text-xs font-bold text-[#1C3A7A]/80 tracking-[0.05em]">
-            <span className="text-[#3B82F6] mr-1">•</span> UNBEATABLE SAVINGS <span className="text-[#3B82F6] mx-1">•</span> UPDATED HOURLY
+            <span className="text-[#FE5502] mr-1">•</span> UNBEATABLE SAVINGS <span className="text-[#FE5502] mx-1">•</span> UPDATED HOURLY
           </p>
         </div>
         <button 

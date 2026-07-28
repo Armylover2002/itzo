@@ -27,7 +27,7 @@ const PremiumBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
     {/* Animated Mesh Gradients */}
     <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#DCFCE7] dark:bg-[#064e3b] rounded-full blur-[120px] opacity-20 animate-pulse" />
-    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#EFF6FF] dark:bg-[#1e3a8a] rounded-full blur-[120px] opacity-20" />
+    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#FFEDD5] dark:bg-[#7c2d12] rounded-full blur-[120px] opacity-20" />
     <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-[#FEF9C3] dark:bg-[#713f12] rounded-full blur-[100px] opacity-15" />
     
     {/* Subtle texture grid */}

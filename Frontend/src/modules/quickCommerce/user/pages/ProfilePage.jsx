@@ -68,8 +68,8 @@ const ProfilePage = () => {
                                 label="My Returns"
                                 sub="Track your return requests"
                                 path="/quick/returns"
-                                color="#6366f1"
-                                bg="rgba(99,102,241,0.10)"
+                                color="#FE5502"
+                                bg="rgba(254,85,2,0.10)"
                             />
                             <MenuItem
                                 icon={CreditCard}
@@ -100,8 +100,8 @@ const ProfilePage = () => {
                                 label="Saved Addresses"
                                 sub="Manage your delivery locations"
                                 path="/quick/addresses"
-                                color="#0ea5e9"
-                                bg="rgba(56,189,248,0.10)"
+                                color="#FE5502"
+                                bg="rgba(254,85,2,0.10)"
                             />
                         </div>
                     </div>
@@ -116,8 +116,8 @@ const ProfilePage = () => {
                                 icon={HelpCircle}
                                 label="Help & Support"
                                 path="/quick/support"
-                                color="#3b82f6"
-                                bg="rgba(59,130,246,0.08)"
+                                color="#FE5502"
+                                bg="rgba(254,85,2,0.10)"
                             />
                             <MenuItem
                                 icon={ShieldCheck}
