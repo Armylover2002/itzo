@@ -221,10 +221,15 @@ export async function getPaymentStatus(orderId, deliveryPartnerId) {
     throw new ForbiddenError('Not your order');
   }
 
-  const transaction = await FoodTransaction.findOne({ orderId: order._id }).lean();
+  let transaction = await FoodTransaction.findOne({ orderId: order._id }).lean();
+
+  // Sync Razorpay QR status if applicable, then re-read fresh data
   if (transaction?.payment?.method === 'razorpay_qr') {
     await syncRazorpayQrPayment(order);
+    // Re-fetch the transaction to get updated payment status
+    transaction = await FoodTransaction.findOne({ orderId: order._id }).lean();
   }
+
   const latestHistory =
     (transaction?.history || []).sort((a, b) => (b.at || 0) - (a.at || 0))[0] ||
     null;

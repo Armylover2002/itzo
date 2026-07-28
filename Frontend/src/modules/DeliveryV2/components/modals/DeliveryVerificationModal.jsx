@@ -312,10 +312,12 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
       if (["paid", "captured", "authorized"].includes(status)) {
         setPaymentStatus("paid");
         if (pollingRef.current) clearInterval(pollingRef.current);
-        // toast.success("Payment Received Successfully!");
+        toast.success("Payment Received Successfully!");
         setShowQrModal(false);
       }
-    } catch (e) {}
+    } catch (e) {
+      toast.error("Could not check payment status");
+    }
   }, [orderId]);
 
   const handleManualCheck = async () => {
