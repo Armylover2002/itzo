@@ -1827,55 +1827,55 @@ export default function OrderTracking() {
     placed: {
       title: "Order Placed",
       subtitle: isQuickOrder ? "Waiting for store to accept" : "Waiting for restaurant to accept",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'food'
     },
     confirmed: {
       title: "Order Confirmed",
       subtitle: isQuickOrder ? "Store has accepted your order" : "Restaurant has accepted your order",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'food'
     },
     preparing: {
       title: isQuickOrder ? "Items are being packed" : "Food is being prepared",
       subtitle: typeof estimatedTime === 'number' ? `Arriving in ${estimatedTime} mins` : (isQuickOrder ? "Packing your items" : "Cooking your meal"),
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'food'
     },
     assigned: {
       title: "Rider is arriving",
       subtitle: isQuickOrder ? "A delivery partner is arriving at the store" : "A delivery partner is arriving at the restaurant",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'rider'
     },
     at_pickup: {
       title: isQuickOrder ? "Rider at store" : "Rider at restaurant",
       subtitle: "Rider is waiting for your order",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'rider'
     },
     ready: {
       title: "Handover in progress",
       subtitle: "Rider is picking up your order",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'rider'
     },
     on_way: {
       title: "Out for delivery",
       subtitle: typeof estimatedTime === 'number' ? `Arriving in ${estimatedTime} mins` : "Rider is out for delivery",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'rider'
     },
     at_drop: {
       title: "Arrived at location",
       subtitle: "Please come to the door",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'rider'
     },
     delivered: {
       title: "Order delivered",
       subtitle: isQuickOrder ? "Enjoy your purchase!" : "Enjoy your meal!",
-      color: "bg-green-600",
+      color: "bg-orange-500",
       iconType: 'delivered'
     },
     cancelled: {
@@ -2051,13 +2051,13 @@ export default function OrderTracking() {
           />
           {!hasActiveDeliveryTracking && (
             <motion.div
-              className="mx-4 mt-4 rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-5 shadow-sm"
+              className="mx-4 mt-4 rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 via-white to-amber-50 p-5 shadow-sm"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-600">
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-orange-600">
                     Live tracking
                   </p>
                   <h3 className="mt-2 text-lg font-bold text-gray-900">
@@ -2069,7 +2069,7 @@ export default function OrderTracking() {
                       : 'The route map is ready. Live rider movement will appear here as soon as a rider accepts the trip.'}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-emerald-100 px-3 py-2 text-xs font-semibold text-emerald-700">
+                <div className="rounded-2xl bg-orange-100 px-3 py-2 text-xs font-semibold text-orange-700">
                   {currentStatus.title}
                 </div>
               </div>
@@ -2077,11 +2077,11 @@ export default function OrderTracking() {
               <div className="mt-5 rounded-2xl border border-white/70 bg-white/90 p-4">
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col items-center pt-1">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 text-[#FE5502]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-[#FE5502]">
                       <MapPin className="h-5 w-5" />
                     </div>
-                    <div className="my-2 h-10 w-px border-l-2 border-dashed border-emerald-200" />
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    <div className="my-2 h-10 w-px border-l-2 border-dashed border-orange-200" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-700">
                       <HomeIcon className="h-5 w-5" />
                     </div>
                   </div>
