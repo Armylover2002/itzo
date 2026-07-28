@@ -205,7 +205,6 @@ export async function createUpiQrCode({ amountPaise, currency = 'INR', descripti
         usage: 'single_use',
         fixed_amount: true,
         payment_amount: Math.round(amountPaise),
-        currency,
         description: description || `Order ${orderId || 'payment'}`,
         close_by: closeBy,
         notes: {

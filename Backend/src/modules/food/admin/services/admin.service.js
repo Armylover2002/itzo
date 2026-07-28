@@ -5371,7 +5371,10 @@ export async function processRefund(orderId, refundAmount, refundTo) {
         throw new ValidationError('Refund already processed for this order');
     }
 
-    const totalAmount = Number(order?.pricing?.total || 0);
+    const pricingTotal = Number(order?.pricing?.total || 0);
+    const platformFee = Number(order?.pricing?.platformFee || 0);
+    const totalAmount = pricingTotal + platformFee;
+
     if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
         throw new ValidationError('No refundable amount found for this order');
     }
