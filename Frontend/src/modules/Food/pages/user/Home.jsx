@@ -508,7 +508,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {hasFoodCartItems && <Suspense fallback={null}><MiniCart /></Suspense>}
+      {activeTab === "food" && hasFoodCartItems && <Suspense fallback={null}><MiniCart /></Suspense>}
       <Suspense fallback={null}><OrderTrackingCard hasBottomNav /></Suspense>
     </div>
   );

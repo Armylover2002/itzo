@@ -10,8 +10,12 @@ import shoppingCartAnimation from "@/assets/lottie/shopping-cart.json";
 const MiniCart = ({
     className = "",
 }) => {
-    const { cart, getCartCount } = useCart();
-    const cartCount = getCartCount();
+    const { cart } = useCart();
+    
+    // Filter to only include Food items, excluding Quick Commerce items
+    const foodItems = cart.filter(item => (item?.orderType || "food") !== "quick");
+    const cartCount = foodItems.reduce((total, item) => total + (Number(item.quantity) || 0), 0);
+    const displayItem = foodItems[0];
 
     // Hide MiniCart on specific pages if needed
     // In Food module, we can just show it when cart has items
@@ -47,10 +51,10 @@ const MiniCart = ({
                             <div className={cn(
                                 "h-8 w-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden border border-gray-100",
                             )}>
-                                {cart[0]?.image || cart[0]?.imageUrl ? (
+                                {displayItem?.image || displayItem?.imageUrl ? (
                                     <img 
-                                        src={cart[0].image || cart[0].imageUrl} 
-                                        alt={cart[0].name} 
+                                        src={displayItem.image || displayItem.imageUrl} 
+                                        alt={displayItem.name} 
                                         className="h-full w-full object-cover"
                                     />
                                 ) : (
