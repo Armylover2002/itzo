@@ -667,7 +667,8 @@ export default function HrmsJoiningRequests() {
                                         </div>
                                     </details>
 
-                                                     <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-bold text-sm hover:text-orange-700 transition-colors bg-orange-50/60 p-3.5 rounded-xl border border-orange-200/60 shadow-xs">
+                                    <details className="group">
+                                        <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-bold text-sm hover:text-orange-700 transition-colors bg-orange-50/60 p-3.5 rounded-xl border border-orange-200/60 shadow-xs">
                                             <MessageSquare className="w-4 h-4 text-orange-600" /> Request More Information / Clarification
                                         </summary>
                                         <div className="mt-3 p-5 bg-orange-50/40 rounded-2xl border border-orange-200/80">
@@ -675,7 +676,7 @@ export default function HrmsJoiningRequests() {
                                             <textarea value={infoMessage} onChange={e => setInfoMessage(e.target.value)} rows={3} placeholder="Specify what documents or details need clarification..."
                                                 className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none bg-white" />
                                             <button onClick={handleRequestInfo} disabled={actionLoading}
-                                                className="mt-3 px-6 h-10 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">sabled:opacity-50 shadow-sm flex items-center gap-2">
+                                                className="mt-3 px-6 h-10 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">
                                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
                                                 Send Information Request
                                             </button>
