@@ -133,7 +133,7 @@ export default function AssessmentSettings() {
 
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><Shuffle className="w-5 h-5" /></div>
+                            <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><Shuffle className="w-5 h-5" /></div>
                             <h3 className="text-lg font-bold text-slate-900">Anti-Cheating & Security</h3>
                         </div>
                         

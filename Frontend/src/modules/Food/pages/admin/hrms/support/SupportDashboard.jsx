@@ -100,7 +100,7 @@ export default function SupportDashboard() {
                                 </div>
                                 <div className="flex items-center gap-4 shrink-0 pl-4">
                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                                        ticket.status === 'Open' ? 'bg-orange-100 text-blue-700' :
+                                        ticket.status === 'Open' ? 'bg-orange-100 text-orange-700' :
                                         ticket.status === 'Resolved' || ticket.status === 'Closed' ? 'bg-emerald-100 text-emerald-700' :
                                         'bg-slate-100 text-slate-700'
                                     }`}>

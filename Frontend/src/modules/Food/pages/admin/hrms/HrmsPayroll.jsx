@@ -363,7 +363,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                                                             <Download className="w-3 h-3" /> Download
                                                         </button>
                                                         <span className="text-slate-300">|</span>
-                                                        <button onClick={() => handleGeneratePayslipPdf(r._id)} className="text-blue-600 hover:text-blue-700 text-xs font-medium" title="Regenerate Payslip">Regenerate</button>
+                                                        <button onClick={() => handleGeneratePayslipPdf(r._id)} className="text-orange-600 hover:text-orange-700 text-xs font-medium" title="Regenerate Payslip">Regenerate</button>
                                                         <span className="text-slate-300">|</span>
                                                         <button onClick={() => { setSelectedSalaryId(r._id); setUploadModalOpen(true); }} className="text-slate-600 hover:text-slate-700 text-xs font-medium" title="Replace Manual Payslip">Replace</button>
                                                     </div>
@@ -445,7 +445,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-slate-700"
                                 title="Print Payslip"
                             >
-                                <Printer className="w-3.5 h-3.5 text-blue-400" /> Print
+                                <Printer className="w-3.5 h-3.5 text-orange-400" /> Print
                             </button>
                             <button
                                 onClick={() => setPreviewPdf(null)}

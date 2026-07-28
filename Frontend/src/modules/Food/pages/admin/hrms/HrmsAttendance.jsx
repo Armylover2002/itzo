@@ -110,7 +110,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                     {records.map(r => (
                                         <tr key={r._id} className="border-b border-slate-50 hover:bg-slate-50/50">
                                             <td className="px-5 py-3.5 font-medium text-slate-900">{r.employeeId?.adminId?.name || '—'}</td>
-                                            <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>{r.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
+                                            <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.employeeType === 'Field' ? 'bg-orange-50 text-orange-700' : 'bg-emerald-50 text-emerald-700'}`}>{r.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                             <td className="px-5 py-3.5 text-slate-600">{new Date(r.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' })}</td>
                                             <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.status === 'Present' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{r.status}</span></td>
                                             <td className="px-5 py-3.5 text-slate-600">{r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</td>
@@ -121,7 +121,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                                         <span className="text-emerald-600 font-medium block">🏢 {r.locationValidation.officeName}</span>
                                                     )}
                                                     {r.employeeType === 'Field' && r.routeDistance > 0 && (
-                                                        <span className="text-blue-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
+                                                        <span className="text-orange-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
                                                     )}
                                                     {r.checkInLocation?.address && (
                                                         <div className="text-slate-500 flex items-start gap-1" title={r.checkInLocation.address}>

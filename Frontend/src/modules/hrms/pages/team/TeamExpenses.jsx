@@ -150,7 +150,7 @@ export default function TeamExpenses() {
                                                 <p className="text-xs text-slate-500 mt-0.5">
                                                     {batch.entries?.length || 0} {(batch.entries?.length || 0) === 1 ? 'visit entry' : 'visit entries'}
                                                     {batch.isLegacy && <span className="ml-2 text-amber-500 font-medium">(Migrated)</span>}
-                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-blue-500 font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
+                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-orange-500 font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
                                                 </p>
                                             </div>
                                         </div>
@@ -172,9 +172,9 @@ export default function TeamExpenses() {
                                     {isExpanded && (
                                         <div className="mt-3 overflow-x-auto">
                                             {batch.resubmissionNote && (
-                                                <div className="mb-3 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
-                                                    <p className="text-xs font-semibold text-blue-700">Resubmission Note:</p>
-                                                    <p className="text-xs text-blue-600 mt-0.5">{batch.resubmissionNote}</p>
+                                                <div className="mb-3 p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
+                                                    <p className="text-xs font-semibold text-orange-700">Resubmission Note:</p>
+                                                    <p className="text-xs text-orange-600 mt-0.5">{batch.resubmissionNote}</p>
                                                 </div>
                                             )}
                                             <table className="w-full text-xs">

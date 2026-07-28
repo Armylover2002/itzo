@@ -432,7 +432,7 @@ export default function UnifiedOTPFastLogin() {
     <div className="min-h-screen bg-gray-50 dark:bg-neutral-950 flex flex-col md:flex-row md:items-stretch relative transition-colors duration-1000 font-sans">
       
       {/* Left Section: Consumer Growth Showcase (Desktop only) */}
-      <div className="hidden md:flex md:w-1/2 flex-col justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 px-12 xl:px-20 py-16 text-white relative overflow-y-auto shrink-0">
+      <div className="hidden md:flex md:w-1/2 flex-col justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 px-12 xl:px-20 py-16 text-white relative overflow-y-auto shrink-0">
         
         {/* Background video or images for visual flair */}
         <div className="absolute inset-0 opacity-10">

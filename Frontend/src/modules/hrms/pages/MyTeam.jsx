@@ -158,7 +158,7 @@ export default function MyTeam() {
                                         </div>
                                         <div>
                                             <span className="text-slate-400 block mb-0.5">Employee Type</span>
-                                            <span className={`inline-flex items-center gap-1 font-medium ${member.employeeType === 'Field' ? 'text-blue-600' : 'text-emerald-600'}`}>
+                                             <span className={`inline-flex items-center gap-1 font-medium ${member.employeeType === 'Field' ? 'text-orange-600' : 'text-emerald-600'}`}>
                                                 {member.employeeType === 'Field' ? <MapPin className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
                                                 {member.employeeType || 'Office'}
                                             </span>
@@ -177,11 +177,11 @@ export default function MyTeam() {
 
             {activeTab === 'add' && (
                 <div className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex gap-3">
-                        <ShieldAlert className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                    <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 flex gap-3">
+                        <ShieldAlert className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
                         <div>
-                            <h4 className="text-sm font-semibold text-blue-800">Assigning Members</h4>
-                            <p className="text-xs text-blue-600 mt-1">You can only add employees who are currently unassigned. Employees already assigned to another manager are shown for visibility but cannot be added. To transfer an employee, please contact the Admin.</p>
+                            <h4 className="text-sm font-semibold text-orange-800">Assigning Members</h4>
+                            <p className="text-xs text-orange-600 mt-1">You can only add employees who are currently unassigned. Employees already assigned to another manager are shown for visibility but cannot be added. To transfer an employee, please contact the Admin.</p>
                         </div>
                     </div>
 
@@ -249,7 +249,7 @@ export default function MyTeam() {
                                                 <td className="px-5 py-3.5 text-slate-600 font-mono text-xs">{member.employeeId}</td>
                                                 <td className="px-5 py-3.5 text-slate-600">{member.department || '—'}</td>
                                                 <td className="px-5 py-3.5">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${member.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${member.employeeType === 'Field' ? 'bg-orange-50 text-orange-700' : 'bg-emerald-50 text-emerald-700'}`}>
                                                         {member.employeeType === 'Field' ? <MapPin className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
                                                         {member.employeeType || 'Office'}
                                                     </span>

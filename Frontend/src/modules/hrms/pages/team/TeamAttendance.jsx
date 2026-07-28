@@ -177,7 +177,7 @@ export default function TeamAttendance() {
                                                 ${record.status === 'Present' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ''}
                                                 ${record.status === 'Absent' ? 'bg-red-50 text-red-700 border border-red-200' : ''}
                                                 ${record.status === 'Late' ? 'bg-amber-50 text-amber-700 border border-amber-200' : ''}
-                                                ${record.status === 'Half_Day' ? 'bg-blue-50 text-blue-700 border border-blue-200' : ''}
+                                                ${record.status === 'Half_Day' ? 'bg-orange-50 text-orange-700 border border-orange-200' : ''}
                                                 ${record.status === 'Week_Off' ? 'bg-slate-100 text-slate-600 border border-slate-200' : ''}
                                                 ${record.status === 'Holiday' ? 'bg-purple-50 text-purple-700 border border-purple-200' : ''}
                                             `}>

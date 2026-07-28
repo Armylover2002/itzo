@@ -249,7 +249,7 @@ export default function Salary() {
                                                         <button onClick={() => handleProxyDownload(r.payslipUrl)} className="text-emerald-600 hover:text-emerald-700 text-xs font-semibold flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg transition-colors" title="Download Payslip">
                                                             <Download className="w-3.5 h-3.5" /> Download
                                                         </button>
-                                                        <button onClick={() => handleProxyPrint(r.payslipUrl)} className="text-blue-600 hover:text-blue-700 text-xs font-semibold flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors" title="Print Payslip">
+                                                        <button onClick={() => handleProxyPrint(r.payslipUrl)} className="text-orange-600 hover:text-orange-700 text-xs font-semibold flex items-center gap-1 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors" title="Print Payslip">
                                                             <Printer className="w-3.5 h-3.5" /> Print
                                                         </button>
                                                     </div>
@@ -299,7 +299,7 @@ export default function Salary() {
                                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-slate-700"
                                 title="Print Payslip"
                             >
-                                <Printer className="w-3.5 h-3.5 text-blue-400" /> Print
+                                <Printer className="w-3.5 h-3.5 text-orange-400" /> Print
                             </button>
                             <button
                                 onClick={() => setPreviewPdf(null)}

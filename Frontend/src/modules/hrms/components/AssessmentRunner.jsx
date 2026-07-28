@@ -269,12 +269,12 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                 {!result.isPassed && (
                     <div className="mt-8 pt-6 border-t border-slate-100">
                         {retakeAlreadySent ? (
-                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                            <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
                                 <div className="flex items-center justify-center gap-2 mb-2">
-                                    <CheckCircle2 className="w-5 h-5 text-blue-600" />
-                                    <p className="text-sm font-semibold text-blue-700">Retake Request Already Sent</p>
+                                    <CheckCircle2 className="w-5 h-5 text-orange-600" />
+                                    <p className="text-sm font-semibold text-orange-700">Retake Request Already Sent</p>
                                 </div>
-                                <p className="text-xs text-blue-500">
+                                <p className="text-xs text-orange-500">
                                     Your request has been submitted. An admin will review and reset your attempt so you can retake the test. Please check back later.
                                 </p>
                             </div>

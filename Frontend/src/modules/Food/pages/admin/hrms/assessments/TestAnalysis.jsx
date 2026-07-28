@@ -147,7 +147,7 @@ export default function TestAnalysis() {
                                             <div className="flex flex-col gap-1.5">
                                                 <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${
                                                     attempt.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
-                                                    attempt.status === 'In_Progress' ? 'bg-blue-50 text-blue-700' :
+                                                    attempt.status === 'In_Progress' ? 'bg-orange-50 text-orange-700' :
                                                     attempt.status === 'Timeout' ? 'bg-orange-50 text-orange-700' :
                                                     'bg-slate-100 text-slate-700'
                                                 }`}>

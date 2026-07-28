@@ -190,7 +190,7 @@ export default function QuestionBank() {
                                             <p className="text-sm font-medium text-slate-900 line-clamp-2">{q.questionText}</p>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                                            <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
                                                 {q.category}
                                             </span>
                                         </td>

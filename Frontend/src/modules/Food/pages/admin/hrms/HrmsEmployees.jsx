@@ -769,7 +769,7 @@ export default function HrmsEmployees() {
                                     {(selectedEmployee.assignedZoneIds && selectedEmployee.assignedZoneIds.length > 0) ? (
                                         <div className="flex flex-wrap gap-1.5">
                                             {selectedEmployee.assignedZoneIds.map((z, i) => (
-                                                <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                                                <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
                                                     <MapPin className="w-3 h-3" />
                                                     {typeof z === 'object' ? `${z.name}${z.serviceLocation ? ` (${z.serviceLocation})` : ''}` : z}
                                                 </span>
@@ -797,7 +797,7 @@ export default function HrmsEmployees() {
                                             {employeeRestaurants.zoneSummary?.length > 0 && (
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {employeeRestaurants.zoneSummary.map((zs, i) => (
-                                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-700 border border-orange-100">
                                                             {zs.zoneName}: {zs.count}
                                                         </span>
                                                     ))}
@@ -956,7 +956,7 @@ export default function HrmsEmployees() {
                                             {emp.assignedZoneIds && emp.assignedZoneIds.length > 0 ? (
                                                 <div className="flex flex-wrap gap-1">
                                                     {emp.assignedZoneIds.slice(0, 2).map((z, i) => (
-                                                        <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100 truncate max-w-[80px]" title={typeof z === 'object' ? z.name : z}>
+                                                        <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-700 border border-orange-100 truncate max-w-[80px]" title={typeof z === 'object' ? z.name : z}>
                                                             {typeof z === 'object' ? z.name : z}
                                                         </span>
                                                     ))}
@@ -968,7 +968,7 @@ export default function HrmsEmployees() {
                                                 <span className="text-xs text-slate-400">—</span>
                                             )}
                                         </td>
-                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
+                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-orange-50 text-orange-700' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                         <td className="px-5 py-3.5">
                                             {emp.status !== 'Active' ? (
                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">

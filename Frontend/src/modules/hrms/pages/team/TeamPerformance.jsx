@@ -118,7 +118,7 @@ export default function TeamPerformance() {
                                 <p className="text-xs font-medium text-slate-500">Team Size</p>
                                 <p className="text-2xl font-bold text-slate-900 mt-0.5">{teamData.teamSize} <span className="text-sm font-normal text-slate-400">members</span></p>
                             </div>
-                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
                                 <Users className="w-5 h-5" />
                             </div>
                         </div>
@@ -331,7 +331,7 @@ export default function TeamPerformance() {
                                         </div>
                                         <div className="bg-white p-3.5 rounded-xl border border-slate-200">
                                             <span className="text-xs text-slate-400 block font-medium">Net Profit</span>
-                                            <span className="text-sm font-bold text-blue-600">{formatCurrency(memberPerformance.financialBreakdown?.netProfit)}</span>
+                                            <span className="text-sm font-bold text-orange-600">{formatCurrency(memberPerformance.financialBreakdown?.netProfit)}</span>
                                         </div>
                                     </div>
 

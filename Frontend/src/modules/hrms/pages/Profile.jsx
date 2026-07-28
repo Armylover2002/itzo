@@ -216,7 +216,7 @@ export default function Profile() {
                             <p className="text-xs font-medium text-slate-500 mb-1">Employee Type</p>
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                                 emp.employeeType === 'Field'
-                                    ? 'bg-blue-50 text-blue-700'
+                                    ? 'bg-orange-50 text-orange-700'
                                     : 'bg-emerald-50 text-emerald-700'
                             }`}>
                                 {emp.employeeType === 'Field' ? '📍 Field Employee' : '🏢 Office Employee'}

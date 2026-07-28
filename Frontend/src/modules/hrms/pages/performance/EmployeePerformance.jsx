@@ -159,12 +159,12 @@ export default function EmployeePerformance() {
                         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
                             <div>
                                 <span className="text-xs font-medium text-slate-500 block">Net Profit Contribution</span>
-                                <span className="text-xl font-bold text-blue-600 mt-0.5 block">
+                                <span className="text-xl font-bold text-orange-600 mt-0.5 block">
                                     {formatCurrency(performanceData.financialBreakdown?.netProfit)}
                                 </span>
                                 <span className="text-xs text-slate-400 mt-0.5 block">After all deductions</span>
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
                                 <Zap className="w-5 h-5" />
                             </div>
                         </div>

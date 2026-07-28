@@ -116,7 +116,7 @@ export default function TeamLeaves() {
                                             <span className="text-xs font-mono text-slate-500">({leave.employeeId?.employeeId})</span>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
                                                 {leave.leaveType}
                                             </span>
                                             <span className={`px-2 py-0.5 rounded text-xs font-medium border

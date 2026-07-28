@@ -405,7 +405,7 @@ export default function HrmsSettings() {
                                                             toast.error('Geolocation is not supported by your browser.');
                                                         }
                                                     }}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-xs font-medium transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg text-xs font-medium transition-colors"
                                                 >
                                                     <MapPin className="w-3.5 h-3.5" /> Fetch Live Location
                                                 </button>

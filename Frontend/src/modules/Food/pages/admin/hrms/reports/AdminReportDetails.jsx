@@ -224,7 +224,7 @@ export default function AdminReportDetails() {
                         {report.achievements && <div><h3 className="font-bold text-emerald-700 uppercase tracking-wider text-xs mb-2">Achievements</h3><p className="text-sm text-slate-700 bg-emerald-50 p-3 rounded-xl">{report.achievements}</p></div>}
                         {report.problemsFaced && <div><h3 className="font-bold text-red-700 uppercase tracking-wider text-xs mb-2">Problems Faced</h3><p className="text-sm text-slate-700 bg-red-50 p-3 rounded-xl">{report.problemsFaced}</p></div>}
                         {report.pendingWork && <div><h3 className="font-bold text-amber-700 uppercase tracking-wider text-xs mb-2">Pending Work</h3><p className="text-sm text-slate-700 bg-amber-50 p-3 rounded-xl">{report.pendingWork}</p></div>}
-                        {report.tomorrowPlan && <div><h3 className="font-bold text-blue-700 uppercase tracking-wider text-xs mb-2">Tomorrow's Plan</h3><p className="text-sm text-slate-700 bg-orange-50 p-3 rounded-xl">{report.tomorrowPlan}</p></div>}
+                        {report.tomorrowPlan && <div><h3 className="font-bold text-orange-700 uppercase tracking-wider text-xs mb-2">Tomorrow's Plan</h3><p className="text-sm text-slate-700 bg-orange-50 p-3 rounded-xl">{report.tomorrowPlan}</p></div>}
                     </section>
 
                     {/* Attachments */}

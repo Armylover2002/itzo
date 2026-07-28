@@ -151,7 +151,7 @@ export default function Attendance() {
                                                     <span className="text-emerald-600 font-medium block">🏢 {r.locationValidation.officeName}</span>
                                                 )}
                                                 {r.employeeType === 'Field' && r.routeDistance > 0 && (
-                                                    <span className="text-blue-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
+                                                    <span className="text-orange-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
                                                 )}
                                                 {r.checkInLocation?.address && (
                                                     <div className="text-slate-500 flex items-start gap-1" title={r.checkInLocation.address}>

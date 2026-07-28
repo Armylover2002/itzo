@@ -429,7 +429,7 @@ export default function Expense() {
                                                 <p className="text-xs text-slate-500 mt-0.5">
                                                     {batch.entries?.length || 0} {(batch.entries?.length || 0) === 1 ? 'entry' : 'entries'}
                                                     {batch.isLegacy && <span className="ml-2 text-amber-500 font-medium">(Legacy)</span>}
-                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-blue-500 font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
+                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-orange-500 font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
                                                 </p>
                                             </div>
                                         </div>
@@ -455,9 +455,9 @@ export default function Expense() {
                                                 </div>
                                             )}
                                             {batch.resubmissionNote && (
-                                                <div className="mx-5 mt-3 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-                                                    <p className="text-xs font-semibold text-blue-700">Resubmission Note:</p>
-                                                    <p className="text-sm text-blue-600 mt-0.5">{batch.resubmissionNote}</p>
+                                                <div className="mx-5 mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                                                    <p className="text-xs font-semibold text-orange-700">Resubmission Note:</p>
+                                                    <p className="text-sm text-orange-600 mt-0.5">{batch.resubmissionNote}</p>
                                                 </div>
                                             )}
                                             <div className="overflow-x-auto p-4">

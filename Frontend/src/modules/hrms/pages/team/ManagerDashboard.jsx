@@ -91,7 +91,7 @@ export default function ManagerDashboard() {
     }
 
     const statCards = [
-        { title: 'Pending Leaves', value: stats?.pendingLeaves || 0, icon: CalendarDays, color: 'bg-blue-500', link: '/hrms/team/leaves' },
+        { title: 'Pending Leaves', value: stats?.pendingLeaves || 0, icon: CalendarDays, color: 'bg-orange-500', link: '/hrms/team/leaves' },
         { title: 'Pending Expenses', value: stats?.pendingExpenses || 0, icon: Receipt, color: 'bg-emerald-500', link: '/hrms/team/expenses' },
         { title: 'Reports Today', value: stats?.reports?.todayCount || 0, icon: ClipboardList, color: 'bg-orange-500', link: '/hrms/team/reports' },
     ];
@@ -234,7 +234,7 @@ export default function ManagerDashboard() {
                                     <div key={leave._id} className="p-4 hover:bg-slate-50 transition-colors">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="font-semibold text-sm text-slate-900">{leave.employeeId?.adminId?.name}</div>
-                                            <div className="text-xs font-medium px-2 py-1 bg-blue-50 text-blue-700 rounded-md border border-blue-100">{leave.leaveType}</div>
+                                            <div className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-700 rounded-md border border-orange-100">{leave.leaveType}</div>
                                         </div>
                                         <div className="text-xs text-slate-500 mb-2">
                                             {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()} ({leave.totalDays} Days)
