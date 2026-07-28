@@ -331,9 +331,9 @@ const MapPicker = ({
                     center={marker}
                     radius={radius * 1000} // KM to Meters
                     options={{
-                      fillColor: "#0ea5e9",
+                      fillColor: "#FE5502",
                       fillOpacity: 0.1,
-                      strokeColor: "#0ea5e9",
+                      strokeColor: "#FE5502",
                       strokeOpacity: 0.5,
                       strokeWeight: 2,
                       clickable: false,
