@@ -91,7 +91,7 @@ export const getReturnDetails = async (req, res) => {
       .lean();
 
     let pickupOtp = null;
-    const activePickupLeg = legs.find(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'].includes(l.returnStatus));
+    const activePickupLeg = legs.find(l => ['return_pickup_assigned', 'pickup_en_route', 'pickup_reached', 'pickup_otp_pending'].includes(l.returnStatus));
     if (activePickupLeg) {
       const otpDoc = await ReturnOtp.findOne({ 
         sellerReturnId: activePickupLeg._id, 

@@ -190,7 +190,7 @@ export default function ReturnDetailPage() {
         </div>
 
         {/* OTP Section for active pickup */}
-        {status === 'IN_PROGRESS' && legs.some(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'].includes(l.returnStatus)) && (
+        {status === 'IN_PROGRESS' && legs.some(l => ['return_pickup_assigned', 'pickup_en_route', 'pickup_reached', 'pickup_otp_pending'].includes(l.returnStatus)) && (
           <div className="bg-orange-50 border border-orange-100 rounded-2xl p-5 shadow-sm">
             <h3 className="font-bold text-orange-800 mb-2">Delivery Partner Assigned</h3>
             <p className="text-sm text-orange-700 mb-3">Please keep your items packed and ready. Share the pickup OTP with the agent when they arrive.</p>
@@ -204,7 +204,7 @@ export default function ReturnDetailPage() {
             
             <button 
               onClick={async () => {
-                const activeLeg = legs.find(l => ['RETURN_PICKUP_ASSIGNED', 'PICKUP_EN_ROUTE', 'PICKUP_REACHED', 'PICKUP_OTP_PENDING'].includes(l.returnStatus));
+                const activeLeg = legs.find(l => ['return_pickup_assigned', 'pickup_en_route', 'pickup_reached', 'pickup_otp_pending'].includes(l.returnStatus));
                 if (activeLeg) {
                    try {
                      const res = await returnApi.resendOtp(activeLeg._id);
