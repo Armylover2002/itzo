@@ -689,7 +689,7 @@ const OrdersList = () => {
                 isProcessing={processingRefund}
                 onConfirm={(amount, refundToMethod) => {
                     if (selectedOrderForRefund) {
-                        processRefund(selectedOrderForRefund.id || selectedOrderForRefund._id, amount, refundToMethod);
+                        processRefund(selectedOrderForRefund._id || selectedOrderForRefund.id, amount, refundToMethod);
                     }
                 }}
             />
