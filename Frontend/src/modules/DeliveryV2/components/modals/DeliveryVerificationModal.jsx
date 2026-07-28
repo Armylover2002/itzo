@@ -342,7 +342,7 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
         name: order.userName || "Customer",
         phone: order.userPhone || "",
       });
-      const link = res?.data?.data?.shortUrl || res?.data?.shortUrl || null;
+      const link = res?.data?.data?.imageUrl || res?.data?.imageUrl || null;
       if (link) {
         setCollectQrLink(link);
         setPaymentStatus("pending");
@@ -526,16 +526,16 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
                 Order Total: ₹{amountToCollect.toFixed(2)}
               </p>
 
-              <div className="relative p-6 bg-gray-50 rounded-3xl border-2 border-gray-100 mb-8">
+              <div className="relative bg-gray-50 rounded-3xl border-2 border-gray-100 mb-8 w-64 h-64 overflow-hidden flex items-center justify-center">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(collectQrLink)}`}
+                  src={collectQrLink}
                   alt="Razorpay QR"
-                  className="w-56 h-56"
+                  className="w-full h-full object-cover scale-[1.6] translate-y-[-8%]"
                 />
                 <button
                   onClick={handleManualCheck}
                   disabled={isSyncing}
-                  className="absolute top-2 right-2 flex gap-1.5 items-center bg-green-500 text-white px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+                  className="absolute top-2 right-2 flex gap-1.5 items-center bg-green-500 text-white px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all z-10">
                   {isSyncing ? (
                     <Loader2 className="w-3 h-3 animate-spin" />
                   ) : (

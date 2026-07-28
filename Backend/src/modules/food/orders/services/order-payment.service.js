@@ -11,6 +11,8 @@ import {
   createPaymentLink,
   fetchRazorpayPaymentLink,
   isRazorpayConfigured,
+  createUpiQrCode,
+  fetchQrCodePayments
 } from '../helpers/razorpay.helper.js';
 import * as foodTransactionService from './foodTransaction.service.js';
 import {
@@ -26,8 +28,56 @@ async function syncRazorpayQrPayment(orderDoc) {
   if (payment.method !== 'razorpay_qr') return payment;
   if (payment.status === 'paid') return payment;
 
+  const qrId = payment?.qr?.qrId;
   const paymentLinkId = payment?.qr?.paymentLinkId;
-  if (!paymentLinkId || !isRazorpayConfigured()) return orderDoc.payment;
+  if (!qrId && !paymentLinkId) return orderDoc.payment;
+  if (!isRazorpayConfigured()) return orderDoc.payment;
+
+  if (qrId) {
+    let paymentsResp;
+    try {
+      paymentsResp = await fetchQrCodePayments(qrId);
+    } catch (error) {
+      logger.warn(
+        `Razorpay QR payments fetch failed for ${qrId}: ${
+          error?.message || error
+        }`,
+      );
+      return orderDoc.payment;
+    }
+
+    const payments = paymentsResp?.items || [];
+    const paidPayment = payments.find((p) =>
+      ['captured', 'authorized'].includes(String(p?.status || '').toLowerCase()),
+    );
+
+    let newStatus = payment.status || 'pending_qr';
+    let qrStatus = payment.qr?.status || 'created';
+
+    if (paidPayment) {
+      newStatus = 'paid';
+      qrStatus = 'paid';
+    } else {
+      const expiresAt = payment.qr?.expiresAt;
+      if (expiresAt && new Date(expiresAt) < new Date()) {
+        newStatus = 'failed';
+        qrStatus = 'expired';
+      }
+    }
+
+    await FoodTransaction.updateOne(
+      { orderId: orderDoc?._id },
+      {
+        $set: {
+          'payment.qr.status': qrStatus,
+          'payment.status': newStatus,
+        },
+      },
+    );
+
+    const updatedTx = await FoodTransaction.findOne({ orderId: orderDoc?._id }).lean();
+    return updatedTx?.payment || payment;
+  }
 
   let link;
   try {
@@ -95,15 +145,19 @@ export async function createCollectQr(
   }
 
   const user = order.userId || {};
-  const link = await createPaymentLink({
+  
+  // Use Razorpay Dynamic Single-Use UPI QR Code
+  const qr = await createUpiQrCode({
     amountPaise: Math.round(amountDue * 100),
     currency: 'INR',
     description: `Order ${order._id.toString()} - COD collect`,
     orderId: order._id.toString(),
     customerName: customerInfo.name || user.name || 'Customer',
-    customerEmail: customerInfo.email || user.email || 'customer@example.com',
-    customerPhone: customerInfo.phone || user.phone,
   });
+
+  const qrImageUrl = qr.image_url || null;
+  const qrId = qr.id || null;
+  const qrExpiresAt = qr.close_by ? new Date(qr.close_by * 1000) : null;
 
   // Phase 2: write QR collection state into FoodTransaction only.
   await FoodTransaction.updateOne(
@@ -114,11 +168,10 @@ export async function createCollectQr(
         'payment.method': 'razorpay_qr',
         'payment.status': 'pending_qr',
         'payment.qr': {
-          paymentLinkId: link.id,
-          shortUrl: link.short_url,
-          imageUrl: link.short_url,
-          status: link.status || 'created',
-          expiresAt: link.expire_by ? new Date(link.expire_by * 1000) : null,
+          qrId: qrId,
+          imageUrl: qrImageUrl,
+          status: qr.status || 'created',
+          expiresAt: qrExpiresAt,
         },
       },
     },
@@ -142,26 +195,15 @@ export async function createCollectQr(
     orderMongoId: String(orderId),
     orderId: order?.orderId || null,
     deliveryPartnerId,
-    paymentLinkId: link.id,
-    shortUrl: link.short_url,
+    qrId: qrId,
     amountDue,
   });
 
   return {
-    shortUrl:
-      link?.short_url ?? link?.shortUrl ?? link?.short_url_path ?? null,
-    imageUrl:
-      link?.short_url ??
-      link?.image_url ??
-      link?.imageUrl ??
-      link?.image ??
-      null,
+    imageUrl: qrImageUrl,
+    qrId: qrId,
     amount: amountDue,
-    expiresAt: link?.expire_by
-      ? new Date(link.expire_by * 1000)
-      : link?.expiresAt
-        ? new Date(link.expiresAt)
-        : null,
+    expiresAt: qrExpiresAt,
   };
 }
 

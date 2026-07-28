@@ -181,3 +181,49 @@ export async function initiateRazorpayRefund(paymentId, amount) {
         };
     }
 }
+
+/**
+ * Create a Dynamic Single-Use UPI QR Code via Razorpay qrCode.create().
+ * Returns the full QR code object containing `image_url`, `id`, `status`, etc.
+ * @param {Object} data
+ * @param {number} data.amountPaise - Amount in paise
+ * @param {string} [data.currency] - Currency code (default INR)
+ * @param {string} [data.description] - Payment description
+ * @param {string} [data.orderId] - Internal order ID for notes
+ * @param {string} [data.customerName] - Customer name for notes
+ */
+export async function createUpiQrCode({ amountPaise, currency = 'INR', description, orderId, customerName }) {
+    const instance = getRazorpayInstance();
+    if (!instance) throw new Error('Razorpay not configured');
+
+    // QR expires 30 minutes from now
+    const closeBy = Math.floor(Date.now() / 1000) + 30 * 60;
+
+    return instance.qrCode.create({
+        type: 'upi_qr',
+        name: customerName || 'Customer',
+        usage: 'single_use',
+        fixed_amount: true,
+        payment_amount: Math.round(amountPaise),
+        currency,
+        description: description || `Order ${orderId || 'payment'}`,
+        close_by: closeBy,
+        notes: {
+            orderId: orderId || '',
+            purpose: 'cod_collection',
+        },
+    });
+}
+
+/**
+ * Fetch all payments made against a Razorpay QR Code.
+ * Used to verify whether the scanned QR payment has been captured/authorized.
+ * @param {string} qrCodeId - Razorpay QR code ID (e.g. qr_xxxxx)
+ * @returns {Promise<Object>} - Razorpay payments response { items: [...], count }
+ */
+export async function fetchQrCodePayments(qrCodeId) {
+    const instance = getRazorpayInstance();
+    if (!instance) throw new Error('Razorpay not configured');
+    if (!qrCodeId) throw new Error('qrCodeId is required');
+    return instance.qrCode.fetchAllPayments(String(qrCodeId), {});
+}
