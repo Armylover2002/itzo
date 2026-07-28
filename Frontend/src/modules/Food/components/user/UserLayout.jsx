@@ -113,6 +113,8 @@ export default function UserLayout({ children }) {
     // Initialize user app settings and favicon
     setAppType('user')
     loadBusinessSettings()
+    // Track the active module for global route routing (e.g., /cart)
+    localStorage.setItem('active_app_module', 'food');
   }, [])
 
   useEffect(() => {

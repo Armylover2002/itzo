@@ -2003,7 +2003,9 @@ export default function Cart() {
   }
 
   // Quick-only cart: redirect to /quick/cart
-  if (isQuickCart) {
+  const activeAppModule = localStorage.getItem('active_app_module') || 'food';
+  
+  if (isQuickCart || (foodOnlyCart.length === 0 && activeAppModule === 'quick')) {
     navigate("/quick/cart", { replace: true })
     return null
   }

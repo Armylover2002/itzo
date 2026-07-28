@@ -16,6 +16,8 @@ const CustomerLayout = ({ children, showHeader: showHeaderProp, fullHeight = fal
     useEffect(() => {
         // Initialize global socket connection for Quick Commerce
         socketService.connect();
+        // Track the active module for global route routing (e.g., /cart)
+        localStorage.setItem('active_app_module', 'quick');
     }, []);
 
     // Route-based visibility logic with module prefix stripping
