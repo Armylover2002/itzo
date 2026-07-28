@@ -10,7 +10,7 @@ export const OrderSummaryModal = ({ order, onDone }) => {
   const earnings = order?.earnings || order?.riderEarning || (order?.orderAmount * 0.1) || 0;
 
   return (
-    <div className="fixed inset-0 z-[160] bg-green-500 overflow-y-auto">
+    <div className="fixed inset-0 z-[160] bg-[#FE5502] overflow-y-auto">
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
@@ -19,7 +19,7 @@ export const OrderSummaryModal = ({ order, onDone }) => {
         >
           {/* Success Icon (White Style) */}
           <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl animate-bounce">
-            <CheckCircle className="w-16 h-16 text-green-500" />
+            <CheckCircle className="w-16 h-16 text-[#FE5502]" />
           </div>
           
           <h1 className="text-white text-5xl font-bold mb-2 tracking-tight">Well Done!</h1>
@@ -34,7 +34,7 @@ export const OrderSummaryModal = ({ order, onDone }) => {
             
             <p className="text-gray-950 text-6xl font-bold mb-6 tracking-tighter">₹{Number(earnings).toFixed(2)}</p>
             
-            <div className="flex items-center justify-center gap-3 py-3 bg-green-50 rounded-2xl text-green-700 text-sm font-bold border border-green-100">
+            <div className="flex items-center justify-center gap-3 py-3 bg-orange-50 rounded-2xl text-orange-700 text-sm font-bold border border-orange-100">
               <Wallet className="w-5 h-5" />
               <span>Transferred to Wallet</span>
             </div>
@@ -42,7 +42,7 @@ export const OrderSummaryModal = ({ order, onDone }) => {
 
           <button 
             onClick={onDone}
-            className="w-full h-16 bg-white text-green-600 font-bold text-xl rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-95 transition-all shadow-xl shadow-black/10"
+            className="w-full h-16 bg-white text-[#FE5502] font-bold text-xl rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-50 active:scale-95 transition-all shadow-xl shadow-black/10"
           >
             Go Back Home <ArrowRight className="w-6 h-6" />
           </button>

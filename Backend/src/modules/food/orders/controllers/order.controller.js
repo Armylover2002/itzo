@@ -1,5 +1,6 @@
 import { sendResponse } from '../../../../utils/response.js';
 import * as orderService from '../services/order.service.js';
+import * as orderPaymentService from '../services/order-payment.service.js';
 import * as foodOrderPaymentService from '../services/foodOrderPayment.service.js';
 import {
     validateCalculateOrderDto,
@@ -327,7 +328,7 @@ export async function getPaymentStatusController(req, res, next) {
     try {
         const deliveryPartnerId = req.user?.userId;
         const orderId = req.params.orderId;
-        const result = await orderService.getPaymentStatus(orderId, deliveryPartnerId);
+        const result = await orderPaymentService.getPaymentStatus(orderId, deliveryPartnerId);
         return sendResponse(res, 200, 'Payment status retrieved', result);
     } catch (err) {
         next(err);

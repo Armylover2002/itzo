@@ -522,9 +522,21 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
               <h3 className="text-gray-950 font-bold text-xl mb-2">
                 Scan to Pay
               </h3>
-              <p className="text-gray-500 text-sm mb-8 font-medium">
+              <p className="text-gray-500 text-sm mb-4 font-medium">
                 Order Total: ₹{amountToCollect.toFixed(2)}
               </p>
+
+              <button
+                onClick={handleManualCheck}
+                disabled={isSyncing}
+                className="flex gap-1.5 items-center bg-[#FE5502] text-white px-4 py-2 mb-6 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">
+                {isSyncing ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4" />
+                )}
+                Check Status
+              </button>
 
               <div className="relative bg-gray-50 rounded-3xl border-2 border-gray-100 mb-8 w-64 h-64 overflow-hidden flex items-center justify-center">
                 <img
@@ -532,17 +544,6 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
                   alt="Razorpay QR"
                   className="w-full h-full object-cover scale-[1.6] translate-y-[-8%]"
                 />
-                <button
-                  onClick={handleManualCheck}
-                  disabled={isSyncing}
-                  className="absolute top-2 right-2 flex gap-1.5 items-center bg-green-500 text-white px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all z-10">
-                  {isSyncing ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-3 h-3" />
-                  )}
-                  Check Status
-                </button>
               </div>
 
               <button
