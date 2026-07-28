@@ -219,7 +219,7 @@ const AdminProfile = () => {
                                         type="submit"
                                         disabled={isSaving}
                                         className={cn(
-                                            "flex items-center gap-2 px-4 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
+                                            "flex items-center gap-2 px-4 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-orange-100 active:scale-95",
                                             isSaving ? "opacity-70 cursor-wait" : "hover:bg-primary-hover"
                                         )}
                                     >
@@ -286,7 +286,7 @@ const AdminProfile = () => {
                                         type="submit"
                                         disabled={isSaving}
                                         className={cn(
-                                            "flex items-center gap-2 px-4 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-100 active:scale-95",
+                                            "flex items-center gap-2 px-4 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-orange-100 active:scale-95",
                                             isSaving ? "opacity-70 cursor-wait" : "hover:bg-primary-hover"
                                         )}
                                     >

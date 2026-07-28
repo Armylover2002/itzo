@@ -43,8 +43,8 @@ export default function AdminReturnsList() {
     const colors = {
       RETURN_REQUESTED: 'bg-yellow-100 text-yellow-800',
       UNDER_ADMIN_REVIEW: 'bg-orange-100 text-orange-800',
-      APPROVED: 'bg-blue-100 text-blue-800',
-      PARTIALLY_APPROVED: 'bg-blue-100 text-blue-800',
+      APPROVED: 'bg-orange-100 text-orange-800',
+      PARTIALLY_APPROVED: 'bg-orange-100 text-orange-800',
       REJECTED: 'bg-red-100 text-red-800',
       IN_PROGRESS: 'bg-purple-100 text-purple-800',
       COMPLETED: 'bg-green-100 text-green-800',
@@ -130,7 +130,7 @@ export default function AdminReturnsList() {
                       <td className="px-6 py-4 text-right">
                         <button 
                           onClick={() => navigate(`/ecs/quick-commerce/returns/${ret._id}`)}
-                          className="p-1.5 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors inline-flex items-center"
+                          className="p-1.5 text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors inline-flex items-center"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />

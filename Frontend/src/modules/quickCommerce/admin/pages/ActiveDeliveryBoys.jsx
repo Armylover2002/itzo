@@ -148,7 +148,7 @@ const ActiveDeliveryBoys = () => {
                             </div>
                             <div className={cn(
                                 "p-3 rounded-2xl transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-lg",
-                                stat.color === 'orange' ? "bg-primary/10 text-primary shadow-indigo-100" :
+                                stat.color === 'orange' ? "bg-primary/10 text-primary shadow-orange-100" :
                                     stat.color === 'emerald' ? "bg-emerald-500/10 text-emerald-600 shadow-emerald-100" :
                                         stat.color === 'amber' ? "bg-amber-500/10 text-amber-600 shadow-amber-100" :
                                             "bg-rose-500/10 text-rose-600 shadow-rose-100"

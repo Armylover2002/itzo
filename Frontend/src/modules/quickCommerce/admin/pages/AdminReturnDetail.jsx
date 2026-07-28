@@ -72,7 +72,7 @@ function AssignDeliveryBoyModal({ legId, onClose, onAssigned }) {
         <div className="p-5 border-b border-gray-100">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-blue-600" />
+              <UserPlus className="w-5 h-5 text-orange-600" />
               Assign Delivery Boy
             </h3>
             <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors">
@@ -86,7 +86,7 @@ function AssignDeliveryBoyModal({ legId, onClose, onAssigned }) {
               placeholder="Search by name or phone..."
               value={search}
               onChange={handleSearchChange}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400"
               autoFocus
             />
           </div>
@@ -96,7 +96,7 @@ function AssignDeliveryBoyModal({ legId, onClose, onAssigned }) {
         <div className="flex-1 overflow-y-auto p-3">
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+              <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
             </div>
           ) : partners.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
@@ -113,15 +113,15 @@ function AssignDeliveryBoyModal({ legId, onClose, onAssigned }) {
                 return (
                   <div
                     key={partner._id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all group"
                   >
                     {/* Avatar */}
                     <div className="relative flex-shrink-0">
                       {partner.profilePhoto ? (
                         <img src={partner.profilePhoto} className="w-10 h-10 rounded-full object-cover bg-gray-100" alt="" />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                          <span className="text-sm font-bold text-blue-600">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center">
+                          <span className="text-sm font-bold text-orange-600">
                             {partner.name?.[0]?.toUpperCase() || '?'}
                           </span>
                         </div>
@@ -152,7 +152,7 @@ function AssignDeliveryBoyModal({ legId, onClose, onAssigned }) {
                       <button
                         onClick={() => handleAssign(partner._id)}
                         disabled={isAssigning}
-                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
+                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1"
                       >
                         {isAssigning ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
@@ -351,7 +351,7 @@ export default function AdminReturnDetail() {
           </div>
         </div>
         <div>
-          <span className="px-4 py-2 rounded-full text-sm font-bold bg-blue-100 text-blue-800 uppercase">
+          <span className="px-4 py-2 rounded-full text-sm font-bold bg-orange-100 text-orange-800 uppercase">
             {returnRequest.status.replace(/_/g, ' ')}
           </span>
         </div>
@@ -428,7 +428,7 @@ export default function AdminReturnDetail() {
                 <button 
                   onClick={submitApprovals}
                   disabled={submitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow disabled:opacity-50 transition-colors"
+                  className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-6 rounded-lg shadow disabled:opacity-50 transition-colors"
                 >
                   {submitting ? 'Submitting...' : 'Submit Review Decisions'}
                 </button>
@@ -458,7 +458,7 @@ export default function AdminReturnDetail() {
                       {/* Assigned Rider Info */}
                       {hasAssignedRider && (
                         <div className="mt-2 flex items-center gap-3">
-                          <p className="text-sm text-blue-600 font-medium">
+                          <p className="text-sm text-orange-600 font-medium">
                             Assigned Rider: {leg.assignment.deliveryPartnerId?.name || (typeof leg.assignment.deliveryPartnerId === 'string' ? leg.assignment.deliveryPartnerId : 'Unknown')}
                             {leg.assignment.deliveryPartnerId?.phone && (
                               <span className="text-gray-400 ml-1">({leg.assignment.deliveryPartnerId.phone})</span>
@@ -482,7 +482,7 @@ export default function AdminReturnDetail() {
                           <button 
                             onClick={() => setAssignModalLegId(leg._id)}
                             disabled={submitting}
-                            className="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
+                            className="text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded transition-colors flex items-center gap-1"
                           >
                             <UserPlus className="w-3 h-3" /> Assign Delivery Boy
                           </button>
@@ -541,7 +541,7 @@ export default function AdminReturnDetail() {
                         </span>
                       )}
                       {(leg.returnStatus === 'return_completed' || leg.returnStatus === 'returned') && (
-                        <span className="flex items-center gap-1 text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded-full text-sm">
+                        <span className="flex items-center gap-1 text-orange-600 font-bold bg-orange-50 px-3 py-1 rounded-full text-sm">
                           <CheckCircle2 className="w-4 h-4" /> Return Complete
                         </span>
                       )}

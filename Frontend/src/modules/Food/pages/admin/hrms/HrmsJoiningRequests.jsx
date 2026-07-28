@@ -12,7 +12,7 @@ import { useSearchParams } from 'react-router-dom';
 
 const statusStyles = {
     Pending: 'bg-amber-50 text-amber-700 border-amber-200',
-    Under_Review: 'bg-orange-50 text-blue-700 border-blue-200',
+    Under_Review: 'bg-orange-50 text-orange-700 border-orange-200',
     Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     Rejected: 'bg-red-50 text-red-700 border-red-200',
     Info_Requested: 'bg-violet-50 text-violet-700 border-violet-200',
@@ -400,7 +400,7 @@ export default function HrmsJoiningRequests() {
                                         <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 shadow-sm">
                                             <div className="min-w-0">
                                                 <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                                    <FileCheck className="w-3.5 h-3.5 text-blue-500" /> PAN Card
+                                                    <FileCheck className="w-3.5 h-3.5 text-orange-500" /> PAN Card
                                                 </p>
                                                 <p className="text-xs font-mono text-slate-500 mt-0.5">{selectedRequest.panNumber || 'Number Not Provided'}</p>
                                             </div>
@@ -667,16 +667,15 @@ export default function HrmsJoiningRequests() {
                                         </div>
                                     </details>
 
-                                    <details className="group">
-                                        <summary className="flex items-center gap-2 cursor-pointer text-blue-600 font-bold text-sm hover:text-blue-700 transition-colors bg-blue-50/60 p-3.5 rounded-xl border border-blue-200/60 shadow-xs">
-                                            <MessageSquare className="w-4 h-4 text-blue-600" /> Request More Information / Clarification
+                                                     <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-bold text-sm hover:text-orange-700 transition-colors bg-orange-50/60 p-3.5 rounded-xl border border-orange-200/60 shadow-xs">
+                                            <MessageSquare className="w-4 h-4 text-orange-600" /> Request More Information / Clarification
                                         </summary>
-                                        <div className="mt-3 p-5 bg-blue-50/40 rounded-2xl border border-blue-200/80">
+                                        <div className="mt-3 p-5 bg-orange-50/40 rounded-2xl border border-orange-200/80">
                                             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Message to Applicant *</label>
                                             <textarea value={infoMessage} onChange={e => setInfoMessage(e.target.value)} rows={3} placeholder="Specify what documents or details need clarification..."
-                                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 resize-none bg-white" />
+                                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none bg-white" />
                                             <button onClick={handleRequestInfo} disabled={actionLoading}
-                                                className="mt-3 px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">
+                                                className="mt-3 px-6 h-10 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">sabled:opacity-50 shadow-sm flex items-center gap-2">
                                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
                                                 Send Information Request
                                             </button>

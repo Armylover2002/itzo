@@ -183,7 +183,7 @@ const AdminAuth = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full bg-primary text-white rounded-[24px] py-5 text-base font-black shadow-2xl shadow-indigo-200 hover:bg-primary-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                    className="w-full bg-primary text-white rounded-[24px] py-5 text-base font-black shadow-2xl shadow-orange-200 hover:bg-primary-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                                 >
                                     {isLoading ? (
                                         <motion.div

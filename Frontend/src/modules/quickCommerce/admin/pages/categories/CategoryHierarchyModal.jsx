@@ -175,7 +175,7 @@ export default function CategoryHierarchyModal({ isOpen, onClose, onSuccess }) {
 
           {/* Body */}
           <div className="p-6 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
-            {renderSection("1. Header Category", <FolderOpen className="w-5 h-5 text-indigo-500" />, headerData, setHeaderData, headerPreview, headerFileRef, setHeaderImage, setHeaderPreview)}
+            {renderSection("1. Header Category", <FolderOpen className="w-5 h-5 text-orange-500" />, headerData, setHeaderData, headerPreview, headerFileRef, setHeaderImage, setHeaderPreview)}
             {renderSection("2. Level 2 Category", <Folder className="w-5 h-5 text-purple-500" />, level2Data, setLevel2Data, level2Preview, level2FileRef, setLevel2Image, setLevel2Preview)}
             {renderSection("3. Subcategory", <Tag className="w-5 h-5 text-emerald-500" />, subData, setSubData, subPreview, subFileRef, setSubImage, setSubPreview)}
           </div>

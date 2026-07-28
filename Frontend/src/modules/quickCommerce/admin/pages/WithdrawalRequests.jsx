@@ -418,21 +418,21 @@ const WithdrawalRequests = () => {
                             </Card>
 
                             {/* Seller Payment Details */}
-                            <Card className="p-5 border-none bg-blue-50/50 ring-1 ring-blue-100 rounded-xl">
-                                <p className="ds-label mb-3 text-blue-700">Seller's Payment Details</p>
+                            <Card className="p-5 border-none bg-orange-50/50 ring-1 ring-orange-100 rounded-xl">
+                                <p className="ds-label mb-3 text-orange-700">Seller's Payment Details</p>
                                 {selectedRequest.paymentMethod === 'qr' && selectedRequest.bankDetails?.qrCodeImage ? (
                                     <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">QR Code</p>
+                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">QR Code</p>
                                         <img src={selectedRequest.bankDetails.qrCodeImage} alt="Seller QR Code" className="w-full max-w-[220px] mx-auto rounded-xl border border-slate-200 shadow-sm" />
                                     </div>
                                 ) : selectedRequest.paymentMethod === 'upi' && selectedRequest.bankDetails?.upiId ? (
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">UPI ID</p>
+                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">UPI ID</p>
                                         <p className="text-sm font-black text-slate-900 bg-white px-4 py-2.5 rounded-xl ring-1 ring-slate-100">{selectedRequest.bankDetails.upiId}</p>
                                     </div>
                                 ) : selectedRequest.bankDetails?.bankName ? (
                                     <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Bank Transfer</p>
+                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Bank Transfer</p>
                                         <div className="bg-white p-4 rounded-xl ring-1 ring-slate-100 space-y-1.5">
                                             <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Bank</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.bankName}</span></div>
                                             <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Holder</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.accountHolderName}</span></div>
