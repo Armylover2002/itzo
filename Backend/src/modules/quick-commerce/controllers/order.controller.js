@@ -22,7 +22,7 @@ import {
   getRiderEarning as getQuickRiderEarning,
 } from '../admin/services/billing.service.js';
 import * as foodTransactionService from '../../food/orders/services/foodTransaction.service.js';
-import { refundWalletBalance } from '../../../core/payments/wallet.service.js';
+import { deductWalletBalance, refundWalletBalance } from '../../food/user/services/userWallet.service.js';
 import { emitQuickCommerceStatusUpdate } from '../services/quickStatusRealtime.service.js';
 
 const USER_CANCEL_FULL_REFUND_WINDOW_MS = 30 * 1000;
