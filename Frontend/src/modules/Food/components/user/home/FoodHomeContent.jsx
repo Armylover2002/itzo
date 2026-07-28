@@ -430,7 +430,7 @@ function FoodHomeContent({
                           index % 3 === 0
                             ? "from-orange-500 to-red-500"
                             : index % 3 === 1
-                              ? "from-blue-500 to-purple-500"
+                              ? "from-orange-500 to-orange-600"
                               : "from-green-500 to-teal-500"
                         }`}
                       />

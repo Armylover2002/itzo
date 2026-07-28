@@ -85,7 +85,7 @@ export const CATEGORY_METADATA = {
     icon: ChildCareIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #4CC9F0, #A0E7E5)",
-      shadow: "shadow-blue-500/20",
+      shadow: "shadow-orange-500/20",
       accent: "text-orange-900",
     },
     banner: {
@@ -107,7 +107,7 @@ export const CATEGORY_METADATA = {
     icon: SportsSoccerIcon,
     theme: {
       gradient: "linear-gradient(to bottom, #4361EE, #4895EF)",
-      shadow: "shadow-indigo-500/20",
+      shadow: "shadow-orange-500/20",
       accent: "text-orange-900",
     },
     banner: { title: "SPORTS", subtitle: "GEAR", floatingElements: "confetti" },

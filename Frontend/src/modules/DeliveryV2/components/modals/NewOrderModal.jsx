@@ -178,7 +178,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
                 {pickupStops.map((pickup, index) => {
                   const isQuickStore = pickup.pickupType === 'quick';
                   const pickupLabel = order?.isReturn ? 'Customer Pickup' : (isQuickStore ? 'Seller Pickup' : 'Restaurant Pickup');
-                  const pickupAccent = order?.isReturn ? 'text-blue-600' : (isQuickStore ? 'text-orange-600' : 'text-green-600');
+                  const pickupAccent = order?.isReturn ? 'text-orange-600' : (isQuickStore ? 'text-orange-600' : 'text-green-600');
                   const pickupAddress = pickup.address || 'Address not available';
                   return (
                     <div key={pickup.id || `${pickup.pickupType}-${index}`}>

@@ -526,8 +526,8 @@ export default function VendorMoveLocation() {
           <h1 className="text-base font-bold text-gray-900">Move Your Location</h1>
           {zoneName && (
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Shield className="w-3 h-3 text-blue-500" />
-              <p className="text-xs text-blue-600 font-medium">Operating in {zoneName}</p>
+              <Shield className="w-3 h-3 text-orange-500" />
+              <p className="text-xs text-orange-600 font-medium">Operating in {zoneName}</p>
             </div>
           )}
         </div>
@@ -545,7 +545,7 @@ export default function VendorMoveLocation() {
               value={locationSearch}
               onChange={(e) => setLocationSearch(e.target.value)}
               placeholder="Search location within your zone..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border-none rounded-xl text-sm shadow-md focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border-none rounded-xl text-sm shadow-md focus:ring-2 focus:ring-orange-500 outline-none"
             />
           </div>
         </div>
@@ -558,9 +558,9 @@ export default function VendorMoveLocation() {
           title="Use my current GPS location"
         >
           {fetchingGPS ? (
-            <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+            <Loader2 className="w-5 h-5 text-orange-500 animate-spin" />
           ) : (
-            <Navigation className="w-5 h-5 text-blue-500" />
+            <Navigation className="w-5 h-5 text-orange-500" />
           )}
         </button>
 
@@ -592,9 +592,9 @@ export default function VendorMoveLocation() {
             {/* Zone + Last Updated */}
             <div className="flex items-center justify-between mb-3">
               {zoneName && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 rounded-full">
-                  <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                  <span className="text-[11px] font-semibold text-blue-700">{zoneName} Zone</span>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 rounded-full">
+                  <div className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  <span className="text-[11px] font-semibold text-orange-700">{zoneName} Zone</span>
                 </div>
               )}
               {lastUpdated && (

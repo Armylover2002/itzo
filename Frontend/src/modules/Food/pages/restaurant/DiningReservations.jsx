@@ -471,7 +471,7 @@ export default function DiningReservations() {
                     >
                         <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50/50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                         <div className="flex items-center gap-4 relative">
-                            <div className="bg-primary p-3 rounded-xl text-white shadow-lg shadow-blue-200">
+                            <div className="bg-primary p-3 rounded-xl text-white shadow-lg shadow-orange-200">
                                 <Users className="w-6 h-6" />
                             </div>
                             <div>

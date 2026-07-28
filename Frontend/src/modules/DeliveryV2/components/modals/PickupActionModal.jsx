@@ -239,7 +239,7 @@ export const PickupActionModal = ({
             const isQuickStore = pickup.pickupType === 'quick';
             const label = isReturn ? 'Customer Pickup' : (isQuickStore ? 'Seller Pickup' : 'Restaurant Pickup');
             const accentClasses = isReturn
-              ? 'text-blue-600 bg-blue-50 border-blue-100'
+              ? 'text-orange-600 bg-orange-50 border-orange-100'
               : (isQuickStore
                 ? 'text-orange-600 bg-orange-50 border-orange-100'
                 : 'text-green-600 bg-green-50 border-green-100');

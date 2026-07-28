@@ -451,7 +451,7 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
               </div>
             </div>
 
-            <div className={`bg-gradient-to-br ${isQuickOrder ? 'from-orange-500 to-orange-600 shadow-blue-500/20 border-orange-200' : 'from-[#FE5502] to-[#C83C00] shadow-red-500/20 border-red-200'} shadow-lg rounded-xl px-4 py-2 shrink-0 flex flex-col items-center justify-center border`}>
+            <div className={`bg-gradient-to-br ${isQuickOrder ? 'from-orange-500 to-orange-600 shadow-orange-500/20 border-orange-200' : 'from-[#FE5502] to-[#C83C00] shadow-red-500/20 border-red-200'} shadow-lg rounded-xl px-4 py-2 shrink-0 flex flex-col items-center justify-center border`}>
               <p className={`${isQuickOrder ? 'text-orange-50' : 'text-red-50'} text-[10px] font-bold uppercase tracking-wider opacity-95 leading-tight mb-[2px]`}>
                 {orderStatus === "scheduled" ? "Scheduled" : "arriving in"}
               </p>

@@ -214,7 +214,7 @@ export default function WalletPage() {
 
             <div className="flex gap-3">
               <Button 
-                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-blue-900/20"
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-orange-900/20"
                 onClick={() => {
                   if (isLowBalance) setRechargeAmount(requiredRecharge.toString())
                   setShowRechargeModal(true)

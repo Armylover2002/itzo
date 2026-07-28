@@ -693,14 +693,14 @@ export default function OutletInfo() {
                 </div>
 
                 {/* Zone Info */}
-                <div className="p-4 bg-blue-50/40">
+                <div className="p-4 bg-orange-50/40">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                    <p className="text-xs text-blue-700 font-medium">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                    <p className="text-xs text-orange-700 font-medium">
                       You are operating in <span className="font-bold">{restaurantData?.zoneName || "your assigned zone"}</span>
                     </p>
                   </div>
-                  <p className="text-[10px] text-blue-500 mt-1 ml-4">
+                  <p className="text-[10px] text-orange-500 mt-1 ml-4">
                     You can move your location anywhere within this zone
                   </p>
                 </div>

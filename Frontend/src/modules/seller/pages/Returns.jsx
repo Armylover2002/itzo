@@ -621,7 +621,7 @@ const Returns = () => {
                                                     Delivery Partner
                                                 </p>
                                                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center gap-3">
-                                                    <div className="h-10 w-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
+                                                    <div className="h-10 w-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center shrink-0">
                                                         <HiOutlineTruck className="h-5 w-5" />
                                                     </div>
                                                     <div>

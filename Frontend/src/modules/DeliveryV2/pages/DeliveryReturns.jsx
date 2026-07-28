@@ -17,13 +17,13 @@ dayjs.extend(relativeTime);
 // ── Status config: uses LOWERCASE values matching MongoDB ──────────────────
 const getStatusConfig = (status) => {
   switch (status) {
-    case 'return_pickup_assigned': return { label: 'Assigned', color: 'bg-blue-100 text-blue-700', icon: Truck, step: 1 };
+    case 'return_pickup_assigned': return { label: 'Assigned', color: 'bg-orange-100 text-orange-700', icon: Truck, step: 1 };
     case 'pickup_en_route':        return { label: 'Heading to User', color: 'bg-orange-100 text-orange-700', icon: Navigation, step: 2 };
     case 'pickup_reached':         return { label: 'Reached User', color: 'bg-amber-100 text-amber-700', icon: MapPin, step: 3 };
     case 'pickup_otp_pending':     return { label: 'Verify Pickup OTP', color: 'bg-purple-100 text-purple-700', icon: Clock, step: 3 };
     case 'picked_up':              return { label: 'Items Picked Up', color: 'bg-teal-100 text-teal-700', icon: Package, step: 4 };
-    case 'return_en_route':        return { label: 'Heading to Seller', color: 'bg-indigo-100 text-indigo-700', icon: Navigation, step: 5 };
-    case 'return_in_transit':      return { label: 'In Transit', color: 'bg-indigo-100 text-indigo-700', icon: Truck, step: 5 };
+    case 'return_en_route':        return { label: 'Heading to Seller', color: 'bg-orange-100 text-orange-700', icon: Navigation, step: 5 };
+    case 'return_in_transit':      return { label: 'In Transit', color: 'bg-orange-100 text-orange-700', icon: Truck, step: 5 };
     case 'return_reached_seller':  return { label: 'Reached Seller', color: 'bg-violet-100 text-violet-700', icon: Store, step: 6 };
     case 'seller_otp_pending':     return { label: 'Verify Seller OTP', color: 'bg-purple-100 text-purple-700', icon: Clock, step: 6 };
     case 'return_completed':       return { label: 'Completed', color: 'bg-green-100 text-green-700', icon: CheckCircle2, step: 7 };
@@ -161,7 +161,7 @@ export default function DeliveryReturns() {
         return (
           <div className="space-y-2">
             <button onClick={() => handleAction(legId, 'accept')} disabled={isLoading}
-              className="w-full bg-blue-600 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50">
+              className="w-full bg-orange-600 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-orange-700 active:scale-95 transition-all disabled:opacity-50">
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               Accept Pickup
             </button>
@@ -193,7 +193,7 @@ export default function DeliveryReturns() {
         return (
           <div className="space-y-2">
             <button onClick={() => handleAction(legId, 'heading_to_seller')} disabled={isLoading}
-              className="w-full bg-indigo-600 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50">
+              className="w-full bg-orange-600 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50">
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
               Start Heading to Seller
             </button>
@@ -204,7 +204,7 @@ export default function DeliveryReturns() {
         return (
           <div className="space-y-2">
             <button onClick={handleGoToFeed}
-              className="w-full bg-indigo-500 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all">
+              className="w-full bg-orange-500 text-white font-bold py-3 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all">
               <Map className="w-4 h-4" /> Navigate on Map
             </button>
             <button onClick={() => handleAction(legId, 'reached_seller')} disabled={isLoading}
@@ -312,7 +312,7 @@ export default function DeliveryReturns() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     key={item._id}
-                    className={`bg-white rounded-3xl p-5 shadow-sm border ${isActive ? 'border-blue-100' : 'border-gray-100'}`}
+                    className={`bg-white rounded-3xl p-5 shadow-sm border ${isActive ? 'border-orange-100' : 'border-gray-100'}`}
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-3">
