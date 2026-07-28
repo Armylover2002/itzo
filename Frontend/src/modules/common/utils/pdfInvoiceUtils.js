@@ -96,6 +96,9 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
     
     const logoDataUrl = await imageUrlToDataUrl(itzoLogoUrl)
 
+    const isQuick = order.orderType === 'quick' || String(order.orderId || order._id).startsWith('QC');
+    const entityTypeLabel = isQuick ? "Seller" : "Restaurant";
+
     // Dynamic Restaurant Details
     let fetchedRestaurant = null;
     
@@ -275,11 +278,11 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
     doc.setFontSize(9)
     doc.setFont("helvetica", "normal")
     doc.text(`Legal Entity Name: ${legalEntityName}`, margin, currentY); currentY += 5
-    doc.text(`Restaurant Name: ${restaurantName}`, margin, currentY); currentY += 5
-    const restAddressLines = doc.splitTextToSize(`Restaurant Address: ${restaurantAddress}`, pageWidth - margin * 2);
+    doc.text(`${entityTypeLabel} Name: ${restaurantName}`, margin, currentY); currentY += 5
+    const restAddressLines = doc.splitTextToSize(`${entityTypeLabel} Address: ${restaurantAddress}`, pageWidth - margin * 2);
     doc.text(restAddressLines, margin, currentY); currentY += restAddressLines.length * 5;
-    doc.text(`Restaurant GSTIN: ${restaurantGstin}`, margin, currentY); currentY += 5
-    doc.text(`Restaurant FSSAI: ${restaurantFssai}`, margin, currentY); currentY += 5
+    doc.text(`${entityTypeLabel} GSTIN: ${restaurantGstin}`, margin, currentY); currentY += 5
+    doc.text(`${entityTypeLabel} FSSAI: ${restaurantFssai}`, margin, currentY); currentY += 5
     doc.text(`Invoice No.: ${orderId}`, margin, currentY); currentY += 5
     doc.text(`Invoice Date: ${orderDate}`, margin, currentY); currentY += 8
 
@@ -296,7 +299,7 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
     doc.setFont("helvetica", "bold")
     doc.text(`HSN Code: ${hsnCode}`, margin, currentY); currentY += 5
     doc.setFont("helvetica", "normal")
-    doc.text(`Service Description: ${order.restaurantDetails?.serviceDescription || "Restaurant Service"}`, margin, currentY); currentY += 8
+    doc.text(`Service Description: ${order.restaurantDetails?.serviceDescription || (isQuick ? "Retail Service" : "Restaurant Service")}`, margin, currentY); currentY += 8
 
     // Table
     const tableHead = shouldShowCgst 
@@ -307,7 +310,7 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
     if (shouldShowCgst) totalRow.push("", formatMoney(totalItemsCgst));
     totalRow.push("", formatMoney(totalItemsSgst), formatMoney(totalItemsTotal));
 
-    const packRow = ["Restaurant Packaging Charge", formatMoney(packagingCharge), "0.00", formatMoney(packagingCharge)];
+    const packRow = [`${entityTypeLabel} Packaging Charge`, formatMoney(packagingCharge), "0.00", formatMoney(packagingCharge)];
     if (shouldShowCgst) packRow.push(`${cgstRate}%`, formatMoney(packCgst));
     packRow.push(`${sgstRate}%`, formatMoney(packSgst), formatMoney(packTotal));
 

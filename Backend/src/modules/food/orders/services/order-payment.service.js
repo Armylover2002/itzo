@@ -22,7 +22,11 @@ import {
 
 async function syncRazorpayQrPayment(orderDoc) {
   // Phase 2: avoid relying on FoodOrder.payment as the source of truth.
-  const tx = await FoodTransaction.findOne({ orderId: orderDoc?._id }).lean();
+  let tx = await FoodTransaction.findOne({ orderId: orderDoc?._id }).lean();
+  if (!tx) {
+    tx = await foodTransactionService.createInitialTransaction(orderDoc);
+    tx = tx.toObject ? tx.toObject() : tx;
+  }
   const payment = tx?.payment || orderDoc?.payment || null;
   if (!payment) return null;
   if (payment.method !== 'razorpay_qr') return payment;
@@ -72,7 +76,7 @@ async function syncRazorpayQrPayment(orderDoc) {
           'payment.qr.status': qrStatus,
           'payment.status': newStatus,
         },
-      },
+      }
     );
 
     const updatedTx = await FoodTransaction.findOne({ orderId: orderDoc?._id }).lean();
@@ -106,7 +110,7 @@ async function syncRazorpayQrPayment(orderDoc) {
             ? 'failed'
             : (payment.status || 'pending_qr'),
       },
-    },
+    }
   );
 
   const updatedTx = await FoodTransaction.findOne({ orderId: orderDoc?._id }).lean();
@@ -132,7 +136,11 @@ export async function createCollectQr(
   ) {
     throw new ForbiddenError('Not your order');
   }
-  const tx = await FoodTransaction.findOne({ orderId: order._id }).lean();
+  let tx = await FoodTransaction.findOne({ orderId: order._id }).lean();
+  if (!tx) {
+    tx = await foodTransactionService.createInitialTransaction(order);
+    tx = tx.toObject ? tx.toObject() : tx;
+  }
   const payment = tx?.payment || order.payment || {};
   if (payment.method !== 'cash' && payment.status === 'paid') {
     throw new ValidationError('Order already paid');
@@ -173,8 +181,8 @@ export async function createCollectQr(
           status: qr.status || 'created',
           expiresAt: qrExpiresAt,
         },
-      },
-    },
+      }
+    }
   );
 
   const updatedTx = await FoodTransaction.findOne({ orderId: order._id }).lean();
@@ -212,7 +220,7 @@ export async function getPaymentStatus(orderId, deliveryPartnerId) {
   if (!identity) throw new ValidationError('Order id required');
 
   const order = await FoodOrder.findOne(identity).select(
-    'dispatch riderEarning platformProfit',
+    'dispatch riderEarning platformProfit payment pricing userId orderType restaurantId',
   );
   if (!order) throw new NotFoundError('Order not found');
   if (
@@ -234,12 +242,18 @@ export async function getPaymentStatus(orderId, deliveryPartnerId) {
     (transaction?.history || []).sort((a, b) => (b.at || 0) - (a.at || 0))[0] ||
     null;
 
+  // Fallback to order.payment if transaction is missing or empty
+  const effectivePayment = transaction?.payment?.method ? transaction.payment : {
+    ...(order.payment?.toObject?.() || order.payment || {}),
+    status: order.payment?.status,
+  };
+
   return {
-    payment: transaction?.payment || {},
+    payment: effectivePayment,
     latestPaymentSnapshot: latestHistory,
     riderEarning: order.riderEarning ?? 0,
     platformProfit: order.platformProfit ?? 0,
-    pricingTotal: transaction?.pricing?.total ?? 0,
+    pricingTotal: transaction?.pricing?.total ?? order.pricing?.total ?? 0,
     transactionStatus: transaction?.status ?? null,
   };
 }
