@@ -9,6 +9,7 @@ import { updateSellerProfileData } from '../seller/controllers/seller.controller
 import { QuickZone } from '../models/quick_zone.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { uploadImageBuffer } from '../../../services/cloudinary.service.js';
+import { processRefund as processFoodRefund } from '../../food/admin/services/admin.service.js';
 import { getIO, rooms } from '../../../config/socket.js';
 import {
   getQuickExperienceSections,
@@ -855,6 +856,50 @@ export const updateProduct = async (req, res) => {
   return res.json({ success: true, result: toProduct(populated) });
 };
 
+export const processRefund = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { refundAmount, refundTo } = req.body;
+    
+    if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({ success: false, message: 'Invalid order id' });
+    }
+    
+    // Reuse the battle-tested Food module refund logic
+    const updated = await processFoodRefund(orderId, refundAmount, refundTo);
+    
+    // Optional: Send notification if needed (handled in service or here)
+    const order = await mongoose.model('FoodOrder').findById(orderId).lean();
+    if (order && order.userId) {
+      try {
+        const { notifyOwnersSafely } = await import('../../../core/notifications/firebase.service.js');
+        await notifyOwnersSafely(
+          [{ ownerType: 'USER', ownerId: order.userId }],
+          {
+            title: 'Refund Processed! 💸',
+            body: `Your refund of ₹${refundAmount || order.totalAmount || order.total || order.pricing?.total || 0} for Order #${order.orderId} has been processed successfully.`,
+            image: 'https://i.ibb.co/3m2Yh7r/Appzeto-Brand-Image.png',
+            data: {
+              type: 'refund_processed',
+              orderId: String(order.orderId),
+              orderMongoId: String(order._id)
+            }
+          }
+        );
+      } catch (notifyErr) {
+        console.error('Failed to send refund notification:', notifyErr);
+      }
+    }
+    
+    res.status(200).json({ success: true, message: 'Refund processed successfully', data: updated });
+  } catch (error) {
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    next(error);
+  }
+};
+
 export const removeProduct = async (req, res) => {
   await QuickProduct.findByIdAndDelete(req.params.productId);
   return res.json({ success: true, result: { deleted: true } });
@@ -892,6 +937,10 @@ export const getAdminOrders = async (req, res) => {
           { workflowStatus: 'DELIVERED' },
         ];
         break;
+      case 'refunded':
+        query['payment.status'] = 'refunded';
+        break;
+      case 'returned':
       default:
         break;
     }

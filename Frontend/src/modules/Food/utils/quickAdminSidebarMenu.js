@@ -98,6 +98,7 @@ export const quickAdminSidebarMenu = [
           { label: "On the Way", path: "/ecs/quick-commerce/orders/out-for-delivery", permissionKey: "out_for_delivery" },
           { label: "Delivered", path: "/ecs/quick-commerce/orders/delivered", permissionKey: "delivered" },
           { label: "Cancelled", path: "/ecs/quick-commerce/orders/cancelled", permissionKey: "cancelled" },
+          { label: "Refunded", path: "/ecs/quick-commerce/orders/refunded", permissionKey: "refunded" },
           { label: "Returned", path: "/ecs/quick-commerce/orders/returned", permissionKey: "returned" },
         ],
       },

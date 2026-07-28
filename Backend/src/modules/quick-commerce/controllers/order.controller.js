@@ -15,13 +15,17 @@ import {
   isRazorpayConfigured,
   getRazorpayKeyId,
   verifyPaymentSignature,
+  initiateRazorpayRefund
 } from '../../food/orders/helpers/razorpay.helper.js';
 import {
   calculateQuickPricing,
   getRiderEarning as getQuickRiderEarning,
 } from '../admin/services/billing.service.js';
 import * as foodTransactionService from '../../food/orders/services/foodTransaction.service.js';
+import { refundWalletBalance } from '../../../core/payments/wallet.service.js';
 import { emitQuickCommerceStatusUpdate } from '../services/quickStatusRealtime.service.js';
+
+const USER_CANCEL_FULL_REFUND_WINDOW_MS = 30 * 1000;
 
 const approvedProductFilter = {
   $or: [
@@ -816,8 +820,106 @@ export const cancelOrder = async (req, res) => {
       note: String(req.body?.reason || 'Quick commerce order cancelled by user').trim(),
     });
 
-    if (order.payment?.method === 'cash') {
-      order.payment.status = 'failed';
+    const paymentMethod = String(order.payment?.method || '').toLowerCase();
+    const isWalletPaid = paymentMethod === 'wallet' && (order.payment.status === 'paid' || order.payment.status === 'refunded');
+    const isOnlinePaid = ['razorpay', 'razorpay_qr', 'online'].includes(paymentMethod) && (order.payment.status === 'paid' || order.payment.status === 'refunded');
+    const refundTo = req.body?.refundTo;
+    const requestedRefundMethod = refundTo === 'wallet' || refundTo === 'gateway' ? refundTo : 'gateway';
+    const reason = req.body?.reason || '';
+
+    const elapsedMs = Date.now() - new Date(order.createdAt).getTime();
+    const isWithinRefundWindow = elapsedMs <= USER_CANCEL_FULL_REFUND_WINDOW_MS || ['created', 'placed'].includes(currentStatus);
+
+    if (isWalletPaid) {
+      if (isWithinRefundWindow) {
+        try {
+          await refundWalletBalance(req.user?._id || order.userId, order.pricing.total, `Refund for cancelled order #${order.orderId}`, {
+            orderId: order._id,
+            orderCustomId: order.orderId,
+            source: 'user_cancel_wallet_refund'
+          });
+          order.payment.status = 'refunded';
+          order.payment.refund = {
+            status: 'processed',
+            amount: order.pricing.total,
+            refundId: `wallet_refund_${Date.now()}`,
+            requestedMethod: 'wallet',
+            processedMethod: 'wallet',
+            requestedAt: new Date(),
+            processedAt: new Date(),
+            reason: reason
+          };
+          await foodTransactionService.updateTransactionStatus(order._id, 'refunded');
+        } catch (err) {
+          logger.error(`Quick User cancel automated wallet refund failed: ${err}`);
+          order.payment.refund = {
+            status: 'pending',
+            amount: order.pricing.total,
+            requestedMethod: 'wallet',
+            requestedAt: new Date(),
+            requestedByUser: true,
+            reason: reason
+          };
+        }
+      } else {
+        order.payment.refund = {
+          status: 'pending',
+          amount: order.pricing.total,
+          requestedMethod: 'wallet',
+          requestedAt: new Date(),
+          requestedByUser: true,
+          reason: reason
+        };
+      }
+    } else if (isOnlinePaid) {
+      if (requestedRefundMethod === 'wallet' && isWithinRefundWindow) {
+        try {
+          await refundWalletBalance(req.user?._id || order.userId, order.pricing.total, `Refund for cancelled order #${order.orderId} (Refunded to wallet)`, {
+            orderId: order._id,
+            orderCustomId: order.orderId,
+            source: 'user_cancel_online_to_wallet_refund'
+          });
+          order.payment.status = 'refunded';
+          order.payment.refund = {
+            status: 'processed',
+            amount: order.pricing.total,
+            refundId: `wallet_refund_${Date.now()}`,
+            requestedMethod: 'wallet',
+            processedMethod: 'wallet',
+            requestedAt: new Date(),
+            processedAt: new Date(),
+            reason: reason
+          };
+          await foodTransactionService.updateTransactionStatus(order._id, 'refunded');
+        } catch (err) {
+          logger.error(`Quick User cancel online-to-wallet automated refund failed: ${err}`);
+          order.payment.refund = {
+            status: 'pending',
+            amount: order.pricing.total,
+            requestedMethod: 'wallet',
+            requestedAt: new Date(),
+            requestedByUser: true,
+            reason: reason
+          };
+        }
+      } else {
+        order.payment.refund = {
+          ...(order.payment.refund || {}),
+          status: 'pending',
+          amount: Number(order.pricing?.total || 0),
+          refundId: '',
+          requestedMethod: requestedRefundMethod,
+          processedMethod: undefined,
+          requestedAt: new Date(),
+          requestedByUser: true,
+          reason: reason,
+          processedAt: null,
+        };
+      }
+    } else if (!['paid', 'refunded'].includes(order.payment?.status)) {
+      if (order.payment) {
+        order.payment.status = 'cancelled';
+      }
     }
 
     await order.save();

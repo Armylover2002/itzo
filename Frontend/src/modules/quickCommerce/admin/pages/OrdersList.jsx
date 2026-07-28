@@ -31,6 +31,7 @@ import {
     adminRouteMatchesOrder,
 } from '@/shared/utils/orderStatus';
 import { joinOrderRoom, onOrderStatusUpdate } from "@/core/services/orderSocket";
+import RefundModal from "@food/components/admin/orders/RefundModal";
 
 const AUTO_REFRESH_INTERVAL_MS = 30000;
 
@@ -93,6 +94,9 @@ const OrdersList = () => {
     const [total, setTotal] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [refundModalOpen, setRefundModalOpen] = useState(false);
+    const [selectedOrderForRefund, setSelectedOrderForRefund] = useState(null);
+    const [processingRefund, setProcessingRefund] = useState(false);
 
     const getToken = () =>
         localStorage.getItem("admin_accessToken") ||
@@ -140,6 +144,7 @@ const OrdersList = () => {
                     date: formatOrderTimestamp(o.createdAt),
                     payment: o.payment?.method === 'cod' || o.payment?.method === 'cash' ? 'COD' : 'Digital',
                     paymentMethod: String(o.payment?.method || '').toLowerCase(),
+                    refundStatus: o.payment?.refund?.status || (o.payment?.status === 'refunded' ? 'processed' : null),
                 }));
                 setOrders(formatted);
                 formatted.forEach((row) => {
@@ -189,6 +194,36 @@ const OrdersList = () => {
         } catch (error) {
             console.error("Failed to delete order:", error);
             showToast(error?.response?.data?.message || "Failed to delete order", "error");
+        }
+    };
+
+    const handleRefundClick = (order) => {
+        setSelectedOrderForRefund(order);
+        setRefundModalOpen(true);
+    };
+
+    const processRefund = async (orderIdToUse, refundAmount = null, refundTo = null) => {
+        if (!orderIdToUse) return;
+        setProcessingRefund(true);
+        try {
+            const requestData = {};
+            if (refundAmount) requestData.refundAmount = refundAmount;
+            if (refundTo) requestData.refundTo = refundTo;
+
+            const response = await adminApi.processRefund(orderIdToUse, requestData);
+            if (response.data.success) {
+                showToast("Refund processed successfully", "success");
+                setRefundModalOpen(false);
+                setSelectedOrderForRefund(null);
+                fetchOrders(page);
+            } else {
+                showToast(response.data.message || "Failed to process refund", "error");
+            }
+        } catch (error) {
+            console.error("Refund error:", error);
+            showToast(error?.response?.data?.message || "Failed to process refund", "error");
+        } finally {
+            setProcessingRefund(false);
         }
     };
 
@@ -570,9 +605,40 @@ const OrdersList = () => {
                                                     handleDeleteOrder(order);
                                                 }}
                                                 className="p-2.5 bg-rose-50 text-rose-500 hover:text-rose-700 hover:bg-rose-100 rounded-xl transition-all"
+                                                title="Delete Order"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>
+                                            {(() => {
+                                                const isCancelled = order.rawStatus === 'cancelled_by_user' || order.rawStatus === 'cancelled_by_restaurant' || order.rawStatus === 'cancelled_by_admin';
+                                                const isOnlineOrWallet = ['razorpay', 'razorpay_qr', 'online', 'wallet'].includes(order.paymentMethod);
+                                                return isCancelled && isOnlineOrWallet;
+                                            })() && (
+                                                <>
+                                                    {order.refundStatus === 'processed' || order.refundStatus === 'initiated' ? (
+                                                        <span className={cn(
+                                                            "px-2 py-1.5 rounded-lg text-[10px] font-bold text-center border",
+                                                            order.paymentMethod === "wallet" ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                                        )}>
+                                                            {order.paymentMethod === "wallet" ? "Wallet Refunded" : "Refunded"}
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRefundClick(order);
+                                                            }}
+                                                            className={cn(
+                                                                "px-2.5 py-2.5 text-white rounded-xl text-[10px] font-bold transition-all shadow-sm flex items-center gap-1",
+                                                                order.paymentMethod === "wallet" ? "bg-orange-500 hover:bg-orange-600" : "bg-fuchsia-600 hover:bg-fuchsia-700"
+                                                            )}
+                                                            title="Process Refund"
+                                                        >
+                                                            <IndianRupee className="h-3 w-3" /> Refund
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -610,6 +676,18 @@ const OrdersList = () => {
                     />
                 </div>
             </Card>
+            
+            <RefundModal
+                isOpen={refundModalOpen}
+                onOpenChange={setRefundModalOpen}
+                order={selectedOrderForRefund}
+                isProcessing={processingRefund}
+                onConfirm={(amount, refundToMethod) => {
+                    if (selectedOrderForRefund) {
+                        processRefund(selectedOrderForRefund.id || selectedOrderForRefund._id, amount, refundToMethod);
+                    }
+                }}
+            />
         </div>
     );
 };

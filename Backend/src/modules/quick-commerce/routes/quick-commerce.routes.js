@@ -49,6 +49,7 @@ import {
   getAdminCategories,
   getAdminOrders,
   getAdminOrderById,
+  processRefund,
   getAdminCustomers,
   getAdminCustomerById,
   deleteAdminOrder,
@@ -227,6 +228,7 @@ router.put(
 router.delete("/admin/products/:productId", ...adminOnly, removeProduct);
 router.get("/admin/orders", ...adminOnly, getAdminOrders);
 router.get("/admin/orders/:orderId", ...adminOnly, getAdminOrderById);
+router.post("/admin/orders/:orderId/refund", ...adminOnly, processRefund);
 router.delete("/admin/orders/:orderId", ...adminOnly, deleteAdminOrder);
 
 // Finance (quick-commerce admin wallet & ledger)
