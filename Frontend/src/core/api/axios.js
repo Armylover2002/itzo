@@ -26,9 +26,11 @@ axiosInstance.interceptors.request.use(
                 seller: 'auth_seller',
                 admin: 'auth_admin',
                 delivery: 'auth_delivery',
-                hrms: 'auth_hrms'
+                hrms: 'auth_hrms',
+                user: 'auth_customer',
+                customer: 'auth_customer'
             };
-            if (config.contextModule === 'customer') {
+            if (config.contextModule === 'customer' || config.contextModule === 'user') {
                 token = getCustomerToken();
             } else if (moduleKeys[config.contextModule]) {
                 token = localStorage.getItem(moduleKeys[config.contextModule]);

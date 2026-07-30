@@ -86,7 +86,7 @@ function getAccessToken(config) {
     
     // 2. Try auth context keys
     if (module === "user") {
-      return localStorage.getItem("auth_customer") || localStorage.getItem("user_accessToken") || localStorage.getItem("accessToken") || localStorage.getItem("token") || null;
+      return localStorage.getItem("auth_customer") || localStorage.getItem("user_accessToken") || null;
     }
     if (module === "seller") {
       return localStorage.getItem("auth_seller") || localStorage.getItem("accessToken") || localStorage.getItem("token") || null;
