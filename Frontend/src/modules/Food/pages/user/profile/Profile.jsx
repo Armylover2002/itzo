@@ -130,19 +130,15 @@ export default function Profile() {
   };
 
   // Settings states
-  const [appearance, setAppearance] = useState(() => theme || localStorage.getItem("appTheme") || "light");
+  const [appearance, setAppearance] = useState("light");
 
   useEffect(() => {
-    const normalizedTheme = theme === "dark" ? "dark" : "light";
-    setAppearance(normalizedTheme);
-  }, [theme]);
-
-  useEffect(() => {
-    const normalizedAppearance = appearance === "dark" ? "dark" : "light";
-    setTheme(normalizedAppearance);
-    localStorage.setItem("appTheme", normalizedAppearance);
-    window.dispatchEvent(new CustomEvent("app-theme-changed", { detail: { theme: normalizedAppearance } }));
-  }, [appearance, setTheme]);
+    if (theme !== "light") {
+      setTheme("light");
+    }
+    localStorage.setItem("appTheme", "light");
+    // window.dispatchEvent(new CustomEvent("app-theme-changed", { detail: { theme: "light" } }));
+  }, [theme, setTheme]);
 
   // Get first letter of name for avatar
   const avatarInitial =
@@ -755,7 +751,7 @@ export default function Profile() {
             </Card>
           </motion.div>
 
-          <motion.div
+          {/* <motion.div
             whileHover={{ x: 4, scale: 1.01 }}
             transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
             <Card
@@ -788,7 +784,7 @@ export default function Profile() {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </motion.div> */}
         </div>
 
         {/* Food Section */}
@@ -1290,7 +1286,7 @@ export default function Profile() {
       )}
 
       {/* Appearance Popup */}
-      <Dialog open={appearanceOpen} onOpenChange={setAppearanceOpen}>
+      {/* <Dialog open={appearanceOpen} onOpenChange={setAppearanceOpen}>
         <DialogContent className="max-w-sm md:max-w-md lg:max-w-lg w-[calc(100%-2rem)] rounded-2xl p-0 overflow-hidden bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-800">
           <DialogHeader className="p-5 pb-3">
             <DialogTitle className="text-lg font-bold text-gray-900 dark:text-white">
@@ -1359,7 +1355,7 @@ export default function Profile() {
             </button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </AnimatedPage>
   );
 }
