@@ -92,7 +92,12 @@ const FooterSection = React.memo(function FooterSection() {
         
         {/* Top Logo Area */}
         <div className="mb-10">
-          <img src={logoImg} alt="ItzoFood Logo" className="h-12 md:h-16 w-auto object-contain rounded-xl" />
+          <img 
+            src={logoImg} 
+            alt="ItzoFood Logo" 
+            className="h-12 md:h-16 w-auto object-contain rounded-xl" 
+            onError={(e) => { e.target.src = "/itzo-logo-transparent.png"; }}
+          />
         </div>
 
         {/* Links Grid */}

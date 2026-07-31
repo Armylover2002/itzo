@@ -197,16 +197,18 @@ export const getCachedSettings = () => {
  */
 export const getAppLogo = (appType) => {
   const settings = getCachedSettings();
-  if (!settings) return null;
+  if (!settings) return '/itzo-logo-transparent.png';
   
+  let logo = null;
   switch(appType) {
-    case 'admin': return settings.adminLogo?.url;
-    case 'user': return settings.userLogo?.url;
-    case 'delivery': return settings.deliveryLogo?.url;
-    case 'restaurant': return settings.restaurantLogo?.url;
-    case 'seller': return settings.sellerLogo?.url;
-    default: return null;
+    case 'admin': logo = settings.adminLogo?.url; break;
+    case 'user': logo = settings.userLogo?.url; break;
+    case 'delivery': logo = settings.deliveryLogo?.url; break;
+    case 'restaurant': logo = settings.restaurantLogo?.url; break;
+    case 'seller': logo = settings.sellerLogo?.url; break;
+    default: logo = settings.userLogo?.url || settings.logo?.url; break;
   }
+  return logo || '/itzo-logo-transparent.png';
 };
 
 /**

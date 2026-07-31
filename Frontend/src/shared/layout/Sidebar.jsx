@@ -257,7 +257,12 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
       <div className="flex-shrink-0 flex h-16 items-center justify-between px-5 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent z-10">
         <div className="flex items-center space-x-2.5">
           {displayLogoUrl ? (
-            <img src={displayLogoUrl} alt={companyName} className="h-9 md:h-12 w-auto object-contain" />
+            <img 
+              src={displayLogoUrl} 
+              alt={companyName} 
+              className="h-9 md:h-12 w-auto object-contain" 
+              onError={(e) => { e.target.src = '/itzo-logo-transparent.png'; }}
+            />
           ) : (
             <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transform -rotate-6 hover:rotate-0 transition-all duration-500 ease-out">
               <span className="text-lg font-black italic">{companyName?.charAt(0) || 'Z'}</span>

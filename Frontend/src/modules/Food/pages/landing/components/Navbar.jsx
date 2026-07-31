@@ -65,7 +65,12 @@ const Navbar = React.memo(function Navbar() {
           
           {/* Logo */}
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.location.href = '/food/user'}>
-            <img src={logoImg} alt="ItzoFood Logo" className="h-10 md:h-12 w-auto object-contain rounded-md" />
+            <img 
+              src={logoImg} 
+              alt="ItzoFood Logo" 
+              className="h-10 md:h-12 w-auto object-contain rounded-md" 
+              onError={(e) => { e.target.src = "/itzo-logo-transparent.png"; }}
+            />
           </div>
 
           {/* Desktop Navigation */}

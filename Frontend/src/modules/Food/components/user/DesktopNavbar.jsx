@@ -183,20 +183,14 @@ export default function DesktopNavbar({ showLogo = true }) {
                             {/* Logo */}
                             {showLogo && (
                                 <Link to="/food/user" className="flex items-center justify-center flex-shrink-0">
-                                    {logoUrl ? (
-                                        <img
-                                            src={logoUrl}
-                                            alt={companyName || "Logo"}
-                                            className="h-10 w-auto md:h-14 lg:h-16 object-contain"
-                                            onError={(e) => {
-                                                e.target.style.display = 'none'
-                                            }}
-                                        />
-                                    ) : (
-                                        <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                          {companyName || "Appzeto"}
-                                        </span>
-                                    )}
+                                    <img
+                                        src={logoUrl || "/itzo-logo-transparent.png"}
+                                        alt={companyName || "Logo"}
+                                        className="h-10 w-auto md:h-14 lg:h-16 object-contain"
+                                        onError={(e) => {
+                                            e.target.src = "/itzo-logo-transparent.png";
+                                        }}
+                                    />
                                 </Link>
                             )}
 
