@@ -7,6 +7,7 @@ import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { updateSellerProfileData } from '../seller/controllers/seller.controller.js';
 import { QuickZone } from '../models/quick_zone.model.js';
+import { QuickCoupon } from '../models/coupon.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { uploadImageBuffer } from '../../../services/cloudinary.service.js';
 import { processRefund as processFoodRefund } from '../../food/admin/services/admin.service.js';
@@ -1671,5 +1672,55 @@ export const settleAdminRiderCash = async (req, res) => {
       success: false,
       message: error.message || "Failed to settle rider cash",
     });
+  }
+};
+
+// Coupon Management
+export const getAdminCoupons = async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    const query = {};
+    if (status && status !== 'all') {
+      query.isActive = status === 'active';
+    }
+    if (search) {
+      query.$or = [
+        { code: { $regex: search, $options: 'i' } },
+        { title: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const coupons = await QuickCoupon.find(query).sort({ createdAt: -1 }).lean();
+    return res.json({ success: true, result: coupons });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch coupons' });
+  }
+};
+
+export const createAdminCoupon = async (req, res) => {
+  try {
+    const coupon = await QuickCoupon.create(req.body);
+    return res.status(201).json({ success: true, result: coupon });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || 'Failed to create coupon' });
+  }
+};
+
+export const updateAdminCoupon = async (req, res) => {
+  try {
+    const coupon = await QuickCoupon.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!coupon) return res.status(404).json({ success: false, message: 'Coupon not found' });
+    return res.json({ success: true, result: coupon });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || 'Failed to update coupon' });
+  }
+};
+
+export const deleteAdminCoupon = async (req, res) => {
+  try {
+    const coupon = await QuickCoupon.findByIdAndDelete(req.params.id);
+    if (!coupon) return res.status(404).json({ success: false, message: 'Coupon not found' });
+    return res.json({ success: true, message: 'Coupon deleted successfully' });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || 'Failed to delete coupon' });
   }
 };

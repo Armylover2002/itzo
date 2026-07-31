@@ -423,10 +423,10 @@ export const adminApi = {
   updateOfferSection: (id, payload) => axiosInstance.put(`/quick-commerce/admin/offer-sections/${id}`, payload),
   deleteOfferSection: (id) => axiosInstance.delete(`/quick-commerce/admin/offer-sections/${id}`),
   reorderOfferSections: (items) => axiosInstance.post('/quick-commerce/admin/offer-sections/reorder', items),
-  getCoupons: () => emptyResponse([]),
-  createCoupon: () => emptyResponse({}),
-  updateCoupon: () => emptyResponse({}),
-  deleteCoupon: () => emptyResponse({}),
+  getCoupons: (params) => axiosInstance.get('/quick-commerce/admin/coupons', { params }),
+  createCoupon: (payload) => axiosInstance.post('/quick-commerce/admin/coupons', payload),
+  updateCoupon: (id, payload) => axiosInstance.put(`/quick-commerce/admin/coupons/${id}`, payload),
+  deleteCoupon: (id) => axiosInstance.delete(`/quick-commerce/admin/coupons/${id}`),
 
   // Seller Commission Management
   getSellerCommissionBootstrap: () => axiosInstance.get('/quick-commerce/admin/seller-commissions/bootstrap'),
