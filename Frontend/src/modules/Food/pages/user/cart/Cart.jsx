@@ -893,20 +893,21 @@ export default function Cart() {
 
             // Add coupons, avoiding duplicates
             coupons.forEach(coupon => {
-              if (!uniqueCouponCodes.has(coupon.couponCode)) {
+              if (coupon.showInCart !== false && !uniqueCouponCodes.has(coupon.couponCode)) {
                 uniqueCouponCodes.add(coupon.couponCode)
                 // Convert backend coupon format to frontend format
                 allCoupons.push({
                   code: coupon.couponCode,
-                  discount: coupon.originalPrice - coupon.discountedPrice,
+                  discount: coupon.discountValue || (coupon.originalPrice - coupon.discountedPrice),
+                  discountValue: coupon.discountValue || 0,
                   discountPercentage: coupon.discountPercentage,
                   discountDisplay: coupon.discountType === "percentage"
                     ? `${coupon.discountPercentage}% OFF`
-                    : `${RUPEE_SYMBOL}${Math.max(0, (coupon.originalPrice || 0) - (coupon.discountedPrice || 0))} OFF`,
+                    : `${RUPEE_SYMBOL}${coupon.discountValue || Math.max(0, (coupon.originalPrice || 0) - (coupon.discountedPrice || 0))} OFF`,
                   minOrder: coupon.minOrderValue || 0,
                   description: coupon.discountType === "percentage"
                     ? `${coupon.discountPercentage}% OFF with '${coupon.couponCode}'`
-                    : `Save ${RUPEE_SYMBOL}${Math.max(0, (coupon.originalPrice || 0) - (coupon.discountedPrice || 0))} with '${coupon.couponCode}'`,
+                    : `Save ${RUPEE_SYMBOL}${coupon.discountValue || Math.max(0, (coupon.originalPrice || 0) - (coupon.discountedPrice || 0))} with '${coupon.couponCode}'`,
                   originalPrice: coupon.originalPrice,
                   discountedPrice: coupon.discountedPrice,
                   customerGroup: coupon.customerGroup || "all",

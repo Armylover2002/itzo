@@ -1660,7 +1660,14 @@ export const listPublicOffers = async () => {
         .populate({ path: 'restaurantId', select: 'restaurantName restaurantNameNormalized profileImage estimatedDeliveryTime rating' })
         .lean();
 
-    const allOffers = list.map((o) => {
+    const allOffers = list
+        .filter((o) => {
+            if (Number(o.usageLimit) > 0 && Number(o.usedCount || 0) >= Number(o.usageLimit)) {
+                return false;
+            }
+            return true;
+        })
+        .map((o) => {
         const restaurant = o.restaurantId && typeof o.restaurantId === 'object' ? o.restaurantId : null;
         const restaurantSlug = restaurant?.restaurantNameNormalized || undefined;
         const restaurantName =

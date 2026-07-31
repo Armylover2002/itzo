@@ -1187,7 +1187,8 @@ export const restaurantAPI = {
           // Guard: respect selected restaurant scope
           if (String(o?.restaurantScope) === "selected") {
             if (!restaurantId) return false;
-            return String(o.restaurantId || "") === String(restaurantId || "");
+            const resId = typeof o.restaurantId === "object" && o.restaurantId ? (o.restaurantId._id || o.restaurantId.id) : o.restaurantId;
+            return String(resId || "") === String(restaurantId || "");
           }
           return true;
         })
@@ -1196,6 +1197,7 @@ export const restaurantAPI = {
           return {
             couponCode: o.couponCode,
             discountType: o.discountType,
+            discountValue: Number(o.discountValue) || 0,
             discountPercentage: isPct ? Number(o.discountValue) || 0 : 0,
             originalPrice: 0,
             discountedPrice: 0,
