@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { customerApi } from "../services/customerApi";
 import { useAuth } from "@core/context/AuthContext";
-import { useCart as useFoodCart } from "@food/context/CartContext";
 
 const CartContext = createContext();
 const QUICK_CART_STORAGE_KEY = "quick_commerce_cart";
@@ -174,29 +173,9 @@ const persistQuickCartSnapshot = (items) => {
     }
     console.error("Failed to persist quick cart snapshot", error);
   }
-
-  // Also sync with legacy 'cart' key to ensure Food module sees these changes
-  // This prevents items from reappearing when navigating back to Food-bridged pages
-  try {
-    const legacyCart = localStorage.getItem("cart");
-    if (legacyCart) {
-      const parsed = JSON.parse(legacyCart);
-      if (Array.isArray(parsed)) {
-        const otherItems = parsed.filter((item) => !isQuickCartItem(item));
-        const nextLegacyCart = [...otherItems, ...items];
-        if (nextLegacyCart.length > 0) {
-          localStorage.setItem("cart", JSON.stringify(nextLegacyCart));
-        } else {
-          localStorage.removeItem("cart");
-        }
-      }
-    }
-  } catch (e) {
-    // ignore legacy sync errors
-  }
 };
 
-const useStandaloneQuickCart = (isBridged = false) => {
+const useStandaloneQuickCart = () => {
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(() => readStoredQuickCart());
 
@@ -266,9 +245,8 @@ const useStandaloneQuickCart = (isBridged = false) => {
     }
   }, [isAuthenticated]);
 
-  // Sync cart when localStorage changes (e.g., cleared from another tab or bridged mode)
+  // Sync cart when localStorage changes (e.g., cleared from another tab)
   useEffect(() => {
-    if (isBridged) return;
     const handleStorage = (e) => {
       if (e.key === QUICK_CART_STORAGE_KEY) {
         if (!e.newValue) {
@@ -283,13 +261,11 @@ const useStandaloneQuickCart = (isBridged = false) => {
     };
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, [isBridged]);
+  }, []);
 
   useEffect(() => {
-    if (!isBridged) {
-      persistQuickCartSnapshot(cart);
-    }
-  }, [cart, isBridged]);
+    persistQuickCartSnapshot(cart);
+  }, [cart]);
 
   const addToCart = async (product) => {
     const id = getProductId(product);
@@ -406,25 +382,6 @@ const useStandaloneQuickCart = (isBridged = false) => {
   const clearCart = async () => {
     setCart([]); // optimistic clear immediately
 
-    // Also clear Quick items from legacy cart to prevent them from reappearing
-    // when switching back to Food-bridged pages (like Home)
-    try {
-      const legacyCart = localStorage.getItem("cart");
-      if (legacyCart) {
-        const parsed = JSON.parse(legacyCart);
-        if (Array.isArray(parsed)) {
-          const remaining = parsed.filter((item) => !isQuickCartItem(item));
-          if (remaining.length > 0) {
-            localStorage.setItem("cart", JSON.stringify(remaining));
-          } else {
-            localStorage.removeItem("cart");
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Failed to clear legacy cart items", e);
-    }
-
     if (isAuthenticated) {
       try {
         await customerApi.clearCart();
@@ -453,151 +410,6 @@ const useStandaloneQuickCart = (isBridged = false) => {
 };
 
 export const CartProvider = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  const foodCart = useFoodCart();
-  const isUsingFoodCart = foodCart?._isProvider === true;
-  const standaloneCart = useStandaloneQuickCart(isUsingFoodCart);
-
-  const quickItemsFromFoodCart = useMemo(
-    () => (Array.isArray(foodCart?.cart) ? foodCart.cart.filter(isQuickCartItem) : []),
-    [foodCart],
-  );
-
-  useEffect(() => {
-    if (!isUsingFoodCart) return;
-
-    persistQuickCartSnapshot(quickItemsFromFoodCart);
-  }, [isUsingFoodCart, quickItemsFromFoodCart]);
-
-  const bridgedValue = useMemo(() => {
-    if (!isUsingFoodCart) {
-      return standaloneCart;
-    }
-
-    const addToCart = async (product) => {
-      const normalizedProduct = normalizeQuickProductForSharedCart(product);
-      const existingItem = quickItemsFromFoodCart.find(
-        (item) => getProductId(item) === normalizedProduct.id,
-      );
-      const nextQuickItems = existingItem
-        ? quickItemsFromFoodCart.map((item) =>
-            getProductId(item) === normalizedProduct.id
-              ? { ...item, quantity: Number(item.quantity || 0) + 1 }
-              : item,
-          )
-        : [...quickItemsFromFoodCart, { ...normalizedProduct, quantity: 1 }];
-
-      persistQuickCartSnapshot(nextQuickItems);
-      foodCart.addToCart(normalizedProduct);
-
-      if (isAuthenticated) {
-        try {
-          await customerApi.addToCart({
-            productId: normalizedProduct.id,
-            quantity: 1,
-          });
-        } catch (error) {
-          console.error("Failed to sync bridged addToCart to backend", error);
-        }
-      }
-    };
-
-    const removeFromCart = async (productId) => {
-      const resolvedProductId = normalizeProductId(productId);
-      if (!resolvedProductId) return;
-      const nextQuickItems = quickItemsFromFoodCart.filter(
-        (item) => getProductId(item) !== resolvedProductId,
-      );
-      persistQuickCartSnapshot(nextQuickItems);
-      foodCart.removeFromCart(resolvedProductId);
-
-      if (isAuthenticated) {
-        try {
-          await customerApi.removeFromCart(resolvedProductId);
-        } catch (error) {
-          console.error("Failed to sync bridged removeFromCart to backend", error);
-        }
-      }
-    };
-
-    const updateQuantity = async (productId, delta) => {
-      const resolvedProductId = normalizeProductId(productId);
-      if (!resolvedProductId) return;
-      const currentItem = foodCart.getCartItem(resolvedProductId);
-      if (!currentItem) return;
-      const nextQuantity = Math.max(0, (currentItem.quantity || 0) + delta);
-      const nextQuickItems =
-        nextQuantity === 0
-          ? quickItemsFromFoodCart.filter(
-              (item) => getProductId(item) !== resolvedProductId,
-            )
-          : quickItemsFromFoodCart.map((item) =>
-              getProductId(item) === resolvedProductId
-                ? { ...item, quantity: nextQuantity }
-                : item,
-            );
-      persistQuickCartSnapshot(nextQuickItems);
-      foodCart.updateQuantity(resolvedProductId, nextQuantity);
-
-      if (isAuthenticated) {
-        try {
-          if (nextQuantity === 0) {
-            await customerApi.removeFromCart(resolvedProductId);
-          } else {
-            try {
-              await customerApi.updateCartQuantity({
-                productId: resolvedProductId,
-                quantity: nextQuantity,
-              });
-            } catch (error) {
-              if (error?.response?.status === 404) {
-                // Fallback: if update fails with 404, the item might be missing from backend cart
-                // but present in local bridged cart. Try adding it.
-                await customerApi.addToCart({
-                  productId: resolvedProductId,
-                  quantity: nextQuantity,
-                });
-              } else {
-                throw error;
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Failed to sync bridged updateQuantity to backend", error);
-        }
-      }
-    };
-
-    const clearCart = async () => {
-      persistQuickCartSnapshot([]);
-      foodCart.clearCart();
-
-      if (isAuthenticated) {
-        try {
-          await customerApi.clearCart();
-        } catch (error) {
-          console.error("Failed to sync bridged clearCart to backend", error);
-        }
-      }
-    };
-
-    return {
-      cart: quickItemsFromFoodCart,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      cartTotal: quickItemsFromFoodCart.reduce(
-        (total, item) => total + Number(item.price || 0) * Number(item.quantity || 0),
-        0,
-      ),
-      cartCount: quickItemsFromFoodCart.reduce(
-        (total, item) => total + Number(item.quantity || 0),
-        0,
-      ),
-      loading: false,
-    };
-  }, [foodCart, isUsingFoodCart, quickItemsFromFoodCart, standaloneCart]);
-
-  return <CartContext.Provider value={bridgedValue}>{children}</CartContext.Provider>;
+  const standaloneCart = useStandaloneQuickCart();
+  return <CartContext.Provider value={standaloneCart}>{children}</CartContext.Provider>;
 };

@@ -195,6 +195,11 @@ export function CartProvider({ children }) {
   }, [cart])
 
   const addToCart = (item, sourcePosition = null) => {
+    if (getItemOrderType(item) === "quick") {
+      debugError('❌ Cannot add quick commerce item to food cart!');
+      return { ok: false, error: 'Cannot add quick commerce items to food cart.', code: 'INVALID_ORDER_TYPE' };
+    }
+
     const safeCart = normalizeCartData(cart)
     if (safeCart.length > 0) {
       const currentOrderType = getItemOrderType(safeCart[0])
@@ -243,7 +248,7 @@ export function CartProvider({ children }) {
 
       // CRITICAL: Validate restaurant consistency
       // If cart already has items, ensure new item belongs to the same restaurant
-      if (safePrev.length > 0 && existingOrderType === "food" && incomingOrderType === "food") {
+      if (safePrev.length > 0) {
         const firstItemRestaurantId = safePrev[0]?.restaurantId;
         const firstItemRestaurantName = safePrev[0]?.restaurant;
         const newItemRestaurantId = item?.restaurantId;
@@ -417,7 +422,7 @@ export function CartProvider({ children }) {
   const replaceCart = (items) => {
     const normalizedItems = normalizeCartData(items).filter((item) => {
       const quantity = Number(item?.quantity)
-      return item?.id && (item?.restaurantId || item?.restaurant) && Number.isFinite(quantity) && quantity > 0
+      return item?.id && (item?.restaurantId || item?.restaurant) && Number.isFinite(quantity) && quantity > 0 && getItemOrderType(item) !== "quick"
     })
 
     setCart(normalizedItems)
@@ -470,17 +475,22 @@ export function CartProvider({ children }) {
   // Validate and clean cart on mount/load to prevent multiple restaurant items
   // This runs only once on initial load to clean up any corrupted cart data from localStorage
   useEffect(() => {
-    const safeCart = normalizeCartData(cart)
-    if (safeCart.length !== cart.length) {
+    let safeCart = normalizeCartData(cart)
+    
+    // Completely separate quick commerce items from food cart
+    const hasQuickItems = safeCart.some(item => getItemOrderType(item) === "quick");
+    if (hasQuickItems) {
+      debugWarn('🧹 Cleaning cart: Removing quick commerce items from food cart');
+      safeCart = safeCart.filter(item => getItemOrderType(item) !== "quick");
+      setCart(safeCart);
+      if (safeCart.length === 0) return;
+    }
+
+    if (safeCart.length !== cart.length && !hasQuickItems) {
       setCart(safeCart)
       return
     }
     if (safeCart.length === 0) return;
-    
-    // Get unique restaurant IDs and names
-    const uniqueOrderTypes = [...new Set(safeCart.map(getItemOrderType))]
-    if (uniqueOrderTypes.length > 1) return;
-    if (uniqueOrderTypes[0] !== "food") return;
 
     const restaurantIds = safeCart.map(item => item.restaurantId).filter(Boolean);
     const restaurantNames = safeCart.map(item => item.restaurant).filter(Boolean);
