@@ -1,63 +1,40 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import ProductCard from "../shared/ProductCard";
 import { useNavigate } from "react-router-dom";
-
-const MOCK_PRODUCTS = [
-  {
-    id: "lowest_price_1",
-    _id: "lowest_price_1",
-    name: "yufyfhgvnbvnbvnbv...",
-    image: "https://images.unsplash.com/photo-1627308595229-7830f5c90683?auto=format&fit=crop&q=80&w=400&fm=webp",
-    price: 495,
-    originalPrice: 500,
-    discount: "1% OFF",
-    weight: "1 unit",
-    deliveryTime: "8-15 MINS",
-    stock: 100,
-  },
-  {
-    id: "lowest_price_2",
-    _id: "lowest_price_2",
-    name: "basmati",
-    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=400&fm=webp",
-    price: 450,
-    originalPrice: null,
-    weight: "packet",
-    deliveryTime: "8-15 MINS",
-    stock: 100,
-  },
-  {
-    id: "lowest_price_3",
-    _id: "lowest_price_3",
-    name: "Allu",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=400&fm=webp",
-    price: 400,
-    originalPrice: 600,
-    discount: "33% OFF",
-    weight: "1 unit",
-    deliveryTime: "8-15 MINS",
-    stock: 100,
-  },
-];
+import { getQuickCategoriesPath } from "../../utils/routes";
 
 const LowestPriceEverSection = ({ products = [] }) => {
   const navigate = useNavigate();
+  const categoriesPath = getQuickCategoriesPath();
 
-  // Try to find matching products from the actual live products
+  // Select up to 6 products with the lowest sale/regular price from live data only.
+  // No fallback to mocks — if there are no live products, the section is hidden.
   const displayProducts = useMemo(() => {
-    const findLiveProduct = (nameQuery) => {
-      return products.find(p => p.name?.toLowerCase().includes(nameQuery.toLowerCase()));
-    };
+    const live = products.filter(
+      (p) =>
+        p &&
+        (p._id || p.id) &&
+        p.name &&
+        // Exclude any product that has no valid price
+        (Number(p.price || 0) > 0 || Number(p.salePrice || 0) > 0)
+    );
 
-    const p1 = findLiveProduct("yufyfhg") || MOCK_PRODUCTS[0];
-    const p2 = findLiveProduct("basmati") || MOCK_PRODUCTS[1];
-    const p3 = findLiveProduct("allu") || MOCK_PRODUCTS[2];
+    if (live.length === 0) return [];
 
-    return [p1, p2, p3];
+    // Sort by effective price ascending (lowest first)
+    const sorted = [...live].sort((a, b) => {
+      const priceA = Number(a.salePrice || 0) > 0 ? Number(a.salePrice) : Number(a.price || 0);
+      const priceB = Number(b.salePrice || 0) > 0 ? Number(b.salePrice) : Number(b.price || 0);
+      return priceA - priceB;
+    });
+
+    return sorted.slice(0, 6);
   }, [products]);
+
+  // If no live products are available, don't render the section at all
+  if (displayProducts.length === 0) return null;
 
   return (
     <div className="w-full bg-[#F0F9FF] pt-6 pb-8 md:mt-2 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border-b border-[#E2E8F0]">
@@ -70,9 +47,9 @@ const LowestPriceEverSection = ({ products = [] }) => {
             <span className="text-[#FE5502] mr-1">•</span> UNBEATABLE SAVINGS <span className="text-[#FE5502] mx-1">•</span> UPDATED HOURLY
           </p>
         </div>
-        <button 
+        <button
           className="flex items-center gap-0.5 bg-white text-[#0A2351] px-3 md:px-4 py-1.5 md:py-2 rounded-full font-bold text-xs shadow-sm hover:shadow-md transition-shadow ring-1 ring-slate-100"
-          onClick={() => { /* Placeholder for See all */ }}
+          onClick={() => navigate(categoriesPath)}
         >
           See all
           <ChevronRight size={14} className="mt-[1px]" />
@@ -83,7 +60,7 @@ const LowestPriceEverSection = ({ products = [] }) => {
         <div className="flex overflow-x-auto gap-3 md:gap-4 pb-2 no-scrollbar snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0">
           {displayProducts.map((product, idx) => (
             <motion.div
-              key={product.id || product._id || `lp-prod-${idx}`}
+              key={product._id || product.id || `lp-prod-${idx}`}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: idx * 0.1 }}
@@ -91,7 +68,7 @@ const LowestPriceEverSection = ({ products = [] }) => {
             >
               <ProductCard
                 product={product}
-                badge={product.discount}
+                badge={product.discount || product.badge}
                 className="shadow-[0_8px_20px_-8px_rgba(0,0,0,0.08)] border-transparent"
                 compact
               />
