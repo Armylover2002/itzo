@@ -23,11 +23,26 @@ const LowestPriceEverSection = ({ products = [] }) => {
 
     if (live.length === 0) return [];
 
-    // Sort by effective price ascending (lowest first)
+    const getDiscount = (p) => {
+      const price = Number(p.salePrice || 0) > 0 ? Number(p.salePrice) : Number(p.price || 0);
+      const original = Number(p.originalPrice || p.mrp || p.price || 0);
+      if (original > price && price > 0) {
+        return ((original - price) / original) * 100;
+      }
+      return 0;
+    };
+
+    // Sort by discount percentage descending.
+    // If discounts are equal, preserve the original backend order (which is newest first),
+    // so recently added test products like "basmati" still show up.
     const sorted = [...live].sort((a, b) => {
-      const priceA = Number(a.salePrice || 0) > 0 ? Number(a.salePrice) : Number(a.price || 0);
-      const priceB = Number(b.salePrice || 0) > 0 ? Number(b.salePrice) : Number(b.price || 0);
-      return priceA - priceB;
+      const discountA = getDiscount(a);
+      const discountB = getDiscount(b);
+      
+      if (discountA !== discountB) {
+        return discountB - discountA;
+      }
+      return 0; // Maintain original order (newest first)
     });
 
     return sorted.slice(0, 6);
