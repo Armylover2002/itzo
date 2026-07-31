@@ -321,8 +321,14 @@ const CheckoutPage = () => {
   const [showAllCartItems, setShowAllCartItems] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(
-    storedCheckoutState.selectedCoupon || null,
+    appliedCoupon || storedCheckoutState.selectedCoupon || null,
   );
+
+  useEffect(() => {
+    if (appliedCoupon && appliedCoupon.code !== selectedCoupon?.code) {
+      setSelectedCoupon(appliedCoupon);
+    }
+  }, [appliedCoupon]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isResolvingAddressCoords, setIsResolvingAddressCoords] = useState(false);
   const [showAddNewAddressForm, setShowAddNewAddressForm] = useState(false);
@@ -1258,6 +1264,7 @@ const CheckoutPage = () => {
         taxTotal: gstAmount,
         platformFee: platformFee,
         timeSlot: selectedTimeSlot,
+        ...(selectedCoupon ? { couponCode: selectedCoupon.code } : {}),
       };
 
       let response;

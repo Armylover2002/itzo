@@ -319,6 +319,11 @@ const orderSchema = new mongoose.Schema(
             type: pricingSchema,
             required: true
         },
+        couponCode: {
+            type: String,
+            default: null,
+            trim: true
+        },
         /**
          * Denormalized payment snapshot for fast reads & legacy clients.
          * Authoritative audit trail: collection `food_order_payments` (FoodOrderPayment model).

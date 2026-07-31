@@ -38,6 +38,7 @@ const calculateQuickCartPricing = ({
   cartItems = [],
   feeSettings = DEFAULT_QUICK_BILLING_SETTINGS,
   categoryFeeMap = {},
+  couponDiscount = 0,
 }) => {
   const safeSubtotal = Number(subtotal || 0);
   const freeThreshold = Number(feeSettings?.freeDeliveryThreshold || 0);
@@ -99,22 +100,43 @@ const calculateQuickCartPricing = ({
     gstAmount,
     grandTotal: Math.max(
       0,
-      safeSubtotal + deliveryFee + handlingFee + platformFee + gstAmount,
+      safeSubtotal + deliveryFee + handlingFee + platformFee + gstAmount - couponDiscount,
     ),
   };
 };
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart, loading } = useCart();
+  const { cart, removeFromCart, updateQuantity, cartTotal, clearCart, loading, appliedCoupon, setAppliedCoupon } = useCart();
   const { showToast } = useToast();
   const { settings } = useSettings();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [quickBillingSettings, setQuickBillingSettings] = useState(
     DEFAULT_QUICK_BILLING_SETTINGS,
   );
   const [categoryFeeMap, setCategoryFeeMap] = useState({});
   const [isUserCodAllowed, setIsUserCodAllowed] = useState(true);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setApplyingCoupon(true);
+    try {
+      const res = await customerApi.applyCoupon({ code: couponInput, cartTotal });
+      if (res.data?.success && res.data?.result) {
+        setAppliedCoupon(res.data.result);
+        showToast("Coupon applied successfully!", "success");
+        setCouponInput("");
+      } else {
+        showToast("Invalid coupon code", "error");
+      }
+    } catch (err) {
+      showToast(err?.response?.data?.message || "Failed to apply coupon", "error");
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -202,12 +224,14 @@ const CartPage = () => {
   const categoriesPath = getQuickCategoriesPath();
   const checkoutPath = getQuickCheckoutPath();
   const itemCount = cart.reduce((count, item) => count + Number(item.quantity || 0), 0);
+  const couponDiscount = appliedCoupon?.calculatedDiscount || 0;
   const { deliveryFee, handlingFee, platformFee, gstAmount, grandTotal } =
     calculateQuickCartPricing({
       subtotal: cartTotal,
       cartItems: cart,
       feeSettings: quickBillingSettings,
       categoryFeeMap,
+      couponDiscount,
     });
   const paymentMethods = [
     ...(settings?.onlineEnabled === false
@@ -467,6 +491,49 @@ const CartPage = () => {
           ))}
         </div>
 
+        {/* Coupons Section */}
+        <section className="mt-4 rounded-[24px] bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-[#FE5502]">
+                <Banknote size={16} />
+              </span>
+              <h2 className="text-base font-bold text-slate-900">Coupons & Offers</h2>
+            </div>
+            {appliedCoupon ? (
+              <button onClick={() => setAppliedCoupon(null)} className="text-xs font-bold text-rose-500 uppercase tracking-wider hover:underline">
+                Remove
+              </button>
+            ) : null}
+          </div>
+          {appliedCoupon ? (
+            <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 p-3 flex justify-between items-center">
+              <div>
+                <p className="text-sm font-bold text-emerald-700">{appliedCoupon.code}</p>
+                <p className="text-xs text-emerald-600 font-medium">Coupon applied successfully</p>
+              </div>
+              <p className="text-sm font-bold text-emerald-700">- {"\u20B9"}{appliedCoupon.calculatedDiscount}</p>
+            </div>
+          ) : (
+            <div className="mt-4 flex gap-2">
+              <input 
+                type="text" 
+                placeholder="Enter coupon code" 
+                className="flex-1 rounded-xl bg-slate-50 px-4 py-2.5 text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-[#FE5502]/50 uppercase"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+              />
+              <button 
+                onClick={handleApplyCoupon}
+                disabled={applyingCoupon || !couponInput.trim()}
+                className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 disabled:opacity-50"
+              >
+                {applyingCoupon ? "Applying..." : "Apply"}
+              </button>
+            </div>
+          )}
+        </section>
+
         <section className="mt-4 rounded-[24px] bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
@@ -503,6 +570,12 @@ const CartPage = () => {
               <span>GST</span>
               <span className="font-semibold text-slate-900">{"\u20B9"}{gstAmount}</span>
             </div>
+            {couponDiscount > 0 && (
+              <div className="flex items-center justify-between text-emerald-600">
+                <span>Coupon discount</span>
+                <span className="font-semibold">-{"\u20B9"}{couponDiscount}</span>
+              </div>
+            )}
             <div className="border-t border-dashed border-slate-200 pt-3">
               <div className="flex items-center justify-between text-base font-bold text-slate-900">
                 <span>To pay</span>

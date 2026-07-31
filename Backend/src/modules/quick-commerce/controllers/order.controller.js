@@ -255,7 +255,41 @@ export const placeOrder = async (req, res) => {
     }
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const discount = Math.max(0, Number(req.body?.discountTotal || 0));
+    let discount = Math.max(0, Number(req.body?.discountTotal || 0));
+    let validCouponCode = null;
+
+    if (req.body?.couponCode) {
+      const { QuickCoupon } = await import('../models/coupon.model.js');
+      const coupon = await QuickCoupon.findOne({ code: String(req.body.couponCode).toUpperCase() });
+      if (coupon && coupon.isActive) {
+        const now = new Date();
+        const isValidDate = (!coupon.validTill || new Date(coupon.validTill) >= now) && 
+                            (!coupon.validFrom || new Date(coupon.validFrom) <= now);
+        const isValidUsage = (!coupon.usageLimit || coupon.usedCount < coupon.usageLimit);
+        const isValidOrderValue = (!coupon.minOrderValue || subtotal >= coupon.minOrderValue);
+
+        if (isValidDate && isValidUsage && isValidOrderValue) {
+          let calcDiscount = 0;
+          if (coupon.discountType === 'percentage') {
+            calcDiscount = (subtotal * coupon.discountValue) / 100;
+          } else if (coupon.discountType === 'flat' || coupon.discountType === 'fixed') {
+            calcDiscount = coupon.discountValue;
+          }
+          if (coupon.maxDiscount && calcDiscount > coupon.maxDiscount) {
+            calcDiscount = coupon.maxDiscount;
+          }
+          
+          discount = calcDiscount;
+          validCouponCode = coupon.code;
+          await QuickCoupon.updateOne({ _id: coupon._id }, { $inc: { usedCount: 1 } });
+        } else {
+          return res.status(400).json({ success: false, message: 'Coupon invalid or expired' });
+        }
+      } else {
+         return res.status(400).json({ success: false, message: 'Invalid coupon code' });
+      }
+    }
+
     const { pricing } = await calculateQuickPricing({
       subtotal,
       discount,
@@ -358,6 +392,7 @@ export const placeOrder = async (req, res) => {
         subtotal,
         total,
       },
+      couponCode: validCouponCode || null,
       deliveryAddress,
       timeSlot: req.body?.timeSlot || 'now',
       payment: {

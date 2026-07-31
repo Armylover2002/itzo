@@ -178,6 +178,7 @@ const persistQuickCartSnapshot = (items) => {
 const useStandaloneQuickCart = () => {
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(() => readStoredQuickCart());
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   const [loading, setLoading] = useState(Boolean(isAuthenticated));
   const pendingRequestsRef = useRef(0);
@@ -406,6 +407,8 @@ const useStandaloneQuickCart = () => {
     cartTotal,
     cartCount,
     loading,
+    appliedCoupon,
+    setAppliedCoupon,
   };
 };
 
