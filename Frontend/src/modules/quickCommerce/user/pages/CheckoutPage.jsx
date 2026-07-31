@@ -277,6 +277,7 @@ const CheckoutPage = () => {
     removeFromCart,
     clearCart,
     loading,
+    appliedCoupon,
   } = useCart();
   const { wishlist, addToWishlist, fetchFullWishlist, isFullDataFetched } =
     useWishlist();
