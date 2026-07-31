@@ -2261,7 +2261,7 @@ function RestaurantDetailsContent() {
 
         {/* Menu Items Section */}
         {restaurant?.menuSections && Array.isArray(restaurant.menuSections) && restaurant.menuSections.length > 0 && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 py-6 sm:py-8 md:py-10 lg:py-12 space-y-6 md:space-y-8 lg:space-y-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-6 pb-[140px] sm:pt-8 md:pt-10 lg:pt-12 space-y-6 md:space-y-8 lg:space-y-10">
             {filteredSections.length === 0 && hasActiveMenuFilters && (
               <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] px-5 py-8 text-center">
                 <p className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300">
