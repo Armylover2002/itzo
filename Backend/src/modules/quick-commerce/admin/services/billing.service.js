@@ -273,10 +273,11 @@ export function calculateDeliveryFeeFromSettings(subtotal, feeSettings = DEFAULT
   return Number(feeSettings.deliveryFee || 0);
 }
 
-export async function calculateQuickPricing({ subtotal = 0, discount = 0, products = [] } = {}) {
+export async function calculateQuickPricing({ subtotal = 0, discount = 0, tip = 0, products = [] } = {}) {
   const feeSettings = await getActiveFeeSettings();
   const safeSubtotal = Number(subtotal || 0);
   const safeDiscount = Math.max(0, Number(discount || 0));
+  const safeTip = Math.max(0, Number(tip || 0));
   const platformFee = Number(feeSettings.platformFee || 0);
   const handlingFee = await calculateHandlingFeeFromProducts(products);
   const deliveryFee = calculateDeliveryFeeFromSettings(safeSubtotal, feeSettings);
@@ -286,7 +287,7 @@ export async function calculateQuickPricing({ subtotal = 0, discount = 0, produc
     Number.isFinite(gstRate) && gstRate > 0
       ? Math.round(safeSubtotal * (gstRate / 100))
       : 0;
-  const total = Math.max(0, safeSubtotal + deliveryFee + handlingFee + tax + gst - safeDiscount);
+  const total = Math.max(0, safeSubtotal + deliveryFee + handlingFee + platformFee + tax + gst - safeDiscount + safeTip);
 
   return {
     pricing: {
@@ -297,6 +298,7 @@ export async function calculateQuickPricing({ subtotal = 0, discount = 0, produc
       deliveryFee,
       platformFee,
       handlingFee,
+      tip: safeTip,
       restaurantCommission: 0,
       discount: safeDiscount,
       total,

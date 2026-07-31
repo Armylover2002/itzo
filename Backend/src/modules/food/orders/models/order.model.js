@@ -104,6 +104,8 @@ const pricingSchema = new mongoose.Schema(
         deliveryDistanceKm: { type: Number, default: null, min: 0 },
         deliverySponsorType: { type: String, default: 'USER_FULL', trim: true },
         platformFee: { type: Number, default: 0, min: 0 },
+        handlingFee: { type: Number, default: 0, min: 0 },
+        tip: { type: Number, default: 0, min: 0 },
         discount: { type: Number, default: 0, min: 0 },
         total: { type: Number, required: true, min: 0 },
         currency: { type: String, default: 'INR' }

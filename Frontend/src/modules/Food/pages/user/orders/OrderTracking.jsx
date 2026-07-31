@@ -577,6 +577,8 @@ const transformOrderForTracking = (apiOrder, previousOrder = null, explicitResta
     gst: apiOrder?.pricing?.tax || apiOrder?.pricing?.gst || apiOrder?.gst || apiOrder?.tax || previousOrder?.gst || 0,
     packagingFee: apiOrder?.pricing?.packagingFee || apiOrder?.packagingFee || 0,
     platformFee: apiOrder?.pricing?.platformFee || apiOrder?.platformFee || 0,
+    handlingFee: apiOrder?.pricing?.handlingFee || apiOrder?.handlingFee || previousOrder?.handlingFee || 0,
+    tip: apiOrder?.pricing?.tip || apiOrder?.tip || previousOrder?.tip || 0,
     discount: apiOrder?.pricing?.discount || apiOrder?.discount || 0,
     subtotal: apiOrder?.pricing?.subtotal || apiOrder?.subtotal || 0,
     paymentMethod: apiOrder?.paymentMethod || apiOrder?.payment?.method || previousOrder?.paymentMethod || null,
@@ -2750,6 +2752,20 @@ export default function OrderTracking() {
                 <span className="text-gray-600">Taxes & Charges (GST)</span>
                 <span className="text-gray-900 font-medium">₹{Number(order?.gst || 0).toFixed(2)}</span>
               </div>
+
+              {Number(order?.handlingFee) > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">Handling Charges</span>
+                  <span className="text-gray-900 font-medium">₹{Number(order.handlingFee).toFixed(2)}</span>
+                </div>
+              )}
+
+              {Number(order?.tip) > 0 && (
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">Delivery Tip</span>
+                  <span className="text-gray-900 font-medium">₹{Number(order.tip).toFixed(2)}</span>
+                </div>
+              )}
 
               {Number(order?.discount) > 0 && (
                 <div className="flex justify-between items-center text-sm text-green-600 font-medium">

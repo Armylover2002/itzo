@@ -290,9 +290,12 @@ export const placeOrder = async (req, res) => {
       }
     }
 
+    const tip = Number(req.body?.selectedTip || req.body?.tip || 0);
+
     const { pricing } = await calculateQuickPricing({
       subtotal,
       discount,
+      tip,
       products,
     });
     const deliveryFee = Number(pricing.deliveryFee || 0);
@@ -303,7 +306,7 @@ export const placeOrder = async (req, res) => {
     const sellerPaymentMode = isOnlinePayment ? 'online' : 'cash';
     const shouldFanOutSellerOrders = true;
     const deliveryAddress = normalizeDeliveryAddress(req.body?.address);
-    const amountDue = Math.max(0, total + Number(pricing.platformFee || 0));
+    const amountDue = Math.max(0, total);
 
     let razorpayPayload = null;
     let rpOrderId = null;
