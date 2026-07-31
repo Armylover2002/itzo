@@ -1698,19 +1698,42 @@ export const getAdminCoupons = async (req, res) => {
 
 export const createAdminCoupon = async (req, res) => {
   try {
-    const coupon = await QuickCoupon.create(req.body);
+    const body = { ...req.body };
+    // Sanitize: remove empty-string values for optional fields so Mongoose uses defaults
+    ['validFrom', 'validTill'].forEach(k => {
+      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
+    });
+    ['maxDiscount', 'usageLimit'].forEach(k => {
+      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
+    });
+    // Ensure title falls back to code if not provided
+    if (!body.title) body.title = body.code || '';
+    const coupon = await QuickCoupon.create(body);
     return res.status(201).json({ success: true, result: coupon });
   } catch (error) {
+    console.error('[createAdminCoupon] Error:', error.message);
+    // Return duplicate key error as a clear message
+    if (error.code === 11000) {
+      return res.status(409).json({ success: false, message: 'A coupon with this code already exists' });
+    }
     return res.status(400).json({ success: false, message: error.message || 'Failed to create coupon' });
   }
 };
 
 export const updateAdminCoupon = async (req, res) => {
   try {
-    const coupon = await QuickCoupon.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const body = { ...req.body };
+    ['validFrom', 'validTill'].forEach(k => {
+      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
+    });
+    ['maxDiscount', 'usageLimit'].forEach(k => {
+      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
+    });
+    const coupon = await QuickCoupon.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
     if (!coupon) return res.status(404).json({ success: false, message: 'Coupon not found' });
     return res.json({ success: true, result: coupon });
   } catch (error) {
+    console.error('[updateAdminCoupon] Error:', error.message);
     return res.status(400).json({ success: false, message: error.message || 'Failed to update coupon' });
   }
 };

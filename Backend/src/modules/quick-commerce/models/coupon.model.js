@@ -11,7 +11,7 @@ const quickCouponSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     description: {
@@ -21,12 +21,12 @@ const quickCouponSchema = new mongoose.Schema(
     },
     couponType: {
       type: String,
-      enum: ['generic', 'user_specific', 'first_order'],
+      enum: ['generic', 'user_specific', 'first_order', 'bulk_order', 'min_order_value', 'free_delivery', 'category_based', 'monthly_volume'],
       default: 'generic',
     },
     discountType: {
       type: String,
-      enum: ['percentage', 'flat'],
+      enum: ['percentage', 'flat', 'fixed', 'free_delivery'],
       default: 'percentage',
     },
     discountValue: {
