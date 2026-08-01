@@ -539,7 +539,7 @@ export async function adminApproveReturn({
             await SellerTransaction.create(
               [{
                 sellerId: leg.sellerId,
-                type: 'Charge',
+                type: 'Adjustment',
                 amount: -Math.abs(deliveryCharge),
                 status: 'Settled',
                 orderId: returnReq.orderId,
