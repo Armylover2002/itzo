@@ -649,10 +649,6 @@ export const getOrderById = async (req, res) => {
   try {
     const idQuery = resolveId(req);
 
-    if (!idQuery) {
-      return res.status(400).json({ success: false, message: 'sessionId or userId is required' });
-    }
-
     const rawOrderId = String(req.params.orderId || '').trim();
     if (!rawOrderId) {
       return res.status(400).json({ success: false, message: 'orderId is required' });
@@ -664,7 +660,6 @@ export const getOrderById = async (req, res) => {
     }
 
     const query = {
-      ...idQuery,
       orderType: 'quick',
       $or: orderIdentityQuery,
     };
