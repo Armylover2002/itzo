@@ -6,6 +6,7 @@
  */
 
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
+import { QuickOrder } from '../../models/order.model.js';
 import * as returnAssignmentService from '../services/returnAssignment.service.js';
 import * as returnService from '../services/return.service.js';
 import * as returnOtpService from '../services/returnOtp.service.js';
@@ -54,9 +55,23 @@ export const getAssignedReturns = async (req, res) => {
     const returns = await SellerReturn.find(query)
       .populate('userId', 'name phone location')
       .populate('sellerId', 'shopName name phone location address')
-      .populate('returnRequestId', 'images reason notes returnId')
+      .populate('returnRequestId', 'images reason notes returnId orderMongoId')
       .sort({ createdAt: -1 })
       .lean();
+
+    // Enrich returns with original order details for frontend rendering
+    for (const ret of returns) {
+      if (ret.returnRequestId && ret.returnRequestId.orderMongoId) {
+        const order = await QuickOrder.findById(ret.returnRequestId.orderMongoId).select('deliveryAddress deliveryCharge').lean();
+        if (order) {
+          ret.pickupAddress = order.deliveryAddress;
+          
+          if (!ret.returnDeliveryCommission || ret.returnDeliveryCommission === 0) {
+            ret.returnDeliveryCommission = order.deliveryCharge || 0;
+          }
+        }
+      }
+    }
 
     return sendResponse(res, 200, 'Assigned returns fetched', { returns });
   } catch (error) {
