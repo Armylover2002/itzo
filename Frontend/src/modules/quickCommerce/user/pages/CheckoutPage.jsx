@@ -1224,6 +1224,7 @@ const CheckoutPage = () => {
     const {
       deliveryFeeCharged,
       handlingFeeCharged,
+      platformFeeCharged,
       taxTotal,
       gstAmount,
       grandTotal,
@@ -1241,6 +1242,7 @@ const CheckoutPage = () => {
       subtotal,
       deliveryFeeCharged,
       handlingFeeCharged,
+      platformFeeCharged,
       taxTotal,
       gstAmount,
       grandTotal,
