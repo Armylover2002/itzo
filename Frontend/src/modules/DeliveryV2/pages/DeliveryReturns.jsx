@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { deliveryAPI } from '@food/api';
+import { useDeliveryStore } from '@/modules/DeliveryV2/store/useDeliveryStore';
+import { getHaversineDistance, calculateETA } from '@/modules/DeliveryV2/utils/geo';
 import { 
   ArrowLeft, Search, Package, AlertTriangle, 
   CheckCircle2, Clock, MapPin, Map, Loader2, RefreshCw,
@@ -80,6 +82,7 @@ export default function DeliveryReturns() {
   const [activeTab, setActiveTab] = useState('active');
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoading, setActionLoading] = useState(null); // legId of the item being acted on
+  const { riderLocation } = useDeliveryStore();
 
   const fetchReturns = useCallback(async () => {
     setLoading(true);
@@ -306,6 +309,36 @@ export default function DeliveryReturns() {
                 const isActive = ACTIVE_STATUSES.includes(item.returnStatus);
                 const StatusIcon = statusInfo.icon;
 
+                // --- Earnings, Distance, ETA Calculations ---
+                const earning = item.returnDeliveryCommission || 0;
+                
+                let distToTarget = 0;
+                let targetCoords = null;
+                const isHeadingToSeller = statusInfo.step >= 4; // 'picked_up' or later
+                
+                if (isHeadingToSeller) {
+                  // Target is Seller
+                  const sLoc = item.sellerId?.location || item.sellerId?.address?.location || {};
+                  const coords = sLoc.coordinates || sLoc.location?.coordinates || [];
+                  targetCoords = { lat: coords[1] || sLoc.lat, lng: coords[0] || sLoc.lng };
+                } else {
+                  // Target is Customer (Pickup)
+                  const cLoc = item.pickupAddress?.location || item.userId?.location || {};
+                  const coords = cLoc.coordinates || cLoc.location?.coordinates || [];
+                  targetCoords = { lat: coords[1] || cLoc.lat, lng: coords[0] || cLoc.lng };
+                }
+
+                if (riderLocation && targetCoords?.lat && targetCoords?.lng) {
+                  distToTarget = getHaversineDistance(
+                    riderLocation.lat, riderLocation.lng,
+                    targetCoords.lat, targetCoords.lng
+                  );
+                }
+
+                const distanceKm = distToTarget > 0 ? (distToTarget / 1000).toFixed(1) : '--';
+                const etaMins = distToTarget > 0 ? calculateETA(distToTarget, 8) : '--';
+                // --------------------------------------------
+
                 return (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -378,6 +411,22 @@ export default function DeliveryReturns() {
                         <p className="text-xs font-medium text-red-700">{item.returnReason || item.returnRequestId?.reason}</p>
                       </div>
                     )}
+
+                    {/* Delivery Fee & Distance */}
+                    <div className="flex items-center bg-gray-50 rounded-2xl p-3 mb-4 border border-gray-100">
+                      <div className="flex-1 flex flex-col items-center border-r border-gray-200">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Earning</span>
+                        <span className="font-bold text-green-600">₹{earning}</span>
+                      </div>
+                      <div className="flex-1 flex flex-col items-center border-r border-gray-200">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Distance</span>
+                        <span className="font-bold text-gray-900">{distanceKm} {distanceKm !== '--' ? 'km' : ''}</span>
+                      </div>
+                      <div className="flex-1 flex flex-col items-center">
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Time</span>
+                        <span className="font-bold text-gray-900">{etaMins} {etaMins !== '--' ? 'min' : ''}</span>
+                      </div>
+                    </div>
 
                     {/* Timestamps */}
                     <div className="flex items-center gap-4 text-[10px] text-gray-400 font-medium mb-4">
