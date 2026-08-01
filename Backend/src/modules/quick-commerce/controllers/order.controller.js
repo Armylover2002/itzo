@@ -49,6 +49,19 @@ const resolveId = (req) => {
   return sessionId ? { sessionId } : null;
 };
 
+const patchExistingOrderTax = (order) => {
+  if (order && order.pricing) {
+    if (!order.pricing.tax && !order.pricing.gst) {
+      const p = order.pricing;
+      const computedSum = (p.subtotal || 0) + (p.deliveryFee || 0) + (p.handlingFee || 0) + (p.platformFee || 0) + (p.packagingFee || 0) - (p.discount || 0) + (p.tip || 0);
+      const diff = (p.total || 0) - computedSum;
+      if (diff > 0) {
+        order.pricing.tax = diff;
+      }
+    }
+  }
+};
+
 const getOrderPayableAmount = (order) => {
   const pricing = order?.pricing || {};
   const pricingTotal = Number(pricing.total ?? order?.total ?? 0);
@@ -65,6 +78,7 @@ const getOrderPayableAmount = (order) => {
 };
 
 const normalizeOrderSummary = (order) => {
+  patchExistingOrderTax(order);
   const amount = getOrderPayableAmount(order);
   const paymentMethod = order?.payment?.method || order?.paymentMethod || 'cash';
   const paymentStatus = order?.payment?.status || order?.paymentStatus || '';
@@ -698,6 +712,8 @@ export const getOrderById = async (req, res) => {
       : null;
     const dropOtp = order.deliveryVerification?.dropOtp || {};
     const handoverOtp = String(order.deliveryOtp || '').trim();
+
+    patchExistingOrderTax(order);
 
     return res.json({
       success: true,

@@ -282,12 +282,13 @@ export async function calculateQuickPricing({ subtotal = 0, discount = 0, tip = 
   const handlingFee = await calculateHandlingFeeFromProducts(products);
   const deliveryFee = calculateDeliveryFeeFromSettings(safeSubtotal, feeSettings);
   const gstRate = Number(feeSettings.gstRate || 0);
-  const tax = 0;
-  const gst =
+  const calculatedGst =
     Number.isFinite(gstRate) && gstRate > 0
       ? Math.round(safeSubtotal * (gstRate / 100))
       : 0;
-  const total = Math.max(0, safeSubtotal + deliveryFee + handlingFee + platformFee + tax + gst - safeDiscount + safeTip);
+  const tax = calculatedGst;
+  const gst = calculatedGst;
+  const total = Math.max(0, safeSubtotal + deliveryFee + handlingFee + platformFee + tax - safeDiscount + safeTip);
 
   return {
     pricing: {
