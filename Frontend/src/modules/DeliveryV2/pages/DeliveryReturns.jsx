@@ -330,7 +330,7 @@ export default function DeliveryReturns() {
                 
                 let distToTarget = 0;
                 let targetCoords = null;
-                const isHeadingToSeller = statusInfo.step >= 4; // 'picked_up' or later
+                const isHeadingToSeller = statusInfo.step >= 3; // 'pickup_reached' / 'pickup_otp_pending' or later — rider is at customer, show distance to seller
                 
                 if (isHeadingToSeller) {
                   // Target is Seller — location is GeoJSON { type: 'Point', coordinates: [lng, lat] }
