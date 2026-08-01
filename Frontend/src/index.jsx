@@ -45,13 +45,14 @@ function resolveNativeInitialRoute() {
   const storedRoute = String(localStorage.getItem(NATIVE_LAST_ROUTE_KEY) || '').trim()
 
   if (pathname.startsWith('/food/')) return pathname
-
+  if (pathname.startsWith('/hrms')) return pathname
+  if (pathname.startsWith('/seller')) return pathname
 
   if (pathname.startsWith('/restaurant')) return `/food${pathname}`
   if (pathname.startsWith('/delivery')) return `/food${pathname}`
   if (pathname.startsWith('/user')) return `/food${pathname}`
   if (pathname.startsWith('/ecs')) return pathname
-  if (storedRoute.startsWith('/food/') || storedRoute.startsWith('/ecs')) {
+  if (storedRoute.startsWith('/food/') || storedRoute.startsWith('/ecs') || storedRoute.startsWith('/hrms') || storedRoute.startsWith('/seller')) {
     return storedRoute
   }
 

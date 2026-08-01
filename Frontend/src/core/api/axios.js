@@ -124,7 +124,11 @@ axiosInstance.interceptors.response.use(
             if (!hasToken) {
                 return Promise.reject(error);
             }
-            const path = window.location.pathname;
+            // Use hash path when available (HashRouter in WebView),
+            // otherwise fall back to server pathname.
+            const rawHash = window.location.hash || '';
+            const hashPath = rawHash.startsWith('#') ? rawHash.substring(1) : '';
+            const path = hashPath || window.location.pathname;
             const requestUrl = String(originalRequest?.url || '');
             const currentModule = path.startsWith('/seller')
                 ? 'seller'
@@ -163,11 +167,26 @@ axiosInstance.interceptors.response.use(
             const keysToClear = moduleStorageKeys[currentModule] || ['token'];
             keysToClear.forEach((key) => localStorage.removeItem(key));
 
-            if (currentModule === 'seller') window.location.href = '/seller/auth';
-            else if (currentModule === 'admin') window.location.href = '/ecs/login';
-            else if (currentModule === 'delivery') window.location.href = '/delivery/auth';
-            else if (currentModule === 'hrms') window.location.href = '/hrms/login';
-            else window.location.href = '/user/auth/login';
+            // Use hash navigation if in a native-like shell (HashRouter),
+            // otherwise use standard navigation (BrowserRouter).
+            const isHashRouter = Boolean(window.flutter_inappwebview) ||
+                Boolean(window.ReactNativeWebView) ||
+                String(window.location?.protocol || '').toLowerCase() === 'file:' ||
+                String(window.navigator?.userAgent || '').toLowerCase().includes(' wv') ||
+                String(window.navigator?.userAgent || '').toLowerCase().includes('; wv');
+
+            let redirectTarget;
+            if (currentModule === 'seller') redirectTarget = '/seller/auth';
+            else if (currentModule === 'admin') redirectTarget = '/ecs/login';
+            else if (currentModule === 'delivery') redirectTarget = '/delivery/auth';
+            else if (currentModule === 'hrms') redirectTarget = '/hrms/login';
+            else redirectTarget = '/user/auth/login';
+
+            if (isHashRouter) {
+                window.location.hash = '#' + redirectTarget;
+            } else {
+                window.location.href = redirectTarget;
+            }
         }
         return Promise.reject(error);
     }

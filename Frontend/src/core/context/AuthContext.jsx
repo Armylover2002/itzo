@@ -36,7 +36,11 @@ const getProfileEndpoint = (role) => {
 export const AuthProvider = ({ children }) => {
     // Current role based on URL
     const getCurrentRoleFromUrl = () => {
-        const path = window.location.pathname;
+        // In HashRouter mode (WebView), the route is in the hash, not pathname.
+        // Check hash path first, then fall back to server pathname.
+        const hash = window.location.hash || '';
+        const hashPath = hash.startsWith('#') ? hash.substring(1) : '';
+        const path = hashPath || window.location.pathname;
         if (path.startsWith('/seller')) return 'seller';
         if (path.startsWith('/ecs')) return 'admin';
         if (path.startsWith('/delivery')) return 'delivery';
@@ -177,13 +181,32 @@ export const AuthProvider = ({ children }) => {
         // Clear the current user profile from memory
         setUser(null);
 
-        // Final fallback: redirect based on current path if needed
-        // (ProtectedRoute usually handles this, but explicit navigation is safer for some UI edge cases)
-        if (path.startsWith('/ecs')) window.location.href = '/ecs/login';
-        else if (path.startsWith('/seller')) window.location.href = '/seller/auth';
-        else if (path.startsWith('/delivery')) window.location.href = '/delivery/auth';
-        else if (path.startsWith('/hrms')) window.location.href = '/hrms/login';
-        else window.location.href = '/user/auth/login';
+        // Determine the correct login route for the current module
+        // Use both hash path and server pathname for detection
+        const hash = window.location.hash || '';
+        const hashPath = hash.startsWith('#') ? hash.substring(1) : '';
+        const effectivePath = hashPath || path;
+
+        let logoutTarget;
+        if (effectivePath.startsWith('/ecs')) logoutTarget = '/ecs/login';
+        else if (effectivePath.startsWith('/seller')) logoutTarget = '/seller/auth';
+        else if (effectivePath.startsWith('/delivery')) logoutTarget = '/delivery/auth';
+        else if (effectivePath.startsWith('/hrms')) logoutTarget = '/hrms/login';
+        else logoutTarget = '/user/auth/login';
+
+        // Use hash navigation if in a native-like shell (HashRouter),
+        // otherwise use standard navigation (BrowserRouter).
+        const isHashRouter = Boolean(window.flutter_inappwebview) ||
+            Boolean(window.ReactNativeWebView) ||
+            String(window.location?.protocol || '').toLowerCase() === 'file:' ||
+            String(window.navigator?.userAgent || '').toLowerCase().includes(' wv') ||
+            String(window.navigator?.userAgent || '').toLowerCase().includes('; wv');
+
+        if (isHashRouter) {
+            window.location.hash = '#' + logoutTarget;
+        } else {
+            window.location.href = logoutTarget;
+        }
     };
 
     const refreshUser = async () => {
