@@ -69,25 +69,6 @@ export const getAdminReturnDetails = async (req, res) => {
       .populate('assignment.deliveryPartnerId', 'name phone')
       .lean();
 
-    // Compute returnRefundAmount on-the-fly for legs where it was never calculated
-    for (const leg of legs) {
-      if ((!leg.returnRefundAmount || leg.returnRefundAmount === 0) && Array.isArray(leg.itemApprovals)) {
-        let computed = 0;
-        for (const ia of leg.itemApprovals) {
-          if (ia.status === 'approved' && ia.approvedQty > 0) {
-            const masterItem = returnRequest.items.find(
-              (i) => i.productId.toString() === (ia.productId || '').toString()
-            );
-            if (masterItem) {
-              computed += masterItem.price * ia.approvedQty;
-            }
-          }
-        }
-        if (computed > 0) {
-          leg.returnRefundAmount = computed;
-        }
-      }
-    }
 
     const history = await ReturnStatusHistory.find({ returnRequestId })
       .sort({ timestamp: -1 })

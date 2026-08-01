@@ -26,7 +26,7 @@ import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js'
 import { logger } from '../../../../utils/logger.js';
 import * as returnNotificationService from './returnNotification.service.js';
 import { emitReturnStatusUpdate, emitAdminTrackingUpdate } from './returnSocket.service.js';
-
+import { calculateRefundAmount } from './returnRefund.service.js';
 // ─── Utilities ──────────────────────────────────────────────────────────────
 
 function generateReturnId() {
@@ -564,6 +564,9 @@ export async function adminApproveReturn({
         });
       }
     }
+
+    // Calculate DB refund amount based on updated item approvals
+    await calculateRefundAmount(returnRequestId, session);
 
     // Sync master
     await syncMasterStatus(returnRequestId, session);

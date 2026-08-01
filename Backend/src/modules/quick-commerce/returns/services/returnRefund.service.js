@@ -86,8 +86,8 @@ async function recordSellerRefundDeduction({ sellerId, refundAmount, orderId, se
  * Recalculates the estimated refund amount based on approved quantities
  * across all legs of the return request.
  */
-export async function calculateRefundAmount(returnRequestId) {
-  const returnReq = await ReturnRequest.findById(returnRequestId);
+export async function calculateRefundAmount(returnRequestId, session = null) {
+  const returnReq = await ReturnRequest.findById(returnRequestId).session(session);
   if (!returnReq) return 0;
 
   let totalAmount = 0;
@@ -95,7 +95,7 @@ export async function calculateRefundAmount(returnRequestId) {
   // We only refund items that were 'approved' by the admin and actually reached the 'returned'/'refund_pending' state.
   // Actually, standard e-commerce refunds the "approved" quantity that was physically returned.
   // The system updates the 'approvedQty' during admin review or pickup verification.
-  const legs = await SellerReturn.find({ returnRequestId });
+  const legs = await SellerReturn.find({ returnRequestId }).session(session);
   
   for (const leg of legs) {
     if (leg.returnStatus === LEG_STATUS.CANCELLED || leg.returnStatus === LEG_STATUS.RETURN_REJECTED) {
@@ -114,13 +114,13 @@ export async function calculateRefundAmount(returnRequestId) {
       }
     }
     leg.returnRefundAmount = legAmount;
-    await leg.save();
+    await leg.save({ session });
     
     totalAmount += legAmount;
   }
   
   returnReq.refund.estimatedAmount = totalAmount;
-  await returnReq.save();
+  await returnReq.save({ session });
   return totalAmount;
 }
 
