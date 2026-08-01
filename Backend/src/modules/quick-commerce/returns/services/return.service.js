@@ -492,6 +492,7 @@ export async function adminApproveReturn({
     for (const leg of legs) {
       let legHasApproved = false;
       let legHasRejected = false;
+      let legRefundAmount = 0;
       
       // Update item approvals inside the leg
       for (const itemApproval of leg.itemApprovals) {
@@ -504,7 +505,17 @@ export async function adminApproveReturn({
         }
         if (itemApproval.status === 'approved') legHasApproved = true;
         if (itemApproval.status === 'rejected') legHasRejected = true;
+
+        // Calculate refund amount for this leg based on approved items
+        if (itemApproval.status === 'approved' && itemApproval.approvedQty > 0) {
+          const masterItem = returnReq.items.find((i) => i.productId.toString() === itemApproval.productId.toString());
+          if (masterItem) {
+            legRefundAmount += (masterItem.price * itemApproval.approvedQty);
+          }
+        }
       }
+      
+      leg.returnRefundAmount = legRefundAmount;
       
       const oldStatus = leg.returnStatus;
       let nextStatus = oldStatus;
@@ -556,6 +567,18 @@ export async function adminApproveReturn({
 
     // Sync master
     await syncMasterStatus(returnRequestId, session);
+
+    // Update master return request refund approvedAmount
+    let totalApprovedRefund = 0;
+    const updatedLegs = await SellerReturn.find({ returnRequestId }).session(session);
+    for (const l of updatedLegs) {
+      totalApprovedRefund += (l.returnRefundAmount || 0);
+    }
+    
+    if (returnReq.refund) {
+      returnReq.refund.approvedAmount = totalApprovedRefund;
+      await returnReq.save({ session });
+    }
 
     await session.commitTransaction();
     
