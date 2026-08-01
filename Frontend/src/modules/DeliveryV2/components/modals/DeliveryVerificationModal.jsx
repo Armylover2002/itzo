@@ -322,8 +322,23 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
 
   const handleManualCheck = async () => {
     setIsSyncing(true);
-    await checkPaymentSync();
-    setTimeout(() => setIsSyncing(false), 800);
+    try {
+      const res = await deliveryAPI.getPaymentStatus(orderId);
+      const data = res?.data?.data || res?.data || {};
+      const status = String(data?.payment?.status || "").toLowerCase();
+      if (["paid", "captured", "authorized"].includes(status)) {
+        setPaymentStatus("paid");
+        if (pollingRef.current) clearInterval(pollingRef.current);
+        toast.success("✅ Payment Received — Paid!");
+        setShowQrModal(false);
+      } else {
+        toast.error("❌ Not Paid Yet — Ask customer to complete payment");
+      }
+    } catch (e) {
+      toast.error("Could not check payment status");
+    } finally {
+      setTimeout(() => setIsSyncing(false), 800);
+    }
   };
 
   useEffect(() => {
