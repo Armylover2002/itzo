@@ -1780,7 +1780,7 @@ export default function OrderTracking() {
       return
     }
     try {
-      await generateOrderInvoicePDF(order, itzoLogo)
+      await generateOrderInvoicePDF(order, itzoLogo, profile)
       toast.success("Invoice downloaded")
     } catch (error) {
       debugError("Error generating invoice PDF:", error)

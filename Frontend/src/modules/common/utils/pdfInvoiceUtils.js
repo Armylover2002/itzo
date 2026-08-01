@@ -68,7 +68,7 @@ const numberToWords = (num) => {
   return res + "Only";
 }
 
-export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
+export const generateOrderInvoicePDF = async (order, itzoLogoUrl, profile = null) => {
   try {
     const { default: jsPDF } = await import("jspdf")
     const { default: autoTable } = await import("jspdf-autotable")
@@ -163,7 +163,10 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
     )
 
     // Dynamic Customer Details
-    const customerName = formatDisplayText(order.userName || order.customerName)
+    const customerName = formatDisplayText(
+      order.userName || order.customerName || profile?.name || profile?.fullName ||
+      order.address?.name || order.deliveryAddress?.contactName
+    )
     let rawAddress = order.address || order.customerAddress || order.deliveryAddress;
     let deliveryAddress = "Not available";
     let stateName = "N/A";
@@ -174,74 +177,7 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
         deliveryAddress = rawAddress;
     }
 
-    // Calculations for Page 1 (Restaurant Invoice)
-    const items = Array.isArray(order.items) ? order.items : []
-    const discountAmount = toNumber(order.couponDiscount ?? order.itemDiscount ?? order.discountAmount ?? order.pricing?.discount)
-    // Distribute discount proportionally across items for the PDF breakdown
-    let totalGross = 0;
-    items.forEach(item => totalGross += toNumber(item.quantity || 1) * toNumber(item.price))
-    
-    // Determine if CGST should be shown based on Gujarat state
-    const isUserGujarat = stateName.toLowerCase().includes('gujrat') || stateName.toLowerCase().includes('gujarat');
-    const restState = formatDisplayText(fetchedRestaurant?.location?.state || fetchedRestaurant?.state || order.restaurantLocation?.state || settings?.state || "N/A");
-    const isRestGujarat = restState.toLowerCase().includes('gujrat') || restState.toLowerCase().includes('gujarat');
-    const shouldShowCgst = !(isUserGujarat && isRestGujarat);
-
-    // We assume standard GST is 5% for restaurant services
-    const gstRate = order.restaurantDetails?.gstRate ? toNumber(order.restaurantDetails.gstRate) : 5;
-    const cgstRate = shouldShowCgst ? gstRate / 2 : 0;
-    const sgstRate = shouldShowCgst ? gstRate / 2 : gstRate;
-    
-    let totalItemsNet = 0;
-    let totalItemsCgst = 0;
-    let totalItemsSgst = 0;
-    let totalItemsTotal = 0;
-
-    const tableBody = items.map((item) => {
-      const qty = toNumber(item.quantity || 1)
-      const title = `${qty} x ${item.name || item.itemName || "Item"}`
-      const unitPrice = toNumber(item.price)
-      const grossValue = qty * unitPrice
-      const itemDiscount = totalGross > 0 ? (grossValue / totalGross) * discountAmount : 0
-      
-      // Calculate taxes backward if item.price is inclusive, or forward if exclusive.
-      // Most restaurant aggregators treat price as inclusive of tax in the menu. Let's assume inclusive for simplicity, 
-      // or we just calculate tax based on net value if exclusive.
-      // Reference invoice shows: Net Value = Gross - Discount. Tax is calculated on Net Value. Total = Net + Tax.
-      // But wait, the reference image: Gross 299, Discount 140, Net 159. CGST 2.5% = 3.975. SGST 2.5% = 3.975. Total = 166.95
-      const netValue = grossValue - itemDiscount
-      const cgstVal = netValue * (cgstRate / 100)
-      const sgstVal = netValue * (sgstRate / 100)
-      const totalVal = netValue + cgstVal + sgstVal
-      
-      totalItemsNet += netValue;
-      totalItemsCgst += cgstVal;
-      totalItemsSgst += sgstVal;
-      totalItemsTotal += totalVal;
-      
-      const row = [title, formatMoney(grossValue), formatMoney(itemDiscount), formatMoney(netValue)];
-      if (shouldShowCgst) {
-        row.push(`${cgstRate}%`, formatMoney(cgstVal));
-      }
-      row.push(`${sgstRate}%`, formatMoney(sgstVal), formatMoney(totalVal));
-      return row;
-    })
-    
-    // Packaging Charge
-    const packagingCharge = toNumber(order.packagingFee ?? order.restaurantPackagingCharge ?? 0)
-    const packCgst = packagingCharge * (cgstRate / 100)
-    const packSgst = packagingCharge * (sgstRate / 100)
-    const packTotal = packagingCharge + packCgst + packSgst
-
-    // Final Totals
-    const grandNet = totalItemsNet + packagingCharge
-    const grandCgst = totalItemsCgst + packCgst
-    const grandSgst = totalItemsSgst + packSgst
-    const grandTotal = totalItemsTotal + packTotal
-
-    // -------------------------------------------------------------------------
-    // PAGE 1: RESTAURANT INVOICE
-    // -------------------------------------------------------------------------
+    // ── Shared: renderHeader helper (used by all pages) ──
     const renderHeader = (doc, title1, title2) => {
       if (logoDataUrl) {
         try {
@@ -266,40 +202,205 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
       doc.line(margin, margin + 16, pageWidth - margin, margin + 16)
     }
 
-    renderHeader(doc, "Tax Invoice", "ORIGINAL FOR RECIPIENT")
+    let currentY;
 
-    let currentY = margin + 22
+    // ── Shared: render seller/restaurant details + customer details on Page 1 ──
+    const renderPage1Details = () => {
+      renderHeader(doc, "Tax Invoice", "ORIGINAL FOR RECIPIENT")
+      currentY = margin + 22
+
+      // Restaurant / Seller Details
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "bold")
+      doc.text("Tax Invoice on behalf of -", margin, currentY)
+      currentY += 6
+      doc.setFontSize(9)
+      doc.setFont("helvetica", "normal")
+      doc.text(`Legal Entity Name: ${legalEntityName}`, margin, currentY); currentY += 5
+      doc.text(`${entityTypeLabel} Name: ${restaurantName}`, margin, currentY); currentY += 5
+      const restAddrLines = doc.splitTextToSize(`${entityTypeLabel} Address: ${restaurantAddress}`, pageWidth - margin * 2);
+      doc.text(restAddrLines, margin, currentY); currentY += restAddrLines.length * 5;
+      doc.text(`${entityTypeLabel} GSTIN: ${restaurantGstin}`, margin, currentY); currentY += 5
+      doc.text(`${entityTypeLabel} FSSAI: ${restaurantFssai}`, margin, currentY); currentY += 5
+      doc.text(`Invoice No.: ${orderId}`, margin, currentY); currentY += 5
+      doc.text(`Invoice Date: ${orderDate}`, margin, currentY); currentY += 8
+
+      // Customer Details
+      doc.setFont("helvetica", "bold")
+      doc.text(`Customer Name: ${customerName}`, margin, currentY); currentY += 5
+      doc.setFont("helvetica", "normal")
+      const delAddrLines = doc.splitTextToSize(`Delivery Address: ${deliveryAddress}`, pageWidth - margin * 2);
+      doc.text(delAddrLines, margin, currentY); currentY += delAddrLines.length * 5;
+      doc.text(`State name and Place of Supply: ${stateName}`, margin, currentY); currentY += 8
+    }
+
+    // ── Shared: render signatory footer on current page ──
+    const renderPage1Footer = (amountTotal) => {
+      currentY = doc.lastAutoTable.finalY + 8
+      doc.setFont("helvetica", "bold")
+      doc.text(`Amount (in words): ${numberToWords(amountTotal)}`, margin, currentY); currentY += 8
+      doc.setFont("helvetica", "normal")
+      doc.text(`Amount of INR ${formatMoney(amountTotal)} settled digitally against Order ID ${orderId} dated ${orderDate}.`, margin, currentY); currentY += 8
+      doc.text(`Supply attracts reverse charge : No`, margin, currentY); currentY += 16
+
+      const footerY = pageHeight - 40
+      doc.setFont("helvetica", "bold")
+      doc.text(`For ${companyFullName}`, margin, footerY)
+      doc.setTextColor(0, 0, 150)
+      doc.setFont("times", "italic")
+      doc.setFontSize(22)
+      doc.text(companyName, pageWidth - margin - 45, footerY + 14, { angle: -5 })
+      doc.setTextColor(0)
+      doc.setFontSize(10)
+      doc.setFont("helvetica", "bold")
+      doc.text("Authorized Signatory", pageWidth - margin - 40, footerY + 20)
+      doc.setFontSize(8)
+      doc.setFont("helvetica", "normal")
+      doc.text(`PAN: ${companyPan}`, margin, footerY + 6)
+      doc.text(`CIN: ${companyCin}`, margin, footerY + 10)
+      doc.text(`GSTIN: ${companyGstin}`, margin, footerY + 14)
+      doc.text(`FSSAI: ${companyFssai}`, margin, footerY + 18)
+    }
+
+    // Determine CGST/SGST display (shared by all pages for platform/delivery fee invoices)
+    const isUserGujarat = stateName.toLowerCase().includes('gujrat') || stateName.toLowerCase().includes('gujarat');
+    const restState = formatDisplayText(fetchedRestaurant?.location?.state || fetchedRestaurant?.state || order.restaurantLocation?.state || settings?.state || "N/A");
+    const isRestGujarat = restState.toLowerCase().includes('gujrat') || restState.toLowerCase().includes('gujarat');
+    const shouldShowCgst = !(isUserGujarat && isRestGujarat);
+
+    if (isQuick) {
+    // =========================================================================
+    // PAGE 1 — QUICK COMMERCE: Seller Invoice
+    // Uses actual values from the order — consistent with checkout & bill summary
+    // =========================================================================
+    const qcSubtotal = toNumber(order.subtotal || order.pricing?.subtotal);
+    const qcDiscount = toNumber(order.discount || order.pricing?.discount);
+    const qcGst = toNumber(order.gst || order.tax || order.pricing?.tax || order.pricing?.gst);
+    const qcHandlingFee = toNumber(order.handlingFee || order.pricing?.handlingFee);
+    const qcPackagingFee = toNumber(order.packagingFee || order.pricing?.packagingFee);
+    const qcTip = toNumber(order.tip || order.pricing?.tip);
+    const qcTotal = toNumber(order.totalAmount || order.total || order.pricing?.total);
+
+    renderPage1Details();
+
+    // Service Details
+    doc.setFont("helvetica", "bold")
+    doc.text(`HSN Code: 996331`, margin, currentY); currentY += 5
+    doc.setFont("helvetica", "normal")
+    doc.text(`Service Description: Retail Service`, margin, currentY); currentY += 8
+
+    // Items table — matches checkout & bill summary exactly
+    const qcItems = Array.isArray(order.items) ? order.items : [];
+    const qcTableHead = [["Particulars", "Qty", "Rate (\u20b9)", "Amount (\u20b9)"]];
+    const qcTableBody = qcItems.map(item => {
+      const qty = toNumber(item.quantity || 1);
+      const rate = toNumber(item.price);
+      return [item.name || item.itemName || "Item", String(qty), formatMoney(rate), formatMoney(qty * rate)];
+    });
+
+    // Summary rows — same line items the user sees in bill summary
+    const qcSummaryRows = [];
+    qcSummaryRows.push(["Item Total", "", "", formatMoney(qcSubtotal)]);
+    if (qcDiscount > 0) {
+      qcSummaryRows.push(["Discount", "", "", `-${formatMoney(qcDiscount)}`]);
+    }
+    if (qcGst > 0) {
+      qcSummaryRows.push(["Taxes & Charges (GST)", "", "", formatMoney(qcGst)]);
+    }
+    if (qcHandlingFee > 0) {
+      qcSummaryRows.push(["Handling Charges", "", "", formatMoney(qcHandlingFee)]);
+    }
+    if (qcPackagingFee > 0) {
+      qcSummaryRows.push(["Packaging Charges", "", "", formatMoney(qcPackagingFee)]);
+    }
+    if (qcTip > 0) {
+      qcSummaryRows.push(["Tip", "", "", formatMoney(qcTip)]);
+    }
+    qcSummaryRows.push(["Total Amount", "", "", formatMoney(qcTotal)]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: qcTableHead,
+      body: [...qcTableBody, ...qcSummaryRows],
+      theme: "grid",
+      headStyles: { fillColor: 255, textColor: 0, fontStyle: "bold", lineWidth: 0.2, lineColor: 0, halign: 'center' },
+      bodyStyles: { textColor: 0, lineWidth: 0.2, lineColor: 0 },
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { halign: 'center' },
+        2: { halign: 'right' },
+        3: { halign: 'right' },
+      },
+      didParseCell: function (data) {
+        if (data.row.index >= qcTableBody.length) {
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    })
+
+    renderPage1Footer(qcTotal);
+
+    } else {
+    // =========================================================================
+    // PAGE 1 — FOOD ORDER: Restaurant Invoice (existing logic, unchanged)
+    // =========================================================================
+    const items = Array.isArray(order.items) ? order.items : []
+    const discountAmount = toNumber(order.couponDiscount ?? order.itemDiscount ?? order.discountAmount ?? order.pricing?.discount)
+    let totalGross = 0;
+    items.forEach(item => totalGross += toNumber(item.quantity || 1) * toNumber(item.price))
+
+    const gstRate = order.restaurantDetails?.gstRate ? toNumber(order.restaurantDetails.gstRate) : 5;
+    const cgstRate = shouldShowCgst ? gstRate / 2 : 0;
+    const sgstRate = shouldShowCgst ? gstRate / 2 : gstRate;
     
-    // Restaurant Details
-    doc.setFontSize(10)
-    doc.setFont("helvetica", "bold")
-    doc.text("Tax Invoice on behalf of -", margin, currentY)
-    currentY += 6
-    doc.setFontSize(9)
-    doc.setFont("helvetica", "normal")
-    doc.text(`Legal Entity Name: ${legalEntityName}`, margin, currentY); currentY += 5
-    doc.text(`${entityTypeLabel} Name: ${restaurantName}`, margin, currentY); currentY += 5
-    const restAddressLines = doc.splitTextToSize(`${entityTypeLabel} Address: ${restaurantAddress}`, pageWidth - margin * 2);
-    doc.text(restAddressLines, margin, currentY); currentY += restAddressLines.length * 5;
-    doc.text(`${entityTypeLabel} GSTIN: ${restaurantGstin}`, margin, currentY); currentY += 5
-    doc.text(`${entityTypeLabel} FSSAI: ${restaurantFssai}`, margin, currentY); currentY += 5
-    doc.text(`Invoice No.: ${orderId}`, margin, currentY); currentY += 5
-    doc.text(`Invoice Date: ${orderDate}`, margin, currentY); currentY += 8
+    let totalItemsNet = 0;
+    let totalItemsCgst = 0;
+    let totalItemsSgst = 0;
+    let totalItemsTotal = 0;
 
-    // Customer Details
-    doc.setFont("helvetica", "bold")
-    doc.text(`Customer Name: ${customerName}`, margin, currentY); currentY += 5
-    doc.setFont("helvetica", "normal")
-    const delAddressLines = doc.splitTextToSize(`Delivery Address: ${deliveryAddress}`, pageWidth - margin * 2);
-    doc.text(delAddressLines, margin, currentY); currentY += delAddressLines.length * 5;
-    doc.text(`State name and Place of Supply: ${stateName}`, margin, currentY); currentY += 8
+    const tableBody = items.map((item) => {
+      const qty = toNumber(item.quantity || 1)
+      const title = `${qty} x ${item.name || item.itemName || "Item"}`
+      const unitPrice = toNumber(item.price)
+      const grossValue = qty * unitPrice
+      const itemDiscount = totalGross > 0 ? (grossValue / totalGross) * discountAmount : 0
+      const netValue = grossValue - itemDiscount
+      const cgstVal = netValue * (cgstRate / 100)
+      const sgstVal = netValue * (sgstRate / 100)
+      const totalVal = netValue + cgstVal + sgstVal
+      
+      totalItemsNet += netValue;
+      totalItemsCgst += cgstVal;
+      totalItemsSgst += sgstVal;
+      totalItemsTotal += totalVal;
+      
+      const row = [title, formatMoney(grossValue), formatMoney(itemDiscount), formatMoney(netValue)];
+      if (shouldShowCgst) {
+        row.push(`${cgstRate}%`, formatMoney(cgstVal));
+      }
+      row.push(`${sgstRate}%`, formatMoney(sgstVal), formatMoney(totalVal));
+      return row;
+    })
+    
+    const packagingCharge = toNumber(order.packagingFee ?? order.restaurantPackagingCharge ?? 0)
+    const packCgst = packagingCharge * (cgstRate / 100)
+    const packSgst = packagingCharge * (sgstRate / 100)
+    const packTotal = packagingCharge + packCgst + packSgst
+
+    const grandNet = totalItemsNet + packagingCharge
+    const grandCgst = totalItemsCgst + packCgst
+    const grandSgst = totalItemsSgst + packSgst
+    const grandTotal = totalItemsTotal + packTotal
+
+    renderPage1Details();
 
     // Service Details
     const hsnCode = order.restaurantDetails?.hsnCode || "996331"
     doc.setFont("helvetica", "bold")
     doc.text(`HSN Code: ${hsnCode}`, margin, currentY); currentY += 5
     doc.setFont("helvetica", "normal")
-    doc.text(`Service Description: ${order.restaurantDetails?.serviceDescription || (isQuick ? "Retail Service" : "Restaurant Service")}`, margin, currentY); currentY += 8
+    doc.text(`Service Description: ${order.restaurantDetails?.serviceDescription || "Restaurant Service"}`, margin, currentY); currentY += 8
 
     // Table
     const tableHead = shouldShowCgst 
@@ -349,35 +450,8 @@ export const generateOrderInvoicePDF = async (order, itzoLogoUrl) => {
       }
     })
 
-    currentY = doc.lastAutoTable.finalY + 8
-    
-    doc.setFont("helvetica", "bold")
-    doc.text(`Amount (in words): ${numberToWords(grandTotal)}`, margin, currentY); currentY += 8
-    doc.setFont("helvetica", "normal")
-    doc.text(`Amount of INR ${formatMoney(grandTotal)} settled digitally against Order ID ${orderId} dated ${orderDate}.`, margin, currentY); currentY += 8
-    doc.text(`Supply attracts reverse charge : ${order.restaurantDetails?.reverseCharge ? "Yes" : "No"}`, margin, currentY); currentY += 16
-
-    // Signatory
-    const footerY = pageHeight - 40
-    doc.setFont("helvetica", "bold")
-    doc.text(`For ${companyFullName}`, margin, footerY)
-    
-    // Dummy Signature
-    doc.setTextColor(0, 0, 150)
-    doc.setFont("times", "italic")
-    doc.setFontSize(22)
-    doc.text(companyName, pageWidth - margin - 45, footerY + 14, { angle: -5 })
-    doc.setTextColor(0)
-
-    doc.setFontSize(10)
-    doc.setFont("helvetica", "bold")
-    doc.text("Authorized Signatory", pageWidth - margin - 40, footerY + 20)
-    doc.setFontSize(8)
-    doc.setFont("helvetica", "normal")
-    doc.text(`PAN: ${companyPan}`, margin, footerY + 6)
-    doc.text(`CIN: ${companyCin}`, margin, footerY + 10)
-    doc.text(`GSTIN: ${companyGstin}`, margin, footerY + 14)
-    doc.text(`FSSAI: ${companyFssai}`, margin, footerY + 18)
+    renderPage1Footer(grandTotal);
+    } // end food order Page 1
 
     // -------------------------------------------------------------------------
     // PAGE 2: PLATFORM FEE INVOICE
