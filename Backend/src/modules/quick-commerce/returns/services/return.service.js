@@ -487,7 +487,7 @@ export async function adminApproveReturn({
     
     // Fetch original order to get delivery charge
     const originalOrder = await QuickOrder.findById(returnReq.orderMongoId).session(session);
-    const deliveryCharge = Number(originalOrder?.deliveryCharge || 0);
+    const deliveryCharge = Number(originalOrder?.riderEarning || originalOrder?.pricing?.deliveryFee || 0);
 
     for (const leg of legs) {
       let legHasApproved = false;

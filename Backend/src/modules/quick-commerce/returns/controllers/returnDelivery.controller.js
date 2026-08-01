@@ -62,12 +62,23 @@ export const getAssignedReturns = async (req, res) => {
     // Enrich returns with original order details for frontend rendering
     for (const ret of returns) {
       if (ret.returnRequestId && ret.returnRequestId.orderMongoId) {
-        const order = await QuickOrder.findById(ret.returnRequestId.orderMongoId).select('deliveryAddress deliveryCharge').lean();
-        if (order) {
-          ret.pickupAddress = order.deliveryAddress;
+        const order = await QuickOrder.findById(ret.returnRequestId.orderMongoId)
+          .select('deliveryAddress pricing riderEarning')
+          .lean();
+        if (order && order.deliveryAddress) {
+          // Build a human-readable address string from deliveryAddress components
+          const da = order.deliveryAddress;
+          const addressParts = [da.street, da.city, da.state].filter(Boolean);
           
+          ret.pickupAddress = {
+            ...da,
+            address: addressParts.join(', ') || 'Customer Address',
+            formattedAddress: addressParts.join(', ') || 'Customer Address',
+          };
+          
+          // Use riderEarning or pricing.deliveryFee as fallback for commission
           if (!ret.returnDeliveryCommission || ret.returnDeliveryCommission === 0) {
-            ret.returnDeliveryCommission = order.deliveryCharge || 0;
+            ret.returnDeliveryCommission = order.riderEarning || order.pricing?.deliveryFee || 0;
           }
         }
       }

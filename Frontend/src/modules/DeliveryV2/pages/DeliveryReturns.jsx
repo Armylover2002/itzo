@@ -82,7 +82,23 @@ export default function DeliveryReturns() {
   const [activeTab, setActiveTab] = useState('active');
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoading, setActionLoading] = useState(null); // legId of the item being acted on
-  const { riderLocation } = useDeliveryStore();
+  const { riderLocation, setRiderLocation } = useDeliveryStore();
+
+  // Initialize GPS if riderLocation is not yet available (e.g. navigated directly to this page)
+  useEffect(() => {
+    if (riderLocation) return;
+    if (!navigator.geolocation) return;
+    
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setRiderLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err) => console.warn('Geolocation error on returns page:', err.message),
+      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [riderLocation, setRiderLocation]);
 
   const fetchReturns = useCallback(async () => {
     setLoading(true);
@@ -317,15 +333,19 @@ export default function DeliveryReturns() {
                 const isHeadingToSeller = statusInfo.step >= 4; // 'picked_up' or later
                 
                 if (isHeadingToSeller) {
-                  // Target is Seller
-                  const sLoc = item.sellerId?.location || item.sellerId?.address?.location || {};
-                  const coords = sLoc.coordinates || sLoc.location?.coordinates || [];
-                  targetCoords = { lat: coords[1] || sLoc.lat, lng: coords[0] || sLoc.lng };
+                  // Target is Seller — location is GeoJSON { type: 'Point', coordinates: [lng, lat] }
+                  const sLoc = item.sellerId?.location;
+                  if (sLoc?.coordinates?.length === 2) {
+                    targetCoords = { lat: sLoc.coordinates[1], lng: sLoc.coordinates[0] };
+                  } else if (sLoc?.latitude && sLoc?.longitude) {
+                    targetCoords = { lat: sLoc.latitude, lng: sLoc.longitude };
+                  }
                 } else {
-                  // Target is Customer (Pickup)
-                  const cLoc = item.pickupAddress?.location || item.userId?.location || {};
-                  const coords = cLoc.coordinates || cLoc.location?.coordinates || [];
-                  targetCoords = { lat: coords[1] || cLoc.lat, lng: coords[0] || cLoc.lng };
+                  // Target is Customer (Pickup) — pickupAddress.location is GeoJSON
+                  const pLoc = item.pickupAddress?.location;
+                  if (pLoc?.coordinates?.length === 2) {
+                    targetCoords = { lat: pLoc.coordinates[1], lng: pLoc.coordinates[0] };
+                  }
                 }
 
                 if (riderLocation && targetCoords?.lat && targetCoords?.lng) {
@@ -377,7 +397,7 @@ export default function DeliveryReturns() {
                                <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wide">Pickup from Customer</p>
                              </div>
                              <p className="text-sm font-bold text-gray-900">{item.userId?.name || item.customer?.name || 'Customer'}</p>
-                             <p className="text-xs text-gray-500 line-clamp-1">{item.pickupAddress?.address || item.userId?.location?.address || 'Customer location'}</p>
+                             <p className="text-xs text-gray-500 line-clamp-1">{item.pickupAddress?.formattedAddress || item.pickupAddress?.address || item.pickupAddress?.street || 'Customer location'}</p>
                            </div>
                            <div>
                              <div className="flex items-center gap-1.5 mb-0.5">
@@ -385,7 +405,7 @@ export default function DeliveryReturns() {
                                <p className="text-[10px] font-bold text-green-600 uppercase tracking-wide">Return to Seller</p>
                              </div>
                              <p className="text-sm font-bold text-gray-900">{item.sellerId?.shopName || item.sellerId?.name || 'Seller'}</p>
-                             <p className="text-xs text-gray-500 line-clamp-1">{item.sellerId?.address || item.sellerId?.location?.address || 'Seller location'}</p>
+                             <p className="text-xs text-gray-500 line-clamp-1">{item.sellerId?.location?.formattedAddress || item.sellerId?.location?.address || 'Seller location'}</p>
                            </div>
                          </div>
                        </div>
