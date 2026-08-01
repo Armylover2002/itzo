@@ -42,8 +42,9 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
 
     // B. Calculate from locations (Local calculation fallback)
     const rest = primaryPickup?.location || order.restaurantLocation || order.pickupAddress?.location || order.restaurantId?.location || {};
-    const resLat = parseFloat(order.restaurant_lat || order.restaurantLat || rest.latitude || rest.lat);
-    const resLng = parseFloat(order.restaurant_lng || order.restaurantLng || rest.longitude || rest.lng);
+    const restCoords = Array.isArray(rest.coordinates) && rest.coordinates.length >= 2 ? { lat: rest.coordinates[1], lng: rest.coordinates[0] } : null;
+    const resLat = parseFloat(order.restaurant_lat || order.restaurantLat || rest.latitude || rest.lat || restCoords?.lat);
+    const resLng = parseFloat(order.restaurant_lng || order.restaurantLng || rest.longitude || rest.lng || restCoords?.lng);
 
     if (riderLocation && !isNaN(resLat) && !isNaN(resLng)) {
       const distM = getHaversineDistance(
@@ -64,6 +65,7 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
   }, [order, primaryPickup, riderLocation]);
 
   if (!order) return null;
+  console.log("NewOrderModal debug order payload:", order);
 
   const earnings = order.earnings || order.returnDeliveryCommission || order.riderEarning || (order.orderAmount ? order.orderAmount * 0.1 : 0);
   const isQuickOrder = String(order?.orderType || order?.serviceType || order?.type || '').trim().toLowerCase() === 'quick' || order?.isReturn;
@@ -73,8 +75,20 @@ export const NewOrderModal = ({ order, onAccept, onReject, onMinimize }) => {
     (isQuickOrder
       ? order?.storeName || order?.sellerName || order?.seller?.shopName || order?.seller?.name || 'Seller store'
       : order?.restaurantName || order?.restaurant_name || order?.restaurantId?.restaurantName || order?.restaurantId?.name || 'Restaurant');
+  const pickupAddressStr = typeof order?.pickupAddress === 'string'
+    ? order.pickupAddress
+    : (order?.pickupAddress?.formattedAddress || order?.pickupAddress?.address);
+
+  const pickupPartsFromSchema = [
+    order?.pickupAddress?.street,
+    order?.pickupAddress?.additionalDetails,
+    order?.pickupAddress?.city,
+    order?.pickupAddress?.state,
+    order?.pickupAddress?.zipCode,
+  ].map((v) => String(v || '').trim()).filter(Boolean).join(', ');
+
   const restaurantAddress = order?.isReturn
-    ? order?.pickupAddress?.address || order?.pickupAddress?.formattedAddress || 'Customer Address'
+    ? pickupAddressStr || (pickupPartsFromSchema.length ? pickupPartsFromSchema : 'Customer Address')
     : (isQuickOrder
       ? order?.storeAddress || order?.sellerAddress || order?.seller?.location?.address || order?.seller?.location?.formattedAddress
       : order?.restaurantAddress || order?.restaurant_address || order?.restaurantId?.location?.address) ||

@@ -43,7 +43,7 @@ export async function emitReturnAssignmentSocket(partnerId, sellerReturn) {
       const populated = await SellerReturn.findById(sellerReturn._id)
         .populate('userId', 'name phone location deliveryAddresses')
         .populate('sellerId', 'shopName name phone location address')
-        .populate('returnRequestId', 'images reason notes returnId orderId deliveryAddress')
+        .populate('returnRequestId', 'images reason notes returnId orderId orderMongoId deliveryAddress')
         .lean();
       
       if (populated) {
@@ -65,9 +65,19 @@ export async function emitReturnAssignmentSocket(partnerId, sellerReturn) {
     if (returnReq.orderMongoId) {
       originalOrder = await QuickOrder.findById(returnReq.orderMongoId).lean();
     }
-    // Pickup = user's address (from original order's delivery address)
-    const pickupAddress = originalOrder?.deliveryAddress || returnReq.deliveryAddress || {};
+    // Pickup = user's address (from original order's delivery address or fallback to user model)
+    const fallbackAddress = (user.addresses && user.addresses.length > 0) ? user.addresses[0] : (user.address || {});
+    const pickupAddress = originalOrder?.deliveryAddress || returnReq.deliveryAddress || fallbackAddress || {};
     
+    const addressParts = [
+      pickupAddress.street,
+      pickupAddress.additionalDetails || pickupAddress.landmark,
+      pickupAddress.city,
+      pickupAddress.state,
+      pickupAddress.zipCode,
+    ].map((v) => String(v || '').trim()).filter(Boolean);
+    const fullPickupAddressStr = addressParts.join(', ') || pickupAddress.address || pickupAddress.formattedAddress || 'Customer Address';
+
     // Dropoff = seller's location
     const dropoffAddress = {
       address: seller.address || seller.location?.address || seller.location?.formattedAddress || '',
@@ -93,8 +103,12 @@ export async function emitReturnAssignmentSocket(partnerId, sellerReturn) {
       },
       pickupAddress: {
         name: user.name || returnData.customer?.name || 'Customer',
-        address: pickupAddress.formattedAddress || pickupAddress.address || pickupAddress.street || 'Customer Address',
+        address: fullPickupAddressStr,
+        formattedAddress: fullPickupAddressStr,
         location: pickupAddress.location,
+        street: pickupAddress.street,
+        city: pickupAddress.city,
+        state: pickupAddress.state
       },
       dropoffAddress: dropoffAddress,
       returnReason: returnData.returnReason || returnReq.reason || '',
