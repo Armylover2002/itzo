@@ -827,7 +827,7 @@ export default function OrderTracking() {
   useEffect(() => {
     getOrderByIdRef.current = getOrderById
   }, [getOrderById])
-  const { profile, getDefaultAddress } = useProfile()
+  const { userProfile: profile, getDefaultAddress } = useProfile()
   const { location: userLiveLocation } = useUserLocation()
 
   const { isConnected: isSocketConnected } = useUserNotifications()

@@ -669,7 +669,7 @@ export const getOrderById = async (req, res) => {
       $or: orderIdentityQuery,
     };
 
-    const order = await QuickOrder.findOne(query).select('+deliveryOtp').lean();
+    const order = await QuickOrder.findOne(query).select('+deliveryOtp').populate('userId', 'name phone email').lean();
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
@@ -678,7 +678,7 @@ export const getOrderById = async (req, res) => {
     const sellerOrder = await SellerOrder.findOne({ orderId: order.orderId }).lean();
     const seller =
       sellerOrder?.sellerId
-        ? await Seller.findById(sellerOrder.sellerId).select('_id name shopName location').lean()
+        ? await Seller.findById(sellerOrder.sellerId).select('_id name shopName location phone address').lean()
         : null;
 
     const returnRequest = await ReturnRequest.findOne({ orderId: order.orderId }).lean();
@@ -725,9 +725,12 @@ export const getOrderById = async (req, res) => {
         orderId: order.orderId,
         address: {
           type: deliveryAddress.label || 'Other',
-          name: '',
+          name: deliveryAddress.name || '',
+          street: deliveryAddress.street || '',
           address: deliveryAddress.street || '',
           city: deliveryAddress.city || '',
+          state: deliveryAddress.state || '',
+          zipCode: deliveryAddress.zipCode || '',
           phone: deliveryAddress.phone || '',
           ...(deliveryCoords ? { location: deliveryCoords } : {}),
         },
@@ -737,7 +740,9 @@ export const getOrderById = async (req, res) => {
               id: seller._id,
               name: seller.shopName || seller.name || 'Store',
               shopName: seller.shopName || seller.name || 'Store',
+              phone: seller.phone || '',
               location: seller.location || null,
+              address: seller.location?.formattedAddress || seller.location?.address || seller.address || '',
             }
           : null,
         sellerOrder: sellerOrder
