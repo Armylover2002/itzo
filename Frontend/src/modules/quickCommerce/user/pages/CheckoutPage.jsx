@@ -62,6 +62,20 @@ import {
   getQuickOrdersPath,
 } from "../utils/routes";
 
+const MAX_QUICK_DELIVERY_RADIUS_KM = 15;
+
+const haversineKm = (lat1, lon1, lat2, lon2) => {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 const CHECKOUT_STORAGE_KEY = "quick_commerce_checkout_state_v1";
 const RECIPIENT_STORAGE_KEY = "appzeto_checkout_recipient_v1";
 
@@ -339,6 +353,8 @@ const CheckoutPage = () => {
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
+  const [showOutOfZoneDialog, setShowOutOfZoneDialog] = useState(false);
+  const [outOfZoneDistance, setOutOfZoneDistance] = useState(null);
   const [pricingPreview, setPricingPreview] = useState(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [quickBillingSettings, setQuickBillingSettings] = useState(
@@ -866,6 +882,18 @@ const CheckoutPage = () => {
         return;
       }
 
+      // Zone check: block out-of-zone addresses
+      if (resolvedLoc) {
+        const storeLat = 22.711140989838025;
+        const storeLng = 75.9001552518043;
+        const dist = haversineKm(storeLat, storeLng, resolvedLoc.lat, resolvedLoc.lng);
+        if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
+          setOutOfZoneDistance(Math.round(dist));
+          setShowOutOfZoneDialog(true);
+          return;
+        }
+      }
+
       setCurrentAddress({
         id: addr.id,
         type: addr.label,
@@ -926,6 +954,19 @@ const CheckoutPage = () => {
           resolvedLoc = { lat: loc.lat, lng: loc.lng };
         }
       } catch { /* geocoding optional */ }
+
+      // Zone check: block out-of-zone addresses
+      if (resolvedLoc) {
+        const storeLat = 22.711140989838025;
+        const storeLng = 75.9001552518043;
+        const dist = haversineKm(storeLat, storeLng, resolvedLoc.lat, resolvedLoc.lng);
+        if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
+          setOutOfZoneDistance(Math.round(dist));
+          setShowOutOfZoneDialog(true);
+          setIsSavingNewAddress(false);
+          return;
+        }
+      }
 
       // Save via location context
       const newAddr = {
@@ -1029,6 +1070,18 @@ const CheckoutPage = () => {
       );
     }
 
+    // Zone check: block out-of-zone addresses
+    if (location) {
+      const storeLat = 22.711140989838025;
+      const storeLng = 75.9001552518043;
+      const dist = haversineKm(storeLat, storeLng, location.lat, location.lng);
+      if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
+        setOutOfZoneDistance(Math.round(dist));
+        setShowOutOfZoneDialog(true);
+        return;
+      }
+    }
+
     setCurrentAddress({
       ...editAddressForm,
       name: editAddressForm.name || currentAddress.name || user?.name || "",
@@ -1045,6 +1098,19 @@ const CheckoutPage = () => {
 
     if (result?.ok && result.location) {
       const liveLocation = result.location;
+
+      // Zone check: block out-of-zone live locations
+      if (typeof liveLocation.latitude === "number" && typeof liveLocation.longitude === "number") {
+        const storeLat = 22.711140989838025;
+        const storeLng = 75.9001552518043;
+        const dist = haversineKm(storeLat, storeLng, liveLocation.latitude, liveLocation.longitude);
+        if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
+          setOutOfZoneDistance(Math.round(dist));
+          setShowOutOfZoneDialog(true);
+          return;
+        }
+      }
+
       setCurrentAddress((prev) => ({
         ...prev,
         address: liveLocation.name,
@@ -1254,6 +1320,24 @@ const CheckoutPage = () => {
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
     try {
+      // Final safety net: zone check before placing order
+      const preCheckAddress = buildAddressForOrder();
+      const preCheckLoc = preCheckAddress?.location;
+      if (preCheckLoc) {
+        const pcLat = typeof preCheckLoc.lat === 'number' ? preCheckLoc.lat : null;
+        const pcLng = typeof preCheckLoc.lng === 'number' ? preCheckLoc.lng : null;
+        if (pcLat && pcLng) {
+          const storeLat = 22.711140989838025;
+          const storeLng = 75.9001552518043;
+          const dist = haversineKm(storeLat, storeLng, pcLat, pcLng);
+          if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
+            setOutOfZoneDistance(Math.round(dist));
+            setShowOutOfZoneDialog(true);
+            setIsPlacingOrder(false);
+            return;
+          }
+        }
+      }
       if (!getCheckoutCartItemsForSync().length) {
         showToast("Cart is empty", "error");
         return;
@@ -2845,6 +2929,29 @@ const CheckoutPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Out of Zone Dialog */}
+      <Dialog open={showOutOfZoneDialog} onOpenChange={setShowOutOfZoneDialog}>
+        <DialogContent className="max-w-sm mx-auto">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-red-600">
+              Out of Delivery Zone
+            </DialogTitle>
+            <DialogDescription className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              The selected address is approximately <strong>{outOfZoneDistance} km</strong> away, which is outside
+              our delivery zone (max {MAX_QUICK_DELIVERY_RADIUS_KM} km). Please choose an
+              address within the serviceable area.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => setShowOutOfZoneDialog(false)}
+              className="w-full bg-[#FE5502] hover:bg-[#C83C00] text-white rounded-xl"
+            >
+              Choose Another Address
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
