@@ -27,6 +27,7 @@ import { logger } from '../../../../utils/logger.js';
 import * as returnNotificationService from './returnNotification.service.js';
 import { emitReturnStatusUpdate, emitAdminTrackingUpdate } from './returnSocket.service.js';
 import { calculateRefundAmount } from './returnRefund.service.js';
+import { getActiveFeeSettings } from '../../admin/services/billing.service.js';
 // ─── Utilities ──────────────────────────────────────────────────────────────
 
 function generateReturnId() {
@@ -485,9 +486,15 @@ export async function adminApproveReturn({
     // Apply to seller legs
     const legs = await SellerReturn.find({ returnRequestId }).session(session);
     
-    // Fetch original order to get delivery charge
-    const originalOrder = await QuickOrder.findById(returnReq.orderMongoId).session(session);
-    const deliveryCharge = Number(originalOrder?.riderEarning || originalOrder?.pricing?.deliveryFee || 0);
+    // Fetch active fee settings to get the configured return delivery commission
+    const feeSettings = await getActiveFeeSettings();
+    let deliveryCharge = Number(feeSettings?.returnDeliveryCommission || 0);
+
+    // Fallback to the original order's delivery fee if the admin hasn't configured a specific return delivery commission
+    if (deliveryCharge <= 0) {
+      const originalOrder = await QuickOrder.findById(returnReq.orderMongoId).session(session);
+      deliveryCharge = Number(originalOrder?.riderEarning || originalOrder?.pricing?.deliveryFee || 0);
+    }
 
     for (const leg of legs) {
       let legHasApproved = false;

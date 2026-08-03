@@ -25,7 +25,7 @@ import {
   emitReturnHandoffOtpToSeller,
 } from '../services/returnSocket.service.js';
 import { creditWallet } from '../../../../core/payments/wallet.service.js';
-
+import { getActiveFeeSettings } from '../../admin/services/billing.service.js';
 export const getAssignedReturns = async (req, res) => {
   try {
     const partnerId = req.user.userId;
@@ -59,6 +59,8 @@ export const getAssignedReturns = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    const feeSettings = await getActiveFeeSettings();
+
     // Enrich returns with original order details for frontend rendering
     for (const ret of returns) {
       if (ret.returnRequestId && ret.returnRequestId.orderMongoId) {
@@ -76,9 +78,12 @@ export const getAssignedReturns = async (req, res) => {
             formattedAddress: addressParts.join(', ') || 'Customer Address',
           };
           
-          // Use riderEarning or pricing.deliveryFee as fallback for commission
+          // Use configured return commission, falling back to riderEarning or pricing.deliveryFee
           if (!ret.returnDeliveryCommission || ret.returnDeliveryCommission === 0) {
-            ret.returnDeliveryCommission = order.riderEarning || order.pricing?.deliveryFee || 0;
+            ret.returnDeliveryCommission = Number(feeSettings?.returnDeliveryCommission || 0);
+            if (ret.returnDeliveryCommission <= 0) {
+              ret.returnDeliveryCommission = order.riderEarning || order.pricing?.deliveryFee || 0;
+            }
           }
         }
       }
