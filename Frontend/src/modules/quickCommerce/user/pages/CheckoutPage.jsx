@@ -28,6 +28,7 @@ import {
   Search,
   X,
   Clipboard,
+  AlertCircle,
   Check,
   Contact2,
 } from "lucide-react";
@@ -74,6 +75,36 @@ const haversineKm = (lat1, lon1, lat2, lon2) => {
       Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const parseLocationCoords = (obj) => {
+  if (!obj) return null;
+  if (typeof obj.lat === "number" && typeof obj.lng === "number" && Number.isFinite(obj.lat) && Number.isFinite(obj.lng)) {
+    return { lat: obj.lat, lng: obj.lng };
+  }
+  if (typeof obj.latitude === "number" && typeof obj.longitude === "number" && Number.isFinite(obj.latitude) && Number.isFinite(obj.longitude)) {
+    return { lat: obj.latitude, lng: obj.longitude };
+  }
+  if (Array.isArray(obj.coordinates) && obj.coordinates.length === 2) {
+    const lng = Number(obj.coordinates[0]);
+    const lat = Number(obj.coordinates[1]);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      return { lat, lng };
+    }
+  }
+  if (obj.result) {
+    const res = parseLocationCoords(obj.result);
+    if (res) return res;
+  }
+  if (obj.data) {
+    const res = parseLocationCoords(obj.data);
+    if (res) return res;
+  }
+  if (obj.location) {
+    const res = parseLocationCoords(obj.location);
+    if (res) return res;
+  }
+  return null;
 };
 
 const CHECKOUT_STORAGE_KEY = "quick_commerce_checkout_state_v1";
@@ -355,6 +386,7 @@ const CheckoutPage = () => {
   const [orderId, setOrderId] = useState(null);
   const [showOutOfZoneDialog, setShowOutOfZoneDialog] = useState(false);
   const [outOfZoneDistance, setOutOfZoneDistance] = useState(null);
+  const [isCurrentAddressOutOfZone, setIsCurrentAddressOutOfZone] = useState(false);
   const [pricingPreview, setPricingPreview] = useState(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [quickBillingSettings, setQuickBillingSettings] = useState(
@@ -582,6 +614,69 @@ const CheckoutPage = () => {
     : [currentAddress.address, currentAddress.landmark, currentAddress.city]
         .filter(Boolean)
         .join(", ");
+
+  const validateAddressZone = async (addressObj) => {
+    if (!addressObj) return { inZone: true, distanceKm: 0, coords: null };
+    let coords = parseLocationCoords(addressObj);
+    const textParts = [
+      addressObj.address,
+      addressObj.street,
+      addressObj.landmark,
+      addressObj.city,
+      addressObj.state,
+      addressObj.zipCode || addressObj.pincode,
+    ].filter(Boolean);
+    const fullText = textParts.join(", ");
+
+    if (!coords && fullText.trim()) {
+      try {
+        const resp = await customerApi.geocodeAddress(fullText);
+        coords = parseLocationCoords(resp);
+      } catch {
+        // geocoding optional
+      }
+    }
+
+    if (coords) {
+      const storeLat = 22.711140989838025; // Indore Hub
+      const storeLng = 75.9001552518043;
+      const dist = haversineKm(storeLat, storeLng, coords.lat, coords.lng);
+      if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
+        return { inZone: false, distanceKm: Math.round(dist), coords };
+      }
+      return { inZone: true, distanceKm: Math.round(dist), coords };
+    }
+
+    const lower = fullText.toLowerCase();
+    const farCities = [
+      "kolkata", "mumbai", "delhi", "bangalore", "bengaluru", "chennai",
+      "hyderabad", "pune", "ahmedabad", "jaipur", "lucknow", "patna", "guwahati"
+    ];
+    if (farCities.some((c) => lower.includes(c))) {
+      return { inZone: false, distanceKm: 500, coords: null };
+    }
+
+    return { inZone: true, distanceKm: 0, coords: null };
+  };
+
+  useEffect(() => {
+    if (!currentAddress?.address && !currentAddress?.city) return;
+    let isMounted = true;
+    void validateAddressZone(currentAddress).then((res) => {
+      if (!isMounted) return;
+      if (!res.inZone) {
+        setIsCurrentAddressOutOfZone(true);
+        setOutOfZoneDistance(res.distanceKm || 500);
+        setShowOutOfZoneDialog(true);
+      } else {
+        setIsCurrentAddressOutOfZone(false);
+        setOutOfZoneDistance(null);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [currentAddress]);
 
   useEffect(() => {
     if (!paymentMethods.length) return;
@@ -816,10 +911,10 @@ const CheckoutPage = () => {
     // Prefer backend geocoding (server key) so billing is controlled centrally.
     try {
       const resp = await customerApi.geocodeAddress(q);
-      const loc = resp.data?.result?.location;
-      if (isValidLatLng(loc)) {
-        setCachedGeocode(cacheKey, { location: { lat: loc.lat, lng: loc.lng } });
-        return { lat: loc.lat, lng: loc.lng };
+      const coords = parseLocationCoords(resp);
+      if (coords) {
+        setCachedGeocode(cacheKey, { location: coords });
+        return coords;
       }
     } catch (e) {
       const serverMsg =
@@ -883,15 +978,16 @@ const CheckoutPage = () => {
       }
 
       // Zone check: block out-of-zone addresses
-      if (resolvedLoc) {
-        const storeLat = 22.711140989838025;
-        const storeLng = 75.9001552518043;
-        const dist = haversineKm(storeLat, storeLng, resolvedLoc.lat, resolvedLoc.lng);
-        if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
-          setOutOfZoneDistance(Math.round(dist));
-          setShowOutOfZoneDialog(true);
-          return;
-        }
+      const zoneCheck = await validateAddressZone({
+        ...addr,
+        address: rawText,
+        location: resolvedLoc,
+      });
+
+      if (!zoneCheck.inZone) {
+        setOutOfZoneDistance(zoneCheck.distanceKm);
+        setShowOutOfZoneDialog(true);
+        return;
       }
 
       setCurrentAddress({
@@ -956,16 +1052,19 @@ const CheckoutPage = () => {
       } catch { /* geocoding optional */ }
 
       // Zone check: block out-of-zone addresses
-      if (resolvedLoc) {
-        const storeLat = 22.711140989838025;
-        const storeLng = 75.9001552518043;
-        const dist = haversineKm(storeLat, storeLng, resolvedLoc.lat, resolvedLoc.lng);
-        if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
-          setOutOfZoneDistance(Math.round(dist));
-          setShowOutOfZoneDialog(true);
-          setIsSavingNewAddress(false);
-          return;
-        }
+      const zoneCheck = await validateAddressZone({
+        address: newAddressForm.address.trim(),
+        landmark: newAddressForm.landmark.trim(),
+        city: newAddressForm.city.trim(),
+        zipCode: newAddressForm.zipCode,
+        location: resolvedLoc,
+      });
+
+      if (!zoneCheck.inZone) {
+        setOutOfZoneDistance(zoneCheck.distanceKm);
+        setShowOutOfZoneDialog(true);
+        setIsSavingNewAddress(false);
+        return;
       }
 
       // Save via location context
@@ -1037,26 +1136,20 @@ const CheckoutPage = () => {
         .filter(Boolean)
         .join(", ");
       const resp = await customerApi.geocodeAddress(query);
-      const loc = resp.data?.result?.location;
-      if (
-        loc &&
-        typeof loc.lat === "number" &&
-        typeof loc.lng === "number" &&
-        Number.isFinite(loc.lat) &&
-        Number.isFinite(loc.lng)
-      ) {
-        location = { lat: loc.lat, lng: loc.lng };
-        placeId = resp.data?.result?.placeId || null;
-        formattedAddress = resp.data?.result?.formattedAddress || null;
+      const coords = parseLocationCoords(resp);
+      if (coords) {
+        location = coords;
+        placeId = resp.data?.result?.placeId || resp.data?.data?.placeId || null;
+        formattedAddress = resp.data?.result?.formattedAddress || resp.data?.data?.formattedAddress || null;
         updateLocation(
           {
-            name: resp.data?.result?.formattedAddress || query,
+            name: formattedAddress || query,
             time: currentLocation?.time || "12-15 mins",
             city: currentLocation?.city,
             state: currentLocation?.state,
             pincode: currentLocation?.pincode,
-            latitude: loc.lat,
-            longitude: loc.lng,
+            latitude: coords.lat,
+            longitude: coords.lng,
           },
           { persist: true, updateSavedHome: false },
         );
@@ -1071,15 +1164,15 @@ const CheckoutPage = () => {
     }
 
     // Zone check: block out-of-zone addresses
-    if (location) {
-      const storeLat = 22.711140989838025;
-      const storeLng = 75.9001552518043;
-      const dist = haversineKm(storeLat, storeLng, location.lat, location.lng);
-      if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
-        setOutOfZoneDistance(Math.round(dist));
-        setShowOutOfZoneDialog(true);
-        return;
-      }
+    const zoneCheck = await validateAddressZone({
+      ...editAddressForm,
+      location,
+    });
+
+    if (!zoneCheck.inZone) {
+      setOutOfZoneDistance(zoneCheck.distanceKm);
+      setShowOutOfZoneDialog(true);
+      return;
     }
 
     setCurrentAddress({
@@ -1100,15 +1193,11 @@ const CheckoutPage = () => {
       const liveLocation = result.location;
 
       // Zone check: block out-of-zone live locations
-      if (typeof liveLocation.latitude === "number" && typeof liveLocation.longitude === "number") {
-        const storeLat = 22.711140989838025;
-        const storeLng = 75.9001552518043;
-        const dist = haversineKm(storeLat, storeLng, liveLocation.latitude, liveLocation.longitude);
-        if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
-          setOutOfZoneDistance(Math.round(dist));
-          setShowOutOfZoneDialog(true);
-          return;
-        }
+      const zoneCheck = await validateAddressZone(liveLocation);
+      if (!zoneCheck.inZone) {
+        setOutOfZoneDistance(zoneCheck.distanceKm);
+        setShowOutOfZoneDialog(true);
+        return;
       }
 
       setCurrentAddress((prev) => ({
@@ -1320,23 +1409,20 @@ const CheckoutPage = () => {
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
     try {
-      // Final safety net: zone check before placing order
+      if (isCurrentAddressOutOfZone) {
+        setShowOutOfZoneDialog(true);
+        setIsPlacingOrder(false);
+        return;
+      }
+
       const preCheckAddress = buildAddressForOrder();
-      const preCheckLoc = preCheckAddress?.location;
-      if (preCheckLoc) {
-        const pcLat = typeof preCheckLoc.lat === 'number' ? preCheckLoc.lat : null;
-        const pcLng = typeof preCheckLoc.lng === 'number' ? preCheckLoc.lng : null;
-        if (pcLat && pcLng) {
-          const storeLat = 22.711140989838025;
-          const storeLng = 75.9001552518043;
-          const dist = haversineKm(storeLat, storeLng, pcLat, pcLng);
-          if (dist > MAX_QUICK_DELIVERY_RADIUS_KM) {
-            setOutOfZoneDistance(Math.round(dist));
-            setShowOutOfZoneDialog(true);
-            setIsPlacingOrder(false);
-            return;
-          }
-        }
+      const zoneCheck = await validateAddressZone(preCheckAddress);
+      if (!zoneCheck.inZone) {
+        setIsCurrentAddressOutOfZone(true);
+        setOutOfZoneDistance(zoneCheck.distanceKm);
+        setShowOutOfZoneDialog(true);
+        setIsPlacingOrder(false);
+        return;
       }
       if (!getCheckoutCartItemsForSync().length) {
         showToast("Cart is empty", "error");
@@ -1937,20 +2023,40 @@ const CheckoutPage = () => {
                   ? "Detecting live location..."
                   : "Use current live location"}
               </button>
-              {/* Manual address info banner */}
-              <motion.div className="mt-3 rounded-2xl border border-orange-100 bg-orange-50/70 px-4 py-3 flex items-center gap-3 shadow-sm">
-                <div className="h-8 w-8 rounded-full bg-[#FE5502] flex items-center justify-center shadow-orange-500/40 shadow-md">
-                  <Check size={16} className="text-white stroke-[3]" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[13px] font-semibold text-orange-950">
-                    Delivery address confirmed
-                  </p>
-                  <p className="text-[11px] font-medium text-orange-900/80">
-                    We&apos;ll deliver to the address you&apos;ve entered above.
-                  </p>
-                </div>
-              </motion.div>
+              {/* Manual address info / out-of-zone banner */}
+              {isCurrentAddressOutOfZone ? (
+                <motion.div
+                  onClick={() => setIsAddressModalOpen(true)}
+                  className="mt-3 rounded-2xl border border-red-200 bg-red-50/90 px-4 py-3 flex items-center gap-3 shadow-sm cursor-pointer hover:bg-red-100 transition-colors"
+                >
+                  <div className="h-8 w-8 rounded-full bg-red-600 flex items-center justify-center shadow-red-500/40 shadow-md flex-shrink-0">
+                    <X size={18} className="text-white stroke-[3]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[13px] font-bold text-red-950">
+                      Out of delivery zone
+                    </p>
+                    <p className="text-[11px] font-medium text-red-800">
+                      We cannot deliver to this location ({outOfZoneDistance ? `~${outOfZoneDistance} km away` : 'outside 15 km radius'}). Tap to change.
+                    </p>
+                  </div>
+                  <ChevronRight size={18} className="text-red-500 flex-shrink-0" />
+                </motion.div>
+              ) : (
+                <motion.div className="mt-3 rounded-2xl border border-orange-100 bg-orange-50/70 px-4 py-3 flex items-center gap-3 shadow-sm">
+                  <div className="h-8 w-8 rounded-full bg-[#FE5502] flex items-center justify-center shadow-orange-500/40 shadow-md">
+                    <Check size={16} className="text-white stroke-[3]" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[13px] font-semibold text-orange-950">
+                      Delivery address confirmed
+                    </p>
+                    <p className="text-[11px] font-medium text-orange-900/80">
+                      We&apos;ll deliver to the address you&apos;ve entered above.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
             </motion.div>
 
             {/* Cart Items */}
@@ -2316,12 +2422,12 @@ const CheckoutPage = () => {
 
                   {/* Desktop Integrated Slide to Pay / Place Order */}
                   <div className="hidden lg:block">
-                    {selectedPayment === "cash" ? (
+                    {selectedPayment === "cash" || isCurrentAddressOutOfZone ? (
                       <button
                         onClick={handlePlaceOrder}
                         disabled={isPlacingOrder || isPreviewLoading || !pricingPreview}
-                        className="w-full py-4 rounded-2xl bg-[#FE5502] hover:bg-[#c83c00] active:bg-[#a03000] disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors shadow-lg shadow-orange-500/20">
-                        {isPlacingOrder ? "Placing Order..." : `Place Order | ₹${totalAmount}`}
+                        className={`w-full py-4 rounded-2xl ${isCurrentAddressOutOfZone ? 'bg-red-600 hover:bg-red-700' : 'bg-[#FE5502] hover:bg-[#c83c00]'} active:bg-[#a03000] disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors shadow-lg shadow-orange-500/20`}>
+                        {isPlacingOrder ? "Placing Order..." : isCurrentAddressOutOfZone ? "Out of Delivery Zone" : `Place Order | ₹${totalAmount}`}
                       </button>
                     ) : (
                       <SlideToPay
@@ -2345,12 +2451,12 @@ const CheckoutPage = () => {
       {/* Sticky Footer - Mobile Only */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-slate-200 dark:border-white/10 px-4 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 rounded-t-3xl transition-colors">
         <div className="max-w-4xl mx-auto">
-          {selectedPayment === "cash" ? (
+          {selectedPayment === "cash" || isCurrentAddressOutOfZone ? (
             <button
               onClick={handlePlaceOrder}
               disabled={isPlacingOrder || isPreviewLoading || !pricingPreview}
-              className="w-full py-4 rounded-2xl bg-[#FE5502] hover:bg-[#c83c00] active:bg-[#a03000] disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors shadow-lg shadow-orange-500/20">
-              {isPlacingOrder ? "Placing Order..." : `Place Order | ₹${totalAmount}`}
+              className={`w-full py-4 rounded-2xl ${isCurrentAddressOutOfZone ? 'bg-red-600 hover:bg-red-700' : 'bg-[#FE5502] hover:bg-[#c83c00]'} active:bg-[#a03000] disabled:opacity-60 disabled:cursor-not-allowed text-white font-black text-lg tracking-wide transition-colors shadow-lg shadow-orange-500/20`}>
+              {isPlacingOrder ? "Placing Order..." : isCurrentAddressOutOfZone ? "Out of Delivery Zone" : `Place Order | ₹${totalAmount}`}
             </button>
           ) : (
             <SlideToPay
@@ -2931,21 +3037,25 @@ const CheckoutPage = () => {
       </AnimatePresence>
       {/* Out of Zone Dialog */}
       <Dialog open={showOutOfZoneDialog} onOpenChange={setShowOutOfZoneDialog}>
-        <DialogContent className="max-w-sm mx-auto">
+        <DialogContent className="max-w-sm mx-auto z-[9999] rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-red-600">
+            <DialogTitle className="text-lg font-black text-red-600 flex items-center gap-2">
+              <AlertCircle className="text-red-600 h-5 w-5" />
               Out of Delivery Zone
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              The selected address is approximately <strong>{outOfZoneDistance} km</strong> away, which is outside
-              our delivery zone (max {MAX_QUICK_DELIVERY_RADIUS_KM} km). Please choose an
-              address within the serviceable area.
+            <DialogDescription className="text-xs font-medium text-slate-600 dark:text-gray-400 mt-2 leading-relaxed">
+              We can only deliver within a <strong>{MAX_QUICK_DELIVERY_RADIUS_KM} km</strong> radius from our store hub.
+              <br /><br />
+              The selected address is <strong>{outOfZoneDistance ? `~${outOfZoneDistance} km` : 'far away'}</strong> from our serviceable area. Please select or add an address nearby.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button
-              onClick={() => setShowOutOfZoneDialog(false)}
-              className="w-full bg-[#FE5502] hover:bg-[#C83C00] text-white rounded-xl"
+              onClick={() => {
+                setShowOutOfZoneDialog(false);
+                setIsAddressModalOpen(true);
+              }}
+              className="w-full bg-[#FE5502] hover:bg-[#C83C00] text-white font-bold py-3 rounded-2xl shadow-md"
             >
               Choose Another Address
             </Button>
