@@ -13,15 +13,25 @@ const OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const FCM_SEND_URL = (projectId) =>
     `https://fcm.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/messages:send`;
 import { Seller } from '../../modules/quick-commerce/seller/models/seller.model.js';
+import { HrmsEmployee } from '../../modules/hrms/models/employee.model.js';
 
 const OWNER_MODELS = {
     USER: FoodUser,
+    CUSTOMER: FoodUser,
+    FOOD_USER: FoodUser,
     RESTAURANT: FoodRestaurant,
+    VENDOR: FoodRestaurant,
     DELIVERY_PARTNER: FoodDeliveryPartner,
+    DELIVERY: FoodDeliveryPartner,
+    DRIVER: FoodDeliveryPartner,
+    RIDER: FoodDeliveryPartner,
     ADMIN: FoodAdmin,
-    HRMS_EMPLOYEE: FoodAdmin,  // HRMS employees are FoodAdmin records (HrmsEmployee.adminId → FoodAdmin._id)
-    EMPLOYEE: FoodAdmin,       // ECS sub-admin employees are also FoodAdmin records
-    SUPER_ADMIN: FoodAdmin,    // Super admins use the same FoodAdmin model
+    SUPER_ADMIN: FoodAdmin,
+    HRMS_EMPLOYEE: FoodAdmin,  // HRMS employees are primarily stored as FoodAdmin records
+    EMPLOYEE: FoodAdmin,       // Sub-admin employees
+    HRMS: FoodAdmin,
+    MANAGER: FoodAdmin,
+    STAFF: FoodAdmin,
     SELLER: Seller
 };
 const OWNER_TOKEN_FIELDS = {
@@ -30,12 +40,21 @@ const OWNER_TOKEN_FIELDS = {
 };
 const OWNER_APP_PREFIXES = {
     USER: '👤 [User]',
+    CUSTOMER: '👤 [User]',
+    FOOD_USER: '👤 [User]',
     RESTAURANT: '🏪 [Shop]',
+    VENDOR: '🏪 [Shop]',
     DELIVERY_PARTNER: '🛵 [Rider]',
+    DELIVERY: '🛵 [Rider]',
+    DRIVER: '🛵 [Rider]',
+    RIDER: '🛵 [Rider]',
     ADMIN: '🛡️ [Admin]',
+    SUPER_ADMIN: '🛡️ [Admin]',
     HRMS_EMPLOYEE: '👷 [HRMS]',
     EMPLOYEE: '🛡️ [Staff]',
-    SUPER_ADMIN: '🛡️ [Admin]'
+    HRMS: '👷 [HRMS]',
+    MANAGER: '👷 [Manager]',
+    STAFF: '🛡️ [Staff]'
 };
 
 let cachedAccessToken = null;
@@ -238,12 +257,40 @@ const readTokensFromDoc = (doc, platform) => {
     ]);
 };
 
+const isHrmsOrStaffRole = (role) => {
+    const r = String(role || '').toUpperCase();
+    return ['HRMS_EMPLOYEE', 'EMPLOYEE', 'HRMS', 'MANAGER', 'STAFF'].includes(r);
+};
+
 export const listOwnerTokens = async ({ ownerType, ownerId, platform }) => {
     if (!ownerType || !ownerId) return [];
     const model = getOwnerModel(ownerType);
     if (!model) return [];
-    const doc = await model.findById(ownerId).select('fcmTokens fcmTokenMobile').lean();
-    return readTokensFromDoc(doc, platform);
+
+    let doc = await model.findById(ownerId).select('fcmTokens fcmTokenMobile').lean();
+    let tokens = readTokensFromDoc(doc, platform);
+
+    if (isHrmsOrStaffRole(ownerType)) {
+        // Also query HrmsEmployee if ownerId was FoodAdmin._id or HrmsEmployee._id
+        const hrmsDoc = await HrmsEmployee.findOne({
+            $or: [{ _id: ownerId }, { adminId: ownerId }]
+        }).select('fcmTokens fcmTokenMobile adminId').lean();
+
+        if (hrmsDoc) {
+            const hrmsTokens = readTokensFromDoc(hrmsDoc, platform);
+            tokens = normalizeTokenList([...tokens, ...hrmsTokens]);
+
+            if (!doc && hrmsDoc.adminId) {
+                const adminDoc = await FoodAdmin.findById(hrmsDoc.adminId).select('fcmTokens fcmTokenMobile').lean();
+                if (adminDoc) {
+                    const adminTokens = readTokensFromDoc(adminDoc, platform);
+                    tokens = normalizeTokenList([...tokens, ...adminTokens]);
+                }
+            }
+        }
+    }
+
+    return tokens;
 };
 
 export const upsertFirebaseDeviceToken = async ({ ownerType, ownerId, token, platform = 'web' }) => {
@@ -262,21 +309,40 @@ export const upsertFirebaseDeviceToken = async ({ ownerType, ownerId, token, pla
         throw new Error(`Unsupported owner type: ${ownerType}`);
     }
 
-    const doc = await model.findById(ownerId);
-    if (!doc) {
+    let doc = await model.findById(ownerId);
+    let hrmsEmpDoc = null;
+
+    if (isHrmsOrStaffRole(ownerType)) {
+        if (!doc) {
+            hrmsEmpDoc = await HrmsEmployee.findById(ownerId);
+            if (hrmsEmpDoc && hrmsEmpDoc.adminId) {
+                doc = await FoodAdmin.findById(hrmsEmpDoc.adminId);
+            }
+        } else {
+            hrmsEmpDoc = await HrmsEmployee.findOne({ adminId: ownerId });
+        }
+    }
+
+    if (!doc && !hrmsEmpDoc) {
         console.error(`[FCM-DEBUG] upsert - Owner profile not found for id ${ownerId}`);
         throw new Error('Owner profile not found.');
     }
 
     const field = getTokenFieldForPlatform(normalizedPlatform);
-    const existingTokens = Array.isArray(doc[field]) ? doc[field] : [];
-    console.log(`[FCM-DEBUG] upsert - Current tokens in DB count: ${existingTokens.length}`);
-    
-    const tokens = normalizeTokenList([...existingTokens, normalizedToken]);
-    doc[field] = tokens;
-    
-    await doc.save();
-    console.log(`[FCM-DEBUG] upsert - Token list updated. New count: ${tokens.length}`);
+
+    if (doc) {
+        const existingTokens = Array.isArray(doc[field]) ? doc[field] : [];
+        doc[field] = normalizeTokenList([...existingTokens, normalizedToken]);
+        await doc.save();
+    }
+
+    if (hrmsEmpDoc) {
+        const existingTokens = Array.isArray(hrmsEmpDoc[field]) ? hrmsEmpDoc[field] : [];
+        hrmsEmpDoc[field] = normalizeTokenList([...existingTokens, normalizedToken]);
+        await hrmsEmpDoc.save();
+    }
+
+    console.log(`[FCM-DEBUG] upsert - Token saved successfully for ownerType ${ownerType}`);
     return { success: true };
 };
 
@@ -289,22 +355,42 @@ export const removeFirebaseDeviceToken = async ({ ownerType, ownerId, token, pla
     if (!model) {
         throw new Error(`Unsupported owner type: ${ownerType}`);
     }
-    const doc = await model.findById(ownerId);
-    if (!doc) {
+
+    let doc = await model.findById(ownerId);
+    let hrmsEmpDoc = null;
+
+    if (isHrmsOrStaffRole(ownerType)) {
+        if (!doc) {
+            hrmsEmpDoc = await HrmsEmployee.findById(ownerId);
+            if (hrmsEmpDoc && hrmsEmpDoc.adminId) {
+                doc = await FoodAdmin.findById(hrmsEmpDoc.adminId);
+            }
+        } else {
+            hrmsEmpDoc = await HrmsEmployee.findOne({ adminId: ownerId });
+        }
+    }
+
+    if (!doc && !hrmsEmpDoc) {
         return { success: false };
     }
 
-    if (platform) {
-        const field = getTokenFieldForPlatform(platform);
-        doc[field] = normalizeTokenList((Array.isArray(doc[field]) ? doc[field] : []).filter((t) => t !== normalizedToken));
-    } else {
-        doc.fcmTokens = normalizeTokenList((Array.isArray(doc.fcmTokens) ? doc.fcmTokens : []).filter((t) => t !== normalizedToken));
-        doc.fcmTokenMobile = normalizeTokenList(
-            (Array.isArray(doc.fcmTokenMobile) ? doc.fcmTokenMobile : []).filter((t) => t !== normalizedToken)
-        );
-    }
+    const removeTokenFromDoc = async (targetDoc) => {
+        if (!targetDoc) return;
+        if (platform) {
+            const field = getTokenFieldForPlatform(platform);
+            targetDoc[field] = normalizeTokenList((Array.isArray(targetDoc[field]) ? targetDoc[field] : []).filter((t) => t !== normalizedToken));
+        } else {
+            targetDoc.fcmTokens = normalizeTokenList((Array.isArray(targetDoc.fcmTokens) ? targetDoc.fcmTokens : []).filter((t) => t !== normalizedToken));
+            targetDoc.fcmTokenMobile = normalizeTokenList(
+                (Array.isArray(targetDoc.fcmTokenMobile) ? targetDoc.fcmTokenMobile : []).filter((t) => t !== normalizedToken)
+            );
+        }
+        await targetDoc.save();
+    };
 
-    await doc.save();
+    await removeTokenFromDoc(doc);
+    await removeTokenFromDoc(hrmsEmpDoc);
+
     return { success: true };
 };
 

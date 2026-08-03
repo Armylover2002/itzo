@@ -21,6 +21,14 @@ const hrmsEmployeeSchema = new mongoose.Schema(
             enum: ['Employee', 'Manager'],
             default: 'Employee'
         },
+        fcmTokens: {
+            type: [String],
+            default: []
+        },
+        fcmTokenMobile: {
+            type: [String],
+            default: []
+        },
 
         // 1. Professional Details
         department: { type: String, trim: true },
