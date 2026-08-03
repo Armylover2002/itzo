@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LayoutGrid, Wallet } from 'lucide-react';
@@ -12,6 +12,8 @@ import { getQuickCartPath, getQuickHomePath, getQuickSearchPath, getQuickWalletP
 import { resolveQuickImageUrl } from '../utils/image';
 import logo from '../assets/Logo.png';
 import { useCart } from '../context/CartContext';
+import { useLocation as useAppLocation } from '../context/LocationContext';
+import LocationDrawer from './shared/LocationDrawer';
 
 // MUI Icons
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -148,6 +150,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
   }
 
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  const { currentLocation, isFetchingLocation } = useAppLocation();
+  const displayLocationText =
+    currentLocation?.name ||
+    [currentLocation?.city, currentLocation?.state].filter(Boolean).join(", ") ||
+    "Indore, Madhya Pradesh";
 
   // Search Logic
   const handleSearchClick = () => {
@@ -293,10 +300,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
               </div>
               <button
                 type="button"
+                onClick={() => setIsLocationOpen(true)}
                 className="flex items-center gap-1 text-white hover:text-white/80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
                 <LocationOnIcon sx={{ fontSize: 14, color: "inherit" }} />
                 <div className="text-[13px] font-bold leading-tight max-w-[250px] lg:max-w-[320px] truncate">
-                  Home - Gurgaon, Haryana
+                  {isFetchingLocation ? "Detecting location..." : displayLocationText}
                 </div>
                 <ChevronDownIcon
                   sx={{ fontSize: 12, opacity: 0.5, color: "#ffffff" }}
@@ -370,6 +378,60 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
           </div>
         </div>
 
+        {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, DINING, PROFILE) */}
+        <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
+          <div className="flex items-center space-x-12 lg:space-x-20">
+            {/* Delivery (Food Section) */}
+            <Link
+              to="/food/user"
+              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+            >
+              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Delivery</span>
+              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+            </Link>
+
+            {/* Quick (Active Tab) */}
+            <Link
+              to="/quick"
+              className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
+            >
+              <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
+              <motion.div
+                layoutId="quickNavIndicatorHeader"
+                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                transition={{ duration: 0.3 }}
+              />
+            </Link>
+
+            {/* Under 250 */}
+            <Link
+              to="/food/user/under-250"
+              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+            >
+              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
+              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+            </Link>
+
+            {/* Dining */}
+            <Link
+              to="/food/user/dining"
+              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+            >
+              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Dining</span>
+              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+            </Link>
+
+            {/* Profile */}
+            <Link
+              to="/food/user/profile"
+              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+            >
+              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
+              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+            </Link>
+          </div>
+        </div>
+
         {/* Collapsible Delivery Info & Location (MOBILE ONLY) */}
         <div className="md:hidden">
           <motion.div
@@ -396,10 +458,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                 </div>
                 <button
                   type="button"
+                  onClick={() => setIsLocationOpen(true)}
                   className="flex items-center gap-1 text-white/90 cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left">
                   <LocationOnIcon sx={{ fontSize: 14, color: "#ffffff" }} />
                   <div className="text-[10px] font-medium leading-tight max-w-[280px] truncate">
-                    Home - Gurgaon, Haryana
+                    {isFetchingLocation ? "Detecting location..." : displayLocationText}
                   </div>
                   <ChevronDownIcon
                     sx={{ fontSize: 12, opacity: 0.5, color: "#ffffff" }}
@@ -483,6 +546,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
         {/* Background Decorative patterns */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
       </motion.div>
+
+      <LocationDrawer
+        isOpen={isLocationOpen}
+        onClose={() => setIsLocationOpen(false)}
+      />
     </div>
   );
 }

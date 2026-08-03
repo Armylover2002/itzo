@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { useLocation as useRouterLocation, useNavigate } from "react-router-dom";
+import { useLocation as useRouterLocation, useNavigate, Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Lottie from "lottie-react";
 import LocationDrawer from "./LocationDrawer";
@@ -585,6 +585,60 @@ const MainLocationHeader = ({
 
                 <div className="flex items-center">
                   <ThemeToggle />
+                </div>
+              </div>
+
+              {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, DINING, PROFILE) */}
+              <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
+                <div className="flex items-center space-x-12 lg:space-x-20">
+                  {/* Delivery (Food Section) */}
+                  <Link
+                    to="/food/user"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Delivery</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
+
+                  {/* Quick (Active Tab) */}
+                  <Link
+                    to="/quick"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
+                    <motion.div
+                      layoutId="quickNavIndicatorMain"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                      transition={{ duration: 0.3 }}
+                    />
+                  </Link>
+
+                  {/* Under 250 */}
+                  <Link
+                    to="/food/user/under-250"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
+
+                  {/* Dining */}
+                  <Link
+                    to="/food/user/dining"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Dining</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
+
+                  {/* Profile */}
+                  <Link
+                    to="/food/user/profile"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
                 </div>
               </div>
             </div>

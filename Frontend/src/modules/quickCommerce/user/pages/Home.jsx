@@ -322,7 +322,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     <div
       className={cn(
         "bg-[#F5F7F8] dark:bg-background",
-        embedded ? "min-h-0 bg-white dark:bg-card pt-0" : "min-h-screen pt-[176px] md:pt-[210px]",
+        embedded ? "min-h-0 bg-white dark:bg-card pt-0" : "min-h-screen pt-[176px] md:pt-[240px]",
       )}>
       {/* Top Dynamic Gradient Section */}
       <div
