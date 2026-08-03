@@ -145,7 +145,7 @@ const OtpModal = ({ order, onVerified, onClose }) => {
       if (res?.data?.success) {
         setIsOtpVerified(true);
         // toast.success("OTP Verified Successfully");
-        setTimeout(() => onVerified(otpString), 600);
+        setTimeout(() => onVerified(otpString, res?.data?.data), 600);
       }
     } catch (err) {
       toast.error(err?.response?.data?.message || "Invalid OTP entered");

@@ -207,6 +207,19 @@ export const useOrderManager = () => {
       // completed the return (seller_otp_pending → return_completed → refund_pending)
       // during the OtpModal step, so we just update local state.
       if (activeOrder?.isReturn) {
+        // Extract earning from the verified response data (passed from OTP modal)
+        const verifiedLegData = options?.verifiedLegData;
+        const returnEarning = Number(
+          verifiedLegData?.leg?.returnDeliveryCommission ||
+          activeOrder?.returnDeliveryCommission ||
+          0
+        );
+        // Update activeOrder with earnings so the summary modal shows the correct amount
+        setActiveOrder({
+          ...activeOrder,
+          earnings: returnEarning,
+          riderEarning: returnEarning,
+        });
         updateTripStatus('COMPLETED');
         return;
       }

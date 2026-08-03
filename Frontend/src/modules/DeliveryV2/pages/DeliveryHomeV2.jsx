@@ -1148,7 +1148,8 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                   <DeliveryVerificationModal 
                     order={activeOrder} 
                     onComplete={async (...args) => {
-                      const res = await completeDelivery(...args);
+                      const [otpString, verifiedData] = args;
+                      const res = await completeDelivery(otpString, { verifiedLegData: verifiedData });
                       setShowVerification(false);
                       return res;
                     }}
