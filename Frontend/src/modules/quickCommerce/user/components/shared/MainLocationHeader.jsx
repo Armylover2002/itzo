@@ -482,166 +482,168 @@ const MainLocationHeader = ({
 
           {/* Desktop/Tablet Header Layout (md and above) */}
           {!embedded && (showTopContent || showSearchBar) && (
-            <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-4 mt-1">
-              {/* Left Section: Logo + Location row */}
-              <div className="flex items-center gap-4 lg:gap-8">
-                {!hideLogo && (
-                  <div
-                    onClick={() => navigate(homePath)}
-                    className="flex items-center gap-3 cursor-pointer group shrink-0">
-                    <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
-                      <img
-                        src={logoUrl}
-                        alt={`${appName} Logo`}
-                        className="h-10 md:h-16 w-auto object-contain"
+            <>
+              <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-4 mt-1">
+                {/* Left Section: Logo + Location row */}
+                <div className="flex items-center gap-4 lg:gap-8">
+                  {!hideLogo && (
+                    <div
+                      onClick={() => navigate(homePath)}
+                      className="flex items-center gap-3 cursor-pointer group shrink-0">
+                      <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                        <img
+                          src={logoUrl}
+                          alt={`${appName} Logo`}
+                          className="h-10 md:h-16 w-auto object-contain"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Location Block (Desktop inline row) */}
+                  <div className={cn("flex flex-col h-10 justify-center", hideLogo ? "" : "border-l border-black/10 pl-4 lg:pl-8")}>
+                    {!hideDeliveryTime && (
+                      <div className="flex items-center gap-1.5 opacity-70">
+                        <AccessTimeIcon sx={{ fontSize: 13, color: iconColor }} />
+                        <span className={`text-[11px] font-black ${textColorClass} uppercase tracking-widest leading-none`}>
+                          {currentLocation.time}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      data-lenis-prevent
+                      data-lenis-prevent-touch
+                      onClick={() => {
+                        setIsLocationOpen(true);
+                      }}
+                      className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? '' : 'mt-0'}`}>
+                      <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: "inherit" }} />
+                      <div className={cn(
+                        "leading-tight max-w-[250px] lg:max-w-[320px] truncate",
+                        hideDeliveryTime ? "text-[16px] font-black" : "text-[13px] font-bold"
+                      )}>
+                        {isFetchingLocation
+                          ? "Detecting location..."
+                          : currentLocation.name}
+                      </div>
+                      <ChevronDownIcon
+                        sx={{ fontSize: hideDeliveryTime ? 16 : 12, opacity: 0.5, color: iconColor }}
                       />
-                    </div>
+                    </button>
                   </div>
-                )}
-
-                {/* Location Block (Desktop inline row) */}
-                <div className={cn("flex flex-col h-10 justify-center", hideLogo ? "" : "border-l border-black/10 pl-4 lg:pl-8")}>
-                  {!hideDeliveryTime && (
-                    <div className="flex items-center gap-1.5 opacity-70">
-                      <AccessTimeIcon sx={{ fontSize: 13, color: iconColor }} />
-                      <span className={`text-[11px] font-black ${textColorClass} uppercase tracking-widest leading-none`}>
-                        {currentLocation.time}
-                      </span>
-                    </div>
-                  )}
-                  <button
-                    type="button"
-                    data-lenis-prevent
-                    data-lenis-prevent-touch
-                    onClick={() => {
-                      setIsLocationOpen(true);
-                    }}
-                    className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? '' : 'mt-0'}`}>
-                    <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: "inherit" }} />
-                    <div className={cn(
-                      "leading-tight max-w-[250px] lg:max-w-[320px] truncate",
-                      hideDeliveryTime ? "text-[16px] font-black" : "text-[13px] font-bold"
-                    )}>
-                      {isFetchingLocation
-                        ? "Detecting location..."
-                        : currentLocation.name}
-                    </div>
-                    <ChevronDownIcon
-                      sx={{ fontSize: hideDeliveryTime ? 16 : 12, opacity: 0.5, color: iconColor }}
-                    />
-                  </button>
                 </div>
-              </div>
 
-              {/* Center Section: Empty (Search moved to categories) */}
-              <div className="flex-1 px-6">
-                <div className="flex items-center justify-end gap-3">
+                {/* Center Section: Empty (Search moved to categories) */}
+                <div className="flex-1 px-6">
+                  <div className="flex items-center justify-end gap-3">
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.9, y: -8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+                      style={{
+                        opacity: cartOpacity,
+                        scale: cartScale,
+                        display: displayCart,
+                      }}
+                      type="button"
+                      aria-label="Open cart"
+                      onClick={() => navigate(cartPath)}
+                      className="group relative h-12 w-12 shrink-0 rounded-2xl border border-white/55 bg-white/28 shadow-[0_16px_35px_rgba(15,23,42,0.16)] backdrop-blur-xl transition-all duration-300 hover:bg-white/42 hover:shadow-[0_18px_40px_rgba(15,23,42,0.2)]">
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/30 via-transparent to-black/5 pointer-events-none" />
+                      <div className="absolute inset-x-2 top-1 h-px bg-white/70 pointer-events-none" />
+                      <Lottie
+                        animationData={shoppingCartAnimation}
+                        loop
+                        className="pointer-events-none absolute inset-0 scale-[1.18] drop-shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-transform duration-300 group-hover:scale-[1.25]"
+                      />
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* Right Section: Action Icons */}
+                <div className="flex items-center gap-5 lg:gap-8 shrink-0">
                   <motion.button
-                    initial={{ opacity: 0, scale: 0.9, y: -8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-                    style={{
-                      opacity: cartOpacity,
-                      scale: cartScale,
-                      display: displayCart,
-                    }}
-                    type="button"
-                    aria-label="Open cart"
-                    onClick={() => navigate(cartPath)}
-                    className="group relative h-12 w-12 shrink-0 rounded-2xl border border-white/55 bg-white/28 shadow-[0_16px_35px_rgba(15,23,42,0.16)] backdrop-blur-xl transition-all duration-300 hover:bg-white/42 hover:shadow-[0_18px_40px_rgba(15,23,42,0.2)]">
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/30 via-transparent to-black/5 pointer-events-none" />
-                    <div className="absolute inset-x-2 top-1 h-px bg-white/70 pointer-events-none" />
-                    <Lottie
-                      animationData={shoppingCartAnimation}
-                      loop
-                      className="pointer-events-none absolute inset-0 scale-[1.18] drop-shadow-[0_8px_18px_rgba(0,0,0,0.14)] transition-transform duration-300 group-hover:scale-[1.25]"
-                    />
+                    whileHover={{ scale: 1.15, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate(wishlistPath)}
+                    className={`${textColorClass} hover:text-red-500 transition-all`}>
+                    <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
                   </motion.button>
+
+                  <motion.button
+                    whileHover={{ scale: 1.15, rotate: -5 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate(cartPath)}
+                    className={`${textColorClass} hover:opacity-80 transition-all relative group`}>
+                    <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-[#FE5502] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-red-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
+                        {cartCount > 99 ? "99+" : cartCount}
+                      </span>
+                    )}
+                  </motion.button>
+
+                  <div className="flex items-center">
+                    <ThemeToggle />
+                  </div>
                 </div>
               </div>
 
-              {/* Right Section: Action Icons */}
-              <div className="flex items-center gap-5 lg:gap-8 shrink-0">
-                <motion.button
-                  whileHover={{ scale: 1.15, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => navigate(wishlistPath)}
-                  className={`${textColorClass} hover:text-red-500 transition-all`}>
-                  <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
-                </motion.button>
+              {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, DINING, PROFILE) */}
+              <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
+                <div className="flex items-center space-x-12 lg:space-x-20">
+                  {/* Delivery (Food Section) */}
+                  <Link
+                    to="/food/user"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Delivery</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
 
-                <motion.button
-                  whileHover={{ scale: 1.15, rotate: -5 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => navigate(cartPath)}
-                  className={`${textColorClass} hover:opacity-80 transition-all relative group`}>
-                  <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-[#FE5502] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-red-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
-                </motion.button>
+                  {/* Quick (Active Tab) */}
+                  <Link
+                    to="/quick"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
+                    <motion.div
+                      layoutId="quickNavIndicatorMain"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                      transition={{ duration: 0.3 }}
+                    />
+                  </Link>
 
-                <div className="flex items-center">
-                  <ThemeToggle />
+                  {/* Under 250 */}
+                  <Link
+                    to="/food/user/under-250"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
+
+                  {/* Dining */}
+                  <Link
+                    to="/food/user/dining"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Dining</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
+
+                  {/* Profile */}
+                  <Link
+                    to="/food/user/profile"
+                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+                  >
+                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
+                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+                  </Link>
                 </div>
               </div>
-            </div>
-
-            {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, DINING, PROFILE) */}
-            <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
-              <div className="flex items-center space-x-12 lg:space-x-20">
-                {/* Delivery (Food Section) */}
-                <Link
-                  to="/food/user"
-                  className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                >
-                  <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Delivery</span>
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                </Link>
-
-                {/* Quick (Active Tab) */}
-                <Link
-                  to="/quick"
-                  className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
-                >
-                  <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
-                  <motion.div
-                    layoutId="quickNavIndicatorMain"
-                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                    transition={{ duration: 0.3 }}
-                  />
-                </Link>
-
-                {/* Under 250 */}
-                <Link
-                  to="/food/user/under-250"
-                  className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                >
-                  <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                </Link>
-
-                {/* Dining */}
-                <Link
-                  to="/food/user/dining"
-                  className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                >
-                  <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Dining</span>
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                </Link>
-
-                {/* Profile */}
-                <Link
-                  to="/food/user/profile"
-                  className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                >
-                  <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
-                  <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                </Link>
-              </div>
-            </div>
+            </>
           )}
 
           {/* Collapsible Delivery Info & Location (MOBILE ONLY) */}

@@ -344,7 +344,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
         <div className={cn("pt-0", embedded && "pt-0")}>
           {/* Hero Banners (mobile): admin-configured or static fallback */}
           <>
-            <div className={cn("block md:hidden", embedded ? "-mt-[1px]" : "mt-0")}>
+            <div className={cn("block", embedded ? "-mt-[1px]" : "mt-0")}>
               <div>
                 <div
                   className="relative w-full overflow-hidden"
