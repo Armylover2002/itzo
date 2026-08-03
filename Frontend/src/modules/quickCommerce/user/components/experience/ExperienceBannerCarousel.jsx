@@ -58,7 +58,7 @@ const ExperienceBannerCarousel = ({ section, items, fullWidth = false, slideGap 
             key={idx}
             className={cn(
               "relative shrink-0 overflow-hidden bg-slate-100 flex items-center justify-center box-border",
-              fullWidth ? "h-[190px] rounded-none px-0" : "h-[190px] px-4 md:px-8"
+              fullWidth ? "h-[190px] sm:h-[240px] md:h-[280px] lg:h-[340px] rounded-none px-0" : "h-[190px] sm:h-[240px] md:h-[280px] lg:h-[340px] px-4 md:px-8"
             )}
             style={{
               width: `${stepPercent}%`,
@@ -70,7 +70,7 @@ const ExperienceBannerCarousel = ({ section, items, fullWidth = false, slideGap 
                 srcSet={getCloudinarySrcSet(banner.imageUrl)}
                 sizes="100vw"
                 alt={banner.title || section?.title || "Banner"}
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover sm:object-fill object-center"
                 loading={idx === 0 ? "eager" : "lazy"}
               />
             ) : (
@@ -80,7 +80,7 @@ const ExperienceBannerCarousel = ({ section, items, fullWidth = false, slideGap 
                   srcSet={getCloudinarySrcSet(banner.imageUrl)}
                   sizes="(max-width: 768px) 100vw, 560px"
                   alt={banner.title || section?.title || "Banner"}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover sm:object-fill object-center"
                   loading={idx === 0 ? "eager" : "lazy"}
                 />
               </div>
