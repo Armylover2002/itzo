@@ -1086,6 +1086,10 @@ export default function Cart() {
   const deliveryFeeBreakdownText = hasDistanceDeliveryBreakdown
     ? `Distance ${Number(deliveryFeeBreakdown.distanceKm).toFixed(1)} km: ${RUPEE_SYMBOL}${Number(deliveryFeeBreakdown.basePayout || 0).toFixed(0)} base + ${Number(deliveryFeeBreakdown.extraDistanceKm || 0).toFixed(1)} km x ${RUPEE_SYMBOL}${Number(deliveryFeeBreakdown.commissionPerKm || 0).toFixed(0)}`
     : null
+  // Sponsored delivery display data
+  const totalDeliveryFeeForDisplay = Number(pricing?.totalDeliveryFee || 0)
+  const isSponsoredDelivery = pricing?.sponsoredDelivery === true && totalDeliveryFeeForDisplay > 0
+  const isPartiallySponsored = pricing?.deliverySponsorType === 'SPLIT' && deliveryFee > 0 && totalDeliveryFeeForDisplay > deliveryFee
   const platformFee = pricing?.platformFee ?? feeSettings.platformFee
   const gstCharges = pricing?.tax ?? Math.round(subtotal * (feeSettings.gstRate / 100))
   const discount = pricing?.discount ?? (appliedCoupon ? Math.min(appliedCoupon.discount, subtotal * 0.5) : 0)
@@ -2409,11 +2413,11 @@ export default function Cart() {
 
               {/* Coupon Section */}
               <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col">
-                {deliveryFee === 0 && (
+                {deliveryFee === 0 && totalDeliveryFeeForDisplay > 0 && (
                   <div className="px-4 py-3 md:px-6 md:py-4 border-b border-dashed border-gray-200 dark:border-gray-800 flex items-center gap-3 bg-[#f4fcf7] dark:bg-green-900/10">
                     <CheckCircle2 className="h-5 w-5 text-green-600 fill-green-600/20" />
                     <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                      You saved {RUPEE_SYMBOL}{Number((pricing?.totalDeliveryFee ?? deliveryFee ?? feeSettings.baseDeliveryFee) || 0).toFixed(2)} on delivery
+                      You saved {RUPEE_SYMBOL}{totalDeliveryFeeForDisplay.toFixed(2)} on delivery
                     </span>
                   </div>
                 )}
@@ -2759,9 +2763,27 @@ export default function Cart() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600 dark:text-gray-400">Delivery Fee</span>
                       <div className="text-right">
-                        <span className={deliveryFee === 0 ? "text-[#FE5502] font-semibold" : "text-gray-800 dark:text-gray-200 font-medium"}>
-                          {deliveryFee === 0 ? "FREE" : `${RUPEE_SYMBOL}${deliveryFee.toFixed(2)}`}
-                        </span>
+                        {deliveryFee === 0 && isSponsoredDelivery ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-gray-400 dark:text-gray-500 line-through text-xs">
+                              {RUPEE_SYMBOL}{totalDeliveryFeeForDisplay.toFixed(2)}
+                            </span>
+                            <span className="text-[#FE5502] font-semibold">FREE</span>
+                          </span>
+                        ) : isPartiallySponsored ? (
+                          <span className="flex items-center gap-1.5">
+                            <span className="text-gray-400 dark:text-gray-500 line-through text-xs">
+                              {RUPEE_SYMBOL}{totalDeliveryFeeForDisplay.toFixed(2)}
+                            </span>
+                            <span className="text-gray-800 dark:text-gray-200 font-medium">
+                              {RUPEE_SYMBOL}{deliveryFee.toFixed(2)}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className={deliveryFee === 0 ? "text-[#FE5502] font-semibold" : "text-gray-800 dark:text-gray-200 font-medium"}>
+                            {deliveryFee === 0 ? "FREE" : `${RUPEE_SYMBOL}${deliveryFee.toFixed(2)}`}
+                          </span>
+                        )}
                       </div>
                     </div>
 
