@@ -6,6 +6,7 @@
  */
 
 import { SellerReturn } from '../../seller/models/sellerReturn.model.js';
+import { SellerTransaction } from '../../seller/models/sellerTransaction.model.js';
 import { QuickOrder } from '../../models/order.model.js';
 import * as returnAssignmentService from '../services/returnAssignment.service.js';
 import * as returnService from '../services/return.service.js';
@@ -344,6 +345,35 @@ export const verifySellerOtp = async (req, res) => {
 
     // Emit live tracking — return completed
     emitReturnLegTrackingUpdate(leg, LEG_STATUS.RETURN_COMPLETED);
+
+    // Ensure returnDeliveryCommission is set (fallback for older returns or missed configs)
+    let finalCommission = Number(leg.returnDeliveryCommission || 0);
+    if (finalCommission <= 0) {
+      const feeSettings = await getActiveFeeSettings();
+      finalCommission = Number(feeSettings?.returnDeliveryCommission || 0);
+      
+      if (finalCommission <= 0) {
+        const originalOrder = await QuickOrder.findOne({ orderId: leg.orderId }).lean();
+        finalCommission = Number(originalOrder?.riderEarning || originalOrder?.pricing?.deliveryFee || 0);
+      }
+      
+      if (finalCommission > 0) {
+        // Since it was 0 in DB, seller wasn't charged during approval. Charge them now.
+        await SellerTransaction.create([{
+            sellerId: leg.sellerId,
+            type: 'Adjustment',
+            amount: -Math.abs(finalCommission),
+            status: 'Settled',
+            orderId: leg.orderId,
+            reference: String(leg._id),
+            reason: 'Return delivery fee deduction (calculated at handover)',
+        }]);
+        
+        // Update the leg so we don't calculate it again
+        await SellerReturn.updateOne({ _id: leg._id }, { $set: { returnDeliveryCommission: finalCommission } });
+        leg.returnDeliveryCommission = finalCommission;
+      }
+    }
 
     // Pay the delivery partner for the return trip
     if (leg.returnDeliveryCommission > 0) {
