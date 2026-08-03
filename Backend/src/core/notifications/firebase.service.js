@@ -19,6 +19,9 @@ const OWNER_MODELS = {
     RESTAURANT: FoodRestaurant,
     DELIVERY_PARTNER: FoodDeliveryPartner,
     ADMIN: FoodAdmin,
+    HRMS_EMPLOYEE: FoodAdmin,  // HRMS employees are FoodAdmin records (HrmsEmployee.adminId → FoodAdmin._id)
+    EMPLOYEE: FoodAdmin,       // ECS sub-admin employees are also FoodAdmin records
+    SUPER_ADMIN: FoodAdmin,    // Super admins use the same FoodAdmin model
     SELLER: Seller
 };
 const OWNER_TOKEN_FIELDS = {
@@ -29,7 +32,10 @@ const OWNER_APP_PREFIXES = {
     USER: '👤 [User]',
     RESTAURANT: '🏪 [Shop]',
     DELIVERY_PARTNER: '🛵 [Rider]',
-    ADMIN: '🛡️ [Admin]'
+    ADMIN: '🛡️ [Admin]',
+    HRMS_EMPLOYEE: '👷 [HRMS]',
+    EMPLOYEE: '🛡️ [Staff]',
+    SUPER_ADMIN: '🛡️ [Admin]'
 };
 
 let cachedAccessToken = null;
