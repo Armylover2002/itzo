@@ -1940,7 +1940,7 @@ export async function calculateOrder(userId, dto) {
       const endOk = !offer.endDate || now < new Date(offer.endDate);
       const scopeOk =
         offer.restaurantScope !== "selected" ||
-        String(offer.restaurantId || "") === String(primaryRestaurantId || "");
+        String(offer.restaurantId || "") === String(primaryRestaurant?.sourceId || primaryRestaurantId || "");
       const minOk = subtotal >= (Number(offer.minOrderValue) || 0);
       let usageOk = true;
       if (
