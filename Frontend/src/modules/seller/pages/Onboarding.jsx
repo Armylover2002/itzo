@@ -273,6 +273,26 @@ export default function SellerOnboarding() {
       return;
     }
 
+    if (form.lat && form.lng && selectedZone?.coordinates?.length >= 3) {
+      const isPointInPolygon = (point, vs) => {
+        let x = point.lat, y = point.lng;
+        let inside = false;
+        for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+          let xi = Number(vs[i].lat ?? vs[i].latitude), yi = Number(vs[i].lng ?? vs[i].longitude);
+          let xj = Number(vs[j].lat ?? vs[j].latitude), yj = Number(vs[j].lng ?? vs[j].longitude);
+          let intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+          if (intersect) inside = !inside;
+        }
+        return inside;
+      };
+      
+      const pt = { lat: Number(form.lat), lng: Number(form.lng) };
+      if (!isPointInPolygon(pt, selectedZone.coordinates)) {
+        toast.error("Store location must be inside the selected service zone. Please update your map pin.");
+        return;
+      }
+    }
+
     if (form.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(form.email)) {
       toast.error("Enter a valid email address (e.g. name@gmail.com)");
       return;

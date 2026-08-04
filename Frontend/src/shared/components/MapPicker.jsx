@@ -170,10 +170,33 @@ const MapPicker = ({
     );
   };
 
+  const isPointInPolygon = (point, polygon) => {
+    const x = point.lng;
+    const y = point.lat;
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i].lng;
+      const yi = polygon[i].lat;
+      const xj = polygon[j].lng;
+      const yj = polygon[j].lat;
+
+      const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  };
+
   const handleConfirm = async () => {
     if (!marker) {
       alert("Please select a location on the map.");
       return;
+    }
+
+    if (zonePath && zonePath.length >= 3) {
+      if (!isPointInPolygon(marker, zonePath)) {
+        alert("The selected location is outside your assigned service zone. Please select a valid location inside the highlighted zone.");
+        return;
+      }
     }
 
     setIsGeocoding(true);
