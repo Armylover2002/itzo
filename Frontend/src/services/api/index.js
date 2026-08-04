@@ -1510,6 +1510,8 @@ export const restaurantAPI = {
     }),
   getPublicOffers: (params = {}, config = {}) =>
     apiClient.get("/food/restaurant/offers", { params, ...config }),
+  getPublicDishes: (params = {}, config = {}) =>
+    apiClient.get("/food/restaurant/dishes/public", { params, ...config }),
   /** Resend delivery notification (restaurant dashboard) */
   resendDeliveryNotification: (orderId) =>
     apiClient.post(`/food/restaurant/orders/${String(orderId)}/resend-notification`, {}, {
