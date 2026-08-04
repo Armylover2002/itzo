@@ -8,7 +8,7 @@ import { sellerApi } from "../services/sellerApi";
 
 export default function SellerPendingApproval() {
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { refreshUser, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -141,6 +141,13 @@ export default function SellerPendingApproval() {
               Use refresh to check if approval has been granted.
             </p>
             <div className="flex flex-col gap-3 md:flex-row">
+              <button
+                type="button"
+                onClick={logout}
+                className="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Logout
+              </button>
               {isRejected && (
                 <button
                   type="button"
