@@ -21,7 +21,9 @@ const SearchPage = () => {
 
     const [query, setQuery] = useState(initialQuery);
     const [allProducts, setAllProducts] = useState([]);
+    const [lowestPriceProducts, setLowestPriceProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const trimmedQuery = query.trim();
 
@@ -50,21 +52,22 @@ const SearchPage = () => {
             deliveryTime: '8-15 mins'
         }));
 
-    // Fetch quick products
+    // Fetch lowest price products on mount
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchLowestPriceProducts = async () => {
             const hasValidLocation =
                 Number.isFinite(currentLocation?.latitude) &&
                 Number.isFinite(currentLocation?.longitude);
             if (!hasValidLocation) {
-                setAllProducts([]);
-                setIsLoading(false);
+                setLowestPriceProducts([]);
+                setIsInitialLoading(false);
                 return;
             }
-            setIsLoading(true);
+            setIsInitialLoading(true);
             try {
                 const response = await customerApi.getProducts({
-                    limit: 100,
+                    limit: 10,
+                    sortBy: 'price_asc',
                     lat: currentLocation.latitude,
                     lng: currentLocation.longitude,
                 });
@@ -77,18 +80,16 @@ const SearchPage = () => {
                         : Array.isArray(rawResult)
                         ? rawResult
                         : [];
-                    if (!trimmedQuery) {
-                        setAllProducts(mapProducts(dbProds));
-                    }
+                    setLowestPriceProducts(mapProducts(dbProds));
                 }
             } catch (error) {
-                console.error('Error fetching products:', error);
+                console.error('Error fetching lowest price products:', error);
             } finally {
-                setIsLoading(false);
+                setIsInitialLoading(false);
             }
         };
-        fetchProducts();
-    }, [currentLocation?.latitude, currentLocation?.longitude, trimmedQuery]);
+        fetchLowestPriceProducts();
+    }, [currentLocation?.latitude, currentLocation?.longitude]);
 
     // Save search term to history
     const saveSearch = (term) => {
@@ -119,6 +120,7 @@ const SearchPage = () => {
             Number.isFinite(currentLocation?.longitude);
 
         if (!trimmedQuery || !hasValidLocation) {
+            setAllProducts([]);
             return undefined;
         }
 
@@ -175,13 +177,6 @@ const SearchPage = () => {
             p.categoryId?.name?.toLowerCase().includes(trimmedQuery.toLowerCase())
         );
     }, [trimmedQuery, allProducts]);
-
-    // Lowest Price Section
-    const lowestPriceProducts = useMemo(() => {
-        return [...allProducts]
-            .sort((a, b) => a.price - b.price)
-            .slice(0, 10);
-    }, [allProducts]);
 
     const handleClear = () => {
         setQuery('');
@@ -324,7 +319,7 @@ const SearchPage = () => {
                                 </button>
                             </div>
                             <div className="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar -mx-5 px-5 pb-4 snap-x">
-                                {isLoading && allProducts.length === 0 ? (
+                                {isInitialLoading && lowestPriceProducts.length === 0 ? (
                                     [...Array(4)].map((_, i) => (
                                         <div key={i} className="min-w-[130px] md:min-w-[170px] h-52 md:h-64 bg-slate-50 rounded-2xl animate-pulse" />
                                     ))

@@ -382,7 +382,7 @@ export const getProducts = async (req, res) => {
   setPublicCache(res, 60);
   await ensureQuickCommerceSeedData();
 
-  const { categoryId, search, limit } = req.query;
+  const { categoryId, search, limit, sortBy } = req.query;
   const query = { ...publicProductFilter };
 
   if (categoryId) {
@@ -395,7 +395,13 @@ export const getProducts = async (req, res) => {
   if (search) query.name = { $regex: String(search).trim(), $options: 'i' };
 
   const parsedLimit = Number(limit) > 0 ? Math.min(Number(limit), 100) : 50;
-  const products = await QuickProduct.find(query).sort({ createdAt: -1 }).limit(parsedLimit).lean();
+  
+  let sortOption = { createdAt: -1 };
+  if (sortBy === 'price_asc') {
+      sortOption = { price: 1, createdAt: -1 };
+  }
+  
+  const products = await QuickProduct.find(query).sort(sortOption).limit(parsedLimit).lean();
   const sellerMap = await buildSellerMap(products);
 
   return res.json({
