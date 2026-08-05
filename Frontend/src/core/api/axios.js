@@ -13,6 +13,30 @@ const getCustomerToken = () =>
     localStorage.getItem('user_accessToken') ||
     null;
 
+// Utility to globally resolve relative upload paths to absolute URLs
+function prependBaseUrlToUploads(obj, apiRoot) {
+    if (!obj || typeof obj !== 'object') return;
+    if (Array.isArray(obj)) {
+        for (let i = 0; i < obj.length; i++) {
+            if (typeof obj[i] === 'string' && obj[i].startsWith('/uploads/')) {
+                obj[i] = apiRoot + obj[i];
+            } else if (typeof obj[i] === 'object') {
+                prependBaseUrlToUploads(obj[i], apiRoot);
+            }
+        }
+    } else {
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                if (typeof obj[key] === 'string' && obj[key].startsWith('/uploads/')) {
+                    obj[key] = apiRoot + obj[key];
+                } else if (typeof obj[key] === 'object') {
+                    prependBaseUrlToUploads(obj[key], apiRoot);
+                }
+            }
+        }
+    }
+}
+
 // Request interceptor for API calls
 axiosInstance.interceptors.request.use(
     async (config) => {
@@ -110,7 +134,14 @@ axiosInstance.interceptors.request.use(
 
 // Response interceptor for API calls
 axiosInstance.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        const baseUrlRaw = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+        const apiRoot = String(baseUrlRaw).replace(/\/api\/v1\/?$/, "");
+        if (response.data) {
+            prependBaseUrlToUploads(response.data, apiRoot);
+        }
+        return response;
+    },
     async (error) => {
         const originalRequest = error.config;
         if (error.response?.status === 401 && !originalRequest._retry) {

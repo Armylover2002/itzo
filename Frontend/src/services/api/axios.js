@@ -22,6 +22,30 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+// Utility to globally resolve relative upload paths to absolute URLs
+function prependBaseUrlToUploads(obj, apiRoot) {
+  if (!obj || typeof obj !== 'object') return;
+  if (Array.isArray(obj)) {
+    for (let i = 0; i < obj.length; i++) {
+      if (typeof obj[i] === 'string' && obj[i].startsWith('/uploads/')) {
+        obj[i] = apiRoot + obj[i];
+      } else if (typeof obj[i] === 'object') {
+        prependBaseUrlToUploads(obj[i], apiRoot);
+      }
+    }
+  } else {
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        if (typeof obj[key] === 'string' && obj[key].startsWith('/uploads/')) {
+          obj[key] = apiRoot + obj[key];
+        } else if (typeof obj[key] === 'object') {
+          prependBaseUrlToUploads(obj[key], apiRoot);
+        }
+      }
+    }
+  }
+}
+
 function getModuleFromUrl(url = "") {
   const normalized = (typeof url === "string" ? url : (url?.url || "")).toLowerCase();
   
@@ -223,7 +247,13 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const apiRoot = baseURL ? baseURL.replace(/\/api\/v1\/?$/, "") : "";
+    if (apiRoot && response.data) {
+      prependBaseUrlToUploads(response.data, apiRoot);
+    }
+    return response;
+  },
   async (err) => {
     const original = err?.config;
     if (err?.response?.status === 429) {
