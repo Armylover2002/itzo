@@ -17,6 +17,11 @@
 export const optimizeCloudinaryUrl = (url, options = {}) => {
   if (!url || typeof url !== "string") return url || "";
 
+  // The 'dv1l9sb4p' Cloudinary account is disabled. Replace with fallback to prevent 401 errors.
+  if (url.includes('dv1l9sb4p')) {
+    return '/itzo-quick-logo.png';
+  }
+
   // Only process Cloudinary URLs
   if (!/res\.cloudinary\.com/i.test(url) || !/\/image\/upload\//i.test(url)) {
     return url;
@@ -80,6 +85,7 @@ export const ensureWebp = (url) => optimizeCloudinaryUrl(url, { format: "webp" }
  */
 export const getCloudinarySrcSet = (url, widths = [200, 400, 600, 800, 1000]) => {
   if (!url || !/res\.cloudinary\.com/i.test(url)) return null;
+  if (url.includes('dv1l9sb4p')) return null;
 
   return widths
     .map((w) => {

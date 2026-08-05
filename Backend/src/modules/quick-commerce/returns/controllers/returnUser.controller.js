@@ -17,7 +17,7 @@ import {
 import { sendResponse, sendError } from '../../../../utils/response.js';
 import { ACTOR_ROLES } from '../constants/returnStateMachine.js';
 import { logger } from '../../../../utils/logger.js';
-import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadImageBuffer } from '../../../../services/upload.service.js';
 
 export const createReturn = async (req, res) => {
   try {

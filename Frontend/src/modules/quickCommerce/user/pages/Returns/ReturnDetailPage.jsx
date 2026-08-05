@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Clock, XCircle, Package, Truck, Store, Receipt } from 'lucide-react';
 import { returnApi } from '../../services/returnApi';
+import { resolveQuickImageUrl } from '../../utils/image';
 import Loader from '@food/components/Loader';
 import { socketService } from '../../../../../core/services/socket';
 
@@ -231,7 +232,7 @@ export default function ReturnDetailPage() {
             {returnRequest.items.map((item, idx) => (
               <div key={idx} className="flex gap-4">
                 <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
-                  <img src={item.image || '/placeholder.png'} alt={item.name} className="w-full h-full object-cover" />
+                  <img src={resolveQuickImageUrl(item.image) || '/placeholder.png'} alt={item.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1">
                   <h4 className="text-sm font-medium text-gray-900">{item.name}</h4>

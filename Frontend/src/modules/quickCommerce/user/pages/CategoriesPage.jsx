@@ -4,6 +4,7 @@ import MainLocationHeader from '../components/shared/MainLocationHeader';
 import { customerApi } from '../services/customerApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getQuickCategoryPath } from '../utils/routes';
+import { resolveQuickImageUrl } from '../utils/image';
 const COLORS = [
     "#FDF2F2", "#F2F9F2", "#F2F2FD", "#FDFDF2",
     "#F2FDFD", "#FDF2FD", "#FFF8F0", "#F0FFF8"
@@ -26,7 +27,7 @@ const CategoryCard = ({ category, isFlipped }) => {
                 {/* Front Side (Image) */}
                 <div className="absolute inset-0 [backface-visibility:hidden] bg-card dark:bg-background rounded-full p-1.5 shadow-[0_8px_20px_-8px_rgba(0,0,0,0.1)] border border-border flex items-center justify-center overflow-hidden transition-colors">
                     <img
-                        src={category.image}
+                        src={resolveQuickImageUrl(category.image)}
                         alt={category.name}
                         className="w-[85%] h-[85%] object-contain mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-500"
                     />

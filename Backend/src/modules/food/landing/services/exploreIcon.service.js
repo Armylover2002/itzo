@@ -1,6 +1,6 @@
 import { FoodExploreIcon } from '../models/exploreIcon.model.js';
 import { v2 as cloudinary } from 'cloudinary';
-import { uploadImageBufferDetailed } from '../../../../services/cloudinary.service.js';
+import { uploadImageBufferDetailed } from '../../../../services/upload.service.js';
 
 const CLOUDINARY_FOLDER = 'food/explore-icons';
 

@@ -1,7 +1,7 @@
 import { JobApplication } from '../models/jobApplication.model.js';
 import { Job } from '../models/job.model.js';
 import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js';
-import { uploadBufferDetailed, signApplicationUrls } from '../../../../services/cloudinary.service.js';
+import { uploadBufferDetailed, signApplicationUrls } from '../../../../services/upload.service.js';
 import { sendJobApplicationAcknowledgementEmail } from '../../../../utils/email.js';
 
 const uploadToCloudinary = async (file, folder = 'careers/applications') => {

@@ -1,6 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { getCloudinarySrcSet } from "@/shared/utils/cloudinaryUtils";
+import { resolveQuickImageUrl } from "../../utils/image";
 
 const ExperienceBannerCarousel = ({ section, items, fullWidth = false, slideGap = 0, edgeToEdge = false }) => {
   if (!items.length) return null;
@@ -66,7 +67,7 @@ const ExperienceBannerCarousel = ({ section, items, fullWidth = false, slideGap 
           >
             {fullWidth ? (
               <img
-                src={banner.imageUrl}
+                src={resolveQuickImageUrl(banner.imageUrl)}
                 srcSet={getCloudinarySrcSet(banner.imageUrl)}
                 sizes="100vw"
                 alt={banner.title || section?.title || "Banner"}
@@ -76,7 +77,7 @@ const ExperienceBannerCarousel = ({ section, items, fullWidth = false, slideGap 
             ) : (
               <div className="h-full w-full max-w-[560px] -translate-x-2 md:-translate-x-4 overflow-hidden rounded-3xl bg-slate-100 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
                 <img
-                  src={banner.imageUrl}
+                  src={resolveQuickImageUrl(banner.imageUrl)}
                   srcSet={getCloudinarySrcSet(banner.imageUrl)}
                   sizes="(max-width: 768px) 100vw, 560px"
                   alt={banner.title || section?.title || "Banner"}

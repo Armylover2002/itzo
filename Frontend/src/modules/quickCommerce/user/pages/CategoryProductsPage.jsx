@@ -13,6 +13,7 @@ import { useProductDetail } from '../context/ProductDetailContext';
 import { customerApi } from '../services/customerApi';
 import MiniCart from '../components/shared/MiniCart';
 import SectionRenderer from "../components/experience/SectionRenderer";
+import { resolveQuickImageUrl } from '../utils/image';
 import { useLocation as useAppLocation } from '../context/LocationContext';
 
 const QUICK_THEME_STORAGE_KEY = "food.quick.headerColor";
@@ -240,7 +241,7 @@ const CategoryProductsPage = () => {
                                     "w-12 h-12 rounded-2xl flex items-center justify-center p-2 transition-all duration-300",
                                     selectedSubCategory === cat.id ? "scale-110" : "grayscale opacity-70"
                                 )}>
-                                    <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
+                                    <img src={resolveQuickImageUrl(cat.icon)} alt={cat.name} className="w-full h-full object-contain" />
                                 </div>
                                 <span className={cn(
                                     "text-[10px] text-center font-bold font-sans leading-tight px-1",

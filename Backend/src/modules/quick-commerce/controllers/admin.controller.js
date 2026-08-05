@@ -9,7 +9,7 @@ import { updateSellerProfileData } from '../seller/controllers/seller.controller
 import { QuickZone } from '../models/quick_zone.model.js';
 import { QuickCoupon } from '../models/coupon.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
-import { uploadImageBuffer } from '../../../services/cloudinary.service.js';
+import { uploadImageBuffer } from '../../../services/upload.service.js';
 import { processRefund as processFoodRefund } from '../../food/admin/services/admin.service.js';
 import { getIO, rooms } from '../../../config/socket.js';
 import {

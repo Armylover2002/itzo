@@ -2,7 +2,7 @@ import { GlobalSettings } from '../models/settings.model.js';
 import { sendResponse } from '../../../utils/response.js';
 import fs from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
-import { uploadImageBufferDetailed, uploadBufferDetailed, uploadFileDetailed } from '../../../services/cloudinary.service.js';
+import { uploadImageBufferDetailed, uploadBufferDetailed, uploadFileDetailed } from '../../../services/upload.service.js';
 import { updateSettingsCache } from '../utils/settingsCache.js';
 
 export async function getGlobalSettings(req, res, next) {

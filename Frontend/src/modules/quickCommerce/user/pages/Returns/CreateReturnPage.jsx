@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, UploadCloud, X, AlertCircle } from 'lucide-react';
 import { customerApi } from '../../services/customerApi';
 import { returnApi } from '../../services/returnApi';
+import { resolveQuickImageUrl } from '../../utils/image';
 import Loader from '@food/components/Loader';
 
 const REASON_OPTIONS = [
@@ -166,7 +167,7 @@ export default function CreateReturnPage() {
               return (
                 <div key={idx} className="flex gap-4">
                   <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 flex-shrink-0 overflow-hidden">
-                    <img src={item.image || '/placeholder.png'} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={resolveQuickImageUrl(item.image) || '/placeholder.png'} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 flex flex-col justify-center">
                     <h4 className="text-sm font-medium text-gray-900 line-clamp-1">{item.name}</h4>

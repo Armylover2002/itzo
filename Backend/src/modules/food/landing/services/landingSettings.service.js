@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { uploadBufferDetailed } from '../../../../services/cloudinary.service.js';
+import { uploadBufferDetailed } from '../../../../services/upload.service.js';
 import { FoodLandingSettings } from '../models/landingSettings.model.js';
 
 export const getLandingSettings = async () => {

@@ -62,6 +62,7 @@ import {
   getQuickOrderDetailPath,
   getQuickOrdersPath,
 } from "../utils/routes";
+import { resolveQuickImageUrl } from '../utils/image';
 
 const MAX_QUICK_DELIVERY_RADIUS_KM = 15;
 
@@ -2067,7 +2068,7 @@ const CheckoutPage = () => {
                   className="flex items-start gap-3 pb-4 border-b border-slate-100 last:border-0 last:pb-0">
                   <div className="h-20 w-20 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0">
                     <img
-                      src={item.image}
+                      src={resolveQuickImageUrl(item.image)}
                       alt={item.name}
                       className="h-full w-full object-cover"
                     />

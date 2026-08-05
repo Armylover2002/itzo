@@ -1,6 +1,6 @@
 import { LicensingRequest } from '../models/LicensingRequest.js';
 import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js';
-import { uploadBufferDetailed } from '../../../../services/cloudinary.service.js';
+import { uploadBufferDetailed } from '../../../../services/upload.service.js';
 import { sendLicensingAcknowledgementEmail } from '../../../../utils/email.js';
 
 const validateAndUpload = async (file, fieldName, folder = 'licensing/documents') => {

@@ -11,6 +11,7 @@ import { customerApi } from "../services/customerApi";
 import { getOrderStatusLabel, getLegacyStatusFromOrder } from "@/shared/utils/orderStatus";
 import { getQuickCategoriesPath } from "../utils/routes";
 import { joinOrderRoom, leaveOrderRoom, onOrderStatusUpdate } from "@/core/services/orderSocket";
+import { resolveQuickImageUrl } from '../utils/image';
 
 const OrdersPage = () => {
   const navigate = useNavigate();
@@ -196,7 +197,7 @@ const OrdersPage = () => {
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 ring-1 ring-slate-200/90">
                       {order.items?.[0]?.image ? (
                         <img
-                          src={order.items[0].image}
+                          src={resolveQuickImageUrl(order.items[0].image)}
                           alt={order.items[0]?.name || "Order thumbnail"}
                           className="h-full w-full object-cover"
                         />

@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { resolveQuickImageUrl } from '../../utils/image';
 
 const ActiveOrderPill = ({ order }) => {
     if (!order) return null;
@@ -39,7 +40,7 @@ const ActiveOrderPill = ({ order }) => {
                                     style={{ zIndex: 10 - index }}
                                 >
                                     <img
-                                        src={item.image}
+                                        src={resolveQuickImageUrl(item.image)}
                                         alt={item.name}
                                         className="w-full h-full object-contain p-0.5"
                                     />

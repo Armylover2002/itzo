@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Package, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { returnApi } from '../../services/returnApi';
+import { resolveQuickImageUrl } from '../../utils/image';
 import Loader from '@food/components/Loader';
 
 const STATUS_CONFIG = {
@@ -102,7 +103,7 @@ export default function ReturnListPage() {
                     {ret.items.slice(0, 3).map((item, idx) => (
                       <img 
                         key={idx}
-                        src={item.image || '/placeholder.png'} 
+                        src={resolveQuickImageUrl(item.image) || '/placeholder.png'} 
                         alt={item.name}
                         className="w-10 h-10 rounded-full border-2 border-white object-cover bg-gray-100"
                       />

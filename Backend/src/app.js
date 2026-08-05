@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import compression from 'compression';
 import mongoSanitize from 'mongo-sanitize';
 import xssClean from 'xss-clean';
+import path from 'path';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
 import {
@@ -117,6 +118,16 @@ app.use('/api', responseTimeLogger);
 
 // API Routes
 app.use('/api', routes);
+
+// Serve static uploads
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    maxAge: '1y',
+    setHeaders: (res, path) => {
+        if (path.endsWith('.webp') || path.endsWith('.png') || path.endsWith('.jpg')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000');
+        }
+    }
+}));
 
 // Error Handling
 app.use(errorHandler);
