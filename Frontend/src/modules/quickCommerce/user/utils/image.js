@@ -20,9 +20,11 @@ export const resolveQuickImageUrl = (value) => {
     resolvedUrl = normalized;
   } else if (normalized.startsWith("//")) {
     resolvedUrl = `https:${normalized}`;
+  } else if (normalized.startsWith("/uploads/")) {
+    resolvedUrl = `${API_BASE_URL}${normalized}`;
   } else {
-    const path = normalized.startsWith("/") ? normalized : `/${normalized}`;
-    resolvedUrl = `${API_BASE_URL}${path}`;
+    // Return relative paths like /itzo-quick-logo.png untouched
+    resolvedUrl = normalized.startsWith("/") ? normalized : `/${normalized}`;
   }
 
   // Optimize Cloudinary URLs to use webp/f_auto

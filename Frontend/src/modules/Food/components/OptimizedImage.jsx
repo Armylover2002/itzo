@@ -57,7 +57,11 @@ const OptimizedImage = React.memo(({
   const resolveUrl = (url) => {
     if (!url || typeof url !== 'string') return ""
     if (/^(https?:|\/\/|data:|blob:)/i.test(url.trim())) return url
-    return backendOrigin ? `${backendOrigin.replace(/\/$/, "")}${url.startsWith("/") ? url : `/${url}`}` : url
+    // Only prepend backendOrigin if it's an uploaded file from backend
+    if (url.startsWith('/uploads/')) {
+        return backendOrigin ? `${backendOrigin.replace(/\/$/, "")}${url}` : url
+    }
+    return url
   }
 
   const resolvedSrc = useMemo(() => resolveUrl(src), [src, backendOrigin])
