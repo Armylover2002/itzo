@@ -194,3 +194,5 @@ const startServer = async () => {
 
 startServer();
 
+
+// Restart nodemon
