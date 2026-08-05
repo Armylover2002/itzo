@@ -105,7 +105,14 @@ const processUrl = async (url) => {
         // We can't really get it via Admin API as easily because the URL is signed/disabled.
         // For dv1l9sb4p, it is permanently disabled. We just return the placeholder or the original URL.
         console.log(`[Error] Skipping ${url} (Cannot be downloaded)`);
-        return url; // Skip if it can't be downloaded
+        
+        // If it's the permanently disabled cloudinary account, force replace with a local fallback logo
+        // to prevent 401 Unauthorized errors in the frontend.
+        if (url.includes('dv1l9sb4p')) {
+            return '/itzo-quick-logo.png';
+        }
+        
+        return url; // Skip if it can't be downloaded (e.g. temporary network error for active accounts)
     }
 
     const localFolder = getLocalFolder(url);
