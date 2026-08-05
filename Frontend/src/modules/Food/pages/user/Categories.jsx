@@ -19,7 +19,7 @@ export default function Categories() {
   const { location } = useLocation();
   const { zoneId } = useZone(location);
 
-  const BACKEND_ORIGIN = useMemo(() => API_BASE_URL.replace(/\/api\/?$/, ""), []);
+  const BACKEND_ORIGIN = useMemo(() => API_BASE_URL.replace(/\/api(\/v1)?\/?$/i, ""), []);
 
   const normalizeImageUrl = (imageUrl) => {
     if (typeof imageUrl !== "string") return "";

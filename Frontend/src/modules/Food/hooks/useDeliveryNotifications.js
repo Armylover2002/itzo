@@ -733,7 +733,7 @@ export const useDeliveryNotifications = () => {
       // best-effort fallback: strip common API prefixes
       backendUrl = String(backendUrl || "")
         .replace(/\/api\/v\d+\/?$/i, "")
-        .replace(/\/api\/?$/i, "")
+        .replace(/\/api(\/v1)?\/?$/i, "")
         .replace(/\/+$/, "");
 
       if ((!backendUrl || !backendUrl.startsWith('http')) && typeof window !== 'undefined') {

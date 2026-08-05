@@ -152,7 +152,7 @@ const defaultBannersData = [
 
 export default function Home() {
   const HERO_BANNER_AUTO_SLIDE_MS = 3500;
-  const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+  const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api(\/v1)?\/?$/i, "");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [heroSearch, setHeroSearch] = useState("");

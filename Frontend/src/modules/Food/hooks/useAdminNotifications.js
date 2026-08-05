@@ -228,7 +228,7 @@ const resolveSocketOrigin = (value) => {
   } catch {
     return raw
       .replace(/\/api\/v\d+\/?$/i, "")
-      .replace(/\/api\/?$/i, "")
+      .replace(/\/api(\/v1)?\/?$/i, "")
       .replace(/\/+$/, "");
   }
 };

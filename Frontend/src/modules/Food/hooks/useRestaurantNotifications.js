@@ -350,7 +350,7 @@ export const useRestaurantNotifications = () => {
     } catch (e) {
       // If URL parsing fails, use regex-based normalization
       // Remove /api suffix first
-      backendUrl = backendUrl.replace(/\/api\/?$/, '');
+      backendUrl = backendUrl.replace(/\/api(\/v1)?\/?$/i, "");
       backendUrl = backendUrl.replace(/\/+$/, ''); // Remove trailing slashes
       
       // Normalize protocol - ensure exactly two slashes after protocol
@@ -454,7 +454,7 @@ export const useRestaurantNotifications = () => {
     } catch {
       socketOrigin = String(backendUrl || "")
         .replace(/\/api\/v\d+\/?$/i, "")
-        .replace(/\/api\/?$/i, "")
+        .replace(/\/api(\/v1)?\/?$/i, "")
         .replace(/\/+$/, "");
     }
 

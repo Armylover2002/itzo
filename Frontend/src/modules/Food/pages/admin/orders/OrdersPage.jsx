@@ -608,7 +608,7 @@ export default function OrdersPage({ statusKey = "all" }) {
   useEffect(() => {
     if (statusKey !== "all") return undefined
 
-    const backendUrl = API_BASE_URL.replace(/\/api\/?$/, "")
+    const backendUrl = API_BASE_URL.replace(/\/api(\/v1)?\/?$/i, "")
     // Backend disconnected - do not open Socket.IO (new backend in progress)
     if (!API_BASE_URL || !backendUrl || !backendUrl.startsWith("http")) {
       return undefined

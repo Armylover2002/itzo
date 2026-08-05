@@ -79,7 +79,7 @@ const DeliveryTrackingMap = ({
   }, [orderId, orderTrackingIds]);
 
   const backendUrl = useMemo(() => {
-    return (API_BASE_URL || '').replace(/\/api\/v1\/?$/i, '').replace(/\/api\/?$/i, '');
+    return (API_BASE_URL || '').replace(/\/api\/v1\/?$/i, '').replace(/\/api(\/v1)?\/?$/i, "");
   }, []);
 
   const beginRiderTransition = useCallback((nextPos) => {

@@ -53,7 +53,7 @@ export const useUserNotifications = () => {
     } catch {
       backendUrl = String(backendUrl || "")
         .replace(/\/api\/v\d+\/?$/i, "")
-        .replace(/\/api\/?$/i, "")
+        .replace(/\/api(\/v1)?\/?$/i, "")
         .replace(/\/+$/, "");
     }
 
