@@ -50,7 +50,13 @@ export default function useNotificationInbox(module, options = {}) {
       const payload = response?.data?.data || {};
       setItems(normalizeInboxItems(payload?.items));
       setUnreadCount(Number(payload?.unreadCount || 0));
-    } catch {
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('user_accessToken');
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('admin_accessToken');
+        localStorage.removeItem('auth_customer');
+      }
       setItems([]);
       setUnreadCount(0);
     } finally {

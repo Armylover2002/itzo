@@ -48,6 +48,9 @@ const OptimizedImage = React.memo(({
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.set(key, String(value))
       })
+      if (imageSrc.includes('/uploads/')) {
+        url.searchParams.set('cb', '2');
+      }
       return url.toString()
     } catch {
       return imageSrc
