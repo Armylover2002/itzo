@@ -80,7 +80,7 @@ const CategoriesPage = () => {
                             categories: subs.map((cat, cIdx) => ({
                                 id: cat._id || `${idx}-${cIdx}`,
                                 name: cat.name,
-                                image: (!cat.image || cat.image.includes('itzo-quick-logo.png')) ? "https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png" : cat.image,
+                                image: (!cat.image || cat.image.includes('itzo-quick-logo.png') || cat.image.includes('cdn.grofers.com')) ? "/uploads/general/grocery.jpg" : cat.image,
                                 color: COLORS[(idx + cIdx) % COLORS.length]
                             }))
                         };

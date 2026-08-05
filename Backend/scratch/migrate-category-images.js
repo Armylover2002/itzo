@@ -3,46 +3,26 @@ dotenv.config();
 import mongoose from 'mongoose';
 import { QuickCategory } from '../src/modules/quick-commerce/models/category.model.js';
 
-// Extremely safe fallback images from Grofers CDN or solid unsplash links
+// Map to our local, safe fallback images
 const imageMap = {
     // Electronics
-    'tv-mobiles': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'coolers-fans': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'electronics': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
+    'tv-mobiles': '/uploads/general/electronics.jpg',
+    'coolers-fans': '/uploads/general/electronics.jpg',
+    'electronics': '/uploads/general/electronics.jpg',
     
     // Kids
-    'toys': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'kids-food': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'kids-essentials': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'baby-wipes': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'kids': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
+    'toys': '/uploads/general/toys.jpg',
+    'kids-food': '/uploads/general/toys.jpg',
+    'kids-essentials': '/uploads/general/toys.jpg',
+    'baby-wipes': '/uploads/general/toys.jpg',
+    'kids': '/uploads/general/toys.jpg',
     
-    // Wedding
-    'bridal': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'wedding': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    
-    // Grocery
-    'grocery': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'dairy': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout_item/2022-09/44910.png',
-    'masalas': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png',
-    'fruitsandvegetables': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout_item/2022-09/44889.png',
-    'aata-dal-rice': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout_item/2022-11/44889.png',
-    
-    // Drinks
-    'coffee': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout_item/2023-01/44907.png',
-    'tea': 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout_item/2023-01/44907.png',
+    // Spices
+    'masalas': '/uploads/general/spices.jpg',
+    'spices': '/uploads/general/spices.jpg'
 };
 
-const defaultImage = 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png';
-
-async function verifyImage(url) {
-    try {
-        const response = await fetch(url, { method: 'HEAD' });
-        return response.status === 200;
-    } catch {
-        return false;
-    }
-}
+const defaultImage = '/uploads/general/grocery.jpg';
 
 async function run() {
     try {
@@ -52,24 +32,14 @@ async function run() {
         console.log("Fetching ALL categories...");
         const categories = await QuickCategory.find({});
         
-        console.log(`Found ${categories.length} categories to verify.`);
+        console.log(`Found ${categories.length} categories to update.`);
         let updatedCount = 0;
         
         for (const cat of categories) {
-            // Check if current image is broken or itzo logo or empty
-            let isBroken = false;
-            if (!cat.image || cat.image.includes('itzo-quick-logo.png')) {
-                isBroken = true;
-            } else {
-                const ok = await verifyImage(cat.image);
-                if (!ok) isBroken = true;
-            }
-            
-            if (isBroken) {
+            // Any external CDN or Unsplash or Itzo logo gets replaced
+            if (!cat.image || cat.image.includes('cdn.grofers.com') || cat.image.includes('unsplash.com') || cat.image.includes('itzo-quick-logo.png')) {
                 const match = imageMap[cat.slug] || imageMap[cat.name.toLowerCase()] || defaultImage;
-                const matchOk = await verifyImage(match);
-                cat.image = matchOk ? match : defaultImage;
-                
+                cat.image = match;
                 await cat.save();
                 updatedCount++;
                 console.log(`Updated ${cat.name} (${cat.slug}) -> ${cat.image}`);

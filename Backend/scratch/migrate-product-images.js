@@ -3,17 +3,10 @@ dotenv.config();
 import mongoose from 'mongoose';
 import { QuickProduct } from '../src/modules/quick-commerce/models/product.model.js';
 
-// Extremely safe fallback product images from Grofers CDN
-const defaultProductImage = 'https://cdn.grofers.com/cdn-cgi/image/f=auto,fit=scale-down,q=70,metadata=none,w=270/layout-engine/2022-11/Slice-1_9.png';
-
-async function verifyImage(url) {
-    try {
-        const response = await fetch(url, { method: 'HEAD' });
-        return response.status === 200;
-    } catch {
-        return false;
-    }
-}
+// Extremely safe fallback product images from local uploads
+const defaultProductImage = '/uploads/general/grocery.jpg';
+const spiceProductImage = '/uploads/general/spices.jpg';
+const electronicsProductImage = '/uploads/general/electronics.jpg';
 
 async function run() {
     try {
@@ -30,28 +23,26 @@ async function run() {
             let needsUpdate = false;
             let updates = {};
             
+            // Determine best local image
+            let match = defaultProductImage;
+            const name = product.name.toLowerCase();
+            const slug = product.slug.toLowerCase();
+            if (name.includes('cumin') || name.includes('tattva') || name.includes('cardamom') || name.includes('chilli') || name.includes('saunf') || name.includes('masala')) {
+                match = spiceProductImage;
+            } else if (name.includes('tv') || name.includes('mobile')) {
+                match = electronicsProductImage;
+            }
+            
             // Check mainImage
-            if (!product.mainImage || product.mainImage.includes('itzo-quick-logo.png')) {
-                updates.mainImage = defaultProductImage;
+            if (!product.mainImage || product.mainImage.includes('itzo-quick-logo.png') || product.mainImage.includes('cdn.grofers.com') || product.mainImage.includes('unsplash.com')) {
+                updates.mainImage = match;
                 needsUpdate = true;
-            } else {
-                const ok = await verifyImage(product.mainImage);
-                if (!ok) {
-                    updates.mainImage = defaultProductImage;
-                    needsUpdate = true;
-                }
             }
 
             // Check image
-            if (!product.image || product.image.includes('itzo-quick-logo.png')) {
-                updates.image = defaultProductImage;
+            if (!product.image || product.image.includes('itzo-quick-logo.png') || product.image.includes('cdn.grofers.com') || product.image.includes('unsplash.com')) {
+                updates.image = match;
                 needsUpdate = true;
-            } else {
-                const ok = await verifyImage(product.image);
-                if (!ok) {
-                    updates.image = defaultProductImage;
-                    needsUpdate = true;
-                }
             }
             
             if (needsUpdate) {
