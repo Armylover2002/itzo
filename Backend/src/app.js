@@ -46,7 +46,8 @@ app.use(helmet({
     hsts: config.nodeEnv === 'production' ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
     xssFilter: true,
     noSniff: true,
-    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 const allowedOrigins = [
     process.env.FRONTEND_URL,
