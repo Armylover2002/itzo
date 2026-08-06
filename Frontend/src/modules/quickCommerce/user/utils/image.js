@@ -46,10 +46,18 @@ export const resolveImageFallbacks = (value) => {
   
   let relativePath = normalized;
   
-  // Extract path if it's already a Cloudinary URL (e.g. from an old cloud name)
-  const cloudinaryMatch = normalized.match(/\/image\/upload\/(?:v\d+\/)?(.+)$/i);
-  if (cloudinaryMatch && cloudinaryMatch[1]) {
-    relativePath = "/" + cloudinaryMatch[1]; // e.g. /uploads/products/123.jpg
+  // Extract path if it's already a Cloudinary URL (e.g. from an old cloud name or optimized URL)
+  if (normalized.includes("/image/upload/")) {
+    const uploadsIndex = normalized.indexOf("/uploads/");
+    if (uploadsIndex !== -1) {
+      relativePath = normalized.slice(uploadsIndex); // guarantees extraction of /uploads/...
+    } else {
+      const parts = normalized.split("/image/upload/");
+      if (parts.length === 2) {
+        // Strip out transformation parameters (e.g. f_webp,q_80/) and version tags (e.g. v1234/)
+        relativePath = "/" + parts[1].replace(/^(?:[a-z_0-9,]+\/)*(?:v\d+\/)?/i, "");
+      }
+    }
   }
   
   // Extract path if it's a local server URL
