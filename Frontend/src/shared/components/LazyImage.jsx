@@ -6,6 +6,13 @@ const LazyImage = ({ src, alt = '', className = '', ...rest }) => {
 
   // Determine if src is an array of fallbacks or a single string
   const sources = Array.isArray(src) ? src : [src];
+  
+  // Reset state when src changes
+  React.useEffect(() => {
+    setLoaded(false);
+    setErrorCount(0);
+  }, [src]);
+
   const currentSrc = errorCount < sources.length ? sources[errorCount] : "/itzo-quick-logo.png";
 
   return (

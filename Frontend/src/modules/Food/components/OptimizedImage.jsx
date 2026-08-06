@@ -36,6 +36,13 @@ const OptimizedImage = React.memo(({
   const imgRef = useRef(null)
   const observerRef = useRef(null)
 
+  // Reset state when src changes
+  useEffect(() => {
+    setIsLoaded(false)
+    setHasError(false)
+    setSrcIndex(0)
+  }, [src])
+
   // Check if image URL supports optimization (external URLs)
   const supportsOptimization = (imageSrc) => {
     if (!imageSrc || typeof imageSrc !== 'string' || imageSrc === '') return false
