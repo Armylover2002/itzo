@@ -74,6 +74,8 @@ export const resolveImageFallbacks = (value) => {
     // It's a relative path, we can construct the new Cloudinary URL
     const cloudinaryUrl = `https://res.cloudinary.com/${ACTIVE_CLOUDINARY_CLOUD_NAME}/image/upload${relativePath}`;
     fallbacks.push(optimizeCloudinaryUrl(cloudinaryUrl));
+  }
+  
   // Priority 3: The Original URL (if it was an external URL or old cloudinary link, try it as a last resort before logo)
   if (normalized.startsWith("http") && !fallbacks.includes(normalized)) {
     fallbacks.push(normalized);
