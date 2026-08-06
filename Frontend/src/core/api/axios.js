@@ -136,7 +136,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     (response) => {
         const baseUrlRaw = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
-        const apiRoot = String(baseUrlRaw).replace(/\/api\/v1\/?$/, "");
+        const apiRoot = String(baseUrlRaw).replace(/\/$/, "");
         if (response.data) {
             prependBaseUrlToUploads(response.data, apiRoot);
         }

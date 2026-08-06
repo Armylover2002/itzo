@@ -247,7 +247,7 @@ apiClient.interceptors.request.use(
 
 apiClient.interceptors.response.use(
   (response) => {
-    const apiRoot = baseURL ? baseURL.replace(/\/api\/v1\/?$/, "") : "";
+    const apiRoot = baseURL ? baseURL.replace(/\/$/, "") : "";
     if (apiRoot && response.data) {
       prependBaseUrlToUploads(response.data, apiRoot);
     }

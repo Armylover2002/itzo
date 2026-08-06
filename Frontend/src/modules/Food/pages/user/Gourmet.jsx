@@ -29,7 +29,7 @@ export default function Gourmet() {
   const { location } = useLocation()
   const showGourmetSkeleton = useDelayedLoading(loading)
 
-  const backendOrigin = (API_BASE_URL || "").replace(/\/api\/v1\/?$/, "")
+  const backendOrigin = (API_BASE_URL || "").replace(/\/$/, "")
 
   const resolveImageUrl = (url) => {
     if (typeof url !== "string") return ""

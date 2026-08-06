@@ -130,6 +130,16 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
     }
 }));
 
+// Route for API so Nginx auto-proxies
+app.use('/api/v1/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+    maxAge: '1y',
+    setHeaders: (res, path) => {
+        if (path.endsWith('.webp') || path.endsWith('.png') || path.endsWith('.jpg')) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000');
+        }
+    }
+}));
+
 // Error Handling
 app.use(errorHandler);
 
