@@ -13,7 +13,18 @@ export const resolveQuickImageUrl = (value) => {
   const normalized = raw.replace(/\\/g, "/");
   let resolvedUrl = normalized;
 
-  if (
+  if (normalized.includes("/image/upload/")) {
+    const uploadsIndex = normalized.indexOf("/uploads/");
+    if (uploadsIndex !== -1) {
+      resolvedUrl = `${API_BASE_URL}${normalized.slice(uploadsIndex)}`;
+    } else {
+      const parts = normalized.split("/image/upload/");
+      if (parts.length === 2) {
+        const extracted = "/" + parts[1].replace(/^(?:[a-z_0-9,]+\/)*(?:v\d+\/)?/i, "");
+        resolvedUrl = extracted.startsWith("/uploads/") ? `${API_BASE_URL}${extracted}` : `${API_BASE_URL}/uploads${extracted}`;
+      }
+    }
+  } else if (
     normalized.startsWith("http://") ||
     normalized.startsWith("https://") ||
     normalized.startsWith("data:") ||
@@ -29,8 +40,8 @@ export const resolveQuickImageUrl = (value) => {
     resolvedUrl = normalized.startsWith("/") ? normalized : `/${normalized}`;
   }
 
-  // Optimize Cloudinary URLs to use webp/f_auto
-  return optimizeCloudinaryUrl(resolvedUrl);
+  // We are no longer optimizing via Cloudinary, return the mapped url directly
+  return resolvedUrl;
 };
 
 /**
@@ -76,20 +87,13 @@ export const resolveImageFallbacks = (value) => {
   if (relativePath.startsWith("/uploads/")) {
     fallbacks.push(`${API_BASE_URL}${relativePath}`);
   }
-
-  // Priority 2: Active Cloudinary Account
-  if (!relativePath.startsWith("http") && !relativePath.startsWith("data:") && !relativePath.startsWith("blob:")) {
-    // It's a relative path, we can construct the new Cloudinary URL
-    const cloudinaryUrl = `https://res.cloudinary.com/${ACTIVE_CLOUDINARY_CLOUD_NAME}/image/upload${relativePath}`;
-    fallbacks.push(optimizeCloudinaryUrl(cloudinaryUrl));
-  }
   
-  // Priority 3: The Original URL (if it was an external URL or old cloudinary link, try it as a last resort before logo)
+  // Priority 2: The Original URL (if it was an external URL or old cloudinary link, try it as a last resort before logo)
   if (normalized.startsWith("http") && !fallbacks.includes(normalized)) {
     fallbacks.push(normalized);
   }
 
-  // Priority 4: Fallback Logo
+  // Priority 3: Fallback Logo
   fallbacks.push(FALLBACK_LOGO);
 
   // Remove duplicates just in case

@@ -16,66 +16,15 @@
  */
 export const optimizeCloudinaryUrl = (url, options = {}) => {
   if (!url || typeof url !== "string") return url || "";
-
-  // The 'dv1l9sb4p' Cloudinary account is disabled. Replace with fallback to prevent 401 errors.
-  if (url.includes('dv1l9sb4p')) {
-    return '/itzo-quick-logo.png';
-  }
-
-  // Only process Cloudinary URLs
-  if (!/res\.cloudinary\.com/i.test(url) || !/\/image\/upload\//i.test(url)) {
-    return url;
-  }
-
-  const {
-    format = "webp",
-    quality = "auto",
-    width,
-    height,
-    crop = width || height ? "fill" : null,
-    dpr = "auto",
-  } = options;
-
-  try {
-    const parts = url.split("/upload/");
-    if (parts.length !== 2) return url;
-
-    const [prefix, suffix] = parts;
-    const slashIndex = suffix.indexOf("/");
-    const firstSegment = slashIndex === -1 ? suffix : suffix.slice(0, slashIndex);
-    const rest = slashIndex === -1 ? "" : suffix.slice(slashIndex + 1);
-    const hasNamedTransformations =
-      firstSegment.includes("_") && !/^v\d+$/.test(firstSegment);
-
-    if (hasNamedTransformations) {
-      const transforms = firstSegment
-        .split(",")
-        .filter(Boolean)
-        .filter((part) => !part.startsWith("f_") && !part.startsWith("q_"));
-
-      transforms.unshift(`q_${quality}`);
-      transforms.unshift(`f_${format}`);
-
-      const normalized = transforms.join(",");
-      return `${prefix}/upload/${normalized}/${rest}`;
-    }
-
-    let transformStr = `f_${format},q_${quality},dpr_${dpr}`;
-    if (width) transformStr += `,w_${width}`;
-    if (height) transformStr += `,h_${height}`;
-    if (crop) transformStr += `,c_${crop}`;
-
-    return `${prefix}/upload/${transformStr}/${suffix}`;
-  } catch (err) {
-    console.error("Error optimizing Cloudinary URL:", err);
-    return url;
-  }
+  // We have completely migrated away from Cloudinary on the frontend.
+  // This acts as a pass-through so downstream utilities can map it to the local uploads folder.
+  return url;
 };
 
 /**
  * Specifically ensures webp format for a Cloudinary URL.
  */
-export const ensureWebp = (url) => optimizeCloudinaryUrl(url, { format: "webp" });
+export const ensureWebp = (url) => url;
 
 /**
  * Generates a srcSet for Cloudinary images.
@@ -84,13 +33,6 @@ export const ensureWebp = (url) => optimizeCloudinaryUrl(url, { format: "webp" }
  * @returns {string} - srcSet string.
  */
 export const getCloudinarySrcSet = (url, widths = [200, 400, 600, 800, 1000]) => {
-  if (!url || !/res\.cloudinary\.com/i.test(url)) return null;
-  if (url.includes('dv1l9sb4p')) return null;
-
-  return widths
-    .map((w) => {
-      const optimized = optimizeCloudinaryUrl(url, { width: w, crop: "scale", format: "webp", quality: "auto" });
-      return `${optimized} ${w}w`;
-    })
-    .join(", ");
+  // Return undefined to strictly disable hardcoded Cloudinary srcSets across the app (e.g. ExperienceBannerCarousel)
+  return undefined;
 };

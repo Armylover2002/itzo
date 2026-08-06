@@ -16,6 +16,20 @@ export const normalizeImageUrl = (imageUrl, BACKEND_ORIGIN) => {
     .replace(/^(https?):\/(?!\/)/i, "$1://")
     .replace(/^(https?:\/\/)(https?:\/\/)/i, "$1");
 
+  // Intercept Cloudinary URLs and map them to the local uploads folder
+  if (normalizedInput.includes("/image/upload/")) {
+    const uploadsIndex = normalizedInput.indexOf("/uploads/");
+    if (uploadsIndex !== -1) {
+      normalizedInput = `${BACKEND_ORIGIN}${normalizedInput.slice(uploadsIndex)}`;
+    } else {
+      const parts = normalizedInput.split("/image/upload/");
+      if (parts.length === 2) {
+        const extracted = "/" + parts[1].replace(/^(?:[a-z_0-9,]+\/)*(?:v\d+\/)?/i, "");
+        normalizedInput = extracted.startsWith("/uploads/") ? `${BACKEND_ORIGIN}${extracted}` : `${BACKEND_ORIGIN}/uploads${extracted}`;
+      }
+    }
+  }
+
   if (/^\/\//.test(normalizedInput)) {
     normalizedInput = `${appProtocol || "https:"}${normalizedInput}`;
   }
@@ -63,7 +77,7 @@ export const normalizeImageUrl = (imageUrl, BACKEND_ORIGIN) => {
       parsed.protocol = "https:";
     }
     const finalUrl = parsed.toString();
-    return optimizeCloudinaryUrl(finalUrl);
+    return finalUrl;
   } catch {
     return absolutePath;
   }
@@ -84,19 +98,6 @@ export const extractImageFromValue = (value, BACKEND_ORIGIN) => {
 export const buildRestaurantImageCandidates = (value, BACKEND_ORIGIN) => {
   const normalized = extractImageFromValue(value, BACKEND_ORIGIN);
   if (!normalized) return [];
-
-  if (/res\.cloudinary\.com/i.test(normalized) && /\/image\/upload\//i.test(normalized)) {
-    const hasTransform = /\/image\/upload\/(?:f_|q_|w_|h_|c_|dpr_|g_)/i.test(normalized);
-    if (!hasTransform) {
-      return Array.from(
-        new Set([
-          normalized.replace("/image/upload/", "/image/upload/f_auto,q_auto,w_1080/"),
-          normalized.replace("/image/upload/", "/image/upload/f_jpg,q_auto,w_1080/"),
-          normalized,
-        ])
-      );
-    }
-  }
   return [normalized];
 };
 
