@@ -11,7 +11,7 @@ import axios from "axios";
 // Prefer explicit env. If not set, use same-origin (works with a Vite proxy).
 // This avoids hardcoding ports like 5000 that may conflict with local setups.
 const baseURL =
-  typeof import.meta !== "undefined" && import.meta.env?.VITE_API_BASE_URL
+  typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE_URL
     ? String(import.meta.env.VITE_API_BASE_URL).replace(/\/$/, "")
     : "";
 
