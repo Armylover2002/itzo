@@ -1,6 +1,6 @@
 import { optimizeCloudinaryUrl } from "@/shared/utils/cloudinaryUtils";
 
-const API_BASE_URL = ((import.meta.env && import.meta.env.VITE_API_BASE_URL) || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
 const ACTIVE_CLOUDINARY_CLOUD_NAME = "dm6dbsbfx";
 const FALLBACK_LOGO = "/itzo-quick-logo.png";
 
