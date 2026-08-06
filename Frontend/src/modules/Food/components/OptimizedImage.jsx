@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { optimizeCloudinaryUrl } from '../../../shared/utils/cloudinaryUtils'
+import { resolveImageFallbacks } from '../../quickCommerce/user/utils/image'
 
 /**
  * OptimizedImage Component
@@ -30,6 +31,7 @@ const OptimizedImage = React.memo(({
 }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [hasError, setHasError] = useState(false)
+  const [srcIndex, setSrcIndex] = useState(0)
   const [isInView, setIsInView] = useState(priority) // Start visible if priority
   const imgRef = useRef(null)
   const observerRef = useRef(null)
@@ -67,7 +69,11 @@ const OptimizedImage = React.memo(({
     return url
   }
 
-  const resolvedSrc = useMemo(() => resolveUrl(src), [src, backendOrigin])
+  const fallbacks = useMemo(() => resolveImageFallbacks(src), [src])
+  const resolvedSrc = useMemo(() => {
+    if (!fallbacks || fallbacks.length === 0) return resolveUrl(src)
+    return resolveUrl(fallbacks[srcIndex < fallbacks.length ? srcIndex : fallbacks.length - 1])
+  }, [fallbacks, srcIndex, backendOrigin, src])
 
   // Generate responsive srcset
   const srcSet = useMemo(() => {
@@ -141,8 +147,13 @@ const OptimizedImage = React.memo(({
   }
 
   const handleError = (e) => {
-    setHasError(true)
-    if (onError) onError(e)
+    if (fallbacks && srcIndex < fallbacks.length - 1) {
+      setSrcIndex(prev => prev + 1)
+      setIsLoaded(false)
+    } else {
+      setHasError(true)
+      if (onError) onError(e)
+    }
   }
 
   // Default blur placeholder (tiny gray square)
@@ -159,7 +170,7 @@ const OptimizedImage = React.memo(({
     )
   }
 
-  const imageSrc = hasError ? 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23e5e7eb" width="400" height="300"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle"%3EImage not found%3C/text%3E%3C/svg%3E' : resolvedSrc
+  const imageSrc = hasError ? '/itzo-quick-logo.png' : resolvedSrc
 
   return (
     <div className={`relative overflow-hidden ${className}`} ref={imgRef}>
@@ -214,12 +225,7 @@ const OptimizedImage = React.memo(({
         </picture>
       )}
 
-      {/* Error State */}
-      {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
-          <span className="text-xs text-gray-400 dark:text-gray-600">Image unavailable</span>
-        </div>
-      )}
+      {/* Removed separate Error State since we fall back to ITZO logo */}
     </div>
   )
 })

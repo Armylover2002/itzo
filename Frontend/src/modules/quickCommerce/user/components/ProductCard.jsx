@@ -2,7 +2,8 @@ import React, { memo } from "react";
 import { Clock, Plus, Minus, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { resolveQuickImageUrl } from "../utils/image";
+import { resolveQuickImageUrl, resolveImageFallbacks } from "../utils/image";
+import LazyImage from "@/shared/components/LazyImage";
 
 const ProductCard = memo(({ product, quantity, onAdd, onIncrement, onDecrement, compact = false }) => {
   const money = (val) => `₹${Number(val || 0).toLocaleString("en-IN")}`;
@@ -34,14 +35,10 @@ const ProductCard = memo(({ product, quantity, onAdd, onIncrement, onDecrement, 
             "flex aspect-square items-center justify-center overflow-hidden rounded-2xl transition-colors duration-300 p-3",
             compact ? "bg-[#f8f9f8]" : "bg-white group-hover:bg-[#f7fbf7]"
           )}>
-            <img
-              src={resolveQuickImageUrl(product.image || product.mainImage)}
+            <LazyImage
+              src={resolveImageFallbacks(product.image || product.mainImage)}
               alt={product.name}
               className="h-full w-full object-contain mix-blend-multiply transition duration-500 group-hover:scale-110"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "https://cdn-icons-png.flaticon.com/128/2321/2321831.png";
-              }}
             />
           </div>
         </div>
