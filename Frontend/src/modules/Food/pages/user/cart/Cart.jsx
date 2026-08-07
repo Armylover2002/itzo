@@ -2217,17 +2217,6 @@ export default function Cart() {
                         We prioritize your order, match the nearest available rider, and keep the handoff moving smoothly.
                       </p>
 
-                      <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <div className="rounded-2xl border border-orange-200/70 bg-white/85 px-3 py-2 text-xs font-medium text-gray-700 shadow-sm dark:border-orange-900/50 dark:bg-white/10 dark:text-gray-200">
-                          Live prep to doorstep flow
-                        </div>
-                        <button
-                          onClick={() => setIsScheduled(!isScheduled)}
-                          className="rounded-2xl border border-dashed border-[#FE5502]/60 bg-[#FFF2EB] px-3 py-2 text-xs font-bold text-[#FE5502] transition-colors hover:bg-[#ffe6d8] dark:bg-[#FE5502]/10 dark:hover:bg-[#FE5502]/20"
-                        >
-                          {isScheduled ? "Switch back to express now" : "Want this later? Schedule it"}
-                        </button>
-                      </div>
                     </div>
                   </div>
 

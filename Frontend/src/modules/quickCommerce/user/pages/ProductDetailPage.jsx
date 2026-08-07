@@ -131,6 +131,7 @@ const ProductDetailPage = () => {
   const [reviewLoading, setReviewLoading] = useState(true);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const { toggleWishlist: toggleWishlistGlobal, isInWishlist } = useWishlist();
@@ -201,6 +202,12 @@ const ProductDetailPage = () => {
   useEffect(() => {
     if (product?.images?.length) {
       setActiveImage(product.images[0]);
+    }
+    // Auto-select first variant when product loads
+    if (product?.variants?.length > 0) {
+      setSelectedVariant(product.variants[0]);
+    } else {
+      setSelectedVariant(null);
     }
   }, [product]);
 
@@ -396,25 +403,56 @@ const ProductDetailPage = () => {
             <div className="mb-5 flex items-baseline gap-4">
               <span className="text-4xl font-black text-[#FE5502] dark:text-orange-500">
                 {"\u20B9"}
-                {product.price}
+                {selectedVariant ? (normalizePrice(selectedVariant.salePrice, 0) > 0 ? selectedVariant.salePrice : selectedVariant.price) : product.price}
               </span>
-              {product.originalPrice > product.price && (
-                <>
-                  <span className="text-lg font-bold text-slate-400 dark:text-slate-500 line-through">
-                    {"\u20B9"}
-                    {product.originalPrice}
-                  </span>
-                  <span className="rounded-lg bg-red-50 dark:bg-red-950/30 px-2 py-1 text-xs font-black uppercase text-red-500">
-                    {Math.round(
-                      ((product.originalPrice - product.price) /
-                        product.originalPrice) *
-                        100,
-                    )}
-                    % OFF
-                  </span>
-                </>
-              )}
+              {(() => {
+                const displayPrice = selectedVariant ? (normalizePrice(selectedVariant.salePrice, 0) > 0 ? selectedVariant.salePrice : selectedVariant.price) : product.price;
+                const displayOriginal = selectedVariant ? selectedVariant.price : product.originalPrice;
+                return displayOriginal > displayPrice ? (
+                  <>
+                    <span className="text-lg font-bold text-slate-400 dark:text-slate-500 line-through">
+                      {"\u20B9"}
+                      {displayOriginal}
+                    </span>
+                    <span className="rounded-lg bg-red-50 dark:bg-red-950/30 px-2 py-1 text-xs font-black uppercase text-red-500">
+                      {Math.round(
+                        ((displayOriginal - displayPrice) /
+                          displayOriginal) *
+                          100,
+                      )}
+                      % OFF
+                    </span>
+                  </>
+                ) : null;
+              })()}
             </div>
+
+            {product.variants && product.variants.length > 0 && (
+              <div className="mb-5">
+                <h4 className="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+                  Select Variant
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  {product.variants.map((v, idx) => (
+                    <button
+                      key={v.sku || idx}
+                      onClick={() => setSelectedVariant(v)}
+                      className={cn(
+                        "relative overflow-hidden rounded-xl px-4 py-2.5 text-sm font-bold transition-all border-2",
+                        selectedVariant?.sku === v.sku && selectedVariant?.name === v.name
+                          ? "bg-orange-50 dark:bg-orange-950/30 border-[#FE5502] text-[#FE5502] shadow-md"
+                          : "bg-card dark:bg-slate-800 border-border text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/10 hover:shadow-sm",
+                      )}
+                    >
+                      {v.name}
+                      {selectedVariant?.sku === v.sku && selectedVariant?.name === v.name && (
+                        <div className="absolute right-0 top-0 h-3 w-3 rounded-bl-lg bg-[#FE5502]" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <p className="max-w-2xl text-lg font-medium leading-relaxed text-slate-600 dark:text-slate-300 transition-colors">
               {product.description}
@@ -437,10 +475,10 @@ const ProductDetailPage = () => {
                   </button>
                   <span className="flex-1 text-center text-xl font-black">{quantity}</span>
                   <button
-                    disabled={quantity >= Number(product.stock ?? Infinity)}
+                    disabled={quantity >= Number((selectedVariant?.stock ?? product.stock) ?? Infinity)}
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all hover:bg-white/20 disabled:opacity-40 disabled:cursor-not-allowed"
                     onClick={() => {
-                      const stock = Number(product.stock ?? Infinity);
+                      const stock = Number((selectedVariant?.stock ?? product.stock) ?? Infinity);
                       if (quantity >= stock) {
                         showToast(`Only ${stock} in stock`, "error");
                         return;
@@ -454,7 +492,7 @@ const ProductDetailPage = () => {
               ) : (
                   <Button
                     onClick={async () => {
-                      const stock = Number(product.stock ?? Infinity);
+                      const stock = Number((selectedVariant?.stock ?? product.stock) ?? Infinity);
                       if (stock <= 0) {
                         showToast("This product is out of stock", "error");
                         return;
