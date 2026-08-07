@@ -186,7 +186,7 @@ export default function EditOwner() {
       }
 
       // Email validation (stricter regex)
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,5}$/
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/
       const emailToValidate = formData.email ? String(formData.email).trim() : ""
       
       if (emailToValidate && !emailRegex.test(emailToValidate)) {

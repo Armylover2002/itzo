@@ -219,7 +219,7 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
       return;
     }
 
-    if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    if (trimmedEmail && !/^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(trimmedEmail)) {
       toast.error("Please enter a valid email address.");
       return;
     }

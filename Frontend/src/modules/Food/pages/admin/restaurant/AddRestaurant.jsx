@@ -24,7 +24,7 @@ const cuisinesOptions = [
 ]
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/
 const PHONE_REGEX = /^\d{10}$/
 const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/
 const FSSAI_REGEX = /^\d{14}$/

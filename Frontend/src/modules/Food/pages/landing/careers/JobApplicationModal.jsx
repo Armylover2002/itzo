@@ -119,7 +119,7 @@ export default function JobApplicationModal({ isOpen, onClose, job }) {
       if (!formData.applicantName.trim()) tempErrors.applicantName = 'Full Name is required.';
       if (!formData.email.trim()) {
         tempErrors.email = 'Email Address is required.';
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      } else if (!/^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(formData.email)) {
         tempErrors.email = 'Invalid email format.';
       }
       if (!formData.mobile.trim()) {

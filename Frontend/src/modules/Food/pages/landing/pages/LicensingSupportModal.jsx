@@ -152,7 +152,7 @@ export default function LicensingSupportModal({ isOpen, onClose, preFillData }) 
             }
             if (!formData.email.trim()) {
                 tempErrors.email = 'Email Address is required.';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            } else if (!/^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(formData.email)) {
                 tempErrors.email = 'Invalid email format.';
             }
         } else if (step === 3) {

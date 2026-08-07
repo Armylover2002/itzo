@@ -37,7 +37,7 @@ export default function AddDeliveryman() {
     if (!formData.lastName.trim()) errors.lastName = "Last name is required"
     if (!formData.email.trim()) {
       errors.email = "User Id is required"
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (!/^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(formData.email)) {
       errors.email = "Invalid email format"
     }
     if (!formData.deliverymanType) errors.deliverymanType = "Deliveryman type is required"
