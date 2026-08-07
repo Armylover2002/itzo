@@ -136,13 +136,22 @@ const ProductDetailPage = () => {
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
   const { toggleWishlist: toggleWishlistGlobal, isInWishlist } = useWishlist();
   const { showToast } = useToast();
+  const cartKey = useMemo(() => {
+    if (!product) return "";
+    const baseId = product.id || product._id || "";
+    if (selectedVariant?.sku) return `${baseId}::${selectedVariant.sku}`;
+    if (selectedVariant?.name) return `${baseId}::${selectedVariant.name}`;
+    return baseId;
+  }, [product, selectedVariant]);
+
   const quantity = useMemo(() => {
-    if (!product) return 0;
-    const cartItem = cart.find(
-      (item) => getProductIdentifier(item) === getProductIdentifier(product),
-    );
+    if (!product || !cartKey) return 0;
+    const cartItem = cart.find((item) => {
+      const itemId = String(item?.productId || item?.itemId || item?.id || item?._id || "");
+      return itemId === cartKey;
+    });
     return cartItem ? cartItem.quantity : 0;
-  }, [cart, product]);
+  }, [cart, product, cartKey]);
 
   const isWishlisted = product
     ? isInWishlist(product.id || product._id)
@@ -466,8 +475,8 @@ const ProductDetailPage = () => {
                   <button
                     onClick={() =>
                       quantity === 1
-                        ? removeFromCart(product.id || product._id)
-                        : updateQuantity(product.id || product._id, -1)
+                        ? removeFromCart(cartKey)
+                        : updateQuantity(cartKey, -1)
                     }
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-all hover:bg-white/20"
                   >
@@ -483,7 +492,7 @@ const ProductDetailPage = () => {
                         showToast(`Only ${stock} in stock`, "error");
                         return;
                       }
-                      updateQuantity(product.id || product._id, 1);
+                      updateQuantity(cartKey, 1);
                     }}
                   >
                     <Plus size={24} strokeWidth={3} />
@@ -497,8 +506,13 @@ const ProductDetailPage = () => {
                         showToast("This product is out of stock", "error");
                         return;
                       }
-                      await addToCart(product);
-                      showToast(`${product.name} added to cart`, "success");
+                      await addToCart(product, selectedVariant);
+                      showToast(
+                        selectedVariant
+                          ? `${product.name} (${selectedVariant.name}) added to cart`
+                          : `${product.name} added to cart`,
+                        "success",
+                      );
                     }}
                     className="h-16 w-full rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-lg font-black text-white shadow-xl transition-all hover:-translate-y-1"
                   >

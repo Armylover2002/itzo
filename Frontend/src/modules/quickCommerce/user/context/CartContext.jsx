@@ -115,6 +115,13 @@ const normalizeQuickProductForSharedCart = (product) => {
   };
 };
 
+const getCartItemKey = (product, variant) => {
+  const baseId = getProductId(product);
+  if (variant?.sku) return `${baseId}::${variant.sku}`;
+  if (variant?.name) return `${baseId}::${variant.name}`;
+  return baseId;
+};
+
 const shrinkCartItem = (item) => {
   if (!item) return null;
   // Only keep essential fields to minimize localStorage footprint and avoid QuotaExceededError
@@ -137,6 +144,8 @@ const shrinkCartItem = (item) => {
     headerId: item.headerId || null,
     quickStoreId: item.quickStoreId,
     quickStoreName: item.quickStoreName,
+    variantSku: item.variantSku || null,
+    variantName: item.variantName || null,
     orderType: "quick",
     type: "quick",
   };
@@ -268,26 +277,49 @@ const useStandaloneQuickCart = () => {
     persistQuickCartSnapshot(cart);
   }, [cart]);
 
-  const addToCart = async (product) => {
-    const id = getProductId(product);
-    if (!id) return;
+  const addToCart = async (product, variant = null) => {
+    const baseId = getProductId(product);
+    if (!baseId) return;
+    const cartKey = getCartItemKey(product, variant);
+
+    // Build variant-aware price fields
+    const variantSalePrice = variant ? Number(variant.salePrice || 0) : 0;
+    const variantBasePrice = variant ? Number(variant.price || 0) : 0;
+    const effectivePrice = variant
+      ? (variantSalePrice > 0 ? variantSalePrice : variantBasePrice)
+      : Number(product.salePrice || product.price || 0);
+    const effectiveStock = variant ? Number(variant.stock ?? product.stock ?? Infinity) : Number(product.stock ?? Infinity);
+
     setCart((prev) => {
-      const existingItem = prev.find((item) => getProductId(item) === id);
+      const existingItem = prev.find((item) => {
+        const itemKey = item.variantSku
+          ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantSku}`
+          : item.variantName
+            ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantName}`
+            : normalizeProductId(item.productId || item.id || item._id);
+        return itemKey === cartKey;
+      });
       if (existingItem) {
-        const stock = Number(existingItem.stock ?? product.stock ?? Infinity);
+        const stock = Number(existingItem.stock ?? effectiveStock);
         if (existingItem.quantity >= stock) return prev; // already at stock limit
-        return prev.map((item) =>
-          getProductId(item) === id ? { ...item, quantity: item.quantity + 1 } : item,
-        );
+        return prev.map((item) => {
+          const itemKey = item.variantSku
+            ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantSku}`
+            : item.variantName
+              ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantName}`
+              : normalizeProductId(item.productId || item.id || item._id);
+          return itemKey === cartKey ? { ...item, quantity: item.quantity + 1 } : item;
+        });
       }
       return [
         ...prev,
         {
           ...product,
-          id,
-          _id: product?._id || id,
-          productId: id,
-          itemId: id,
+          id: cartKey,
+          _id: cartKey,
+          productId: cartKey,
+          itemId: cartKey,
+          baseProductId: baseId,
           orderType: "quick",
           type: "quick",
           quickStoreId: getQuickStoreId(product),
@@ -297,6 +329,14 @@ const useStandaloneQuickCart = () => {
           restaurant: getQuickStoreName(product),
           restaurantId: getQuickStoreId(product),
           quantity: 1,
+          price: effectivePrice,
+          salePrice: variant ? variantSalePrice : Number(product.salePrice || 0),
+          originalPrice: variant ? variantBasePrice : Number(product.originalPrice || product.mrp || product.price || 0),
+          mrp: variant ? variantBasePrice : Number(product.mrp || product.originalPrice || product.price || 0),
+          stock: effectiveStock,
+          variantSku: variant?.sku || null,
+          variantName: variant?.name || null,
+          name: variant ? `${product.name} (${variant.name})` : product.name,
           categoryId: product.categoryId || null,
           subcategoryId: product.subcategoryId || null,
           headerId: product.headerId || null,
@@ -309,7 +349,7 @@ const useStandaloneQuickCart = () => {
     if (isAuthenticated) {
       pendingRequestsRef.current += 1;
       try {
-        const response = await customerApi.addToCart({ productId: id, quantity: 1 });
+        const response = await customerApi.addToCart({ productId: baseId, quantity: 1 });
         pendingRequestsRef.current -= 1;
         syncCart(response.data?.result?.items || response.data?.items);
       } catch (error) {
@@ -319,14 +359,29 @@ const useStandaloneQuickCart = () => {
     }
   };
 
-  const removeFromCart = async (productId) => {
-    const resolvedProductId = normalizeProductId(productId);
-    if (!resolvedProductId) return;
-    setCart((prev) => prev.filter((item) => getProductId(item) !== resolvedProductId));
+  const getItemCartKey = (item) => {
+    const baseId = normalizeProductId(item?.productId || item?.itemId || item?.id || item?._id);
+    if (item?.variantSku) return `${baseId}::${item.variantSku}`;
+    if (item?.variantName) return `${baseId}::${item.variantName}`;
+    return baseId;
+  };
+
+  const removeFromCart = async (cartKeyOrProductId) => {
+    if (!cartKeyOrProductId) return;
+    const isCompositeKey = String(cartKeyOrProductId).includes("::");
+    const baseProductId = normalizeProductId(cartKeyOrProductId);
+
+    setCart((prev) => prev.filter((item) => {
+      if (isCompositeKey) {
+        return getItemCartKey(item) !== cartKeyOrProductId;
+      }
+      return getItemCartKey(item) !== cartKeyOrProductId;
+    }));
+
     if (isAuthenticated) {
       pendingRequestsRef.current += 1;
       try {
-        const response = await customerApi.removeFromCart(resolvedProductId);
+        const response = await customerApi.removeFromCart(baseProductId);
         pendingRequestsRef.current -= 1;
         syncCart(response.data?.result?.items || response.data?.items);
       } catch (error) {
@@ -336,28 +391,29 @@ const useStandaloneQuickCart = () => {
     }
   };
 
-  const updateQuantity = async (productId, delta) => {
-    const resolvedProductId = normalizeProductId(productId);
-    if (!resolvedProductId) return;
-    const currentItem = cart.find((item) => getProductId(item) === resolvedProductId);
+  const updateQuantity = async (cartKeyOrProductId, delta) => {
+    if (!cartKeyOrProductId) return;
+    const baseProductId = normalizeProductId(cartKeyOrProductId);
+
+    const currentItem = cart.find((item) => getItemCartKey(item) === cartKeyOrProductId);
     if (!currentItem) return;
     const stock = Number(currentItem.stock ?? Infinity);
     const newQty = Math.max(0, Math.min(currentItem.quantity + delta, stock));
     if (newQty === currentItem.quantity && delta > 0) return; // already at stock limit
     if (newQty === 0) {
-      removeFromCart(resolvedProductId);
+      removeFromCart(cartKeyOrProductId);
       return;
     }
     setCart((prev) =>
       prev.map((item) =>
-        getProductId(item) === resolvedProductId ? { ...item, quantity: newQty } : item,
+        getItemCartKey(item) === cartKeyOrProductId ? { ...item, quantity: newQty } : item,
       ),
     );
       if (isAuthenticated) {
       pendingRequestsRef.current += 1;
       try {
         await customerApi.updateCartQuantity({
-          productId: resolvedProductId,
+          productId: baseProductId,
           quantity: newQty,
         });
         pendingRequestsRef.current -= 1;
@@ -367,7 +423,7 @@ const useStandaloneQuickCart = () => {
         if (error?.response?.status === 404) {
           try {
             await customerApi.addToCart({
-              productId: resolvedProductId,
+              productId: baseProductId,
               quantity: newQty,
             });
           } catch (addError) {
