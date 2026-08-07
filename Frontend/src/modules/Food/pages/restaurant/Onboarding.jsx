@@ -480,7 +480,7 @@ export default function RestaurantOnboarding() {
     profileImage: null,
     cuisines: [],
     openingTime: "",
-    closingTime: "21:00",
+    closingTime: "",
     openDays: [],
   })
 
@@ -1055,6 +1055,8 @@ export default function RestaurantOnboarding() {
     }
     if (!step2.closingTime?.trim()) {
       errors.push("Closing time is required")
+    } else if (step2.openingTime?.trim() && step2.closingTime <= step2.openingTime) {
+      errors.push("Closing time must be after opening time")
     }
     if (!step2.openDays || step2.openDays.length === 0) {
       errors.push("Please select at least one open day")
