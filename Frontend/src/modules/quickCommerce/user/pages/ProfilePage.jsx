@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     User, MapPin, Package, CreditCard, Wallet, ChevronRight,
-    LogOut, ShieldCheck, Heart, HelpCircle, Info, Edit2, ChevronLeft, RefreshCw
+    LogOut, ShieldCheck, Heart, HelpCircle, Info, Edit2, ChevronLeft, RefreshCw, Building2
 } from 'lucide-react';
 import { useAuth } from '@core/context/AuthContext';
 import { useSettings } from '@core/context/SettingsContext';
@@ -56,12 +56,20 @@ const ProfilePage = () => {
                         </div>
                         <div className="divide-y divide-slate-100">
                             <MenuItem
-                                icon={Package}
-                                label="Your Orders"
-                                sub="Track, return or buy things again"
-                                path="/quick/orders"
+                                icon={Building2}
+                                label="Food Orders"
+                                sub="Track or reorder your food"
+                                path="/user/orders"
                                 color="#FE5502"
                                 bg="rgba(254,85,2,0.10)"
+                            />
+                            <MenuItem
+                                icon={Package}
+                                label="Quick Orders"
+                                sub="Track, return or buy things again"
+                                path="/quick/orders"
+                                color="#0c831f"
+                                bg="rgba(12,131,31,0.10)"
                             />
                             <MenuItem
                                 icon={RefreshCw}
@@ -89,11 +97,19 @@ const ProfilePage = () => {
                             />
                             <MenuItem
                                 icon={Heart}
-                                label="Your Wishlist"
-                                sub="Your saved items"
+                                label="Food Wishlist"
+                                sub="Your saved food items"
+                                path="/food/user/profile/wishlist"
+                                color="#FE5502"
+                                bg="rgba(254,85,2,0.10)"
+                            />
+                            <MenuItem
+                                icon={Heart}
+                                label="Quick Wishlist"
+                                sub="Your saved quick items"
                                 path="/quick/wishlist"
-                                color="#fb7185"
-                                bg="rgba(248,113,113,0.08)"
+                                color="#0c831f"
+                                bg="rgba(12,131,31,0.10)"
                             />
                             <MenuItem
                                 icon={MapPin}
