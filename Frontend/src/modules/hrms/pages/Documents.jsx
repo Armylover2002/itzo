@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '@core/api/axios';
 import { FileText, Loader2, Download, X, ZoomIn } from 'lucide-react';
+import appLogo from '../../../assets/Logo.png';
 
 export default function Documents() {
     const [documents, setDocuments] = useState([]);
@@ -129,6 +130,7 @@ export default function Documents() {
                                                 src={doc.url} 
                                                 alt={doc.name} 
                                                 className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                                onError={(e) => { e.target.onerror = null; e.target.src = appLogo; }}
                                             />
                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
                                                 <button onClick={() => openPreview(doc.url)} className="p-2.5 bg-white text-slate-900 rounded-full hover:bg-orange-50 hover:text-orange-600 transition-colors shadow-lg" title="Full-Screen Preview">
@@ -175,6 +177,7 @@ export default function Documents() {
                             alt="Document Preview" 
                             className="max-w-full max-h-full object-contain cursor-zoom-in rounded-lg shadow-2xl transition-transform duration-300"
                             onClick={(e) => e.target.classList.toggle('scale-[1.75]')}
+                            onError={(e) => { e.target.onerror = null; e.target.src = appLogo; }}
                         />
                     </div>
                 </div>
