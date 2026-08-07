@@ -139,7 +139,7 @@ const ProductDetailPage = () => {
   const cartKey = useMemo(() => {
     if (!product) return "";
     const baseId = product.id || product._id || "";
-    if (selectedVariant?.sku) return `${baseId}::${selectedVariant.sku}`;
+    if (selectedVariant?._id) return `${baseId}::${selectedVariant._id}`;
     if (selectedVariant?.name) return `${baseId}::${selectedVariant.name}`;
     return baseId;
   }, [product, selectedVariant]);
@@ -444,17 +444,17 @@ const ProductDetailPage = () => {
                 <div className="flex flex-wrap gap-3">
                   {product.variants.map((v, idx) => (
                     <button
-                      key={v.sku || idx}
+                      key={v._id || idx}
                       onClick={() => setSelectedVariant(v)}
                       className={cn(
                         "relative overflow-hidden rounded-xl px-4 py-2.5 text-sm font-bold transition-all border-2",
-                        selectedVariant?.sku === v.sku && selectedVariant?.name === v.name
+                        selectedVariant?._id === v._id
                           ? "bg-orange-50 dark:bg-orange-950/30 border-[#FE5502] text-[#FE5502] shadow-md"
                           : "bg-card dark:bg-slate-800 border-border text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/10 hover:shadow-sm",
                       )}
                     >
                       {v.name}
-                      {selectedVariant?.sku === v.sku && selectedVariant?.name === v.name && (
+                      {selectedVariant?._id === v._id && (
                         <div className="absolute right-0 top-0 h-3 w-3 rounded-bl-lg bg-[#FE5502]" />
                       )}
                     </button>

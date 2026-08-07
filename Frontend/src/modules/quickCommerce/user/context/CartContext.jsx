@@ -117,7 +117,7 @@ const normalizeQuickProductForSharedCart = (product) => {
 
 const getCartItemKey = (product, variant) => {
   const baseId = getProductId(product);
-  if (variant?.sku) return `${baseId}::${variant.sku}`;
+  if (variant?._id) return `${baseId}::${variant._id}`;
   if (variant?.name) return `${baseId}::${variant.name}`;
   return baseId;
 };
@@ -144,7 +144,7 @@ const shrinkCartItem = (item) => {
     headerId: item.headerId || null,
     quickStoreId: item.quickStoreId,
     quickStoreName: item.quickStoreName,
-    variantSku: item.variantSku || null,
+    variantId: item.variantId || null,
     variantName: item.variantName || null,
     orderType: "quick",
     type: "quick",
@@ -292,8 +292,8 @@ const useStandaloneQuickCart = () => {
 
     setCart((prev) => {
       const existingItem = prev.find((item) => {
-        const itemKey = item.variantSku
-          ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantSku}`
+        const itemKey = item.variantId
+          ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantId}`
           : item.variantName
             ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantName}`
             : normalizeProductId(item.productId || item.id || item._id);
@@ -303,8 +303,8 @@ const useStandaloneQuickCart = () => {
         const stock = Number(existingItem.stock ?? effectiveStock);
         if (existingItem.quantity >= stock) return prev; // already at stock limit
         return prev.map((item) => {
-          const itemKey = item.variantSku
-            ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantSku}`
+          const itemKey = item.variantId
+            ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantId}`
             : item.variantName
               ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantName}`
               : normalizeProductId(item.productId || item.id || item._id);
@@ -334,7 +334,7 @@ const useStandaloneQuickCart = () => {
           originalPrice: variant ? variantBasePrice : Number(product.originalPrice || product.mrp || product.price || 0),
           mrp: variant ? variantBasePrice : Number(product.mrp || product.originalPrice || product.price || 0),
           stock: effectiveStock,
-          variantSku: variant?.sku || null,
+          variantId: variant?._id || null,
           variantName: variant?.name || null,
           name: variant ? `${product.name} (${variant.name})` : product.name,
           categoryId: product.categoryId || null,
@@ -361,7 +361,7 @@ const useStandaloneQuickCart = () => {
 
   const getItemCartKey = (item) => {
     const baseId = normalizeProductId(item?.productId || item?.itemId || item?.id || item?._id);
-    if (item?.variantSku) return `${baseId}::${item.variantSku}`;
+    if (item?.variantId) return `${baseId}::${item.variantId}`;
     if (item?.variantName) return `${baseId}::${item.variantName}`;
     return baseId;
   };
