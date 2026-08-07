@@ -59,10 +59,10 @@ export default function BottomNavigation() {
         </Link>
 
         {/* Divider */}
-        <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" />
+        {/* <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" /> */}
 
         {/* Dining Tab */}
-        <Link
+        {/* <Link
           to="/food/user/dining"
           className={`flex flex-1 flex-col items-center gap-1.5 px-2 sm:px-3 py-2 transition-all duration-200 relative ${isDining
               ? "text-primary-orange dark:text-primary-orange"
@@ -76,7 +76,7 @@ export default function BottomNavigation() {
           {isDining && (
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary-orange dark:bg-primary-orange rounded-b-full" />
           )}
-        </Link>
+        </Link> */}
 
         {/* Divider */}
         <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" />
