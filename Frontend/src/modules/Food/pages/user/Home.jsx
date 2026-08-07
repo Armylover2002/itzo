@@ -473,7 +473,7 @@ export default function Home() {
         showSwitchOffPopup={showSwitchOffPopup}
         onCloseVegPopup={(level) => {
           setShowVegModePopup(false);
-          if (level) {
+          if (level === "pure" || level === "all") {
             setVegModeContext(level);
           }
         }}
