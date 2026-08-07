@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Store,
   Upload,
+  UploadCloud,
 } from "lucide-react";
 import { toast } from "sonner";
 import { sellerApi } from "../services/sellerApi";
