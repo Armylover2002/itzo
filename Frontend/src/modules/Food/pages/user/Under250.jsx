@@ -836,10 +836,7 @@ export default function Under250() {
     <div className={`relative min-h-screen bg-white dark:bg-[#0a0a0a] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
       <div
         ref={stickyHeaderRef}
-        className={`fixed top-0 left-0 right-0 z-40 w-full md:hidden transition-all duration-300 ${hasScrolledPastBanner
-          ? "bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
-          : "bg-transparent"
-          }`}
+        className="sticky top-0 left-0 right-0 z-40 w-full md:hidden transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
       >
         <div className="relative z-50 pt-2 sm:pt-3 pb-2">
           <PageNavbar textColor="black" zIndex={20} showProfile={true} showLogo={false} />
