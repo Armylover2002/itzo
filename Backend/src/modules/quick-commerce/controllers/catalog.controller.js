@@ -3,6 +3,8 @@ import { QuickProduct } from '../models/product.model.js';
 import { QuickReview } from '../models/review.model.js';
 import { FoodUser } from '../../../core/users/user.model.js';
 import { Seller } from '../seller/models/seller.model.js';
+import { QuickZone } from '../models/quick_zone.model.js';
+import { isPointInPolygon } from '../../../utils/geo.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import {
   getQuickCategories,
@@ -382,15 +384,49 @@ export const getProducts = async (req, res) => {
   setPublicCache(res, 60);
   await ensureQuickCommerceSeedData();
 
-  const { categoryId, search, limit, sortBy } = req.query;
+  const { categoryId, search, limit, sortBy, lat, lng } = req.query;
   const query = { ...publicProductFilter };
 
+  if (lat && lng) {
+    const latNum = Number(lat);
+    const lngNum = Number(lng);
+    if (!isNaN(latNum) && !isNaN(lngNum)) {
+      const zones = await QuickZone.find({ isActive: true }).lean();
+      const userZone = zones.find((z) => isPointInPolygon(latNum, lngNum, z.coordinates));
+
+      if (userZone) {
+        const localSellers = await Seller.find({
+          'shopInfo.zoneId': userZone._id,
+          isActive: true,
+          approved: true,
+        }).select('_id').lean();
+        
+        const sellerIds = localSellers.map((s) => s._id);
+        
+        // Include products from local sellers, or admin products (sellerId: null/missing)
+        query.$or = query.$or || [];
+        query.$or.push({ sellerId: { $in: sellerIds } }, { sellerId: { $exists: false } }, { sellerId: null });
+      } else {
+        // If the user has a location but is not in any active zone, show nothing
+        query._id = null;
+      }
+    }
+  }
+
+  // Handle category filtering
   if (categoryId) {
-    query.$or = [
+    // If we already have an $or from the seller filter, we need to use $and to combine them
+    const categoryOr = [
       { categoryId: categoryId },
       { subcategoryId: categoryId },
       { headerId: categoryId }
     ];
+    if (query.$or) {
+      query.$and = [{ $or: query.$or }, { $or: categoryOr }];
+      delete query.$or;
+    } else {
+      query.$or = categoryOr;
+    }
   }
   if (search) query.name = { $regex: String(search).trim(), $options: 'i' };
 
