@@ -222,7 +222,19 @@ const useStandaloneQuickCart = () => {
 
   const syncCart = (backendItems) => {
     if (pendingRequestsRef.current === 0) {
-      setCart(normalizeBackendCart(backendItems));
+      setCart((prev) => {
+        // Keep variant items from local state (backend doesn't understand variants)
+        const localVariantItems = prev.filter((item) => item.variantId || item.variantName);
+        const backendNormalized = normalizeBackendCart(backendItems);
+        // Exclude backend items whose base productId already has variant items locally
+        const variantBaseIds = new Set(localVariantItems.map((item) =>
+          normalizeProductId(item.baseProductId || item.productId || item.id || item._id)
+        ));
+        const filteredBackend = backendNormalized.filter(
+          (item) => !variantBaseIds.has(getProductId(item))
+        );
+        return [...filteredBackend, ...localVariantItems];
+      });
     }
   };
 
@@ -232,8 +244,18 @@ const useStandaloneQuickCart = () => {
       try {
         const response = await customerApi.getCart();
         const items = response.data?.result?.items || response.data?.items || [];
-        const normalizedItems = normalizeBackendCart(items);
-        setCart(normalizedItems);
+        const backendNormalized = normalizeBackendCart(items);
+        setCart((prev) => {
+          // Preserve variant items from local/localStorage state
+          const localVariantItems = prev.filter((item) => item.variantId || item.variantName);
+          const variantBaseIds = new Set(localVariantItems.map((item) =>
+            normalizeProductId(item.baseProductId || item.productId || item.id || item._id)
+          ));
+          const filteredBackend = backendNormalized.filter(
+            (item) => !variantBaseIds.has(getProductId(item))
+          );
+          return [...filteredBackend, ...localVariantItems];
+        });
       } catch (error) {
         console.error("Failed to fetch cart from backend", error);
       } finally {
@@ -351,10 +373,15 @@ const useStandaloneQuickCart = () => {
       try {
         const response = await customerApi.addToCart({ productId: baseId, quantity: 1 });
         pendingRequestsRef.current -= 1;
-        syncCart(response.data?.result?.items || response.data?.items);
+        // Skip syncing backend response when variant is involved, because the backend
+        // has no variant awareness and would overwrite variant-specific prices with
+        // the base product price, causing incorrect totals.
+        if (!variant) {
+          syncCart(response.data?.result?.items || response.data?.items);
+        }
       } catch (error) {
         pendingRequestsRef.current -= 1;
-        if (pendingRequestsRef.current === 0) await fetchCart();
+        if (!variant && pendingRequestsRef.current === 0) await fetchCart();
       }
     }
   };
