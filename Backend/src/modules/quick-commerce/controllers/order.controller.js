@@ -152,6 +152,10 @@ const normalizeRequestedItems = (items) => {
     .map((item) => ({
       productId: String(item?.productId || item?.itemId || item?.id || item?._id || '').trim(),
       quantity: Math.max(1, Number(item?.quantity || 1)),
+      // Preserve variant info for variant-aware pricing
+      ...(item?.variantId ? { variantId: String(item.variantId).trim() } : {}),
+      ...(item?.variantName ? { variantName: String(item.variantName).trim() } : {}),
+      ...(item?.price != null ? { price: Number(item.price) } : {}),
     }))
     .filter((item) => item.productId && mongoose.isValidObjectId(item.productId));
 };
@@ -199,8 +203,13 @@ export const placeOrder = async (req, res) => {
 
     const cart = await QuickCart.findOne(idQuery).lean();
     const requestedItems = normalizeRequestedItems(req.body?.items);
+    // Prefer frontend-sent items when they contain variant info, since the
+    // backend cart model cannot store variant data (only productId + quantity).
+    const requestedHasVariants = requestedItems.some((item) => item.variantId || item.variantName);
     const sourceItems =
-      Array.isArray(cart?.items) && cart.items.length > 0 ? cart.items : requestedItems;
+      requestedHasVariants && requestedItems.length > 0
+        ? requestedItems
+        : (Array.isArray(cart?.items) && cart.items.length > 0 ? cart.items : requestedItems);
 
     if (sourceItems.length === 0) {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
@@ -217,17 +226,47 @@ export const placeOrder = async (req, res) => {
       .map((item) => {
         const product = productMap[String(item.productId)];
         if (!product) return null;
-        const unitPrice =
-          Number(product.salePrice || 0) > 0
+
+        // Use variant-specific pricing when variantId is provided
+        let unitPrice;
+        let itemName = product.name;
+        if (item.variantId && Array.isArray(product.variants) && product.variants.length > 0) {
+          const variant = product.variants.find((v) => String(v._id) === String(item.variantId));
+          if (variant) {
+            unitPrice = Number(variant.salePrice || 0) > 0
+              ? Number(variant.salePrice)
+              : Number(variant.price || 0);
+            itemName = `${product.name} (${variant.name})`;
+          }
+        } else if (item.variantName && Array.isArray(product.variants) && product.variants.length > 0) {
+          const variant = product.variants.find((v) => v.name === item.variantName);
+          if (variant) {
+            unitPrice = Number(variant.salePrice || 0) > 0
+              ? Number(variant.salePrice)
+              : Number(variant.price || 0);
+            itemName = `${product.name} (${variant.name})`;
+          }
+        }
+        // Fallback: if variant price was sent from frontend and no variant found in DB, trust it
+        if (!unitPrice && item.price > 0 && (item.variantId || item.variantName)) {
+          unitPrice = Number(item.price);
+        }
+        // Default: use base product price
+        if (!unitPrice) {
+          unitPrice = Number(product.salePrice || 0) > 0
             ? Number(product.salePrice)
             : Number(product.price || 0);
+        }
+
         return {
           productId: product._id,
           sellerId: product.sellerId || null,
-          name: product.name,
+          name: itemName,
           image: product.image || product.mainImage || '',
           price: unitPrice,
           quantity: item.quantity,
+          ...(item.variantId ? { variantId: item.variantId } : {}),
+          ...(item.variantName ? { variantName: item.variantName } : {}),
         };
       })
       .filter(Boolean);
@@ -247,17 +286,45 @@ export const placeOrder = async (req, res) => {
         .map((item) => {
           const product = fallbackProductMap[String(item.productId)];
           if (!product) return null;
-          const unitPrice =
-            Number(product.salePrice || 0) > 0
+
+          // Use variant-specific pricing when variantId is provided
+          let unitPrice;
+          let itemName = product.name;
+          if (item.variantId && Array.isArray(product.variants) && product.variants.length > 0) {
+            const variant = product.variants.find((v) => String(v._id) === String(item.variantId));
+            if (variant) {
+              unitPrice = Number(variant.salePrice || 0) > 0
+                ? Number(variant.salePrice)
+                : Number(variant.price || 0);
+              itemName = `${product.name} (${variant.name})`;
+            }
+          } else if (item.variantName && Array.isArray(product.variants) && product.variants.length > 0) {
+            const variant = product.variants.find((v) => v.name === item.variantName);
+            if (variant) {
+              unitPrice = Number(variant.salePrice || 0) > 0
+                ? Number(variant.salePrice)
+                : Number(variant.price || 0);
+              itemName = `${product.name} (${variant.name})`;
+            }
+          }
+          if (!unitPrice && item.price > 0 && (item.variantId || item.variantName)) {
+            unitPrice = Number(item.price);
+          }
+          if (!unitPrice) {
+            unitPrice = Number(product.salePrice || 0) > 0
               ? Number(product.salePrice)
               : Number(product.price || 0);
+          }
+
           return {
             productId: product._id,
             sellerId: product.sellerId || null,
-            name: product.name,
+            name: itemName,
             image: product.image || product.mainImage || '',
             price: unitPrice,
             quantity: item.quantity,
+            ...(item.variantId ? { variantId: item.variantId } : {}),
+            ...(item.variantName ? { variantName: item.variantName } : {}),
           };
         })
         .filter(Boolean);

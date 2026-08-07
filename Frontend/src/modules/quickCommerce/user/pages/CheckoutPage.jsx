@@ -578,6 +578,10 @@ const CheckoutPage = () => {
       .map((item) => ({
         productId: getCheckoutProductId(item),
         quantity: Math.max(1, Number(item.quantity || 1)),
+        // Send variant info so backend can use variant-specific pricing
+        ...(item.variantId ? { variantId: item.variantId } : {}),
+        ...(item.variantName ? { variantName: item.variantName } : {}),
+        ...(item.variantId || item.variantName ? { price: Number(item.price || 0) } : {}),
       }))
       .filter((item) => item.productId);
 
