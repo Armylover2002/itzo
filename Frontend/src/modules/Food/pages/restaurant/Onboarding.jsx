@@ -227,7 +227,11 @@ const loadOnboardingFromLocalStorage = () => {
   try {
     const stored = localStorage.getItem(ONBOARDING_STORAGE_KEY)
     if (stored) {
-      return JSON.parse(stored)
+      const parsed = JSON.parse(stored)
+      if (parsed?.step2 && parsed.step2.closingTime === "21:00" && !parsed.step2.openingTime) {
+        parsed.step2.closingTime = ""
+      }
+      return parsed
     }
   } catch (error) {
     debugError("Failed to load onboarding data from localStorage:", error)
