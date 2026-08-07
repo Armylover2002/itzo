@@ -76,9 +76,19 @@ const parseOpeningHours = (value) => {
   return { openingTime: "", closingTime: "" };
 };
 
+const formatTimeAMPM = (timeStr) => {
+  if (!timeStr) return "";
+  const [hourStr, minuteStr] = timeStr.split(":");
+  let hour = parseInt(hourStr, 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  hour = hour ? hour : 12;
+  return `${String(hour).padStart(2, "0")}:${minuteStr} ${ampm}`;
+};
+
 const buildOpeningHoursLabel = (openingTime, closingTime) => {
   if (!openingTime || !closingTime) return "";
-  return `${openingTime} - ${closingTime}`;
+  return `${formatTimeAMPM(openingTime)} - ${formatTimeAMPM(closingTime)}`;
 };
 const timeOptions = Array.from({ length: 48 }, (_, index) => {
   const hours = String(Math.floor(index / 2)).padStart(2, "0");
@@ -227,6 +237,11 @@ export default function SellerOnboarding() {
   const handleSaveOpeningHours = async () => {
     if (!hoursDraft.openingTime || !hoursDraft.closingTime) {
       toast.error("Select both opening and closing time first");
+      return;
+    }
+
+    if (hoursDraft.closingTime <= hoursDraft.openingTime) {
+      toast.error("Closing time must be after opening time");
       return;
     }
 
@@ -548,7 +563,7 @@ export default function SellerOnboarding() {
                         <option value="">Select opening time</option>
                         {timeOptions.map((time) => (
                           <option key={time} value={time}>
-                            {time}
+                            {formatTimeAMPM(time)}
                           </option>
                         ))}
                       </select>
@@ -563,7 +578,7 @@ export default function SellerOnboarding() {
                         <option value="">Select closing time</option>
                         {timeOptions.map((time) => (
                           <option key={time} value={time}>
-                            {time}
+                            {formatTimeAMPM(time)}
                           </option>
                         ))}
                       </select>
