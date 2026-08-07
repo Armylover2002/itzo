@@ -128,13 +128,13 @@ export default function SellerAuth() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#fcfaf6] px-6 py-10 font-['Outfit']">
+    <div className="relative min-h-screen overflow-hidden bg-[#fcfaf6] px-4 py-6 md:px-6 md:py-10 font-['Outfit']">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-[-8%] top-[-8%] h-72 w-72 rounded-full bg-[#fed7aa]/40 blur-3xl" />
         <div className="absolute bottom-[-10%] right-[-5%] h-80 w-80 rounded-full bg-[#ffedd5]/50 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl overflow-hidden rounded-[36px] border border-white/70 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
+      <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] md:min-h-[calc(100vh-5rem)] w-full max-w-6xl overflow-hidden rounded-[24px] md:rounded-[36px] border border-white/70 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
         <div className="hidden w-[42%] flex-col justify-between bg-[linear-gradient(160deg,#0f172a_0%,#c2410c_50%,#FE5502_100%)] p-10 text-white md:flex">
           <div>
             <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.28em]">
@@ -154,7 +154,7 @@ export default function SellerAuth() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center px-6 py-10 md:w-[58%] md:px-12">
+        <div className="flex w-full items-center justify-center px-4 py-8 sm:px-6 md:w-[58%] md:px-12 md:py-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -163,7 +163,7 @@ export default function SellerAuth() {
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.3em] text-primary-orange">Partner Access</p>
-                <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
+                <h2 className="mt-2 text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
                   {companyName} seller login
                 </h2>
                 <p className="mt-2 text-sm font-medium text-slate-500">
@@ -175,17 +175,17 @@ export default function SellerAuth() {
               </div>
             </div>
 
-            <div className="space-y-5 rounded-[32px] border border-slate-200 bg-slate-50/70 p-6">
+            <div className="space-y-5 rounded-[24px] md:rounded-[32px] border border-slate-200 bg-slate-50/70 p-4 sm:p-6">
               {step === "phone" ? (
                 <>
                   <div className="space-y-2">
                     <label className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
                       Registered Mobile Number
                     </label>
-                    <div className="flex items-center gap-3 rounded-[24px] border border-slate-200 bg-white px-4 py-4">
-                      <Phone className="h-5 w-5 text-slate-400" />
-                      <span className="font-bold text-slate-900">{DEFAULT_COUNTRY_CODE}</span>
-                      <div className="h-5 w-px bg-slate-200" />
+                    <div className="flex items-center gap-2 sm:gap-3 rounded-[24px] border border-slate-200 bg-white px-3 py-3 sm:px-4 sm:py-4">
+                      <Phone className="h-5 w-5 shrink-0 text-slate-400" />
+                      <span className="shrink-0 font-bold text-slate-900">{DEFAULT_COUNTRY_CODE}</span>
+                      <div className="h-5 w-px shrink-0 bg-slate-200" />
                       <input
                         type="tel"
                         inputMode="numeric"
@@ -193,7 +193,7 @@ export default function SellerAuth() {
                         value={phone}
                         onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
                         placeholder="10-digit mobile number"
-                        className="flex-1 bg-transparent text-base font-bold text-slate-900 outline-none placeholder:text-slate-300"
+                        className="min-w-0 flex-1 bg-transparent text-sm sm:text-base font-bold text-slate-900 outline-none placeholder:text-slate-300"
                       />
                     </div>
                   </div>
@@ -202,7 +202,7 @@ export default function SellerAuth() {
                     type="button"
                     onClick={handleSendOtp}
                     disabled={isLoading}
-                    className="h-14 w-full rounded-[24px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-sm font-black uppercase tracking-[0.22em] text-white transition-colors"
+                    className="h-12 sm:h-14 w-full rounded-[24px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-xs sm:text-sm font-black uppercase tracking-[0.22em] text-white transition-colors"
                   >
                     {isLoading ? "Sending OTP..." : "Send OTP"}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -214,11 +214,11 @@ export default function SellerAuth() {
                     <label className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
                       Verify OTP
                     </label>
-                    <div className="rounded-[24px] border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-800">
+                    <div className="rounded-[24px] border border-orange-200 bg-orange-50 px-4 py-3 text-xs sm:text-sm font-semibold text-orange-800">
                       Code sent to {maskedPhone}
                     </div>
-                    <div className="flex items-center gap-3 rounded-[24px] border border-slate-200 bg-white px-4 py-4">
-                      <KeyRound className="h-5 w-5 text-slate-400" />
+                    <div className="flex items-center gap-2 sm:gap-3 rounded-[24px] border border-slate-200 bg-white px-3 py-3 sm:px-4 sm:py-4">
+                      <KeyRound className="h-5 w-5 shrink-0 text-slate-400" />
                       <input
                         type="tel"
                         inputMode="numeric"
@@ -226,12 +226,12 @@ export default function SellerAuth() {
                         value={otp}
                         onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                         placeholder="Enter OTP"
-                        className="flex-1 bg-transparent text-base font-bold tracking-[0.45em] text-slate-900 outline-none placeholder:tracking-normal placeholder:text-slate-300"
+                        className="min-w-0 flex-1 bg-transparent text-sm sm:text-base font-bold tracking-[0.45em] text-slate-900 outline-none placeholder:tracking-normal placeholder:text-slate-300"
                       />
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 sm:gap-3">
                     <Button
                       type="button"
                       variant="outline"
@@ -240,7 +240,7 @@ export default function SellerAuth() {
                         setOtp("");
                         setOtpPhone("");
                       }}
-                      className="h-14 flex-1 rounded-[24px] border-slate-300 bg-white font-black uppercase tracking-[0.18em] text-slate-700"
+                      className="h-12 sm:h-14 flex-1 rounded-[24px] border-slate-300 bg-white text-xs sm:text-sm font-black uppercase tracking-[0.18em] text-slate-700"
                     >
                       Back
                     </Button>
@@ -248,7 +248,7 @@ export default function SellerAuth() {
                       type="button"
                       onClick={handleVerifyOtp}
                       disabled={isLoading}
-                      className="h-14 flex-[1.4] rounded-[24px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-sm font-black uppercase tracking-[0.18em] text-white transition-colors"
+                      className="h-12 sm:h-14 flex-[1.4] rounded-[24px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-xs sm:text-sm font-black uppercase tracking-[0.18em] text-white transition-colors"
                     >
                       {isLoading ? "Verifying..." : "Continue"}
                     </Button>
