@@ -32,7 +32,7 @@ function normalizePhone(phone) {
 
 /** User phone: exactly 10 digits, numeric only. */
 const USER_PHONE_LENGTH = 10;
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
  * Request OTP for user login.

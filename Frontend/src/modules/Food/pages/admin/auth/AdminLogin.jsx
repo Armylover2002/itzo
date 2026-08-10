@@ -116,7 +116,7 @@ export default function AdminLogin() {
       setError("User Id is required")
       return
     }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
     if (!emailRegex.test(trimmedEmail)) {
       setError("Please enter a valid email address")
       return
