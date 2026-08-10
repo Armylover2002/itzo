@@ -196,16 +196,54 @@ export default function SignupStep2() {
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
 
+    let isMounted = true
+
     const loadSavedFiles = async () => {
       const docTypes = ["profilePhoto", "aadharPhoto", "panPhoto", "drivingLicensePhoto"]
       const restored = {}
       let hasRestored = false
 
+      // Pre-check: verify IndexedDB is actually available and responsive
+      // before showing the "Restoring..." state to the user
+      let dbAvailable = false
+      try {
+        if (typeof indexedDB !== "undefined" && indexedDB) {
+          const testDb = await Promise.race([
+            initDB(),
+            new Promise((resolve) => setTimeout(() => resolve(null), 1500))
+          ])
+          if (testDb) {
+            dbAvailable = true
+            // Only close if it's a real IDBDatabase object we opened for testing
+            try { testDb.close() } catch (_) {}
+          }
+        }
+      } catch (_) {
+        dbAvailable = false
+      }
+
+      // If IndexedDB isn't available or not responsive, skip restoration entirely
+      if (!dbAvailable) {
+        return
+      }
+
+      if (!isMounted) return
       setRestoring(Object.fromEntries(docTypes.map(t => [t, true])))
+
+      // Safety timeout: ensure "Restoring..." never gets stuck
+      const safetyTimeout = setTimeout(() => {
+        if (isMounted) {
+          setRestoring({})
+        }
+      }, 3000)
 
       try {
         for (const type of docTypes) {
-          const file = await getFileFromDB(type)
+          if (!isMounted) break
+          const file = await Promise.race([
+            getFileFromDB(type),
+            new Promise((resolve) => setTimeout(() => resolve(null), 2000))
+          ])
           if (file && (file instanceof File || file instanceof Blob)) {
             const restoredFile = file instanceof File ? file : new File([file], `${type}.jpg`, { type: file.type || "image/jpeg" })
             restored[type] = restoredFile
@@ -215,14 +253,21 @@ export default function SignupStep2() {
       } catch (e) {
         debugError("Error loading saved files from DB:", e)
       } finally {
-        setRestoring({})
+        clearTimeout(safetyTimeout)
+        if (isMounted) {
+          setRestoring({})
+        }
       }
 
-      if (hasRestored) {
+      if (hasRestored && isMounted) {
         setDocuments(prev => ({ ...prev, ...restored }))
       }
     }
     loadSavedFiles()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Save uploaded docs to session storage whenever they change
