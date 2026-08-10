@@ -176,7 +176,22 @@ export default function SignupStep2() {
     drivingLicensePhoto: null
   })
   const [uploadedDocs, setUploadedDocs] = useState(() => {
-    const saved = sessionStorage.getItem("deliverySignupDocs")
+    // Try phone-scoped localStorage first (persists across sessions),
+    // then fall back to sessionStorage (backward compat)
+    let saved = null
+    try {
+      const sessionDetails = sessionStorage.getItem("deliverySignupDetails")
+      if (sessionDetails) {
+        const parsed = JSON.parse(sessionDetails)
+        const phoneKey = String(parsed.phone || "").replace(/\D/g, "").slice(-10)
+        if (phoneKey) {
+          saved = localStorage.getItem(`deliverySignup_${phoneKey}_docs`)
+        }
+      }
+    } catch (_) {}
+    if (!saved) {
+      saved = sessionStorage.getItem("deliverySignupDocs")
+    }
     if (saved) {
       try {
         return sanitizeUploadedDocs(JSON.parse(saved))
@@ -270,9 +285,20 @@ export default function SignupStep2() {
     }
   }, [])
 
-  // Save uploaded docs to session storage whenever they change
+  // Save uploaded docs to session storage and phone-scoped localStorage whenever they change
   useEffect(() => {
     sessionStorage.setItem("deliverySignupDocs", JSON.stringify(uploadedDocs))
+    // Also persist to phone-scoped localStorage
+    try {
+      const sessionDetails = sessionStorage.getItem("deliverySignupDetails")
+      if (sessionDetails) {
+        const parsed = JSON.parse(sessionDetails)
+        const phoneKey = String(parsed.phone || "").replace(/\D/g, "").slice(-10)
+        if (phoneKey) {
+          localStorage.setItem(`deliverySignup_${phoneKey}_docs`, JSON.stringify(uploadedDocs))
+        }
+      }
+    } catch (_) {}
   }, [uploadedDocs])
 
   useEffect(() => {
@@ -373,7 +399,22 @@ export default function SignupStep2() {
       return
     }
 
-    const raw = sessionStorage.getItem("deliverySignupDetails")
+    // Try sessionStorage first, then phone-scoped localStorage (handles app restart)
+    let raw = sessionStorage.getItem("deliverySignupDetails")
+    if (!raw) {
+      // Try to find details from localStorage using any matching key
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && key.startsWith("deliverySignup_") && key.endsWith("_details")) {
+            raw = localStorage.getItem(key)
+            // Also restore to sessionStorage for same-session use
+            if (raw) sessionStorage.setItem("deliverySignupDetails", raw)
+            break
+          }
+        }
+      } catch (_) {}
+    }
     if (!raw) {
       toast.error("Session expired. Please start from Create Account.")
       navigate("/food/delivery/signup", { replace: true })
@@ -450,7 +491,8 @@ export default function SignupStep2() {
       formData.append("platform", platform);
     }
 
-    const isCompleteProfile = sessionStorage.getItem("deliveryNeedsRegistration") === "true"
+    const isCompleteProfile = sessionStorage.getItem("deliveryNeedsRegistration") === "true" ||
+      localStorage.getItem(`deliverySignup_${String(details.phone || "").replace(/\D/g, "").slice(-10)}_needsRegistration`) === "true"
 
     setIsSubmitting(true)
 
@@ -462,11 +504,18 @@ export default function SignupStep2() {
         : await deliveryAPI.completeProfile(formData)
 
       if (response?.data?.success) {
+        // Clean up all onboarding data from both storages
+        const phoneKey = String(details.phone || "").replace(/\D/g, "").slice(-10)
         sessionStorage.removeItem("deliverySignupDetails")
         sessionStorage.removeItem("deliverySignupDocs")
+        sessionStorage.removeItem("deliveryNeedsRegistration")
+        if (phoneKey) {
+          localStorage.removeItem(`deliverySignup_${phoneKey}_details`)
+          localStorage.removeItem(`deliverySignup_${phoneKey}_docs`)
+          localStorage.removeItem(`deliverySignup_${phoneKey}_needsRegistration`)
+        }
         clearDB()
         if (isCompleteProfile) {
-          sessionStorage.removeItem("deliveryNeedsRegistration")
           const pendingPhone = `${details.countryCode || "+91"} ${String(details.phone || "").replace(/\D/g, "").slice(0, 15)}`.trim()
           sessionStorage.setItem("deliveryPendingPhone", pendingPhone)
           toast.success("Registration submitted. Verification is in progress.")

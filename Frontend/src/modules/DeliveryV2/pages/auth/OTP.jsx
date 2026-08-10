@@ -242,26 +242,34 @@ export default function DeliveryOTP() {
 
       if (needsRegistration) {
         // No DB record yet; redirect to registration details page WITHOUT creating anything in DB.
-        const existingDetailsRaw = sessionStorage.getItem("deliverySignupDetails")
+        const digits = String(phone || "").replace(/\D/g, "")
+        const phoneKey = digits.slice(-10)
+
+        // Try to restore previously saved onboarding data (phone-scoped localStorage first, then sessionStorage)
         let existingDetails = {}
         try {
-          if (existingDetailsRaw) {
-            existingDetails = JSON.parse(existingDetailsRaw)
+          const localStored = localStorage.getItem(`deliverySignup_${phoneKey}_details`)
+          const sessionStored = sessionStorage.getItem("deliverySignupDetails")
+          const raw = localStored || sessionStored
+          if (raw) {
+            existingDetails = JSON.parse(raw)
           }
         } catch (e) {
           debugError("Error parsing existing signup details:", e)
         }
 
         sessionStorage.removeItem("deliveryAuthData")
-        sessionStorage.setItem("deliveryNeedsRegistration", "true")
-        const digits = String(phone || "").replace(/\D/g, "")
         const details = {
           ...existingDetails,
           name: existingDetails.name || "",
-          phone: digits.slice(-10),
+          phone: phoneKey,
           countryCode: "+91",
         }
+        // Persist to both localStorage (survives app restart) and sessionStorage (same-session compat)
+        localStorage.setItem(`deliverySignup_${phoneKey}_details`, JSON.stringify(details))
         sessionStorage.setItem("deliverySignupDetails", JSON.stringify(details))
+        localStorage.setItem(`deliverySignup_${phoneKey}_needsRegistration`, "true")
+        sessionStorage.setItem("deliveryNeedsRegistration", "true")
         setIsLoading(false)
         navigate("/food/delivery/signup/details", { replace: true })
         return
@@ -543,13 +551,25 @@ export default function DeliveryOTP() {
                     onClick={() => {
                       const phone = authData?.phone
                       const digits = String(phone || "").replace(/\D/g, "")
-                      sessionStorage.setItem("deliveryNeedsRegistration", "true")
+                      const phoneKey = digits.slice(-10)
+
+                      // Try to restore previously saved onboarding data for this phone
+                      let existingDetails = {}
+                      try {
+                        const localStored = localStorage.getItem(`deliverySignup_${phoneKey}_details`)
+                        if (localStored) existingDetails = JSON.parse(localStored)
+                      } catch (_) {}
+
                       const details = {
-                        name: "",
-                        phone: digits.slice(-10),
+                        ...existingDetails,
+                        name: existingDetails.name || "",
+                        phone: phoneKey,
                         countryCode: "+91",
                       }
+                      localStorage.setItem(`deliverySignup_${phoneKey}_details`, JSON.stringify(details))
                       sessionStorage.setItem("deliverySignupDetails", JSON.stringify(details))
+                      localStorage.setItem(`deliverySignup_${phoneKey}_needsRegistration`, "true")
+                      sessionStorage.setItem("deliveryNeedsRegistration", "true")
                       navigate("/food/delivery/signup/details", { replace: true })
                     }}
                     className="w-full py-3 bg-red-600 text-white rounded-lg font-bold text-sm hover:bg-red-700 shadow-md transition-all active:scale-95"

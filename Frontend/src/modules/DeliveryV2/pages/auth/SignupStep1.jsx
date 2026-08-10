@@ -16,7 +16,6 @@ export default function SignupStep1() {
   const queryRef = searchParams.get("ref") || ""
 
   const [formData, setFormData] = useState(() => {
-    const saved = sessionStorage.getItem("deliverySignupDetails")
     const base = {
       name: "",
       phone: "",
@@ -33,6 +32,25 @@ export default function SignupStep1() {
       panNumber: "",
       aadharNumber: ""
     }
+
+    // Try phone-scoped localStorage first (persists across sessions),
+    // then fall back to sessionStorage (backward compat)
+    let saved = null
+    try {
+      const sessionRaw = sessionStorage.getItem("deliverySignupDetails")
+      if (sessionRaw) {
+        const sessionParsed = JSON.parse(sessionRaw)
+        const phoneKey = String(sessionParsed.phone || "").replace(/\D/g, "").slice(-10)
+        if (phoneKey) {
+          saved = localStorage.getItem(`deliverySignup_${phoneKey}_details`) || sessionRaw
+        } else {
+          saved = sessionRaw
+        }
+      }
+    } catch (e) {
+      debugError("Error reading saved details:", e)
+    }
+
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
@@ -88,9 +106,14 @@ export default function SignupStep1() {
   const sanitizeEmailValue = (value) =>
     value.replace(/\s/g, "").toLowerCase()
 
-  // Save data to session storage whenever formData changes
+  // Save data to session storage and phone-scoped localStorage whenever formData changes
   useEffect(() => {
     sessionStorage.setItem("deliverySignupDetails", JSON.stringify(formData))
+    // Also persist to phone-scoped localStorage so data survives app/tab restarts
+    const phoneKey = String(formData.phone || "").replace(/\D/g, "").slice(-10)
+    if (phoneKey) {
+      localStorage.setItem(`deliverySignup_${phoneKey}_details`, JSON.stringify(formData))
+    }
   }, [formData])
 
   const handleChange = (e) => {
