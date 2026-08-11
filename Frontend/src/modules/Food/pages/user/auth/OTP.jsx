@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import AnimatedPage from "@food/components/user/AnimatedPage"
 import { Input } from "@food/components/ui/input"
 import { Button } from "@food/components/ui/button"
-import { authAPI } from "@food/api"
+import api, { authAPI } from "@food/api"
 import { setAuthData as setUserAuthData } from "@food/utils/auth"
 
 export default function OTP() {
@@ -23,6 +23,7 @@ export default function OTP() {
   const [contactType, setContactType] = useState("phone")
   const [deviceToken, setDeviceToken] = useState(null)
   const [activePlatform, setActivePlatform] = useState("web")
+  const [pendingAuthData, setPendingAuthData] = useState(null)
   const [showRecoveryModal, setShowRecoveryModal] = useState(false)
   const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
   const inputRefs = useRef([])
@@ -239,6 +240,9 @@ export default function OTP() {
       const needsName = data.isNewUser === true || !hasName;
 
       if (needsName) {
+        // Store tokens from successful OTP verification so we can use them
+        // to update the profile name without re-verifying the (now-deleted) OTP.
+        setPendingAuthData({ accessToken, refreshToken, user })
         setVerifiedOtp(code4)
         setShowNameInput(true)
         setIsLoading(false)
@@ -316,8 +320,12 @@ export default function OTP() {
       return
     }
 
-    if (!verifiedOtp) {
-      setError("OTP verification step missing. Please request a new OTP.")
+    if (!pendingAuthData?.accessToken) {
+      setError("Session expired. Please go back and try again.")
+      setShowNameInput(false)
+      setPendingAuthData(null)
+      setVerifiedOtp("")
+      setOtp(["", "", "", ""])
       return
     }
 
@@ -326,54 +334,53 @@ export default function OTP() {
     setNameError("")
 
     try {
-      const phone = authData?.method === "phone" ? authData.phone : null
-      const email = authData?.method === "email" ? authData.email : null
-      const purpose = authData?.isSignUp ? "register" : "login"
-      const referralCode = authData?.referralCode || null
-
-      // Second call with name to auto-register and login
-      const response = await authAPI.verifyOTP(
-        phone,
-        verifiedOtp,
-        purpose,
-        trimmedName,
-        email,
-        "user",
-        null,
-        referralCode,
-        deviceToken,
-        activePlatform
+      // Use the pending access token to update the user's profile name.
+      // The OTP has already been consumed and deleted from the DB during
+      // the first verification, so we cannot call verifyOTP again.
+      const response = await api.patch(
+        "/food/user/profile",
+        { name: trimmedName },
+        { headers: { Authorization: `Bearer ${pendingAuthData.accessToken}` } }
       )
-      const data = response?.data?.data || response?.data || {}
-
-      const accessToken = data.accessToken
-      const refreshToken = data.refreshToken ?? null
-      const user = data.user
-
-      if (!accessToken || !user) {
-        throw new Error("Invalid response from server")
-      }
-      if (!refreshToken) {
-        throw new Error("Invalid response from server: missing refresh token")
-      }
+      const updatedUser =
+        response?.data?.data?.user ||
+        response?.data?.user ||
+        response?.data?.data ||
+        response?.data
 
       sessionStorage.removeItem("userAuthData")
 
-      setUserAuthData("user", accessToken, user, refreshToken)
+      // Finalize login with the tokens from the first OTP verification,
+      // merging the updated user data with the confirmed name.
+      setUserAuthData(
+        "user",
+        pendingAuthData.accessToken,
+        { ...(pendingAuthData.user || {}), name: trimmedName, ...(updatedUser || {}) },
+        pendingAuthData.refreshToken
+      )
 
       window.dispatchEvent(new Event("userAuthChanged"))
 
+      setPendingAuthData(null)
       setSuccess(true)
 
       setTimeout(() => {
         navigate("/food/user")
       }, 500)
     } catch (err) {
-      const message =
+      const status = err?.response?.status
+      let message =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         err?.message ||
         "Failed to complete registration. Please try again."
+      if (status === 401) {
+        message = "Session expired. Please go back and try again."
+        setPendingAuthData(null)
+        setShowNameInput(false)
+        setVerifiedOtp("")
+        setOtp(["", "", "", ""])
+      }
       setError(message)
     } finally {
       setIsLoading(false)
@@ -421,6 +428,7 @@ export default function OTP() {
     setName("")
     setNameError("")
     setVerifiedOtp("")
+    setPendingAuthData(null)
     inputRefs.current[0]?.focus()
   }
 
