@@ -199,12 +199,18 @@ apiClient.interceptors.request.use(
     // Determine target module for authorization headers scoping
     config.contextModule = getModuleFromConfig(config);
 
-    const token = getAccessToken(config);
-    if (token) {
-      config.headers.Authorization = 'Bearer ' + token;
-    } else {
-      // Clean stale header if token absent
-      delete config.headers.Authorization;
+    // Preserve any Authorization header that was explicitly set by the caller
+    // (e.g. during new-user registration when tokens are pending and not yet in localStorage).
+    const callerSetAuth = config.headers?.Authorization || config.headers?.authorization;
+
+    if (!callerSetAuth) {
+      const token = getAccessToken(config);
+      if (token) {
+        config.headers.Authorization = 'Bearer ' + token;
+      } else {
+        // Clean stale header if token absent
+        delete config.headers.Authorization;
+      }
     }
 
     // Attach context module as header for backend scoping (e.g. notifications)
