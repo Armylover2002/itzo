@@ -87,7 +87,7 @@ export async function createTopupOrder(userId, userType, amount) {
     }
 
     try {
-        const order = await createRazorpayOrder(amountPaise, 'INR', receipt);
+        const order = await createRazorpayOrder(amountPaise, 'INR', receipt, notes);
         return {
             razorpay: {
                 key: getRazorpayKeyId(),

@@ -20,13 +20,14 @@ export function getRazorpayInstance() {
     return new Razorpay({ key_id: KEY_ID, key_secret: KEY_SECRET });
 }
 
-export function createRazorpayOrder(amountPaise, currency = 'INR', receipt = '') {
+export function createRazorpayOrder(amountPaise, currency = 'INR', receipt = '', notes = {}) {
     const instance = getRazorpayInstance();
     if (!instance) return Promise.reject(new Error('Razorpay not configured'));
     return instance.orders.create({
         amount: Math.round(amountPaise),
         currency,
-        receipt: receipt || undefined
+        receipt: receipt || undefined,
+        ...(notes && Object.keys(notes).length > 0 ? { notes } : {})
     });
 }
 

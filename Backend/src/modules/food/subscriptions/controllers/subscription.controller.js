@@ -98,21 +98,45 @@ export async function verifyTopupController(req, res, next) {
             return res.status(400).json({ success: false, message: 'Missing payment details' });
         }
 
-        // Verify signature
-        const { verifyPaymentSignature } = await import('../../orders/helpers/razorpay.helper.js');
+        // Step 1: Verify Razorpay signature
+        const { verifyPaymentSignature, fetchRazorpayPayment } = await import('../../orders/helpers/razorpay.helper.js');
         const isValid = verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
         if (!isValid) {
             return res.status(400).json({ success: false, message: 'Invalid payment signature' });
         }
 
-        // Credit wallet
+        // Step 2: Fetch actual payment from Razorpay to verify status and amount
+        let rzPayment;
+        try {
+            rzPayment = await fetchRazorpayPayment(razorpayPaymentId);
+        } catch (fetchErr) {
+            return res.status(400).json({ success: false, message: 'Unable to verify payment with Razorpay. Please contact support.' });
+        }
+
+        // Step 3: Verify payment is actually captured (not failed/cancelled/refunded)
+        if (rzPayment.status !== 'captured') {
+            return res.status(400).json({
+                success: false,
+                message: `Payment is not completed (status: ${rzPayment.status}). Wallet not credited.`
+            });
+        }
+
+        // Step 4: Verify the order_id matches to prevent cross-order attacks
+        if (rzPayment.order_id && rzPayment.order_id !== razorpayOrderId) {
+            return res.status(400).json({ success: false, message: 'Payment order mismatch' });
+        }
+
+        // Step 5: Use verified amount from Razorpay (paise → rupees), NOT from req.body
+        const verifiedAmountRupees = Math.round(rzPayment.amount) / 100;
+
+        // Credit wallet with verified amount
         await walletService.verifyTopup({
             payment: { id: razorpayPaymentId },
             order: { id: razorpayOrderId },
             notes: {
                 ownerId: String(userId),
                 ownerType: userType,
-                amount: req.body.amount ? String(req.body.amount) : null
+                amount: String(verifiedAmountRupees)
             }
         });
 

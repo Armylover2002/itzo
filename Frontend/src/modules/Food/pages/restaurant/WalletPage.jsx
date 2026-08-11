@@ -101,24 +101,32 @@ export default function WalletPage() {
               await restaurantAPI.verifyTopup({
                 razorpayPaymentId: response.razorpay_payment_id,
                 razorpayOrderId: response.razorpay_order_id,
-                razorpaySignature: response.razorpay_signature,
-                amount: amount
+                razorpaySignature: response.razorpay_signature
               })
               toast.success("Payment successful! Wallet credited.")
               fetchWalletData()
               setShowRechargeModal(false)
             } catch (verifyErr) {
-              toast.error("Payment done but verification failed. Contact support.")
+              const msg = verifyErr?.response?.data?.message || "Payment verification failed. Contact support."
+              toast.error(msg)
+            } finally {
+              setSubmittingRecharge(false)
             }
           },
           onError: (err) => {
-            toast.error(err.description || "Payment failed")
+            toast.error(err.description || "Payment failed. Please try again.")
+            setSubmittingRecharge(false)
+          },
+          onClose: () => {
+            // User dismissed the Razorpay modal without completing payment
+            setSubmittingRecharge(false)
           }
         })
+      } else {
+        setSubmittingRecharge(false)
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Recharge failed")
-    } finally {
       setSubmittingRecharge(false)
     }
   }
