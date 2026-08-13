@@ -129,9 +129,27 @@ export default function Login() {
                                 Submit a joining request
                             </Link>
                         </div>
+
+                        {/* Policy Footer Links */}
+                        <div className="mt-5 pt-4 border-t border-slate-100 text-center">
+                            <p className="text-[11px] text-slate-400 font-medium mb-1.5">By continuing, you agree to our</p>
+                            <div className="flex justify-center items-center gap-1.5 flex-wrap text-[11px]">
+                                <Link to="/profile/terms" className="text-orange-500 font-bold hover:underline">
+                                    Terms & Conditions
+                                </Link>
+                                <span className="text-slate-300">•</span>
+                                <Link to="/profile/privacy" className="text-orange-500 font-bold hover:underline">
+                                    Privacy Policy
+                                </Link>
+                                <span className="text-slate-300">•</span>
+                                <Link to="/profile/support-policy" className="text-orange-500 font-bold hover:underline">
+                                    Support
+                                </Link>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="mt-8 text-center text-sm text-slate-500 font-medium pb-6">
+                    <div className="mt-4 text-center text-sm text-slate-500 font-medium pb-6">
                         © {new Date().getFullYear()} {hrmsSettings?.companyName || 'ItzoFood'} · Enterprise HRMS
                     </div>
                 </div>
