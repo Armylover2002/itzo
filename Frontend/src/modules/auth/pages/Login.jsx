@@ -822,6 +822,10 @@ export default function UnifiedOTPFastLogin() {
               <Link to="/profile/refund" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                 Content Policy
               </Link>
+              <span>•</span>
+              <Link to="/profile/support-policy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                Support
+              </Link>
             </div>
           </div>
         </div>

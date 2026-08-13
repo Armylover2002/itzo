@@ -114,6 +114,7 @@ const AboutUs = lazy(() => import("@food/pages/admin/settings/AboutUs"));
 const RefundPolicy = lazy(() => import("@food/pages/admin/settings/RefundPolicy"));
 const ShippingPolicy = lazy(() => import("@food/pages/admin/settings/ShippingPolicy"));
 const CancellationPolicy = lazy(() => import("@food/pages/admin/settings/CancellationPolicy"));
+const SupportPolicy = lazy(() => import("@food/pages/admin/settings/SupportPolicy"));
 const ReactRegistration = lazy(() => import("@food/pages/admin/settings/ReactRegistration"));
 const RestaurantConsultingSettings = lazy(() => import("@food/pages/admin/settings/RestaurantConsultingSettings"));
 const LoginGrowthSettings = lazy(() => import("@food/pages/admin/settings/LoginGrowthSettings"));
@@ -403,6 +404,7 @@ export default function AdminRouter() {
             <Route path="pages-social-media/refund" element={<RefundPolicy />} />
             <Route path="pages-social-media/shipping" element={<ShippingPolicy />} />
             <Route path="pages-social-media/cancellation" element={<CancellationPolicy />} />
+            <Route path="pages-social-media/support" element={<SupportPolicy />} />
             <Route path="pages-social-media/react-registration" element={<ReactRegistration />} />
             <Route path="pages-social-media/consulting" element={<RestaurantConsultingSettings />} />
             <Route path="pages-social-media/login-growth" element={<LoginGrowthSettings />} />

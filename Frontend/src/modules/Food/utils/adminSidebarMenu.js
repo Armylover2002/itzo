@@ -345,6 +345,7 @@ export const adminSidebarMenu = [
       { type: "link", label: "Refund Policy", permissionKey: "refund", path: "/ecs/food/pages-social-media/refund", icon: "Receipt" },
       { type: "link", label: "Shipping Policy", permissionKey: "shipping", path: "/ecs/food/pages-social-media/shipping", icon: "Truck" },
       { type: "link", label: "Cancellation Policy", permissionKey: "cancellation", path: "/ecs/food/pages-social-media/cancellation", icon: "X" },
+      { type: "link", label: "Support", permissionKey: "support", path: "/ecs/food/pages-social-media/support", icon: "Headphones" },
       { type: "link", label: "Restaurant Consulting", permissionKey: "consulting", path: "/ecs/food/pages-social-media/consulting", icon: "Briefcase" },
       { type: "link", label: "Login Growth Settings", permissionKey: "login_growth", path: "/ecs/food/pages-social-media/login-growth", icon: "TrendingUp" },
     ],

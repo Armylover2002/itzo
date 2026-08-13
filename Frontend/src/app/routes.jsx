@@ -42,6 +42,7 @@ const SharedProfilePrivacyPage = lazy(() => import('../modules/Food/pages/user/p
 const SharedProfileRefundPage = lazy(() => import('../modules/Food/pages/user/profile/Refund'))
 const SharedProfileShippingPage = lazy(() => import('../modules/Food/pages/user/profile/Shipping'))
 const SharedProfileCancellationPage = lazy(() => import('../modules/Food/pages/user/profile/Cancellation'))
+const SharedProfileSupportPolicyPage = lazy(() => import('../modules/Food/pages/user/profile/SupportPolicy'))
 
 const RouteAwarePageLoader = () => {
   const location = useLocation()
@@ -261,6 +262,10 @@ const AppRoutes = () => {
           <Route
             path="/profile/cancellation"
             element={<SharedProfileCancellationPage />}
+          />
+          <Route
+            path="/profile/support-policy"
+            element={<SharedProfileSupportPolicyPage />}
           />
         </Route>
 

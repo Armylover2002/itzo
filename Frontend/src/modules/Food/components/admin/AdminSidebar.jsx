@@ -64,6 +64,7 @@ import {
   Smartphone,
   Monitor,
   Briefcase,
+  Headphones,
 
   ChevronDown as ChevronDownIcon,
   LayoutGrid,
@@ -138,6 +139,7 @@ const iconMap = {
   Smartphone,
   Monitor,
   Briefcase,
+  Headphones,
 
   X,
   LayoutGrid,
