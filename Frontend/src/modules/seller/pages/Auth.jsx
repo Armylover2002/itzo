@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Store, Phone, KeyRound } from "lucide-react";
 import { toast } from "sonner";
@@ -257,6 +257,24 @@ export default function SellerAuth() {
               )}
             </div>
           </motion.div>
+
+            {/* Footer Links */}
+            <div className="mt-8 text-center">
+              <p className="text-xs text-slate-400 font-medium mb-1.5">By continuing, you agree to our</p>
+              <div className="flex justify-center items-center gap-1.5 flex-wrap text-xs">
+                <Link to="/profile/terms" className="text-[#FE5502] font-bold hover:underline">
+                  Terms & Conditions
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/profile/privacy" className="text-[#FE5502] font-bold hover:underline">
+                  Privacy Policy
+                </Link>
+                <span className="text-slate-300">•</span>
+                <Link to="/profile/support-policy" className="text-[#FE5502] font-bold hover:underline">
+                  Support
+                </Link>
+              </div>
+            </div>
         </div>
       </div>
     </div>
