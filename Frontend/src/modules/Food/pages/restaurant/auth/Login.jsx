@@ -445,6 +445,22 @@ export default function RestaurantLogin() {
                 >
                   Terms & Conditions
                 </button>
+                <span className="text-slate-300 mx-1">•</span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/food/restaurant/privacy")}
+                  className="bg-transparent border-0 p-0 text-[#FE5502] font-bold hover:underline cursor-pointer"
+                >
+                  Privacy Policy
+                </button>
+                <span className="text-slate-300 mx-1">•</span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/food/restaurant/support-policy")}
+                  className="bg-transparent border-0 p-0 text-[#FE5502] font-bold hover:underline cursor-pointer"
+                >
+                  Support
+                </button>
               </p>
             </div>
           </div>
