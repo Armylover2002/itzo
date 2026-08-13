@@ -154,7 +154,7 @@ export default function SellerAuth() {
           </div>
         </div>
 
-        <div className="flex w-full items-center justify-center px-4 py-8 sm:px-6 md:w-[58%] md:px-12 md:py-10">
+        <div className="flex w-full flex-col items-center justify-center px-4 py-8 sm:px-6 md:w-[58%] md:px-12 md:py-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
@@ -256,12 +256,11 @@ export default function SellerAuth() {
                 </>
               )}
             </div>
-          </motion.div>
 
             {/* Footer Links */}
-            <div className="mt-8 text-center">
-              <p className="text-xs text-slate-400 font-medium mb-1.5">By continuing, you agree to our</p>
-              <div className="flex justify-center items-center gap-1.5 flex-wrap text-xs">
+            <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+              <p className="text-[11px] text-slate-400 font-medium mb-1.5">By continuing, you agree to our</p>
+              <div className="flex justify-center items-center gap-1.5 flex-wrap text-[11px]">
                 <Link to="/profile/terms" className="text-[#FE5502] font-bold hover:underline">
                   Terms & Conditions
                 </Link>
@@ -275,6 +274,7 @@ export default function SellerAuth() {
                 </Link>
               </div>
             </div>
+          </motion.div>
         </div>
       </div>
     </div>
