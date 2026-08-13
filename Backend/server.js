@@ -101,23 +101,30 @@ const startServer = async () => {
             console.log(`🌐 [URL] http://localhost:${config.port}`);
         });
 
-        const runExpire = async () => {
-            try {
-                await expireExpiredOffers();
-            } catch (err) {
-                logger.error(`Expire offers error: ${err.message}`);
+        const withRetry = async (fn, label, retries = 3) => {
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    await fn();
+                    return;
+                } catch (err) {
+                    const isTransient = ['ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(err.code)
+                        || /ECONNRESET|ETIMEDOUT|EPIPE|topology was destroyed|pool was cleared/i.test(err.message);
+                    if (isTransient && attempt < retries) {
+                        const delay = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
+                        logger.warn(`${label} transient error (attempt ${attempt}/${retries}): ${err.message}. Retrying in ${delay}ms...`);
+                        await new Promise(r => setTimeout(r, delay));
+                    } else {
+                        logger.error(`${label} error: ${err.message}`);
+                    }
+                }
             }
         };
+
+        const runExpire = () => withRetry(expireExpiredOffers, 'Expire offers');
         runExpire();
         expireOffersInterval = setInterval(runExpire, 5 * 60 * 1000);
 
-        const runFssaiExpirySync = async () => {
-            try {
-                await syncExpiredFssaiNotifications();
-            } catch (err) {
-                logger.error(`FSSAI expiry sync error: ${err.message}`);
-            }
-        };
+        const runFssaiExpirySync = () => withRetry(syncExpiredFssaiNotifications, 'FSSAI expiry sync');
         runFssaiExpirySync();
         fssaiExpiryInterval = setInterval(runFssaiExpirySync, 60 * 60 * 1000);
 
