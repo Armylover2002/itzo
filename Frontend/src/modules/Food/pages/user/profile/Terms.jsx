@@ -37,7 +37,7 @@ export default function Terms() {
 
   const handleBack = () => {
     if (window.history.length > 2) {
-      goBack()
+      navigate(-1)
     } else {
       navigate('/food/user')
     }
