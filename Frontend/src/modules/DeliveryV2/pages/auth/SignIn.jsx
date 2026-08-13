@@ -542,6 +542,14 @@ export default function DeliverySignIn() {
                   <Link to="/food/delivery/terms" className="text-[#FE5502] font-bold hover:underline">
                     Terms & Conditions
                   </Link>
+                  <span className="text-slate-300 mx-1">•</span>
+                  <Link to="/food/delivery/privacy" className="text-[#FE5502] font-bold hover:underline">
+                    Privacy Policy
+                  </Link>
+                  <span className="text-slate-300 mx-1">•</span>
+                  <Link to="/food/delivery/support-policy" className="text-[#FE5502] font-bold hover:underline">
+                    Support
+                  </Link>
                 </p>
               </div>
             </div>

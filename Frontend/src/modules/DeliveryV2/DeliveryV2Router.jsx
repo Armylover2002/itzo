@@ -35,6 +35,7 @@ import { PocketDetailsV2 } from './pages/pocket/PocketDetailsV2';
 import { ProfileDetailsV2 } from './pages/profile/ProfileDetailsV2';
 import TermsAndConditionsV2 from './pages/TermsAndConditionsV2';
 import PrivacyPolicyV2 from './pages/PrivacyPolicyV2';
+import SupportPolicyV2 from './pages/SupportPolicyV2';
 import NotificationsV2 from './pages/NotificationsV2';
 import SubscriptionV2 from './pages/SubscriptionV2';
 import DeliveryReturns from './pages/DeliveryReturns';
@@ -69,6 +70,8 @@ const DeliveryV2Router = () => {
         <Route path="signup/documents" element={<SignupStep2 />} />
         <Route path="verification" element={<PendingVerification />} />
         <Route path="terms" element={<TermsAndConditionsV2 />} />
+        <Route path="privacy" element={<PrivacyPolicyV2 />} />
+        <Route path="support-policy" element={<SupportPolicyV2 />} />
 
         {/* Protected Core Routes */}
         <Route path="/" element={<ProtectedRoute><DeliveryHomeV2 tab="feed" /></ProtectedRoute>} />
