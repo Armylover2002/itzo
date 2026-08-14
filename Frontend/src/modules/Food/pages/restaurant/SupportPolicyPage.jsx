@@ -55,11 +55,6 @@ const FALLBACK_CONTENT = `
       </li>
     </ul>
   </div>
-
-  <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-    <h4 class="font-bold mb-2">Corporate Office</h4>
-    <p class="text-sm">ItzoFood Technologies Pvt. Ltd.<br/>Cyber City, Phase 2, Gurugram, Haryana - 122002, India</p>
-  </div>
 </div>
 `;
 
