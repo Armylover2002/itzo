@@ -8,13 +8,71 @@ import api from "@food/api"
 import useAppBackNavigation from "@food/hooks/useAppBackNavigation"
 import { API_ENDPOINTS } from "@food/api/config"
 
+const FALLBACK_CONTENT = `
+<div class="space-y-6">
+  <div>
+    <h3 class="text-xl font-bold mb-2">Welcome to ItzoFood Support</h3>
+    <p>We're here to help! Whether you're a customer, restaurant partner, delivery executive, or an employee, our dedicated teams are available to assist you 24/7.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+    <div class="bg-gray-50 dark:bg-[#1a1a1a] p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">👨‍💼 Customer Support</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> support@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+
+    <div class="bg-gray-50 dark:bg-[#1a1a1a] p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">🏪 Restaurant Partners</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> partners@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+
+    <div class="bg-gray-50 dark:bg-[#1a1a1a] p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">🛵 Delivery Executives</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> delivery@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+
+    <div class="bg-gray-50 dark:bg-[#1a1a1a] p-4 rounded-lg border border-gray-100 dark:border-gray-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">🏢 Corporate & HR</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> hr@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <h3 class="text-xl font-bold mb-4">Frequently Asked Questions</h3>
+    <ul class="space-y-4">
+      <li>
+        <strong>Q: How do I track my food order?</strong><br/>
+        A: You can track your order in real-time by going to the 'My Orders' section in your ItzoFood app.
+      </li>
+      <li>
+        <strong>Q: How can I register my restaurant on ItzoFood?</strong><br/>
+        A: Download the Itzo Partner app, click on 'Register', and submit your details along with your FSSAI license. Our team will verify and onboard you within 24-48 hours.
+      </li>
+      <li>
+        <strong>Q: What should I do if my payout is delayed?</strong><br/>
+        A: Payouts are processed weekly. If there is a delay, please contact our partner support team with your registered phone number and bank details.
+      </li>
+    </ul>
+  </div>
+
+  <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+    <h4 class="font-bold mb-2">Corporate Office</h4>
+    <p class="text-sm">ItzoFood Technologies Pvt. Ltd.<br/>Cyber City, Phase 2, Gurugram, Haryana - 122002, India</p>
+  </div>
+</div>
+`;
+
 export default function SupportPolicy() {
   const navigate = useNavigate()
   const goBack = useAppBackNavigation()
   const [loading, setLoading] = useState(true)
   const [supportData, setSupportData] = useState({
-    title: 'Support',
-    content: ''
+    title: 'ItzoFood Support',
+    content: FALLBACK_CONTENT
   })
 
   useEffect(() => {
@@ -26,10 +84,18 @@ export default function SupportPolicy() {
       setLoading(true)
       const response = await api.get(`${API_ENDPOINTS.ADMIN.SUPPORT_PUBLIC}?role=user`)
       if (response.data.success) {
-        setSupportData(response.data.data || { title: 'Support', content: '' })
+        const payload = response.data.data || {};
+        setSupportData({ 
+          title: payload?.title || 'ItzoFood Support', 
+          content: payload?.content || FALLBACK_CONTENT 
+        })
       }
     } catch (error) {
       console.error('Error fetching support data:', error)
+      setSupportData({
+        title: 'ItzoFood Support',
+        content: FALLBACK_CONTENT
+      })
     } finally {
       setLoading(false)
     }

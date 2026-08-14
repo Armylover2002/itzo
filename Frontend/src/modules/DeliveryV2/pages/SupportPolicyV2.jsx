@@ -4,10 +4,68 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import api, { API_ENDPOINTS } from "@food/api"
 import useDeliveryBackNavigation from "../hooks/useDeliveryBackNavigation"
 
+const FALLBACK_CONTENT = `
+<div class="space-y-6">
+  <div>
+    <h3 class="text-xl font-bold mb-2">Welcome to ItzoFood Support</h3>
+    <p>We're here to help! Whether you're a customer, restaurant partner, delivery executive, or an employee, our dedicated teams are available to assist you 24/7.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+    <div class="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-lg border border-gray-100 dark:border-zinc-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">👨‍💼 Customer Support</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> support@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+
+    <div class="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-lg border border-gray-100 dark:border-zinc-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">🏪 Restaurant Partners</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> partners@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+
+    <div class="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-lg border border-gray-100 dark:border-zinc-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">🛵 Delivery Executives</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> delivery@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+
+    <div class="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-lg border border-gray-100 dark:border-zinc-800">
+      <h4 class="font-bold text-lg mb-2 flex items-center gap-2">🏢 Corporate & HR</h4>
+      <p class="text-sm mb-1"><strong>Email:</strong> hr@itzofood.com</p>
+      <p class="text-sm"><strong>Phone:</strong> +91 9586640145</p>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <h3 class="text-xl font-bold mb-4">Frequently Asked Questions</h3>
+    <ul class="space-y-4">
+      <li>
+        <strong>Q: How do I track my food order?</strong><br/>
+        A: You can track your order in real-time by going to the 'My Orders' section in your ItzoFood app.
+      </li>
+      <li>
+        <strong>Q: How can I register my restaurant on ItzoFood?</strong><br/>
+        A: Download the Itzo Partner app, click on 'Register', and submit your details along with your FSSAI license. Our team will verify and onboard you within 24-48 hours.
+      </li>
+      <li>
+        <strong>Q: What should I do if my payout is delayed?</strong><br/>
+        A: Payouts are processed weekly. If there is a delay, please contact our partner support team with your registered phone number and bank details.
+      </li>
+    </ul>
+  </div>
+
+  <div class="mt-8 pt-6 border-t border-gray-200 dark:border-zinc-800">
+    <h4 class="font-bold mb-2">Corporate Office</h4>
+    <p class="text-sm">ItzoFood Technologies Pvt. Ltd.<br/>Cyber City, Phase 2, Gurugram, Haryana - 122002, India</p>
+  </div>
+</div>
+`;
+
 export default function SupportPolicyV2() {
   const goBack = useDeliveryBackNavigation()
   const [loading, setLoading] = useState(true)
-  const [content, setContent] = useState("")
+  const [content, setContent] = useState(FALLBACK_CONTENT)
   const [lastUpdated, setLastUpdated] = useState("")
 
   useEffect(() => {
@@ -18,11 +76,12 @@ export default function SupportPolicyV2() {
         })
         const payload = response?.data?.data || response?.data || {}
         if (response?.data?.success) {
-          setContent(payload?.content || "")
+          setContent(payload?.content || FALLBACK_CONTENT)
           setLastUpdated(payload?.updatedAt || "")
         }
       } catch (error) {
         console.error("Error fetching support:", error)
+        setContent(FALLBACK_CONTENT)
       } finally {
         setLoading(false)
       }
