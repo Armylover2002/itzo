@@ -740,6 +740,7 @@ export default function JoiningRequest() {
                       type="date"
                       value={filters.dateFrom}
                       onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                      max={new Date().toISOString().split('T')[0]}
                       className="w-full px-4 py-2.5 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                     />
                   </div>
@@ -1054,13 +1055,11 @@ export default function JoiningRequest() {
                                 <>
                                   <p className="text-xs text-slate-500">Address</p>
                                   <p className="text-sm font-medium text-slate-900">
-                                    {addressParts.length > 0
-                                      ? [r.addressLine1, r.addressLine2, r.area, r.city, r.landmark].filter(Boolean).join(", ")
-                                      : r?.location?.addressLine1
-                                        ? [r.location.addressLine1, r.location.addressLine2, r.location.area, r.location.city].filter(Boolean).join(", ")
-                                        : r?.onboarding?.step1?.location
-                                          ? [r.onboarding.step1.location.addressLine1, r.onboarding.step1.location.addressLine2, r.onboarding.step1.location.area, r.onboarding.step1.location.city].filter(Boolean).join(", ")
-                                          : r?.zone || "—"}
+                                    {r?.formattedAddress || 
+                                     [r?.addressLine1, r?.addressLine2, r?.area, r?.city, r?.landmark].filter(Boolean).join(", ") ||
+                                     [r?.location?.addressLine1, r?.location?.addressLine2, r?.location?.area, r?.location?.city].filter(Boolean).join(", ") ||
+                                     [r?.onboarding?.step1?.location?.addressLine1, r?.onboarding?.step1?.location?.addressLine2, r?.onboarding?.step1?.location?.area, r?.onboarding?.step1?.location?.city].filter(Boolean).join(", ") ||
+                                     r?.zone || "—"}
                                   </p>
                                 </>
                               )}
@@ -1085,20 +1084,7 @@ export default function JoiningRequest() {
                     <div>
                       <h4 className="text-lg font-semibold text-slate-900 mb-4">Cuisine & Details</h4>
                       <div className="space-y-3">
-                        <div>
-                          <p className="text-xs text-slate-500 mb-1">Cuisines</p>
-                          <div className="flex flex-wrap gap-2">
-                            {r?.cuisines && Array.isArray(r.cuisines) && r.cuisines.length > 0 ? (
-                              r.cuisines.map((cuisine, idx) => (
-                                <span key={idx} className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-                                  {cuisine}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-sm text-slate-700">N/A</span>
-                            )}
-                          </div>
-                        </div>
+
                         {typeof r?.pureVegRestaurant === "boolean" && (
                           <div>
                             <p className="text-xs text-slate-500 mb-1">Food Type</p>
