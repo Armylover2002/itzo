@@ -178,7 +178,7 @@ export default function SignIn() {
                   placeholder="Phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`flex-1 h-12 md:h-14 text-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border-gray-300 dark:border-neutral-700 rounded-xl rounded-l-none pl-4 focus-visible:ring-0 focus-visible:border-[#FE5502] ${error ? "border-red-500" : ""} transition-all shadow-none`}
+                  className={`flex-1 h-12 md:h-14 text-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border-gray-300 dark:border-neutral-700 rounded-xl rounded-l-none pl-4 focus-visible:ring-0 focus-visible:border-[#FE5502] ${error ? "border-red-500" : ""} transition-all shadow-none [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s] [&:-webkit-autofill]:[-webkit-text-fill-color:inherit] dark:[&:-webkit-autofill]:[-webkit-text-fill-color:#fff]`}
                   aria-invalid={error ? "true" : "false"}
                 />
               </div>

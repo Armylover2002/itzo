@@ -587,7 +587,7 @@ export default function UnifiedOTPFastLogin() {
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     maxLength={10}
-                    className="flex-1 h-12 md:h-14 w-full text-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-xl rounded-l-none pl-4 focus:ring-0 focus:border-[#FE5502] focus:outline-none transition-all shadow-none placeholder:text-gray-400"
+                    className="flex-1 h-12 md:h-14 w-full text-lg bg-white dark:bg-neutral-900 text-gray-900 dark:text-white border border-gray-300 dark:border-neutral-700 rounded-xl rounded-l-none pl-4 focus:ring-0 focus:border-[#FE5502] focus:outline-none transition-all shadow-none placeholder:text-gray-400 [&:-webkit-autofill]:[transition:background-color_5000s_ease-in-out_0s] [&:-webkit-autofill]:[-webkit-text-fill-color:inherit] dark:[&:-webkit-autofill]:[-webkit-text-fill-color:#fff]"
                     placeholder="Phone"
                   />
                 </div>
