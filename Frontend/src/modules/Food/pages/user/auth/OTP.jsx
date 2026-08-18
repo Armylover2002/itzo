@@ -266,22 +266,27 @@ export default function OTP() {
       }, 500)
     } catch (err) {
       const status = err?.response?.status
+      const code = err?.response?.data?.code
       let message =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         err?.message ||
         "Failed to verify OTP. Please try again."
-      if (err?.response?.data?.code === 'ACCOUNT_DELETED') {
+
+      if (code === 'ACCOUNT_DELETED') {
+        // Show recovery modal, don't show error banner
         setShowRecoveryModal(true)
-      } else if (status === 401) {
-        // Friendlier copy for deactivated users or auth errors
-        if (/deactivat(ed|e)/i.test(String(message))) {
-          message = "Your account is deactivated. Please contact support."
-        } else {
-          message = "Invalid or expired code, or account not active."
+        setError("")
+      } else {
+        if (status === 401) {
+          if (code === 'ACCOUNT_DEACTIVATED' || /deactivat(ed|e)/i.test(String(message))) {
+            message = "Your account is deactivated. Please contact support."
+          } else {
+            message = "Invalid or expired code, or account not active."
+          }
         }
+        setError(message)
       }
-      setError(message)
     } finally {
       setIsLoading(false)
       submittingRef.current = false

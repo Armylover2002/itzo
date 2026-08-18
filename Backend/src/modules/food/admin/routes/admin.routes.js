@@ -40,6 +40,7 @@ router.get('/customers/recovery-requests', checkPermission('food::customer_manag
 router.get('/customers/:id', adminController.getCustomerById);
 router.get('/customers/:id/contacts', checkPermission('food::customer_management::customers', 'view'), getCustomerContactsAdminController);
 router.post('/customers/:id/approve-recovery', checkPermission('food::customer_management::customers', 'edit'), adminController.approveRecoveryRequest);
+router.post('/customers/:id/reject-recovery', checkPermission('food::customer_management::customers', 'edit'), adminController.rejectRecoveryRequest);
 router.patch('/customers/:id/status', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerStatus);
 router.patch('/customers/:id/cod-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerCodAccess);
 router.patch('/customers/cod-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersCodAccess);

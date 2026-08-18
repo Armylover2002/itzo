@@ -57,6 +57,22 @@ export default function RecoveryRequests() {
     }
   }
 
+  const handleReject = async (id) => {
+    try {
+      setActionLoadingId(id)
+      const res = await adminAPI.rejectRecoveryRequest(id)
+      if (res?.data?.success) {
+        toast.success("Account recovery rejected successfully")
+        setRequests((prev) => prev.filter((r) => r._id !== id))
+        setTotalRequests((prev) => prev - 1)
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to reject request")
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
@@ -143,20 +159,36 @@ export default function RecoveryRequests() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleApprove(user._id)}
-                        disabled={actionLoadingId === user._id}
-                        className="bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200"
-                      >
-                        {actionLoadingId === user._id ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                        )}
-                        Approve Recovery
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleReject(user._id)}
+                          disabled={actionLoadingId === user._id}
+                          className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 border-red-200"
+                        >
+                          {actionLoadingId === user._id ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          ) : (
+                            <XCircle className="w-4 h-4 mr-1" />
+                          )}
+                          Reject
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleApprove(user._id)}
+                          disabled={actionLoadingId === user._id}
+                          className="bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200"
+                        >
+                          {actionLoadingId === user._id ? (
+                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                          )}
+                          Approve
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))

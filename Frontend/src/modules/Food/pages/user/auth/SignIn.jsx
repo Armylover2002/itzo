@@ -23,6 +23,27 @@ export default function SignIn() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const submittingRef = useRef(false)
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false)
+  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
+
+  const handleRecoveryRequest = async () => {
+    if (isRecoveryLoading) return
+    setIsRecoveryLoading(true)
+    try {
+      const countryCode = formData.countryCode?.trim() || "+91"
+      const phoneDigits = String(formData.phone ?? "").replace(/\D/g, "").slice(0, 10)
+      const fullPhone = `${countryCode} ${phoneDigits}`
+      await authAPI.requestAccountRecovery(fullPhone)
+      setError("")
+      setShowRecoveryModal(false)
+      alert("Recovery request submitted successfully. You will be notified once admin approves it.")
+    } catch (err) {
+      setError(err?.response?.data?.message || err?.message || "Failed to submit recovery request")
+      setShowRecoveryModal(false)
+    } finally {
+      setIsRecoveryLoading(false)
+    }
+  }
 
   useEffect(() => {
     const stored = sessionStorage.getItem("userAuthData")
@@ -97,11 +118,19 @@ export default function SignIn() {
       sessionStorage.setItem("userAuthData", JSON.stringify(authData))
       navigate("/food/user/auth/otp")
     } catch (apiError) {
+      const code = apiError?.response?.data?.code || apiError?.code
       const message =
         apiError?.response?.data?.message ||
         apiError?.response?.data?.error ||
+        apiError?.message ||
         "Failed to send OTP. Please try again."
-      setError(message)
+
+      if (code === 'ACCOUNT_DELETED' || message?.toLowerCase().includes('account has been deleted')) {
+        setShowRecoveryModal(true)
+        setError("")
+      } else {
+        setError(message)
+      }
     } finally {
       setIsLoading(false)
       submittingRef.current = false
@@ -248,7 +277,37 @@ export default function SignIn() {
           </div>
         </div>
       </div>
+
+      {showRecoveryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative p-6">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Account Deleted</h3>
+            <p className="text-gray-600 mb-6">
+              Your account was previously deleted. Would you like to submit a request to recover it?
+            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowRecoveryModal(false)}
+                className="flex-1 border-gray-300"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRecoveryRequest}
+                disabled={isRecoveryLoading}
+                className="flex-1 bg-[#ff4a4a] hover:bg-[#ff3333] text-white"
+              >
+                {isRecoveryLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                ) : (
+                  "Request Recovery"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </AnimatedPage>
   )
 }
-

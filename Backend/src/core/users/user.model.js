@@ -202,7 +202,7 @@ const userSchema = new mongoose.Schema(
         deletionRequest: {
             status: {
                 type: String,
-                enum: ['none', 'pending', 'approved', 'rejected'],
+                enum: ['none', 'pending', 'approved', 'rejected', 'recovery_pending'],
                 default: 'none',
                 index: true
             },

@@ -108,6 +108,7 @@ function LocationSelectorProvider({ children }) {
 
 export default function UserLayout({ children }) {
   const location = useLocation()
+  const navigate = useNavigate()
 
   useEffect(() => {
     // Initialize user app settings and favicon
@@ -123,6 +124,18 @@ export default function UserLayout({ children }) {
   }, [location.pathname, location.search, location.hash])
 
   useUserNotifications()
+
+  useEffect(() => {
+    const handleAuthFailure = (e) => {
+      // Only redirect if the failed module is 'user' or if it's not specified
+      if (!e.detail?.module || e.detail.module === 'user' || e.detail.module === 'food') {
+        navigate('/user/auth/login', { replace: true })
+      }
+    }
+    
+    window.addEventListener('authRefreshFailed', handleAuthFailure)
+    return () => window.removeEventListener('authRefreshFailed', handleAuthFailure)
+  }, [navigate])
 
   // Note: Authentication checks and redirects are handled by ProtectedRoute components
   // UserLayout should not interfere with authentication redirects

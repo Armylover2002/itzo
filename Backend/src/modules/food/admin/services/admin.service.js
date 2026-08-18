@@ -1181,6 +1181,12 @@ export async function getCustomers(query = {}) {
         role: 'USER',
     };
 
+    if (query.isDeleted === 'true' || query.isDeleted === true) {
+        filter.isDeleted = true;
+    } else {
+        filter.isDeleted = { $ne: true };
+    }
+
     if (query.status) {
         if (String(query.status) === 'active') filter.isActive = true;
         if (String(query.status) === 'inactive') filter.isActive = false;
@@ -1338,15 +1344,18 @@ export async function getCustomerById(id) {
 export async function updateCustomerStatus(id, isActive) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
     const customerObjectId = new mongoose.Types.ObjectId(id);
-    const hasFoodOrders = await FoodOrder.exists({
-        userId: customerObjectId,
-        orderType: { $in: FOOD_CUSTOMER_ORDER_TYPES },
-    });
-    if (!hasFoodOrders) return null;
+
+    const updateFields = { isActive: Boolean(isActive) };
+
+    // When activating a user, also clear the deletion flag so they can log in
+    if (Boolean(isActive)) {
+        updateFields.isDeleted = false;
+        updateFields['deletionRequest.status'] = 'none';
+    }
 
     const updatedDoc = await FoodUser.findByIdAndUpdate(
         id,
-        { $set: { isActive: Boolean(isActive) } },
+        { $set: updateFields },
         { new: true }
     );
     if (!updatedDoc) return null;
@@ -1380,7 +1389,7 @@ export async function getRecoveryRequests(query = {}) {
 
     const [docs, total] = await Promise.all([
         FoodUser.find(filter)
-            .sort({ 'deletionRequest.recoveryRequestedAt': -1 })
+            .sort({ 'deletionRequest.requestedAt': -1 })
             .skip(skip)
             .limit(limit)
             .select('name email phone countryCode isDeleted isActive createdAt deletionRequest profileImage')
@@ -1413,14 +1422,28 @@ export async function approveRecoveryRequest(id) {
     return user.toObject();
 }
 
+export async function rejectRecoveryRequest(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+    const customerObjectId = new mongoose.Types.ObjectId(id);
+
+    const user = await FoodUser.findById(customerObjectId);
+    if (!user) return null;
+    if (!user.isDeleted) return null; // Only reject if actually deleted
+
+    if (user.deletionRequest) {
+        user.deletionRequest.status = 'rejected';
+        user.deletionRequest.reviewedAt = new Date();
+    }
+    
+    await user.save();
+    
+    return user.toObject();
+}
+
 export async function updateCustomerCodAccess(id, isCodAllowed) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
     const customerObjectId = new mongoose.Types.ObjectId(id);
-    const hasFoodOrders = await FoodOrder.exists({
-        userId: customerObjectId,
-        orderType: { $in: FOOD_CUSTOMER_ORDER_TYPES },
-    });
-    if (!hasFoodOrders) return null;
+
 
     const updatedDoc = await FoodUser.findByIdAndUpdate(
         id,
@@ -1445,17 +1468,9 @@ export async function bulkUpdateCustomersCodAccess(ids = [], isCodAllowed) {
     }
 
     const objectIds = normalizedIds.map((id) => new mongoose.Types.ObjectId(id));
-    const eligibleIds = await FoodOrder.distinct('userId', {
-        userId: { $in: objectIds },
-        orderType: { $in: FOOD_CUSTOMER_ORDER_TYPES },
-    });
-
-    if (!eligibleIds.length) {
-        return { matched: 0, modified: 0 };
-    }
 
     const result = await FoodUser.updateMany(
-        { _id: { $in: eligibleIds } },
+        { _id: { $in: objectIds } },
         { $set: { isCodAllowed: Boolean(isCodAllowed) } }
     );
 

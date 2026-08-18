@@ -147,6 +147,13 @@ export const adminSidebarMenu = [
       },
       {
         type: "link",
+        label: "Deleted Accounts",
+        permissionKey: "customers",
+        path: "/ecs/food/deleted-customers",
+        icon: "UserX",
+      },
+      {
+        type: "link",
         label: "Support Tickets (User & Restaurant)",
         permissionKey: "support_tickets",
         path: "/ecs/food/support-tickets",

@@ -72,6 +72,20 @@ export async function approveRecoveryRequest(req, res, next) {
     }
 }
 
+export async function rejectRecoveryRequest(req, res, next) {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid customer id' });
+        }
+        const updated = await adminService.rejectRecoveryRequest(id);
+        if (!updated) return res.status(404).json({ success: false, message: 'Customer or request not found' });
+        res.status(200).json({ success: true, message: 'Recovery request rejected successfully', data: { user: updated } });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function updateCustomerCodAccess(req, res, next) {
     try {
         const { id } = req.params;

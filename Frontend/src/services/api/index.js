@@ -153,8 +153,8 @@ export const authAPI = {
       platform,
     );
   },
-  requestAccountRecovery: (phone, otp) => {
-    return authService.requestAccountRecovery(phone, otp);
+  requestAccountRecovery: (phone) => {
+    return authService.requestAccountRecovery(phone);
   },
   getCurrentUser: () => getUserMeOnce(),
   refreshToken: (token) => authService.refreshToken(token),
@@ -589,6 +589,8 @@ export const adminAPI = {
     apiClient.get("/food/admin/customers/recovery-requests", { params, contextModule: "admin" }),
   approveRecoveryRequest: (id) =>
     apiClient.post(`/food/admin/customers/${String(id)}/approve-recovery`, {}, { contextModule: "admin" }),
+  rejectRecoveryRequest: (id) =>
+    apiClient.post(`/food/admin/customers/${String(id)}/reject-recovery`, {}, { contextModule: "admin" }),
   getCustomerById: (id) =>
     apiClient.get(`/food/admin/customers/${String(id)}`, {
       contextModule: "admin",

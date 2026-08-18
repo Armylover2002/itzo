@@ -66,6 +66,8 @@ export default function UnifiedOTPFastLogin() {
   const [otpSent, setOtpSent] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
   const [showNameInput, setShowNameInput] = useState(false)
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false)
+  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
   const [name, setName] = useState("")
   const [nameError, setNameError] = useState("")
   // Holds token/user temporarily while user is on the name step (auth is not finalized yet)
@@ -195,8 +197,13 @@ export default function UnifiedOTPFastLogin() {
       setResendTimer(RESEND_COOLDOWN_SECONDS)
       toast.success("OTP sent! Check your phone.")
     } catch (err) {
+      const code = err?.response?.data?.code || err?.code
       const msg = err?.response?.data?.message || err?.message || "Failed to send OTP."
-      toast.error(msg)
+      if (code === 'ACCOUNT_DELETED' || msg?.toLowerCase().includes('account has been deleted')) {
+        setShowRecoveryModal(true)
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setLoading(false)
       submitting.current = false
@@ -220,8 +227,13 @@ export default function UnifiedOTPFastLogin() {
       setResendTimer(RESEND_COOLDOWN_SECONDS)
       toast.success("OTP resent successfully.")
     } catch (err) {
+      const code = err?.response?.data?.code || err?.code
       const msg = err?.response?.data?.message || err?.message || "Failed to resend OTP."
-      toast.error(msg)
+      if (code === 'ACCOUNT_DELETED' || msg?.toLowerCase().includes('account has been deleted')) {
+        setShowRecoveryModal(true)
+      } else {
+        toast.error(msg)
+      }
     } finally {
       setLoading(false)
       submitting.current = false
@@ -830,6 +842,56 @@ export default function UnifiedOTPFastLogin() {
           </div>
         </div>
       </div>
+
+      {/* Account Deleted - Recovery Modal */}
+      {showRecoveryModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                <ShieldAlert className="w-7 h-7 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Account Deleted</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
+                Your account has been deleted. You can request to recover your account. The admin will review your request and restore access if approved.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowRecoveryModal(false)}
+                className="flex-1 h-12 border border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (isRecoveryLoading) return
+                  setIsRecoveryLoading(true)
+                  try {
+                    const phone = String(phoneNumber).replace(/\D/g, "").slice(-10)
+                    await authAPI.requestAccountRecovery(phone)
+                    setShowRecoveryModal(false)
+                    toast.success("Recovery request submitted! You will be notified once admin approves it.")
+                  } catch (err) {
+                    const errMsg = err?.response?.data?.message || err?.message || "Failed to submit recovery request."
+                    toast.error(errMsg)
+                  } finally {
+                    setIsRecoveryLoading(false)
+                  }
+                }}
+                disabled={isRecoveryLoading}
+                className="flex-1 h-12 bg-[#FE5502] hover:bg-[#E04B00] text-white font-semibold rounded-xl transition-all hover:shadow-lg active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isRecoveryLoading ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>
+                ) : (
+                  "Request Recovery"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

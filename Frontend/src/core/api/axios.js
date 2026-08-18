@@ -147,6 +147,11 @@ axiosInstance.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 
+            // Skip redirect for ACCOUNT_DELETED — this is a business-logic error
+            if (error.response?.data?.code === 'ACCOUNT_DELETED') {
+                return Promise.reject(error);
+            }
+
             // Only reload when we had a token that's now invalid (expired/logged out elsewhere).
             // If no token exists, skip reload to avoid infinite loop on public pages.
             const hasToken = ['auth_seller', 'auth_admin', 'auth_delivery', 'auth_customer', 'user_accessToken', 'accessToken', 'token'].some(

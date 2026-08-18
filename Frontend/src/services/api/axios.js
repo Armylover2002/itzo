@@ -272,6 +272,11 @@ apiClient.interceptors.response.use(
     if (err?.response?.data?.message === 'Invalid or missing contacts view password') {
       return Promise.reject(err);
     }
+    // Skip token refresh for ACCOUNT_DELETED — this is not an auth expiry,
+    // it's a business-logic error that the UI must handle directly.
+    if (err?.response?.data?.code === 'ACCOUNT_DELETED') {
+      return Promise.reject(err);
+    }
     const module = original.contextModule || getModuleFromUrl(original.url);
     const refreshToken = getRefreshToken(module);
     if (!refreshToken) {

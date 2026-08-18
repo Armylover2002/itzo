@@ -1265,14 +1265,29 @@ export default function Profile() {
                     setIsDeletingAccount(true);
                     await userAPI.deleteAccount();
                     toast.success("Account deleted successfully");
-                    clearModuleAuth();
-                    firebaseAuth.signOut().catch(() => {});
-                    setDeleteAccountConfirmOpen(false);
-                    navigate("/food/user/login", { replace: true });
                   } catch (error) {
-                    toast.error(error.message || "Failed to delete account");
-                    setIsDeletingAccount(false);
+                    // If we get 401, it likely means the account was already
+                    // deleted/deactivated OR the session expired. Either way,
+                    // we should clear auth and redirect to login gracefully.
+                    const status = error?.response?.status;
+                    if (status === 401) {
+                      // Session already invalid — just clear and redirect
+                      toast.success("Session ended. Redirecting to login...");
+                    } else {
+                      toast.error(
+                        error?.response?.data?.message ||
+                        error?.message ||
+                        "Failed to delete account"
+                      );
+                      setIsDeletingAccount(false);
+                      return; // Don't clear auth or navigate on non-401 errors
+                    }
                   }
+                  // Always clear auth and redirect after successful delete or 401
+                  clearModuleAuth();
+                  firebaseAuth.signOut().catch(() => {});
+                  setDeleteAccountConfirmOpen(false);
+                  navigate("/user/auth/login", { replace: true });
                 }}
                 disabled={isDeletingAccount}
               >

@@ -103,13 +103,13 @@ export function verifyUserOtp(
   });
 }
 
-export function requestAccountRecovery(phone, otp) {
+export function requestAccountRecovery(phone) {
   const digits = normalizePhone(phone);
   const normalizedPhone =
     digits.length > USER_PHONE_LENGTH
       ? digits.slice(-USER_PHONE_LENGTH)
       : digits;
-  return apiClient.post(AUTH.USER_REQUEST_RECOVERY, { phone: normalizedPhone, otp });
+  return apiClient.post(AUTH.USER_REQUEST_RECOVERY, { phone: normalizedPhone });
 }
 
 /**

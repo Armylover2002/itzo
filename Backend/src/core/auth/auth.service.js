@@ -10,10 +10,10 @@ import { Seller } from "../../modules/quick-commerce/seller/models/seller.model.
 import { FoodReferralSettings } from "../../modules/food/admin/models/referralSettings.model.js";
 import { FoodReferralLog } from "../../modules/food/admin/models/referralLog.model.js";
 import { FoodUserWallet } from "../../modules/food/user/models/userWallet.model.js";
-import { createOrUpdateOtp, verifyOtp } from "../otp/otp.service.js";
+import { createOrUpdateOtp, verifyOtp, deleteOtp } from "../otp/otp.service.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "./token.util.js";
 import { FoodRefreshToken } from "../refreshTokens/refreshToken.model.js";
-import { ValidationError, AuthError } from "./errors.js";
+import { ValidationError, AuthError, NotFoundError } from "./errors.js";
 import { config } from "../../config/env.js";
 import { logger } from "../../utils/logger.js";
 import { sendAdminResetOtpEmail } from "../../utils/email.js";
@@ -95,6 +95,14 @@ export const requestUserOtp = async (phone) => {
     throw new ValidationError("Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.");
   }
 
+  // Block OTP generation for deleted users
+  const user = await FoodUser.findOne({ phone: digits, role: 'USER' }).select('isDeleted').lean();
+  if (user && user.isDeleted) {
+    const err = new AuthError("Your account has been deleted.");
+    err.code = "ACCOUNT_DELETED";
+    throw err;
+  }
+
   const otp = await createOrUpdateOtp(digits);
   // TODO: integrate SMS provider here
   const shouldExposeOtp =
@@ -104,14 +112,8 @@ export const requestUserOtp = async (phone) => {
 };
 
 
-export const requestAccountRecovery = async (phone, otp) => {
-  const result = await verifyOtp(phone, otp);
-
-  if (!result.valid) {
-    throw new AuthError(result.reason || "OTP verification failed");
-  }
-
-  const normalizedPhone = normalizePhone(phone);
+export const requestAccountRecovery = async (phone) => {
+  const normalizedPhone = String(phone).replace(/^\+?91/, "").replace(/\D/g, "");
   const user = await FoodUser.findOne({ phone: normalizedPhone, role: 'USER' });
   
   if (!user) {
@@ -123,9 +125,10 @@ export const requestAccountRecovery = async (phone, otp) => {
   }
 
   user.deletionRequest = {
-    ...(user.deletionRequest || {}),
     status: 'recovery_pending',
-    recoveryRequestedAt: new Date()
+    reason: user.deletionRequest?.reason || 'User requested account deletion',
+    requestedAt: user.deletionRequest?.requestedAt || new Date(),
+    reviewedAt: null
   };
 
   await user.save();
@@ -143,7 +146,7 @@ export const verifyUserOtpAndLogin = async (
   // Normalize to 10-digit format (same as requestUserOtp)
   const normalizedPhone = String(phone).replace(/^\+?91/, "").replace(/\D/g, "");
 
-  const result = await verifyOtp(normalizedPhone, otp);
+  const result = await verifyOtp(normalizedPhone, otp, { keepOnSuccess: true });
 
   if (!result.valid) {
     throw new AuthError(result.reason || "OTP verification failed");
@@ -177,19 +180,22 @@ export const verifyUserOtpAndLogin = async (
     if (needsSave) await userDoc.save();
   }
 
-  // Block login for deactivated users
-  if (userDoc.isActive === false) {
-    throw new AuthError(
-      "Your account has been deactivated. Please contact support.",
-    );
-  }
-
   // Block login for deleted users
   if (userDoc.isDeleted) {
     const err = new AuthError("Your account has been deleted.");
     err.code = "ACCOUNT_DELETED";
     throw err;
   }
+
+  // Block login for deactivated users
+  if (userDoc.isActive === false) {
+    const err = new AuthError("Your account has been deactivated. Please contact support.");
+    err.code = "ACCOUNT_DEACTIVATED";
+    throw err;
+  }
+
+  // Account is active and not deleted, so we can consume the OTP
+  await deleteOtp(normalizedPhone);
 
   // Update FCM token if provided
   if (fcmToken) {
