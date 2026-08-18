@@ -824,7 +824,7 @@ export default function UnifiedOTPFastLogin() {
             <p className="mb-2">By continuing, you agree to our</p>
             <div className="flex justify-center gap-1.5 flex-wrap">
               <Link to="/profile/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                Terms of Service
+                Terms & Conditions
               </Link>
               <span>•</span>
               <Link to="/profile/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">

@@ -197,7 +197,7 @@ export default function RestaurantProfilePage() {
           <div className="flex justify-center gap-4 mt-2 text-xs text-gray-500 font-medium">
             <a href="#">Privacy Policy</a>
             <span>•</span>
-            <a href="#">Terms of Service</a>
+            <a href="#">Terms & Conditions</a>
           </div>
         </div>
       </div>

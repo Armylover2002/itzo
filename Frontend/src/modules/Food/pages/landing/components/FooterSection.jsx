@@ -138,7 +138,7 @@ const FooterSection = React.memo(function FooterSection() {
             <ul className="space-y-2.5 text-gray-600 text-[14px]">
               <li><a href="/profile/privacy" className="hover:text-black transition-colors">Privacy</a></li>
               <li><a href="/profile/privacy" className="hover:text-black transition-colors">Security</a></li>
-              <li><a href="/profile/terms" className="hover:text-black transition-colors">Terms of Service</a></li>
+              <li><a href="/profile/terms" className="hover:text-black transition-colors">Terms & Conditions</a></li>
               <li><a href="/support" className="hover:text-black transition-colors">Help & Support</a></li>
             </ul>
           </div>
@@ -175,7 +175,7 @@ const FooterSection = React.memo(function FooterSection() {
         {/* Bottom Text */}
         <div className="border-t border-gray-200 pt-6 mt-2">
           <p className="text-gray-500 text-[13px] leading-relaxed">
-            By continuing past this page, you agree to our Terms of Service, Cookie Policy, Privacy Policy and Content Policies. All trademarks are properties of their respective owners 2026 © ItzoFood Partners Private Limited. All rights reserved.
+            By continuing past this page, you agree to our Terms & Conditions, Cookie Policy, Privacy Policy and Content Policies. All trademarks are properties of their respective owners 2026 © ItzoFood Partners Private Limited. All rights reserved.
           </p>
         </div>
       </div>

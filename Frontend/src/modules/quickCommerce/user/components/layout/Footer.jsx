@@ -167,7 +167,7 @@ const Footer = () => {
                     <p className="md:text-base text-white/60">&copy; {new Date().getFullYear()} {settings?.appName || 'App'}. All rights reserved.</p>
                     <div className="flex gap-6 justify-center md:justify-end mt-4 md:mt-0 md:gap-12">
                         <a href="#" className="hover:text-amber-200 md:text-base text-white/60 transition-all">Privacy Policy</a>
-                        <a href="#" className="hover:text-amber-200 md:text-base text-white/60 transition-all">Terms of Service</a>
+                        <a href="#" className="hover:text-amber-200 md:text-base text-white/60 transition-all">Terms & Conditions</a>
                     </div>
                 </div>
             </div>

@@ -13,7 +13,7 @@ export default function Terms() {
   const goBack = useAppBackNavigation()
   const [loading, setLoading] = useState(true)
   const [termsData, setTermsData] = useState({
-    title: 'Terms of Service',
+    title: 'Terms & Conditions',
     content: ''
   })
 
@@ -26,7 +26,7 @@ export default function Terms() {
       setLoading(true)
       const response = await api.get(`${API_ENDPOINTS.ADMIN.TERMS_PUBLIC}?role=user`)
       if (response.data.success) {
-        setTermsData(response.data.data || { title: 'Terms of Service', content: '' })
+        setTermsData(response.data.data || { title: 'Terms & Conditions', content: '' })
       }
     } catch (error) {
       console.error('Error fetching terms data:', error)
@@ -69,7 +69,7 @@ export default function Terms() {
           </Button>
           <div className="flex-1">
              <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white tracking-tight leading-none">
-               {termsData.title || "Terms of Service"}
+               {termsData.title || "Terms & Conditions"}
              </h1>
              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">ItzoFood Policy</p>
           </div>

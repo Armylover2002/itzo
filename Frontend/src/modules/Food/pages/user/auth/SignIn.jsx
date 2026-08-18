@@ -258,9 +258,9 @@ export default function SignIn() {
           <div className="text-center text-[11px] md:text-xs text-gray-400 dark:text-gray-500 pt-4 pb-2 border-t border-gray-100 dark:border-neutral-800 mt-6">
             <p className="mb-2">By continuing, you agree to our</p>
             <div className="flex justify-center gap-1.5 flex-wrap">
-              <Link to="/profile/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                Terms of Service
-              </Link>
+              <a href="/profile/terms" className="hover:text-black transition-colors font-medium underline underline-offset-2">
+                Terms & Conditions
+              </a>
               <span>•</span>
               <Link to="/profile/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                 Privacy Policy
