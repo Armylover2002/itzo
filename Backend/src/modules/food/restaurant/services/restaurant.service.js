@@ -8,6 +8,7 @@ import { ValidationError } from '../../../../core/auth/errors.js';
 import mongoose from 'mongoose';
 import { FoodZone } from '../../admin/models/zone.model.js';
 import { FoodOffer } from '../../admin/models/offer.model.js';
+import { FoodItem } from '../../admin/models/food.model.js';
 import { getRestaurantDiningSnapshot, submitRestaurantDiningRequest } from '../../dining/services/dining.service.js';
 import { 
     notifyAdminsSafely, 
@@ -1470,6 +1471,10 @@ export const listApprovedRestaurants = async (query = {}) => {
             ];
         }
     }
+
+    // Only show restaurants that have at least one approved dish
+    const restaurantsWithDishes = await FoodItem.distinct('restaurantId', { approvalStatus: 'approved' });
+    filter._id = { $in: restaurantsWithDishes };
 
     // Optional zone polygon filter (when restaurant.zoneId is not set yet).
     const zoneFilter = await buildZoneRestaurantFilter(query.zoneId);

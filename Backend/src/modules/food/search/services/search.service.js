@@ -64,7 +64,11 @@ export const searchUnified = async (query = {}, options = {}) => {
     const regex = term ? new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') : null;
 
     // 1. Initial Filter (approved status and basic conditions)
-    const restaurantFilter = { status: 'approved' };
+    const restaurantsWithDishes = await FoodItem.distinct('restaurantId', { approvalStatus: 'approved' });
+    const restaurantFilter = { 
+        status: 'approved',
+        _id: { $in: restaurantsWithDishes }
+    };
     
     console.log(`[Search-Service] Querying with term: "${term}", categoryId: "${categoryId}", zoneId: "${zoneId}"`);
 
