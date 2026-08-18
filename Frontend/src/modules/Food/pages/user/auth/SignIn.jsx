@@ -15,10 +15,14 @@ export default function SignIn() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [formData, setFormData] = useState({
-    phone: "",
+  const [formData, setFormData] = useState(() => ({
+    phone: sessionStorage.getItem("login_temp_phone") || "",
     countryCode: "+91", // required; default +91 for India
-  })
+  }))
+
+  useEffect(() => {
+    sessionStorage.setItem("login_temp_phone", formData.phone)
+  }, [formData.phone])
 
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)

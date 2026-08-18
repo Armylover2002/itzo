@@ -59,7 +59,12 @@ export default function UnifiedOTPFastLogin() {
     return () => clearInterval(interval)
   }, [backgroundImages.length])
   const RESEND_COOLDOWN_SECONDS = 60
-  const [phoneNumber, setPhoneNumber] = useState("")
+  const [phoneNumber, setPhoneNumber] = useState(() => sessionStorage.getItem("login_temp_phone") || "")
+  
+  useEffect(() => {
+    sessionStorage.setItem("login_temp_phone", phoneNumber)
+  }, [phoneNumber])
+
   const [otp, setOtp] = useState("")
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
