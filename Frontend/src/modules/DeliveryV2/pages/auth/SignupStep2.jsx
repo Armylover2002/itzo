@@ -117,7 +117,7 @@ const sanitizeUploadedDocs = (docs) => ({
 })
 
 const hasDocumentValue = (localFile, uploadedValue) => {
-  if (localFile instanceof File) return true
+  if (localFile instanceof File || localFile instanceof Blob) return true
   if (typeof uploadedValue === "string") return uploadedValue.trim().length > 0
   if (uploadedValue && typeof uploadedValue === "object") {
     if (typeof uploadedValue.url === "string" && uploadedValue.url.trim()) return true
@@ -304,7 +304,7 @@ export default function SignupStep2() {
   useEffect(() => {
     return () => {
       Object.values(documents).forEach((file) => {
-        if (file instanceof File) {
+        if (file instanceof File || file instanceof Blob) {
           const previewUrl = file.previewUrl || file._previewUrl
           if (previewUrl) {
             URL.revokeObjectURL(previewUrl)
@@ -320,7 +320,7 @@ export default function SignupStep2() {
     if (uploaded?.url) return uploaded.url
 
     const localFile = documents[docType]
-    if (localFile instanceof File) {
+    if (localFile instanceof File || localFile instanceof Blob) {
       if (!localFile._previewUrl) {
         localFile._previewUrl = URL.createObjectURL(localFile)
       }
@@ -624,7 +624,7 @@ export default function SignupStep2() {
               }}
               type="file"
               className="hidden"
-              accept=".jpg,.jpeg,.png,.webp,.heic,.heif,image/jpeg,image/png,image/webp,image/heic,image/heif"
+              accept="*/*"
               onClick={(e) => {
                 e.target.value = ""
               }}
