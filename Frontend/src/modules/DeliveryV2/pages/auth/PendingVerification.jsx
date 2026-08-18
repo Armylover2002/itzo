@@ -54,15 +54,7 @@ export default function PendingVerification() {
               You can sign in later to check your approval status.
             </p>
 
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => navigate("/food/delivery/profile/details")}
-                className="text-xs font-semibold text-primary hover:underline"
-              >
-                View Registered Details
-              </button>
-            </div>
+
           </div>
         </div>
       </div>
