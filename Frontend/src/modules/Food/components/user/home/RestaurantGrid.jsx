@@ -160,7 +160,7 @@ const FoodRestaurantCard = memo(({
                   <span className="font-medium text-gray-700 dark:text-gray-300">{restaurant.distance}</span>
                 </div>
 
-                {restaurant.offer && (
+                {typeof restaurant.offer === 'string' && restaurant.offer.trim() !== '' && restaurant.offer.trim() !== 'null' && restaurant.offer.trim() !== 'undefined' && (
                   <div className="mt-auto flex items-center gap-2 text-sm transition-transform duration-300 group-hover:translate-x-1 lg:text-base">
                     <BadgePercent className="h-4 w-4 text-black lg:h-5 lg:w-5" strokeWidth={2} />
                     <span className="font-medium text-gray-700 dark:text-gray-300">{restaurant.offer}</span>
