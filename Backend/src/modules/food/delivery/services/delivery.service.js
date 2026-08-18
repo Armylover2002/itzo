@@ -19,11 +19,13 @@ export const registerDeliveryPartner = async (payload, files) => {
 
     const existing = await FoodDeliveryPartner.findOne({ phone });
     if (existing) {
-        if (existing.status !== 'rejected') {
+        if (!existing.isDeleted && existing.status !== 'rejected') {
             throw new ValidationError('Delivery partner with this phone already exists');
         }
-        // If rejected, delete the old record so they can start fresh with same phone
-        await FoodDeliveryPartner.deleteMany({ phone });
+        if (existing.status === 'rejected' && !existing.isDeleted) {
+            // If rejected, delete the old record so they can start fresh with same phone
+            await FoodDeliveryPartner.deleteMany({ phone });
+        }
     }
 
     const images = {};
@@ -44,23 +46,54 @@ export const registerDeliveryPartner = async (payload, files) => {
         );
     }
 
-    const partner = await FoodDeliveryPartner.create({
-        name,
-        phone,
-        email: email && String(email).trim() ? String(email).trim() : undefined,
-        countryCode,
-        address,
-        city,
-        state,
-        vehicleType,
-        vehicleName,
-        vehicleNumber,
-        drivingLicenseNumber,
-        panNumber,
-        aadharNumber,
-        status: 'pending',
-        ...images
-    });
+    let partner;
+
+    if (existing && existing.isDeleted) {
+        // Resurrect soft-deleted account
+        existing.isDeleted = false;
+        existing.deletedAt = undefined;
+        existing.status = 'approved';
+        existing.isActive = true;
+        
+        existing.name = name;
+        if (email && String(email).trim()) existing.email = String(email).trim();
+        existing.countryCode = countryCode;
+        existing.address = address;
+        existing.city = city;
+        existing.state = state;
+        existing.vehicleType = vehicleType;
+        existing.vehicleName = vehicleName;
+        existing.vehicleNumber = vehicleNumber;
+        existing.drivingLicenseNumber = drivingLicenseNumber;
+        existing.panNumber = panNumber;
+        existing.aadharNumber = aadharNumber;
+        
+        if (images.profilePhoto) existing.profilePhoto = images.profilePhoto;
+        if (images.aadharPhoto) existing.aadharPhoto = images.aadharPhoto;
+        if (images.panPhoto) existing.panPhoto = images.panPhoto;
+        if (images.drivingLicensePhoto) existing.drivingLicensePhoto = images.drivingLicensePhoto;
+        
+        await existing.save();
+        partner = existing;
+    } else {
+        partner = await FoodDeliveryPartner.create({
+            name,
+            phone,
+            email: email && String(email).trim() ? String(email).trim() : undefined,
+            countryCode,
+            address,
+            city,
+            state,
+            vehicleType,
+            vehicleName,
+            vehicleNumber,
+            drivingLicenseNumber,
+            panNumber,
+            aadharNumber,
+            status: 'pending',
+            ...images
+        });
+    }
 
     // Update FCM token if provided
     if (fcmToken) {

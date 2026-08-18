@@ -556,9 +556,7 @@ export const verifyDeliveryOtpAndLogin = async (phone, otp, fcmToken, platform) 
   }
 
   if (deliveryPartner.isDeleted) {
-    throw new AuthError(
-      "Your account has been deleted.",
-    );
+    return { needsRegistration: true, phone };
   }
 
   // Update FCM token if provided - CRITICAL: do this BEFORE returning pendingApproval

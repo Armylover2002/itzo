@@ -708,7 +708,7 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
                               <span className="text-xs">
-                                Account Status: <span className={`${dm.isActive !== false ? 'text-emerald-700' : 'text-rose-700'} underline`}>{dm.isActive !== false ? "active" : "inactive"}</span>
+                                Account Status: <span className={`${dm.isDeleted ? 'text-red-700' : dm.isActive !== false ? 'text-emerald-700' : 'text-rose-700'} underline`}>{dm.isDeleted ? "deleted" : dm.isActive !== false ? "active" : "inactive"}</span>
                               </span>
                             </div>
                           </td>
