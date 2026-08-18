@@ -52,8 +52,8 @@ export const registerDeliveryPartner = async (payload, files) => {
         // Resurrect soft-deleted account
         existing.isDeleted = false;
         existing.deletedAt = undefined;
-        existing.status = 'approved';
-        existing.isActive = true;
+        existing.status = 'pending';
+        existing.isActive = false;
         
         existing.name = name;
         if (email && String(email).trim()) existing.email = String(email).trim();
