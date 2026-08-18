@@ -534,6 +534,14 @@ export const notifyAdminsSafely = async (payload = {}) => {
             ownerType: 'ADMIN',
             ownerId: String(a._id)
         }));
+
+        const { getIO, rooms } = await import('../../config/socket.js');
+        const io = getIO();
+        if (io) {
+            targets.forEach(target => {
+                io.to(rooms.admin(target.ownerId)).emit('admin_notification', payload);
+            });
+        }
         
         return await sendNotificationToOwners(targets, payload);
     } catch (e) {
