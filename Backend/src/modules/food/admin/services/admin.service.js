@@ -3641,6 +3641,15 @@ export async function approveRestaurant(id, performer = null) {
         } catch (e) {
             console.error('Failed to send restaurant approval notification:', e);
         }
+
+        if (updated.ownerEmail) {
+            try {
+                const { sendRestaurantApprovalEmail } = await import('../../../../utils/email.js');
+                await sendRestaurantApprovalEmail(updated.ownerEmail, updated.restaurantName);
+            } catch (e) {
+                console.error('Failed to send restaurant approval email:', e);
+            }
+        }
     }
     return updated;
 }

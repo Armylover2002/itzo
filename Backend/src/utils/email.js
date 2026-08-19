@@ -215,4 +215,49 @@ export async function sendLicensingAcknowledgementEmail(to, ownerName, restauran
     }
 }
 
+/**
+ * Send approval notification email to a restaurant.
+ * @param {string} to - Recipient email
+ * @param {string} restaurantName - The restaurant's name
+ * @returns {Promise<boolean>}
+ */
+export async function sendRestaurantApprovalEmail(to, restaurantName) {
+    const trans = getTransporter();
+    if (!trans) {
+        logger.warn('Restaurant approval email skipped: SMTP not configured');
+        return false;
+    }
+    const from = config.emailFrom || config.emailUser;
+    const subject = `Your Restaurant "${restaurantName}" is Approved! 🎉 – ItzoFood`;
+    const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 500px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #ea580c;">Congratulations! 🎉</h2>
+  <p>We are thrilled to inform you that your restaurant <strong>${restaurantName}</strong> has been successfully verified and approved on ItzoFood.</p>
+  <p>You can now log into your restaurant dashboard to manage your menu, view analytics, and start accepting orders.</p>
+  <p>Welcome to the ItzoFood family! We look forward to a successful partnership.</p>
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+  <p style="color: #999; font-size: 12px;">Best Regards,<br>ItzoFood Team</p>
+</body>
+</html>`;
+    const text = `Congratulations!\n\nWe are thrilled to inform you that your restaurant ${restaurantName} has been successfully verified and approved on ItzoFood.\n\nYou can now log into your restaurant dashboard and start accepting orders.\n\nBest Regards,\nItzoFood Team`;
+
+    try {
+        await trans.sendMail({
+            from: typeof from === 'string' && from.includes('<') ? from : `ItzoFood <${from}>`,
+            to,
+            subject,
+            text,
+            html
+        });
+        logger.info(`Restaurant approval email sent to ${to}`);
+        return true;
+    } catch (err) {
+        logger.error(`Failed to send restaurant approval email to ${to}:`, err.message);
+        return false;
+    }
+}
+
 
