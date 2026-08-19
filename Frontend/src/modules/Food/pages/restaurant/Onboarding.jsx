@@ -2633,14 +2633,18 @@ export default function RestaurantOnboarding() {
 
         <footer className={`px-4 sm:px-6 py-3 bg-white ${keyboardInset ? "hidden" : ""}`}>
           <div className="flex justify-between items-center">
-            <Button
-              variant="ghost"
-              disabled={step === 1 || saving}
-              onClick={() => { goToStep(step - 1); window.scrollTo({ top: 0, behavior: "instant" }) }}
-              className="text-sm text-gray-700 bg-transparent"
-            >
-              Back
-            </Button>
+            {step > 1 ? (
+              <Button
+                variant="ghost"
+                disabled={saving}
+                onClick={() => { goToStep(step - 1); window.scrollTo({ top: 0, behavior: "instant" }) }}
+                className="text-sm text-gray-700 bg-transparent"
+              >
+                Back
+              </Button>
+            ) : (
+              <div />
+            )}
             <Button
               onClick={handleNext}
               disabled={saving || (step === 4 && !isEditing)}

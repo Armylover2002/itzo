@@ -378,8 +378,8 @@ export default function SellerOnboarding() {
       return;
     }
 
-    if (form.accountNumber && !/^\d{6,20}$/.test(form.accountNumber)) {
-      toast.error("Account number must be 6–20 digits (numbers only)");
+    if (form.accountNumber && !/^\d{9,18}$/.test(form.accountNumber)) {
+      toast.error("Account number must be 9–18 digits (numbers only)");
       return;
     }
 
@@ -681,14 +681,14 @@ export default function SellerOnboarding() {
                   <label className="text-xs font-bold text-slate-500">Account number <span className="text-red-500">*</span></label>
                   <input
                     required
-                    className={`rounded-2xl border px-4 py-3 font-semibold outline-none focus:border-slate-900 ${form.accountNumber && !/^\d{6,20}$/.test(form.accountNumber) ? "border-red-400 bg-red-50" : "border-slate-200"}`}
-                    placeholder="Account number (6–20 digits)"
+                    className={`rounded-2xl border px-4 py-3 font-semibold outline-none focus:border-slate-900 ${form.accountNumber && !/^\d{9,18}$/.test(form.accountNumber) ? "border-red-400 bg-red-50" : "border-slate-200"}`}
+                    placeholder="Account number (9–18 digits)"
                     value={form.accountNumber}
-                    maxLength={20}
-                    onChange={(e) => updateField("accountNumber", e.target.value.replace(/\D/g, "").slice(0, 20))}
+                    maxLength={18}
+                    onChange={(e) => updateField("accountNumber", e.target.value.replace(/\D/g, "").slice(0, 18))}
                   />
-                  {form.accountNumber && !/^\d{6,20}$/.test(form.accountNumber) && (
-                    <p className="text-xs font-semibold text-red-500 px-1">Account number must be 6–20 digits (numbers only)</p>
+                  {form.accountNumber && !/^\d{9,18}$/.test(form.accountNumber) && (
+                    <p className="text-xs font-semibold text-red-500 px-1">Account number must be 9–18 digits (numbers only)</p>
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
