@@ -1707,7 +1707,11 @@ export default function RestaurantOnboarding() {
           get(["locality"]) ||
           get(["administrative_area_level_2"])
         const state = get(["administrative_area_level_1"])
-        const pincode = get(["postal_code"])
+        let pincode = get(["postal_code"])
+        if (!pincode && formattedAddress) {
+          const match = formattedAddress.match(/\b\d{6}\b/)
+          if (match) pincode = match[0]
+        }
         const lat = place?.geometry?.location?.lat?.()
         const lng = place?.geometry?.location?.lng?.()
         return {
