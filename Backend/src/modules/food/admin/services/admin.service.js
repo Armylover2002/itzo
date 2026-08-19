@@ -3650,6 +3650,16 @@ export async function approveRestaurant(id, performer = null) {
                 console.error('Failed to send restaurant approval email:', e);
             }
         }
+
+        if (updated.ownerPhone) {
+            try {
+                const { sendCustomSms } = await import('../../../../core/otp/otp.service.js');
+                const smsMessage = `Congratulations! Your restaurant ${updated.restaurantName} has been verified and approved on ItzoFood.`;
+                await sendCustomSms(updated.ownerPhone, smsMessage);
+            } catch (e) {
+                console.error('Failed to send restaurant approval SMS:', e);
+            }
+        }
     }
     return updated;
 }

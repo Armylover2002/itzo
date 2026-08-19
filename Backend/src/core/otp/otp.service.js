@@ -87,6 +87,57 @@ const sendSmsViaIndiaHub = async (phone, otp) => {
     }
 };
 
+/**
+ * Sends a custom SMS via SMS India Hub API
+ * @param {string} phone - 10-digit mobile number
+ * @param {string} message - The exact DLT approved text
+ * @param {string} [dltTemplateId] - The specific DLT template ID for this custom message (optional)
+ */
+export const sendCustomSms = async (phone, message, dltTemplateId = null) => {
+    try {
+        if (!config.smsApiKey || !config.smsSenderId) {
+            logger.warn('Custom SMS skipped: SMS credentials not configured');
+            return;
+        }
+        const digits = String(phone || '').replace(/\D/g, '');
+        const msisdn = digits.startsWith('91') ? digits : `91${digits}`;
+
+        const url = new URL('http://cloud.smsindiahub.in/vendorsms/pushsms.aspx');
+        url.searchParams.append('APIKey', config.smsApiKey);
+        url.searchParams.append('sid', config.smsSenderId);
+        url.searchParams.append('msisdn', msisdn);
+        url.searchParams.append('msg', message);
+        url.searchParams.append('gwid', '2');
+        url.searchParams.append('fl', '0');
+        if (config.smsIndiaHubUsername) {
+            url.searchParams.append('uname', config.smsIndiaHubUsername);
+        }
+        
+        // Use the provided template ID, or fallback to the default one in .env
+        const templateIdToUse = dltTemplateId || config.smsDltTemplateId;
+        if (templateIdToUse) {
+            url.searchParams.append('DLT_TE_ID', templateIdToUse);
+        }
+
+        logger.info(`[SMS] Sending custom SMS to ${msisdn}...`);
+        const response = await fetch(url.toString());
+        const resultText = await response.text();
+        
+        let parsed = null;
+        try { parsed = JSON.parse(resultText); } catch (_) { /* */ }
+
+        if (parsed && parsed.ErrorCode && parsed.ErrorCode !== '000') {
+            logger.error(`SMS ERROR for ${phone}: [${parsed.ErrorCode}] ${parsed.ErrorMessage || resultText}`);
+        } else if (!response.ok) {
+            logger.error(`SMS API HTTP error for ${phone}: ${response.status} – ${resultText}`);
+        } else {
+            logger.info(`✅ Custom SMS sent successfully to ${msisdn}`);
+        }
+    } catch (error) {
+        logger.error(`Error sending custom SMS to ${phone}: ${error.message}`);
+    }
+};
+
 export const createOrUpdateOtp = async (phone, options = {}) => {
     const forceRandom = options?.forceRandom === true;
     const phoneCandidates = getPhoneCandidates(phone);
