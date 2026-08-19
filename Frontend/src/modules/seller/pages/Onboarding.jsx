@@ -109,7 +109,16 @@ const getSellerPhone = (seller = {}) => seller.phone || "";
 export default function SellerOnboarding() {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
-  const [form, setForm] = useState(initialState);
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = localStorage.getItem("seller_onboarding_draft");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...initialState, ...(parsed.form || {}) };
+      }
+    } catch (e) {}
+    return initialState;
+  });
   const [qrFile, setQrFile] = useState(null);
   const [licenseFile, setLicenseFile] = useState(null);
   const [panFile, setPanFile] = useState(null);
@@ -121,12 +130,28 @@ export default function SellerOnboarding() {
   const [zonesLoading, setZonesLoading] = useState(true);
   const [isSavingHours, setIsSavingHours] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hoursDraft, setHoursDraft] = useState({ openingTime: "", closingTime: "" });
+  const [hoursDraft, setHoursDraft] = useState(() => {
+    try {
+      const saved = localStorage.getItem("seller_onboarding_draft");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.hoursDraft) return parsed.hoursDraft;
+      }
+    } catch (e) {}
+    return { openingTime: "", closingTime: "" };
+  });
+
+  useEffect(() => {
+    try {
+      if (!isLoading) {
+        localStorage.setItem("seller_onboarding_draft", JSON.stringify({ form, hoursDraft }));
+      }
+    } catch (e) {}
+  }, [form, hoursDraft, isLoading]);
 
   useEffect(() => {
     if (user) {
-      setForm((prev) => ({ ...initialState, phone: getSellerPhone(user) || prev.phone }));
-      setHoursDraft({ openingTime: "", closingTime: "" });
+      setForm((prev) => ({ ...prev, phone: getSellerPhone(user) || prev.phone }));
     }
   }, [user]);
 
@@ -142,8 +167,11 @@ export default function SellerOnboarding() {
       try {
         const response = await sellerApi.getProfile();
         const data = response?.data?.result || {};
-        setForm((prev) => ({ ...initialState, phone: getSellerPhone(data) || prev.phone }));
-        setHoursDraft(parseOpeningHours(data?.shopInfo?.openingHours || data?.openingHours || ""));
+        setForm((prev) => ({ ...prev, phone: getSellerPhone(data) || prev.phone }));
+        setHoursDraft((prev) => {
+          if (prev.openingTime || prev.closingTime) return prev;
+          return parseOpeningHours(data?.shopInfo?.openingHours || data?.openingHours || "");
+        });
       } catch (error) {
         if (error?.response?.status !== 401) {
           toast.error("Failed to load seller onboarding data");
@@ -396,6 +424,9 @@ export default function SellerOnboarding() {
 
       await sellerApi.updateProfile(payload);
       await refreshUser();
+      try {
+        localStorage.removeItem("seller_onboarding_draft");
+      } catch (e) {}
       toast.success("Application submitted for admin approval");
       navigate("/seller/pending", { replace: true });
     } catch (error) {
