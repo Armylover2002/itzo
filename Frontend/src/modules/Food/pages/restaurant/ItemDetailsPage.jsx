@@ -740,6 +740,11 @@ export default function ItemDetailsPage() {
       return
     }
 
+    if (images.length === 0) {
+      toast.error("Please add an item image")
+      return
+    }
+
     try {
       setUploadingImages(true)
 
