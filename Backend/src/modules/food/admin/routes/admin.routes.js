@@ -44,6 +44,7 @@ router.post('/customers/:id/reject-recovery', checkPermission('food::customer_ma
 router.patch('/customers/:id/status', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerStatus);
 router.patch('/customers/:id/cod-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerCodAccess);
 router.patch('/customers/cod-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersCodAccess);
+router.patch('/customers/:id/soft-delete', checkPermission('food::customer_management::customers', 'edit'), adminController.softDeleteCustomer);
 
 // ----- Safety / Emergency Reports -----
 router.get('/safety-emergency-reports', adminController.getSafetyEmergencyReports);

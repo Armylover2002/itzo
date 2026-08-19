@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Search, Download, ChevronDown, Calendar, Eye, FileDown, FileSpreadsheet, FileText, X, Mail, Phone, MapPin, Package, IndianRupee, Calendar as CalendarIcon, User, CheckCircle, XCircle } from "lucide-react"
+import { Search, Download, ChevronDown, Calendar, Eye, EyeOff, FileDown, FileSpreadsheet, FileText, X, Mail, Phone, MapPin, Package, IndianRupee, Calendar as CalendarIcon, User, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { exportCustomersToCSV, exportCustomersToExcel, exportCustomersToPDF } from "@food/components/admin/customers/customersExportUtils"
 import { adminAPI } from "@food/api"
@@ -31,6 +31,13 @@ export default function Customers() {
   const [contactsViewPassword, setContactsViewPassword] = useState("")
   const [isContactsAuthorized, setIsContactsAuthorized] = useState(false)
   const [authorizingContacts, setAuthorizingContacts] = useState(false)
+
+  // Soft delete state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteTargetCustomer, setDeleteTargetCustomer] = useState(null)
+  const [deletePassword, setDeletePassword] = useState("")
+  const [deletingCustomer, setDeletingCustomer] = useState(false)
+  const [showDeletePassword, setShowDeletePassword] = useState(false)
 
   const filteredUserContacts = useMemo(() => {
     if (!contactsSearchQuery.trim()) return userContacts
@@ -341,6 +348,37 @@ export default function Customers() {
       setAuthorizingContacts(false);
     }
   };
+
+  const handleDeleteClick = (customer) => {
+    setDeleteTargetCustomer(customer)
+    setDeletePassword("")
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletePassword.trim()) {
+      toast.error("Please enter the password")
+      return
+    }
+    const customerId = getCustomerId(deleteTargetCustomer)
+    if (!customerId) return
+
+    try {
+      setDeletingCustomer(true)
+      await adminAPI.softDeleteCustomer(customerId, deletePassword)
+      toast.success(`Customer "${deleteTargetCustomer?.name || ''}" deleted successfully`)
+      setCustomers(prev => prev.filter(c => getCustomerId(c) !== customerId))
+      setTotalCustomers(prev => Math.max(0, prev - 1))
+      setShowDeleteDialog(false)
+      setDeleteTargetCustomer(null)
+      setDeletePassword("")
+    } catch (error) {
+      debugError('Error soft deleting customer:', error)
+      toast.error(error?.response?.data?.message || 'Failed to delete customer')
+    } finally {
+      setDeletingCustomer(false)
+    }
+  }
 
   const handleDownloadContacts = () => {
     if (!userContacts || userContacts.length === 0) {
@@ -712,12 +750,22 @@ export default function Customers() {
                         </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => handleViewDetails(customer._id || customer.id || customer.sl)}
-                          className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleViewDetails(customer._id || customer.id || customer.sl)}
+                            className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                            title="View details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(customer)}
+                            className="p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors"
+                            title="Delete customer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -904,6 +952,7 @@ export default function Customers() {
                         onChange={(e) => setContactsViewPassword(e.target.value)}
                         className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary bg-white"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleVerifyContactsPassword() }}
+                        autoComplete="new-password"
                       />
                       <button
                         onClick={handleVerifyContactsPassword}
@@ -978,6 +1027,79 @@ export default function Customers() {
               <div className="text-sm text-slate-500">No user details available</div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+        if (!open) {
+          setShowDeleteDialog(false)
+          setDeleteTargetCustomer(null)
+          setDeletePassword("")
+        }
+      }}>
+        <DialogContent className="sm:max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-900">Delete Customer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-800">
+                Are you sure you want to delete <strong>{deleteTargetCustomer?.name || "this customer"}</strong>?
+                This customer will no longer be visible to you or themselves.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Enter Password to Confirm
+              </label>
+              <div className="relative">
+                <input
+                  type={showDeletePassword ? "text" : "password"}
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleConfirmDelete() }}
+                  placeholder="Enter admin password"
+                  className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                  autoFocus
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeletePassword(!showDeletePassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setShowDeleteDialog(false); setDeleteTargetCustomer(null); setDeletePassword("") }}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+                disabled={deletingCustomer}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deletingCustomer || !deletePassword.trim()}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {deletingCustomer ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

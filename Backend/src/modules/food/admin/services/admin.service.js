@@ -1366,6 +1366,28 @@ export async function updateCustomerStatus(id, isActive) {
     return updated;
 }
 
+export async function softDeleteCustomer(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const user = await FoodUser.findById(id);
+    if (!user) return null;
+    if (user.isDeleted) return null; // Already deleted
+
+    user.isDeleted = true;
+    user.isActive = false;
+    user.deletionRequest = {
+        status: 'approved',
+        requestedAt: new Date(),
+        reason: 'Deleted by admin'
+    };
+    await user.save();
+
+    // Invalidate all sessions
+    await FoodRefreshToken.deleteMany({ userId: user._id });
+
+    return user.toObject();
+}
+
 export async function getRecoveryRequests(query = {}) {
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 50, 1), 1000);
     const page = Math.max(parseInt(query.page, 10) || 1, 1);

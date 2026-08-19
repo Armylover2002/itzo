@@ -621,6 +621,10 @@ export const adminAPI = {
       },
       { contextModule: "admin" },
     ),
+  softDeleteCustomer: (id, password) =>
+    apiClient.patch(`/food/admin/customers/${String(id)}/soft-delete`, { password }, {
+      contextModule: "admin",
+    }),
   /** Orders (admin) – list, get by id, assign delivery partner */
   getOrders: (params = {}) =>
     apiClient.get("/food/admin/orders", {
