@@ -269,8 +269,8 @@ const MapPicker = ({
         </div>
       }>
       <div className="space-y-4">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3">
+          <div className="relative w-full">
             {isLoaded && (
               <Autocomplete
                 onLoad={(ref) => (autocompleteRef.current = ref)}
@@ -295,7 +295,7 @@ const MapPicker = ({
             type="button"
             onClick={getCurrentLocation}
             disabled={isFetchingLocation}
-            className="shrink-0 whitespace-nowrap px-4"
+            className="w-full shrink-0 whitespace-nowrap px-4 py-2.5 flex justify-center items-center"
             title="Use current location">
             {isFetchingLocation ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
