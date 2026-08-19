@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight, ShieldCheck, Store, Phone, KeyRound } from "lucide-react";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@food/components/ui/button";
 import { useCompanyName } from "@food/hooks/useCompanyName";
 import { useAuth } from "@core/context/AuthContext";
+import { getAppLogo, getCachedSettings } from "@common/utils/businessSettings";
 import { sellerApi } from "../services/sellerApi";
 
 const DEFAULT_COUNTRY_CODE = "+91";
@@ -16,6 +17,20 @@ export default function SellerAuth() {
   const location = useLocation();
   const { login } = useAuth();
   const companyName = useCompanyName();
+  const [logoUrl, setLogoUrl] = useState(() => getAppLogo('seller'));
+
+  useEffect(() => {
+    const handleSettingsUpdate = (e) => {
+      const settings = e.detail || getCachedSettings()
+      if (settings) {
+        const logo = settings.sellerLogo?.url || settings.logo?.url
+        if (logo) setLogoUrl(logo)
+      }
+    }
+    window.addEventListener('businessSettingsUpdated', handleSettingsUpdate)
+    return () => window.removeEventListener('businessSettingsUpdated', handleSettingsUpdate)
+  }, [])
+
   const [step, setStep] = useState("phone");
   const [isLoading, setIsLoading] = useState(false);
   const [phone, setPhone] = useState("");
@@ -160,6 +175,12 @@ export default function SellerAuth() {
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-xl"
           >
+            {logoUrl && (
+              <div className="mb-6 flex justify-center">
+                <img src={logoUrl} alt="Logo" className="h-16 md:h-20 w-auto object-contain drop-shadow-sm" />
+              </div>
+            )}
+
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.3em] text-primary-orange">Partner Access</p>
