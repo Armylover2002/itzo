@@ -1071,6 +1071,25 @@ export default function OrdersMain() {
     };
   }, [navigate]);
 
+  // Poll for approval status if not active
+  useEffect(() => {
+    if (restaurantStatus?.isActive || restaurantStatus?.isLoading) return;
+    
+    const interval = setInterval(async () => {
+      try {
+        const response = await restaurantAPI.getCurrentRestaurant();
+        const restaurant = response?.data?.data?.restaurant || response?.data?.restaurant;
+        if (restaurant && restaurant.isActive) {
+          window.location.reload(); 
+        }
+      } catch (error) {
+        // ignore error during polling
+      }
+    }, 10000); // Poll every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [restaurantStatus?.isActive, restaurantStatus?.isLoading]);
+
   // Handle reverify (resubmit for approval)
   const handleReverify = async () => {
     try {
