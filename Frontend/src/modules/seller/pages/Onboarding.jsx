@@ -709,8 +709,8 @@ export default function SellerOnboarding() {
                 <div className="flex flex-col gap-1 md:col-span-2">
                   <label className="text-xs font-bold text-slate-500">UPI QR image <span className="text-red-500">*</span></label>
                   <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-                    <span>{qrFile?.name || "Upload UPI QR image"}</span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                    <span className="truncate min-w-0 flex-1 mr-2">{qrFile?.name || "Upload UPI QR image"}</span>
+                    <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
                       <Upload className="h-3.5 w-3.5" />
                       Choose
                     </span>
@@ -742,8 +742,8 @@ export default function SellerOnboarding() {
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-slate-500">PAN image <span className="text-red-500">*</span></label>
                   <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-                    <span>{panFile?.name || "Upload PAN image"}</span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                    <span className="truncate min-w-0 flex-1 mr-2">{panFile?.name || "Upload PAN image"}</span>
+                    <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
                       <UploadCloud className="h-3.5 w-3.5" />
                       Choose
                     </span>
@@ -777,8 +777,8 @@ export default function SellerOnboarding() {
                     <div className="flex flex-col gap-1 md:col-span-2">
                       <label className="text-xs font-bold text-slate-500">GST certificate image <span className="text-red-500">*</span></label>
                       <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-                        <span>{gstFile?.name || "Upload GST image"}</span>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                        <span className="truncate min-w-0 flex-1 mr-2">{gstFile?.name || "Upload GST image"}</span>
+                        <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
                           <UploadCloud className="h-3.5 w-3.5" />
                           Choose
                         </span>
@@ -804,8 +804,8 @@ export default function SellerOnboarding() {
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-bold text-slate-500">FSSAI license image <span className="text-red-500">*</span></label>
                   <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-                    <span>{fssaiFile?.name || "Upload FSSAI image"}</span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                    <span className="truncate min-w-0 flex-1 mr-2">{fssaiFile?.name || "Upload FSSAI image"}</span>
+                    <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
                       <UploadCloud className="h-3.5 w-3.5" />
                       Choose
                     </span>
@@ -857,8 +857,8 @@ export default function SellerOnboarding() {
                 <div className="flex flex-col gap-1 md:col-span-2">
                   <label className="text-xs font-bold text-slate-500">Shop license image <span className="text-red-500">*</span></label>
                   <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-                    <span>{licenseFile?.name || "Upload shop license image"}</span>
-                    <span className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
+                    <span className="truncate min-w-0 flex-1 mr-2">{licenseFile?.name || "Upload shop license image"}</span>
+                    <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-amber-500 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white">
                       <Upload className="h-3.5 w-3.5" />
                       Choose
                     </span>
