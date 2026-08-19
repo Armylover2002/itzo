@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import Lenis from "lenis"
-import { ArrowLeft, Settings, ChevronRight } from "lucide-react"
+import { ArrowLeft, Settings, ChevronRight, Clock } from "lucide-react"
 import { Switch } from "@food/components/ui/switch"
 import { toast } from "react-hot-toast"
 import { Card, CardContent } from "@food/components/ui/card"
@@ -539,7 +539,7 @@ export default function RestaurantStatus() {
         <DialogContent className="sm:max-w-md p-4 w-[90%] gap-2 flex flex-col">
           <DialogHeader className="text-center">
             <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
-              <span className="text-3xl">??</span>
+              <Clock className="h-8 w-8 text-orange-600" />
             </div>
             <DialogTitle className="text-lg font-semibold text-gray-900 text-center">
               Outlet Timings Closed
