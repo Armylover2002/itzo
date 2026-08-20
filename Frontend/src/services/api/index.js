@@ -540,6 +540,10 @@ export const adminAPI = {
       { status: status !== false },
       { contextModule: "admin" },
     ),
+  softDeleteRestaurant: (id, password) =>
+    apiClient.patch(`/food/admin/restaurants/${String(id)}/soft-delete`, { password }, {
+      contextModule: "admin",
+    }),
   /** Update restaurant location (admin). Body includes lat/lng + address fields. */
   updateRestaurantLocation: (id, body) =>
     apiClient.patch(

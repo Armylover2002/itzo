@@ -78,6 +78,7 @@ router.patch('/restaurants/:id/location', checkPermission('food::restaurant_mana
 router.patch('/restaurants/:id/menu', checkPermission('food::restaurant_management::restaurants::list', 'edit'), adminController.updateRestaurantMenuById);
 router.patch('/restaurants/:id/approve', checkPermission('food::restaurant_management::restaurants::joining_request', 'edit'), adminController.approveRestaurant);
 router.patch('/restaurants/:id/reject', checkPermission('food::restaurant_management::restaurants::joining_request', 'edit'), adminController.rejectRestaurant);
+router.patch('/restaurants/:id/soft-delete', checkPermission('food::restaurant_management::restaurants::list', 'edit'), adminController.softDeleteRestaurant);
 
 // ----- Categories -----
 router.get('/categories', adminController.getCategories);

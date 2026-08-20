@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Search, Download, ChevronDown, Eye, Settings, ArrowUpDown, Loader2, X, MapPin, Phone, Mail, Clock, Star, Building2, User, FileText, CreditCard, Calendar, Image as ImageIcon, ExternalLink, ShieldX, AlertTriangle, Trash2, Plus } from "lucide-react"
+import { Search, Download, ChevronDown, Eye, EyeOff, Settings, ArrowUpDown, Loader2, X, MapPin, Phone, Mail, Clock, Star, Building2, User, FileText, CreditCard, Calendar, Image as ImageIcon, ExternalLink, ShieldX, AlertTriangle, Trash2, Plus } from "lucide-react"
 import { adminAPI, restaurantAPI, uploadAPI } from "@food/api"
 import { clearModuleAuth } from "@food/utils/auth"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
@@ -173,6 +173,8 @@ export default function RestaurantsList() {
   const [banning, setBanning] = useState(false)
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(null) // { restaurant }
   const [deleting, setDeleting] = useState(false)
+  const [deletePassword, setDeletePassword] = useState("")
+  const [showDeletePassword, setShowDeletePassword] = useState(false)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" })
   const [isEditingDetails, setIsEditingDetails] = useState(false)
   const [savingDetails, setSavingDetails] = useState(false)
@@ -1366,6 +1368,8 @@ export default function RestaurantsList() {
       return
     }
     setDeleteConfirmDialog({ restaurant })
+    setDeletePassword("")
+    setShowDeletePassword(false)
   }
 
   const confirmDeleteRestaurant = async () => {
@@ -1374,6 +1378,10 @@ export default function RestaurantsList() {
       return
     }
     if (!deleteConfirmDialog) return
+    if (!deletePassword.trim()) {
+      toast.error("Please enter the password")
+      return
+    }
 
     const { restaurant } = deleteConfirmDialog
 
@@ -1381,9 +1389,9 @@ export default function RestaurantsList() {
       setDeleting(true)
       const restaurantId = restaurant._id || restaurant.id
 
-      // Delete restaurant via API
+      // Soft delete restaurant via API
       try {
-        await adminAPI.deleteRestaurant(restaurantId)
+        await adminAPI.softDeleteRestaurant(restaurantId, deletePassword)
 
         // Remove from local state on success
         setRestaurants(prevRestaurants =>
@@ -1394,17 +1402,18 @@ export default function RestaurantsList() {
 
         // Close dialog
         setDeleteConfirmDialog(null)
+        setDeletePassword("")
 
         // Show success message
-        alert(`Restaurant "${restaurant.name}" deleted successfully!`)
+        toast.success(`Restaurant "${restaurant.name}" deleted successfully!`)
       } catch (apiErr) {
         debugError("API Error:", apiErr)
-        alert(apiErr.response?.data?.message || "Failed to delete restaurant. Please try again.")
+        toast.error(apiErr.response?.data?.message || "Failed to delete restaurant. Please try again.")
       }
 
     } catch (err) {
       debugError("Error deleting restaurant:", err)
-      alert("Failed to delete restaurant. Please try again.")
+      toast.error("Failed to delete restaurant. Please try again.")
     } finally {
       setDeleting(false)
     }
@@ -1412,6 +1421,7 @@ export default function RestaurantsList() {
 
   const cancelDeleteRestaurant = () => {
     setDeleteConfirmDialog(null)
+    setDeletePassword("")
   }
 
   // Handle export functionality
@@ -2957,9 +2967,34 @@ export default function RestaurantsList() {
                 </div>
               </div>
 
-              <p className="text-sm text-slate-700 mb-6">
-                Are you sure you want to delete this restaurant? This action cannot be undone and will permanently remove all restaurant data, including orders, menu items, and settings.
+              <p className="text-sm text-red-800 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
+                Are you sure you want to delete <strong>{deleteConfirmDialog.restaurant.name}</strong>? This action will hide the restaurant from the admin panel and the restaurant will be shown that their account was deleted by admin.
               </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Enter Password to Confirm
+                </label>
+                <div className="relative">
+                  <input
+                    type={showDeletePassword ? "text" : "password"}
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") confirmDeleteRestaurant() }}
+                    placeholder="Enter admin password"
+                    className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                    autoFocus
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDeletePassword(!showDeletePassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
 
               <div className="flex items-center gap-3">
                 <button
@@ -2971,7 +3006,7 @@ export default function RestaurantsList() {
                 </button>
                 <button
                   onClick={confirmDeleteRestaurant}
-                  disabled={deleting}
+                  disabled={deleting || !deletePassword.trim()}
                   className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {deleting ? (

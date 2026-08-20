@@ -339,7 +339,7 @@ export async function getRestaurants(query) {
     const page = Math.max(parseInt(query.page, 10) || 1, 1);
     const skip = (page - 1) * limit;
     const status = query.status;
-    const filter = {};
+    const filter = { isDeleted: { $ne: true } };
     if (status && ['pending', 'approved', 'rejected'].includes(status)) {
         filter.status = status;
     }
@@ -1386,6 +1386,34 @@ export async function softDeleteCustomer(id) {
     await FoodRefreshToken.deleteMany({ userId: user._id });
 
     return user.toObject();
+}
+
+export async function softDeleteRestaurant(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const restaurant = await FoodRestaurant.findById(id);
+    if (!restaurant) return null;
+    if (restaurant.isDeleted) return null; // Already deleted
+
+    restaurant.isDeleted = true;
+    restaurant.isActive = false;
+    restaurant.deletionRequest = {
+        status: 'approved',
+        requestedAt: new Date(),
+        reason: 'Deleted by admin'
+    };
+    await restaurant.save();
+
+    // Invalidate sessions and clear tokens
+    await Promise.all([
+        FoodRefreshToken.deleteMany({ userId: restaurant._id }),
+        FoodRestaurant.updateOne(
+            { _id: restaurant._id },
+            { $set: { fcmTokens: [], fcmTokenMobile: [] } }
+        ),
+    ]);
+
+    return restaurant.toObject();
 }
 
 export async function getRecoveryRequests(query = {}) {

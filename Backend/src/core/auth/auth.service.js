@@ -449,7 +449,7 @@ export const verifyRestaurantOtpAndLogin = async (phone, otp, fcmToken, platform
   // Block login for deleted restaurants
   if (restaurant.isDeleted) {
     throw new AuthError(
-      "Your account has been deleted.",
+      "Your account has been deleted by admin. Please contact support.",
     );
   }
 
