@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import http from 'http';
 import app from './src/app.js';
 import { config } from './src/config/env.js';
@@ -28,21 +29,22 @@ const gracefulShutdown = async (signal) => {
     }
     server.close(async () => {
         try {
-            await disconnectDB();
-            await closeRedis();
-            await closeBullMQConnection();
             if (expireOffersInterval) clearInterval(expireOffersInterval);
             if (fssaiExpiryInterval) clearInterval(fssaiExpiryInterval);
             if (reportAbsentInterval) clearInterval(reportAbsentInterval);
-            logger.info('Graceful shutdown complete');
+            await disconnectDB();
+            await closeBullMQConnection();
+            await closeRedis();
+            logger.info('Graceful shutdown completed successfully');
             process.exit(0);
         } catch (err) {
-            logger.error(`Shutdown error: ${err.message}`);
+            logger.error(`Error during graceful shutdown: ${err.message}`);
             process.exit(1);
         }
     });
+
     setTimeout(() => {
-        logger.error('Shutdown timeout, forcing exit');
+        logger.error('Could not close connections in time, forcefully shutting down');
         process.exit(1);
     }, SHUTDOWN_TIMEOUT_MS);
 };
@@ -50,10 +52,28 @@ const gracefulShutdown = async (signal) => {
 const startServer = async () => {
     try {
         validateConfig();
-        initializeFirebaseRealtime();
 
-        // 1. Connect to Database (MongoDB)
         await connectDB();
+        
+        try {
+            await connectRedis();
+        } catch (err) {
+            logger.error(`Redis connection failed (server will continue without Redis): ${err.message}`);
+        }
+
+        const httpServer = http.createServer(app);
+        
+        try {
+            initSocket(httpServer);
+        } catch (err) {
+            logger.error(`Socket initialization error: ${err.message}`);
+        }
+
+        try {
+            initializeFirebaseRealtime();
+        } catch (err) {
+            logger.error(`Watchdog startup error: ${err.message}`);
+        }
 
         // 1.5 Initialize Settings Cache
         try {
@@ -63,16 +83,6 @@ const startServer = async () => {
             logger.error(`Settings cache initialization error: ${err.message}`);
         }
 
-        // 2. Create HTTP server from Express app
-        const httpServer = http.createServer(app);
-
-        // 3. Initialize Socket.IO with the HTTP server (Redis adapter when Redis enabled)
-        await initSocket(httpServer);
-
-        if (config.redisEnabled) {
-            await connectRedis();
-        }
-        
         // 5a. Watchdog: Recover stuck orders from previous run
         try {
             const { recoverStuckOrders } = await import('./src/modules/food/orders/services/order.service.js');
@@ -102,19 +112,28 @@ const startServer = async () => {
         });
 
         const withRetry = async (fn, label, retries = 3) => {
+            if (mongoose.connection.readyState !== 1) {
+                logger.warn(`${label} skipped because database is not connected.`);
+                return;
+            }
             for (let attempt = 1; attempt <= retries; attempt++) {
                 try {
                     await fn();
                     return;
                 } catch (err) {
-                    const isTransient = ['ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'].includes(err.code)
-                        || /ECONNRESET|ETIMEDOUT|EPIPE|topology was destroyed|pool was cleared/i.test(err.message);
+                    const isTransient = ['ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN', 'ENOTFOUND'].includes(err.code)
+                        || /ECONNRESET|ETIMEDOUT|EPIPE|topology was destroyed|pool was cleared|getaddrinfo ENOTFOUND/i.test(err.message);
                     if (isTransient && attempt < retries) {
                         const delay = Math.min(2000 * Math.pow(2, attempt - 1), 10000);
                         logger.warn(`${label} transient error (attempt ${attempt}/${retries}): ${err.message}. Retrying in ${delay}ms...`);
                         await new Promise(r => setTimeout(r, delay));
                     } else {
-                        logger.error(`${label} error: ${err.message}`);
+                        // Don't log ENOTFOUND as a critical error if it's the last attempt, it's just a network drop
+                        if (isTransient) {
+                            logger.warn(`${label} aborted after ${retries} attempts due to network failure: ${err.message}`);
+                        } else {
+                            logger.error(`${label} error: ${err.message}`);
+                        }
                     }
                 }
             }
