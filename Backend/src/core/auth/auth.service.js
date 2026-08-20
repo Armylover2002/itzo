@@ -96,19 +96,21 @@ export const requestUserOtp = async (phone) => {
   }
 
   // Block OTP generation for deleted users
-  const user = await FoodUser.findOne({ phone: digits, role: 'USER' }).select('isDeleted').lean();
+  const user = await FoodUser.findOne({ phone: digits, role: 'USER' }).select('isDeleted name').lean();
   if (user && user.isDeleted) {
     const err = new AuthError("Your account has been deleted.");
     err.code = "ACCOUNT_DELETED";
     throw err;
   }
 
+  const isNewUser = !user || !user.name || String(user.name).trim() === "" || String(user.name).toLowerCase() === "null";
+
   const otp = await createOrUpdateOtp(digits);
   // TODO: integrate SMS provider here
   const shouldExposeOtp =
     config.nodeEnv !== "production" || config.useDefaultOtp;
 
-  return shouldExposeOtp ? { otp } : {};
+  return shouldExposeOtp ? { otp, isNewUser } : { isNewUser };
 };
 
 

@@ -75,6 +75,7 @@ export default function UnifiedOTPFastLogin() {
   const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
   const [name, setName] = useState("")
   const [nameError, setNameError] = useState("")
+  const [needsName, setNeedsName] = useState(false)
   // Holds token/user temporarily while user is on the name step (auth is not finalized yet)
   const [pendingAuthData, setPendingAuthData] = useState(null)
   const [logoUrl, setLogoUrl] = useState(() => getAppLogo('user'))
@@ -156,6 +157,7 @@ export default function UnifiedOTPFastLogin() {
     setShowNameInput(false)
     setName("")
     setNameError("")
+    setNeedsName(false)
     setPendingAuthData(null)
   }
 
@@ -179,7 +181,10 @@ export default function UnifiedOTPFastLogin() {
     setLoading(true)
     try {
       clearNameFlow()
-      await authAPI.sendOTP(phone, "login", null)
+      const res = await authAPI.sendOTP(phone, "login", null)
+      if (res?.data?.isNewUser || res?.data?.data?.isNewUser) {
+        setNeedsName(true)
+      }
       setOtpSent(true)
       setOtp("")
       setStep(2)
@@ -210,7 +215,10 @@ export default function UnifiedOTPFastLogin() {
     setLoading(true)
     try {
       clearNameFlow()
-      await authAPI.sendOTP(phone, "login", null)
+      const res = await authAPI.sendOTP(phone, "login", null)
+      if (res?.data?.isNewUser || res?.data?.data?.isNewUser) {
+        setNeedsName(true)
+      }
       setOtp("")
       setOtpSent(true)
       setResendTimer(RESEND_COOLDOWN_SECONDS)
@@ -236,14 +244,7 @@ export default function UnifiedOTPFastLogin() {
     clearNameFlow()
   }
 
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault()
-    const phone = normalizedPhone()
-    const otpDigits = String(otp).replace(/\D/g, "").slice(0, 4)
-    if (otpDigits.length !== 4) {
-      toast.error("Please enter the 4-digit OTP")
-      return
-    }
+  const executeVerifyOTP = async (nameToPass = null) => {
     if (submitting.current) return
     submitting.current = true
     setLoading(true)
@@ -273,11 +274,14 @@ export default function UnifiedOTPFastLogin() {
         console.warn("Failed to get FCM token during login", e);
       }
 
+      const phone = normalizedPhone()
+      const otpDigits = String(otp).replace(/\D/g, "").slice(0, 4)
+
       const response = await authAPI.verifyOTP(
-        phoneNumber, 
+        phone, 
         otpDigits, 
         "login", 
-        null, 
+        nameToPass, 
         null, 
         "user", 
         null, 
@@ -294,25 +298,10 @@ export default function UnifiedOTPFastLogin() {
         throw new Error("Invalid response from server")
       }
 
-      const hasName =
-        user.name &&
-        String(user.name).trim().length > 0 &&
-        String(user.name).toLowerCase() !== "null"
-      const needsName = data.isNewUser === true || !hasName
-
-      if (needsName) {
-        // Do NOT save tokens yet — user must provide their name first.
-        // Tokens are stored in temporary state; they will be committed after handleSubmitName succeeds.
-        setPendingAuthData({ accessToken, refreshToken, user })
-        setShowNameInput(true)
-        setLoading(false)
-        submitting.current = false
-        return
-      }
-
       setAuthData("user", accessToken, user, refreshToken)
       window.dispatchEvent(new Event("userAuthChanged"))
-      toast.success("Login successful!")
+      clearNameFlow()
+      toast.success(nameToPass ? "Welcome! Your profile is ready." : "Login successful!")
       navigate(redirectTo, { replace: true })
     } catch (err) {
       const status = err?.response?.status
@@ -329,6 +318,22 @@ export default function UnifiedOTPFastLogin() {
       setLoading(false)
       submitting.current = false
     }
+  }
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault()
+    const otpDigits = String(otp).replace(/\D/g, "").slice(0, 4)
+    if (otpDigits.length !== 4) {
+      toast.error("Please enter the 4-digit OTP")
+      return
+    }
+    
+    if (needsName) {
+      setShowNameInput(true)
+      return
+    }
+
+    await executeVerifyOTP(null)
   }
 
   const handleSubmitName = async (e) => {
@@ -351,53 +356,10 @@ export default function UnifiedOTPFastLogin() {
       return
     }
 
-    if (!pendingAuthData?.accessToken) {
-      toast.error("Session expired. Please log in again.")
-      clearNameFlow()
-      setStep(1)
-      setOtp("")
-      return
-    }
-
-    if (submitting.current) return
-    submitting.current = true
-    setLoading(true)
     setNameError("")
-
-    try {
-      // Use the pending token directly in the Authorization header since the user is not
-      // officially logged in yet (setAuthData has not been called).
-      const response = await api.patch(
-        "/food/user/profile",
-        { name: trimmedName },
-        { headers: { Authorization: `Bearer ${pendingAuthData.accessToken}` } }
-      )
-      const updatedUser =
-        response?.data?.data?.user ||
-        response?.data?.user ||
-        response?.data?.data ||
-        response?.data
-
-      // Now that name is confirmed saved, finalize login.
-      setAuthData("user", pendingAuthData.accessToken, { ...(pendingAuthData.user || {}), name: trimmedName, ...(updatedUser || {}) }, pendingAuthData.refreshToken)
-      window.dispatchEvent(new Event("userAuthChanged"))
-      clearNameFlow()
-      toast.success("Welcome! Your profile is ready.")
-      navigate(redirectTo, { replace: true })
-    } catch (err) {
-      const status = err?.response?.status
-      let msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Failed to save your name."
-      if (status === 401) {
-        msg = "Session expired. Please log in again."
-        clearNameFlow()
-        setStep(1)
-        setOtp("")
-      }
-      toast.error(msg)
-    } finally {
-      setLoading(false)
-      submitting.current = false
-    }
+    
+    // Pass the name to our deferred OTP verification
+    await executeVerifyOTP(trimmedName)
   }
 
   useEffect(() => {
