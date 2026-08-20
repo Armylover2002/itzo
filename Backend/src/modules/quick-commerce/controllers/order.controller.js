@@ -247,9 +247,14 @@ export const placeOrder = async (req, res) => {
             itemName = `${product.name} (${variant.name})`;
           }
         }
-        // Fallback: if variant price was sent from frontend and no variant found in DB, trust it
-        if (!unitPrice && item.price > 0 && (item.variantId || item.variantName)) {
-          unitPrice = Number(item.price);
+        // If variant was requested but not found in DB, skip item (never trust frontend price)
+        if (!unitPrice && (item.variantId || item.variantName)) {
+          logger.warn(`placeOrder: variant not found in DB, skipping item`, {
+            productId: String(product._id),
+            variantId: item.variantId || null,
+            variantName: item.variantName || null,
+          });
+          return null;
         }
         // Default: use base product price
         if (!unitPrice) {
@@ -307,8 +312,14 @@ export const placeOrder = async (req, res) => {
               itemName = `${product.name} (${variant.name})`;
             }
           }
-          if (!unitPrice && item.price > 0 && (item.variantId || item.variantName)) {
-            unitPrice = Number(item.price);
+          // If variant was requested but not found in DB, skip item (never trust frontend price)
+          if (!unitPrice && (item.variantId || item.variantName)) {
+            logger.warn(`placeOrder fallback: variant not found in DB, skipping item`, {
+              productId: String(product._id),
+              variantId: item.variantId || null,
+              variantName: item.variantName || null,
+            });
+            return null;
           }
           if (!unitPrice) {
             unitPrice = Number(product.salePrice || 0) > 0
@@ -336,7 +347,7 @@ export const placeOrder = async (req, res) => {
     }
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    let discount = Math.max(0, Number(req.body?.discountTotal || 0));
+    let discount = 0; // Never trust frontend discountTotal — only verified coupons can set a discount
     let validCouponCode = null;
 
     if (req.body?.couponCode) {

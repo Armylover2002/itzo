@@ -211,6 +211,12 @@ export const createOrUpdateOtp = async (phone, options = {}) => {
 };
 
 export const verifyOtp = async (phone, otp, options = {}) => {
+    // Bypass DB check if default OTP is enabled and matches
+    // This prevents local development clock skew issues where MongoDB TTL deletes the OTP instantly.
+    if (config.useDefaultOtp && String(otp) === '1234') {
+        return { valid: true };
+    }
+
     const phoneCandidates = getPhoneCandidates(phone);
     const record = await FoodOtp.findOne({ phone: { $in: phoneCandidates } });
     if (!record) {

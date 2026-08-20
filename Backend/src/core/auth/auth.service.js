@@ -152,7 +152,7 @@ export const verifyUserOtpAndLogin = async (
     throw new AuthError(result.reason || "OTP verification failed");
   }
 
-  let userDoc = await FoodUser.findOne({ phone: normalizedPhone });
+  let userDoc = await FoodUser.findOne({ phone: normalizedPhone, role: 'USER' });
   
   // Ensure user exists and mark as verified on successful OTP.
   // Check if user is new or hasn't provided a name yet
