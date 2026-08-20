@@ -905,6 +905,9 @@ export const verifySellerOtpController = async (req, res) => {
     });
 
     if (seller && seller.isDeleted) {
+      if (seller.deletionRequest?.reason === 'Account self-deleted by seller') {
+        return sendError(res, 403, "Account with this number earlier deleted by seller.");
+      }
       return sendError(res, 403, "Your account has been deleted by admin. Please contact support.");
     }
 
