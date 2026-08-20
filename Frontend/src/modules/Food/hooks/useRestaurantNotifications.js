@@ -60,8 +60,10 @@ const triggerWebViewNativeNotification = async (orderData = {}) => {
 
       for (const handlerName of handlerNames) {
         try {
-          await window.flutter_inappwebview.callHandler(handlerName, bridgePayload);
-          return true;
+          const result = await window.flutter_inappwebview.callHandler(handlerName, bridgePayload);
+          if (result === true) {
+            return true;
+          }
         } catch {
           // Try next handler name.
         }

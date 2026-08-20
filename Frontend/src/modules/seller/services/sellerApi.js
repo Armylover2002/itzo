@@ -108,6 +108,19 @@ export const sellerApi = {
     
   getReturnOtp: (sellerReturnId) =>
     call(axiosInstance.get(`/seller/returns/${String(sellerReturnId)}/otp`)),
+
+  saveFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    const path = platform === "mobile" ? "/fcm-tokens/mobile/save" : "/fcm-tokens/save";
+    return call(axiosInstance.post(path, { token: String(token), platform }));
+  },
+
+  removeFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    return call(axiosInstance.delete(`/fcm-tokens/remove/${encodeURIComponent(String(token))}`, {
+      data: { token: String(token), platform }
+    }));
+  }
 };
 
 export default sellerApi;

@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { userAPI, restaurantAPI, deliveryAPI, adminAPI } from "@food/api";
+import { userAPI, restaurantAPI, deliveryAPI, adminAPI, sellerAPI, hrmsAPI } from "@food/api";
 import { initializeApp, getApp, getApps } from "firebase/app";
 import fallbackNotificationSound from "@food/assets/audio/alert.mp3";
 
@@ -37,6 +37,8 @@ function normalizeModuleFromPath(pathname = window.location.pathname) {
   if (pathname.includes("/restaurant") && !pathname.includes("/restaurants")) return "restaurant";
   if (pathname.includes("/delivery")) return "delivery";
   if (pathname.includes("/ecs")) return "admin";
+  if (pathname.includes("/seller")) return "seller";
+  if (pathname.includes("/hrms")) return "hrms";
   return "user";
 }
 
@@ -64,9 +66,62 @@ function isSupportedBrowser() {
 function isFlutterWebView() {
   return (
     typeof window !== "undefined" &&
-    Boolean(window.flutter_inappwebview) &&
+    window.flutter_inappwebview &&
     typeof window.flutter_inappwebview.callHandler === "function"
   );
+}
+
+function getFcmAppConfig() {
+  if (typeof window === "undefined") return DEFAULT_FIREBASE_CONFIG;
+  return window.FIREBASE_CONFIG || DEFAULT_FIREBASE_CONFIG;
+}
+
+function getFirebaseApp(appConfig) {
+  if (!isSupportedBrowser()) return null;
+
+  const existing = getApps().find((a) => a.name === MESSAGING_APP_NAME);
+  if (existing) return existing;
+
+  try {
+    return getApp(MESSAGING_APP_NAME);
+  } catch {
+    return initializeApp(appConfig, MESSAGING_APP_NAME);
+  }
+}
+
+function getSavedToken(moduleName) {
+  return localStorage.getItem(`${tokenCachePrefix}${moduleName}`) || "";
+}
+
+function setSavedToken(moduleName, token) {
+  localStorage.setItem(`${tokenCachePrefix}${moduleName}`, token);
+}
+
+async function saveTokenByModule(moduleName, token, platform = "web") {
+  pushDebugLog(PUSH_DEBUG_PREFIX, "saveTokenByModule starting", { moduleName, platform, tokenPreview: `${token?.slice(0, 10)}...` });
+  if (moduleName === "restaurant") {
+    await restaurantAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "delivery") {
+    await deliveryAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "seller") {
+    await sellerAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "hrms") {
+    await hrmsAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "admin") {
+    await adminAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "user") {
+    await userAPI.saveFcmToken(token, { platform });
+  }
 }
 
 function isSecureContextForPush() {
@@ -218,9 +273,11 @@ async function triggerWebViewNativeNotification(payload = {}) {
       for (const handlerName of handlerNames) {
         try {
           pushDebugLog(PUSH_DEBUG_PREFIX, "Trying native notification handler", { handlerName, bridgePayload });
-          await window.flutter_inappwebview.callHandler(handlerName, bridgePayload);
-          pushDebugLog(PUSH_DEBUG_PREFIX, "Native notification handler succeeded", { handlerName });
-          return true;
+          const result = await window.flutter_inappwebview.callHandler(handlerName, bridgePayload);
+          if (result === true) {
+            pushDebugLog(PUSH_DEBUG_PREFIX, "Native notification handler succeeded", { handlerName });
+            return true;
+          }
         } catch {
           // Try the next available handler name.
         }

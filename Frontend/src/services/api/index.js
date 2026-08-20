@@ -213,6 +213,18 @@ export const notificationAPI = {
 
 /** Admin API - new backend only (GET /auth/me, PATCH /auth/admin/profile, POST /auth/admin/change-password) */
 export const adminAPI = {
+  saveFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    const path = platform === "mobile" ? "/fcm-tokens/mobile/save" : "/fcm-tokens/save";
+    return apiClient.post(path, { token: String(token), platform }, { contextModule: "admin" });
+  },
+  removeFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    return apiClient.delete(`/fcm-tokens/remove/${encodeURIComponent(String(token))}`, {
+      data: { token: String(token), platform },
+      contextModule: "admin",
+    });
+  },
   getSidebarBadges: () =>
     apiClient.get("/food/admin/sidebar-badges", { contextModule: "admin" }),
   getPublicRoles: () => apiClient.get("/auth/admin/roles"),
@@ -2437,6 +2449,37 @@ export const userAPI = {
   toggleFoodWishlist: (body) => apiClient.post("/food/user/wishlist/toggle", body ?? {}, { contextModule: "user" }),
 };
 export const locationAPI = createStubAPI();
+
+export const sellerAPI = {
+  saveFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    const path = platform === "mobile" ? "/fcm-tokens/mobile/save" : "/fcm-tokens/save";
+    return apiClient.post(path, { token: String(token), platform }, { contextModule: "seller" });
+  },
+  removeFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    return apiClient.delete(`/fcm-tokens/remove/${encodeURIComponent(String(token))}`, {
+      data: { token: String(token), platform },
+      contextModule: "seller",
+    });
+  }
+};
+
+export const hrmsAPI = {
+  saveFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    const path = platform === "mobile" ? "/fcm-tokens/mobile/save" : "/fcm-tokens/save";
+    // HRMS uses raw axios, so we just construct the API route directly on the apiClient
+    return apiClient.post(path, { token: String(token), platform });
+  },
+  removeFcmToken: (token, platform = "web") => {
+    if (!token) return Promise.reject(new Error("FCM token is required"));
+    return apiClient.delete(`/fcm-tokens/remove/${encodeURIComponent(String(token))}`, {
+      data: { token: String(token), platform }
+    });
+  }
+};
+
 export const zoneAPI = {
   /** Public: detect active service zone for a lat/lng point. */
   detectZone: (lat, lng) =>

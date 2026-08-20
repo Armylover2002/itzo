@@ -189,8 +189,12 @@ const triggerWebViewNativeNotification = async (orderData = {}) => {
 
       for (const handlerName of handlerNames) {
         try {
-          await window.flutter_inappwebview.callHandler(handlerName, bridgePayload);
-          return true;
+          const result = await window.flutter_inappwebview.callHandler(handlerName, bridgePayload);
+          // Only assume native handled it if it explicitly returns true,
+          // otherwise flutter_inappwebview might just return null for missing handlers.
+          if (result === true) {
+            return true;
+          }
         } catch {
           // Try next handler name.
         }
