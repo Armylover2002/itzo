@@ -1279,7 +1279,7 @@ export const getAdminSellerRequests = async (req, res) => {
   const { status = 'pending', page = 1, limit = 50, search = '' } = req.query || {};
   const currentPage = Math.max(1, parseInt(page, 10) || 1);
   const perPage = Math.max(1, Math.min(parseInt(limit, 10) || 50, 100));
-  const query = {};
+  const query = { isDeleted: { $ne: true } };
 
   if (status === 'pending') query.approvalStatus = 'pending';
   else if (status === 'approved') query.approvalStatus = 'approved';
@@ -1315,6 +1315,60 @@ export const getAdminSellerRequests = async (req, res) => {
       totalPages: Math.max(1, Math.ceil(total / perPage)),
     },
   });
+};
+
+export const softDeleteAdminSeller = async (req, res) => {
+  try {
+    const sellerId = req.params.id;
+    if (!sellerId || !mongoose.Types.ObjectId.isValid(sellerId)) {
+      return res.status(400).json({ success: false, message: 'Invalid seller ID' });
+    }
+
+    // Verify password — same flow as contacts view / customer delete
+    const passwordInput = req.body.password || req.query.password;
+    const password = passwordInput ? passwordInput.trim() : "";
+
+    const { GlobalSettings } = await import('../../../common/models/settings.model.js');
+    const settings = await GlobalSettings.findOne();
+
+    if (settings && settings.contactsViewPassword) {
+      if (!password || password !== settings.contactsViewPassword.trim()) {
+        return res.status(401).json({ success: false, message: 'Invalid password' });
+      }
+    }
+
+    const seller = await Seller.findById(sellerId);
+    if (!seller) {
+      return res.status(404).json({ success: false, message: 'Seller not found' });
+    }
+    if (seller.isDeleted) {
+      return res.status(404).json({ success: false, message: 'Seller already deleted' });
+    }
+
+    seller.isDeleted = true;
+    seller.isActive = false;
+    seller.deletionRequest = {
+        status: 'approved',
+        requestedAt: new Date(),
+        reason: 'Deleted by admin'
+    };
+    await seller.save();
+
+    // Invalidate sessions and clear tokens
+    const { FoodRefreshToken } = await import('../../../core/refreshTokens/refreshToken.model.js');
+    await Promise.all([
+        FoodRefreshToken.deleteMany({ userId: seller._id }),
+        Seller.updateOne(
+            { _id: seller._id },
+            { $set: { fcmTokens: [], fcmTokenMobile: [] } }
+        ),
+    ]);
+
+    return res.json({ success: true, message: 'Seller deleted successfully', data: { seller } });
+  } catch (error) {
+    console.error('Error soft deleting seller:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
 };
 
 export const approveAdminSellerRequest = async (req, res) => {

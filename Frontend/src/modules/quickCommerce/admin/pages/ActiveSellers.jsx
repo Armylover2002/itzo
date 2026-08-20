@@ -12,6 +12,7 @@ import {
 } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import { adminApi } from '../services/adminApi';
@@ -32,6 +33,10 @@ const ActiveSellers = () => {
   const [sellers, setSellers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(null); // { seller }
+  const [deleting, setDeleting] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   const loadActiveSellers = async () => {
     setIsLoading(true);
@@ -71,6 +76,40 @@ const ActiveSellers = () => {
         .some((value) => String(value).toLowerCase().includes(query)),
     );
   }, [searchTerm, sellers]);
+
+  const handleDeleteClick = (seller) => {
+    setDeleteConfirmDialog({ seller });
+    setDeletePassword("");
+    setShowDeletePassword(false);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmDialog) return;
+    if (!deletePassword.trim()) {
+      toast.error("Please enter the password");
+      return;
+    }
+
+    const { seller } = deleteConfirmDialog;
+    try {
+      setDeleting(true);
+      await adminApi.softDeleteSeller(seller._id || seller.id, deletePassword);
+      
+      setSellers(prev => prev.filter(s => (s._id || s.id) !== (seller._id || seller.id)));
+      setDeleteConfirmDialog(null);
+      setDeletePassword("");
+      toast.success(`Seller "${seller.shopName || seller.name || 'Seller'}" deleted successfully!`);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete seller. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirmDialog(null);
+    setDeletePassword("");
+  };
 
   const stats = useMemo(
     () => ({
@@ -223,14 +262,24 @@ const ActiveSellers = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/ecs/quick-commerce/sellers/active/${seller._id || seller.id}`)}
-                        className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-[10px] font-bold text-white shadow-lg"
-                      >
-                        <HiOutlineEye className="h-3.5 w-3.5" />
-                        View
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/ecs/quick-commerce/sellers/active/${seller._id || seller.id}`)}
+                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-[10px] font-bold text-white shadow-lg"
+                        >
+                          <HiOutlineEye className="h-3.5 w-3.5" />
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(seller)}
+                          className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
+                          title="Delete Seller"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -250,6 +299,80 @@ const ActiveSellers = () => {
           </table>
         </div>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={cancelDelete}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Delete Seller</h3>
+                  <p className="text-sm text-slate-600">
+                    {deleteConfirmDialog.seller.shopName || deleteConfirmDialog.seller.name || 'Seller'}
+                  </p>
+                </div>
+              </div>
+
+              <p className="text-sm text-red-800 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
+                Are you sure you want to delete <strong>{deleteConfirmDialog.seller.shopName || deleteConfirmDialog.seller.name || 'Seller'}</strong>? This action will hide the seller from the admin panel and the seller will be shown that their account was deleted by admin.
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Enter Password to Confirm
+                </label>
+                <div className="relative">
+                  <input
+                    type={showDeletePassword ? "text" : "password"}
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") confirmDelete() }}
+                    placeholder="Enter admin password"
+                    className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                    autoFocus
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDeletePassword(!showDeletePassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={cancelDelete}
+                  disabled={deleting}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={deleting || !deletePassword.trim()}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Deleting...
+                    </span>
+                  ) : (
+                    "Delete Seller"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

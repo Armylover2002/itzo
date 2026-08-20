@@ -371,6 +371,7 @@ export const adminApi = {
   getSellerRequests: (params) => axiosInstance.get('/quick-commerce/admin/seller-requests', { params }),
   rejectSeller: (sellerId, data = {}) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/reject`, data),
   updateSellerProfile: (sellerId, data) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/profile`, data),
+  softDeleteSeller: (sellerId, password) => axiosInstance.patch(`/quick-commerce/admin/sellers/${sellerId}/soft-delete`, { password }),
   getTickets: (params = {}) => axiosInstance.get('/quick-commerce/admin/support-tickets', { params }),
   updateTicketStatus: (id, status) =>
     axiosInstance.patch(`/quick-commerce/admin/support-tickets/${id}`, { status }),

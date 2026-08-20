@@ -166,6 +166,30 @@ const sellerSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletionRequest: {
+      status: {
+          type: String,
+          enum: ['none', 'pending', 'approved', 'rejected'],
+          default: 'none',
+      },
+      reason: {
+          type: String,
+          default: '',
+          trim: true
+      },
+      requestedAt: {
+          type: Date,
+          default: null
+      },
+      reviewedAt: {
+          type: Date,
+          default: null
+      }
+    }
   },
   {
     collection: 'quick_seller_profiles',

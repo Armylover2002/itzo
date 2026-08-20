@@ -904,6 +904,10 @@ export const verifySellerOtpController = async (req, res) => {
       ],
     });
 
+    if (seller && seller.isDeleted) {
+      return sendError(res, 403, "Your account has been deleted by admin. Please contact support.");
+    }
+
     if (!seller) {
       const suffix = phoneSuffix || digits || Date.now().toString().slice(-4);
       seller = await Seller.create({
