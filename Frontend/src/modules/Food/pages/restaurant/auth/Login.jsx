@@ -89,30 +89,9 @@ export default function RestaurantLogin() {
     }
   }, [navigate])
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) return undefined
-
-    const updateKeyboardInset = () => {
-      const viewport = window.visualViewport
-      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
-      setKeyboardInset(inset > 0 ? inset : 0)
-    }
-
-    updateKeyboardInset()
-    window.visualViewport.addEventListener("resize", updateKeyboardInset)
-    window.visualViewport.addEventListener("scroll", updateKeyboardInset)
-
-    return () => {
-      window.visualViewport.removeEventListener("resize", updateKeyboardInset)
-      window.visualViewport.removeEventListener("scroll", updateKeyboardInset)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (keyboardInset > 0) {
-      ensurePhoneFieldVisible()
-    }
-  }, [keyboardInset])
+  // iOS keyboard fix: removed visualViewport tracking and scrollIntoView
+  // to prevent the "floating screen" bounce on iOS WebView/Safari.
+  // iOS natively handles scrolling focused inputs into view.
 
   const validatePhone = (phone, countryCode) => {
     if (!phone || phone.trim() === "") return "Phone number is required"
@@ -137,21 +116,6 @@ export default function RestaurantLogin() {
     if (error) {
       setError(validatePhone(value, formData.countryCode))
     }
-  }
-
-  const ensurePhoneFieldVisible = () => {
-    // Wait for keyboard to animate in
-    window.setTimeout(() => {
-      const content = document.getElementById('login-content')
-      if (content) {
-        content.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      } else {
-        phoneInputRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        })
-      }
-    }, 300)
   }
 
   const handleSendOTP = async () => {

@@ -95,24 +95,8 @@ export default function DeliverySignIn() {
     return () => clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) return undefined
-
-    const updateKeyboardInset = () => {
-      const viewport = window.visualViewport
-      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
-      setKeyboardInset(inset > 0 ? inset : 0)
-    }
-
-    updateKeyboardInset()
-    window.visualViewport.addEventListener("resize", updateKeyboardInset)
-    window.visualViewport.addEventListener("scroll", updateKeyboardInset)
-
-    return () => {
-      window.visualViewport.removeEventListener("resize", updateKeyboardInset)
-      window.visualViewport.removeEventListener("scroll", updateKeyboardInset)
-    }
-  }, [])
+  // iOS keyboard fix: removed visualViewport tracking to prevent
+  // the "floating screen" bounce on iOS WebView/Safari.
 
   // Pre-fill form from sessionStorage if data exists (e.g., when coming back from OTP)
   useEffect(() => {

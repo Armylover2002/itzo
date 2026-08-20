@@ -71,58 +71,7 @@ function isFlutterWebView() {
   );
 }
 
-function getFcmAppConfig() {
-  if (typeof window === "undefined") return DEFAULT_FIREBASE_CONFIG;
-  return window.FIREBASE_CONFIG || DEFAULT_FIREBASE_CONFIG;
-}
 
-function getFirebaseApp(appConfig) {
-  if (!isSupportedBrowser()) return null;
-
-  const existing = getApps().find((a) => a.name === MESSAGING_APP_NAME);
-  if (existing) return existing;
-
-  try {
-    return getApp(MESSAGING_APP_NAME);
-  } catch {
-    return initializeApp(appConfig, MESSAGING_APP_NAME);
-  }
-}
-
-function getSavedToken(moduleName) {
-  return localStorage.getItem(`${tokenCachePrefix}${moduleName}`) || "";
-}
-
-function setSavedToken(moduleName, token) {
-  localStorage.setItem(`${tokenCachePrefix}${moduleName}`, token);
-}
-
-async function saveTokenByModule(moduleName, token, platform = "web") {
-  pushDebugLog(PUSH_DEBUG_PREFIX, "saveTokenByModule starting", { moduleName, platform, tokenPreview: `${token?.slice(0, 10)}...` });
-  if (moduleName === "restaurant") {
-    await restaurantAPI.saveFcmToken(token, platform);
-    return;
-  }
-  if (moduleName === "delivery") {
-    await deliveryAPI.saveFcmToken(token, platform);
-    return;
-  }
-  if (moduleName === "seller") {
-    await sellerAPI.saveFcmToken(token, platform);
-    return;
-  }
-  if (moduleName === "hrms") {
-    await hrmsAPI.saveFcmToken(token, platform);
-    return;
-  }
-  if (moduleName === "admin") {
-    await adminAPI.saveFcmToken(token, platform);
-    return;
-  }
-  if (moduleName === "user") {
-    await userAPI.saveFcmToken(token, { platform });
-  }
-}
 
 function isSecureContextForPush() {
   return window.isSecureContext || window.location.hostname === "localhost";
@@ -511,6 +460,18 @@ async function saveTokenByModule(moduleName, token, platform = "web") {
   }
   if (moduleName === "delivery") {
     await deliveryAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "seller") {
+    await sellerAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "hrms") {
+    await hrmsAPI.saveFcmToken(token, platform);
+    return;
+  }
+  if (moduleName === "admin") {
+    await adminAPI.saveFcmToken(token, platform);
     return;
   }
   if (moduleName === "user") {

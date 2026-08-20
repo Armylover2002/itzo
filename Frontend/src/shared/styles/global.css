@@ -140,6 +140,36 @@
   body {
     @apply bg-background text-foreground m-0 min-h-screen;
   }
+
+  /*
+   * iOS WebView / Safari keyboard fix:
+   * When the virtual keyboard opens on iOS, the browser fires resize and scroll
+   * events on `window.visualViewport`. If JS code calls `scrollIntoView()` in
+   * response, it creates a bounce loop where iOS native scroll and JS scroll
+   * fight each other, causing the "floating screen" effect.
+   *
+   * These rules:
+   * 1. Prevent iOS from over-scrolling the viewport when keyboard appears
+   * 2. Stabilize the body position so the page doesn't jump
+   * 3. Apply to all 5 apps (User, Restaurant, Delivery, Seller, HRMS)
+   */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS-only: prevent body from bouncing when keyboard opens */
+    html, body {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+      /* Prevent the iOS elastic bounce at page edges */
+      overscroll-behavior-y: none;
+    }
+
+    /* Prevent iOS from zooming into small inputs (OTP boxes) */
+    input[inputmode="numeric"],
+    input[type="tel"],
+    input[type="number"] {
+      font-size: 16px !important;
+    }
+  }
 }
 
 @layer utilities {

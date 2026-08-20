@@ -24,7 +24,6 @@ export default function RestaurantOTP() {
   const [authData, setAuthData] = useState(null)
   const [contactInfo, setContactInfo] = useState("") 
   const [focusedIndex, setFocusedIndex] = useState(null)
-  const [keyboardOffset, setKeyboardOffset] = useState(0)
   const [pendingMessage, setPendingMessage] = useState("")
   const [isRejected, setIsRejected] = useState(false)
   const [rejectionReason, setRejectionReason] = useState("")
@@ -74,52 +73,10 @@ export default function RestaurantOTP() {
     }
   }, [])
 
-  useEffect(() => {
-    if (typeof window === "undefined") return
-
-    const viewport = window.visualViewport
-    if (!viewport) return
-
-    const updateKeyboardState = () => {
-      const keyboardHeight = Math.max(0, window.innerHeight - viewport.height)
-      setKeyboardOffset(keyboardHeight > 120 ? keyboardHeight : 0)
-    }
-
-    updateKeyboardState()
-    viewport.addEventListener("resize", updateKeyboardState)
-    viewport.addEventListener("scroll", updateKeyboardState)
-
-    return () => {
-      viewport.removeEventListener("resize", updateKeyboardState)
-      viewport.removeEventListener("scroll", updateKeyboardState)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (focusedIndex == null) return
-
-    const targetInput = inputRefs.current[focusedIndex]
-    if (!targetInput) return
-
-    const id = window.setTimeout(() => {
-      try {
-        targetInput.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest",
-        })
-        otpSectionRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          inline: "nearest",
-        })
-      } catch {
-        // no-op
-      }
-    }, 120)
-
-    return () => window.clearTimeout(id)
-  }, [focusedIndex, keyboardOffset])
+  // iOS keyboard fix: prevent viewport bounce by NOT using scrollIntoView or
+  // tracking visualViewport resize. iOS Safari/WebView natively scrolls focused
+  // inputs into view; fighting it with JS causes the "floating screen" bounce.
+  // We simply let the browser handle scroll positioning.
 
   const handleChange = (index, value) => {
     if (value && !/^\d$/.test(value)) {
@@ -363,8 +320,7 @@ export default function RestaurantOTP() {
 
   return (
     <div
-      className={`h-[100dvh] bg-white flex flex-col font-sans ${keyboardOffset > 0 ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden"}`}
-      style={keyboardOffset > 0 ? { paddingBottom: `${Math.min(keyboardOffset, 360)}px` } : undefined}
+      className="h-[100dvh] bg-white flex flex-col font-sans overflow-y-auto overflow-x-hidden"
     >
       {/* Curved Header Background */}
       <div className="relative h-[240px] sm:h-[300px] w-full bg-[#FE5502] overflow-hidden">

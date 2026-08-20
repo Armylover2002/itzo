@@ -136,24 +136,8 @@ export default function UnifiedOTPFastLogin() {
     return () => clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.visualViewport) return undefined
-
-    const updateKeyboardInset = () => {
-      const viewport = window.visualViewport
-      const inset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop)
-      setKeyboardInset(inset > 0 ? inset : 0)
-    }
-
-    updateKeyboardInset()
-    window.visualViewport.addEventListener("resize", updateKeyboardInset)
-    window.visualViewport.addEventListener("scroll", updateKeyboardInset)
-
-    return () => {
-      window.visualViewport.removeEventListener("resize", updateKeyboardInset)
-      window.visualViewport.removeEventListener("scroll", updateKeyboardInset)
-    }
-  }, [])
+  // iOS keyboard fix: removed visualViewport tracking to prevent
+  // the "floating screen" bounce on iOS WebView/Safari.
 
   const searchParams = new URLSearchParams(location.search)
   const referralCode = searchParams.get("ref") || ""
