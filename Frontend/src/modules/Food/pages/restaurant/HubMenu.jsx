@@ -460,7 +460,13 @@ export default function HubMenu() {
     
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/heic", "image/heif"]
     const validFiles = files.filter(file => {
-      if (!allowedTypes.includes(file.type)) {
+      const ext = file.name ? file.name.split('.').pop().toLowerCase() : ''
+      const allowedExts = ["png", "jpeg", "jpg", "webp", "heic", "heif"]
+      
+      const isValidType = allowedTypes.includes(file.type)
+      const isValidExt = allowedExts.includes(ext)
+      
+      if (!isValidType && !isValidExt) {
         toast.error(`${file.name}: Invalid file type. Please upload PNG, JPG, JPEG, WEBP, HEIC, or HEIF.`)
         return false
       }

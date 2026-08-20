@@ -284,7 +284,6 @@ export default function RestaurantLogin() {
                     placeholder="Mobile number"
                     value={formData.phone}
                     onChange={handlePhoneChange}
-                    onFocus={ensurePhoneFieldVisible}
                     className="min-w-0 flex-1 h-12 bg-transparent border-0 outline-none ring-0 shadow-none focus:border-0 focus:outline-none focus:ring-0 focus:shadow-none text-left text-lg font-bold leading-none tracking-[0.02em] text-slate-900 placeholder-slate-300 caret-[#FE5502] px-2"
                     style={{ WebkitTextFillColor: "#0f172a", opacity: 1 }}
                   />

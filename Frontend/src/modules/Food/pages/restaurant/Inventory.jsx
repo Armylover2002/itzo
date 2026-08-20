@@ -1098,8 +1098,15 @@ export default function Inventory() {
   const handleAddonImageSelect = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const allowed = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/heic", "image/heif"]
-    if (!allowed.includes(file.type)) {
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/heic", "image/heif"]
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : ''
+    const allowedExts = ["png", "jpeg", "jpg", "webp", "heic", "heif"]
+    
+    // Android camera captures sometimes have an empty file.type
+    const isValidType = allowedTypes.includes(file.type)
+    const isValidExt = allowedExts.includes(ext)
+    
+    if (!isValidType && !isValidExt) {
       toast.error("Invalid image type. Please use PNG, JPG, JPEG, WEBP, HEIC, or HEIF.")
       e.target.value = ""
       return
