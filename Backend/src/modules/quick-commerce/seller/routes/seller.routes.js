@@ -27,6 +27,7 @@ import {
   updateSellerOrderStatusController,
   updateSellerProductController,
   updateSellerProfileController,
+  deleteSellerProfileController,
   verifySellerOtpController,
 } from "../controllers/seller.controller.js";
 
@@ -70,6 +71,7 @@ router.put(
   sellerProfileUpload,
   updateSellerProfileController,
 );
+router.delete("/profile", ...sellerOnly, deleteSellerProfileController);
 
 router.get("/notifications", ...sellerOnly, getSellerNotificationsController);
 router.put(

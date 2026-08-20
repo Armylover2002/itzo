@@ -1489,6 +1489,55 @@ export const updateSellerProfileData = async (seller, req) => {
 
 };
 
+export const deleteSellerProfileController = async (req, res) => {
+  try {
+    const sellerId = sellerScope(req);
+    const seller = await Seller.findById(sellerId);
+
+    if (!seller) {
+      return sendError(res, 404, "Seller not found");
+    }
+
+    if (seller.isDeleted) {
+      return sendError(res, 404, "Seller already deleted");
+    }
+
+    await Seller.updateOne(
+      { _id: seller._id },
+      {
+        $set: {
+          isDeleted: true,
+          isActive: false,
+          'deletionRequest.status': 'approved',
+          'deletionRequest.requestedAt': new Date(),
+          'deletionRequest.reason': 'Account self-deleted by seller'
+        }
+      }
+    );
+
+    // Clear active sessions for this seller
+    const { FoodRefreshToken } = await import('../../../../core/refreshTokens/refreshToken.model.js');
+    await Promise.all([
+      FoodRefreshToken.deleteMany({ userId: seller._id }),
+      Seller.updateOne(
+        { _id: seller._id },
+        { $set: { fcmTokens: [], fcmTokenMobile: [] } }
+      ),
+    ]);
+
+    return res.json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    return sendError(
+      res,
+      500,
+      error.message || "Failed to delete seller profile",
+    );
+  }
+};
+
 export const updateSellerProfileController = async (req, res) => {
   try {
     const seller = await Seller.findById(sellerScope(req));

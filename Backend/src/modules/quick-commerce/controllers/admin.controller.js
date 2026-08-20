@@ -1279,12 +1279,16 @@ export const getAdminSellerRequests = async (req, res) => {
   const { status = 'pending', page = 1, limit = 50, search = '' } = req.query || {};
   const currentPage = Math.max(1, parseInt(page, 10) || 1);
   const perPage = Math.max(1, Math.min(parseInt(limit, 10) || 50, 100));
-  const query = { isDeleted: { $ne: true } };
-
-  if (status === 'pending') query.approvalStatus = 'pending';
-  else if (status === 'approved') query.approvalStatus = 'approved';
-  else if (status === 'rejected') query.approvalStatus = 'rejected';
-  else if (status === 'draft') query.approvalStatus = 'draft';
+  const query = {};
+  if (status === 'deleted') {
+    query.isDeleted = true;
+  } else {
+    query.isDeleted = { $ne: true };
+    if (status === 'pending') query.approvalStatus = 'pending';
+    else if (status === 'approved') query.approvalStatus = 'approved';
+    else if (status === 'rejected') query.approvalStatus = 'rejected';
+    else if (status === 'draft') query.approvalStatus = 'draft';
+  }
 
   const searchText = String(search || '').trim();
   if (searchText) {
@@ -1315,6 +1319,22 @@ export const getAdminSellerRequests = async (req, res) => {
       totalPages: Math.max(1, Math.ceil(total / perPage)),
     },
   });
+};
+
+export const getAdminSellerById = async (req, res) => {
+  try {
+    const sellerId = req.params.id;
+    if (!sellerId || !mongoose.Types.ObjectId.isValid(sellerId)) {
+      return res.status(400).json({ success: false, message: 'Invalid seller ID' });
+    }
+    const seller = await Seller.findById(sellerId).lean();
+    if (!seller) {
+      return res.status(404).json({ success: false, message: 'Seller not found' });
+    }
+    return res.json({ success: true, result: seller });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch seller details' });
+  }
 };
 
 export const softDeleteAdminSeller = async (req, res) => {

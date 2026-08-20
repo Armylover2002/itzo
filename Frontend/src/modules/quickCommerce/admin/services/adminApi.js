@@ -368,6 +368,13 @@ export const adminApi = {
     });
     return response;
   },
+  getDeletedSellers: async () => {
+    const response = await axiosInstance.get('/quick-commerce/admin/seller-requests', {
+      params: { status: 'deleted', limit: 100 },
+    });
+    return response;
+  },
+  getSellerById: (id) => axiosInstance.get(`/quick-commerce/admin/sellers/${id}`),
   getSellerRequests: (params) => axiosInstance.get('/quick-commerce/admin/seller-requests', { params }),
   rejectSeller: (sellerId, data = {}) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/reject`, data),
   updateSellerProfile: (sellerId, data) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/profile`, data),

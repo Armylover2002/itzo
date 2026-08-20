@@ -74,9 +74,8 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
     try {
       let data = null;
       if (asAdmin && adminSellerId) {
-        const response = await adminApi.getSellerRequests({ status: "approved", limit: 500 });
-        const items = response?.data?.result?.items || response?.data?.data?.items || response?.data?.result || [];
-        data = Array.isArray(items) ? items.find((item) => String(item._id || item.id) === String(adminSellerId)) : null;
+        const response = await adminApi.getSellerById(adminSellerId);
+        data = response?.data?.result;
         if (!data) {
           toast.error("Seller not found");
           setIsLoading(false);
@@ -128,6 +127,22 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (window.confirm("Are you sure you want to permanently delete your account? This action cannot be undone.")) {
+      setIsLoading(true);
+      try {
+        await sellerApi.deleteProfile();
+        toast.success("Account deleted successfully.");
+        localStorage.removeItem("auth_seller");
+        localStorage.removeItem("seller_id");
+        window.location.href = "/seller/auth/login";
+      } catch (error) {
+        toast.error("Failed to delete account. Please try again.");
+        setIsLoading(false);
+      }
     }
   };
 
@@ -989,6 +1004,25 @@ const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, o
               </div>
             </div>
           </Card>
+          
+          {!asAdmin && (
+            <Card className="p-5 sm:p-8 border border-red-100 shadow-[0_20px_50px_rgba(239,68,68,0.05)] rounded-2xl sm:rounded-[40px] bg-red-50/30">
+              <h4 className="text-[10px] font-black uppercase tracking-[4px] text-red-600 mb-4">
+                Danger Zone
+              </h4>
+              <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed">
+                Permanently delete your account and all associated data. This action cannot be undone.
+              </p>
+              <Button
+                variant="danger"
+                className="w-full sm:w-auto"
+                onClick={handleDeleteAccount}
+                disabled={isLoading}
+              >
+                Delete Account
+              </Button>
+            </Card>
+          )}
         </div>
       </div>
 

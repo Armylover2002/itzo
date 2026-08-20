@@ -57,6 +57,7 @@ import {
   getAdminStats,
   rejectAdminSellerRequest,
   softDeleteAdminSeller,
+  getAdminSellerById,
   removeCategory,
   removeProduct,
   updateCategory,
@@ -309,6 +310,7 @@ router.patch(
   ...adminOnly,
   softDeleteAdminSeller
 );
+router.get("/admin/sellers/:id", ...adminOnly, getAdminSellerById);
 router.get("/admin/zones", ...adminOnly, getAdminZones);
 router.get("/admin/zones/:zoneId", ...adminOnly, getAdminZoneById);
 router.post("/admin/zones", ...adminOnly, createAdminZone);

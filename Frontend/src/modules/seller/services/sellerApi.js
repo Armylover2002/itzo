@@ -78,6 +78,8 @@ export const sellerApi = {
         : undefined),
     ),
 
+  deleteProfile: () => call(axiosInstance.delete("/seller/profile")),
+
   adjustStock: (data = {}) =>
     call(axiosInstance.post("/seller/stock-adjustments", data)),
 

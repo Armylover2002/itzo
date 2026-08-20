@@ -37,11 +37,14 @@ const ActiveSellers = () => {
   const [deleting, setDeleting] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [filter, setFilter] = useState('active');
 
-  const loadActiveSellers = async () => {
+  const loadActiveSellers = async (currentFilter = filter) => {
     setIsLoading(true);
     try {
-      const response = await adminApi.getSellers();
+      const response = currentFilter === 'deleted' 
+        ? await adminApi.getDeletedSellers()
+        : await adminApi.getSellers();
       const items =
         response?.data?.result?.items ||
         response?.data?.data?.items ||
@@ -57,8 +60,8 @@ const ActiveSellers = () => {
   };
 
   useEffect(() => {
-    loadActiveSellers();
-  }, []);
+    loadActiveSellers(filter);
+  }, [filter]);
 
   const filteredSellers = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
@@ -142,7 +145,7 @@ const ActiveSellers = () => {
         </div>
         <button
           type="button"
-          onClick={loadActiveSellers}
+          onClick={() => loadActiveSellers()}
           className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
         >
           <HiOutlineArrowPath className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -197,11 +200,29 @@ const ActiveSellers = () => {
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2 ring-1 ring-emerald-100">
-            <HiOutlineCheckCircle className="h-4 w-4 text-emerald-600" />
-            <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
-              Live approved seller accounts
-            </span>
+          <div className="flex items-center gap-3">
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-primary/10"
+            >
+              <option value="active">Active Sellers</option>
+              <option value="deleted">Deleted Sellers</option>
+            </select>
+            {filter === 'active' ? (
+              <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-2 ring-1 ring-emerald-100">
+                <HiOutlineCheckCircle className="h-4 w-4 text-emerald-600" />
+                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+                  Live approved
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 ring-1 ring-red-100">
+                <span className="text-[10px] font-bold text-red-700 uppercase tracking-widest">
+                  Soft Deleted
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -271,14 +292,16 @@ const ActiveSellers = () => {
                           <HiOutlineEye className="h-3.5 w-3.5" />
                           View
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteClick(seller)}
-                          className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
-                          title="Delete Seller"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {!seller.isDeleted && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClick(seller)}
+                            className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
+                            title="Delete Seller"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
