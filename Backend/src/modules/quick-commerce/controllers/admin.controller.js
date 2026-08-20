@@ -1328,7 +1328,7 @@ export const softDeleteAdminSeller = async (req, res) => {
     const passwordInput = req.body.password || req.query.password;
     const password = passwordInput ? passwordInput.trim() : "";
 
-    const { GlobalSettings } = await import('../../../common/models/settings.model.js');
+    const { GlobalSettings } = await import('../../common/models/settings.model.js');
     const settings = await GlobalSettings.findOne();
 
     if (settings && settings.contactsViewPassword) {
