@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
-import { Users, Loader2, Search, Eye, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter, UserCog, ArrowRight, Edit2, Save, Globe, Store } from 'lucide-react';
+import { Users, Loader2, Search, Eye, EyeOff, Plus, ChevronLeft, ChevronRight, X, UserPlus, FileText, Upload, MapPin, Building2, Filter, UserCog, ArrowRight, Edit2, Save, Globe, Store, Trash2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { useHrmsSettings } from '../../../../hrms/context/HrmsSettingsContext';
 
@@ -45,6 +45,41 @@ export default function HrmsEmployees() {
     });
     const [uploading, setUploading] = useState({ aadhaar: false, pan: false, profilePhoto: false, resume: false });
 
+    const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(null);
+    const [deletePassword, setDeletePassword] = useState("");
+    const [deleting, setDeleting] = useState(false);
+    const [showDeletePassword, setShowDeletePassword] = useState(false);
+
+    const handleDeleteClick = (employee) => {
+        setDeleteConfirmDialog(employee);
+    };
+
+    const confirmDelete = async () => {
+        if (!deletePassword.trim()) {
+            toast.error("Please enter your admin password to confirm deletion.");
+            return;
+        }
+
+        setDeleting(true);
+        try {
+            await axiosInstance.patch(`/hrms/employees/${deleteConfirmDialog._id || deleteConfirmDialog.id}/soft-delete`, {
+                password: deletePassword
+            });
+            setEmployees(employees.filter((emp) => (emp._id || emp.id) !== (deleteConfirmDialog._id || deleteConfirmDialog.id)));
+            setDeleteConfirmDialog(null);
+            setDeletePassword("");
+            toast.success(`Employee deleted successfully!`);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to delete employee. Please try again.");
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    const cancelDelete = () => {
+        setDeleteConfirmDialog(null);
+        setDeletePassword("");
+    };
     const fetchEmployees = useCallback(async (page = 1) => {
         setLoading(true);
         try {
@@ -988,9 +1023,18 @@ export default function HrmsEmployees() {
                                         <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.hrmsRole === 'Manager' ? 'bg-orange-50 text-orange-700' : emp.hrmsRole === 'HR' ? 'bg-violet-50 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>{emp.hrmsRole}</span></td>
                                         <td className="px-5 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${emp.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{emp.status}</span></td>
                                         <td className="px-5 py-3.5">
-                                            <button onClick={() => setSelectedEmployee(emp)} className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
-                                                <Eye className="w-3.5 h-3.5" /> View
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={() => setSelectedEmployee(emp)} className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
+                                                    <Eye className="w-3.5 h-3.5" /> View
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteClick(emp)} 
+                                                    className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
+                                                    title="Delete Employee"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -1045,6 +1089,80 @@ export default function HrmsEmployees() {
                             <button onClick={handleTransferConfirm} className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors shadow-sm">
                                 Confirm Transfer
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            {deleteConfirmDialog && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={cancelDelete}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-6">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                                    <Trash2 className="w-6 h-6 text-red-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">Delete Employee</h3>
+                                    <p className="text-sm text-slate-600">
+                                        {deleteConfirmDialog.employeeName || deleteConfirmDialog.name || 'Employee'}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <p className="text-sm text-red-800 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
+                                Are you sure you want to delete <strong>{deleteConfirmDialog.employeeName || deleteConfirmDialog.name || 'Employee'}</strong>? This action will hide the employee from the admin panel and they will be shown that their account was deleted by admin.
+                            </p>
+
+                            <div className="mb-6">
+                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                                    Enter Password to Confirm
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showDeletePassword ? "text" : "password"}
+                                        value={deletePassword}
+                                        onChange={(e) => setDeletePassword(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === "Enter") confirmDelete() }}
+                                        placeholder="Enter admin password"
+                                        className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                                        autoFocus
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeletePassword(!showDeletePassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                                    >
+                                        {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 mt-2">
+                                <button
+                                    onClick={cancelDelete}
+                                    disabled={deleting}
+                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={deleting || !deletePassword.trim()}
+                                    className="px-5 py-2 text-sm font-semibold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[120px]"
+                                >
+                                    {deleting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                            Deleting...
+                                        </>
+                                    ) : (
+                                        "Delete Employee"
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

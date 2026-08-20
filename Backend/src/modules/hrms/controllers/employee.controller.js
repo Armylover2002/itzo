@@ -275,7 +275,7 @@ export const getEmployees = async (req, res, next) => {
     try {
         const { page = 1, limit = 20, search, department, status = 'Active', sortBy = 'createdAt', sortOrder = 'desc', employeeType, assignmentStatus, currentManagerId, hrmsRole, excludeManagers, zoneId } = req.query;
 
-        const filter = {};
+        const filter = { isDeleted: { $ne: true } };
         if (req.user.role === 'HRMS_EMPLOYEE' && req.hrmsEmployee) {
             filter.managerId = req.hrmsEmployee._id;
         }
@@ -910,6 +910,61 @@ export const getEmployeeRestaurants = async (req, res, next) => {
             zoneSummary,
             totalRestaurants: zoneSummary.reduce((sum, z) => sum + z.count, 0)
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const softDeleteEmployee = async (req, res, next) => {
+    try {
+        const employeeId = req.params.id;
+        
+        // Verify password - same flow as other deletes
+        const passwordInput = req.body.password || req.query.password;
+        const password = passwordInput ? passwordInput.trim() : "";
+
+        const { GlobalSettings } = await import('../../common/models/settings.model.js');
+        const settings = await GlobalSettings.findOne();
+
+        if (settings && settings.contactsViewPassword) {
+            if (!password || password !== settings.contactsViewPassword.trim()) {
+                return sendError(res, 401, 'Invalid password');
+            }
+        }
+
+        const employee = await HrmsEmployee.findById(employeeId);
+        if (!employee) {
+            return sendError(res, 404, 'Employee not found');
+        }
+        if (employee.isDeleted) {
+            return sendError(res, 404, 'Employee already deleted');
+        }
+
+        await HrmsEmployee.updateOne(
+            { _id: employee._id },
+            {
+                $set: {
+                    isDeleted: true,
+                    status: 'Terminated',
+                    isActive: false,
+                    'deletionRequest.status': 'approved',
+                    'deletionRequest.requestedAt': new Date(),
+                    'deletionRequest.reason': 'Deleted by admin'
+                }
+            }
+        );
+
+        // Invalidate sessions and clear tokens
+        const { FoodRefreshToken } = await import('../../../core/refreshTokens/refreshToken.model.js');
+        await Promise.all([
+            FoodRefreshToken.deleteMany({ userId: employee.adminId }), // HRMS employee logs in via adminId
+            HrmsEmployee.updateOne(
+                { _id: employee._id },
+                { $set: { fcmTokens: [], fcmTokenMobile: [] } }
+            )
+        ]);
+
+        return sendResponse(res, 200, 'Employee deleted successfully', { employee });
     } catch (error) {
         next(error);
     }

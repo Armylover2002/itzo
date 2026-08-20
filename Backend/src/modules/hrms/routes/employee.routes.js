@@ -14,7 +14,8 @@ import {
     getActiveManagers,
     transferEmployee,
     manageEmployeeZones,
-    getEmployeeRestaurants
+    getEmployeeRestaurants,
+    softDeleteEmployee
 } from '../controllers/employee.controller.js';
 import { authMiddleware } from '../../../core/auth/auth.middleware.js';
 import { requireHrmsEmployee, requireAdminOrManager } from '../middleware/hrmsAuth.middleware.js';
@@ -44,5 +45,6 @@ router.put('/:id/zones', authMiddleware, requireAdminOrManager, manageEmployeeZo
 router.get('/:id/restaurants', authMiddleware, requireAdminOrManager, getEmployeeRestaurants);
 router.patch('/:id/status', authMiddleware, requireAdminOrManager, updateEmployeeStatus);
 router.post('/:id/edit-request/action', authMiddleware, requireAdminOrManager, approveProfileEdit);
+router.patch('/:id/soft-delete', authMiddleware, requireAdminOrManager, softDeleteEmployee);
 
 export default router;

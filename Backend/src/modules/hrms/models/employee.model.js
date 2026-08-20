@@ -135,6 +135,9 @@ const hrmsEmployeeSchema = new mongoose.Schema(
         profileEditRejectionReason: { type: String },
         pendingProfileEdit: { type: Object },
 
+        isDeleted: { type: Boolean, default: false },
+        deletionRequest: { type: Object, default: null },
+
         status: {
             type: String,
             enum: ['Active', 'Suspended', 'Resigned', 'Terminated'],

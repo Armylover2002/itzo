@@ -359,6 +359,15 @@ export const adminLogin = async (email, password, roleId) => {
     }
   }
 
+  if (admin.role === 'HRMS_EMPLOYEE' || admin.role === 'EMPLOYEE') {
+    // Import HrmsEmployee dynamically to avoid circular dependency
+    const { HrmsEmployee } = await import('../../modules/hrms/models/employee.model.js');
+    const employee = await HrmsEmployee.findOne({ adminId: admin._id });
+    if (employee && employee.isDeleted) {
+      throw new AuthError("Your account was deleted by admin.");
+    }
+  }
+
   const payload = { userId: admin._id.toString(), role: admin.role };
 
   const accessToken = signAccessToken(payload);
