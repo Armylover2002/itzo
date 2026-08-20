@@ -1345,14 +1345,18 @@ export const softDeleteAdminSeller = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Seller already deleted' });
     }
 
-    seller.isDeleted = true;
-    seller.isActive = false;
-    seller.deletionRequest = {
-        status: 'approved',
-        requestedAt: new Date(),
-        reason: 'Deleted by admin'
-    };
-    await seller.save();
+    await Seller.updateOne(
+      { _id: seller._id },
+      {
+        $set: {
+          isDeleted: true,
+          isActive: false,
+          'deletionRequest.status': 'approved',
+          'deletionRequest.requestedAt': new Date(),
+          'deletionRequest.reason': 'Deleted by admin'
+        }
+      }
+    );
 
     // Invalidate sessions and clear tokens
     const { FoodRefreshToken } = await import('../../../core/refreshTokens/refreshToken.model.js');
