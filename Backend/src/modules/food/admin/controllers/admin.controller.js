@@ -165,6 +165,34 @@ export async function updateDeliveryPartnerActiveStatus(req, res, next) {
     }
 }
 
+export async function softDeleteDeliveryPartner(req, res, next) {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid delivery partner id' });
+        }
+
+        // Verify password — same flow as contacts view
+        const passwordInput = req.body.password || req.query.password;
+        const password = passwordInput ? passwordInput.trim() : "";
+        
+        const { GlobalSettings } = await import('../../../common/models/settings.model.js');
+        const settings = await GlobalSettings.findOne();
+        
+        if (settings && settings.contactsViewPassword) {
+            if (!password || password !== settings.contactsViewPassword.trim()) {
+                return res.status(401).json({ success: false, message: 'Invalid password' });
+            }
+        }
+
+        const updated = await adminService.softDeleteDeliveryPartner(id);
+        if (!updated) return res.status(404).json({ success: false, message: 'Delivery partner not found or already deleted' });
+        res.status(200).json({ success: true, message: 'Delivery partner deleted successfully', data: { partner: updated } });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function bulkUpdateCustomersCodAccess(req, res, next) {
     try {
         const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];

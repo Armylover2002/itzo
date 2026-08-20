@@ -186,6 +186,7 @@ router.get('/delivery/:id', adminController.getDeliveryPartnerById);
 router.patch('/delivery/:id/approve', checkPermission('food::deliveryman_management::deliveryman::join_request', 'edit'), adminController.approveDeliveryPartner);
 router.patch('/delivery/:id/reject', checkPermission('food::deliveryman_management::deliveryman::join_request', 'edit'), adminController.rejectDeliveryPartner);
 router.patch('/delivery/:id/active-status', checkPermission('food::deliveryman_management::deliveryman::list', 'edit'), adminController.updateDeliveryPartnerActiveStatus);
+router.patch('/delivery/:id/soft-delete', checkPermission('food::deliveryman_management::deliveryman::list', 'edit'), adminController.softDeleteDeliveryPartner);
 
 // ----- Zones -----
 router.get('/zones', adminController.getZones);

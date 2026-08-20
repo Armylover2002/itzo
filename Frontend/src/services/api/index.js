@@ -402,6 +402,10 @@ export const adminAPI = {
       { isActive: isActive !== false },
       { contextModule: "admin" },
     ),
+  softDeleteDeliveryPartner: (id, password) =>
+    apiClient.patch(`/food/admin/delivery/${String(id)}/soft-delete`, { password }, {
+      contextModule: "admin",
+    }),
   /** GET /food/admin/delivery/support-tickets - list all delivery support tickets (query: status, priority, search, page, limit). */
   getDeliverySupportTickets: (params) =>
     apiClient.get("/food/admin/delivery/support-tickets", {

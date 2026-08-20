@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react"
-import { Search, Download, ChevronDown, Eye, User, Star, ArrowUpDown, Settings, FileText, FileSpreadsheet, Loader2, Check, Columns, ExternalLink, Calendar, MapPin, CreditCard, Mail, Phone, Bike, FileCheck, Pencil, Save, X } from "lucide-react"
+import { Search, Download, ChevronDown, Eye, EyeOff, User, Star, ArrowUpDown, Settings, FileText, FileSpreadsheet, Loader2, Check, Columns, ExternalLink, Calendar, MapPin, CreditCard, Mail, Phone, Bike, FileCheck, Pencil, Save, X, Trash2 } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@food/components/ui/dialog"
@@ -74,6 +74,13 @@ export default function DeliverymanList() {
   const [editValues, setEditValues] = useState({ pocketBalance: "", cashInHand: "" })
   const [savingDeliveryId, setSavingDeliveryId] = useState(null)
   const [activeUpdatingId, setActiveUpdatingId] = useState(null)
+
+  // Soft delete state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteTargetPartner, setDeleteTargetPartner] = useState(null)
+  const [deletePassword, setDeletePassword] = useState("")
+  const [deletingPartner, setDeletingPartner] = useState(false)
+  const [showDeletePassword, setShowDeletePassword] = useState(false)
   const [visibleColumns, setVisibleColumns] = useState({
     si: true,
     name: true,
@@ -390,6 +397,40 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
       toast.error(err.response?.data?.message || "Failed to update wallet")
     } finally {
       setSavingDeliveryId(null)
+    }
+  }
+
+  const handleDeleteClick = (deliveryman) => {
+    setDeleteTargetPartner(deliveryman)
+    setDeletePassword("")
+    setShowDeletePassword(false)
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletePassword.trim()) {
+      toast.error("Please enter the password")
+      return
+    }
+    const partnerId = String(deleteTargetPartner?._id || "")
+    if (!partnerId) {
+      toast.error("Delivery partner not found")
+      return
+    }
+
+    try {
+      setDeletingPartner(true)
+      await adminAPI.softDeleteDeliveryPartner(partnerId, deletePassword)
+      toast.success(`Delivery partner "${deleteTargetPartner?.name || ''}" deleted successfully`)
+      setDeliverymen(prev => prev.filter(d => String(d._id) !== partnerId))
+      setShowDeleteDialog(false)
+      setDeleteTargetPartner(null)
+      setDeletePassword("")
+    } catch (error) {
+      debugError('Error soft deleting delivery partner:', error)
+      toast.error(error?.response?.data?.message || 'Failed to delete delivery partner')
+    } finally {
+      setDeletingPartner(false)
     }
   }
 
@@ -765,6 +806,15 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                                   ) : (
                                     dm.isActive !== false ? "Deactivate" : "Activate"
                                   )}
+                                </button>
+                              )}
+                              {canEdit && (
+                                <button
+                                  onClick={() => handleDeleteClick(dm)}
+                                  className="p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors"
+                                  title="Delete Delivery Partner"
+                                >
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               )}
                             </div>
@@ -1228,6 +1278,79 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                 className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
               >
                 Apply
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={(open) => {
+        if (!open) {
+          setShowDeleteDialog(false)
+          setDeleteTargetPartner(null)
+          setDeletePassword("")
+        }
+      }}>
+        <DialogContent className="sm:max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-900">Delete Delivery Partner</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-800">
+                Are you sure you want to delete <strong>{deleteTargetPartner?.name || "this delivery partner"}</strong>?
+                This partner will no longer be visible to you and will be shown that their account was deleted by admin.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Enter Password to Confirm
+              </label>
+              <div className="relative">
+                <input
+                  type={showDeletePassword ? "text" : "password"}
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleConfirmDelete() }}
+                  placeholder="Enter admin password"
+                  className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                  autoFocus
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeletePassword(!showDeletePassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => { setShowDeleteDialog(false); setDeleteTargetPartner(null); setDeletePassword("") }}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+                disabled={deletingPartner}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deletingPartner || !deletePassword.trim()}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {deletingPartner ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </>
+                )}
               </button>
             </div>
           </div>

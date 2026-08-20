@@ -4030,7 +4030,7 @@ export async function updateDeliverySupportTicket(id, body = {}) {
 // ----- Delivery partners (approved list) -----
 export async function getDeliveryPartners(query) {
     const { page = 1, limit = 1000, search } = query;
-    const filter = { status: 'approved' };
+    const filter = { status: 'approved', isDeleted: { $ne: true } };
     if (search && typeof search === 'string' && search.trim()) {
         const term = search.trim();
         filter.$or = [
@@ -4961,6 +4961,35 @@ export async function updateDeliveryPartnerActiveStatus(id, isActive) {
     }
 
     return updated;
+}
+
+export async function softDeleteDeliveryPartner(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const partner = await FoodDeliveryPartner.findById(id);
+    if (!partner) return null;
+    if (partner.isDeleted) return null; // Already deleted
+
+    partner.isDeleted = true;
+    partner.isActive = false;
+    partner.availabilityStatus = 'offline';
+    partner.deletionRequest = {
+        status: 'approved',
+        requestedAt: new Date(),
+        reason: 'Deleted by admin'
+    };
+    await partner.save();
+
+    // Invalidate sessions and clear tokens
+    await Promise.all([
+        FoodRefreshToken.deleteMany({ userId: partner._id }),
+        FoodDeliveryPartner.updateOne(
+            { _id: partner._id },
+            { $set: { fcmTokens: [], fcmTokenMobile: [] } }
+        ),
+    ]);
+
+    return partner.toObject();
 }
 
 // ----- Zones CRUD -----
