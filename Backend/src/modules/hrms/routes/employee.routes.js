@@ -15,7 +15,8 @@ import {
     transferEmployee,
     manageEmployeeZones,
     getEmployeeRestaurants,
-    softDeleteEmployee
+    softDeleteEmployee,
+    deleteEmployeeAccount
 } from '../controllers/employee.controller.js';
 import { authMiddleware } from '../../../core/auth/auth.middleware.js';
 import { requireHrmsEmployee, requireAdminOrManager } from '../middleware/hrmsAuth.middleware.js';
@@ -26,6 +27,8 @@ const router = express.Router();
 router.get('/me', authMiddleware, requireHrmsEmployee, getMyProfile);
 // EMPLOYEE: Request profile update
 router.post('/me/edit-request', authMiddleware, requireHrmsEmployee, requestProfileUpdate);
+// EMPLOYEE: Delete own account
+router.delete('/delete-account', authMiddleware, requireHrmsEmployee, deleteEmployeeAccount);
 
 // ADMIN: Get pending profile edits
 router.get('/pending-edits', authMiddleware, requireAdminOrManager, getPendingProfileEdits);

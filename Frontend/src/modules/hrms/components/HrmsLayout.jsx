@@ -6,7 +6,7 @@ import axiosInstance from '@core/api/axios';
 import {
     LayoutDashboard, Clock, CalendarDays, Wallet, FileText,
     Receipt, User, LogOut, Menu, X, ChevronRight, Building2,
-    LifeBuoy, ChevronDown, MessageSquarePlus, List, Phone, ClipboardList, Target, Users, MapPin
+    LifeBuoy, ChevronDown, MessageSquarePlus, List, Phone, ClipboardList, Target, Users, MapPin, AlertTriangle
 } from 'lucide-react';
 
 const navItems = [
@@ -49,6 +49,19 @@ export default function HrmsLayout() {
 
     const toggleMenu = (label) => {
         setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
+    };
+
+    const handleDeleteAccount = async () => {
+        if (window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+            try {
+                await axiosInstance.delete('/hrms/employees/delete-account');
+                logout();
+                navigate('/hrms/login'); 
+            } catch (error) {
+                console.error("Failed to delete account", error);
+                alert(error?.response?.data?.message || "Failed to delete account");
+            }
+        }
     };
 
     const handleLogout = () => {
@@ -199,10 +212,17 @@ export default function HrmsLayout() {
                 <div className="px-3 pb-5">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 mb-2"
                     >
                         <LogOut className="w-[18px] h-[18px]" />
                         <span>Sign Out</span>
+                    </button>
+                    <button
+                        onClick={handleDeleteAccount}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                    >
+                        <AlertTriangle className="w-[18px] h-[18px]" />
+                        <span>Delete Account</span>
                     </button>
                 </div>
             </aside>

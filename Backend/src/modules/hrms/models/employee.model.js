@@ -136,6 +136,7 @@ const hrmsEmployeeSchema = new mongoose.Schema(
         pendingProfileEdit: { type: Object },
 
         isDeleted: { type: Boolean, default: false },
+        deletedByEmployee: { type: Boolean, default: false },
         deletionRequest: { type: Object, default: null },
 
         status: {

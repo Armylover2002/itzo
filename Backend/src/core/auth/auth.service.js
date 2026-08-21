@@ -366,6 +366,9 @@ export const adminLogin = async (email, password, roleId) => {
     const { HrmsEmployee } = await import('../../modules/hrms/models/employee.model.js');
     const employee = await HrmsEmployee.findOne({ adminId: admin._id });
     if (employee && employee.isDeleted) {
+      if (employee.deletedByEmployee) {
+        throw new AuthError("account previously deleted by employee");
+      }
       throw new AuthError("Your account was deleted by admin.");
     }
   }

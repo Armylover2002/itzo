@@ -969,3 +969,48 @@ export const softDeleteEmployee = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * EMPLOYEE: Soft delete own account
+ */
+export const deleteEmployeeAccount = async (req, res, next) => {
+    try {
+        const adminId = req.user.userId;
+        const employee = await HrmsEmployee.findOne({ adminId });
+
+        if (!employee) {
+            return sendError(res, 404, 'Employee not found');
+        }
+        if (employee.isDeleted) {
+            return sendError(res, 404, 'Employee already deleted');
+        }
+
+        await HrmsEmployee.updateOne(
+            { _id: employee._id },
+            {
+                $set: {
+                    isDeleted: true,
+                    deletedByEmployee: true,
+                    status: 'Resigned', // Or 'Terminated' based on company policy, 'Resigned' is safer for self-delete
+                    'deletionRequest.status': 'approved',
+                    'deletionRequest.requestedAt': new Date(),
+                    'deletionRequest.reason': 'Deleted by employee self-serve'
+                }
+            }
+        );
+
+        // Invalidate sessions and clear tokens
+        const { FoodRefreshToken } = await import('../../../core/refreshTokens/refreshToken.model.js');
+        await Promise.all([
+            FoodRefreshToken.deleteMany({ userId: adminId }),
+            HrmsEmployee.updateOne(
+                { _id: employee._id },
+                { $set: { fcmTokens: [], fcmTokenMobile: [] } }
+            )
+        ]);
+
+        return sendResponse(res, 200, 'Your account has been deleted successfully', { employee });
+    } catch (error) {
+        next(error);
+    }
+};
