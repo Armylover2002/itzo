@@ -660,19 +660,21 @@ export default function HrmsEmployees() {
                                 <p className="text-sm text-slate-500">ID: {selectedEmployee.employeeId}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                {!editMode ? (
-                                    <button onClick={() => startEditEmployee(selectedEmployee)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-lg text-xs transition-colors border border-orange-200">
-                                        <Edit2 className="w-3.5 h-3.5" /> Edit
-                                    </button>
-                                ) : (
-                                    <>
-                                        <button onClick={() => setEditMode(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200">
-                                            <X className="w-3.5 h-3.5" /> Cancel
+                                {!window.location.pathname.startsWith('/hrms') && (
+                                    !editMode ? (
+                                        <button onClick={() => startEditEmployee(selectedEmployee)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-lg text-xs transition-colors border border-orange-200">
+                                            <Edit2 className="w-3.5 h-3.5" /> Edit
                                         </button>
-                                        <button onClick={handleEditSave} disabled={editSaving} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg text-xs transition-colors disabled:opacity-50">
-                                            <Save className="w-3.5 h-3.5" /> {editSaving ? 'Saving...' : 'Save'}
-                                        </button>
-                                    </>
+                                    ) : (
+                                        <>
+                                            <button onClick={() => setEditMode(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200">
+                                                <X className="w-3.5 h-3.5" /> Cancel
+                                            </button>
+                                            <button onClick={handleEditSave} disabled={editSaving} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg text-xs transition-colors disabled:opacity-50">
+                                                <Save className="w-3.5 h-3.5" /> {editSaving ? 'Saving...' : 'Save'}
+                                            </button>
+                                        </>
+                                    )
                                 )}
                                 <button onClick={() => { setSelectedEmployee(null); setEditMode(false); setEmployeeRestaurants(null); }} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
                                     <X className="w-5 h-5 text-slate-400" />
@@ -1027,13 +1029,15 @@ export default function HrmsEmployees() {
                                                 <button onClick={() => setSelectedEmployee(emp)} className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
                                                     <Eye className="w-3.5 h-3.5" /> View
                                                 </button>
-                                                <button 
-                                                    onClick={() => handleDeleteClick(emp)} 
-                                                    className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
-                                                    title="Delete Employee"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
+                                                {!window.location.pathname.startsWith('/hrms') && (
+                                                    <button 
+                                                        onClick={() => handleDeleteClick(emp)} 
+                                                        className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
+                                                        title="Delete Employee"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
