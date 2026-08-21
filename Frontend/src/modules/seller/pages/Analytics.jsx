@@ -368,7 +368,7 @@ const Analytics = () => {
               </div>
             </div>
             <div className="h-[400px] w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <AreaChart
                   data={statsData?.salesTrend || []}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -456,7 +456,7 @@ const Analytics = () => {
               </p>
             </div>
             <div className="h-[350px] w-full flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <RadarChart
                   cx="50%"
                   cy="50%"
@@ -586,7 +586,7 @@ const Analytics = () => {
 
             <div className="flex flex-col md:flex-row items-center gap-8">
               <div className="h-[250px] w-full md:w-1/2">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <PieChart>
                     <Pie
                       data={statsData?.trafficSources || []}

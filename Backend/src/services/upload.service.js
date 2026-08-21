@@ -1,5 +1,5 @@
 import { config } from '../config/env.js';
-import * as cloudinaryService from './upload.service.js';
+import * as cloudinaryService from './cloudinary.service.js';
 import * as localStorageService from './localStorage.service.js';
 import { logger } from '../utils/logger.js';
 

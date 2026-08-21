@@ -370,7 +370,7 @@ const Dashboard = () => {
           subtitle="Last 7 days performance"
           className="lg:col-span-2">
           <div className="h-[300px] min-h-[280px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart
                 data={revenueChartData}
                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -436,7 +436,7 @@ const Dashboard = () => {
         {/* Product Performance */}
         <Card title="Top Categories" subtitle="Sales by category">
           <div className="h-[300px] min-h-[280px] w-full mt-4">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={statsData?.categoryMix || []} layout="vertical">
                 <CartesianGrid
                   strokeDasharray="3 3"

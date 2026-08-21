@@ -242,7 +242,7 @@ const Earnings = () => {
             {(Array.isArray(data?.monthlyChart) ? data.monthlyChart : []).length === 0 ? (
               <p className="text-slate-600 text-sm font-medium">No monthly revenue data yet.</p>
             ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={data.monthlyChart}>
                 <CartesianGrid
                   strokeDasharray="3 3"

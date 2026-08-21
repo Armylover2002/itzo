@@ -175,7 +175,7 @@ const AdvancedAnalytics = () => {
                         </div>
                     </div>
                     <div className="h-[350px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <AreaChart data={salesData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
@@ -218,7 +218,7 @@ const AdvancedAnalytics = () => {
                 <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-white rounded-[32px] p-8">
                     <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight mb-8">Category Revenue Mix</h4>
                     <div className="h-[250px] w-full relative">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                             <PieChart>
                                 <Pie
                                     data={categoryData}

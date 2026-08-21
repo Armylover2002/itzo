@@ -250,7 +250,7 @@ const AdminDashboard = () => {
                         className="h-full"
                     >
                         <div className="ds-chart-container min-h-[250px]">
-                            <ResponsiveContainer width="100%" height={250}>
+                            <ResponsiveContainer width="100%" height={250} minWidth={0} minHeight={0}>
                                 <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -304,7 +304,7 @@ const AdminDashboard = () => {
                         className="h-full border-none shadow-sm ring-1 ring-gray-100"
                     >
                         <div className="h-[250px] min-h-[250px] relative">
-                            <ResponsiveContainer width="100%" height={250}>
+                            <ResponsiveContainer width="100%" height={250} minWidth={0} minHeight={0}>
                                 <PieChart>
                                     <Pie
                                         data={categoryData}
