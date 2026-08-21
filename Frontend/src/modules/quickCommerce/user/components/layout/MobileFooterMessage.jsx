@@ -3,7 +3,7 @@ import { useSettings } from '@core/context/SettingsContext';
 
 const MobileFooterMessage = () => {
     const { settings } = useSettings();
-    const appName = settings?.data.companyName || 'ItzoFood';
+    const appName = settings?.data?.companyName || 'ItzoFood';
 
     return (
         <div className="md:hidden w-full flex flex-col items-center -mt-8 pt-0 pb-28 px-6 bg-transparent">
