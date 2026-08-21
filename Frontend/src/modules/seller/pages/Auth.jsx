@@ -149,27 +149,8 @@ export default function SellerAuth() {
         <div className="absolute bottom-[-10%] right-[-5%] h-80 w-80 rounded-full bg-[#ffedd5]/50 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] md:min-h-[calc(100vh-5rem)] w-full max-w-6xl overflow-hidden rounded-[24px] md:rounded-[36px] border border-white/70 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
-        <div className="hidden w-[42%] flex-col justify-between bg-[linear-gradient(160deg,#0f172a_0%,#c2410c_50%,#FE5502_100%)] p-10 text-white md:flex">
-          <div>
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-[0.28em]">
-              <Store className="h-4 w-4" />
-              Seller Console
-            </div>
-            <h1 className="mt-8 text-4xl font-black leading-tight">
-              Grow your store with a seller-first login flow.
-            </h1>
-            <p className="mt-4 max-w-md text-sm font-medium text-white/80">
-              Based on your Blinkit reference, adapted to this project&apos;s live OTP backend so partners can actually sign in.
-            </p>
-          </div>
-
-          <div className="space-y-3 text-sm font-semibold text-white/85">
-            <div className="rounded-2xl bg-white/10 px-4 py-3">Fast OTP login for store owners</div>
-          </div>
-        </div>
-
-        <div className="flex w-full flex-col items-center justify-center px-4 py-8 sm:px-6 md:w-[58%] md:px-12 md:py-10">
+      <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] md:min-h-[calc(100vh-5rem)] w-full max-w-lg sm:max-w-xl overflow-hidden rounded-[24px] md:rounded-[36px] border border-white/70 bg-white shadow-[0_40px_120px_rgba(15,23,42,0.08)]">
+        <div className="flex w-full flex-col items-center justify-center px-4 py-8 sm:px-6 md:px-10 md:py-10">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
