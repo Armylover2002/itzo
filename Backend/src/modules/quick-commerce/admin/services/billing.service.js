@@ -14,13 +14,22 @@ const DEFAULT_QUICK_FEE_SETTINGS = {
   isActive: true,
 };
 
-let deliveryCommissionRulesCache = null;
+let deliveryCommissionRulesPromise = null;
 let deliveryCommissionRulesLoadedAt = 0;
-const DELIVERY_COMMISSION_CACHE_MS = 30 * 1000;
+const DELIVERY_COMMISSION_CACHE_MS = 60 * 1000;
 
 const clearDeliveryCommissionRulesCache = () => {
-  deliveryCommissionRulesCache = null;
+  deliveryCommissionRulesPromise = null;
   deliveryCommissionRulesLoadedAt = 0;
+};
+
+let feeSettingsPromise = null;
+let feeSettingsLoadedAt = 0;
+const FEE_SETTINGS_CACHE_MS = 60 * 1000;
+
+const clearFeeSettingsCache = () => {
+  feeSettingsPromise = null;
+  feeSettingsLoadedAt = 0;
 };
 
 export async function getDeliveryCommissionRules() {
@@ -188,6 +197,7 @@ export async function upsertFeeSettings(body) {
     if (!Object.keys(update).length) return existing.toObject();
 
     const updated = await QuickFeeSettings.findByIdAndUpdate(existing._id, update, { new: true }).lean();
+    clearFeeSettingsCache();
     return updated;
   }
 
@@ -204,12 +214,22 @@ export async function upsertFeeSettings(body) {
   if (body.gstRate !== undefined && body.gstRate !== null) payload.gstRate = body.gstRate;
 
   const created = await QuickFeeSettings.create(payload);
+  clearFeeSettingsCache();
   return created.toObject();
 }
 
-export async function getActiveFeeSettings() {
-  const doc = await QuickFeeSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
-  return doc || DEFAULT_QUICK_FEE_SETTINGS;
+export function getActiveFeeSettings() {
+  const now = Date.now();
+  if (feeSettingsPromise && (now - feeSettingsLoadedAt < FEE_SETTINGS_CACHE_MS)) {
+    return feeSettingsPromise;
+  }
+  
+  feeSettingsPromise = QuickFeeSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean().then(doc => doc || DEFAULT_QUICK_FEE_SETTINGS).catch(err => {
+    feeSettingsPromise = null;
+    throw err;
+  });
+  feeSettingsLoadedAt = now;
+  return feeSettingsPromise;
 }
 
 export async function calculateHandlingFeeFromProducts(products = []) {
@@ -311,19 +331,21 @@ export async function calculateQuickPricing({ subtotal = 0, discount = 0, tip = 
   };
 }
 
-export async function getActiveDeliveryCommissionRules() {
+export function getActiveDeliveryCommissionRules() {
   const now = Date.now();
   if (
-    deliveryCommissionRulesCache &&
-    now - deliveryCommissionRulesLoadedAt < DELIVERY_COMMISSION_CACHE_MS
+    deliveryCommissionRulesPromise &&
+    (now - deliveryCommissionRulesLoadedAt < DELIVERY_COMMISSION_CACHE_MS)
   ) {
-    return deliveryCommissionRulesCache;
+    return deliveryCommissionRulesPromise;
   }
 
-  const list = await QuickDeliveryCommissionRule.find({ status: { $ne: false } }).lean();
-  deliveryCommissionRulesCache = list || [];
+  deliveryCommissionRulesPromise = QuickDeliveryCommissionRule.find({ status: { $ne: false } }).lean().then(list => list || []).catch(err => {
+    deliveryCommissionRulesPromise = null;
+    throw err;
+  });
   deliveryCommissionRulesLoadedAt = now;
-  return deliveryCommissionRulesCache;
+  return deliveryCommissionRulesPromise;
 }
 
 export async function getRiderEarning(distanceKm) {
