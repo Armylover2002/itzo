@@ -52,7 +52,7 @@ export default function ManagerDashboard() {
                 axiosInstance.get('/hrms/daily-reports/admin/dashboard').catch(() => ({ data: { data: {} } })),
                 axiosInstance.get('/hrms/leaves', { params: { status: 'Pending', limit: 10 } }).catch(() => ({ data: { data: { leaves: [], pagination: { total: 0 } } } })),
                 axiosInstance.get('/hrms/expenses', { params: { status: 'Pending', limit: 10 } }).catch(() => ({ data: { data: { expenses: [], pagination: { total: 0 } } } })),
-                axiosInstance.get('/hrms/performance/team-performance?period=monthly').catch(() => ({ data: { data: { teamMembersPerformance: [], averageTeamScore: 0 } } }))
+                axiosInstance.get('/hrms/performance/team-performance').catch(() => ({ data: { data: { teamMembersPerformance: [], averageTeamScore: 0 } } }))
             ]);
 
             const perfMembers = perfRes.data?.data?.teamMembersPerformance || [];

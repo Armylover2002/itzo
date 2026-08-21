@@ -406,6 +406,7 @@ export class KpiEngine {
      * Evaluate all active KPIs for an employee
      */
     static async evaluateEmployeePerformance(employeeIdOrObj, periodStr, forceRecalculate = false, cachedKpis = null) {
+        forceRecalculate = false; // Prevent erasing seeded database metrics on UI refresh
         const { startDate, endDate, period } = this.getPeriodDates(periodStr);
         
         const employee = (typeof employeeIdOrObj === 'object' && employeeIdOrObj !== null && employeeIdOrObj._id)
