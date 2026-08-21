@@ -4,6 +4,8 @@ const SELLER_COMMISSION_CACHE_MS = 60 * 1000;
 let sellerCommissionRulesCache = null;
 let sellerCommissionRulesLoadedAt = 0;
 
+let sellerCommissionRulesPromise = null;
+
 async function getActiveSellerCommissionRules() {
   const now = Date.now();
   if (
@@ -13,12 +15,24 @@ async function getActiveSellerCommissionRules() {
     return sellerCommissionRulesCache;
   }
 
-  const list = await QuickSellerCommission.find({
-    status: { $ne: false },
-  }).lean();
-  sellerCommissionRulesCache = list || [];
-  sellerCommissionRulesLoadedAt = now;
-  return sellerCommissionRulesCache;
+  if (sellerCommissionRulesPromise) {
+    return sellerCommissionRulesPromise;
+  }
+
+  sellerCommissionRulesPromise = (async () => {
+    try {
+      const list = await QuickSellerCommission.find({
+        status: { $ne: false },
+      }).lean();
+      sellerCommissionRulesCache = list || [];
+      sellerCommissionRulesLoadedAt = Date.now();
+      return sellerCommissionRulesCache;
+    } finally {
+      sellerCommissionRulesPromise = null;
+    }
+  })();
+
+  return sellerCommissionRulesPromise;
 }
 
 export function computeSellerCommissionAmount(baseAmount, rule) {

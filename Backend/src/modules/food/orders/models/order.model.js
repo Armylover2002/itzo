@@ -404,6 +404,7 @@ orderSchema.index({ 'dispatch.deliveryPartnerId': 1, orderStatus: 1 });
 orderSchema.index({ 'dispatch.status': 1, orderStatus: 1 });
 orderSchema.index({ 'payment.status': 1, createdAt: -1 });
 orderSchema.index({ 'payment.method': 1, createdAt: -1 });
+orderSchema.index({ 'items.sourceId': 1, 'items.type': 1, createdAt: -1 });
 
 export const FoodOrder = mongoose.model('FoodOrder', orderSchema, 'food_orders');
 
