@@ -439,6 +439,7 @@ export const PocketV2 = () => {
                        </div>
                        
                        <div className="space-y-3">
+                          {/* Razorpay disabled temporarily for iOS Web App
                           <button 
                              onClick={handleRazorpayDeposit}
                              className="w-full p-4 border border-gray-200 rounded-2xl hover:border-black active:bg-gray-50 transition-all flex items-center justify-between"
@@ -454,6 +455,7 @@ export const PocketV2 = () => {
                              </div>
                              <ChevronRight className="w-5 h-5 text-gray-400" />
                           </button>
+                          */}
                           
                           <button 
                              onClick={() => setDepositStep('select_manual_method')}

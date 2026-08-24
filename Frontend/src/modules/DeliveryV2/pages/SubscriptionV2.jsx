@@ -349,6 +349,7 @@ export default function SubscriptionV2() {
                   </div>
                 </div>
               </div>
+              {/* Razorpay disabled temporarily for iOS Web App
               <Button 
                 onClick={() => setShowTopupModal(true)}
                 className="bg-[#FE5502] hover:bg-[#E64D02] text-white rounded-2xl px-5 py-2.5 h-auto flex items-center gap-2 text-xs font-black shadow-lg shadow-orange-500/20 active:scale-95 transition-all"
@@ -356,6 +357,7 @@ export default function SubscriptionV2() {
                 <Plus className="w-4 h-4" />
                 Recharge
               </Button>
+              */}
             </div>
 
             <div className="bg-slate-50 rounded-[28px] p-6 flex flex-col gap-4 border border-slate-100/50">
@@ -441,6 +443,9 @@ export default function SubscriptionV2() {
                           </div>
                         </div>
                       ) : (
+                        /* Razorpay disabled temporarily for iOS Web App */
+                        null
+                        /*
                         <Button 
                           onClick={() => handlePurchase(plan)}
                           disabled={!!purchasing || hasLockedSubscription}
@@ -456,6 +461,7 @@ export default function SubscriptionV2() {
                             'Subscribe'
                           )}
                         </Button>
+                        */
                       )}
                     </div>
                   </div>
@@ -617,6 +623,7 @@ export default function SubscriptionV2() {
 
                   {/* Action Section */}
                   <div className="space-y-4 pt-2">
+                    {/* Razorpay disabled temporarily for iOS Web App
                     <Button 
                       onClick={handleTopup}
                       disabled={topupLoading || !topupAmount || (isLowBalance && parseFloat(topupAmount) < requiredRecharge)}
@@ -625,6 +632,7 @@ export default function SubscriptionV2() {
                       {topupLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
                       {topupLoading ? 'Processing...' : 'Proceed to Payment'}
                     </Button>
+                    */}
                     
                     <button 
                       onClick={() => setShowTopupModal(false)}
