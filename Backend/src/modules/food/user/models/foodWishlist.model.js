@@ -43,7 +43,4 @@ const foodWishlistSchema = new mongoose.Schema(
     }
 );
 
-// Index for fast lookup by userId
-foodWishlistSchema.index({ userId: 1 });
-
 export const FoodWishlist = mongoose.model('FoodWishlist', foodWishlistSchema, 'food_wishlists');

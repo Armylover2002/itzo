@@ -160,9 +160,7 @@ hrmsEmployeeSchema.pre('save', function (next) {
 });
 
 // Indexes for fast querying
-hrmsEmployeeSchema.index({ adminId: 1 });
 hrmsEmployeeSchema.index({ managerId: 1 });
-hrmsEmployeeSchema.index({ employeeId: 1 });
 hrmsEmployeeSchema.index({ status: 1 });
 hrmsEmployeeSchema.index({ hrmsRole: 1 });
 hrmsEmployeeSchema.index({ department: 1 });

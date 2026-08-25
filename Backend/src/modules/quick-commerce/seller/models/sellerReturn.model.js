@@ -225,7 +225,6 @@ sellerReturnSchema.index(
 );
 
 // New indexes for return management queries
-sellerReturnSchema.index({ returnRequestId: 1 });
 sellerReturnSchema.index({ userId: 1, returnStatus: 1 });
 sellerReturnSchema.index({ 'assignment.deliveryPartnerId': 1, returnStatus: 1 });
 
