@@ -5,8 +5,7 @@ import { logger } from '../utils/logger.js';
 
 export const connectDB = async () => {
     try {
-        // Using system default DNS. Do not override with 8.8.8.8 here, 
-        // as it causes ENOTFOUND for SRV records on some Windows networks.
+        dns.setServers(['8.8.8.8', '8.8.4.4']);
         const conn = await mongoose.connect(config.mongodbUri, {
             family: 4, // Force IPv4
             serverSelectionTimeoutMS: 15000,

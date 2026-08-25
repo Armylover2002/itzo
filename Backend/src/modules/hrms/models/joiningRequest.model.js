@@ -146,7 +146,6 @@ const hrmsJoiningRequestSchema = new mongoose.Schema(
 hrmsJoiningRequestSchema.index({ email: 1 });
 hrmsJoiningRequestSchema.index({ phone: 1 });
 hrmsJoiningRequestSchema.index({ status: 1 });
-hrmsJoiningRequestSchema.index({ requestId: 1 });
 hrmsJoiningRequestSchema.index({ createdAt: -1 });
 
 export const HrmsJoiningRequest = mongoose.model(

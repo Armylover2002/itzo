@@ -43,7 +43,6 @@ const quickProductSchema = new mongoose.Schema({
 
 quickProductSchema.index({ name: 'text' });
 quickProductSchema.index({ createdAt: -1 });
-quickProductSchema.index({ headerId: 1 });
 quickProductSchema.index({ approvalStatus: 1, isActive: 1, categoryId: 1, subcategoryId: 1 });
 quickProductSchema.index({ isActive: 1, status: 1 });
 

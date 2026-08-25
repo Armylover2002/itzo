@@ -6,13 +6,11 @@ const userSubscriptionSchema = new mongoose.Schema(
         restaurantId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'FoodRestaurant',
-            index: true,
             default: null
         },
         deliveryBoyId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'FoodDeliveryPartner',
-            index: true,
             default: null
         },
         userType: {
