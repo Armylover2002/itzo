@@ -42,4 +42,5 @@ jobs:
             "$SERVER_USER@$SERVER_HOST" \
             "/root/deploy.sh"
 
-          echo "Deployment finished successfully."
+          echo "Connecting to ItzoFood production server..."
+          echo "CI/CD deployment started..."
