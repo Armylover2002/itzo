@@ -1,0 +1,46 @@
+name: Deploy ItzoFood
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy ItzoFood to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to ItzoFood Server
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+
+        run: |
+          set -e
+
+          echo "Preparing SSH..."
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s' "$SERVER_SSH_KEY" | base64 --decode > ~/.ssh/itzo_deploy_key
+          chmod 600 ~/.ssh/itzo_deploy_key
+
+          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
+
+          echo "Connecting to server..."
+
+          ssh \
+            -i ~/.ssh/itzo_deploy_key \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "$SERVER_USER@$SERVER_HOST" \
+            "/root/deploy.sh"
+
+          echo "Connecting to ItzoFood production server..."
+          echo "CI/CD deployment started..."
