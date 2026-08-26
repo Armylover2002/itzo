@@ -28,7 +28,7 @@ jobs:
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
 
-          printf '%s\n' "$SERVER_SSH_KEY" > ~/.ssh/itzo_deploy_key
+          printf '%s' "$SERVER_SSH_KEY" | base64 --decode > ~/.ssh/itzo_deploy_key
           chmod 600 ~/.ssh/itzo_deploy_key
 
           ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts
