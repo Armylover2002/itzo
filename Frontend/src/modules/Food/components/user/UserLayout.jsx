@@ -140,7 +140,7 @@ export default function UserLayout({ children }) {
   // Note: Authentication checks and redirects are handled by ProtectedRoute components
   // UserLayout should not interfere with authentication redirects
 
-  // Show bottom navigation only on home page, dining page, under-250 page, and profile page
+  // Show bottom navigation only on home page, dining page, under-250 page, orders page, and profile page
   const path = location.pathname.startsWith("/food")
     ? location.pathname.substring(5) || "/"
     : location.pathname
@@ -159,12 +159,17 @@ export default function UserLayout({ children }) {
     normalizedPath === "/user/profile" ||
     isSharedFoodProfile
 
+  const isOrdersRoot =
+    normalizedPath === "/user/orders" ||
+    normalizedPath === "/orders"
+
   const showBottomNav = normalizedPath === "/" ||
     normalizedPath === "/user" ||
     normalizedPath === "/dining" ||
     normalizedPath === "/user/dining" ||
     normalizedPath === "/under-250" ||
     normalizedPath === "/user/under-250" ||
+    isOrdersRoot ||
     isProfileRoot ||
     normalizedPath === "" // Handle empty string case for root relative to /food
 

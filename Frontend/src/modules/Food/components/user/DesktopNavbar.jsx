@@ -75,7 +75,13 @@ export default function DesktopNavbar({ showLogo = true }) {
         location.pathname.startsWith("/food/user/profile") ||
         location.pathname.startsWith("/food/profile") ||
         isSharedFoodProfile
-    const isDelivery = !isDining && !isUnder250 && !isProfile && !isQuick && (location.pathname === "/food/user" || location.pathname === "/food" || (location.pathname.startsWith("/food/user") && !location.pathname.includes("/dining") && !location.pathname.includes("/under-250") && !location.pathname.includes("/profile")))
+    const isOrders =
+        location.pathname === "/food/user/orders" ||
+        location.pathname.startsWith("/food/user/orders") ||
+        location.pathname === "/food/orders" ||
+        normalizedPath === "/orders" ||
+        normalizedPath.startsWith("/orders/")
+    const isDelivery = !isDining && !isUnder250 && !isOrders && !isProfile && !isQuick && (location.pathname === "/food/user" || location.pathname === "/food" || (location.pathname.startsWith("/food/user") && !location.pathname.includes("/dining") && !location.pathname.includes("/under-250") && !location.pathname.includes("/orders") && !location.pathname.includes("/profile")))
     const isBannerRoute =
         location.pathname === "/food/user/under-250" ||
         location.pathname === "/food/under-250"
@@ -325,8 +331,8 @@ export default function DesktopNavbar({ showLogo = true }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center h-12">
                         {/* Navigation Tabs - Centered with spacing */}
-                        <div className="flex items-center space-x-24">
-                            {/* Delivery Tab */}
+                        <div className="flex items-center space-x-16">
+                            {/* Home Tab */}
                             <Link
                                 to="/food/user"
                                 className={`flex flex-col items-center gap-1 px-2 py-1 transition-colors relative group ${isDelivery
@@ -334,7 +340,7 @@ export default function DesktopNavbar({ showLogo = true }) {
                                     : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
                                     }`}
                             >
-                                <span className="text-sm font-bold tracking-wide uppercase">Delivery</span>
+                                <span className="text-sm font-bold tracking-wide uppercase">Home</span>
                                 {isDelivery && (
                                     <motion.div
                                         layoutId="navIndicator"
@@ -376,6 +382,27 @@ export default function DesktopNavbar({ showLogo = true }) {
                             >
                                 <span className="text-sm font-bold tracking-wide uppercase">Under 250</span>
                                 {isUnder250 && (
+                                    <motion.div
+                                        layoutId="navIndicator"
+                                        className="absolute -bottom-3 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                    />
+                                )}
+                            </Link>
+
+                            {/* Orders Tab */}
+                            <Link
+                                to={isAuthenticated ? "/food/user/orders" : "/user/auth/login"}
+                                state={!isAuthenticated ? { redirectTo: "/food/user/orders" } : undefined}
+                                className={`flex flex-col items-center gap-1 px-2 py-1 transition-colors relative group ${isOrders
+                                    ? "text-[#FE5502] dark:text-[#FE5502]"
+                                    : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
+                                    }`}
+                            >
+                                <span className="text-sm font-bold tracking-wide uppercase">Orders</span>
+                                {isOrders && (
                                     <motion.div
                                         layoutId="navIndicator"
                                         className="absolute -bottom-3 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"

@@ -662,9 +662,9 @@ Order again from this restaurant in the ${companyName} app.`
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-10">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24">
         <div className="bg-white dark:bg-[#111111] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b border-transparent dark:border-gray-800">
-          <Link to="/user">
+          <Link to="/food/user">
             <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-white cursor-pointer" />
           </Link>
           <h1 className="ml-4 text-xl font-semibold text-gray-800 dark:text-white">Your Orders</h1>
@@ -678,16 +678,16 @@ Order again from this restaurant in the ${companyName} app.`
 
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-10">
+      <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24">
         <div className="bg-white dark:bg-[#111111] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b border-transparent dark:border-gray-800">
-          <Link to="/user">
+          <Link to="/food/user">
             <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-white cursor-pointer" />
           </Link>
           <h1 className="ml-4 text-xl font-semibold text-gray-800 dark:text-white">Your Orders</h1>
         </div>
         <div className="px-4 py-8 text-center">
           <p className="text-gray-600 dark:text-gray-300">You haven't placed any orders yet</p>
-          <Link to="/user">
+          <Link to="/food/user">
             <button className="mt-4 text-[#FE5502] font-medium">Start Ordering</button>
           </Link>
         </div>
@@ -696,7 +696,7 @@ Order again from this restaurant in the ${companyName} app.`
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-10 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24 font-sans">
       {/* Header */}
       <div className="bg-white dark:bg-[#111111] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b border-transparent dark:border-gray-800">
         <Link to="/food/user">
