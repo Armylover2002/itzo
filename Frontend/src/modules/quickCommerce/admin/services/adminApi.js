@@ -159,33 +159,6 @@ export const adminApi = {
     },
   }),
 
-  getProfile: async () => {
-    const response = await axiosInstance.get('/auth/me', { contextModule: 'admin' });
-    const user = response.data?.data?.user || response.data?.result || response.data?.data || {};
-    return {
-      ...response,
-      data: {
-        ...response.data,
-        success: true,
-        result: user,
-      },
-    };
-  },
-
-  updateProfile: async (data) => {
-    const response = await axiosInstance.patch('/auth/admin/profile', data);
-    return {
-      ...response,
-      data: {
-        ...response.data,
-        success: true,
-        result: response.data?.data?.user || response.data?.result || {},
-      },
-    };
-  },
-
-  updatePassword: (data) => axiosInstance.post('/auth/admin/change-password', data),
-
   getSettings: async () => {
     const response = await axiosInstance.get('/food/admin/business-settings');
     return {
@@ -386,13 +359,6 @@ export const adminApi = {
     axiosInstance.patch(`/quick-commerce/admin/support-tickets/${id}`, { adminResponse }),
   getPendingReviews: () => emptyResponse({ items: [], total: 0 }),
   updateReviewStatus: () => emptyResponse({}),
-  getDeliveryPartners: () => emptyResponse({ items: [], total: 0 }),
-  approveDeliveryPartner: () => emptyResponse({}),
-  rejectDeliveryPartner: () => emptyResponse({}),
-  getActiveFleet: () => emptyResponse({ items: [], total: 0 }),
-  getDeliveryTransactions: () => emptyResponse({ items: [], total: 0 }),
-  settleTransaction: () => emptyResponse({}),
-  bulkSettleDelivery: () => emptyResponse({}),
   getSellerWithdrawals: (params = {}) =>
     axiosInstance.get('/quick-commerce/admin/withdrawals/sellers', { params }),
   getDeliveryWithdrawals: (params = {}) =>
@@ -400,14 +366,6 @@ export const adminApi = {
   getSellerTransactions: () => emptyResponse({ items: [], total: 0 }),
   updateWithdrawalStatus: (id, body = {}) =>
     axiosInstance.patch(`/quick-commerce/admin/withdrawals/${String(id)}`, body),
-  getDeliveryCashBalances: (params = {}) =>
-    axiosInstance.get('/quick-commerce/admin/cash-collection/balances', { params }),
-  getRiderCashDetails: (riderId, params = {}) =>
-    axiosInstance.get(`/quick-commerce/admin/cash-collection/riders/${String(riderId)}`, { params }),
-  settleRiderCash: (body = {}) =>
-    axiosInstance.post('/quick-commerce/admin/cash-collection/settle', body),
-  getCashSettlementHistory: (params = {}) =>
-    axiosInstance.get('/quick-commerce/admin/cash-collection/history', { params }),
   getFAQs: () => emptyResponse({ items: [], total: 0 }),
   createFAQ: () => emptyResponse({}),
   updateFAQ: () => emptyResponse({}),

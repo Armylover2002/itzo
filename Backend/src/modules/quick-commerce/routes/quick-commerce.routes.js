@@ -86,10 +86,6 @@ import {
   getAdminFinancePayouts,
   getAdminSellerWithdrawals,
   getAdminDeliveryWithdrawals,
-  getAdminDeliveryCashBalances,
-  getAdminCashSettlementHistory,
-  getAdminRiderCashDetails,
-  settleAdminRiderCash,
   updateAdminWithdrawalStatus,
   getAdminCoupons,
   createAdminCoupon,
@@ -255,26 +251,6 @@ router.patch(
   "/admin/withdrawals/:withdrawalId",
   ...adminOnly,
   updateAdminWithdrawalStatus,
-);
-router.get(
-  "/admin/cash-collection/balances",
-  ...adminOnly,
-  getAdminDeliveryCashBalances,
-);
-router.get(
-  "/admin/cash-collection/history",
-  ...adminOnly,
-  getAdminCashSettlementHistory,
-);
-router.get(
-  "/admin/cash-collection/riders/:riderId",
-  ...adminOnly,
-  getAdminRiderCashDetails,
-);
-router.post(
-  "/admin/cash-collection/settle",
-  ...adminOnly,
-  settleAdminRiderCash,
 );
 router.get("/admin/customers", ...adminOnly, getAdminCustomers);
 router.get("/admin/customers/:id", ...adminOnly, getAdminCustomerById);

@@ -571,7 +571,6 @@ const AdminWallet = () => {
                         <div className="space-y-3">
                             {[
                                 { label: 'Platform Revenue Report', icon: TrendingUp, path: '/ecs' },
-                                { label: 'Settlement History', icon: History, path: '/ecs/delivery-funds' },
                                 { label: 'Tax Statements', icon: DollarSign, path: '#' },
                             ].map((link, i) => (
                                 <button

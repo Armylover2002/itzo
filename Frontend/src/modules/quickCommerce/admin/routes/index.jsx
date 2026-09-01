@@ -15,13 +15,9 @@ const ProductManagement = React.lazy(() => import("../pages/ProductManagement"))
 const ActiveSellers = React.lazy(() => import("../pages/ActiveSellers"))
 const PendingSellers = React.lazy(() => import("../pages/PendingSellers"))
 const SellerLocations = React.lazy(() => import("../pages/SellerLocations"))
-const ActiveDeliveryBoys = React.lazy(() => import("../pages/ActiveDeliveryBoys"))
-const PendingDeliveryBoys = React.lazy(() => import("../pages/PendingDeliveryBoys"))
-const DeliveryFunds = React.lazy(() => import("../pages/DeliveryFunds"))
 const AdminWallet = React.lazy(() => import("../pages/AdminWallet"))
 const WithdrawalRequests = React.lazy(() => import("../pages/WithdrawalRequests"))
 const SellerTransactions = React.lazy(() => import("../pages/SellerTransactions"))
-const CashCollection = React.lazy(() => import("../pages/CashCollection"))
 const CustomerManagement = React.lazy(() => import("../pages/CustomerManagement"))
 const CustomerDetail = React.lazy(() => import("../pages/CustomerDetail"))
 const FAQManagement = React.lazy(() => import("../pages/FAQManagement"))
@@ -30,14 +26,12 @@ const OrderDetail = React.lazy(() => import("../pages/OrderDetail"))
 const SellerDetail = React.lazy(() => import("../pages/SellerDetail"))
 const SupportTickets = React.lazy(() => import("../pages/SupportTickets"))
 const ReviewModeration = React.lazy(() => import("../pages/ReviewModeration"))
-const FleetTracking = React.lazy(() => import("../pages/FleetTracking"))
 const CouponManagement = React.lazy(() => import("../pages/CouponManagement"))
 const ContentManager = React.lazy(() => import("../pages/ContentManager"))
 const HeroCategoriesPerPage = React.lazy(() => import("../pages/HeroCategoriesPerPage"))
 const NotificationComposer = React.lazy(() => import("../pages/NotificationComposer"))
 const OfferSectionsManagement = React.lazy(() => import("../pages/OfferSectionsManagement"))
 const ShopByStoreManagement = React.lazy(() => import("../pages/ShopByStoreManagement"))
-const AdminProfile = React.lazy(() => import("../pages/AdminProfile"))
 const BillingCharges = React.lazy(() => import("../pages/BillingCharges"))
 const QuickZoneSetup = React.lazy(() => import("../pages/ZoneSetup"))
 const QuickAddZone = React.lazy(() => import("../pages/AddZone"))
@@ -54,7 +48,6 @@ function QuickCommerceAdminRoutesInner() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard />} />
-      <Route path="/profile" element={<AdminProfile />} />
       <Route path="/categories" element={<Navigate to="/ecs/quick-commerce/categories/header" replace />} />
       <Route path="/categories/header" element={<HeaderCategories />} />
       <Route path="/categories/level2" element={<Level2Categories />} />
@@ -65,7 +58,6 @@ function QuickCommerceAdminRoutesInner() {
       <Route path="/zone-setup/add" element={<QuickAddZone />} />
       <Route path="/zone-setup/edit/:id" element={<QuickAddZone />} />
       <Route path="/zone-setup/view/:id" element={<QuickViewZone />} />
-      <Route path="/seller-requests" element={<PendingSellers />} />
       <Route path="/sellers/active" element={<ActiveSellers />} />
       <Route path="/sellers/active/:id" element={<SellerDetail />} />
       <Route path="/sellers/commission" element={<SellerCommission />} />
@@ -79,14 +71,9 @@ function QuickCommerceAdminRoutesInner() {
       <Route path="/coupons" element={<CouponManagement />} />
       <Route path="/sellers/pending" element={<PendingSellers />} />
       <Route path="/seller-locations" element={<SellerLocations />} />
-      <Route path="/delivery-boys/active" element={<ActiveDeliveryBoys />} />
-      <Route path="/delivery-boys/pending" element={<PendingDeliveryBoys />} />
-      <Route path="/tracking" element={<FleetTracking />} />
-      <Route path="/delivery-funds" element={<DeliveryFunds />} />
       <Route path="/wallet" element={<AdminWallet />} />
       <Route path="/withdrawals" element={<WithdrawalRequests />} />
       <Route path="/seller-transactions" element={<SellerTransactions />} />
-      <Route path="/cash-collection" element={<CashCollection />} />
       <Route path="/customers" element={<CustomerManagement />} />
       <Route path="/customers/:id" element={<CustomerDetail />} />
       <Route path="/faqs" element={<FAQManagement />} />

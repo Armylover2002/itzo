@@ -32,10 +32,6 @@ import {
   getQuickCommerceFinanceLedger,
   getQuickCommerceFinancePayouts,
   getQuickCommerceFinanceSummary,
-  getQuickCommerceDeliveryCashBalances,
-  getQuickCommerceCashSettlementHistory,
-  getQuickCommerceRiderCashDetails,
-  settleQuickCommerceRiderCash,
   getQuickCommerceSellerWithdrawals,
   updateQuickCommerceWithdrawalStatus,
 } from "../services/finance.service.js";
@@ -1734,45 +1730,6 @@ export const updateAdminWithdrawalStatus = async (req, res) => {
     const message = error.message || "Failed to update withdrawal";
     const statusCode = message.includes("not found") ? 404 : 400;
     return res.status(statusCode).json({ success: false, message });
-  }
-};
-
-export const getAdminDeliveryCashBalances = async (req, res) => {
-  const page = Math.max(1, Number(req.query?.page || 1) || 1);
-  const limit = Math.max(1, Math.min(100, Number(req.query?.limit || 25) || 25));
-  const search = String(req.query?.search || "").trim();
-  const result = await getQuickCommerceDeliveryCashBalances({ page, limit, search });
-  return res.json({ success: true, result });
-};
-
-export const getAdminCashSettlementHistory = async (req, res) => {
-  const page = Math.max(1, Number(req.query?.page || 1) || 1);
-  const limit = Math.max(1, Math.min(100, Number(req.query?.limit || 25) || 25));
-  const search = String(req.query?.search || "").trim();
-  const result = await getQuickCommerceCashSettlementHistory({ page, limit, search });
-  return res.json({ success: true, result });
-};
-
-export const getAdminRiderCashDetails = async (req, res) => {
-  const limit = Math.max(1, Math.min(200, Number(req.query?.limit || 50) || 50));
-  const result = await getQuickCommerceRiderCashDetails(req.params.riderId, { limit });
-  return res.json({ success: true, result, results: result });
-};
-
-export const settleAdminRiderCash = async (req, res) => {
-  try {
-    const result = await settleQuickCommerceRiderCash({
-      riderId: req.body?.riderId,
-      amount: req.body?.amount,
-      method: req.body?.method,
-      adminId: req.user?.userId || null,
-    });
-    return res.json({ success: true, result });
-  } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error.message || "Failed to settle rider cash",
-    });
   }
 };
 

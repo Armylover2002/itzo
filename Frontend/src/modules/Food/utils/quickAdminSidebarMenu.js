@@ -12,13 +12,6 @@ export const quickAdminSidebarMenu = [
     permissionKey: "core_management",
     items: [
       {
-        type: "link",
-        label: "Seller Requests",
-        permissionKey: "seller_requests",
-        path: "/ecs/quick-commerce/seller-requests",
-        icon: "ClipboardCheck",
-      },
-      {
         type: "expandable",
         label: "Categories",
         permissionKey: "categories",
@@ -68,22 +61,9 @@ export const quickAdminSidebarMenu = [
           { label: "Seller Commission", path: "/ecs/quick-commerce/sellers/commission", permissionKey: "commission" },
         ],
       },
-      {
-        type: "expandable",
-        label: "Delivery Drivers",
-        permissionKey: "drivers",
-        icon: "Truck",
-        subItems: [
-          { label: "Active Drivers", path: "/ecs/quick-commerce/delivery-boys/active", permissionKey: "active" },
-          { label: "Waiting for Review", path: "/ecs/quick-commerce/delivery-boys/pending", permissionKey: "pending" },
-          { label: "Track Drivers", path: "/ecs/quick-commerce/tracking", permissionKey: "tracking" },
-          { label: "Send Money", path: "/ecs/quick-commerce/delivery-funds", permissionKey: "funds" },
-        ],
-      },
       { type: "link", label: "Wallet", permissionKey: "wallet", path: "/ecs/quick-commerce/wallet", icon: "Wallet" },
       { type: "link", label: "Money Requests", permissionKey: "withdrawals", path: "/ecs/quick-commerce/withdrawals", icon: "CreditCard" },
       { type: "link", label: "Seller Payments", permissionKey: "seller_payments", path: "/ecs/quick-commerce/seller-transactions", icon: "Receipt" },
-      { type: "link", label: "Collect Cash", permissionKey: "cash_collection", path: "/ecs/quick-commerce/cash-collection", icon: "IndianRupee" },
       { type: "link", label: "Customers", permissionKey: "customers", path: "/ecs/quick-commerce/customers", icon: "Users" },
       { type: "link", label: "FAQs", permissionKey: "faqs", path: "/ecs/quick-commerce/faqs", icon: "MessageSquare" },
       {
@@ -104,7 +84,6 @@ export const quickAdminSidebarMenu = [
       },
       { type: "link", label: "Returns", permissionKey: "returns", path: "/ecs/quick-commerce/returns", icon: "RotateCcw" },
       { type: "link", label: "Fees & Charges", permissionKey: "billing", path: "/ecs/quick-commerce/billing", icon: "DollarSign" },
-      { type: "link", label: "My Profile", permissionKey: "profile", path: "/ecs/quick-commerce/profile", icon: "User" },
     ],
   },
 ]
