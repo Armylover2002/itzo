@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { MapPin, ArrowLeft, Save, X, Hand, Shapes, Search } from "lucide-react"
+import { MapPin, ArrowLeft, Save, X, Hand, Shapes, Search, Ruler } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { getGoogleMapsApiKey } from "@food/utils/googleMapsApiKey"
 import { Loader } from "@googlemaps/js-api-loader"
@@ -32,6 +32,106 @@ const radialSort = (coords) => {
   })
 }
 
+// --- Distance-based ("radius") zone helpers ---
+// A radius zone is still saved as a plain polygon (coordinates array), so every
+// existing zone list/map/panel that reads `coordinates` keeps working unchanged.
+
+const EARTH_RADIUS_METERS = 6371000
+const KM_PER_MILE = 1.609344
+
+const toRadians = (deg) => (deg * Math.PI) / 180
+const toDegrees = (rad) => (rad * 180) / Math.PI
+
+const haversineDistanceMeters = (lat1, lng1, lat2, lng2) => {
+  const dLat = toRadians(lat2 - lat1)
+  const dLng = toRadians(lng2 - lng1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) ** 2
+  return EARTH_RADIUS_METERS * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+const destinationPoint = (lat, lng, bearingDeg, distanceMeters) => {
+  const angularDistance = distanceMeters / EARTH_RADIUS_METERS
+  const bearingRad = toRadians(bearingDeg)
+  const lat1 = toRadians(lat)
+  const lng1 = toRadians(lng)
+
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(angularDistance) +
+      Math.cos(lat1) * Math.sin(angularDistance) * Math.cos(bearingRad)
+  )
+  const lng2 =
+    lng1 +
+    Math.atan2(
+      Math.sin(bearingRad) * Math.sin(angularDistance) * Math.cos(lat1),
+      Math.cos(angularDistance) - Math.sin(lat1) * Math.sin(lat2)
+    )
+
+  return { latitude: toDegrees(lat2), longitude: toDegrees(lng2) }
+}
+
+const generateCirclePolygon = (centerLat, centerLng, radiusMeters, sides = 20) => {
+  const points = []
+  for (let i = 0; i < sides; i++) {
+    points.push(destinationPoint(centerLat, centerLng, (360 / sides) * i, radiusMeters))
+  }
+  return points
+}
+
+// Approximate area of a small geographic polygon (equirectangular projection + shoelace).
+// Accurate enough for city-scale delivery zones.
+const polygonAreaMeters = (coords) => {
+  if (!coords || coords.length < 3) return 0
+  const refLat = toRadians(coords.reduce((sum, c) => sum + c.latitude, 0) / coords.length)
+  const projected = coords.map((c) => ({
+    x: EARTH_RADIUS_METERS * toRadians(c.longitude) * Math.cos(refLat),
+    y: EARTH_RADIUS_METERS * toRadians(c.latitude),
+  }))
+  let area = 0
+  for (let i = 0; i < projected.length; i++) {
+    const p1 = projected[i]
+    const p2 = projected[(i + 1) % projected.length]
+    area += p1.x * p2.y - p2.x * p1.y
+  }
+  return Math.abs(area / 2)
+}
+
+const metersFromDistance = (value, unit) => {
+  const num = parseFloat(value)
+  if (!num || num <= 0) return 0
+  return unit === "miles" ? num * KM_PER_MILE * 1000 : num * 1000
+}
+
+const distanceFromMeters = (meters, unit) => {
+  const km = meters / 1000
+  const value = unit === "miles" ? km / KM_PER_MILE : km
+  return Math.round(value * 100) / 100
+}
+
+const formatArea = (areaMetersSq, unit) => {
+  if (!areaMetersSq || areaMetersSq <= 0) return null
+  if (unit === "miles") {
+    return `${(areaMetersSq / (1609.344 * 1609.344)).toFixed(2)} mi²`
+  }
+  return `${(areaMetersSq / 1_000_000).toFixed(2)} km²`
+}
+
+// Detect whether a saved polygon looks like it was generated from a circle
+// (near-uniform radius from centroid) so edit mode can restore radius-editing UX.
+const detectCircle = (coords) => {
+  if (!coords || coords.length < 8) return null
+  const centroid = calculateCentroid(coords)
+  const radii = coords.map((c) =>
+    haversineDistanceMeters(centroid.latitude, centroid.longitude, c.latitude, c.longitude)
+  )
+  const avgRadius = radii.reduce((sum, r) => sum + r, 0) / radii.length
+  if (avgRadius <= 0) return null
+  const maxDeviation = Math.max(...radii.map((r) => Math.abs(r - avgRadius)))
+  if (maxDeviation / avgRadius > 0.05) return null
+  return { center: centroid, radiusMeters: avgRadius }
+}
+
 export default function AddZone() {
   const navigate = useNavigate()
   const { id } = useParams()
@@ -39,21 +139,28 @@ export default function AddZone() {
   const mapRef = useRef(null)
   const mapInstanceRef = useRef(null)
   const polygonRef = useRef(null)
+  const circleRef = useRef(null)
+  const circleGeometryRef = useRef(null) // { center: {lat,lng}, radiusMeters }
+  const savedCircleMetaRef = useRef(null) // exact circle data from a loaded zone, if any
   const markersRef = useRef([])
-  
+
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState("")
   const [mapLoading, setMapLoading] = useState(true)
   const [loading, setLoading] = useState(false)
-  
+
   // Form state
   const [formData, setFormData] = useState({
     country: "India",
     zoneName: "",
     unit: "kilometer",
   })
-  
+
   const [coordinates, setCoordinates] = useState([])
   const [isDrawing, setIsDrawing] = useState(false)
+  const [radiusMode, setRadiusMode] = useState(false)
+  const [distanceValue, setDistanceValue] = useState("")
+  const [isCircleZone, setIsCircleZone] = useState(false)
+  const [areaCovered, setAreaCovered] = useState(null)
   const [locationSearch, setLocationSearch] = useState("")
   const [existingZones, setExistingZones] = useState([])
   const autocompleteInputRef = useRef(null)
@@ -102,30 +209,58 @@ export default function AddZone() {
     }
   }, [mapLoading])
 
-  // Draw existing polygon when in edit mode and coordinates are loaded
+  // Draw existing polygon (or circle) when in edit mode and coordinates are loaded.
+  // Polls until the map instance is actually ready rather than trusting the
+  // `mapLoading` state flip to be synchronized with `mapInstanceRef.current`.
   useEffect(() => {
-    if (isEditMode && coordinates.length >= 3 && mapInstanceRef.current && window.google && !mapLoading && !existingPolygonDrawnRef.current) {
+    if (!isEditMode || coordinates.length < 3 || existingPolygonDrawnRef.current) return
+
+    let cancelled = false
+    let attempts = 0
+
+    const tryDraw = () => {
+      if (cancelled || existingPolygonDrawnRef.current) return
+      if (!mapInstanceRef.current || !window.google) {
+        if (++attempts > 50) return // ~10s, give up
+        setTimeout(tryDraw, 200)
+        return
+      }
+
       existingPolygonDrawnRef.current = true
       debugLog("Drawing existing polygon in edit mode, coordinates:", coordinates.length)
-      setTimeout(() => {
-        if (mapInstanceRef.current && window.google) {
-          setIsDrawing(false)
-          renderEditablePolygon(coordinates)
-          
-          // Fit map to polygon bounds
-          const bounds = new google.maps.LatLngBounds()
-          coordinates.forEach(coord => {
-            const lat = typeof coord === 'object' ? (coord.latitude || coord.lat) : null
-            const lng = typeof coord === 'object' ? (coord.longitude || coord.lng) : null
-            if (lat !== null && lng !== null) {
-              bounds.extend(new google.maps.LatLng(lat, lng))
-            }
-          })
-          mapInstanceRef.current.fitBounds(bounds)
+
+      setIsDrawing(false)
+      setRadiusMode(false)
+
+      // Prefer the exact saved circle (center/radiusMeters) over reverse-engineering
+      // it from the polygon approximation; only fall back to detectCircle for
+      // legacy zones saved before shapeType/center/radiusMeters existed.
+      const savedCircle = savedCircleMetaRef.current
+      const circleInfo = savedCircle
+        ? { center: { latitude: savedCircle.center.lat, longitude: savedCircle.center.lng }, radiusMeters: savedCircle.radiusMeters }
+        : detectCircle(coordinates)
+      if (circleInfo) {
+        const center = new window.google.maps.LatLng(circleInfo.center.latitude, circleInfo.center.longitude)
+        renderEditableCircle(center, circleInfo.radiusMeters)
+      } else {
+        renderEditablePolygon(coordinates)
+      }
+
+      // Fit map to polygon bounds
+      const bounds = new window.google.maps.LatLngBounds()
+      coordinates.forEach(coord => {
+        const lat = typeof coord === 'object' ? (coord.latitude || coord.lat) : null
+        const lng = typeof coord === 'object' ? (coord.longitude || coord.lng) : null
+        if (lat !== null && lng !== null) {
+          bounds.extend(new window.google.maps.LatLng(lat, lng))
         }
-      }, 500)
+      })
+      mapInstanceRef.current.fitBounds(bounds)
     }
-  }, [isEditMode, coordinates.length, mapLoading])
+
+    tryDraw()
+    return () => { cancelled = true }
+  }, [isEditMode, coordinates.length])
 
 
 
@@ -159,6 +294,13 @@ export default function AddZone() {
         
         if (zoneData.coordinates && zoneData.coordinates.length > 0) {
           setCoordinates(zoneData.coordinates)
+        }
+
+        if (zoneData.shapeType === 'circle' && zoneData.center && Number.isFinite(zoneData.radiusMeters)) {
+          savedCircleMetaRef.current = {
+            center: { lat: zoneData.center.latitude, lng: zoneData.center.longitude },
+            radiusMeters: zoneData.radiusMeters
+          }
         }
       }
     } catch (error) {
@@ -235,27 +377,8 @@ export default function AddZone() {
 
     mapInstanceRef.current = map
     setMapLoading(false)
-
-    // If in edit mode and coordinates are already loaded, draw the polygon
-    if (isEditMode && coordinates.length >= 3) {
-      setTimeout(() => {
-        if (mapInstanceRef.current && window.google) {
-          setIsDrawing(false)
-          renderEditablePolygon(coordinates)
-          
-          // Fit map to polygon bounds
-          const bounds = new google.maps.LatLngBounds()
-          coordinates.forEach(coord => {
-            const lat = typeof coord === 'object' ? (coord.latitude || coord.lat) : null
-            const lng = typeof coord === 'object' ? (coord.longitude || coord.lng) : null
-            if (lat !== null && lng !== null) {
-              bounds.extend(new google.maps.LatLng(lat, lng))
-            }
-          })
-          mapInstanceRef.current.fitBounds(bounds)
-        }
-      }, 500)
-    }
+    // Edit-mode polygon/circle rendering is handled by the dedicated useEffect below,
+    // which polls until the map is actually ready instead of assuming it is here.
   }
 
   // Draw existing zones on the map
@@ -384,6 +507,55 @@ export default function AddZone() {
     })
   }
 
+  const syncFromCircle = () => {
+    const circle = circleRef.current
+    if (!circle) return
+    const center = circle.getCenter()
+    const radiusMeters = circle.getRadius()
+    if (!center || !radiusMeters) return
+
+    circleGeometryRef.current = { center: { lat: center.lat(), lng: center.lng() }, radiusMeters }
+    setCoordinates(generateCirclePolygon(center.lat(), center.lng(), radiusMeters))
+    setDistanceValue(String(distanceFromMeters(radiusMeters, formData.unit)))
+  }
+
+  const renderEditableCircle = (center, radiusMeters) => {
+    if (!mapInstanceRef.current || !window.google) return
+
+    if (polygonRef.current) {
+      polygonRef.current.setMap(null)
+      polygonRef.current = null
+    }
+    if (circleRef.current) {
+      circleRef.current.setMap(null)
+      circleRef.current = null
+    }
+    markersRef.current.forEach(m => m.setMap(null))
+    markersRef.current = []
+
+    const circle = new window.google.maps.Circle({
+      center,
+      radius: radiusMeters,
+      strokeColor: "#9333ea",
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: "#9333ea",
+      fillOpacity: 0.35,
+      editable: true,
+      draggable: true,
+      clickable: true
+    })
+
+    circle.setMap(mapInstanceRef.current)
+    circleRef.current = circle
+    setIsCircleZone(true)
+
+    window.google.maps.event.addListener(circle, 'radius_changed', syncFromCircle)
+    window.google.maps.event.addListener(circle, 'center_changed', syncFromCircle)
+
+    syncFromCircle()
+  }
+
   const getCoordinatesFromMarkers = () => {
     return markersRef.current.map(m => {
       const pos = m.getPosition()
@@ -394,8 +566,14 @@ export default function AddZone() {
     })
   }
 
+  const MAX_ZONE_POINTS = 20
+
   const addDrawingPoint = (latLng) => {
     if (!mapInstanceRef.current || !window.google) return
+    if (markersRef.current.length >= MAX_ZONE_POINTS) {
+      alert(`Maximum ${MAX_ZONE_POINTS} points allowed per zone. Click "Stop Drawing" to finish, or remove a point (right-click) first.`)
+      return
+    }
 
     const marker = new window.google.maps.Marker({
       position: latLng,
@@ -518,9 +696,17 @@ export default function AddZone() {
       polygonRef.current.setMap(null)
       polygonRef.current = null
     }
+    if (circleRef.current) {
+      circleRef.current.setMap(null)
+      circleRef.current = null
+    }
     markersRef.current.forEach(marker => marker.setMap(null))
     markersRef.current = []
     setCoordinates([])
+    setIsCircleZone(false)
+    circleGeometryRef.current = null
+    savedCircleMetaRef.current = null
+    setDistanceValue("")
   }
 
   const toggleDrawingMode = () => {
@@ -533,8 +719,31 @@ export default function AddZone() {
       }
     } else {
       // User clicked "Start Drawing"
+      setRadiusMode(false)
       clearDrawing()
       setIsDrawing(true)
+    }
+  }
+
+  const toggleRadiusMode = () => {
+    if (radiusMode) {
+      setRadiusMode(false)
+      return
+    }
+    // Don't clear the existing circle/polygon yet — only replace it once a new
+    // point is actually placed, so cancelling doesn't lose the current shape.
+    setIsDrawing(false)
+    setRadiusMode(true)
+  }
+
+  const handleDistanceInputChange = (e) => {
+    const value = e.target.value
+    setDistanceValue(value)
+    if (circleRef.current && value) {
+      const radiusMeters = metersFromDistance(value, formData.unit)
+      if (radiusMeters > 0) {
+        circleRef.current.setRadius(radiusMeters)
+      }
     }
   }
 
@@ -562,14 +771,62 @@ export default function AddZone() {
     }
   }, [isDrawing])
 
-  // Set existing zones' clickable state based on isDrawing state
+  // Add/remove map click listener for placing a distance-based (circle) zone
+  useEffect(() => {
+    if (!mapInstanceRef.current || !window.google) return
+
+    let clickListener = null
+
+    if (radiusMode) {
+      mapInstanceRef.current.setOptions({ draggableCursor: 'crosshair' })
+      clickListener = mapInstanceRef.current.addListener('click', (event) => {
+        const radiusMeters = metersFromDistance(distanceValue, formData.unit)
+        if (!radiusMeters) {
+          alert("Please enter a valid distance first.")
+          return
+        }
+        renderEditableCircle(event.latLng, radiusMeters)
+        setRadiusMode(false)
+      })
+    } else if (!isDrawing) {
+      mapInstanceRef.current.setOptions({ draggableCursor: null })
+    }
+
+    return () => {
+      if (clickListener) {
+        window.google.maps.event.removeListener(clickListener)
+      }
+    }
+  }, [radiusMode, distanceValue, formData.unit])
+
+  // Keep the displayed distance in sync with the selected unit (km/miles) without
+  // changing the actual circle geometry (which is always stored in meters).
+  useEffect(() => {
+    if (isCircleZone && circleGeometryRef.current) {
+      setDistanceValue(String(distanceFromMeters(circleGeometryRef.current.radiusMeters, formData.unit)))
+    }
+  }, [formData.unit])
+
+  // Compute the covered area for whatever shape is currently on the map
+  // (exact for circles, approximated via shoelace formula for hand-drawn polygons).
+  useEffect(() => {
+    let areaMeters = 0
+    if (isCircleZone && circleGeometryRef.current) {
+      areaMeters = Math.PI * circleGeometryRef.current.radiusMeters ** 2
+    } else if (coordinates.length >= 3) {
+      areaMeters = polygonAreaMeters(coordinates)
+    }
+    setAreaCovered(formatArea(areaMeters, formData.unit))
+  }, [coordinates, formData.unit, isCircleZone])
+
+  // Set existing zones' clickable state based on isDrawing/radiusMode state
   useEffect(() => {
     existingZonesPolygonsRef.current.forEach(polygon => {
       if (polygon) {
-        polygon.setOptions({ clickable: !isDrawing })
+        polygon.setOptions({ clickable: !isDrawing && !radiusMode })
       }
     })
-  }, [isDrawing])
+  }, [isDrawing, radiusMode])
 
 
   const handleInputChange = (field, value) => {
@@ -624,7 +881,17 @@ export default function AddZone() {
         country: formData.country,
         unit: formData.unit || "kilometer",
         coordinates: validCoordinates,
-        isActive: true
+        isActive: true,
+        ...(isCircleZone && circleGeometryRef.current
+          ? {
+              shapeType: "circle",
+              center: {
+                latitude: circleGeometryRef.current.center.lat,
+                longitude: circleGeometryRef.current.center.lng
+              },
+              radiusMeters: circleGeometryRef.current.radiusMeters
+            }
+          : { shapeType: "polygon" })
       }
 
       debugLog("Sending zone data:", zoneData)
@@ -749,6 +1016,52 @@ export default function AddZone() {
                       <option value="miles">Miles (mi)</option>
                     </select>
                   </div>
+
+                  {/* Distance-based (radius) zone creation */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Zone Radius (optional)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min="0.1"
+                        step="0.1"
+                        value={distanceValue}
+                        onChange={handleDistanceInputChange}
+                        placeholder={`e.g. 5`}
+                        className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      <button
+                        type="button"
+                        onClick={toggleRadiusMode}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                          radiusMode
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "bg-primary text-white hover:bg-primary/90"
+                        }`}
+                      >
+                        <Ruler className="w-4 h-4" />
+                        <span>{radiusMode ? "Cancel" : isCircleZone ? "Move" : "Set on Map"}</span>
+                      </button>
+                    </div>
+                    {radiusMode && (
+                      <p className="text-xs text-primary mt-2">
+                        Click a point on the map to place a {distanceValue || "..."}{" "}
+                        {formData.unit === "miles" ? "mi" : "km"} zone.
+                      </p>
+                    )}
+                    {isCircleZone && !radiusMode && (
+                      <p className="text-xs text-slate-500 mt-2">
+                        Drag the circle to move it, or drag its edge to resize.
+                      </p>
+                    )}
+                    {areaCovered && (
+                      <p className="text-sm text-slate-700 mt-2">
+                        Area covered: <strong>{areaCovered}</strong>
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -797,9 +1110,15 @@ export default function AddZone() {
                 </div>
                 {coordinates.length > 0 && (
                   <p className="text-xs text-slate-600 mt-2">
-                    Points drawn: <strong>{coordinates.length}</strong>
-                    {coordinates.length < 3 && (
-                      <span className="text-red-600 ml-2">(Minimum 3 points required)</span>
+                    {isCircleZone ? (
+                      <>Circle zone — radius <strong>{distanceValue} {formData.unit === "miles" ? "mi" : "km"}</strong></>
+                    ) : (
+                      <>
+                        Points drawn: <strong>{coordinates.length}</strong>
+                        {coordinates.length < 3 && (
+                          <span className="text-red-600 ml-2">(Minimum 3 points required)</span>
+                        )}
+                      </>
                     )}
                   </p>
                 )}

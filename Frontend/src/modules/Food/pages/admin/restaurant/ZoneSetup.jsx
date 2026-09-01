@@ -9,6 +9,34 @@ const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
+const EARTH_RADIUS_METERS = 6371000
+const toRadians = (deg) => (deg * Math.PI) / 180
+
+// Exact for circle zones (radiusMeters), approximated (shoelace) for polygons.
+const formatZoneArea = (zone) => {
+  let areaMeters = 0
+  if (zone.shapeType === 'circle' && Number.isFinite(zone.radiusMeters)) {
+    areaMeters = Math.PI * zone.radiusMeters ** 2
+  } else if (Array.isArray(zone.coordinates) && zone.coordinates.length >= 3) {
+    const coords = zone.coordinates
+    const refLat = toRadians(coords.reduce((sum, c) => sum + c.latitude, 0) / coords.length)
+    const projected = coords.map((c) => ({
+      x: EARTH_RADIUS_METERS * toRadians(c.longitude) * Math.cos(refLat),
+      y: EARTH_RADIUS_METERS * toRadians(c.latitude),
+    }))
+    let area = 0
+    for (let i = 0; i < projected.length; i++) {
+      const p1 = projected[i]
+      const p2 = projected[(i + 1) % projected.length]
+      area += p1.x * p2.y - p2.x * p1.y
+    }
+    areaMeters = Math.abs(area / 2)
+  }
+  if (!areaMeters) return null
+  return zone.unit === 'miles'
+    ? `${(areaMeters / (1609.344 * 1609.344)).toFixed(2)} mi²`
+    : `${(areaMeters / 1_000_000).toFixed(2)} km²`
+}
 
 export default function ZoneSetup() {
   const navigate = useNavigate()
@@ -234,6 +262,12 @@ export default function ZoneSetup() {
                     <span className="text-slate-600">Unit:</span>
                     <span className="font-medium text-slate-900">{zone.unit || "km"}</span>
                   </div>
+                  {formatZoneArea(zone) && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600">Area:</span>
+                      <span className="font-medium text-slate-900">{formatZoneArea(zone)}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-slate-600">Status:</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${

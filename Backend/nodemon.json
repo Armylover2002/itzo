@@ -1,5 +1,5 @@
 {
-  "watch": ["src", "server.js"],
+  "watch": ["src", "server.js", ".env"],
   "ext": "js,mjs,cjs,json",
   "ignore": ["node_modules", "logs"],
   "signal": "SIGTERM",

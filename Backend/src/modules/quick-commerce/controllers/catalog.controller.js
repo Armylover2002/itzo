@@ -4,7 +4,7 @@ import { QuickReview } from '../models/review.model.js';
 import { FoodUser } from '../../../core/users/user.model.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { QuickZone } from '../models/quick_zone.model.js';
-import { isPointInPolygon } from '../../../utils/geo.js';
+import { isPointInZone } from '../../../utils/geo.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import {
   getQuickCategories,
@@ -392,7 +392,7 @@ export const getProducts = async (req, res) => {
     const lngNum = Number(lng);
     if (!isNaN(latNum) && !isNaN(lngNum)) {
       const zones = await QuickZone.find({ isActive: true }).lean();
-      const userZone = zones.find((z) => isPointInPolygon(latNum, lngNum, z.coordinates));
+      const userZone = zones.find((z) => isPointInZone(latNum, lngNum, z));
 
       if (userZone) {
         const localSellers = await Seller.find({

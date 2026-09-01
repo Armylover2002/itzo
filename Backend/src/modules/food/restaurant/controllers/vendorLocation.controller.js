@@ -1,7 +1,7 @@
 import { sendError, sendResponse } from '../../../../utils/response.js';
 import mongoose from 'mongoose';
 import { FoodZone } from '../../admin/models/zone.model.js';
-import { isPointInPolygon } from '../../../../utils/geo.js';
+import { isPointInZone } from '../../../../utils/geo.js';
 import { logger } from '../../../../utils/logger.js';
 import { writeVendorLocationToRtdb, clearVendorLiveStatusInRtdb } from '../../../../core/notifications/firebaseRtdb.service.js';
 
@@ -58,7 +58,7 @@ export const updateLiveLocationController = async (req, res) => {
         if (restaurant.zoneId) {
             const zone = await FoodZone.findById(restaurant.zoneId);
             if (zone && zone.coordinates && zone.coordinates.length >= 3) {
-                const isInside = isPointInPolygon(lat, lng, zone.coordinates);
+                const isInside = isPointInZone(lat, lng, zone);
                 if (!isInside) {
                     return sendError(res, 403, 'You can only operate inside your assigned delivery zone.');
                 }

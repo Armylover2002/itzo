@@ -34,6 +34,14 @@ export async function getGlobalSettings(req, res, next) {
         });
         rawSettings.modules = cleanedModules;
 
+        // Subscription enforcement defaults to ON so a missing/partial record never
+        // silently disables the paywall.
+        const rawEnforcement = rawSettings.subscriptionEnforcement || {};
+        rawSettings.subscriptionEnforcement = {
+            deliveryPartner: rawEnforcement.deliveryPartner !== false,
+            restaurant: rawEnforcement.restaurant !== false
+        };
+
         return sendResponse(res, 200, 'Global settings fetched successfully', rawSettings);
     } catch (error) {
         next(error);
@@ -175,6 +183,22 @@ export async function updateGlobalSettings(req, res, next) {
         
         // Use markModified to ensure the modules object is fully replaced in DB
         settings.markModified('modules');
+
+        // Subscription enforcement toggles (per partner type). Only the keys that are
+        // explicitly sent are changed; anything else keeps its current value.
+        const incomingEnforcement = data.subscriptionEnforcement;
+        if (incomingEnforcement && typeof incomingEnforcement === 'object') {
+            const currentEnforcement = settings.subscriptionEnforcement || {};
+            settings.subscriptionEnforcement = {
+                deliveryPartner: incomingEnforcement.deliveryPartner !== undefined
+                    ? !!incomingEnforcement.deliveryPartner
+                    : currentEnforcement.deliveryPartner !== false,
+                restaurant: incomingEnforcement.restaurant !== undefined
+                    ? !!incomingEnforcement.restaurant
+                    : currentEnforcement.restaurant !== false
+            };
+            settings.markModified('subscriptionEnforcement');
+        }
 
         // Handle file uploads
         if (req.files) {

@@ -193,6 +193,22 @@ export const getCachedSettings = () => {
 };
 
 /**
+ * Whether the subscription / daily-pass gate is active for a partner type.
+ * Mirrors the backend check and fails SAFE: anything other than an explicit
+ * `false` keeps the existing subscription flow visible.
+ *
+ * @param {'DELIVERY_PARTNER'|'RESTAURANT'} userType
+ * @returns {boolean}
+ */
+export const isSubscriptionEnforced = (userType) => {
+  const enforcement = getCachedSettings()?.subscriptionEnforcement;
+  if (!enforcement) return true;
+  if (userType === 'DELIVERY_PARTNER') return enforcement.deliveryPartner !== false;
+  if (userType === 'RESTAURANT') return enforcement.restaurant !== false;
+  return true;
+};
+
+/**
  * Get app specific logo with fallback to common logo
  */
 export const getAppLogo = (appType) => {

@@ -36,6 +36,23 @@ const quickZoneSchema = new mongoose.Schema(
       enum: ['kilometer', 'miles'],
       default: 'kilometer',
     },
+    /** 'circle' zones were created via distance/radius mode on the map admin UI.
+     *  center/radiusMeters are the exact source of truth; `coordinates` below is
+     *  still populated (as a polygon approximation) for backward compatibility
+     *  with anything that renders/consumes zones as plain polygons. */
+    shapeType: {
+      type: String,
+      enum: ['polygon', 'circle'],
+      default: 'polygon',
+    },
+    center: {
+      type: coordinateSchema,
+      required: false,
+    },
+    radiusMeters: {
+      type: Number,
+      required: false,
+    },
     coordinates: {
       type: [coordinateSchema],
       required: true,

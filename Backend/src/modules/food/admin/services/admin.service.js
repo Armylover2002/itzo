@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { ValidationError } from '../../../../core/auth/errors.js';
+import { isPointInZone, capPolygonPoints } from '../../../../utils/geo.js';
 import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
 import { FoodRestaurantWallet } from '../../restaurant/models/restaurantWallet.model.js';
 import { FoodDeliveryPartner } from '../../delivery/models/deliveryPartner.model.js';
@@ -108,26 +109,10 @@ const normalizeRestaurantTime = (value) => {
     return '';
 };
 
-const isPointInPolygon = (lat, lng, polygon) => {
-    if (!Array.isArray(polygon) || polygon.length < 3) return false;
-    let inside = false;
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-        const xi = polygon[i].longitude;
-        const yi = polygon[i].latitude;
-        const xj = polygon[j].longitude;
-        const yj = polygon[j].latitude;
-        const intersect =
-            yi > lat !== yj > lat &&
-            lng < ((xj - xi) * (lat - yi)) / (yj - yi + 0.0) + xi;
-        if (intersect) inside = !inside;
-    }
-    return inside;
-};
-
 const detectZoneFromPartner = (partner, zones) => {
     let detectedZone = null;
     if (partner.lastLat && partner.lastLng) {
-        const match = zones.find(z => isPointInPolygon(partner.lastLat, partner.lastLng, z.coordinates));
+        const match = zones.find(z => isPointInZone(partner.lastLat, partner.lastLng, z));
         if (match) detectedZone = match.zoneName || match.name;
     }
     
@@ -5058,10 +5043,12 @@ export async function createZone(body) {
     const coordinates = Array.isArray(body.coordinates) ? body.coordinates : [];
     if (coordinates.length < 3) return { error: 'At least 3 coordinates (polygon points) are required' };
 
-    const normalized = coordinates.map((c) => ({
+    const normalized = capPolygonPoints(coordinates.map((c) => ({
         latitude: Number(c.latitude) || 0,
         longitude: Number(c.longitude) || 0
-    }));
+    })));
+
+    const isCircle = body.shapeType === 'circle' && body.center && Number.isFinite(Number(body.radiusMeters));
 
     const zone = new FoodZone({
         name,
@@ -5070,7 +5057,15 @@ export async function createZone(body) {
         serviceLocation: (body.serviceLocation && body.serviceLocation.trim()) || name,
         unit: body.unit === 'miles' ? 'miles' : 'kilometer',
         coordinates: normalized,
-        isActive: body.isActive !== false
+        isActive: body.isActive !== false,
+        ...(isCircle && {
+            shapeType: 'circle',
+            center: {
+                latitude: Number(body.center.latitude),
+                longitude: Number(body.center.longitude)
+            },
+            radiusMeters: Number(body.radiusMeters)
+        })
     });
     await zone.save();
     return { zone: zone.toObject() };
@@ -5087,10 +5082,22 @@ export async function updateZone(id, body) {
     if (body.unit !== undefined) zone.unit = body.unit === 'miles' ? 'miles' : 'kilometer';
     if (body.isActive !== undefined) zone.isActive = body.isActive !== false;
     if (Array.isArray(body.coordinates) && body.coordinates.length >= 3) {
-        zone.coordinates = body.coordinates.map((c) => ({
+        zone.coordinates = capPolygonPoints(body.coordinates.map((c) => ({
             latitude: Number(c.latitude) || 0,
             longitude: Number(c.longitude) || 0
-        }));
+        })));
+    }
+    if (body.shapeType === 'circle' && body.center && Number.isFinite(Number(body.radiusMeters))) {
+        zone.shapeType = 'circle';
+        zone.center = {
+            latitude: Number(body.center.latitude),
+            longitude: Number(body.center.longitude)
+        };
+        zone.radiusMeters = Number(body.radiusMeters);
+    } else if (body.shapeType === 'polygon') {
+        zone.shapeType = 'polygon';
+        zone.center = undefined;
+        zone.radiusMeters = undefined;
     }
     if (zone.name) zone.serviceLocation = zone.serviceLocation || zone.name;
 

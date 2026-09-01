@@ -68,7 +68,7 @@ const Navbar = React.memo(function Navbar() {
             <img 
               src={logoImg} 
               alt="ItzoFood Logo" 
-              className="h-10 md:h-12 w-auto object-contain rounded-md" 
+              className="h-14 md:h-16 w-auto object-contain rounded-md"
               onError={(e) => { e.target.src = "/itzo-logo-transparent.png"; }}
             />
           </div>

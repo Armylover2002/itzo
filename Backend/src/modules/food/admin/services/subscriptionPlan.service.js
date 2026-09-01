@@ -8,6 +8,7 @@ import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js'
 import dayjs from 'dayjs';
 import { logger } from '../../../../utils/logger.js';
 import { getCache, setCache } from '../../../../utils/cacheManager.js';
+import { isSubscriptionEnforced } from '../../../common/utils/settingsCache.js';
 
 /**
  * Maps our internal duration units to Razorpay periods.
@@ -210,7 +211,9 @@ export async function processSubscriptionExpiry() {
     }
 
     // 4. Automatically set delivery partners offline if their subscription has expired
-    if (expiredRiderIds.length > 0) {
+    // (skipped entirely when the rider subscription gate is switched off — riders
+    // control their own availability in that mode).
+    if (expiredRiderIds.length > 0 && isSubscriptionEnforced('DELIVERY_PARTNER')) {
         try {
             const { FoodDeliveryPartner } = await import('../../delivery/models/deliveryPartner.model.js');
             const riderUpdateResult = await FoodDeliveryPartner.updateMany(

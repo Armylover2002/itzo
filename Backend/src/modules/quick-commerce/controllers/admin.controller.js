@@ -7,6 +7,7 @@ import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { updateSellerProfileData } from '../seller/controllers/seller.controller.js';
 import { QuickZone } from '../models/quick_zone.model.js';
+import { capPolygonPoints } from '../../../utils/geo.js';
 import { QuickCoupon } from '../models/coupon.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { uploadImageBuffer } from '../../../services/upload.service.js';
@@ -1526,6 +1527,8 @@ export const createAdminZone = async (req, res) => {
     return res.status(400).json({ success: false, message: 'Zone must have at least 3 coordinates' });
   }
 
+  const isCircle = body.shapeType === 'circle' && body.center && Number.isFinite(Number(body.radiusMeters));
+
   const zone = await QuickZone.create({
     name,
     zoneName: body.zoneName && String(body.zoneName).trim() ? String(body.zoneName).trim() : name,
@@ -1533,10 +1536,18 @@ export const createAdminZone = async (req, res) => {
     serviceLocation: body.serviceLocation ? String(body.serviceLocation).trim() : name,
     unit: body.unit === 'miles' ? 'miles' : 'kilometer',
     isActive: body.isActive !== false,
-    coordinates: coordinates.map((coord) => ({
+    coordinates: capPolygonPoints(coordinates.map((coord) => ({
       latitude: Number(coord?.latitude ?? coord?.lat),
       longitude: Number(coord?.longitude ?? coord?.lng),
-    })),
+    }))),
+    ...(isCircle && {
+      shapeType: 'circle',
+      center: {
+        latitude: Number(body.center.latitude),
+        longitude: Number(body.center.longitude),
+      },
+      radiusMeters: Number(body.radiusMeters),
+    }),
   });
 
   return res.status(201).json({ success: true, data: { zone } });
@@ -1556,10 +1567,22 @@ export const updateAdminZone = async (req, res) => {
   if (body.unit !== undefined) zone.unit = body.unit === 'miles' ? 'miles' : 'kilometer';
   if (body.isActive !== undefined) zone.isActive = body.isActive !== false;
   if (Array.isArray(body.coordinates) && body.coordinates.length >= 3) {
-    zone.coordinates = body.coordinates.map((coord) => ({
+    zone.coordinates = capPolygonPoints(body.coordinates.map((coord) => ({
       latitude: Number(coord?.latitude ?? coord?.lat),
       longitude: Number(coord?.longitude ?? coord?.lng),
-    }));
+    })));
+  }
+  if (body.shapeType === 'circle' && body.center && Number.isFinite(Number(body.radiusMeters))) {
+    zone.shapeType = 'circle';
+    zone.center = {
+      latitude: Number(body.center.latitude),
+      longitude: Number(body.center.longitude),
+    };
+    zone.radiusMeters = Number(body.radiusMeters);
+  } else if (body.shapeType === 'polygon') {
+    zone.shapeType = 'polygon';
+    zone.center = undefined;
+    zone.radiusMeters = undefined;
   }
   if (!zone.zoneName) zone.zoneName = zone.name;
   if (!zone.serviceLocation) zone.serviceLocation = zone.name;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 const GoldSection = React.memo(function GoldSection() {
   return (
@@ -45,10 +45,7 @@ const GoldSection = React.memo(function GoldSection() {
           className="flex items-center justify-center text-[70px] md:text-[140px] font-black tracking-widest bg-gradient-to-b from-[#ffea99] via-[#d4af37] to-[#8b6508] bg-clip-text text-transparent leading-none mb-6 drop-shadow-[0_10px_30px_rgba(212,175,55,0.15)]"
         >
           G
-          <div className="relative flex items-center justify-center mx-1 md:mx-2">
-            <span className="bg-gradient-to-b from-[#ffea99] via-[#d4af37] to-[#8b6508] bg-clip-text text-transparent">O</span>
-            <Crown className="absolute text-black w-8 h-8 md:w-16 md:h-16 fill-black mt-1 md:mt-2" strokeWidth={0} />
-          </div>
+          <span className="bg-gradient-to-b from-[#ffea99] via-[#d4af37] to-[#8b6508] bg-clip-text text-transparent mx-1 md:mx-2">O</span>
           LD
         </motion.div>
 
@@ -92,7 +89,7 @@ const GoldSection = React.memo(function GoldSection() {
             </div>
             <div className="flex flex-col justify-center h-full pt-1 md:pt-2">
                <h4 className="text-white text-xl md:text-[24px] font-bold mb-1 md:mb-2 leading-tight">Free Delivery</h4>
-               <p className="text-[#d4af37]/80 text-base md:text-[17px] font-medium leading-snug">At all restaurants within 7 km</p>
+               <p className="text-[#d4af37]/80 text-base md:text-[17px] font-medium leading-snug">At all restaurants within 3 km</p>
             </div>
           </motion.div>
           

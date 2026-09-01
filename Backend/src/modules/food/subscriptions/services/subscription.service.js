@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import dayjs from 'dayjs';
 import crypto from 'crypto';
 import { logger } from '../../../../utils/logger.js';
+import { isSubscriptionEnforced } from '../../../common/utils/settingsCache.js';
 
 export async function initiatePurchase(userId, userType, { planId }) {
     const plan = await SubscriptionPlan.findOne({ _id: planId, isDeleted: false, isActive: true });
@@ -329,7 +330,8 @@ export async function getActiveSubscription(userId, userType) {
             sub.status = 'expired';
             await sub.save();
 
-            if (userType === 'DELIVERY_PARTNER' && sub.deliveryBoyId) {
+            // Only force the rider offline while the subscription gate is active.
+            if (userType === 'DELIVERY_PARTNER' && sub.deliveryBoyId && isSubscriptionEnforced('DELIVERY_PARTNER')) {
                 try {
                     const { FoodDeliveryPartner } = await import('../../delivery/models/deliveryPartner.model.js');
                     await FoodDeliveryPartner.updateOne(

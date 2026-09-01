@@ -38,3 +38,19 @@ export function updateSettingsCache(settings) {
   cachedSettings = settings?.toObject ? settings.toObject() : settings;
   logger.info("Global settings cache updated.");
 }
+
+/**
+ * Whether the subscription / daily-pass gate is active for a partner type.
+ * Reads the in-memory settings cache (no DB round-trip), and fails SAFE:
+ * anything other than an explicit `false` keeps the existing paywall behaviour.
+ *
+ * @param {'DELIVERY_PARTNER'|'RESTAURANT'} userType
+ * @returns {boolean}
+ */
+export function isSubscriptionEnforced(userType) {
+  const enforcement = getSettingsSync()?.subscriptionEnforcement;
+  if (!enforcement) return true;
+  if (userType === 'DELIVERY_PARTNER') return enforcement.deliveryPartner !== false;
+  if (userType === 'RESTAURANT') return enforcement.restaurant !== false;
+  return true;
+}

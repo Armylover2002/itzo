@@ -17,6 +17,7 @@ import {
 } from "../../../../core/auth/errors.js";
 import { logger } from "../../../../utils/logger.js";
 import { config } from "../../../../config/env.js";
+import { isSubscriptionEnforced } from "../../../common/utils/settingsCache.js";
 import { getIO, rooms } from "../../../../config/socket.js";
 import { addOrderJob } from "../../../../queues/producers/order.producer.js";
 import {
@@ -30,6 +31,8 @@ import {
 export async function filterEligiblePartners(partners) {
   if (!partners.length) return [];
   if (config.nodeEnv !== "production") return partners;
+  // Subscription gate turned off for riders: every online partner is eligible.
+  if (!isSubscriptionEnforced("DELIVERY_PARTNER")) return partners;
   
   const partnerIds = partners.map(p => p.partnerId);
   const today = dayjs().tz("Asia/Kolkata").format("YYYY-MM-DD");

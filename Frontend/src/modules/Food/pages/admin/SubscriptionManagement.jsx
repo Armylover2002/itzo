@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import { useAuth } from "@core/context/AuthContext";
 import { getCurrentUser } from "@food/utils/auth";
 import { canPerformAdminPermissionAction, extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions } from "@food/utils/adminPermissions";
+import { loadBusinessSettings } from "@common/utils/businessSettings";
 import { 
     ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, 
     Tooltip as ChartTooltip, PieChart, Pie, Cell, Legend 
@@ -39,6 +40,10 @@ export default function SubscriptionManagement() {
     const [editingPlan, setEditingPlan] = useState(null);
     const [showInactive, setShowInactive] = useState(false);
     const [resolvedPermissions, setResolvedPermissions] = useState({});
+    // Subscription requirement per partner type (defaults to enforced = current flow)
+    const [enforcement, setEnforcement] = useState({ restaurant: true, deliveryPartner: true });
+    const [enforcementLoading, setEnforcementLoading] = useState(true);
+    const [enforcementSaving, setEnforcementSaving] = useState(false);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -114,6 +119,56 @@ export default function SubscriptionManagement() {
     useEffect(() => {
         fetchPlans();
     }, [activeTab, showInactive]);
+
+    // --- Subscription enforcement master switch (per partner type) ---
+    const enforcementKey = activeTab === "RESTAURANT" ? "restaurant" : "deliveryPartner";
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const res = await adminAPI.getBusinessSettings();
+                const value = res.data?.data?.subscriptionEnforcement;
+                if (mounted && value) {
+                    setEnforcement({
+                        restaurant: value.restaurant !== false,
+                        deliveryPartner: value.deliveryPartner !== false
+                    });
+                }
+            } catch {
+                // Keep the safe default (enforced) if settings can't be read.
+            } finally {
+                if (mounted) setEnforcementLoading(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
+
+    const handleToggleEnforcement = async (nextValue) => {
+        if (!canEditPlan) {
+            toast.error("Permission denied");
+            return;
+        }
+        const previous = enforcement;
+        const updated = { ...enforcement, [enforcementKey]: nextValue };
+        setEnforcement(updated); // optimistic
+        setEnforcementSaving(true);
+        try {
+            await adminAPI.updateBusinessSettings({ subscriptionEnforcement: updated });
+            // Refresh the app-wide settings cache so every panel picks it up.
+            await loadBusinessSettings().catch(() => {});
+            toast.success(
+                nextValue
+                    ? `Subscription is now required for ${activeTab === "RESTAURANT" ? "restaurants" : "delivery partners"}`
+                    : `Subscription requirement removed for ${activeTab === "RESTAURANT" ? "restaurants" : "delivery partners"}`
+            );
+        } catch (error) {
+            setEnforcement(previous); // rollback
+            toast.error(error.response?.data?.message || "Failed to update subscription setting");
+        } finally {
+            setEnforcementSaving(false);
+        }
+    };
 
     const filteredPlans = useMemo(() => {
         return normalizePlans(plans).filter(plan => 
@@ -377,6 +432,49 @@ export default function SubscriptionManagement() {
                     className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === "DELIVERY_PARTNER" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
                 >
                     Delivery Partners
+                </button>
+            </div>
+
+            {/* Subscription requirement master switch (per partner type) */}
+            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex-1">
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-[#FE5502]" />
+                        Require subscription for {activeTab === "RESTAURANT" ? "restaurants" : "delivery partners"}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 max-w-2xl">
+                        {enforcementLoading ? (
+                            "Loading current setting…"
+                        ) : enforcement[enforcementKey] ? (
+                            <>
+                                <span className="font-semibold text-slate-700">ON</span> — current flow: a
+                                {activeTab === "RESTAURANT" ? " restaurant" : " delivery partner"} needs an active plan
+                                or a daily pass to go online and receive orders.
+                            </>
+                        ) : (
+                            <>
+                                <span className="font-semibold text-slate-700">OFF</span> — no subscription needed. They
+                                control their own online status, and the subscription section is hidden from their panel.
+                            </>
+                        )}
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    role="switch"
+                    aria-checked={!!enforcement[enforcementKey]}
+                    disabled={enforcementLoading || enforcementSaving || !canEditPlan}
+                    onClick={() => handleToggleEnforcement(!enforcement[enforcementKey])}
+                    title={!canEditPlan ? "You don't have permission to change this" : undefined}
+                    className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        enforcement[enforcementKey] ? "bg-[#FE5502]" : "bg-slate-300"
+                    }`}
+                >
+                    <span
+                        className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                            enforcement[enforcementKey] ? "translate-x-7" : "translate-x-0"
+                        }`}
+                    />
                 </button>
             </div>
 

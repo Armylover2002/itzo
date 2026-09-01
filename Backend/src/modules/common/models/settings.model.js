@@ -147,6 +147,17 @@ const globalSettingsSchema = new mongoose.Schema(
             quickCommerce: { type: Boolean, default: true },
 
         },
+        /**
+         * Master switch for the subscription / daily-pass gate, per partner type.
+         * true  (default) => existing flow: partner needs an active plan or day pass
+         *                    to go online and to receive orders.
+         * false           => partner manages their own online status freely, no
+         *                    subscription required and the subscription UI is hidden.
+         */
+        subscriptionEnforcement: {
+            deliveryPartner: { type: Boolean, default: true },
+            restaurant: { type: Boolean, default: true }
+        },
         contactsViewPassword: { type: String, default: 'admin123' }
     },
     { timestamps: true }

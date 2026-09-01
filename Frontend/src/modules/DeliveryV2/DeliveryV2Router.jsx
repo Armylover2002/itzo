@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
+import SubscriptionGate from "@common/components/SubscriptionGate";
 import Loader from "@food/components/Loader";
 import {
   loadBusinessSettings,
@@ -84,7 +85,7 @@ const DeliveryV2Router = () => {
         <Route path="/profile/details" element={<ProtectedRoute><ProfileDetailsV2 /></ProtectedRoute>} />
         <Route path="/profile/bank" element={<ProtectedRoute><ProfileBankV2 /></ProtectedRoute>} />
         <Route path="/profile/documents" element={<ProtectedRoute><ProfileDocsV2 /></ProtectedRoute>} />
-        <Route path="/subscription" element={<ProtectedRoute><SubscriptionV2 /></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute><SubscriptionGate userType="DELIVERY_PARTNER" redirectTo="/food/delivery"><SubscriptionV2 /></SubscriptionGate></ProtectedRoute>} />
         
         {/* Support Systems */}
         <Route path="/help/tickets" element={<ProtectedRoute><SupportTicketsV2 /></ProtectedRoute>} />

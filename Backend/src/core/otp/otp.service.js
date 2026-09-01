@@ -39,9 +39,10 @@ const sendSmsViaIndiaHub = async (phone, otp) => {
         const digits = String(phone || '').replace(/\D/g, '');
         const msisdn = digits.startsWith('91') ? digits : `91${digits}`;
 
-        // EXACT DLT TEMPLATE provided by user:
-        // "Welcome to the ##var## powered by SMSINDIAHUB. Your OTP for registration is ##var##"
-        const message = `Welcome to the Appzeto powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
+        // EXACT DLT TEMPLATE approved on SMS India Hub (Template Id 1007282516644508833, SenderId BGADEC).
+        // Per SMS India Hub's own account-generated sample request, there is NO space between the
+        // variable and "powered" (a quirk baked into the approved DLT text) — do not "fix" this spacing.
+        const message = `Welcome to the ITZOFOOD powered by Appzeto.Your OTP for registration is ${otp}.BGADEC`;
 
         // SMS India Hub HTTP GET API — query param names are case-sensitive per SOP
         const url = new URL('http://cloud.smsindiahub.in/vendorsms/pushsms.aspx');
@@ -112,7 +113,7 @@ export const sendCustomSms = async (phone, message, dltTemplateId = null) => {
         if (config.smsIndiaHubUsername) {
             url.searchParams.append('uname', config.smsIndiaHubUsername);
         }
-        
+
         // Use the provided template ID, or fallback to the default one in .env
         const templateIdToUse = dltTemplateId || config.smsDltTemplateId;
         if (templateIdToUse) {
@@ -122,7 +123,7 @@ export const sendCustomSms = async (phone, message, dltTemplateId = null) => {
         logger.info(`[SMS] Sending custom SMS to ${msisdn}...`);
         const response = await fetch(url.toString());
         const resultText = await response.text();
-        
+
         let parsed = null;
         try { parsed = JSON.parse(resultText); } catch (_) { /* */ }
 
@@ -191,9 +192,9 @@ export const createOrUpdateOtp = async (phone, options = {}) => {
         existing.lastRequestAt = now;
         await existing.save();
     } else {
-        await FoodOtp.create({ 
+        await FoodOtp.create({
             phone: normalizedPhone,
-            otp, 
+            otp,
             expiresAt,
             requestCount: 1,
             lastRequestAt: now

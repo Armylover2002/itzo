@@ -14,7 +14,7 @@ import {
     notifyAdminsSafely, 
     notifyOwnerSafely 
 } from '../../../../core/notifications/firebase.service.js';
-import { isPointInPolygon } from '../../../../utils/geo.js';
+import { isPointInZone } from '../../../../utils/geo.js';
 import { ensureDailyPassEligibility, activateDailyPass, checkRestaurantEligibilityReadOnly } from '../../subscriptions/services/wallet.service.js';
 import { logger } from '../../../../utils/logger.js';
 
@@ -426,7 +426,7 @@ export const registerRestaurant = async (payload, files) => {
             throw new ValidationError('Invalid zone configuration');
         }
 
-        if (!isPointInPolygon(latNum, lngNum, zone.coordinates)) {
+        if (!isPointInZone(latNum, lngNum, zone)) {
             throw new ValidationError('Selected address is outside the selected zone');
         }
 
@@ -663,7 +663,11 @@ export const getCurrentRestaurantProfile = async (restaurantId) => {
     let isAcceptingOrders = doc.isAcceptingOrders !== false;
     try {
         const eligibility = await checkRestaurantEligibilityReadOnly(restaurantId, 'RESTAURANT');
-        if (isAcceptingOrders !== eligibility.shouldAppearOnline) {
+        // When the subscription gate is off the restaurant owns its own open/closed
+        // state, so we must not derive (or self-heal) it from subscription status.
+        if (eligibility.enforced === false) {
+            // keep doc.isAcceptingOrders as-is
+        } else if (isAcceptingOrders !== eligibility.shouldAppearOnline) {
             isAcceptingOrders = eligibility.shouldAppearOnline;
             
             // Self-heal the database state asynchronously (non-blocking)
@@ -958,7 +962,7 @@ export const updateRestaurantProfile = async (restaurantId, body = {}) => {
             throw new ValidationError('Invalid zone configuration');
         }
 
-        if (!isPointInPolygon(lat, lng, zone.coordinates)) {
+        if (!isPointInZone(lat, lng, zone)) {
             throw new ValidationError('Selected address is outside the selected zone');
         }
 

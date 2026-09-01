@@ -279,8 +279,14 @@ export default function RestaurantStatus() {
         return
       }
 
-      // Already has active subscription or daily pass — toggle directly
-      if (eligibility.reason === 'RECURRING_ACTIVE' || eligibility.reason === 'DAY_PASS_ACTIVE') {
+      // Subscription not required (admin switched it off), or already covered by an
+      // active plan / daily pass — toggle directly.
+      if (
+        eligibility.enforced === false ||
+        eligibility.reason === 'ENFORCEMENT_DISABLED' ||
+        eligibility.reason === 'RECURRING_ACTIVE' ||
+        eligibility.reason === 'DAY_PASS_ACTIVE'
+      ) {
         setDeliveryStatus(true)
         await restaurantAPI.updateAcceptingOrders(true)
         persistRestaurantOnlineStatus(true)

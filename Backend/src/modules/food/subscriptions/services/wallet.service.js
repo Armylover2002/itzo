@@ -11,6 +11,7 @@ import { SubscriptionPlan } from '../../admin/models/subscriptionPlan.model.js';
 import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js';
 import { createRazorpayOrder, isRazorpayConfigured, getRazorpayKeyId } from '../../orders/helpers/razorpay.helper.js';
 import { logger } from '../../../../utils/logger.js';
+import { isSubscriptionEnforced } from '../../../common/utils/settingsCache.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -194,6 +195,15 @@ function logDailyPassEvent(event, { userId, userType, retryCount = 0, passId = n
  * Robust standalone rollback safety, race-condition delay, and exact deletion checks.
  */
 export async function activateDailyPass(userId, userType, retryCount = 0) {
+    // 0. Master switch off: never create a pass or touch the wallet.
+    if (!isSubscriptionEnforced(userType)) {
+        return {
+            success: true,
+            deducted: false,
+            reason: 'ENFORCEMENT_DISABLED'
+        };
+    }
+
     const todayIST = dayjs().tz(IST_TIMEZONE).format('YYYY-MM-DD');
     const endOfDayIST = dayjs().tz(IST_TIMEZONE).endOf('day').toDate();
 
@@ -356,6 +366,18 @@ export async function ensureDailyPassEligibility(userId, userType) {
         throw new ValidationError('Invalid user type for eligibility check');
     }
 
+    // 0. Master switch: admin has turned the subscription gate off for this partner
+    // type, so nothing is required and nothing is ever deducted.
+    if (!isSubscriptionEnforced(userType)) {
+        return {
+            eligible: true,
+            reason: 'ENFORCEMENT_DISABLED',
+            shouldDeduct: false,
+            subscriptionType: null,
+            enforced: false
+        };
+    }
+
     // 1. Priority Check: MONTH/WEEK Subscription (MONTH > WEEK)
     const activeSub = await getActiveSubscription(userId, userType);
     if (activeSub && activeSub.planId) {
@@ -478,6 +500,19 @@ export async function getWalletLedger(ownerId, ownerType, { limit = 20, skip = 0
 export async function checkRestaurantEligibilityReadOnly(userId, userType) {
     if (!['RESTAURANT', 'DELIVERY_PARTNER'].includes(userType)) {
         return { eligible: false, shouldDeduct: false, shouldAppearOnline: false, reason: 'INVALID_USER_TYPE' };
+    }
+
+    // 0. Master switch off: the partner owns their online status, so callers must
+    // not derive/override it from subscription state (see `enforced: false`).
+    if (!isSubscriptionEnforced(userType)) {
+        return {
+            eligible: true,
+            shouldDeduct: false,
+            shouldAppearOnline: true,
+            reason: 'ENFORCEMENT_DISABLED',
+            subscriptionType: null,
+            enforced: false
+        };
     }
 
     // 1. Check Recurring Subscription (Month/Week)

@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from "react"
 import { Routes, Route, Navigate } from "react-router-dom"
 import { loadBusinessSettings, setAppType } from "@common/utils/businessSettings"
 import ProtectedRoute from "@food/components/ProtectedRoute"
+import SubscriptionGate from "@common/components/SubscriptionGate"
 import Loader from "@food/components/Loader"
 import { LiveLocationProvider } from "@food/contexts/LiveLocationContext"
 
@@ -105,7 +106,7 @@ export default function RestaurantRouter() {
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Hyperpure /></ProtectedRoute>} path="hyperpure" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemDetailsPage /></ProtectedRoute>} path="hub-menu/item/:id" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><HubFinance /></ProtectedRoute>} path="hub-finance" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WalletPage /></ProtectedRoute>} path="wallet" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><SubscriptionGate userType="RESTAURANT" redirectTo="/food/restaurant"><WalletPage /></SubscriptionGate></ProtectedRoute>} path="wallet" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WithdrawalHistoryPage /></ProtectedRoute>} path="withdrawal-history" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FinanceDetailsPage /></ProtectedRoute>} path="finance-details" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DownloadReport /></ProtectedRoute>} path="download-report" />
@@ -114,7 +115,7 @@ export default function RestaurantRouter() {
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningReservations /></ProtectedRoute>} path="reservations" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ZoneSetup /></ProtectedRoute>} path="zone-setup" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantProfilePage /></ProtectedRoute>} path="profile" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><BusinessPlanPage /></ProtectedRoute>} path="business-plan" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><SubscriptionGate userType="RESTAURANT" redirectTo="/food/restaurant"><BusinessPlanPage /></SubscriptionGate></ProtectedRoute>} path="business-plan" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantReferEarn /></ProtectedRoute>} path="refer-earn" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><LiveLocationControl /></ProtectedRoute>} path="live-location" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><VendorMoveLocation /></ProtectedRoute>} path="move-location" />

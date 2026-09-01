@@ -95,7 +95,7 @@ const FooterSection = React.memo(function FooterSection() {
           <img 
             src={logoImg} 
             alt="ItzoFood Logo" 
-            className="h-12 md:h-16 w-auto object-contain rounded-xl" 
+            className="h-16 md:h-20 w-auto object-contain rounded-xl"
             onError={(e) => { e.target.src = "/itzo-logo-transparent.png"; }}
           />
         </div>
