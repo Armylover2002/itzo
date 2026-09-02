@@ -141,6 +141,23 @@ const sellerSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    previousRejectionNotes: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    isReapplied: {
+      type: Boolean,
+      default: false,
+    },
+    reappliedAt: {
+      type: Date,
+      default: null,
+    },
+    reapplicationCount: {
+      type: Number,
+      default: 0,
+    },
     approvedAt: {
       type: Date,
       default: null,

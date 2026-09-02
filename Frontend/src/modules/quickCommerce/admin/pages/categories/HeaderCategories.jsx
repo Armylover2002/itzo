@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { adminApi } from "../../services/adminApi";
 import { toast } from "sonner";
 import IconSelector from "@shared/components/IconSelector";
+import CategoryDeleteDialog from "./CategoryDeleteDialog";
 import Pagination from "@shared/components/ui/Pagination";
 import { getIconSvg } from "@shared/constants/categoryIcons";
 
@@ -66,10 +67,7 @@ const HeaderCategories = () => {
     status: "active",
     type: "header",
     parentId: null,
-    iconId: "",
-    adminCommission: 0,
-    handlingFees: 0,
-    headerColor: "#FE5502",
+    iconId: "",    headerColor: "#FE5502",
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -167,6 +165,12 @@ const HeaderCategories = () => {
       toast.error("Name and slug are required");
       return;
     }
+    // Header categories are represented by an icon in every storefront surface,
+    // so it is mandatory rather than optional.
+    if (!formData.iconId) {
+      toast.error("Icon is required for a header category");
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -199,20 +203,6 @@ const HeaderCategories = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-
-    try {
-      await adminApi.deleteCategory(deleteTarget._id || deleteTarget.id);
-      toast.success("Header category deleted");
-      setIsDeleteModalOpen(false);
-      setDeleteTarget(null);
-      fetchCategories(page);
-    } catch (error) {
-      toast.error("Failed to delete category");
-    }
-  };
-
   const openAddModal = () => {
     setEditingItem(null);
     setFormData({
@@ -222,10 +212,7 @@ const HeaderCategories = () => {
       status: "active",
       type: "header",
       parentId: null,
-      iconId: "",
-      adminCommission: 0,
-      handlingFees: 0,
-      headerColor: "#FE5502",
+      iconId: "",      headerColor: "#FE5502",
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -241,10 +228,7 @@ const HeaderCategories = () => {
       status: item.status,
       type: "header",
       parentId: null,
-      iconId: item.iconId || "",
-      adminCommission: item.adminCommission || 0,
-      handlingFees: item.handlingFees || 0,
-      headerColor: item.headerColor || "#FE5502",
+      iconId: item.iconId || "",      headerColor: item.headerColor || "#FE5502",
     });
     setPreviewUrl(item.image?.url || null);
     setIsAddModalOpen(true);
@@ -379,12 +363,6 @@ const HeaderCategories = () => {
                       {cat.name}
                     </td>
                     <td className="py-3 px-4 text-gray-500">{cat.slug}</td>
-                    <td className="py-3 px-4 text-gray-500 font-medium">
-                      {cat.adminCommission ?? 0}%
-                    </td>
-                    <td className="py-3 px-4 text-gray-500 font-medium">
-                      ₹{cat.handlingFees ?? 0}
-                    </td>
                     <td className="py-3 px-4">
                       <Badge
                         variant={
@@ -616,40 +594,6 @@ const HeaderCategories = () => {
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      ECS Commission (%)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.adminCommission}
-                      onChange={(e) =>
-                        setFormData({ ...formData, adminCommission: parseFloat(e.target.value) || 0 })
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="0"
-                      min="0"
-                      max="100"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">
-                      Handling Fees (₹)
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.handlingFees}
-                      onChange={(e) =>
-                        setFormData({ ...formData, handlingFees: parseFloat(e.target.value) || 0 })
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="0"
-                      min="0"
-                    />
-                  </div>
-                </div>
               </div>
 
               <div className="p-6 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 shrink-0">
@@ -687,46 +631,12 @@ const HeaderCategories = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {isDeleteModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
-              <div className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
-                  <Trash2 className="w-6 h-6" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  Delete Category?
-                </h3>
-                <p className="text-gray-500 text-sm mb-6">
-                  Are you sure you want to delete{" "}
-                  <span className="font-semibold text-gray-900">
-                    {deleteTarget?.name}
-                  </span>
-                  ? This action cannot be undone.
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    onClick={() => setIsDeleteModalOpen(false)}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors">
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDelete}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors">
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Delete Confirmation — shows the full cascade impact */}
+      <CategoryDeleteDialog
+        target={isDeleteModalOpen ? deleteTarget : null}
+        onCancel={() => { setIsDeleteModalOpen(false); setDeleteTarget(null); }}
+        onDeleted={() => { setIsDeleteModalOpen(false); setDeleteTarget(null); fetchCategories(page); }}
+      />
     </div>
   );
 };

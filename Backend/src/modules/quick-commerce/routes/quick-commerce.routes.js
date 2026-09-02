@@ -5,10 +5,7 @@ import {
   getCoupons,
   applyCoupon,
   getHomeData,
-  getExperienceOnly,
-  getHeroOnly,
-  getOfferSectionsOnly,
-  getOffers,
+  getPublicBanners,
   getProductById,
   getProductReviews,
   submitProductReview,
@@ -44,7 +41,6 @@ import {
   approveAdminSellerRequest,
   getAdminSellerRequests,
   createCategory,
-  createCategoryHierarchy,
   createProduct,
   getAdminCategories,
   getAdminOrders,
@@ -59,6 +55,7 @@ import {
   softDeleteAdminSeller,
   getAdminSellerById,
   removeCategory,
+  getCategoryDeleteImpact,
   removeProduct,
   updateCategory,
   updateProduct,
@@ -69,18 +66,6 @@ import {
   updateAdminZone,
   deleteAdminZone,
   listPublicZones,
-  getAdminExperienceSections,
-  createAdminExperienceSection,
-  updateAdminExperienceSection,
-  deleteAdminExperienceSection,
-  reorderAdminExperienceSections,
-  getAdminHeroConfig,
-  setAdminHeroConfig,
-  getAdminOfferSections,
-  createAdminOfferSection,
-  updateAdminOfferSection,
-  deleteAdminOfferSection,
-  reorderAdminOfferSections,
   getAdminFinanceSummary,
   getAdminFinanceLedger,
   getAdminFinancePayouts,
@@ -91,6 +76,12 @@ import {
   createAdminCoupon,
   updateAdminCoupon,
   deleteAdminCoupon,
+  getAdminBannersController,
+  getAdminBannerByIdController,
+  createAdminBannerController,
+  updateAdminBannerController,
+  toggleAdminBannerStatusController,
+  deleteAdminBannerController,
 } from "../controllers/admin.controller.js";
 import {
   getSellerCommissionBootstrap,
@@ -121,6 +112,14 @@ import { authMiddleware } from "../../../core/auth/auth.middleware.js";
 import { requireRoles } from "../../../core/roles/role.middleware.js";
 import { verifyAccessToken } from "../../../core/auth/token.util.js";
 
+/**
+ * Express 4 does not forward rejected promises from async handlers, so a throw
+ * inside one leaves the request hanging until the client times out. Wrapping the
+ * handler routes the error to the error middleware and returns a real response.
+ */
+const wrap = (handler) => (req, res, next) =>
+  Promise.resolve(handler(req, res, next)).catch(next);
+
 const optionalAuth = (req, res, next) => {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ")
@@ -145,10 +144,7 @@ router.get("/health", (_req, res) =>
 );
 
 router.get("/home", getHomeData);
-router.get("/experience", getExperienceOnly);
-router.get("/experience/hero", getHeroOnly);
-router.get("/offer-sections", getOfferSectionsOnly);
-router.get("/offers", getOffers);
+router.get("/banners/public", getPublicBanners);
 router.get("/coupons", getCoupons);
 router.post("/coupons/apply", applyCoupon);
 router.get("/categories", getCategories);
@@ -184,31 +180,26 @@ router.post("/wishlist/toggle", optionalAuth, toggleWishlist);
 
 // Admin endpoints (quick-commerce dashboard)
 router.get("/admin/stats", ...adminOnly, getAdminStats);
-router.get("/admin/categories", ...adminOnly, getAdminCategories);
+router.get("/admin/categories", ...adminOnly, wrap(getAdminCategories));
 router.post(
   "/admin/categories",
   ...adminOnly,
   upload.single("image"),
-  createCategory,
-);
-router.post(
-  "/admin/categories/hierarchy",
-  ...adminOnly,
-  upload.fields([
-    { name: "headerImage", maxCount: 1 },
-    { name: "level2Image", maxCount: 1 },
-    { name: "subImage", maxCount: 1 },
-  ]),
-  createCategoryHierarchy,
+  wrap(createCategory),
 );
 router.put(
   "/admin/categories/:categoryId",
   ...adminOnly,
   upload.single("image"),
-  updateCategory,
+  wrap(updateCategory),
 );
-router.delete("/admin/categories/:categoryId", ...adminOnly, removeCategory);
-router.get("/admin/products", ...adminOnly, getAdminProducts);
+router.get(
+  "/admin/categories/:categoryId/delete-impact",
+  ...adminOnly,
+  wrap(getCategoryDeleteImpact),
+);
+router.delete("/admin/categories/:categoryId", ...adminOnly, wrap(removeCategory));
+router.get("/admin/products", ...adminOnly, wrap(getAdminProducts));
 router.post(
   "/admin/products",
   ...adminOnly,
@@ -216,7 +207,7 @@ router.post(
     { name: "mainImage", maxCount: 1 },
     { name: "galleryImages", maxCount: 8 },
   ]),
-  createProduct,
+  wrap(createProduct),
 );
 router.put(
   "/admin/products/:productId",
@@ -225,9 +216,9 @@ router.put(
     { name: "mainImage", maxCount: 1 },
     { name: "galleryImages", maxCount: 8 },
   ]),
-  updateProduct,
+  wrap(updateProduct),
 );
-router.delete("/admin/products/:productId", ...adminOnly, removeProduct);
+router.delete("/admin/products/:productId", ...adminOnly, wrap(removeProduct));
 router.get("/admin/orders", ...adminOnly, getAdminOrders);
 router.get("/admin/orders/:orderId", ...adminOnly, getAdminOrderById);
 router.post("/admin/orders/:orderId/refund", ...adminOnly, processRefund);
@@ -293,51 +284,6 @@ router.post("/admin/zones", ...adminOnly, createAdminZone);
 router.patch("/admin/zones/:zoneId", ...adminOnly, updateAdminZone);
 router.delete("/admin/zones/:zoneId", ...adminOnly, deleteAdminZone);
 
-// Experience Sections Management
-router.get(
-  "/admin/experience/sections",
-  ...adminOnly,
-  getAdminExperienceSections,
-);
-router.post(
-  "/admin/experience/sections",
-  ...adminOnly,
-  createAdminExperienceSection,
-);
-router.put(
-  "/admin/experience/sections/:id",
-  ...adminOnly,
-  updateAdminExperienceSection,
-);
-router.delete(
-  "/admin/experience/sections/:id",
-  ...adminOnly,
-  deleteAdminExperienceSection,
-);
-router.post(
-  "/admin/experience/sections/reorder",
-  ...adminOnly,
-  reorderAdminExperienceSections,
-);
-
-router.get("/admin/experience/hero", ...adminOnly, getAdminHeroConfig);
-router.post("/admin/experience/hero", ...adminOnly, setAdminHeroConfig);
-
-// Offer Sections Management
-router.get("/admin/offer-sections", ...adminOnly, getAdminOfferSections);
-router.post("/admin/offer-sections", ...adminOnly, createAdminOfferSection);
-router.put("/admin/offer-sections/:id", ...adminOnly, updateAdminOfferSection);
-router.delete(
-  "/admin/offer-sections/:id",
-  ...adminOnly,
-  deleteAdminOfferSection,
-);
-router.post(
-  "/admin/offer-sections/reorder",
-  ...adminOnly,
-  reorderAdminOfferSections,
-);
-
 // Seller Commission Management
 router.get(
   "/admin/seller-commissions/bootstrap",
@@ -399,5 +345,31 @@ router.get("/admin/coupons", ...adminOnly, getAdminCoupons);
 router.post("/admin/coupons", ...adminOnly, createAdminCoupon);
 router.put("/admin/coupons/:id", ...adminOnly, updateAdminCoupon);
 router.delete("/admin/coupons/:id", ...adminOnly, deleteAdminCoupon);
+
+// Admin Banner Management (Marketing Tools)
+router.get("/admin/banners", ...adminOnly, getAdminBannersController);
+router.get("/admin/banners/:id", ...adminOnly, getAdminBannerByIdController);
+router.post(
+  "/admin/banners",
+  ...adminOnly,
+  upload.single("image"),
+  createAdminBannerController
+);
+router.put(
+  "/admin/banners/:id",
+  ...adminOnly,
+  upload.single("image"),
+  updateAdminBannerController
+);
+router.patch(
+  "/admin/banners/:id/status",
+  ...adminOnly,
+  toggleAdminBannerStatusController
+);
+router.delete(
+  "/admin/banners/:id",
+  ...adminOnly,
+  deleteAdminBannerController
+);
 
 export default router;

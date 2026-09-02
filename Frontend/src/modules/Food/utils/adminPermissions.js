@@ -15,6 +15,18 @@ const ACTIONS = ["view", "create", "edit", "delete"];
 const normalizeAction = (action = "view") =>
   ACTIONS.includes(action) ? action : "view";
 
+export const isSuperAdminUser = (user) => {
+  if (!user) return false;
+  const role = String(user.role || "").toUpperCase();
+  return (
+    role === "ADMIN" ||
+    role === "SUPER_ADMIN" ||
+    role === "SUPERADMIN" ||
+    user.isSuperAdmin === true ||
+    user.isAdmin === true
+  );
+};
+
 export const extractAdminRoleId = (user) => {
   if (!user) return null;
 
@@ -28,7 +40,7 @@ export const extractAdminRoleId = (user) => {
 };
 
 export const extractAdminPermissions = (user) => {
-  if (!user || user.role === "ADMIN") return {};
+  if (!user || isSuperAdminUser(user)) return {};
 
   const directPermissions = normalizePermissions(user.permissions);
   if (Object.keys(directPermissions).length > 0) return directPermissions;
@@ -54,7 +66,7 @@ export const fetchAdminRolePermissions = async (roleId) => {
 };
 
 export const resolveAdminPermissionsForUser = async (user) => {
-  if (!user || user.role === "ADMIN") return {};
+  if (!user || isSuperAdminUser(user)) return {};
 
   const existingPermissions = extractAdminPermissions(user);
   if (Object.keys(existingPermissions).length > 0) {
@@ -98,9 +110,12 @@ export const hasPermissionEntry = (permissions, permissionKey, action = "view") 
   let entry = permissions?.[permissionKey];
   if (!entry && permissionKey) {
     const parts = permissionKey.split("::");
-    if (parts.length > 1) {
-      const parentKey = parts.slice(0, -1).join("::");
-      entry = permissions?.[parentKey];
+    for (let i = parts.length - 1; i >= 1; i--) {
+      const parentKey = parts.slice(0, i).join("::");
+      if (permissions?.[parentKey]) {
+        entry = permissions[parentKey];
+        break;
+      }
     }
   }
   if (!permissionKey || !entry) return false;
@@ -191,7 +206,7 @@ export const getFirstAccessibleAdminPath = (menuList, permissions, parentKey) =>
 
 export const getDefaultAdminLandingPath = (user, permissions = {}) => {
   if (!user) return "/ecs/food";
-  if (user.role === "ADMIN") return "/ecs/food";
+  if (isSuperAdminUser(user)) return "/ecs/food";
 
   const moduleConfigs = [
     { rootKey: "food", menu: adminSidebarMenu },
@@ -244,7 +259,7 @@ export const inferAdminActionFromPath = (pathname, match) => {
 };
 
 export const canPerformAdminPermissionAction = (user, permissions, permissionKey, action = "view") => {
-  if (!user || user.role === "ADMIN") return true;
+  if (!user || isSuperAdminUser(user)) return true;
 
   const rootKey = String(permissionKey || "").split("::")[0];
   if (!rootKey || !hasAnyRootAccess(permissions, rootKey)) return false;
@@ -253,7 +268,7 @@ export const canPerformAdminPermissionAction = (user, permissions, permissionKey
 };
 
 export const canAccessAdminPath = (user, permissions, pathname) => {
-  if (!user || user.role === "ADMIN") return true;
+  if (!user || isSuperAdminUser(user)) return true;
 
   const { rootKey, menu } = getAdminModuleConfig(pathname);
   if (!hasAnyRootAccess(permissions, rootKey)) return false;

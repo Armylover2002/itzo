@@ -27,11 +27,7 @@ const SellerDetail = React.lazy(() => import("../pages/SellerDetail"))
 const SupportTickets = React.lazy(() => import("../pages/SupportTickets"))
 const ReviewModeration = React.lazy(() => import("../pages/ReviewModeration"))
 const CouponManagement = React.lazy(() => import("../pages/CouponManagement"))
-const ContentManager = React.lazy(() => import("../pages/ContentManager"))
-const HeroCategoriesPerPage = React.lazy(() => import("../pages/HeroCategoriesPerPage"))
-const NotificationComposer = React.lazy(() => import("../pages/NotificationComposer"))
-const OfferSectionsManagement = React.lazy(() => import("../pages/OfferSectionsManagement"))
-const ShopByStoreManagement = React.lazy(() => import("../pages/ShopByStoreManagement"))
+const BannerManagement = React.lazy(() => import("../pages/BannerManagement"))
 const BillingCharges = React.lazy(() => import("../pages/BillingCharges"))
 const QuickZoneSetup = React.lazy(() => import("../pages/ZoneSetup"))
 const QuickAddZone = React.lazy(() => import("../pages/AddZone"))
@@ -63,11 +59,7 @@ function QuickCommerceAdminRoutesInner() {
       <Route path="/sellers/commission" element={<SellerCommission />} />
       <Route path="/support-tickets" element={<SupportTickets />} />
       <Route path="/moderation" element={<ReviewModeration />} />
-      <Route path="/experience-studio" element={<ContentManager />} />
-      <Route path="/hero-categories" element={<HeroCategoriesPerPage />} />
-      <Route path="/notifications" element={<NotificationComposer />} />
-      <Route path="/offer-sections" element={<OfferSectionsManagement />} />
-      <Route path="/shop-by-store" element={<ShopByStoreManagement />} />
+      <Route path="/banners" element={<BannerManagement />} />
       <Route path="/coupons" element={<CouponManagement />} />
       <Route path="/sellers/pending" element={<PendingSellers />} />
       <Route path="/seller-locations" element={<SellerLocations />} />

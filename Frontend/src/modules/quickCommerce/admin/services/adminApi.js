@@ -254,13 +254,12 @@ export const adminApi = {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
 
-  createCategoryHierarchy: (formData) => axiosInstance.post('/quick-commerce/admin/categories/hierarchy', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
-
   updateCategory: (id, formData) => axiosInstance.put(`/quick-commerce/admin/categories/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   }),
+
+  getCategoryDeleteImpact: (id) =>
+    axiosInstance.get(`/quick-commerce/admin/categories/${id}/delete-impact`),
 
   deleteCategory: (id) => axiosInstance.delete(`/quick-commerce/admin/categories/${id}`),
 
@@ -371,28 +370,22 @@ export const adminApi = {
   updateFAQ: () => emptyResponse({}),
   deleteFAQ: () => emptyResponse({}),
   getPublicFAQs: () => emptyResponse({ items: [] }),
-  getExperienceSections: (params) => axiosInstance.get('/quick-commerce/admin/experience/sections', { params }),
-  createExperienceSection: (payload) => axiosInstance.post('/quick-commerce/admin/experience/sections', payload),
-  updateExperienceSection: (id, payload) => axiosInstance.put(`/quick-commerce/admin/experience/sections/${id}`, payload),
-  deleteExperienceSection: (id) => axiosInstance.delete(`/quick-commerce/admin/experience/sections/${id}`),
-  reorderExperienceSections: (items) => axiosInstance.post('/quick-commerce/admin/experience/sections/reorder', items),
-  uploadExperienceBanner: (formData) => adminApi.uploadSettingsImage(formData, 'experience'),
-  getHeroConfig: (params) => axiosInstance.get('/quick-commerce/admin/experience/hero', { params }),
-  setHeroConfig: (payload) => axiosInstance.post('/quick-commerce/admin/experience/hero', payload),
-  getOffers: () => axiosInstance.get('/quick-commerce/offers'),
-  createOffer: (payload) => axiosInstance.post('/quick-commerce/admin/offers', payload),
-  updateOffer: (id, payload) => axiosInstance.put(`/quick-commerce/admin/offers/${id}`, payload),
-  deleteOffer: (id) => axiosInstance.delete(`/quick-commerce/admin/offers/${id}`),
-  reorderOffers: (items) => axiosInstance.post('/quick-commerce/admin/offers/reorder', items),
-  getOfferSections: () => axiosInstance.get('/quick-commerce/admin/offer-sections'),
-  createOfferSection: (payload) => axiosInstance.post('/quick-commerce/admin/offer-sections', payload),
-  updateOfferSection: (id, payload) => axiosInstance.put(`/quick-commerce/admin/offer-sections/${id}`, payload),
-  deleteOfferSection: (id) => axiosInstance.delete(`/quick-commerce/admin/offer-sections/${id}`),
-  reorderOfferSections: (items) => axiosInstance.post('/quick-commerce/admin/offer-sections/reorder', items),
   getCoupons: (params) => axiosInstance.get('/quick-commerce/admin/coupons', { params }),
   createCoupon: (payload) => axiosInstance.post('/quick-commerce/admin/coupons', payload),
   updateCoupon: (id, payload) => axiosInstance.put(`/quick-commerce/admin/coupons/${id}`, payload),
   deleteCoupon: (id) => axiosInstance.delete(`/quick-commerce/admin/coupons/${id}`),
+
+  // Banner Management
+  getBanners: (params) => axiosInstance.get('/quick-commerce/admin/banners', { params }),
+  getBannerById: (id) => axiosInstance.get(`/quick-commerce/admin/banners/${id}`),
+  createBanner: (formData) => axiosInstance.post('/quick-commerce/admin/banners', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  updateBanner: (id, formData) => axiosInstance.put(`/quick-commerce/admin/banners/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+  toggleBannerStatus: (id) => axiosInstance.patch(`/quick-commerce/admin/banners/${id}/status`),
+  deleteBanner: (id) => axiosInstance.delete(`/quick-commerce/admin/banners/${id}`),
 
   // Seller Commission Management
   getSellerCommissionBootstrap: () => axiosInstance.get('/quick-commerce/admin/seller-commissions/bootstrap'),

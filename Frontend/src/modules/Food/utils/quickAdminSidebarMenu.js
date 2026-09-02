@@ -31,12 +31,8 @@ export const quickAdminSidebarMenu = [
         permissionKey: "marketing_tools",
         icon: "Megaphone",
         subItems: [
-          { label: "Content Manager", path: "/ecs/quick-commerce/experience-studio", permissionKey: "experience_studio" },
-          { label: "Hero & Categories Per Page", path: "/ecs/quick-commerce/hero-categories", permissionKey: "hero_categories" },
-          { label: "Send Notifications", path: "/ecs/quick-commerce/notifications", permissionKey: "notifications" },
+          { label: "Banners", path: "/ecs/quick-commerce/banners", permissionKey: "banners" },
           { label: "Coupons & Promos", path: "/ecs/quick-commerce/coupons", permissionKey: "coupons" },
-          { label: "Offer Sections", path: "/ecs/quick-commerce/offer-sections", permissionKey: "offer_sections" },
-          { label: "Shop by Store", path: "/ecs/quick-commerce/shop-by-store", permissionKey: "shop_by_store" },
         ],
       },
       {

@@ -496,10 +496,12 @@ const CartPage = () => {
               <span>Delivery fee</span>
               <span className="font-semibold text-slate-900">{"\u20B9"}{deliveryFee}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Handling charge</span>
-              <span className="font-semibold text-slate-900">{"\u20B9"}{handlingFee}</span>
-            </div>
+            {handlingFee > 0 && (
+              <div className="flex items-center justify-between">
+                <span>Handling charge</span>
+                <span className="font-semibold text-slate-900">{"\u20B9"}{handlingFee}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span>Platform fee</span>
               <span className="font-semibold text-slate-900">{"\u20B9"}{platformFee}</span>

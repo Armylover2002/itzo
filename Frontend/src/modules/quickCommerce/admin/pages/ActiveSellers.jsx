@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   HiOutlineArrowPath,
   HiOutlineBuildingOffice2,
@@ -9,13 +10,28 @@ import {
   HiOutlineMagnifyingGlass,
   HiOutlineMapPin,
   HiOutlinePhone,
+  HiOutlineXCircle,
+  HiOutlineXMark,
 } from 'react-icons/hi2';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import { adminApi } from '../services/adminApi';
+import { formatOpeningHoursAMPM } from '@shared/utils/timeFormat';
+
+const formatDateTime = (value) => {
+  if (!value) return 'N/A';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleString('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+};
 
 const formatDate = (value) => {
   if (!value) return 'N/A';
@@ -29,7 +45,6 @@ const formatDate = (value) => {
 };
 
 const ActiveSellers = () => {
-  const navigate = useNavigate();
   const [sellers, setSellers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -38,6 +53,8 @@ const ActiveSellers = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [filter, setFilter] = useState('active');
+  const [viewingSeller, setViewingSeller] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const loadActiveSellers = async (currentFilter = filter) => {
     setIsLoading(true);
@@ -286,8 +303,8 @@ const ActiveSellers = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() => navigate(`/ecs/quick-commerce/sellers/active/${seller._id || seller.id}`)}
-                          className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-[10px] font-bold text-white shadow-lg"
+                          onClick={() => { setViewingSeller(seller); setIsViewModalOpen(true); }}
+                          className="inline-flex items-center gap-2 rounded-xl bg-[#6412C6] hover:bg-[#520da8] px-4 py-2 text-[10px] font-bold text-white shadow-lg shadow-[#6412C6]/20 transition-colors"
                         >
                           <HiOutlineEye className="h-3.5 w-3.5" />
                           View
@@ -322,6 +339,250 @@ const ActiveSellers = () => {
           </table>
         </div>
       </Card>
+
+      {/* Seller Details Modal */}
+      <AnimatePresence>
+        {isViewModalOpen && viewingSeller && (
+          <div className="fixed inset-0 z-[100] overflow-y-auto">
+            <div className="min-h-full flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-slate-900/80 backdrop-blur-md"
+                onClick={() => setIsViewModalOpen(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: 24 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: 24 }}
+                className="relative z-10 w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-[0.95fr_1.4fr] max-h-[90vh] overflow-y-auto">
+                  <div className="bg-slate-50 p-6 border-r border-slate-100">
+                    <div className="flex items-start justify-between">
+                      <div className="h-20 w-20 rounded-3xl bg-white shadow-xl flex items-center justify-center overflow-hidden text-3xl font-black text-slate-900 ring-4 ring-white">
+                        {viewingSeller.shopInfo?.shopImage ? (
+                          <img src={viewingSeller.shopInfo.shopImage} alt={viewingSeller.shopName} className="h-full w-full object-cover" />
+                        ) : (
+                          (viewingSeller.shopName || 'S')[0]
+                        )}
+                      </div>
+                      <button type="button" onClick={() => setIsViewModalOpen(false)} className="rounded-full p-2 hover:bg-slate-200">
+                        <HiOutlineXMark className="h-5 w-5" />
+                      </button>
+                    </div>
+
+                    <div className="mt-8 space-y-6">
+                      <div>
+                        <h3 className="text-2xl font-black text-slate-900 leading-tight">{viewingSeller.shopName}</h3>
+                        <p className="mt-2 text-[11px] font-black uppercase tracking-[0.28em] text-[#6412C6]">
+                          {viewingSeller.category || 'General'} seller · Approved
+                        </p>
+                      </div>
+                      <div className="space-y-4 text-xs">
+                        <div className="flex items-center gap-3"><HiOutlineEnvelope className="h-4 w-4 text-slate-400" /><span className="font-semibold text-slate-600">{viewingSeller.email || 'No email'}</span></div>
+                        <div className="flex items-center gap-3"><HiOutlinePhone className="h-4 w-4 text-slate-400" /><span className="font-semibold text-slate-600">{viewingSeller.phone || 'No phone'}</span></div>
+                        <div className="flex items-center gap-3"><HiOutlineMapPin className="h-4 w-4 text-slate-400" /><span className="font-semibold text-slate-600">{viewingSeller.location || 'No address provided'}</span></div>
+                        <div className="flex items-center gap-3"><HiOutlineCalendarDays className="h-4 w-4 text-slate-400" /><span className="font-semibold text-slate-600">Approved {formatDateTime(viewingSeller.approvedAt || viewingSeller.applicationDate)}</span></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 lg:p-8">
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="text-lg font-black text-slate-900">Store overview</h4>
+                        <p className="mt-2 text-sm font-medium text-slate-500">
+                          Business, banking, and compliance details on file for this approved seller.
+                        </p>
+                      </div>
+
+                      <div className="space-y-6">
+                        {/* Store Identity */}
+                        <div>
+                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-[#6412C6] mb-3">Store Identity</h5>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {[
+                              ['Owner name', viewingSeller.ownerName],
+                              ['Business type', viewingSeller.shopInfo?.businessType],
+                              ['Alternate phone', viewingSeller.shopInfo?.alternatePhone],
+                              ['Support email', viewingSeller.shopInfo?.supportEmail],
+                              ['Opening hours', formatOpeningHoursAMPM(viewingSeller.shopInfo?.openingHours || viewingSeller.openingHours) || 'Not set'],
+                              ['Service zone', viewingSeller.shopInfo?.zoneName || viewingSeller.zoneName],
+                              ['Address', viewingSeller.location],
+                            ].map(([label, value]) => (
+                              <div key={label} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">{label}</p>
+                                <p className="mt-1.5 text-sm font-bold text-slate-800 break-words">{value || 'Not provided'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Banking & UPI */}
+                        <div>
+                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-[#6412C6] mb-3">Banking & UPI</h5>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {[
+                              ['Bank name', viewingSeller.bankInfo?.bankName],
+                              ['Account holder', viewingSeller.bankInfo?.accountHolderName],
+                              ['Account number', viewingSeller.bankInfo?.accountNumber],
+                              ['IFSC code', viewingSeller.bankInfo?.ifscCode],
+                              ['Account type', viewingSeller.bankInfo?.accountType],
+                              ['UPI ID', viewingSeller.bankInfo?.upiId],
+                            ].map(([label, value]) => (
+                              <div key={label} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">{label}</p>
+                                <p className="mt-1.5 text-sm font-bold text-slate-800 break-words">{value || 'Not provided'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Compliance */}
+                        <div>
+                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-[#6412C6] mb-3">Compliance & Licenses</h5>
+                          <div className="grid gap-3 md:grid-cols-2">
+                            {[
+                              ['PAN number', viewingSeller.documents?.panNumber],
+                              ['GST registered', viewingSeller.documents?.gstRegistered ? 'Yes' : 'No'],
+                              ['GST number', viewingSeller.documents?.gstNumber],
+                              ['GST legal name', viewingSeller.documents?.gstLegalName],
+                              ['FSSAI number', viewingSeller.documents?.fssaiNumber],
+                              ['FSSAI expiry', viewingSeller.documents?.fssaiExpiry ? new Date(viewingSeller.documents.fssaiExpiry).toLocaleDateString('en-IN') : null],
+                              ['Shop license no.', viewingSeller.documents?.shopLicenseNumber],
+                              ['License expiry', viewingSeller.documents?.shopLicenseExpiry ? new Date(viewingSeller.documents.shopLicenseExpiry).toLocaleDateString('en-IN') : null],
+                            ].map(([label, value]) => (
+                              <div key={label} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">{label}</p>
+                                <p className="mt-1.5 text-sm font-bold text-slate-800 break-words">{value || 'Not provided'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {(viewingSeller.shopInfo?.shopImage || viewingSeller.bankInfo?.upiQrImage || viewingSeller.documents?.shopLicenseImage || viewingSeller.documents?.fssaiImage) && (
+                        <div className="space-y-4 pt-2">
+                          <h4 className="text-base font-black text-slate-900 uppercase tracking-wider">Verification documents</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            {viewingSeller.shopInfo?.shopImage && (
+                              <div className="space-y-3">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Shop Image</p>
+                                <div className="group relative aspect-square w-full overflow-hidden rounded-3xl border-2 border-slate-100 bg-slate-50 transition-all hover:border-[#6412C6]/20 hover:shadow-xl">
+                                  <img
+                                    src={viewingSeller.shopInfo.shopImage}
+                                    alt="Shop Image"
+                                    className="h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                  <a
+                                    href={viewingSeller.shopInfo.shopImage}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="absolute inset-0 flex items-center justify-center bg-slate-900/0 opacity-0 transition-all duration-300 group-hover:bg-slate-900/40 group-hover:backdrop-blur-sm group-hover:opacity-100"
+                                  >
+                                    <div className="rounded-2xl bg-white/20 p-4 text-white backdrop-blur-md">
+                                      <HiOutlineEye className="h-8 w-8" />
+                                    </div>
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                            {viewingSeller.bankInfo?.upiQrImage && (
+                              <div className="space-y-3">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">UPI QR Code</p>
+                                <div className="group relative aspect-square w-full overflow-hidden rounded-3xl border-2 border-slate-100 bg-slate-50 transition-all hover:border-[#6412C6]/20 hover:shadow-xl">
+                                  <img
+                                    src={viewingSeller.bankInfo.upiQrImage}
+                                    alt="UPI QR"
+                                    className="h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                  <a
+                                    href={viewingSeller.bankInfo.upiQrImage}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="absolute inset-0 flex items-center justify-center bg-slate-900/0 opacity-0 transition-all duration-300 group-hover:bg-slate-900/40 group-hover:backdrop-blur-sm group-hover:opacity-100"
+                                  >
+                                    <div className="rounded-2xl bg-white/20 p-4 text-white backdrop-blur-md">
+                                      <HiOutlineEye className="h-8 w-8" />
+                                    </div>
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                            {viewingSeller.documents?.shopLicenseImage && (
+                              <div className="space-y-3">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">Shop License</p>
+                                <div className="group relative aspect-square w-full overflow-hidden rounded-3xl border-2 border-slate-100 bg-slate-50 transition-all hover:border-[#6412C6]/20 hover:shadow-xl">
+                                  <img
+                                    src={viewingSeller.documents.shopLicenseImage}
+                                    alt="Shop License"
+                                    className="h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                  <a
+                                    href={viewingSeller.documents.shopLicenseImage}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="absolute inset-0 flex items-center justify-center bg-slate-900/0 opacity-0 transition-all duration-300 group-hover:bg-slate-900/40 group-hover:backdrop-blur-sm group-hover:opacity-100"
+                                  >
+                                    <div className="rounded-2xl bg-white/20 p-4 text-white backdrop-blur-md">
+                                      <HiOutlineEye className="h-8 w-8" />
+                                    </div>
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                            {viewingSeller.documents?.fssaiImage && (
+                              <div className="space-y-3">
+                                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">FSSAI Image</p>
+                                <div className="group relative aspect-square w-full overflow-hidden rounded-3xl border-2 border-slate-100 bg-slate-50 transition-all hover:border-[#6412C6]/20 hover:shadow-xl">
+                                  <img
+                                    src={viewingSeller.documents.fssaiImage}
+                                    alt="FSSAI Image"
+                                    className="h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+                                  />
+                                  <a
+                                    href={viewingSeller.documents.fssaiImage}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="absolute inset-0 flex items-center justify-center bg-slate-900/0 opacity-0 transition-all duration-300 group-hover:bg-slate-900/40 group-hover:backdrop-blur-sm group-hover:opacity-100"
+                                  >
+                                    <div className="rounded-2xl bg-white/20 p-4 text-white backdrop-blur-md">
+                                      <HiOutlineEye className="h-8 w-8" />
+                                    </div>
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {!viewingSeller.shopInfo?.shopImage && !viewingSeller.bankInfo?.upiQrImage && !viewingSeller.documents?.shopLicenseImage && !viewingSeller.documents?.fssaiImage && (
+                        <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5 text-sm font-bold text-amber-800 flex items-center gap-3">
+                          <HiOutlineXCircle className="h-5 w-5" />
+                          No verification documents were uploaded with this application.
+                        </div>
+                      )}
+
+                      <div className="flex justify-end pt-4">
+                        <button
+                          type="button"
+                          onClick={() => setIsViewModalOpen(false)}
+                          className="rounded-2xl bg-slate-100 hover:bg-slate-200 px-6 py-3 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 transition"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirmDialog && (

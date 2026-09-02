@@ -65,14 +65,20 @@ axiosInstance.interceptors.request.use(
         // 1. If we are on a module-specific page (e.g. /seller/dashboard), prioritize that module's token
         // This is crucial for shared APIs like /products or /admin/categories
         if (!token) {
+            // Prefer the module-specific access token first — it's the one kept
+            // up to date by the refresh flow in services/api/axios.js. The
+            // legacy auth_* aliases below are only updated at login time, so
+            // relying on them alone re-attaches a stale token after any
+            // silent refresh and causes spurious 401s (and forced logout) on
+            // page reload once the original access token has expired.
             if (pagePath.startsWith('/seller')) {
-                token = localStorage.getItem('auth_seller');
+                token = localStorage.getItem('seller_accessToken') || localStorage.getItem('auth_seller');
             } else if (pagePath.startsWith('/ecs')) {
-                token = localStorage.getItem('auth_admin');
+                token = localStorage.getItem('admin_accessToken') || localStorage.getItem('auth_admin');
             } else if (pagePath.startsWith('/delivery')) {
-                token = localStorage.getItem('auth_delivery');
+                token = localStorage.getItem('delivery_accessToken') || localStorage.getItem('auth_delivery');
             } else if (pagePath.startsWith('/hrms')) {
-                token = localStorage.getItem('auth_hrms');
+                token = localStorage.getItem('hrms_accessToken') || localStorage.getItem('auth_hrms');
             } else if (pagePath.startsWith('/customer') || pagePath.startsWith('/quick') || pagePath === '/') {
                 token = getCustomerToken();
             }
@@ -187,9 +193,15 @@ axiosInstance.interceptors.response.use(
                                 ? 'customer'
                                 : null;
 
-            // Prevent cross-module 401s from logging out the active session
-            // (e.g. seller page accidentally calling an admin endpoint).
-            if (requestModule && requestModule !== currentModule) {
+            // Prevent cross-module (and unclassifiable) 401s from logging out the
+            // active session. Many real endpoints (e.g. /food/admin/*,
+            // /quick-commerce/admin/*) don't start with any of the recognized
+            // prefixes, so requestModule comes back null for them — that must
+            // NOT be treated as "same module as the current page", or a stale
+            // token on any of those calls force-logs-out the whole session.
+            // Only log out when we're confident the failing request actually
+            // belongs to the module currently being viewed.
+            if (requestModule !== currentModule) {
                 return Promise.reject(error);
             }
 

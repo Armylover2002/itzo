@@ -13,25 +13,12 @@ import { QuickCoupon } from '../models/coupon.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { processRefund as processFoodRefund } from '../../food/admin/services/admin.service.js';
 import { getIO, rooms } from '../../../config/socket.js';
+import { uploadImageBuffer } from '../../../services/upload.service.js';
 import {
   buildApplySellerPendingProfileChanges,
   buildDiscardSellerPendingProfileChanges,
 } from '../shared/pendingProfileChanges.js';
 import { upsertSellerNotification } from '../seller/services/sellerNotify.service.js';
-import {
-  getQuickExperienceSections,
-  createQuickExperienceSection,
-  updateQuickExperienceSection,
-  deleteQuickExperienceSection,
-  reorderQuickExperienceSections,
-  setQuickHeroConfig,
-  getQuickHeroConfig,
-  getQuickOfferSections,
-  createQuickOfferSection,
-  updateQuickOfferSection,
-  deleteQuickOfferSection,
-  reorderQuickOfferSections,
-} from '../services/content.service.js';
 import {
   getQuickCommerceDeliveryWithdrawals,
   getQuickCommerceFinanceLedger,
@@ -40,6 +27,14 @@ import {
   getQuickCommerceSellerWithdrawals,
   updateQuickCommerceWithdrawalStatus,
 } from "../services/finance.service.js";
+import {
+  getAdminBanners as getBannersService,
+  getAdminBannerById as getBannerByIdService,
+  createAdminBanner as createBannerService,
+  updateAdminBanner as updateBannerService,
+  deleteAdminBanner as deleteBannerService,
+  toggleAdminBannerStatus as toggleBannerStatusService,
+} from '../services/banner.service.js';
 
 const toCategory = (category) => ({
   id: category._id,
@@ -53,8 +48,6 @@ const toCategory = (category) => ({
   status: category.status || (category.isActive ? 'active' : 'inactive'),
   parentId: category.parentId || null,
   iconId: category.iconId || '',
-  adminCommission: Number(category.adminCommission || 0),
-  handlingFees: Number(category.handlingFees || 0),
   headerColor: category.headerColor || category.accentColor,
   sortOrder: category.sortOrder,
   isActive: category.isActive,
@@ -96,46 +89,59 @@ const toProduct = (product) => ({
   restaurantName: product.restaurantName || '',
 });
 
-const toSellerRequest = (seller, extras = {}) => ({
-  id: seller._id,
-  _id: seller._id,
-  shopName: seller.shopName || seller.name || 'Store',
-  ownerName: seller.name || 'Seller',
-  email: seller.email || '',
-  phone: seller.phoneLast10 || seller.phone || '',
-  location: seller.location?.formattedAddress || seller.location?.address || '',
-  category: seller.shopInfo?.businessType || 'General',
-  applicationDate: seller.createdAt,
-  approvedAt: seller.approvedAt || null,
-  zoneId: seller.shopInfo?.zoneId || null,
-  zoneName: seller.shopInfo?.zoneName || '',
-  productCount: Number(extras.productCount) || 0,
-  status:
-    seller.approvalStatus ||
-    (seller.approved === false ? 'pending' : 'approved'),
-  approvalStatus:
-    seller.approvalStatus ||
-    (seller.approved === false ? 'pending' : 'approved'),
-  approved: seller.approved !== false,
-  onboardingSubmitted: seller.onboardingSubmitted === true,
-  bankInfo: seller.bankInfo || {},
-  documents: seller.documents || {},
-  shopInfo: seller.shopInfo || {},
-  approvalNotes: seller.approvalNotes || '',
-  wasEverApproved: seller.wasEverApproved === true,
-  hasPendingProfileUpdate: seller.pendingProfileChanges?.hasPendingUpdate === true,
-  pendingProfileChanges: seller.pendingProfileChanges?.hasPendingUpdate
-    ? {
-        hasPendingUpdate: true,
-        proposed: seller.pendingProfileChanges.proposed || {},
-        previous: seller.pendingProfileChanges.previous || {},
-        changeTypes: seller.pendingProfileChanges.changeTypes || [],
-        reason: seller.pendingProfileChanges.reason || '',
-        requestedAt: seller.pendingProfileChanges.requestedAt || null,
-      }
-    : null,
-  profileUpdateRequestedAt: seller.pendingProfileChanges?.requestedAt || null,
-});
+const toSellerRequest = (seller, extras = {}) => {
+  const isReapplied =
+    seller.isReapplied === true ||
+    Boolean(seller.reappliedAt) ||
+    (seller.approvalStatus === 'pending' && Boolean(seller.previousRejectionNotes)) ||
+    (seller.approvalStatus === 'pending' && Boolean(seller.rejectedAt));
+
+  return {
+    id: seller._id,
+    _id: seller._id,
+    shopName: seller.shopName || seller.name || 'Store',
+    ownerName: seller.name || 'Seller',
+    email: seller.email || '',
+    phone: seller.phoneLast10 || seller.phone || '',
+    location: seller.location?.formattedAddress || seller.location?.address || '',
+    category: seller.shopInfo?.businessType || 'General',
+    applicationDate: seller.reappliedAt || seller.createdAt,
+    approvedAt: seller.approvedAt || null,
+    rejectedAt: seller.rejectedAt || null,
+    zoneId: seller.shopInfo?.zoneId || null,
+    zoneName: seller.shopInfo?.zoneName || '',
+    productCount: Number(extras.productCount) || 0,
+    status:
+      seller.approvalStatus ||
+      (seller.approved === false ? 'pending' : 'approved'),
+    approvalStatus:
+      seller.approvalStatus ||
+      (seller.approved === false ? 'pending' : 'approved'),
+    approved: seller.approved !== false,
+    onboardingSubmitted: seller.onboardingSubmitted === true,
+    bankInfo: seller.bankInfo || {},
+    documents: seller.documents || {},
+    shopInfo: seller.shopInfo || {},
+    approvalNotes: seller.approvalNotes || '',
+    previousRejectionNotes: seller.previousRejectionNotes || seller.approvalNotes || '',
+    isReapplied,
+    reappliedAt: seller.reappliedAt || null,
+    reapplicationCount: seller.reapplicationCount || 0,
+    wasEverApproved: seller.wasEverApproved === true,
+    hasPendingProfileUpdate: seller.pendingProfileChanges?.hasPendingUpdate === true,
+    pendingProfileChanges: seller.pendingProfileChanges?.hasPendingUpdate
+      ? {
+          hasPendingUpdate: true,
+          proposed: seller.pendingProfileChanges.proposed || {},
+          previous: seller.pendingProfileChanges.previous || {},
+          changeTypes: seller.pendingProfileChanges.changeTypes || [],
+          reason: seller.pendingProfileChanges.reason || '',
+          requestedAt: seller.pendingProfileChanges.requestedAt || null,
+        }
+      : null,
+    profileUpdateRequestedAt: seller.pendingProfileChanges?.requestedAt || null,
+  };
+};
 
 const buildProductSellerMap = async (products = []) => {
   const sellerIds = [...new Set(
@@ -318,6 +324,13 @@ const getCategoryImage = async (req) => {
   return String(req.body?.image || '').trim();
 };
 
+const getBannerImage = async (req) => {
+  if (req.file?.buffer) {
+    return uploadImageBuffer(req.file.buffer, 'quick-commerce/banners');
+  }
+  return String(req.body?.image || '').trim();
+};
+
 const getProductImages = async (req) => {
   const mainFile = req.files?.mainImage?.[0];
   const galleryFiles = Array.isArray(req.files?.galleryImages) ? req.files.galleryImages : [];
@@ -450,6 +463,128 @@ export const getAdminCategories = async (_req, res) => {
   });
 };
 
+/**
+ * Category hierarchy contract (single source of truth for both create and update):
+ *   header      -> top level, no parent, identified by an icon (no image needed)
+ *   category    -> "Main" level, must sit under a header, must have an image
+ *   subcategory -> must sit under a Main category, must have an image
+ */
+const CATEGORY_LEVELS = {
+  header: { label: 'Header category', parentType: null },
+  category: { label: 'Main category', parentType: 'header' },
+  subcategory: { label: 'Subcategory', parentType: 'category' },
+};
+
+/**
+ * Validates the parent link and the mandatory icon/image for a category level.
+ * Returns an error message string when invalid, or null when the payload is fine.
+ */
+const validateCategoryHierarchy = async ({ type, parentId, iconId, image }) => {
+  const level = CATEGORY_LEVELS[type];
+  if (!level) {
+    return `Invalid category type "${type}". Expected header, category or subcategory.`;
+  }
+
+  if (!level.parentType) {
+    // Header: never nested, and the icon is what represents it in the UI.
+    if (parentId) return 'A header category cannot be placed under another category.';
+    if (!String(iconId || '').trim()) return 'Icon is required for a header category.';
+    return null;
+  }
+
+  // Main / Sub: parent is mandatory and must be exactly one level above.
+  if (!mongoose.isValidObjectId(parentId)) {
+    return `Please select a ${CATEGORY_LEVELS[level.parentType].label.toLowerCase()} for this ${level.label.toLowerCase()}.`;
+  }
+
+  const parent = await QuickCategory.findById(parentId).select('type name').lean();
+  if (!parent) return 'Selected parent category no longer exists.';
+  if ((parent.type || 'header') !== level.parentType) {
+    return `A ${level.label.toLowerCase()} must be created under a ${CATEGORY_LEVELS[level.parentType].label.toLowerCase()}.`;
+  }
+
+  if (!String(image || '').trim()) return `Image is required for a ${level.label.toLowerCase()}.`;
+  return null;
+};
+
+/**
+ * Collects a category and every descendant beneath it (breadth-first on parentId),
+ * so deletes and impact previews always operate on the whole branch.
+ */
+const collectCategoryBranchIds = async (rootId) => {
+  const ids = [String(rootId)];
+  let frontier = [rootId];
+
+  while (frontier.length) {
+    const children = await QuickCategory.find({ parentId: { $in: frontier } })
+      .select('_id')
+      .lean();
+    if (!children.length) break;
+    frontier = children.map((child) => child._id);
+    ids.push(...frontier.map(String));
+  }
+
+  return ids;
+};
+
+const branchProductFilter = (categoryIds) => ({
+  $or: [
+    { categoryId: { $in: categoryIds } },
+    { subcategoryId: { $in: categoryIds } },
+    { headerId: { $in: categoryIds } },
+  ],
+});
+
+/**
+ * Walks up the parent chain and returns the first ancestor that is switched off.
+ * A category can only go live when every ancestor above it is live, so this is
+ * what blocks "activate a child while its header is still inactive".
+ */
+const findInactiveAncestor = async (parentId) => {
+  let currentId = parentId;
+  const seen = new Set();
+
+  while (currentId && !seen.has(String(currentId))) {
+    seen.add(String(currentId));
+    const parent = await QuickCategory.findById(currentId)
+      .select('_id name type status isActive parentId')
+      .lean();
+    if (!parent) return null; // orphaned link — nothing above to block on
+    if (parent.status === 'inactive' || parent.isActive === false) return parent;
+    currentId = parent.parentId;
+  }
+
+  return null;
+};
+
+/**
+ * Switches a whole branch (the category, everything nested under it, and every
+ * product attached to any of them) on or off in one go.
+ *
+ * Products are only ever flipped between active/inactive — never deleted — so a
+ * seller's catalogue survives and comes back when the branch is restored.
+ */
+const setBranchActiveState = async (rootId, makeActive) => {
+  const branchIds = await collectCategoryBranchIds(rootId);
+  const status = makeActive ? 'active' : 'inactive';
+
+  const [categories, products] = await Promise.all([
+    QuickCategory.updateMany(
+      { _id: { $in: branchIds } },
+      { $set: { status, isActive: makeActive } },
+    ),
+    QuickProduct.updateMany(
+      branchProductFilter(branchIds),
+      { $set: { status, isActive: makeActive } },
+    ),
+  ]);
+
+  return {
+    categoryCount: categories.modifiedCount || 0,
+    productCount: products.modifiedCount || 0,
+  };
+};
+
 export const createCategory = async (req, res) => {
   const {
     name,
@@ -461,14 +596,24 @@ export const createCategory = async (req, res) => {
     approvalStatus,
     parentId,
     iconId,
-    adminCommission,
-    handlingFees,
     headerColor,
   } = req.body || {};
   const image = await getCategoryImage(req);
 
   if (!name) {
     return res.status(400).json({ success: false, message: 'name is required' });
+  }
+
+  const resolvedType = type || 'header';
+  const resolvedParentId = mongoose.isValidObjectId(parentId) ? parentId : null;
+  const hierarchyError = await validateCategoryHierarchy({
+    type: resolvedType,
+    parentId: resolvedParentId,
+    iconId,
+    image,
+  });
+  if (hierarchyError) {
+    return res.status(400).json({ success: false, message: hierarchyError });
   }
 
   const baseSlug = slugify(name);
@@ -480,20 +625,18 @@ export const createCategory = async (req, res) => {
     slug,
     image,
     description: description || '',
-    type: type || 'header',
+    type: resolvedType,
     status: status || 'active',
     approvalStatus:
-      type === 'subcategory'
+      resolvedType === 'subcategory'
         ? (approvalStatus || 'pending')
         : (approvalStatus || 'approved'),
     approvedAt:
-      (type === 'subcategory' ? approvalStatus || 'pending' : approvalStatus || 'approved') === 'approved'
+      (resolvedType === 'subcategory' ? approvalStatus || 'pending' : approvalStatus || 'approved') === 'approved'
         ? new Date()
         : null,
-    parentId: mongoose.isValidObjectId(parentId) ? parentId : null,
+    parentId: resolvedParentId,
     iconId: iconId || '',
-    adminCommission: parseNumber(adminCommission, 0),
-    handlingFees: parseNumber(handlingFees, 0),
     headerColor: headerColor || accentColor || '#0c831f',
     accentColor: accentColor || '#0c831f',
     sortOrder: Number(sortOrder || 0),
@@ -502,126 +645,6 @@ export const createCategory = async (req, res) => {
 
   return res.status(201).json({ success: true, result: toCategory(category) });
 }
-
-export const createCategoryHierarchy = async (req, res) => {
-  try {
-    const { headerData, level2Data, subData } = req.body;
-    if (!headerData || !level2Data || !subData) {
-      return res.status(400).json({ success: false, message: 'headerData, level2Data, and subData are required' });
-    }
-
-    const header = JSON.parse(headerData);
-    const level2 = JSON.parse(level2Data);
-    const sub = JSON.parse(subData);
-
-    if (!header.name || !level2.name || !sub.name) {
-      return res.status(400).json({ success: false, message: 'Name is required for all three category levels' });
-    }
-
-    // Helper for generating unique slug
-    const generateUniqueSlug = async (name) => {
-      const baseSlug = slugify(name);
-      const count = await QuickCategory.countDocuments({ slug: { $regex: `^${baseSlug}` } });
-      return count > 0 ? `${baseSlug}-${count + 1}` : baseSlug;
-    };
-
-    const headerSlug = await generateUniqueSlug(header.name);
-    const level2Slug = await generateUniqueSlug(level2.name);
-    const subSlug = await generateUniqueSlug(sub.name);
-
-    // Process images
-    const getUploadedImage = async (fieldName) => {
-      const file = req.files?.[fieldName]?.[0];
-      if (file?.buffer) {
-        return uploadImageBuffer(file.buffer, 'quick-commerce/categories');
-      }
-      return '';
-    };
-
-    const headerImage = await getUploadedImage('headerImage') || header.image || '';
-    const level2Image = await getUploadedImage('level2Image') || level2.image || '';
-    const subImage = await getUploadedImage('subImage') || sub.image || '';
-
-    // Step 1: Create Header
-    const createdHeader = await QuickCategory.create({
-      name: header.name,
-      slug: headerSlug,
-      image: headerImage,
-      description: header.description || '',
-      type: 'header',
-      status: header.status || 'active',
-      approvalStatus: 'approved',
-      approvedAt: new Date(),
-      parentId: null,
-      iconId: header.iconId || '',
-      adminCommission: parseNumber(header.adminCommission, 0),
-      handlingFees: parseNumber(header.handlingFees, 0),
-      headerColor: header.headerColor || header.accentColor || '#0c831f',
-      accentColor: header.accentColor || '#0c831f',
-      sortOrder: Number(header.sortOrder || 0),
-      isActive: (header.status || 'active') === 'active',
-    });
-
-    let createdLevel2, createdSub;
-
-    try {
-      // Step 2: Create Level 2
-      createdLevel2 = await QuickCategory.create({
-        name: level2.name,
-        slug: level2Slug,
-        image: level2Image,
-        description: level2.description || '',
-        type: 'category',
-        status: level2.status || 'active',
-        approvalStatus: 'approved',
-        approvedAt: new Date(),
-        parentId: createdHeader._id,
-        adminCommission: parseNumber(level2.adminCommission, 0),
-        handlingFees: parseNumber(level2.handlingFees, 0),
-        headerColor: level2.headerColor || level2.accentColor || '#0c831f',
-        accentColor: level2.accentColor || '#0c831f',
-        sortOrder: Number(level2.sortOrder || 0),
-        isActive: (level2.status || 'active') === 'active',
-      });
-
-      // Step 3: Create Subcategory
-      createdSub = await QuickCategory.create({
-        name: sub.name,
-        slug: subSlug,
-        image: subImage,
-        description: sub.description || '',
-        type: 'subcategory',
-        status: sub.status || 'active',
-        approvalStatus: 'approved', // Admin creating them directly
-        approvedAt: new Date(),
-        parentId: createdLevel2._id,
-        adminCommission: parseNumber(sub.adminCommission, 0),
-        handlingFees: parseNumber(sub.handlingFees, 0),
-        headerColor: sub.headerColor || sub.accentColor || '#0c831f',
-        accentColor: sub.accentColor || '#0c831f',
-        sortOrder: Number(sub.sortOrder || 0),
-        isActive: (sub.status || 'active') === 'active',
-      });
-
-      return res.status(201).json({
-        success: true,
-        result: {
-          header: toCategory(createdHeader),
-          level2: toCategory(createdLevel2),
-          sub: toCategory(createdSub)
-        }
-      });
-    } catch (error) {
-      // Manual rollback if any step fails
-      if (createdHeader) await QuickCategory.findByIdAndDelete(createdHeader._id);
-      if (createdLevel2) await QuickCategory.findByIdAndDelete(createdLevel2._id);
-      throw error;
-    }
-  } catch (error) {
-    console.error('Error in createCategoryHierarchy:', error);
-    return res.status(500).json({ success: false, message: 'Failed to create category hierarchy' });
-  }
-};
 
 export const updateCategory = async (req, res) => {
   const category = await QuickCategory.findById(req.params.categoryId);
@@ -641,10 +664,58 @@ export const updateCategory = async (req, res) => {
     approvalStatus,
     parentId,
     iconId,
-    adminCommission,
-    handlingFees,
     headerColor,
   } = req.body || {};
+
+  // Re-validate the hierarchy against the merged (existing + incoming) values so an
+  // edit can never leave a category orphaned, mis-nested, or without its icon/image.
+  const nextType = type !== undefined ? (type || 'header') : (category.type || 'header');
+  const nextParentId =
+    parentId !== undefined
+      ? (mongoose.isValidObjectId(parentId) ? String(parentId) : null)
+      : (category.parentId ? String(category.parentId) : null);
+
+  if (nextParentId && nextParentId === String(category._id)) {
+    return res.status(400).json({ success: false, message: 'A category cannot be its own parent.' });
+  }
+  if (nextParentId) {
+    const branchIds = await collectCategoryBranchIds(category._id);
+    if (branchIds.includes(nextParentId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'A category cannot be moved under one of its own subcategories.',
+      });
+    }
+  }
+
+  const hierarchyError = await validateCategoryHierarchy({
+    type: nextType,
+    parentId: nextParentId,
+    iconId: iconId !== undefined ? iconId : category.iconId,
+    image: image || category.image,
+  });
+  if (hierarchyError) {
+    return res.status(400).json({ success: false, message: hierarchyError });
+  }
+
+  // --- Activation rules -----------------------------------------------------
+  // A category may only go live when its whole parent chain is live. Turning one
+  // off, or moving it under a live parent, cascades down the branch afterwards.
+  const wasActive = category.status !== 'inactive' && category.isActive !== false;
+  const nextStatus = status !== undefined ? status : (wasActive ? 'active' : 'inactive');
+  const willBeActive = nextStatus === 'active';
+  const parentChanged = String(category.parentId || '') !== String(nextParentId || '');
+
+  // Resolved once and reused: it both blocks an explicit activation and decides
+  // whether a move is allowed to bring the branch back online.
+  const blockingAncestor = await findInactiveAncestor(nextParentId);
+
+  if (willBeActive && blockingAncestor) {
+    return res.status(400).json({
+      success: false,
+      message: `"${blockingAncestor.name}" is inactive, so this category cannot go live. Activate "${blockingAncestor.name}" first, or move this one under an active category.`,
+    });
+  }
 
   if (name !== undefined) category.name = name;
   if (slug !== undefined) category.slug = slugify(slug || name || category.name);
@@ -664,29 +735,129 @@ export const updateCategory = async (req, res) => {
   if (sortOrder !== undefined) category.sortOrder = parseNumber(sortOrder, 0);
   if (parentId !== undefined) category.parentId = mongoose.isValidObjectId(parentId) ? parentId : null;
   if (iconId !== undefined) category.iconId = iconId || '';
-  if (adminCommission !== undefined) category.adminCommission = parseNumber(adminCommission, 0);
-  if (handlingFees !== undefined) category.handlingFees = parseNumber(handlingFees, 0);
 
-  await category.save();
-  return res.json({ success: true, result: toCategory(category) });
-};
-
-export const removeCategory = async (req, res) => {
-  const categoryId = req.params.categoryId;
-  const childCount = await QuickCategory.countDocuments({ parentId: categoryId });
-  const productCount = await QuickProduct.countDocuments({
-    $or: [{ categoryId }, { subcategoryId: categoryId }, { headerId: categoryId }],
-  });
-
-  if (childCount > 0 || productCount > 0) {
-    return res.status(400).json({
-      success: false,
-      message: 'Category has linked children or products. Remove dependencies first.',
-    });
+  // Re-linking a switched-off category under a live parent brings it back by
+  // itself — that is how an unlinked branch is recovered after its parent was
+  // deleted. An explicit status in the request always wins over this.
+  const reactivatedByMove =
+    parentChanged && !wasActive && status === undefined && !!nextParentId && !blockingAncestor;
+  if (reactivatedByMove) {
+    category.status = 'active';
+    category.isActive = true;
   }
 
-  await QuickCategory.findByIdAndDelete(categoryId);
-  return res.json({ success: true, result: { deleted: true } });
+  await category.save();
+
+  // Cascade the resulting state down the branch: switching a parent off takes its
+  // children and their products with it, and switching it back on restores them.
+  const isNowActive = category.status !== 'inactive' && category.isActive !== false;
+  let cascade = null;
+  if (isNowActive !== wasActive) {
+    cascade = await setBranchActiveState(category._id, isNowActive);
+  }
+
+  return res.json({
+    success: true,
+    result: toCategory(category),
+    cascade: cascade
+      ? {
+          activated: isNowActive,
+          categoryCount: cascade.categoryCount,
+          productCount: cascade.productCount,
+        }
+      : null,
+  });
+};
+
+/**
+ * Preview what a delete would remove, so the admin UI can show an accurate
+ * confirmation before anything is destroyed.
+ */
+export const getCategoryDeleteImpact = async (req, res) => {
+  const { categoryId } = req.params;
+  if (!mongoose.isValidObjectId(categoryId)) {
+    return res.status(400).json({ success: false, message: 'Invalid category id' });
+  }
+
+  const category = await QuickCategory.findById(categoryId).select('name type').lean();
+  if (!category) {
+    return res.status(404).json({ success: false, message: 'Category not found' });
+  }
+
+  const branchIds = await collectCategoryBranchIds(categoryId);
+  const descendantIds = branchIds.slice(1);
+
+  const [descendants, productCount] = await Promise.all([
+    descendantIds.length
+      ? QuickCategory.find({ _id: { $in: descendantIds } }).select('name type').lean()
+      : [],
+    QuickProduct.countDocuments(branchProductFilter(branchIds)),
+  ]);
+
+  return res.json({
+    success: true,
+    result: {
+      category: { id: category._id, name: category.name, type: category.type || 'header' },
+      mainCategoryCount: descendants.filter((item) => (item.type || '') === 'category').length,
+      subcategoryCount: descendants.filter((item) => (item.type || '') === 'subcategory').length,
+      totalCategoryCount: branchIds.length,
+      productCount,
+    },
+  });
+};
+
+/**
+ * Removes a single category and switches off everything that depended on it.
+ *
+ * Only the target category is destroyed. Its children survive as *unlinked*
+ * (parentId cleared) and switched off, and everything deeper stays attached to
+ * them but is switched off too — so the admin can re-link a branch under another
+ * parent later and bring it, and its products, straight back.
+ */
+export const removeCategory = async (req, res) => {
+  const { categoryId } = req.params;
+  if (!mongoose.isValidObjectId(categoryId)) {
+    return res.status(400).json({ success: false, message: 'Invalid category id' });
+  }
+
+  const category = await QuickCategory.findById(categoryId).select('_id name type').lean();
+  if (!category) {
+    return res.status(404).json({ success: false, message: 'Category not found' });
+  }
+
+  const branchIds = await collectCategoryBranchIds(categoryId);
+  const descendantIds = branchIds.slice(1);
+
+  // Both flags are written because the storefront treats a missing flag as visible.
+  const deactivatedProducts = await QuickProduct.updateMany(
+    branchProductFilter(branchIds),
+    { $set: { status: 'inactive', isActive: false } },
+  );
+
+  let deactivatedCategories = 0;
+  if (descendantIds.length) {
+    const result = await QuickCategory.updateMany(
+      { _id: { $in: descendantIds } },
+      { $set: { status: 'inactive', isActive: false } },
+    );
+    deactivatedCategories = result.modifiedCount || 0;
+
+    // Direct children lose their parent link so the admin can spot them as
+    // "unlinked" and move them under a different parent.
+    await QuickCategory.updateMany({ parentId: categoryId }, { $set: { parentId: null } });
+  }
+
+  await QuickCategory.deleteOne({ _id: categoryId });
+
+  return res.json({
+    success: true,
+    result: {
+      deleted: true,
+      deletedCategoryCount: 1,
+      deactivatedCategoryCount: deactivatedCategories,
+      deactivatedProductCount: deactivatedProducts.modifiedCount || 0,
+    },
+  });
 };
 
 export const getAdminProducts = async (req, res) => {
@@ -826,6 +997,11 @@ export const updateProduct = async (req, res) => {
   const images = await getProductImages(req);
   const body = req.body || {};
 
+  // Remembered before the assignments below so we can tell whether the product
+  // was actually moved to a different category.
+  const originalCategoryId = product.categoryId ? String(product.categoryId) : '';
+  const originalSubcategoryId = product.subcategoryId ? String(product.subcategoryId) : '';
+
   if (body.name !== undefined) product.name = body.name;
   if (body.slug !== undefined || body.name !== undefined) {
     product.slug = slugify(body.slug || body.name || product.name);
@@ -869,6 +1045,38 @@ export const updateProduct = async (req, res) => {
   }
   if (Array.isArray(images.galleryImages) && images.galleryImages.length > 0) {
     product.galleryImages = images.galleryImages;
+  }
+
+  // Older products were stored without an mrp, which the schema now requires.
+  // Backfilling from the price keeps those records saveable instead of failing
+  // validation on every edit.
+  if (product.mrp === undefined || product.mrp === null) {
+    product.mrp = parseNumber(product.price, 0);
+  }
+
+  // Moving a switched-off product into a live category brings it back — this is
+  // how products recover after the category they belonged to was deleted or
+  // switched off. An explicit status in the request still wins.
+  const categoryChanged =
+    (body.categoryId && String(body.categoryId) !== String(originalCategoryId || '')) ||
+    (body.subcategoryId !== undefined &&
+      String(body.subcategoryId || '') !== String(originalSubcategoryId || ''));
+
+  if (categoryChanged && body.status === undefined && product.isActive === false) {
+    const targetCategoryId = product.subcategoryId || product.categoryId;
+    const targetCategory = targetCategoryId
+      ? await QuickCategory.findById(targetCategoryId).select('_id status isActive parentId').lean()
+      : null;
+    const targetIsLive =
+      targetCategory &&
+      targetCategory.status !== 'inactive' &&
+      targetCategory.isActive !== false &&
+      !(await findInactiveAncestor(targetCategory.parentId));
+
+    if (targetIsLive) {
+      product.status = 'active';
+      product.isActive = true;
+    }
   }
 
   await product.save();
@@ -1603,6 +1811,8 @@ export const rejectAdminSellerRequest = async (req, res) => {
   seller.approvedAt = null;
   seller.rejectedAt = new Date();
   seller.approvalNotes = reason;
+  seller.previousRejectionNotes = reason;
+  seller.isReapplied = false;
   await seller.save();
 
   await upsertSellerNotification(seller._id, {
@@ -1790,74 +2000,6 @@ export const deleteAdminZone = async (req, res) => {
   return res.json({ success: true, data: { id: req.params.zoneId } });
 };
 
-export const getAdminExperienceSections = async (req, res) => {
-  const { pageType = 'home', headerId = null } = req.query || {};
-  const sections = await getQuickExperienceSections({ pageType, headerId });
-  return res.json({ success: true, results: sections });
-};
-
-export const createAdminExperienceSection = async (req, res) => {
-  const section = await createQuickExperienceSection(req.body);
-  return res.status(201).json({ success: true, result: section });
-};
-
-export const updateAdminExperienceSection = async (req, res) => {
-  const section = await updateQuickExperienceSection(req.params.id, req.body);
-  if (!section) {
-    return res.status(404).json({ success: false, message: 'Section not found' });
-  }
-  return res.json({ success: true, result: section });
-};
-
-export const deleteAdminExperienceSection = async (req, res) => {
-  await deleteQuickExperienceSection(req.params.id);
-  return res.json({ success: true, result: { deleted: true } });
-};
-
-export const reorderAdminExperienceSections = async (req, res) => {
-  await reorderQuickExperienceSections(req.body);
-  return res.json({ success: true, result: { reordered: true } });
-};
-
-export const getAdminHeroConfig = async (req, res) => {
-  const { pageType = 'home', headerId = null } = req.query || {};
-  const config = await getQuickHeroConfig({ pageType, headerId });
-  return res.json({ success: true, result: config || { banners: { items: [] }, categoryIds: [] } });
-};
-
-export const setAdminHeroConfig = async (req, res) => {
-  const config = await setQuickHeroConfig(req.body);
-  return res.json({ success: true, result: config });
-};
-
-export const getAdminOfferSections = async (req, res) => {
-  const sections = await getQuickOfferSections(req.query);
-  return res.json({ success: true, results: sections });
-};
-
-export const createAdminOfferSection = async (req, res) => {
-  const section = await createQuickOfferSection(req.body);
-  return res.status(201).json({ success: true, result: section });
-};
-
-export const updateAdminOfferSection = async (req, res) => {
-  const section = await updateQuickOfferSection(req.params.id, req.body);
-  if (!section) {
-    return res.status(404).json({ success: false, message: 'Section not found' });
-  }
-  return res.json({ success: true, result: section });
-};
-
-export const deleteAdminOfferSection = async (req, res) => {
-  await deleteQuickOfferSection(req.params.id);
-  return res.json({ success: true, result: { deleted: true } });
-};
-
-export const reorderAdminOfferSections = async (req, res) => {
-  await reorderQuickOfferSections(req.body);
-  return res.json({ success: true, result: { reordered: true } });
-};
-
 export const getAdminFinanceSummary = async (_req, res) => {
   const result = await getQuickCommerceFinanceSummary();
   return res.json({ success: true, result });
@@ -1999,3 +2141,89 @@ export const deleteAdminCoupon = async (req, res) => {
     return res.status(400).json({ success: false, message: error.message || 'Failed to delete coupon' });
   }
 };
+
+// ==========================================
+// Banner Management (Marketing Tools)
+// ==========================================
+
+export const getAdminBannersController = async (req, res) => {
+  try {
+    const data = await getBannersService(req.query);
+    return res.json({ success: true, ...data });
+  } catch (error) {
+    console.error('[getAdminBannersController] Error:', error.message);
+    return res.status(500).json({ success: false, message: error.message || 'Failed to fetch banners' });
+  }
+};
+
+export const getAdminBannerByIdController = async (req, res) => {
+  try {
+    const banner = await getBannerByIdService(req.params.id);
+    if (!banner) return res.status(404).json({ success: false, message: 'Banner not found' });
+    return res.json({ success: true, result: banner });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || 'Failed to fetch banner' });
+  }
+};
+
+export const createAdminBannerController = async (req, res) => {
+  try {
+    const image = await getBannerImage(req);
+    if (!image) {
+      return res.status(400).json({ success: false, message: 'Banner image is required' });
+    }
+
+    const payload = {
+      ...req.body,
+      image,
+    };
+
+    if (!payload.title || !payload.title.trim()) {
+      return res.status(400).json({ success: false, message: 'Banner title is required' });
+    }
+
+    const banner = await createBannerService(payload);
+    return res.status(201).json({ success: true, result: banner });
+  } catch (error) {
+    console.error('[createAdminBannerController] Error:', error.message);
+    return res.status(400).json({ success: false, message: error.message || 'Failed to create banner' });
+  }
+};
+
+export const updateAdminBannerController = async (req, res) => {
+  try {
+    const payload = { ...req.body };
+
+    if (req.file?.buffer) {
+      payload.image = await uploadImageBuffer(req.file.buffer, 'quick-commerce/banners');
+    }
+
+    const banner = await updateBannerService(req.params.id, payload);
+    if (!banner) return res.status(404).json({ success: false, message: 'Banner not found' });
+    return res.json({ success: true, result: banner });
+  } catch (error) {
+    console.error('[updateAdminBannerController] Error:', error.message);
+    return res.status(400).json({ success: false, message: error.message || 'Failed to update banner' });
+  }
+};
+
+export const toggleAdminBannerStatusController = async (req, res) => {
+  try {
+    const banner = await toggleBannerStatusService(req.params.id);
+    if (!banner) return res.status(404).json({ success: false, message: 'Banner not found' });
+    return res.json({ success: true, result: banner });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || 'Failed to toggle banner status' });
+  }
+};
+
+export const deleteAdminBannerController = async (req, res) => {
+  try {
+    const deleted = await deleteBannerService(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Banner not found' });
+    return res.json({ success: true, message: 'Banner deleted successfully' });
+  } catch (error) {
+    return res.status(400).json({ success: false, message: error.message || 'Failed to delete banner' });
+  }
+};
+

@@ -8,7 +8,7 @@ import { ShieldAlert } from "lucide-react"
 import { getCurrentUser } from "@food/utils/auth"
 import { useMemo } from "react"
 import { useAuth } from "@core/context/AuthContext"
-import { canAccessAdminPath, extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions, getAdminModuleConfig, getFirstAccessibleAdminPath } from "@food/utils/adminPermissions"
+import { canAccessAdminPath, extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions, getAdminModuleConfig, getFirstAccessibleAdminPath, isSuperAdminUser } from "@food/utils/adminPermissions"
 import { adminSidebarMenu } from "@food/utils/adminSidebarMenu"
 import { quickAdminSidebarMenu } from "@food/utils/quickAdminSidebarMenu"
 import { commonAdminSidebarMenu } from "@food/utils/commonAdminSidebarMenu"
@@ -30,7 +30,7 @@ export default function AdminLayout() {
     let isMounted = true;
 
     const resolvePermissions = async () => {
-      if (!user || user.role === "ADMIN") {
+      if (!user || isSuperAdminUser(user)) {
         if (isMounted) setResolvedPermissions({});
         return;
       }
@@ -62,7 +62,7 @@ export default function AdminLayout() {
   }, [user]);
 
   useEffect(() => {
-    if (!user || user.role === "ADMIN") {
+    if (!user || isSuperAdminUser(user)) {
       setHasAccess(true);
       return;
     }
@@ -72,7 +72,7 @@ export default function AdminLayout() {
   }, [location.pathname, resolvedPermissions, user]);
 
   useEffect(() => {
-    if (!user || user.role === "ADMIN") return;
+    if (!user || isSuperAdminUser(user)) return;
     if (hasAccess) return;
 
     const { rootKey } = getAdminModuleConfig(location.pathname);

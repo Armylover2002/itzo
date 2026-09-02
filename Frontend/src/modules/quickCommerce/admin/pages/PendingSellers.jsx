@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import { adminApi } from '../services/adminApi';
+import { formatOpeningHoursAMPM } from "@shared/utils/timeFormat";
 import { cn } from '@/lib/utils';
 import { useAuth } from "@core/context/AuthContext";
 import { getCurrentUser } from "@food/utils/auth";
@@ -128,8 +129,11 @@ const PendingSellers = () => {
       result = result.filter(seller => {
         const isRejected = seller.approvalStatus === 'rejected';
         const isProfileUpdate = seller.hasPendingProfileUpdate === true;
-        const isReapplied = seller.approvalStatus === 'pending' && seller.approvalNotes;
-        const isFresh = seller.approvalStatus === 'pending' && !seller.approvalNotes;
+        const isReapplied =
+          seller.isReapplied === true ||
+          Boolean(seller.reappliedAt) ||
+          (seller.approvalStatus === 'pending' && Boolean(seller.previousRejectionNotes || seller.approvalNotes || seller.rejectedAt));
+        const isFresh = seller.approvalStatus === 'pending' && !isReapplied && !isProfileUpdate;
 
         if (statusFilter === 'Profile Update') return isProfileUpdate;
         if (statusFilter === 'Pending') return isFresh;
@@ -221,7 +225,7 @@ const PendingSellers = () => {
         <button
           type="button"
           onClick={() => loadPendingSellers(searchTerm)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
+          className="inline-flex items-center gap-2 rounded-2xl bg-[#6412C6] hover:bg-[#520da8] px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white transition-colors shadow-sm"
         >
           <HiOutlineArrowPath className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           Refresh Queue
@@ -328,7 +332,7 @@ const PendingSellers = () => {
                         <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-purple-50 text-purple-600 uppercase tracking-widest">Profile Update</span>
                       ) : seller.approvalStatus === 'rejected' ? (
                         <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-rose-50 text-rose-600 uppercase tracking-widest">Rejected</span>
-                      ) : seller.approvalNotes ? (
+                      ) : (seller.isReapplied || seller.reappliedAt || seller.previousRejectionNotes || (seller.approvalStatus === 'pending' && (seller.approvalNotes || seller.rejectedAt))) ? (
                         <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-amber-50 text-amber-600 uppercase tracking-widest">Re-applied</span>
                       ) : (
                         <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-blue-50 text-blue-600 uppercase tracking-widest">Pending</span>
@@ -351,7 +355,7 @@ const PendingSellers = () => {
                           title="View application"
                           aria-label={`View ${seller.shopName || 'seller'} application`}
                           onClick={() => { setViewingSeller(seller); setIsReviewModalOpen(true); }}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition hover:bg-red-50 hover:text-red-600 hover:ring-red-100"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition hover:bg-purple-50 hover:text-[#6412C6] hover:ring-purple-200"
                         >
                           <HiOutlineEye className="h-5 w-5" />
                         </button>
@@ -424,9 +428,11 @@ const PendingSellers = () => {
                     <div className="mt-8 space-y-6">
                       <div>
                         <h3 className="text-2xl font-black text-slate-900 leading-tight">{viewingSeller.shopName}</h3>
-                        <p className="mt-2 text-[11px] font-black uppercase tracking-[0.28em] text-primary">
+                        <p className="mt-2 text-[11px] font-black uppercase tracking-[0.28em] text-[#6412C6]">
                           {viewingSeller.hasPendingProfileUpdate
                             ? "Existing approved seller • Profile update"
+                            : (viewingSeller.isReapplied || viewingSeller.previousRejectionNotes || viewingSeller.reappliedAt || (viewingSeller.approvalStatus === 'pending' && viewingSeller.rejectedAt))
+                            ? "Re-applied seller request"
                             : `${viewingSeller.category || "General"} seller request`}
                         </p>
                       </div>
@@ -446,9 +452,25 @@ const PendingSellers = () => {
                         <p className="mt-2 text-sm font-medium text-slate-500">
                           {viewingSeller.hasPendingProfileUpdate
                             ? 'Review proposed profile changes against the currently approved seller details.'
+                            : (viewingSeller.isReapplied || viewingSeller.previousRejectionNotes || viewingSeller.reappliedAt || (viewingSeller.approvalStatus === 'pending' && viewingSeller.rejectedAt))
+                            ? 'Review re-submitted application details after previous rejection.'
                             : 'Review the submitted business, banking, and compliance details before approval.'}
                         </p>
                       </div>
+
+                      {(viewingSeller.isReapplied || viewingSeller.previousRejectionNotes || (viewingSeller.approvalStatus === 'pending' && viewingSeller.rejectedAt)) && (
+                        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4">
+                          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-700">Re-applied Application</p>
+                          <p className="mt-1 text-xs font-semibold text-amber-950">
+                            This seller updated and re-submitted their onboarding form after a previous rejection.
+                          </p>
+                          {viewingSeller.previousRejectionNotes && (
+                            <p className="mt-2 text-xs text-amber-800 bg-white/70 p-2.5 rounded-xl border border-amber-200">
+                              <span className="font-bold text-amber-900">Previous rejection reason:</span> {viewingSeller.previousRejectionNotes}
+                            </p>
+                          )}
+                        </div>
+                      )}
 
                       {viewingSeller.hasPendingProfileUpdate && viewingSeller.pendingProfileChanges?.proposed && (
                         <div className="rounded-2xl border border-purple-100 bg-purple-50/60 p-4">
@@ -500,14 +522,14 @@ const PendingSellers = () => {
                       <div className="space-y-6">
                         {/* Store Identity */}
                         <div>
-                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-primary mb-3">Store Identity</h5>
+                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-[#6412C6] mb-3">Store Identity</h5>
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
                               ['Owner name', viewingSeller.ownerName],
                               ['Business type', viewingSeller.shopInfo?.businessType],
                               ['Alternate phone', viewingSeller.shopInfo?.alternatePhone],
                               ['Support email', viewingSeller.shopInfo?.supportEmail],
-                              ['Opening hours', viewingSeller.shopInfo?.openingHours || viewingSeller.openingHours || 'Not set'],
+                              ['Opening hours', formatOpeningHoursAMPM(viewingSeller.shopInfo?.openingHours || viewingSeller.openingHours) || 'Not set'],
                               ['Service zone', viewingSeller.shopInfo?.zoneName],
                               ['Address', viewingSeller.location],
                             ].map(([label, value]) => (
@@ -521,7 +543,7 @@ const PendingSellers = () => {
 
                         {/* Banking & UPI */}
                         <div>
-                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-primary mb-3">Banking & UPI</h5>
+                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-[#6412C6] mb-3">Banking & UPI</h5>
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
                               ['Bank name', viewingSeller.bankInfo?.bankName],
@@ -541,7 +563,7 @@ const PendingSellers = () => {
 
                         {/* Compliance */}
                         <div>
-                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-primary mb-3">Compliance & Licenses</h5>
+                          <h5 className="text-xs font-black uppercase tracking-[0.22em] text-[#6412C6] mb-3">Compliance & Licenses</h5>
                           <div className="grid gap-3 md:grid-cols-2">
                             {[
                               ['PAN number', viewingSeller.documents?.panNumber],
@@ -670,7 +692,7 @@ const PendingSellers = () => {
                           <button type="button" disabled={isProcessing} onClick={() => openRejectModal(viewingSeller._id)} className="flex-1 rounded-2xl bg-slate-100 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-60">
                             <span className="inline-flex items-center gap-2"><HiOutlineXCircle className="h-4 w-4" />Reject request</span>
                           </button>
-                          <button type="button" disabled={isProcessing} onClick={() => openApproveModal(viewingSeller._id)} className="flex-[1.35] rounded-2xl bg-red-600 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-black disabled:opacity-60">
+                          <button type="button" disabled={isProcessing} onClick={() => openApproveModal(viewingSeller._id)} className="flex-[1.35] rounded-2xl bg-[#6412C6] hover:bg-[#520da8] py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white transition-all shadow-md shadow-[#6412C6]/20 disabled:opacity-60">
                             <span className="inline-flex items-center gap-2 justify-center">{isProcessing ? <HiOutlineArrowPath className="h-4 w-4 animate-spin" /> : <HiOutlineCheckCircle className="h-4 w-4" />}Approve seller</span>
                           </button>
                         </div>

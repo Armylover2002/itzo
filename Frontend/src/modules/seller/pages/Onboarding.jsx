@@ -476,11 +476,17 @@ export default function SellerOnboarding() {
           ),
         );
 
+        if (data?.approvalStatus === "approved" || data?.approved === true) {
+          navigate("/seller", { replace: true });
+          return;
+        }
+
         if (sessionStorage.getItem("sellerReonboard") === "true" || data?.approvalStatus === "rejected") {
-          setRejectionReason(data.approvalNotes || data.rejectionReason || "Your previous application was rejected. Please update your details.");
+          setRejectionReason(data?.approvalNotes || data?.rejectionReason || "Your previous application was rejected. Please update your details.");
           setIsReonboardBypass(true);
-        } else if (data?.approvalStatus === "pending" || data?.approvalStatus === "approved" || data?.onboardingSubmitted) {
-          setIsReonboardBypass(true);
+        } else if (data?.approvalStatus === "pending" || data?.onboardingSubmitted) {
+          navigate("/seller/pending", { replace: true });
+          return;
         }
       } catch (error) {
         toast.error("Failed to load seller profile details");
@@ -490,7 +496,7 @@ export default function SellerOnboarding() {
     };
 
     loadProfile();
-  }, [navigate, user]);
+  }, [navigate]);
 
   useEffect(() => {
     let isMounted = true;
@@ -1025,7 +1031,9 @@ export default function SellerOnboarding() {
       clearSellerOnboardingDraft();
       sessionStorage.removeItem("sellerReonboard");
       toast.success("Application submitted successfully!");
-      if (refreshUser) refreshUser();
+      if (refreshUser) {
+        await refreshUser({ forceRefresh: true }).catch(() => {});
+      }
       navigate("/seller/pending", { replace: true });
     } catch (error) {
       toast.error(error?.response?.data?.message || error?.message || "Failed to submit application");
@@ -1717,7 +1725,7 @@ export default function SellerOnboarding() {
                 <button
                   type="submit"
                   disabled={isSubmitting || Boolean(uploadingImageKey)}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-8 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70 shadow-lg shadow-emerald-600/20 active:scale-[0.99]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#e71d28] px-8 text-sm font-bold text-white transition hover:bg-[#c41922] disabled:cursor-not-allowed disabled:opacity-70 shadow-lg shadow-[#e71d28]/20 active:scale-[0.99]"
                 >
                   {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                   {isSubmitting ? "Submitting Application..." : "Submit Application"}

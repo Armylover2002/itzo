@@ -11,8 +11,6 @@ const quickCategorySchema = new mongoose.Schema({
   approvedAt: { type: Date, default: null },
   parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'quick_category', default: null, index: true },
   iconId: { type: String, default: '' },
-  adminCommission: { type: Number, default: 0 },
-  handlingFees: { type: Number, default: 0 },
   headerColor: { type: String, default: '#0c831f' },
   accentColor: { type: String, default: '#0c831f' },
   sortOrder: { type: Number, default: 0 },

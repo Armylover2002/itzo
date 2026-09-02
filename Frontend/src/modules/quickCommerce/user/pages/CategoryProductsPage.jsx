@@ -9,10 +9,8 @@ import { cn } from '@/lib/utils';
 
 import ProductCard from '../components/shared/ProductCard';
 import ProductDetailSheet from '../components/shared/ProductDetailSheet';
-import { useProductDetail } from '../context/ProductDetailContext';
 import { customerApi } from '../services/customerApi';
 import MiniCart from '../components/shared/MiniCart';
-import SectionRenderer from "../components/experience/SectionRenderer";
 import { resolveQuickImageUrl } from '../utils/image';
 import { useLocation as useAppLocation } from '../context/LocationContext';
 
@@ -56,11 +54,6 @@ const CategoryProductsPage = () => {
         }
     }, []);
 
-    const [experienceSections, setExperienceSections] = useState([]);
-    const [heroConfig, setHeroConfig] = useState(null);
-    const [categoryMap, setCategoryMap] = useState({});
-    const [subcategoryMap, setSubcategoryMap] = useState({});
-
     const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -68,7 +61,7 @@ const CategoryProductsPage = () => {
                 Number.isFinite(currentLocation?.latitude) &&
                 Number.isFinite(currentLocation?.longitude);
 
-            const [prodRes, catRes, expRes, heroRes] = await Promise.all([
+            const [prodRes, catRes] = await Promise.all([
                 hasValidLocation
                     ? customerApi.getProducts({
                         categoryId: catId,
@@ -76,12 +69,10 @@ const CategoryProductsPage = () => {
                         lng: currentLocation.longitude,
                     })
                     : Promise.resolve({ data: { success: true, result: { items: [] } } }),
-                customerApi.getCategories({ tree: true }),
-                customerApi.getExperienceSections({ pageType: 'header', headerId: catId }).catch(() => null),
-                customerApi.getHeroConfig({ pageType: 'header', headerId: catId }).catch(() => null)
+                customerApi.getCategories({ tree: true })
             ]);
 
-            if (prodRes.data.success) {
+            if (prodRes.data?.success) {
                 const rawResult = prodRes.data.result;
                 const dbProds = Array.isArray(prodRes.data.results)
                     ? prodRes.data.results
@@ -103,26 +94,19 @@ const CategoryProductsPage = () => {
                 setProducts(Array.isArray(formattedProds) ? formattedProds : []);
             }
 
-            if (catRes.data.success) {
+            if (catRes.data?.success) {
                 const results = catRes.data.results || catRes.data.result || [];
                 const allCats = Array.isArray(results) ? results : [];
 
-                // Build maps for SectionRenderer
-                const cMap = {};
-                const sMap = {};
                 const fullMap = {};
                 
                 const flatten = (items) => {
                     items.forEach(item => {
                         fullMap[item._id] = item;
-                        if (item.type === 'category') cMap[item._id] = item;
-                        else if (item.type === 'subcategory') sMap[item._id] = item;
                         if (item.children && item.children.length > 0) flatten(item.children);
                     });
                 };
                 flatten(allCats);
-                setCategoryMap(cMap);
-                setSubcategoryMap(sMap);
 
                 // Find the current category in the flattened map
                 let currentCat = fullMap[catId];
@@ -159,13 +143,6 @@ const CategoryProductsPage = () => {
                         setSelectedSubCategory(currentCat._id);
                     }
                 }
-            }
-
-            if (expRes?.data?.success) {
-                setExperienceSections(expRes.data.result || expRes.data.results || []);
-            }
-            if (heroRes?.data?.success) {
-                setHeroConfig(heroRes.data.result);
             }
         } catch (error) {
             console.error("Error fetching category data:", error);
@@ -255,19 +232,6 @@ const CategoryProductsPage = () => {
 
                     {/* Content */}
                     <main className="flex-1 px-3 pt-1 pb-24 bg-white dark:bg-background transition-colors">
-                        {selectedSubCategory === 'all' && experienceSections.filter(s => (s.title || '').trim().toLowerCase() !== 'best sellers').length > 0 && (
-                            <div className="mb-4">
-                                <SectionRenderer
-                                    sections={experienceSections.filter(s => 
-                                        (s.title || '').trim().toLowerCase() !== 'best sellers'
-                                    )}
-                                    productsById={productsById}
-                                    categoriesById={categoryMap}
-                                    subcategoriesById={subcategoryMap}
-                                />
-                            </div>
-                        )}
-
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-2 gap-y-4 md:gap-4 lg:gap-6">
                             {filteredProducts.map((product) => (
                                 <ProductCard key={product.id} product={product} compact={true} />

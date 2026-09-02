@@ -82,7 +82,7 @@ import {
 import { adminAPI } from "@food/api"
 import { getCurrentUser } from "@food/utils/auth"
 import { useAuth } from "@core/context/AuthContext"
-import { extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions, getFirstAccessibleAdminPath, hasAnyRootAccess } from "@food/utils/adminPermissions"
+import { extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions, getFirstAccessibleAdminPath, hasAnyRootAccess, isSuperAdminUser } from "@food/utils/adminPermissions"
 
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -363,7 +363,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     let isMounted = true
 
     const resolvePermissions = async () => {
-      if (!user || user.role === "ADMIN") {
+      if (!user || isSuperAdminUser(user)) {
         if (isMounted) setResolvedPermissions({})
         return
       }
@@ -412,14 +412,18 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     if (!isQuickAdmin && !isCommonAdmin && !enabledModules.food) return []
 
     // Filter by permissions if employee
-    if (user && user.role !== "ADMIN") {
+    if (user && !isSuperAdminUser(user)) {
       const permissions = resolvedPermissions;
       const filterMenuByPermissions = (menuList, parentKey) => {
         return menuList
           .map((item) => {
             if (!item.permissionKey) return null;
             const currentKey = `${parentKey}::${item.permissionKey}`;
-            const hasView = permissions[currentKey]?.view === true;
+            const hasView =
+              permissions[currentKey]?.view === true ||
+              (item.type !== "section" &&
+                item.type !== "expandable" &&
+                permissions[parentKey]?.view === true);
 
             if (item.type === "link" && item.permissionKey === "dashboard" && (parentKey === "food" || parentKey === "quick")) {
               return null;

@@ -384,6 +384,10 @@ const serializeSellerProfile = (seller) => ({
     (seller.approved === false ? "pending" : "approved"),
   onboardingSubmitted: seller.onboardingSubmitted === true,
   approvalNotes: seller.approvalNotes || "",
+  previousRejectionNotes: seller.previousRejectionNotes || seller.approvalNotes || "",
+  isReapplied: seller.isReapplied === true || Boolean(seller.reappliedAt) || (seller.approvalStatus === "pending" && Boolean(seller.previousRejectionNotes || seller.rejectedAt)),
+  reappliedAt: seller.reappliedAt || null,
+  reapplicationCount: seller.reapplicationCount || 0,
   approvedAt: seller.approvedAt || null,
   rejectedAt: seller.rejectedAt || null,
   location: seller.location || null,
@@ -1590,12 +1594,26 @@ export const updateSellerProfileData = async (seller, req) => {
     }
 
     if (submitForApproval) {
+      const wasRejectedBefore =
+        seller.approvalStatus === "rejected" ||
+        Boolean(seller.rejectedAt) ||
+        Boolean(seller.previousRejectionNotes) ||
+        seller.isReapplied === true;
+
+      if (wasRejectedBefore) {
+        seller.isReapplied = true;
+        seller.reappliedAt = new Date();
+        seller.reapplicationCount = (seller.reapplicationCount || 0) + 1;
+        if (seller.approvalNotes) {
+          seller.previousRejectionNotes = seller.approvalNotes;
+        }
+      }
+
       seller.onboardingSubmitted = true;
       seller.approved = false;
       seller.approvalStatus = "pending";
       seller.approvalNotes = "";
       seller.approvedAt = null;
-      seller.rejectedAt = null;
 
       try {
         const { notifyAdminsSafely } = await import(

@@ -49,12 +49,13 @@ const ACTION_MAPPING = {
   'seller_payments': ["view"],
   'billing': ["view", "edit"],
   'profile': ["view", "edit"],
-  'experience_studio': ["view", "edit"],
   'notifications': ["view", "create"],
   'moderation': ["view", "edit", "delete"],
   'processed': ["view", "edit"],
   'returned': ["view", "edit"],
   'locations': ["view"],
+  'banners': ["view", "create", "edit", "delete"],
+  'coupons': ["view", "create", "edit", "delete"],
 };
 
 export function generatePermissionTree(enabledModules = null) {

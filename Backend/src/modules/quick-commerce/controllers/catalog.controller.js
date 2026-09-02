@@ -9,12 +9,9 @@ import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import {
   getQuickCategories,
   getQuickCoupons,
-  getQuickExperienceSections,
-  getQuickHeroConfig,
-  getQuickOfferSections,
-  getQuickOffers,
   getQuickSettings,
 } from '../services/content.service.js';
+import { getPublicQuickBanners } from '../services/banner.service.js';
 
 const setNoCache = (res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -81,8 +78,6 @@ const mapCategory = (category) => ({
   parentId: category.parentId || null,
   iconId: category.iconId || '',
   headerColor: category.headerColor || category.accentColor,
-  handlingFees: Number(category.handlingFees || 0),
-  adminCommission: Number(category.adminCommission || 0),
   color: category.accentColor,
   approvalStatus: category.approvalStatus || 'approved',
 });
@@ -152,70 +147,26 @@ export const getHomeData = async (req, res) => {
   setPublicCache(res, 60); // 1 minute cache
   await ensureQuickCommerceSeedData();
 
-  const pageType = req.query?.pageType || 'home';
-  const headerId = req.query?.headerId || null;
+  const { zoneId, headerId, categoryId, lat, lng } = req.query || {};
 
-  const [categories, products, settings, heroConfig, experienceSections, offerSections] = await Promise.all([
+  const [categories, products, settings, banners] = await Promise.all([
     getQuickCategories(),
     QuickProduct.find(publicProductFilter).sort({ createdAt: -1 }).limit(18).lean(),
     getQuickSettings(),
-    getQuickHeroConfig({ pageType, headerId }),
-    getQuickExperienceSections({ pageType, headerId }),
-    getQuickOfferSections(),
+    getPublicQuickBanners({
+      zoneId,
+      headerCategoryId: headerId || categoryId,
+      lat,
+      lng,
+    }),
   ]);
   const sellerMap = await buildSellerMap(products);
-
-  const fallbackHero = {
-    title: 'Blinkit style quick delivery',
-    subtitle: 'Groceries delivered in minutes',
-    banners: {
-      items: [
-        {
-          imageUrl: '/assets/ExperienceBanner.png',
-          title: '',
-          subtitle: '',
-          linkType: 'none',
-          linkValue: '',
-          status: 'active',
-        },
-      ],
-    },
-    categoryIds: categories.slice(0, 5).map((category) => String(category._id)),
-  };
-
-  const fallbackSections = [
-    {
-      _id: 'best-sellers-section',
-      title: 'Best Sellers',
-      displayType: 'products',
-      config: {
-        products: {
-          productIds: products.slice(0, 6).map((product) => String(product._id)),
-          rows: 1,
-          columns: 2,
-          singleRowScrollable: true,
-        },
-      },
-    },
-  ];
-
-  const resolvedHero = heroConfig
-    ? {
-        ...heroConfig,
-        banners: heroConfig.banners || { items: [] },
-        categoryIds: Array.isArray(heroConfig.categoryIds) ? heroConfig.categoryIds : [],
-      }
-    : fallbackHero;
-
-  const resolvedSections = experienceSections.length ? experienceSections : fallbackSections;
 
   const homeData = {
     settings: settings || {},
     categories: categories.map(mapCategory),
     bestSellers: products.map((product) => mapProduct(product, sellerMap)),
-    hero: resolvedHero,
-    sections: resolvedSections,
-    offerSections,
+    banners: banners || [],
   };
 
   return res.json({
@@ -224,47 +175,16 @@ export const getHomeData = async (req, res) => {
   });
 };
 
-export const getExperienceOnly = async (req, res) => {
+export const getPublicBanners = async (req, res) => {
   setPublicCache(res, 60);
-  const pageType = req.query?.pageType || 'home';
-  const headerId = req.query?.headerId || null;
-  const sections = await getQuickExperienceSections({ pageType, headerId });
-  const fallbackSections = [
-    {
-      _id: 'best-sellers-section',
-      title: 'Best Sellers',
-      displayType: 'products',
-      config: { products: { productIds: [], rows: 1, columns: 2, singleRowScrollable: true } },
-    },
-  ];
-  return res.json({ success: true, result: sections.length ? sections : fallbackSections });
-};
-
-export const getHeroOnly = async (req, res) => {
-  setPublicCache(res, 60);
-  const pageType = req.query?.pageType || 'home';
-  const headerId = req.query?.headerId || null;
-  const heroConfig = await getQuickHeroConfig({ pageType, headerId });
-  const fallbackHero = {
-    title: 'Blinkit style quick delivery',
-    subtitle: 'Groceries delivered in minutes',
-    banners: { items: [{ imageUrl: '/assets/ExperienceBanner.png', title: '', subtitle: '', linkType: 'none', linkValue: '', status: 'active' }] },
-    categoryIds: [],
-  };
-  const resolvedHero = heroConfig
-    ? {
-        ...heroConfig,
-        banners: heroConfig.banners || { items: [] },
-        categoryIds: Array.isArray(heroConfig.categoryIds) ? heroConfig.categoryIds : [],
-      }
-    : fallbackHero;
-  return res.json({ success: true, result: resolvedHero });
-};
-
-export const getOfferSectionsOnly = async (_req, res) => {
-  setPublicCache(res, 60);
-  const offerSections = await getQuickOfferSections();
-  return res.json({ success: true, results: offerSections || [] });
+  const { zoneId, headerId, categoryId, lat, lng } = req.query || {};
+  const banners = await getPublicQuickBanners({
+    zoneId,
+    headerCategoryId: headerId || categoryId,
+    lat,
+    lng,
+  });
+  return res.json({ success: true, results: banners });
 };
 
 export const getCoupons = async (_req, res) => {
@@ -342,12 +262,6 @@ export const applyCoupon = async (req, res) => {
       discountValue,
     },
   });
-};
-
-export const getOffers = async (_req, res) => {
-  setNoCache(res);
-  const offers = await getQuickOffers();
-  return res.json({ success: true, results: offers });
 };
 
 export const getCategories = async (req, res) => {

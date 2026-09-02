@@ -115,10 +115,8 @@ export const customerApi = {
   },
   submitReview: (data) => axiosInstance.post("/quick-commerce/products/reviews", data, withQuickSession()),
 
-  getExperienceSections: (params) => quickGetWithDedupe("/quick-commerce/experience", params),
-  getHeroConfig: (params) => quickGetWithDedupe("/quick-commerce/experience/hero", params),
-  getOfferSections: (params) => quickGetWithDedupe("/quick-commerce/offer-sections", params),
-  getHomeData: () => quickGetWithDedupe("/quick-commerce/home", {}),
+  getHomeData: (params = {}) => quickGetWithDedupe("/quick-commerce/home", params),
+  getBanners: (params = {}) => quickGetWithDedupe("/quick-commerce/banners/public", params),
 
   getCoupons: () => quickGetWithDedupe("/quick-commerce/coupons", {}),
   getActiveCoupons: () => quickGetWithDedupe("/quick-commerce/coupons", {}),
@@ -165,13 +163,6 @@ export const prefetchQuickHomeBootstrap = async (location = null) => {
     hasValidLocation
       ? customerApi.getProducts(productParams)
       : Promise.resolve(null),
-    customerApi.getExperienceSections({ pageType: "home" }),
-    customerApi.getHeroConfig({ pageType: "home" }),
-    hasValidLocation
-      ? customerApi.getOfferSections({
-          lat: location.latitude,
-          lng: location.longitude,
-        })
-      : Promise.resolve(null),
+    customerApi.getHomeData(),
   ]);
 };

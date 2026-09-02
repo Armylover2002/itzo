@@ -309,8 +309,15 @@ apiClient.interceptors.response.use(
       if (newAccessToken) {
         try {
           localStorage.setItem(`${module}_accessToken`, newAccessToken);
-          
-          // Also sync legacy and global keys for consistency across the app
+
+          // Also sync legacy and global keys for consistency across the app.
+          // auth_${module} in particular is read directly by core/api/axios.js
+          // (used by AuthContext, HRMS admin pages, quick-commerce admin,
+          // etc.) — leaving it stale after a refresh here caused those calls
+          // to keep sending an expired token and force-logout the session.
+          if (module !== "user") {
+            localStorage.setItem(`auth_${module}`, newAccessToken);
+          }
           if (module === "admin") {
             localStorage.setItem("adminToken", newAccessToken);
           } else if (module === "user") {

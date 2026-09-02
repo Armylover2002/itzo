@@ -38,11 +38,20 @@ const productUpload = upload.fields([
   { name: "galleryImages", maxCount: 8 },
 ]);
 export const sellerProfileUpload = upload.fields([
+  { name: "shopImage", maxCount: 1 },
+  { name: "shopPhoto", maxCount: 1 },
+  { name: "logo", maxCount: 1 },
+  { name: "banner", maxCount: 1 },
+  { name: "image", maxCount: 1 },
   { name: "upiQrImage", maxCount: 1 },
+  { name: "upiQrCode", maxCount: 1 },
   { name: "shopLicenseImage", maxCount: 1 },
   { name: "panImage", maxCount: 1 },
   { name: "gstImage", maxCount: 1 },
   { name: "fssaiImage", maxCount: 1 },
+  { name: "aadharImage", maxCount: 1 },
+  { name: "chequeImage", maxCount: 1 },
+  { name: "documentImage", maxCount: 1 },
 ]);
 
 router.post("/auth/request-otp", requestSellerOtpController);

@@ -64,6 +64,9 @@ router.use('/licensing-request', licensingRoutes);
 // Mark business-settings/public as truly public (must be before protected admin block)
 // Global Settings routes
 router.use('/v1/common/settings', commonSettingsRoutes);
+router.get('/v1/common/onboarding-fees/public', (req, res) => {
+    res.status(200).json({ success: true, data: {} });
+});
 
 // Backward compatibility for public settings
 router.get('/v1/food/admin/business-settings/public', getPublicSettings);

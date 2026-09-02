@@ -14,7 +14,6 @@ const QUICK_HEADER_RETURN_STORAGE_KEY = "food.quick.headerReturn";
 // --- Global Persistence Cache ---
 let globalQuickHomeCache = {
   data: null,
-  headerSections: new Map(), // headerId -> sections
   categoryProducts: new Map(), // headerId -> products
   lastFetched: 0,
   hasValidLocation: false,
@@ -30,14 +29,10 @@ export const useQuickHomeData = ({ currentLocation }) => {
   const [categories, setCategories] = useState(globalQuickHomeCache.data?.categories || [ALL_CATEGORY]);
   const [activeCategory, setActiveCategory] = useState(globalQuickHomeCache.data?.activeCategory || ALL_CATEGORY);
   const [products, setProducts] = useState(globalQuickHomeCache.data?.products || []);
+  const [banners, setBanners] = useState(globalQuickHomeCache.data?.banners || []);
   const [quickCategories, setQuickCategories] = useState(globalQuickHomeCache.data?.quickCategories || []);
-  const [experienceSections, setExperienceSections] = useState(globalQuickHomeCache.data?.experienceSections || []);
-  const [offerSections, setOfferSections] = useState(globalQuickHomeCache.data?.offerSections || []);
   const [categoryMap, setCategoryMap] = useState(globalQuickHomeCache.data?.categoryMap || {});
   const [subcategoryMap, setSubcategoryMap] = useState(globalQuickHomeCache.data?.subcategoryMap || {});
-  const [heroConfig, setHeroConfig] = useState(globalQuickHomeCache.data?.heroConfig || { banners: { items: [] }, categoryIds: [] });
-  const [headerSections, setHeaderSections] = useState([]);
-  const [loadingHeaderSections, setLoadingHeaderSections] = useState(false);
   const [categoryProducts, setCategoryProducts] = useState(null); // null = use global products
 
   const fetchDataSeqRef = useRef(0);
@@ -60,7 +55,6 @@ export const useQuickHomeData = ({ currentLocation }) => {
        if (hasValidLocation && !globalQuickHomeCache.hasValidLocation) {
            setIsBootstrapped(true);
            setIsLoading(false);
-           // Let execution continue below without setting isLoading to true!
        } else {
            setIsBootstrapped(true);
            setIsLoading(false);
@@ -76,14 +70,17 @@ export const useQuickHomeData = ({ currentLocation }) => {
     }
 
     try {
+      const homeParams = {};
       const productParams = { limit: 20 };
       if (hasValidLocation) {
+        homeParams.lat = lat;
+        homeParams.lng = lng;
         productParams.lat = lat;
         productParams.lng = lng;
       }
 
       const [homeRes, catRes, prodRes] = await Promise.all([
-        customerApi.getHomeData().catch(() => null),
+        customerApi.getHomeData(homeParams).catch(() => null),
         customerApi.getCategories().catch((err) => ({ data: { success: false, result: [], error: err } })),
         customerApi.getProducts(productParams).catch((err) => ({ data: { success: false, result: { items: [] }, error: err } })),
       ]);
@@ -96,13 +93,16 @@ export const useQuickHomeData = ({ currentLocation }) => {
         categories: [ALL_CATEGORY],
         activeCategory: ALL_CATEGORY,
         products: [],
+        banners: [],
         quickCategories: [],
-        experienceSections: homePayload.sections || [],
-        offerSections: homePayload.offerSections || [],
-        heroConfig: homePayload.hero || { banners: { items: [] }, categoryIds: [] },
         categoryMap: {},
         subcategoryMap: {},
       };
+
+      // Process Banners (from homePayload.banners)
+      const dbBanners = Array.isArray(homePayload.banners) ? homePayload.banners : [];
+      setBanners(dbBanners);
+      newDataCache.banners = dbBanners;
 
       // Process Categories (from catRes or homeData.categories)
       const dbCats = (catRes?.data?.success && (catRes.data.results || catRes.data.result)) || homePayload.categories || [];
@@ -138,9 +138,8 @@ export const useQuickHomeData = ({ currentLocation }) => {
         // Restore active category if stored
         let initialActive = mergedAllCategory;
         const storedHeaderReturn = typeof window !== "undefined" ? window.sessionStorage.getItem(QUICK_HEADER_RETURN_STORAGE_KEY) : null;
-        const storedExpReturn = typeof window !== "undefined" ? window.sessionStorage.getItem("experienceReturn") : null;
         
-        const restoreId = (storedHeaderReturn && JSON.parse(storedHeaderReturn)?.headerId) || (storedExpReturn && JSON.parse(storedExpReturn)?.headerId);
+        const restoreId = storedHeaderReturn && JSON.parse(storedHeaderReturn)?.headerId;
         if (restoreId) {
             const match = finalCategories.find(h => h._id === restoreId || h.id === restoreId);
             if (match) initialActive = match;
@@ -167,16 +166,6 @@ export const useQuickHomeData = ({ currentLocation }) => {
         newDataCache.products = formattedProds;
       }
 
-      if (homePayload.sections && Array.isArray(homePayload.sections)) {
-        setExperienceSections(homePayload.sections);
-      }
-      if (homePayload.offerSections && Array.isArray(homePayload.offerSections)) {
-        setOfferSections(homePayload.offerSections);
-      }
-      if (homePayload.hero) {
-        setHeroConfig(homePayload.hero);
-      }
-
       globalQuickHomeCache.data = newDataCache;
       globalQuickHomeCache.lastFetched = Date.now();
       if (hasValidLocation) {
@@ -196,36 +185,14 @@ export const useQuickHomeData = ({ currentLocation }) => {
     fetchData();
   }, [fetchData]);
 
-  // Fetch header-specific sections
+  // Fetch category products when header active
   useEffect(() => {
     if (!activeCategory || activeCategory._id === "all") {
-      setHeaderSections([]);
       setCategoryProducts(null); // reset to global products
       return;
     }
 
     const headerId = activeCategory._id;
-
-    const fetchHeader = async () => {
-      if (globalQuickHomeCache.headerSections.has(headerId)) {
-        setHeaderSections(globalQuickHomeCache.headerSections.get(headerId));
-      } else {
-        setLoadingHeaderSections(true);
-        try {
-          const res = await customerApi.getExperienceSections({ pageType: "header", headerId });
-          if (res.data.success) {
-            const raw = res.data.result || res.data.results || res.data;
-            const sections = Array.isArray(raw) ? raw : [];
-            setHeaderSections(sections);
-            globalQuickHomeCache.headerSections.set(headerId, sections);
-          }
-        } catch (e) {
-          console.error("Error fetching header sections:", e);
-        } finally {
-          setLoadingHeaderSections(false);
-        }
-      }
-    };
 
     const fetchCategoryProducts = async () => {
       if (globalQuickHomeCache.categoryProducts.has(headerId)) {
@@ -260,7 +227,6 @@ export const useQuickHomeData = ({ currentLocation }) => {
       }
     };
 
-    fetchHeader();
     fetchCategoryProducts();
   }, [activeCategory]);
 
@@ -269,16 +235,12 @@ export const useQuickHomeData = ({ currentLocation }) => {
     activeCategory,
     setActiveCategory,
     products,
+    banners,
     categoryProducts, // null when "All" is active, array when a specific category is selected
     quickCategories,
-    experienceSections,
-    offerSections,
     categoryMap,
     subcategoryMap,
-    headerSections,
-    heroConfig,
     isLoading: isLoading || !isBootstrapped,
-    loadingHeaderSections,
     isBootstrapped,
     actions: {
         refresh: () => {

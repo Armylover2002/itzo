@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { QuickFeeSettings } from '../models/feeSettings.model.js';
 import { QuickDeliveryCommissionRule } from '../models/deliveryCommissionRule.model.js';
-import { QuickCategory } from '../../models/category.model.js';
 
 const DEFAULT_QUICK_FEE_SETTINGS = {
   deliveryFee: 25,
@@ -232,30 +231,13 @@ export function getActiveFeeSettings() {
   return feeSettingsPromise;
 }
 
-export async function calculateHandlingFeeFromProducts(products = []) {
-  const ids = new Set();
-
-  for (const product of products) {
-    const candidates = [product?.headerId, product?.categoryId, product?.subcategoryId];
-    candidates.forEach((value) => {
-      const normalized =
-        value && typeof value === 'object' && value._id ? String(value._id) : String(value || '').trim();
-      if (normalized && mongoose.Types.ObjectId.isValid(normalized)) {
-        ids.add(normalized);
-      }
-    });
-  }
-
-  if (!ids.size) return 0;
-
-  const categories = await QuickCategory.find({ _id: { $in: Array.from(ids) } })
-    .select('_id handlingFees')
-    .lean();
-
-  return categories.reduce(
-    (maxFee, category) => Math.max(maxFee, Number(category?.handlingFees || 0)),
-    0,
-  );
+/**
+ * Handling fees are no longer configured per category — charges are managed
+ * centrally in the quick-commerce fee settings instead. Kept as a no-op so the
+ * order total pipeline keeps its shape and callers stay unchanged.
+ */
+export async function calculateHandlingFeeFromProducts() {
+  return 0;
 }
 
 export function calculateDeliveryFeeFromSettings(subtotal, feeSettings = DEFAULT_QUICK_FEE_SETTINGS) {

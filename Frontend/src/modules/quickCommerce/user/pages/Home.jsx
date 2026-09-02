@@ -40,18 +40,10 @@ import { Skeleton } from "@food/components/ui/skeleton";
 import QuickCategorySlider from "../components/home/QuickCategorySlider";
 import QuickProductShelf from "../components/home/QuickProductShelf";
 import LowestPriceEverSection from "../components/home/LowestPriceEverSection";
-import CardBanner from "@/assets/CardBanner.jpg";
-import SectionRenderer from "../components/experience/SectionRenderer";
-import ExperienceBannerCarousel from "../components/experience/ExperienceBannerCarousel";
 import { useLocation } from "../context/LocationContext";
 import { resolveQuickImageUrl } from "../utils/image";
 import { getCloudinarySrcSet } from "@/shared/utils/cloudinaryUtils";
 import { useQuickHomeData } from "../hooks/useQuickHomeData";
-import {
-  getSideImageByKey,
-  getBackgroundColorByValue,
-  getBackgroundGradientByValue,
-} from "@/shared/constants/offerSectionOptions";
 import {
   getQuickCartPath,
   getQuickCategoriesPath,
@@ -152,21 +144,34 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     activeCategory,
     setActiveCategory,
     products,
+    banners,
     categoryProducts,
     quickCategories,
-    experienceSections,
-    offerSections,
     categoryMap,
     subcategoryMap,
-    headerSections,
-    heroConfig,
     isLoading,
     isBootstrapped
   } = useQuickHomeData({ currentLocation });
 
   const [mobileBannerIndex, setMobileBannerIndex] = useState(0);
-  const [isInstantBannerJump, setIsInstantBannerJump] = useState(false);
-  const [pendingReturn, setPendingReturn] = useState(null);
+
+  // Active banners filtered by current header category tab
+  const activeBanners = useMemo(() => {
+    if (!Array.isArray(banners) || banners.length === 0) return [];
+
+    // When "All Categories" is active (or header is "all"), return all eligible banners
+    if (!activeCategory || activeCategory._id === "all" || activeCategory.id === "all") {
+      return banners;
+    }
+
+    const currentHeaderId = String(activeCategory._id || activeCategory.id);
+    return banners.filter((b) => {
+      if (b.targetCategoryType === "all" || !b.headerCategoryIds?.length) return true;
+      return b.headerCategoryIds.some(
+        (cat) => String(cat?._id || cat?.id || cat) === currentHeaderId
+      );
+    });
+  }, [banners, activeCategory]);
 
   useLayoutEffect(() => {
     if (!embedded || typeof window === "undefined") return;
@@ -193,30 +198,28 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
   }, [activeCategory, onThemeChange]);
 
   const isInitialPageLoading = !isBootstrapped;
-  const hasHeroBanners = (heroConfig.banners?.items || []).length > 0;
-  const shouldShowHeroFallback = !isInitialPageLoading && !hasHeroBanners;
 
-
-  // Autoplay for Mobile Banner Carousel
+  // Reset banner index on category change
   useEffect(() => {
-    const totalSlides = 3;
+    setMobileBannerIndex(0);
+  }, [activeCategory, activeBanners.length]);
+
+  // Autoplay for Promotional Banner Carousel
+  useEffect(() => {
+    if (activeBanners.length <= 1) return;
     const intervalId = setInterval(() => {
-      setMobileBannerIndex((prev) => (prev >= totalSlides - 1 ? prev : prev + 1));
-    }, 3500);
+      setMobileBannerIndex((prev) => (prev + 1) % activeBanners.length);
+    }, 4000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [activeBanners.length]);
 
-  useEffect(() => {
-    if (!isInstantBannerJump) return;
-    const id = requestAnimationFrame(() => setIsInstantBannerJump(false));
-    return () => cancelAnimationFrame(id);
-  }, [isInstantBannerJump]);
-
-  const handleBannerTransitionEnd = () => {
-    const totalSlides = 3;
-    if (mobileBannerIndex === totalSlides - 1) {
-      setIsInstantBannerJump(true);
-      setMobileBannerIndex(0);
+  const handleBannerClick = (banner) => {
+    if (!banner) return;
+    const catId = banner.headerCategoryIds?.[0]?._id || banner.headerCategoryIds?.[0];
+    if (banner.targetCategoryType === "specific" && catId) {
+      navigate(getQuickCategoryPath(catId));
+    } else {
+      navigate(getQuickCategoriesPath());
     }
   };
 
@@ -237,16 +240,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     return map;
   }, [products]);
 
-  const effectiveQuickCategories = useMemo(() => {
-    const ids = heroConfig.categoryIds || [];
-    if (ids.length > 0) {
-      const resolved = ids.map((id) => categoryMap[id]).filter(Boolean).map((c) => ({
-        id: c._id, name: c.name, image: getQuickCategoryImage(c),
-      }));
-      if (resolved.length > 0) return resolved;
-    }
-    return quickCategories;
-  }, [heroConfig.categoryIds, categoryMap, quickCategories]);
+  const effectiveQuickCategories = quickCategories;
 
   // Filter products by active header category
   // Prefer server-fetched categoryProducts when a specific category is active
@@ -268,26 +262,10 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     });
   }, [products, categoryProducts, activeCategory, categoryMap]);
 
-  const sectionsForRenderer = headerSections.length ? headerSections : experienceSections;
-
   const opacity = useTransform(scrollY, [0, 300], [1, 0.6]);
   const y = useTransform(scrollY, [0, 300], [0, 80]);
   const scale = useTransform(scrollY, [0, 300], [1, 0.95]);
   const pointerEvents = useTransform(scrollY, [0, 100], ["auto", "none"]);
-
-  useEffect(() => {
-    if (!pendingReturn?.sectionId) return;
-    const allSections = sectionsForRenderer;
-    if (!allSections.length) return;
-    if (!allSections.some((s) => s._id === pendingReturn.sectionId)) return;
-
-    const el = document.getElementById(`section-${pendingReturn.sectionId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "instant", block: "start" });
-      window.sessionStorage.removeItem("experienceReturn");
-      setPendingReturn(null);
-    }
-  }, [sectionsForRenderer, pendingReturn]);
 
   const renderFloatingElements = (type) => {
     const count = 10;
@@ -342,130 +320,75 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
         <QuickHomeLoadingState embedded={embedded} />
       ) : (
         <div className={cn("pt-0", embedded && "pt-0")}>
-          {/* Hero Banners (mobile): admin-configured or static fallback */}
-          <>
-            <div className={cn("block", embedded ? "-mt-[1px]" : "mt-0")}>
-              <div>
+          {/* Dynamic Promotional Banner Carousel */}
+          {activeBanners.length > 0 && (
+            <div className={cn("block px-3 md:px-8 lg:px-[50px] mb-3 md:mb-5", embedded ? "-mt-[1px]" : "mt-2 md:mt-4")}>
+              <div
+                className="relative w-full overflow-hidden rounded-2xl md:rounded-[28px] shadow-sm border border-gray-100 dark:border-white/5"
+                style={embedded ? { backgroundColor: activeCategory?.headerColor || ALL_CATEGORY.headerColor } : undefined}>
                 <div
-                  className="relative w-full overflow-hidden"
-                  style={embedded ? { backgroundColor: activeCategory?.headerColor || ALL_CATEGORY.headerColor } : undefined}>
-                  {hasHeroBanners ? (
-                    <ExperienceBannerCarousel
-                      section={{ title: "" }}
-                      items={heroConfig.banners.items}
-                      fullWidth
-                      edgeToEdge
-                    />
-                  ) : shouldShowHeroFallback ? (
-                    <div
-                      className={cn(
-                        "flex",
-                        !isInstantBannerJump &&
-                        "transition-transform duration-500 ease-out",
-                      )}
-                      style={{
-                        transform: `translateX(-${mobileBannerIndex * 100}%)`,
-                      }}
-                      onTransitionEnd={handleBannerTransitionEnd}>
-                      <motion.div
-                        onClick={() => navigate(getQuickCategoriesPath())}
-                        whileTap={{ scale: 0.96 }}
-                        className="min-w-full">
-                        <div className="w-full h-[190px] bg-[#FFF3EC] p-6 relative overflow-hidden flex items-center border-y border-[#FE5502]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]">
-                          <div className="relative z-10 w-3/5 flex flex-col items-start gap-2">
-                            <div className="flex flex-col gap-0.5">
-                              <h4 className="text-2xl font-[1000] text-[#1A1A1A] tracking-tighter leading-none">
-                                Get <span className="text-[#FE5502]">Products</span>
+                  className="flex transition-transform duration-500 ease-out"
+                  style={{
+                    transform: `translateX(-${mobileBannerIndex * 100}%)`,
+                  }}>
+                  {activeBanners.map((banner, bIdx) => (
+                    <motion.div
+                      key={banner._id || banner.id || bIdx}
+                      onClick={() => handleBannerClick(banner)}
+                      whileTap={{ scale: 0.98 }}
+                      className="min-w-full cursor-pointer relative select-none">
+                      <div className="w-full h-[150px] sm:h-[190px] md:h-[220px] lg:h-[260px] relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+                        <img
+                          src={resolveQuickImageUrl(banner.image)}
+                          alt={banner.title || "Promotional Banner"}
+                          className="w-full h-full object-cover sm:object-fill"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                        {(banner.title || banner.subtitle) && (
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-4 md:p-6 text-white pointer-events-none">
+                            {banner.title && (
+                              <h4 className="text-base sm:text-xl md:text-2xl font-black drop-shadow-md line-clamp-1">
+                                {banner.title}
                               </h4>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-sm font-black text-gray-700">
-                                  at
-                                </span>
-                                <div className="bg-[#FE5502] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
-                                  <VerifiedIcon sx={{ fontSize: 16 }} />
-                                  <span className="text-xl font-[1000]">₹0</span>
-                                </div>
-                                <span className="text-sm font-[1000] text-gray-700">
-                                  Fee
-                                </span>
-                              </div>
-                            </div>
-                            <p className="text-[11px] font-bold text-gray-500 max-w-[150px] leading-tight">
-                              Get groceries delivered in minutes
-                            </p>
-                            <button className="bg-[#FF1E56] text-white px-6 py-2.5 rounded-2xl font-black text-xs tracking-wide shadow-lg shadow-rose-200 mt-2">
-                              Order now
-                            </button>
+                            )}
+                            {banner.subtitle && (
+                              <p className="text-xs sm:text-sm text-white/90 font-medium drop-shadow-sm line-clamp-1 mt-0.5">
+                                {banner.subtitle}
+                              </p>
+                            )}
                           </div>
-                          <div className="absolute right-[-10px] bottom-0 top-0 w-2/5 flex items-center justify-center">
-                            <img
-                              src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400&fm=webp"
-                              alt="Promo"
-                              className="w-full h-full object-contain rotate-3 scale-110"
-                            />
-                          </div>
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FE5502]/5 rounded-full blur-2xl -mt-12 -mr-12" />
-                        </div>
-                      </motion.div>
-                      <motion.div
-                        onClick={() => navigate("/categories")}
-                        whileTap={{ scale: 0.96 }}
-                        className="min-w-full">
-                        <div className="w-full h-[190px] bg-white dark:bg-card relative overflow-hidden flex border-y border-gray-100 dark:border-white/5 shadow-[0_4px_15px_rgba(0,0,0,0.05)] group">
-                          <img
-                            src={CardBanner}
-                            alt="Promotion"
-                            className="w-full h-full object-fill"
-                          />
-                          <div className="absolute inset-0 bg-linear-to-t from-black/5 to-transparent pointer-events-none" />
-                        </div>
-                      </motion.div>
-                      <motion.div
-                        onClick={() => navigate(getQuickCategoriesPath())}
-                        whileTap={{ scale: 0.96 }}
-                        className="min-w-full">
-                        <div className="w-full h-[190px] bg-[#FFF3EC] p-6 relative overflow-hidden flex items-center border-y border-[#FE5502]/10 shadow-[0_4px_15px_rgba(0,0,0,0.05)]">
-                          <div className="relative z-10 w-3/5 flex flex-col items-start gap-2">
-                            <div className="flex flex-col gap-0.5">
-                              <h4 className="text-2xl font-[1000] text-[#1A1A1A] tracking-tighter leading-none">
-                                Get <span className="text-[#FE5502]">Products</span>
-                              </h4>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                <span className="text-sm font-black text-gray-700">
-                                  at
-                                </span>
-                                <div className="bg-[#FE5502] text-white px-2 py-0.5 rounded-lg flex items-center gap-1 shadow-sm">
-                                  <VerifiedIcon sx={{ fontSize: 16 }} />
-                                  <span className="text-xl font-[1000]">₹0</span>
-                                </div>
-                                <span className="text-sm font-[1000] text-gray-700">
-                                  Fee
-                                </span>
-                              </div>
-                            </div>
-                            <p className="text-[11px] font-bold text-gray-500 max-w-[150px] leading-tight">
-                              Get groceries delivered in minutes
-                            </p>
-                            <button className="bg-[#FF1E56] text-white px-6 py-2.5 rounded-2xl font-black text-xs tracking-wide shadow-lg shadow-rose-200 mt-2">
-                              Order now
-                            </button>
-                          </div>
-                          <div className="absolute right-[-10px] bottom-0 top-0 w-2/5 flex items-center justify-center">
-                            <img
-                              src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400&fm=webp"
-                              alt="Promo"
-                              className="w-full h-full object-contain rotate-3 scale-110"
-                            />
-                          </div>
-                          <div className="absolute top-0 right-0 w-24 h-24 bg-[#FE5502]/5 rounded-full blur-2xl -mt-12 -mr-12" />
-                        </div>
-                      </motion.div>
-                    </div>
-                  ) : null}
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
+
+                {/* Indicators / Dots */}
+                {activeBanners.length > 1 && (
+                  <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10 bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-full pointer-events-auto">
+                    {activeBanners.map((_, dotIdx) => (
+                      <button
+                        key={dotIdx}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMobileBannerIndex(dotIdx);
+                        }}
+                        className={cn(
+                          "h-1.5 rounded-full transition-all duration-300 cursor-pointer",
+                          mobileBannerIndex === dotIdx
+                            ? "w-5 bg-white shadow-sm"
+                            : "w-1.5 bg-white/50 hover:bg-white/80"
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
-          </>
+          )}
 
           {/* Promo Marquee Strip */}
           <div className={cn("w-full md:-mt-[2px] mb-4", embedded ? "-mt-[1px]" : "-mt-[2px]")}>
@@ -513,193 +436,6 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
 
           {/* New LOWEST PRICE EVER section */}
           <LowestPriceEverSection products={products} />
-
-          {/* Offer Sections (admin-configured: Trending, etc.) – show on Home so user sees them */}
-          {offerSections.length > 0 && (
-            <div className="w-full px-0 pt-0 pb-2 md:pb-4">
-              {[...offerSections]
-                .filter(section => {
-                  if ((section.title || '').trim().toLowerCase() === 'best sellers') return false;
-                  // If a specific category is active, only show sections that match it
-                  const activeCatId = activeCategory?._id || activeCategory?.id;
-                  if (!activeCatId || activeCatId === "all") return true;
-                  const sectionCatIds = (section.categoryIds || []).map(c =>
-                    typeof c === "object" ? String(c._id || c.id || "") : String(c)
-                  );
-                  if (sectionCatIds.length === 0) return true; // no category filter = show always
-                  return sectionCatIds.some(id => {
-                    if (id === String(activeCatId)) return true;
-                    const cat = categoryMap[id];
-                    const parentHeaderId = cat?.parentId || cat?.headerId || cat?.parent?._id || cat?.header?._id;
-                    return String(parentHeaderId) === String(activeCatId);
-                  });
-                })
-                .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-                .map((section, sIdx) => {
-                  const bgColor = getBackgroundColorByValue(
-                    section.backgroundColor,
-                  );
-                  const sectionProducts = (section.productIds || [])
-                    .filter((p) => typeof p === "object" && p !== null)
-                    .map((p) => ({
-                      id: p._id,
-                      _id: p._id,
-                      name: p.name,
-                      image: resolveQuickImageUrl(p.mainImage || p.image || ""),
-                      price:
-                        Number(p.salePrice || 0) > 0
-                          ? Number(p.salePrice)
-                          : Number(p.price || 0),
-                      originalPrice: Number(
-                        p.originalPrice || p.mrp || p.price || p.salePrice || 0,
-                      ),
-                      weight: p.weight,
-                      deliveryTime: p.deliveryTime,
-                    }));
-                  return (
-                    <motion.div
-                      key={section._id || section.id || `sec-${sIdx}`}
-                      initial={{ opacity: 0, y: 24 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, amount: 0.25 }}
-                      transition={{ duration: 0.4 }}
-                      className={cn(
-                        "mb-4 rounded-none overflow-hidden shadow-[0_10px_25px_rgba(15,23,42,0.1)] border-y border-slate-100/70 border-x-0 md:border-x",
-                        section.title?.toLowerCase().includes('masala') ? "bg-[#FFF9E7]" : "bg-white"
-                      )}>
-                      <div
-                        className="relative flex items-center justify-between px-5 md:px-8 py-5 md:py-6 text-black dark:text-white"
-                        style={{
-                          backgroundColor: bgColor,
-                          backgroundImage: getBackgroundGradientByValue(
-                            section.backgroundColor,
-                          ),
-                        }}>
-                        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                          <div className="absolute -top-10 -left-10 w-40 h-40 md:w-56 md:h-56 bg-white/20 rounded-full blur-3xl" />
-                          <div className="absolute -bottom-10 right-0 w-44 h-44 bg-white/10 rounded-full blur-3xl" />
-                        </div>
-                        <div className="flex-1 pr-4">
-                          <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.25em] text-black/60 dark:text-white/60 mb-1">
-                            Trending right now
-                          </p>
-                          <h3 className="text-2xl md:text-3xl font-black tracking-tight leading-tight drop-shadow-sm">
-                            {section.title}
-                          </h3>
-                          {((section.categoryIds || [])
-                            .map((c) =>
-                              typeof c === "object" && c?.name ? c.name : null,
-                            )
-                            .filter(Boolean)
-                            .join(", ") ||
-                            section.categoryId?.name) && (
-                              <p className="text-xs md:text-sm font-semibold text-black/75 dark:text-white/75 mt-1">
-                                {(section.categoryIds || [])
-                                  .map((c) =>
-                                    typeof c === "object" && c?.name ? c.name : null,
-                                  )
-                                  .filter(Boolean)
-                                  .join(", ") || section.categoryId?.name}
-                              </p>
-                            )}
-                        </div>
-                        <motion.div
-                          whileHover={{ y: -4, rotate: -4, scale: 1.06 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 260,
-                            damping: 18,
-                          }}
-                          className="w-20 h-20 md:w-24 md:h-24 rounded-2xl flex-shrink-0 shadow-[0_16px_30px_rgba(0,0,0,0.25)] border border-black/10 overflow-hidden relative bg-black/10">
-                          {/* Product-driven visual if available */}
-                          {sectionProducts[0]?.image ? (
-                            <>
-                              <img
-                                src={sectionProducts[0].image}
-                                srcSet={getCloudinarySrcSet(sectionProducts[0].image)}
-                                sizes="100px"
-                                alt={section.title}
-                                className="absolute inset-0 w-full h-full object-cover scale-110"
-                                loading="lazy"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-tr from-black/60 via-black/20 to-transparent" />
-                              <div className="absolute -bottom-6 -right-6 w-16 h-16 rounded-full bg-amber-400/60 blur-xl mix-blend-screen" />
-                            </>
-                          ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-red-400 via-red-500 to-rose-500" />
-                          )}
-
-                          {/* Top-left pill with items count */}
-                          {sectionProducts.length > 0 && (
-                            <div className="absolute top-1 left-1 px-2 py-0.5 rounded-full bg-black/70 text-[9px] font-bold text-white/90 tracking-wide flex items-center gap-1">
-                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FE5502]" />
-                              {sectionProducts.length} items
-                            </div>
-                          )}
-
-                          <div className="relative z-10 flex items-center justify-center h-full">
-                            <Sparkles
-                              className="text-amber-200 drop-shadow-[0_0_12px_rgba(251,191,36,0.9)]"
-                              size={30}
-                            />
-                          </div>
-                        </motion.div>
-                      </div>
-                      <div className="p-4 md:p-5">
-                        <div className="flex overflow-x-auto gap-3 md:gap-4 pb-2 no-scrollbar snap-x snap-mandatory">
-                          {sectionProducts.length === 0 ? (
-                            <div className="w-full py-6 text-center text-slate-400 text-sm font-bold">
-                              No products in this section yet.
-                            </div>
-                          ) : (
-                            sectionProducts.map((product, pIdx) => (
-                              <div
-                                key={product.id || product._id || `sprod-${pIdx}`}
-                                className="w-[130px] md:w-[160px] lg:w-[180px] flex-shrink-0 snap-start">
-                                <ProductCard
-                                  product={product}
-                                  className="border border-slate-100 dark:border-white/5 shadow-[0_10px_24px_rgba(15,23,42,0.08)]"
-                                  compact
-                                />
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-            </div>
-          )}
-
-          {/* Main Content Area – show admin-configured sections (hero/categories already shown above are skipped) */}
-          {sectionsForRenderer.length > 0 && (
-            <div
-              className={cn(
-                "container mx-auto px-4 md:px-8 lg:px-[50px] bg-[#F0F9FF] rounded-none pt-4 pb-10 mt-[-28px] mb-10 relative z-[1] border-x-2 border-b-2 border-orange-200/50 shadow-sm overflow-hidden",
-              )}>
-              {/* Animated Top Border Glow */}
-              <motion.div
-                animate={{
-                  x: ["-100%", "100%"],
-                  opacity: [0, 1, 0]
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear"
-                }}
-                className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-orange-400/80 to-transparent"
-              />
-
-              <SectionRenderer
-                sections={sectionsForRenderer}
-                productsById={productsById}
-                categoriesById={categoryMap}
-                subcategoriesById={subcategoryMap}
-              />
-            </div>
-          )}
 
           {embedded && (
             <>

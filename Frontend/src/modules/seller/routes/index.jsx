@@ -126,16 +126,22 @@ const SellerAccessRouter = () => {
   const approved =
     user.approved !== false &&
     (!user.approvalStatus || user.approvalStatus === "approved");
-  const onboardingSubmitted = user.onboardingSubmitted === true;
-  const requiresOnboarding =
-    !approved && (!onboardingSubmitted || user.approvalStatus === "draft");
+  const isRejected = user.approvalStatus === "rejected";
+  const onboardingSubmitted = user.onboardingSubmitted === true || user.approvalStatus === "pending";
+  const isReonboarding = typeof window !== "undefined" && sessionStorage.getItem("sellerReonboard") === "true";
 
   return (
     <Routes>
       <Route
         path="onboarding"
         element={
-          approved ? <Navigate to="/seller" replace /> : <Onboarding />
+          approved ? (
+            <Navigate to="/seller" replace />
+          ) : onboardingSubmitted && !isRejected && !isReonboarding ? (
+            <Navigate to="/seller/pending" replace />
+          ) : (
+            <Onboarding />
+          )
         }
       />
       <Route
@@ -143,7 +149,7 @@ const SellerAccessRouter = () => {
         element={
           approved ? (
             <Navigate to="/seller" replace />
-          ) : onboardingSubmitted ? (
+          ) : onboardingSubmitted || isRejected ? (
             <PendingApproval />
           ) : (
             <Navigate to="/seller/onboarding" replace />
@@ -155,10 +161,10 @@ const SellerAccessRouter = () => {
         element={
           approved ? (
             <SellerWorkspace />
-          ) : requiresOnboarding ? (
-            <Navigate to="/seller/onboarding" replace />
-          ) : (
+          ) : onboardingSubmitted || isRejected ? (
             <Navigate to="/seller/pending" replace />
+          ) : (
+            <Navigate to="/seller/onboarding" replace />
           )
         }
       />
