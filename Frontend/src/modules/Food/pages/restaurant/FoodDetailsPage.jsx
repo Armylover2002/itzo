@@ -511,7 +511,7 @@ export default function FoodDetailsPage() {
                                 {review.userName}
                               </h4>
                               {review.verified && (
-                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                <span className="text-xs bg-[#e7eaef] text-[#092240] px-2 py-0.5 rounded-full">
                                   Verified
                                 </span>
                               )}

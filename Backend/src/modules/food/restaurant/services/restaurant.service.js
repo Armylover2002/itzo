@@ -17,6 +17,10 @@ import {
 import { isPointInZone } from '../../../../utils/geo.js';
 import { ensureDailyPassEligibility, activateDailyPass, checkRestaurantEligibilityReadOnly } from '../../subscriptions/services/wallet.service.js';
 import { logger } from '../../../../utils/logger.js';
+import ms from 'ms';
+import { signAccessToken, signRefreshToken } from '../../../../core/auth/token.util.js';
+import { FoodRefreshToken } from '../../../../core/refreshTokens/refreshToken.model.js';
+import { config } from '../../../../config/env.js';
 
 
 const normalizeName = (value) =>
@@ -343,13 +347,28 @@ export const registerRestaurant = async (payload, files) => {
         throw new ValidationError('Restaurant name is required to register a restaurant');
     }
 
-    // Strict validation for onboarding images to prevent partial records
-    if (!files?.profileImage?.[0]) {
+    // Reapplication support: a phone number that already submitted an application
+    // reuses that same record (instead of creating a second one, which would also
+    // collide with the unique restaurantNameNormalized+ownerPhoneLast10 index).
+    // Fail fast here — before any image uploads — if that phone is already active.
+    const existingRestaurant = await FoodRestaurant.findOne({
+        ownerPhoneLast10,
+        isDeleted: { $ne: true }
+    });
+    if (existingRestaurant && existingRestaurant.status === 'approved') {
+        throw new ValidationError('Restaurant with this phone already exists and is active. Please login.');
+    }
+    const isReapply = !!existingRestaurant && ['pending', 'rejected'].includes(existingRestaurant.status);
+
+    // Strict validation for onboarding images to prevent partial records.
+    // A reapply may keep its previously-uploaded images unchanged, so only a
+    // brand-new application must upload them fresh.
+    if (!files?.profileImage?.[0] && !(isReapply && existingRestaurant.profileImage)) {
         logger.warn(`[ONBOARDING] Registration failed for ${ownerPhoneDigits || 'unknown'}: Missing profile image`);
         throw new ValidationError('Restaurant profile image is required');
     }
 
-    if (!files?.menuImages?.length) {
+    if (!files?.menuImages?.length && !(isReapply && existingRestaurant.menuImages?.length)) {
         logger.warn(`[ONBOARDING] Registration failed for ${ownerPhoneDigits || 'unknown'}: Missing menu images`);
         throw new ValidationError('At least one menu image is required');
     }
@@ -430,7 +449,7 @@ export const registerRestaurant = async (payload, files) => {
             throw new ValidationError('Selected address is outside the selected zone');
         }
 
-        const restaurant = await FoodRestaurant.create({
+        const restaurantAttrs = {
             businessType: businessType || 'Fixed Restaurant',
             restaurantName,
             restaurantNameNormalized,
@@ -479,16 +498,46 @@ export const registerRestaurant = async (payload, files) => {
             ifscCode,
             accountHolderName,
             accountType,
-            estimatedDeliveryTime: estimatedDeliveryTime || '',
             featuredDish: featuredDish || '',
             offer: offer || '',
-            menuImages,
+            ...(menuImages.length > 0 && { menuImages }),
             ...images
-        });
+        };
+
+        let restaurant;
+        if (isReapply) {
+            // Reuse the same record: reset it to pending, keep any previously
+            // uploaded images/documents the seller didn't re-upload this time, and
+            // track that this is a re-application (visible to admin as a filter).
+            Object.assign(existingRestaurant, restaurantAttrs);
+            existingRestaurant.status = 'pending';
+            existingRestaurant.approvedAt = null;
+            existingRestaurant.approvedBy = null;
+            existingRestaurant.rejectedAt = null;
+            existingRestaurant.rejectedBy = null;
+            existingRestaurant.applicationType = 'reapplied';
+            existingRestaurant.reappliedAt = new Date();
+            existingRestaurant.reapplicationCount = (existingRestaurant.reapplicationCount || 0) + 1;
+            if (existingRestaurant.rejectionReason) {
+                existingRestaurant.previousRejectionReason = existingRestaurant.rejectionReason;
+            }
+            existingRestaurant.rejectionReason = undefined;
+            existingRestaurant.isDeleted = false;
+            await existingRestaurant.save();
+            restaurant = existingRestaurant;
+        } else {
+            restaurant = await FoodRestaurant.create({
+                ...restaurantAttrs,
+                applicationType: 'new'
+            });
+        }
 
         // --- Referral Handling ---
+        // Skipped on reapply: the referral (if any) was already processed on the
+        // first submission, and re-running it on every reject+reapply cycle would
+        // let a referral reward be claimed repeatedly.
         const refRaw = typeof ref === 'string' ? String(ref).trim() : '';
-        if (refRaw) {
+        if (refRaw && !isReapply) {
             try {
                 // Find referrer by ID or referralCode
                 const referrerQuery = mongoose.Types.ObjectId.isValid(refRaw)
@@ -558,18 +607,23 @@ export const registerRestaurant = async (payload, files) => {
             };
         });
 
-        await FoodRestaurantOutletTimings.create({
-            restaurantId: restaurant._id,
-            timings: timingsArray
-        });
+        // Upsert (not create) so a reapply updates the same outlet-timings record
+        // instead of leaving a stale duplicate behind.
+        await FoodRestaurantOutletTimings.findOneAndUpdate(
+            { restaurantId: restaurant._id },
+            { $set: { restaurantId: restaurant._id, timings: timingsArray } },
+            { upsert: true }
+        );
 
         try {
             const { notifyAdminsSafely } = await import('../../../../core/notifications/firebase.service.js');
             void notifyAdminsSafely({
-                title: 'New Restaurant Registration 🏪',
-                body: `A new restaurant "${restaurant.restaurantName}" has registered and is pending approval.`,
+                title: isReapply ? 'Restaurant Re-application 🏪' : 'New Restaurant Registration 🏪',
+                body: isReapply
+                    ? `"${restaurant.restaurantName}" has updated and resubmitted their rejected application.`
+                    : `A new restaurant "${restaurant.restaurantName}" has registered and is pending approval.`,
                 data: {
-                    type: 'new_registration',
+                    type: isReapply ? 're_registration' : 'new_registration',
                     subType: 'restaurant',
                     id: String(restaurant._id)
                 }
@@ -586,6 +640,103 @@ export const registerRestaurant = async (payload, files) => {
         }
         throw err;
     }
+};
+
+/**
+ * Public (no-auth) onboarding status lookup by phone — mirrors
+ * getDeliveryOnboardingStatus. Used by the "under review" screen to show the
+ * live status/rejection reason and by the reapply flow to prefill the
+ * onboarding form, both before a restaurant has a login session (rejected/
+ * pending restaurants are never issued a token). Also doubles as a one-call
+ * auto-login the moment admin approves, so the frontend never needs a
+ * separate login round-trip.
+ */
+export const getRestaurantOnboardingStatus = async (phone) => {
+    if (!phone) {
+        throw new ValidationError('Phone number is required');
+    }
+    const digits = String(phone).replace(/\D/g, '');
+    const last10 = digits.slice(-10);
+
+    const restaurant = await FoodRestaurant.findOne({
+        $or: [
+            { ownerPhone: String(phone).trim() },
+            { ownerPhone: digits },
+            { ownerPhoneLast10: last10 },
+            { ownerPhone: { $regex: new RegExp(last10 + '$') } }
+        ]
+    });
+
+    if (!restaurant || restaurant.isDeleted) {
+        return { exists: false };
+    }
+
+    let auth = null;
+    if (restaurant.status === 'approved') {
+        const payload = { userId: restaurant._id.toString(), role: 'RESTAURANT' };
+        const accessToken = signAccessToken(payload);
+        const refreshToken = signRefreshToken(payload);
+        const ttlMs = ms(config.jwtRefreshExpiresIn || '7d');
+        const expiresAt = new Date(Date.now() + ttlMs);
+
+        await FoodRefreshToken.create({
+            userId: restaurant._id,
+            token: refreshToken,
+            expiresAt
+        });
+
+        auth = { accessToken, refreshToken, user: restaurant };
+    }
+
+    return {
+        exists: true,
+        status: restaurant.status || 'pending',
+        applicationType: restaurant.applicationType || 'new',
+        reappliedAt: restaurant.reappliedAt || null,
+        reapplicationCount: restaurant.reapplicationCount || 0,
+        createdAt: restaurant.createdAt,
+        updatedAt: restaurant.updatedAt,
+        rejectionReason: restaurant.rejectionReason || null,
+        previousRejectionReason: restaurant.previousRejectionReason || null,
+        data: {
+            _id: restaurant._id,
+            businessType: restaurant.businessType || '',
+            restaurantName: restaurant.restaurantName || '',
+            name: restaurant.restaurantName || '',
+            ownerName: restaurant.ownerName || '',
+            ownerEmail: restaurant.ownerEmail || '',
+            ownerPhone: restaurant.ownerPhone || '',
+            primaryContactNumber: restaurant.primaryContactNumber || '',
+            pureVegRestaurant: restaurant.pureVegRestaurant ?? null,
+            zoneId: restaurant.zoneId || null,
+            location: restaurant.location || null,
+            cuisines: restaurant.cuisines || [],
+            openingTime: restaurant.openingTime || '',
+            closingTime: restaurant.closingTime || '',
+            openDays: restaurant.openDays || [],
+            estimatedDeliveryTime: restaurant.estimatedDeliveryTime || '',
+            featuredDish: restaurant.featuredDish || '',
+            offer: restaurant.offer || '',
+            profileImage: restaurant.profileImage || null,
+            menuImages: restaurant.menuImages || [],
+            panNumber: restaurant.panNumber || '',
+            nameOnPan: restaurant.nameOnPan || '',
+            panImage: restaurant.panImage || null,
+            gstRegistered: !!restaurant.gstRegistered,
+            gstNumber: restaurant.gstNumber || '',
+            gstLegalName: restaurant.gstLegalName || '',
+            gstAddress: restaurant.gstAddress || '',
+            gstImage: restaurant.gstImage || null,
+            fssaiNumber: restaurant.fssaiNumber || '',
+            fssaiExpiry: restaurant.fssaiExpiry || null,
+            fssaiImage: restaurant.fssaiImage || null,
+            accountNumber: restaurant.accountNumber || '',
+            ifscCode: restaurant.ifscCode || '',
+            accountHolderName: restaurant.accountHolderName || '',
+            accountType: restaurant.accountType || ''
+        },
+        auth
+    };
 };
 
 export const getCurrentRestaurantProfile = async (restaurantId) => {

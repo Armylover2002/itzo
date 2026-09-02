@@ -230,11 +230,13 @@ export default function DeliveryOTP() {
 
       if (data.pendingApproval === true) {
         sessionStorage.removeItem("deliveryAuthData")
+        sessionStorage.setItem("deliveryPendingPhone", phone)
+        localStorage.setItem("deliveryPendingPhone", phone)
         setIsLoading(false)
-        setError("")
-        setPendingMessage(data.message || "Your account is pending admin verification. You will be notified once approved.")
-        setIsRejected(data.isRejected || false)
-        setRejectionReason(data.rejectionReason || "")
+        navigate("/food/delivery/verification", {
+          replace: true,
+          state: { phone, isRejected: data.isRejected, rejectionReason: data.rejectionReason }
+        })
         return
       }
 

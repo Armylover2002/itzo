@@ -64,6 +64,14 @@ export function getLegacyStatusFromOrder(order) {
     return "delivered";
   }
 
+  if (
+    String(order.orderStatus || "").toLowerCase().includes("cancel") ||
+    String(order.status || "").toLowerCase().includes("cancel") ||
+    String(order.workflowStatus || "").toLowerCase().includes("cancel")
+  ) {
+    return "cancelled";
+  }
+
   const v = Number(order.workflowVersion) || 0;
   if (v >= 2 && order.workflowStatus) {
     const workflowStatus = String(order.workflowStatus).toUpperCase();

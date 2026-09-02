@@ -30,6 +30,7 @@ const Profile = React.lazy(() => import("../pages/Profile"));
 const Withdrawals = React.lazy(() => import("../pages/Withdrawals"));
 const Onboarding = React.lazy(() => import("../pages/Onboarding"));
 const PendingApproval = React.lazy(() => import("../pages/PendingApproval"));
+import SellerLiveUpdates from "../components/SellerLiveUpdates";
 
 const navItems = [
   { label: "Dashboard", path: "/seller", icon: HiOutlineSquares2X2, end: true },
@@ -165,10 +166,24 @@ const SellerAccessRouter = () => {
   );
 };
 
-const SellerRoutes = () => (
-  <Suspense fallback={<Loader />}>
-    <SellerAccessRouter />
-  </Suspense>
-);
+import { getAppFavicon, updateBrowserFavicon, loadBusinessSettings } from "@/modules/common/utils/businessSettings";
+
+const SellerRoutes = () => {
+  useEffect(() => {
+    const fav = getAppFavicon('seller');
+    if (fav) updateBrowserFavicon(fav);
+    loadBusinessSettings().then(() => {
+      const freshFav = getAppFavicon('seller');
+      if (freshFav) updateBrowserFavicon(freshFav);
+    }).catch(() => {});
+  }, []);
+
+  return (
+    <Suspense fallback={<Loader />}>
+      <SellerLiveUpdates />
+      <SellerAccessRouter />
+    </Suspense>
+  );
+};
 
 export default SellerRoutes;

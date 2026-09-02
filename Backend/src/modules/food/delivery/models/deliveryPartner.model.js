@@ -80,6 +80,15 @@ const deliveryPartnerSchema = new mongoose.Schema(
             enum: ['pending', 'approved', 'rejected'],
             default: 'pending'
         },
+        applicationType: {
+            type: String,
+            enum: ['new', 'reapplied'],
+            default: 'new',
+            index: true
+        },
+        reappliedAt: { type: Date },
+        reapplicationCount: { type: Number, default: 0 },
+        previousRejectionReason: { type: String },
         isActive: {
             type: Boolean,
             default: true,

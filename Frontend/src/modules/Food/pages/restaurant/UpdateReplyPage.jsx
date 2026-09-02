@@ -152,7 +152,7 @@ export default function UpdateReplyPage() {
                 onChange={(e) => setReplyText(e.target.value)}
                 placeholder="Write your reply..."
                 disabled={!reviewData}
-                className="w-full min-h-[120px] bg-orange-50 border-orange-200 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#ff8100] focus:border-[#ff8100] resize-none"
+                className="w-full min-h-[120px] bg-[#f3f5f7] border-[#c3ccd6] text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#ff8100] focus:border-[#ff8100] resize-none"
                 rows={5}
               />
             </CardContent>

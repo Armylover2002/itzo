@@ -287,6 +287,17 @@ const restaurantSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    // Reapplication tracking (mirrors the delivery-partner onboarding flow):
+    // a rejected/pending restaurant resubmitting reuses the same record instead
+    // of creating a duplicate, so the admin can see it was a re-application.
+    applicationType: {
+      type: String,
+      enum: ["new", "reapplied"],
+      default: "new",
+    },
+    reappliedAt: { type: Date, default: null },
+    reapplicationCount: { type: Number, default: 0 },
+    previousRejectionReason: { type: String, trim: true },
     reVerification: {
       isZoneUpdate: { type: Boolean, default: false },
       previousAddress: { type: String },

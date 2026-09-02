@@ -362,11 +362,11 @@ export default function OrdersPage() {
       case 'confirmed':
         return "bg-yellow-100 text-yellow-700"
       case 'preparing':
-        return "bg-orange-100 text-orange-700"
+        return "bg-[#e7eaef] text-[#092240]"
       case 'ready':
-        return "bg-orange-100 text-orange-700"
+        return "bg-[#e7eaef] text-[#092240]"
       case 'out_for_delivery':
-        return "bg-orange-100 text-orange-700"
+        return "bg-[#e7eaef] text-[#092240]"
       case 'delivered':
         return "bg-green-100 text-green-700"
       case 'cancelled':

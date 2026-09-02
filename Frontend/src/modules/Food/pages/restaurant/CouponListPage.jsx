@@ -114,7 +114,7 @@ export default function CouponListPage() {
                       e.stopPropagation()
                       setOpenMenuId(openMenuId === coupon.id ? null : coupon.id)
                     }}
-                    className="p-1.5 bg-orange-100 hover:bg-orange-200 rounded transition-colors"
+                    className="p-1.5 bg-[#e7eaef] hover:bg-[#c3ccd6] rounded transition-colors"
                     data-menu-id={coupon.id}
                   >
                     <MoreVertical className="w-4 h-4 text-[#ff8100]" />
@@ -166,7 +166,7 @@ export default function CouponListPage() {
 
                 <div className="flex">
                   {/* Left Section */}
-                  <div className="flex-1 p-4 flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100/50">
+                  <div className="flex-1 p-4 flex flex-col items-center justify-center bg-gradient-to-br from-[#f3f5f7] to-[#e7eaef]/50">
                     <div className="mb-3">
                       <div className="w-16 h-16 bg-[#ff8100] rounded-full flex items-center justify-center shadow-md">
                         <Flame className="w-8 h-8 text-white" />

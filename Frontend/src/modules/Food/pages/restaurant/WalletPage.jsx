@@ -202,7 +202,7 @@ export default function WalletPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="bg-primary/10 p-3 rounded-xl">
-                <Wallet className="w-6 h-6 text-orange-400" />
+                <Wallet className="w-6 h-6 text-[#566f8c]" />
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">Subscription Wallet</span>
@@ -222,7 +222,7 @@ export default function WalletPage() {
 
             <div className="flex gap-3">
               <Button 
-                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-orange-900/20"
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-[#051424]/20"
                 onClick={() => {
                   if (isLowBalance) setRechargeAmount(requiredRecharge.toString())
                   setShowRechargeModal(true)
@@ -243,11 +243,11 @@ export default function WalletPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl p-6 shadow-lg border-l-8 border-orange-500"
+            className="bg-white rounded-2xl p-6 shadow-lg border-l-8 border-[#0d315b]"
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="bg-orange-500/10 p-3 rounded-xl">
-                <ShieldCheck className="w-6 h-6 text-orange-600" />
+              <div className="bg-[#0d315b]/10 p-3 rounded-xl">
+                <ShieldCheck className="w-6 h-6 text-[#0b2a4d]" />
               </div>
               <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Plan Status</span>
             </div>
@@ -281,7 +281,7 @@ export default function WalletPage() {
               {/* Recurring Plan Row */}
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${subStatus === 'active' ? 'bg-orange-100 text-primary' : 'bg-gray-200 text-gray-400'}`}>
+                  <div className={`p-2 rounded-lg ${subStatus === 'active' ? 'bg-[#e7eaef] text-primary' : 'bg-gray-200 text-gray-400'}`}>
                     <Calendar className="w-4 h-4" />
                   </div>
                   <div>
@@ -336,7 +336,7 @@ export default function WalletPage() {
                     <div className={`p-3 rounded-full ${
                       tx.type === 'TOPUP' ? 'bg-green-50 text-green-600' : 
                       tx.type === 'DAILY_DEDUCTION' ? 'bg-red-50 text-red-600' : 
-                      'bg-orange-50 text-primary'
+                      'bg-[#f3f5f7] text-primary'
                     }`}>
                       {tx.type === 'TOPUP' ? <TrendingUp className="w-5 h-5" /> : <DollarSign className="w-5 h-5" />}
                     </div>
@@ -364,7 +364,7 @@ export default function WalletPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
-          className="bg-gradient-to-r from-orange-600 to-orange-700 rounded-2xl p-6 text-white shadow-xl flex items-center justify-between cursor-pointer"
+          className="bg-gradient-to-r from-[#0b2a4d] to-[#092240] rounded-2xl p-6 text-white shadow-xl flex items-center justify-between cursor-pointer"
           onClick={() => navigate('/food/restaurant/business-plan')}
         >
           <div>

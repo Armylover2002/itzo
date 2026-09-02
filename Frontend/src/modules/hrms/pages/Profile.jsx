@@ -6,7 +6,7 @@ import { User, Loader2, Building2, Phone, Mail, MapPin, CreditCard, Heart, Gradu
 const Section = ({ icon: Icon, title, children }) => (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden h-full">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3 bg-slate-50/50">
-            <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center"><Icon className="w-4 h-4 text-orange-600" /></div>
+            <div className="w-8 h-8 rounded-lg bg-[#f7f3fc] flex items-center justify-center"><Icon className="w-4 h-4 text-[#550fa8]" /></div>
             <h3 className="font-semibold text-slate-900">{title}</h3>
         </div>
         <div className="p-6">{children}</div>
@@ -40,7 +40,7 @@ export default function Profile() {
         fetchProfile();
     }, []);
 
-    if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
+    if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
     if (!profile?.employee) return <div className="p-8 text-center text-slate-500">Profile not found</div>;
 
     const emp = profile.employee;
@@ -110,7 +110,7 @@ export default function Profile() {
         }
     };
 
-    const inputClass = "w-full h-9 px-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all";
+    const inputClass = "w-full h-9 px-3 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#6412c6] focus:ring-1 focus:ring-[#6412c6] transition-all";
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
@@ -150,7 +150,7 @@ export default function Profile() {
                             )}
                         </div>
                         {isEditing && (
-                            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors border-2 border-slate-800">
+                            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#6412c6] hover:bg-[#550fa8] rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors border-2 border-slate-800">
                                 {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <Camera className="w-4 h-4 text-white" />}
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
                             </label>
@@ -176,7 +176,7 @@ export default function Profile() {
                                 <button onClick={() => setIsEditing(false)} className="px-4 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition-all flex items-center gap-2 backdrop-blur-sm border border-slate-200">
                                     <X className="w-4 h-4" /> Cancel
                                 </button>
-                                <button onClick={submitEdit} disabled={submitting} className="px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
+                                <button onClick={submitEdit} disabled={submitting} className="px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm transition-all flex items-center gap-2 shadow-sm disabled:opacity-50">
                                     <Check className="w-4 h-4" /> {submitting ? 'Submitting...' : 'Submit for Approval'}
                                 </button>
                             </div>
@@ -216,7 +216,7 @@ export default function Profile() {
                             <p className="text-xs font-medium text-slate-500 mb-1">Employee Type</p>
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                                 emp.employeeType === 'Field'
-                                    ? 'bg-orange-50 text-orange-700'
+                                    ? 'bg-[#f7f3fc] text-[#460d8b]'
                                     : 'bg-emerald-50 text-emerald-700'
                             }`}>
                                 {emp.employeeType === 'Field' ? '📍 Field Employee' : '🏢 Office Employee'}

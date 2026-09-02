@@ -259,7 +259,7 @@ export default function DeliverySettings() {
                         initial={{ opacity: 0, y: -5 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -5 }}
-                        className="text-xs text-orange-600 mt-2 flex items-center gap-1"
+                        className="text-xs text-[#0b2a4d] mt-2 flex items-center gap-1"
                       >
                         <AlertCircle className="w-3 h-3" />
                         You are outside outlet timings
@@ -296,7 +296,7 @@ export default function DeliverySettings() {
           transition={{ duration: 0.3, delay: 0.1 }}
           className="mt-4"
         >
-          <Card className="bg-orange-50 border-orange-200 shadow-sm">
+          <Card className="bg-[#f3f5f7] border-[#c3ccd6] shadow-sm">
             <CardContent className="p-4">
               <p className="text-sm text-gray-700">
                 <strong>Note:</strong> When delivery is turned off, customers won't be able to place delivery orders from your restaurant. You can turn it back on anytime.
@@ -332,10 +332,10 @@ export default function DeliverySettings() {
               <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
                 <div className="flex justify-center mb-4">
                   <div className={`w-16 h-16 rounded-full flex items-center justify-center ${
-                    pendingStatus ? "bg-orange-100" : "bg-red-100"
+                    pendingStatus ? "bg-[#e7eaef]" : "bg-red-100"
                   }`}>
                     <AlertCircle className={`w-10 h-10 ${
-                      pendingStatus ? "text-orange-600" : "text-red-600"
+                      pendingStatus ? "text-[#0b2a4d]" : "text-red-600"
                     }`} />
                   </div>
                 </div>

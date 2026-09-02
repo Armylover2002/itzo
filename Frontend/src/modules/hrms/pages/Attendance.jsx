@@ -67,7 +67,7 @@ export default function Attendance() {
                     <p className="text-sm text-slate-500 mt-1">Track your daily attendance and request regularizations</p>
                 </div>
                 <button onClick={() => setShowRegForm(!showRegForm)}
-                    className="px-4 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl shadow-sm transition-all text-sm">
+                    className="px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl shadow-sm transition-all text-sm">
                     {showRegForm ? 'Cancel' : 'Request Regularization'}
                 </button>
             </div>
@@ -80,26 +80,26 @@ export default function Attendance() {
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Date</label>
                             <input type="date" value={regForm.date} onChange={e => setRegForm(p => ({ ...p, date: e.target.value }))}
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30" />
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" />
                         </div>
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Reason</label>
                             <input value={regForm.reason} onChange={e => setRegForm(p => ({ ...p, reason: e.target.value }))} placeholder="e.g., Forgot to check in"
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30" />
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" />
                         </div>
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Check-in Time</label>
                             <input type="time" value={regForm.requestedCheckInTime} onChange={e => setRegForm(p => ({ ...p, requestedCheckInTime: e.target.value }))}
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30" />
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" />
                         </div>
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Check-out Time</label>
                             <input type="time" value={regForm.requestedCheckOutTime} onChange={e => setRegForm(p => ({ ...p, requestedCheckOutTime: e.target.value }))}
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30" />
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" />
                         </div>
                     </div>
                     <button onClick={submitRegularization} disabled={regLoading}
-                        className="mt-4 px-6 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-all text-sm disabled:opacity-50">
+                        className="mt-4 px-6 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl transition-all text-sm disabled:opacity-50">
                         {regLoading ? 'Submitting...' : 'Submit Request'}
                     </button>
                 </div>
@@ -151,7 +151,7 @@ export default function Attendance() {
                                                     <span className="text-emerald-600 font-medium block">🏢 {r.locationValidation.officeName}</span>
                                                 )}
                                                 {r.employeeType === 'Field' && r.routeDistance > 0 && (
-                                                    <span className="text-orange-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
+                                                    <span className="text-[#550fa8] font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
                                                 )}
                                                 {r.checkInLocation?.address && (
                                                     <div className="text-slate-500 flex items-start gap-1" title={r.checkInLocation.address}>

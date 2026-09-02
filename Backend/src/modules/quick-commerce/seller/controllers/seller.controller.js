@@ -33,6 +33,15 @@ import { getSellerCommissionSnapshot } from "../../admin/services/commission.ser
 import * as quickOrderService from "../../services/quickOrder.service.js";
 import * as returnOtpService from "../../returns/services/returnOtp.service.js";
 import {
+  buildSellerProfilePatch,
+  mergeSellerPendingProfileChanges,
+  restoreStagedFieldsFromSnapshot,
+  sellerHadPriorApproval,
+  serializeSellerPendingProfileChanges,
+  splitSellerReviewablePatch,
+} from "../../shared/pendingProfileChanges.js";
+import { upsertSellerNotification } from "../services/sellerNotify.service.js";
+import {
   buildSellerCategoryTree,
   ensureSellerCategoriesSeeded,
   resolveSellerCategoryIds,
@@ -412,7 +421,11 @@ const serializeSellerProfile = (seller) => ({
     zoneId: seller.shopInfo?.zoneId || null,
     zoneSource: seller.shopInfo?.zoneSource || "",
     zoneName: seller.shopInfo?.zoneName || "",
+    shopImage: seller.shopInfo?.shopImage || "",
   },
+  wasEverApproved: seller.wasEverApproved === true,
+  hasPendingProfileUpdate: seller.pendingProfileChanges?.hasPendingUpdate === true,
+  pendingProfileChanges: serializeSellerPendingProfileChanges(seller),
 });
 
 const objectIdOrNull = (value) =>
@@ -857,16 +870,11 @@ export const requestSellerOtpController = async (req, res) => {
     }
 
     const otp = await createOrUpdateOtp(phone);
-    const hasSmsProvider = Boolean(config.smsApiKey && config.smsSenderId);
-    const isLocalRequest = ["localhost", "127.0.0.1", "::1"].includes(
-      String(req.hostname || "").toLowerCase(),
-    );
-    const shouldExposeOtp =
-      config.useDefaultOtp || (!hasSmsProvider && isLocalRequest);
+    const shouldExposeOtp = config.useDefaultOtp;
 
     return sendResponse(res, 200, "OTP sent successfully", {
       phone,
-      deliveryMode: shouldExposeOtp && !hasSmsProvider ? "debug" : "sms",
+      deliveryMode: shouldExposeOtp ? "debug" : "sms",
       ...(shouldExposeOtp ? { otp } : {}),
     });
   } catch (error) {
@@ -1191,12 +1199,18 @@ export const getSellerProfileController = async (req, res) => {
 
 export const updateSellerProfileData = async (seller, req) => {
     const files = req.files && typeof req.files === 'object' ? req.files : {};
+    const profileSnapshot = seller.toObject();
+
     if (req.body?.name !== undefined)
       seller.name = str(req.body.name) || seller.name;
     if (req.body?.shopName !== undefined)
       seller.shopName = str(req.body.shopName) || seller.shopName;
-    if (req.body?.phone !== undefined)
-      seller.phone = str(req.body.phone) || seller.phone;
+    if (req.body?.phone !== undefined) {
+      const newPhone = str(req.body.phone) || seller.phone;
+      seller.phone = newPhone;
+      seller.phoneDigits = normalizePhone(newPhone);
+      seller.phoneLast10 = last10(newPhone);
+    }
     if (req.body?.email !== undefined)
       seller.email = str(req.body.email).toLowerCase();
 
@@ -1237,7 +1251,7 @@ export const updateSellerProfileData = async (seller, req) => {
       if (!seller.location) {
         seller.location = {
           type: "Point",
-          coordinates: [0, 0], // Default coordinates if missing but address provided
+          coordinates: [0, 0],
           latitude: 0,
           longitude: 0,
           formattedAddress: address,
@@ -1299,11 +1313,14 @@ export const updateSellerProfileData = async (seller, req) => {
     if (req.body?.upiId !== undefined || bankInfoBody.upiId !== undefined) {
       seller.bankInfo.upiId = str(bankInfoBody.upiId ?? req.body.upiId, "");
     }
+
+    // Upload images
+    let uploadedUpiQr = "";
     const upiQrImageInput = files?.upiQrImage?.[0] || bankInfoBody.upiQrImage || req.body?.upiQrImage || req.body?.upiQrCode;
     if (upiQrImageInput !== undefined) {
-      const uploadedUrl = await uploadFileOrBase64ToCloudinary(upiQrImageInput, "seller/upi-qr");
-      if (uploadedUrl || typeof upiQrImageInput === "string") {
-        seller.bankInfo.upiQrImage = uploadedUrl;
+      uploadedUpiQr = await uploadFileOrBase64ToCloudinary(upiQrImageInput, "seller/upi-qr");
+      if (uploadedUpiQr || typeof upiQrImageInput === "string") {
+        seller.bankInfo.upiQrImage = uploadedUpiQr || upiQrImageInput;
       }
     }
 
@@ -1370,34 +1387,43 @@ export const updateSellerProfileData = async (seller, req) => {
         "",
       );
     }
+
+    let uploadedShopLicense = "";
     const shopLicenseImageInput = files?.shopLicenseImage?.[0] || documentsBody.shopLicenseImage || req.body?.shopLicenseImage;
     if (shopLicenseImageInput !== undefined) {
-      const uploadedUrl = await uploadFileOrBase64ToCloudinary(shopLicenseImageInput, "seller/shop-license");
-      if (uploadedUrl || typeof shopLicenseImageInput === "string") {
-        seller.documents.shopLicenseImage = uploadedUrl;
+      uploadedShopLicense = await uploadFileOrBase64ToCloudinary(shopLicenseImageInput, "seller/shop-license");
+      if (uploadedShopLicense || typeof shopLicenseImageInput === "string") {
+        seller.documents.shopLicenseImage = uploadedShopLicense || shopLicenseImageInput;
       }
     }
+
+    let uploadedPan = "";
     const panImageInput = files?.panImage?.[0] || documentsBody.panImage || req.body?.panImage;
     if (panImageInput !== undefined) {
-      const uploadedUrl = await uploadFileOrBase64ToCloudinary(panImageInput, "seller/pan");
-      if (uploadedUrl || typeof panImageInput === "string") {
-        seller.documents.panImage = uploadedUrl;
+      uploadedPan = await uploadFileOrBase64ToCloudinary(panImageInput, "seller/pan");
+      if (uploadedPan || typeof panImageInput === "string") {
+        seller.documents.panImage = uploadedPan || panImageInput;
       }
     }
+
+    let uploadedGst = "";
     const gstImageInput = files?.gstImage?.[0] || documentsBody.gstImage || req.body?.gstImage;
     if (gstImageInput !== undefined) {
-      const uploadedUrl = await uploadFileOrBase64ToCloudinary(gstImageInput, "seller/gst");
-      if (uploadedUrl || typeof gstImageInput === "string") {
-        seller.documents.gstImage = uploadedUrl;
+      uploadedGst = await uploadFileOrBase64ToCloudinary(gstImageInput, "seller/gst");
+      if (uploadedGst || typeof gstImageInput === "string") {
+        seller.documents.gstImage = uploadedGst || gstImageInput;
       }
     }
+
+    let uploadedFssai = "";
     const fssaiImageInput = files?.fssaiImage?.[0] || documentsBody.fssaiImage || req.body?.fssaiImage;
     if (fssaiImageInput !== undefined) {
-      const uploadedUrl = await uploadFileOrBase64ToCloudinary(fssaiImageInput, "seller/fssai");
-      if (uploadedUrl || typeof fssaiImageInput === "string") {
-        seller.documents.fssaiImage = uploadedUrl;
+      uploadedFssai = await uploadFileOrBase64ToCloudinary(fssaiImageInput, "seller/fssai");
+      if (uploadedFssai || typeof fssaiImageInput === "string") {
+        seller.documents.fssaiImage = uploadedFssai || fssaiImageInput;
       }
     }
+
     if (
       req.body?.shopLicenseExpiry !== undefined ||
       documentsBody.shopLicenseExpiry !== undefined
@@ -1430,10 +1456,13 @@ export const updateSellerProfileData = async (seller, req) => {
       req.body?.alternatePhone !== undefined ||
       shopInfoBody.alternatePhone !== undefined
     ) {
-      seller.shopInfo.alternatePhone = str(
+      const alt = str(
         shopInfoBody.alternatePhone ?? req.body.alternatePhone,
         "",
       );
+      seller.shopInfo.alternatePhone = alt;
+      seller.alternatePhoneDigits = normalizePhone(alt);
+      seller.alternatePhoneLast10 = last10(alt);
     }
     if (
       req.body?.supportEmail !== undefined ||
@@ -1479,6 +1508,87 @@ export const updateSellerProfileData = async (seller, req) => {
       );
     }
 
+    let uploadedShopImage = "";
+    const shopImageInput = files?.shopImage?.[0] || shopInfoBody.shopImage || req.body?.shopImage;
+    if (shopImageInput !== undefined) {
+      uploadedShopImage = await uploadFileOrBase64ToCloudinary(shopImageInput, "seller/shop-image");
+      if (uploadedShopImage || typeof shopImageInput === "string") {
+        seller.shopInfo.shopImage = uploadedShopImage || shopImageInput;
+      }
+    }
+
+    const requiresProfileReview =
+      sellerHadPriorApproval(seller) && !submitForApproval;
+
+    if (requiresProfileReview) {
+      const patch = buildSellerProfilePatch({
+        body: req.body,
+        bankInfoBody,
+        documentsBody,
+        shopInfoBody,
+        uploaded: {
+          upiQrImage: uploadedUpiQr,
+          shopImage: uploadedShopImage,
+          fssaiImage: uploadedFssai,
+          shopLicenseImage: uploadedShopLicense,
+        },
+        lat,
+        lng,
+        address,
+      });
+
+      const { stagedPatch, shouldStage } = splitSellerReviewablePatch(
+        profileSnapshot,
+        patch,
+        { requiresReview: true },
+      );
+
+      if (shouldStage) {
+        restoreStagedFieldsFromSnapshot(seller, profileSnapshot, stagedPatch);
+        seller.pendingProfileChanges = mergeSellerPendingProfileChanges(
+          seller.pendingProfileChanges,
+          stagedPatch,
+          profileSnapshot,
+        );
+        seller.markModified("pendingProfileChanges");
+
+        try {
+          const { notifyAdminsSafely } = await import(
+            "../../../../core/notifications/firebase.service.js"
+          );
+          void notifyAdminsSafely({
+            title: "Seller profile update pending",
+            body: `${seller.shopName || seller.name || "A seller"} submitted profile changes for admin review.`,
+            data: {
+              type: "seller_profile_updated",
+              subType: "seller",
+              id: String(seller._id),
+              link: "/admin/quick-commerce/sellers/pending",
+            },
+          });
+        } catch {}
+
+        try {
+          const io = getIO();
+          if (io) {
+            io.to(rooms.admin()).emit("admin_notification", {
+              type: "seller_profile_updated",
+              sellerId: String(seller._id),
+            });
+          }
+        } catch {}
+
+        await upsertSellerNotification(seller._id, {
+          key: `profile-update:${String(seller._id)}:submitted`,
+          type: "system",
+          title: "Profile changes submitted",
+          message:
+            "Your requested profile changes are with our team for review. Customers still see your current approved details until admin approves.",
+          link: "/seller/profile",
+        });
+      }
+    }
+
     if (submitForApproval) {
       seller.onboardingSubmitted = true;
       seller.approved = false;
@@ -1486,8 +1596,42 @@ export const updateSellerProfileData = async (seller, req) => {
       seller.approvalNotes = "";
       seller.approvedAt = null;
       seller.rejectedAt = null;
-    }
 
+      try {
+        const { notifyAdminsSafely } = await import(
+          "../../../../core/notifications/firebase.service.js"
+        );
+        void notifyAdminsSafely({
+          title: "New seller onboarding",
+          body: `${seller.shopName || seller.name || "A seller"} submitted their store for approval.`,
+          data: {
+            type: "seller_onboarding_submitted",
+            subType: "seller",
+            id: String(seller._id),
+            link: "/admin/quick-commerce/sellers/pending",
+          },
+        });
+      } catch {}
+
+      try {
+        const io = getIO();
+        if (io) {
+          io.to(rooms.admin()).emit("admin_notification", {
+            type: "seller_onboarding_submitted",
+            sellerId: String(seller._id),
+          });
+        }
+      } catch {}
+
+      await upsertSellerNotification(seller._id, {
+        key: `onboarding:${String(seller._id)}:submitted`,
+        type: "system",
+        title: "Onboarding submitted successfully",
+        message:
+          "We received your store details. Our team is reviewing your application and you will be notified once it is approved.",
+        link: "/seller",
+      });
+    }
 };
 
 export const deleteSellerProfileController = async (req, res) => {

@@ -108,7 +108,7 @@ const Analytics = () => {
       trend: statsData?.overview?.salesTrend || "0%",
       icon: HiOutlineArrowTrendingUp,
       color: "text-primary",
-      bg: "bg-orange-50",
+      bg: "bg-[#fef4f4]",
     },
     {
       label: "Total Orders",
@@ -116,7 +116,7 @@ const Analytics = () => {
       trend: statsData?.overview?.ordersTrend || "0%",
       icon: HiOutlineShoppingBag,
       color: "text-primary",
-      bg: "bg-orange-50",
+      bg: "bg-[#fef4f4]",
     },
     {
       label: "Avg Order Value",
@@ -258,8 +258,8 @@ const Analytics = () => {
             </div>
             <ShimmerButton
               onClick={handleDownloadReport}
-              background="#FE5502"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-xs sm:text-sm sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors"
+              background="#E71D28"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-xs sm:text-sm sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark transition-colors"
               disabled={isExporting}>
               <HiOutlineArrowDownTray className="h-4 w-4 shrink-0" />
               <span>{isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}</span>
@@ -637,7 +637,7 @@ const Analytics = () => {
 
             <div className="mt-8 grid grid-cols-3 gap-4 border-t border-slate-50 pt-8">
               <div className="text-center">
-                <div className="h-10 w-10 bg-orange-50 text-primary rounded-xl flex items-center justify-center mx-auto mb-2">
+                <div className="h-10 w-10 bg-[#fef4f4] text-primary rounded-xl flex items-center justify-center mx-auto mb-2">
                   <HiOutlineMapPin className="h-5 w-5" />
                 </div>
                 <p className="text-[10px] font-black text-slate-900 tracking-tight">
@@ -704,11 +704,11 @@ const Analytics = () => {
                   {selectedProduct.revenue}
                 </p>
               </div>
-              <div className="p-4 bg-orange-50 rounded-2xl">
-                <p className="text-[10px] font-black text-orange-700 uppercase tracking-widest">
+              <div className="p-4 bg-[#fef4f4] rounded-2xl">
+                <p className="text-[10px] font-black text-[#a2141c] uppercase tracking-widest">
                   Units Sold
                 </p>
-                <p className="text-xl font-black text-orange-900">
+                <p className="text-xl font-black text-[#5c0c10]">
                   {selectedProduct.sales}
                 </p>
               </div>
@@ -728,7 +728,7 @@ const Analytics = () => {
 
             <Button
               onClick={() => setIsProductModalOpen(false)}
-              className="w-full py-4 rounded-2xl font-black bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
+              className="w-full py-4 rounded-2xl font-black bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
               CLOSE DETAILS
             </Button>
           </div>

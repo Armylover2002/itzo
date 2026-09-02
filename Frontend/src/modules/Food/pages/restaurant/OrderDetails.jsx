@@ -592,7 +592,7 @@ export default function OrderDetails() {
       case "CANCELLED":
         return "bg-red-700 text-white"
       case "DELIVERED":
-        return "bg-[#FE5502] text-white"
+        return "bg-[#0D315B] text-white"
       default:
         return "bg-gray-600 text-white"
     }

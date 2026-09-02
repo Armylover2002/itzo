@@ -282,8 +282,8 @@ function CompletedOrders({ onSelectOrder, refreshToken = 0 }) {
                       </div>
 
                       <div className="flex flex-col items-end gap-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border border-[#FE5502]/40 text-[#FE5502]">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#FE5502]" />
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border border-[#0D315B]/40 text-[#0D315B]">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#0D315B]" />
                           Delivered
                         </span>
                         <span className="text-[11px] text-gray-500 text-right">
@@ -500,13 +500,13 @@ function CancelledOrders({ onSelectOrder, refreshToken = 0 }) {
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border ${
                             order.cancelledBy === "user"
-                              ? "border-orange-500 text-orange-600"
+                              ? "border-[#0d315b] text-[#0b2a4d]"
                               : "border-red-500 text-red-600"
                           }`}>
                           <span
                             className={`h-1.5 w-1.5 rounded-full ${
                               order.cancelledBy === "user"
-                                ? "bg-orange-500"
+                                ? "bg-[#0d315b]"
                                 : "bg-red-500"
                             }`}
                           />
@@ -637,13 +637,13 @@ function TableBookings() {
                 <span
                   className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                     booking.status === "confirmed"
-                      ? "bg-[#FE5502] text-white"
+                      ? "bg-[#0D315B] text-white"
                       : booking.status === "pending"
                         ? "bg-[#FFF9E7] text-[#D97706]"
                         : booking.status === "checked-in"
-                          ? "bg-orange-100 text-orange-700"
+                          ? "bg-[#e7eaef] text-[#092240]"
                           : booking.status === "completed"
-                            ? "bg-orange-100 text-orange-700"
+                            ? "bg-[#e7eaef] text-[#092240]"
                             : "bg-gray-100 text-gray-600"
                   }`}>
                   {booking.status === "pending" ? "Pending" : booking.status}
@@ -654,7 +654,7 @@ function TableBookings() {
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 bg-[#F8FAFC] p-4 rounded-2xl border border-gray-50 mb-5">
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Calendar className="w-3.5 h-3.5 text-[#FE5502]" />
+                    <Calendar className="w-3.5 h-3.5 text-[#0D315B]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {new Date(booking.date).toLocaleDateString("en-GB", {
@@ -665,7 +665,7 @@ function TableBookings() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Clock className="w-3.5 h-3.5 text-[#FE5502]" />
+                    <Clock className="w-3.5 h-3.5 text-[#0D315B]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {booking.timeSlot}
@@ -673,7 +673,7 @@ function TableBookings() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Users className="w-3.5 h-3.5 text-[#FE5502]" />
+                    <Users className="w-3.5 h-3.5 text-[#0D315B]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {booking.guests} Guests
@@ -681,7 +681,7 @@ function TableBookings() {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                    <Phone className="w-3.5 h-3.5 text-[#FE5502]" />
+                    <Phone className="w-3.5 h-3.5 text-[#0D315B]" />
                   </div>
                   <span className="text-[12px] font-semibold text-gray-700">
                     {booking.user?.phone || "No phone"}
@@ -690,8 +690,8 @@ function TableBookings() {
               </div>
 
               {booking.specialRequest && (
-                <div className="mb-5 p-3 bg-orange-50/50 rounded-xl border border-orange-100/30">
-                  <p className="text-[11px] text-orange-700 italic flex items-start gap-1.5">
+                <div className="mb-5 p-3 bg-[#f3f5f7]/50 rounded-xl border border-[#e7eaef]/30">
+                  <p className="text-[11px] text-[#092240] italic flex items-start gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                     <span>{booking.specialRequest}</span>
                   </p>
@@ -703,7 +703,7 @@ function TableBookings() {
                 {String(booking.status || "").toLowerCase() === "pending" && (
                   <button
                     onClick={() => handleUpdateStatus(booking._id, "confirmed")}
-                    className="flex-1 bg-[#FE5502] text-white py-3 rounded-2xl text-[13px] font-bold hover:bg-[#E64D02] transition-all active:scale-[0.98] shadow-sm shadow-[#FE5502]/10 uppercase tracking-wide">
+                    className="flex-1 bg-[#0D315B] text-white py-3 rounded-2xl text-[13px] font-bold hover:bg-[#0b2a4d] transition-all active:scale-[0.98] shadow-sm shadow-[#0D315B]/10 uppercase tracking-wide">
                     Accept
                   </button>
                 )}
@@ -2050,7 +2050,7 @@ export default function OrdersMain() {
                 {isActive && (
                   <motion.div
                     layoutId="activeFilterBackground"
-                    className="absolute inset-0 bg-[#FE5502] rounded-full -z-10"
+                    className="absolute inset-0 bg-[#0D315B] rounded-full -z-10"
                     initial={false}
                     transition={{
                       type: "spring",
@@ -2299,10 +2299,10 @@ export default function OrdersMain() {
                         <Calendar className="w-4 h-4 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-[#FE5502] uppercase tracking-wider">
+                        <p className="text-[10px] font-bold text-[#0D315B] uppercase tracking-wider">
                           Scheduled Order
                         </p>
-                        <p className="text-sm font-semibold text-[#FE5502] mt-0.5">
+                        <p className="text-sm font-semibold text-[#0D315B] mt-0.5">
                           For{" "}
                           {new Date(
                             currentPopupOrder.scheduledAt,
@@ -2412,12 +2412,12 @@ export default function OrdersMain() {
                   {/* Cutlery preference */}
                   <div
                     className={`mb-4 flex items-center gap-2 rounded-lg p-3 ${(popupOrder || newOrder)?.sendCutlery === false
-                        ? "bg-orange-50"
+                        ? "bg-[#f3f5f7]"
                         : "bg-gray-50"
                       }`}>
                     <svg
                       className={`h-5 w-5 ${(popupOrder || newOrder)?.sendCutlery === false
-                          ? "text-orange-600"
+                          ? "text-[#0b2a4d]"
                           : "text-gray-600"
                         }`}
                       fill="none"
@@ -2432,7 +2432,7 @@ export default function OrdersMain() {
                     </svg>
                     <span
                       className={`text-sm font-medium ${(popupOrder || newOrder)?.sendCutlery === false
-                          ? "text-orange-700"
+                          ? "text-[#092240]"
                           : "text-gray-700"
                         }`}>
                       {(popupOrder || newOrder)?.sendCutlery === false
@@ -2517,7 +2517,7 @@ export default function OrdersMain() {
                       ref={acceptSliderRef}
                       className="relative h-14 rounded-2xl bg-gray-900 overflow-hidden select-none touch-pan-y shadow-inner">
                       <motion.div
-                        className="absolute inset-y-0 left-0 bg-[#FE5502]"
+                        className="absolute inset-y-0 left-0 bg-[#0D315B]"
                         initial={{ width: "100%" }}
                         animate={{ width: `${(countdown / 240) * 100}%` }}
                         transition={{ duration: 1, ease: "linear" }}
@@ -3018,12 +3018,12 @@ function OrderCard({
                   <span
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                       deliveryPartnerId
-                        ? "bg-[#FE5502]/10 text-[#FE5502] border border-[#FE5502]/30"
-                        : "bg-orange-100 text-orange-700 border border-orange-300"
+                        ? "bg-[#0D315B]/10 text-[#0D315B] border border-[#0D315B]/30"
+                        : "bg-[#e7eaef] text-[#092240] border border-[#9eadbd]"
                     }`}>
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
-                        deliveryPartnerId ? "bg-[#FE5502]" : "bg-orange-500"
+                        deliveryPartnerId ? "bg-[#0D315B]" : "bg-[#0d315b]"
                       }`}
                     />
                     {deliveryPartnerId ? "Assigned" : "Not Assigned"}
@@ -3047,7 +3047,7 @@ function OrderCard({
                     onMarkReady({ orderId, mongoId, customerName });
                   }}
                   disabled={isMarkingReady}
-                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-[#FE5502] text-[#FE5502] bg-[#FE5502]/5 hover:bg-[#FE5502]/10 disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
+                  className="px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-[#0D315B] text-[#0D315B] bg-[#0D315B]/5 hover:bg-[#0D315B]/10 disabled:opacity-60 disabled:cursor-not-allowed transition-colors">
                   {isMarkingReady ? "Marking..." : "Mark Ready"}
                 </button>
               )}

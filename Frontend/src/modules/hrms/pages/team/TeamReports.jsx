@@ -40,7 +40,7 @@ export default function TeamReports() {
     if (loading && reports.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -61,7 +61,7 @@ export default function TeamReports() {
                         type="date"
                         value={dateFilter}
                         onChange={e => setDateFilter(e.target.value)}
-                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                     />
                 </div>
                 <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -71,7 +71,7 @@ export default function TeamReports() {
                             onClick={() => setStatusFilter(status)}
                             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 statusFilter === status 
-                                    ? 'bg-white text-orange-600 shadow-sm' 
+                                    ? 'bg-white text-[#550fa8] shadow-sm' 
                                     : 'text-slate-600 hover:text-slate-900'
                             }`}
                         >
@@ -95,7 +95,7 @@ export default function TeamReports() {
                             <Link 
                                 key={report._id} 
                                 to={`/hrms/reports/${report._id}`}
-                                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-orange-200 transition-all group block"
+                                className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:shadow-md hover:border-[#d8c4f1] transition-all group block"
                             >
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
@@ -103,12 +103,12 @@ export default function TeamReports() {
                                             {report.employeeId?.adminId?.name?.[0] || 'E'}
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-slate-900 text-sm group-hover:text-orange-600 transition-colors">{report.employeeId?.adminId?.name}</h3>
+                                            <h3 className="font-semibold text-slate-900 text-sm group-hover:text-[#550fa8] transition-colors">{report.employeeId?.adminId?.name}</h3>
                                             <p className="text-xs text-slate-500">{new Date(report.reportDate).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
                                         </div>
                                     </div>
                                     <div className={`px-2.5 py-1 rounded-md text-xs font-semibold border
-                                        ${report.status === 'Submitted' ? 'bg-orange-50 text-orange-700 border-orange-200' : ''}
+                                        ${report.status === 'Submitted' ? 'bg-[#f7f3fc] text-[#460d8b] border-[#d8c4f1]' : ''}
                                         ${report.status === 'Reviewed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : ''}
                                     `}>
                                         {report.status}
@@ -132,7 +132,7 @@ export default function TeamReports() {
                                     <div className="flex items-center gap-1.5 text-xs font-medium">
                                         <MessageSquare className="w-3.5 h-3.5" /> Reply / View
                                     </div>
-                                    <ChevronRight className="w-4 h-4 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" />
+                                    <ChevronRight className="w-4 h-4 group-hover:text-[#6412c6] group-hover:translate-x-1 transition-all" />
                                 </div>
                             </Link>
                         ))}

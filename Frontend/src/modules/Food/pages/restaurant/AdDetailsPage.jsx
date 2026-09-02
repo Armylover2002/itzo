@@ -83,7 +83,7 @@ export default function AdDetailsPage() {
                 <h2 className="text-base font-bold text-gray-900">
                   Ads ID #{adData.id}
                 </h2>
-                <span className="bg-orange-100 text-orange-700 text-xs font-medium px-3 py-1 rounded-full">
+                <span className="bg-[#e7eaef] text-[#092240] text-xs font-medium px-3 py-1 rounded-full">
                   {adData.status}
                 </span>
               </div>

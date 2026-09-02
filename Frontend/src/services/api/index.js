@@ -1517,6 +1517,12 @@ export const restaurantAPI = {
     }
     return apiClient.post("/food/restaurant/register", formData, { timeout: 120000 });
   },
+  /** GET /food/restaurant/onboarding-status - check review status and fetch filled data by phone (no token required). */
+  getOnboardingStatus: (phone) =>
+    apiClient.get("/food/restaurant/onboarding-status", {
+      params: { phone },
+      contextModule: "restaurant",
+    }),
   /** Public: list approved restaurants for user app */
   getRestaurants: (params = {}, config = {}) =>
     getPublicRestaurantsOnce(params, config),
@@ -1820,6 +1826,12 @@ export const deliveryAPI = {
     const fcmToken = typeof localStorage !== "undefined" ? localStorage.getItem("fcm_web_registered_token_delivery") : null;
     return authService.logout(token, fcmToken, "web");
   },
+  /** GET /food/delivery/onboarding-status - check review status and fetch filled data by phone (no token required). */
+  getOnboardingStatus: (phone) =>
+    apiClient.get("/food/delivery/onboarding-status", {
+      params: { phone },
+      contextModule: "delivery",
+    }),
   /** POST /food/delivery/register - multipart FormData (new partner, no token). */
   register: (formData) => {
     if (!formData || !(formData instanceof FormData)) {
@@ -3019,3 +3031,11 @@ export const mediaAPI = {
 };
 export const heroBannerAPI = createStubAPI();
 export const publicAPI = createStubAPI();
+
+export const onboardingFeeAPI = {
+  getPublicFees: () => apiClient.get("/common/onboarding-fees/public"),
+  createOrder: (body) => apiClient.post("/common/onboarding-fees/public/create-order", body ?? {}),
+  getConfig: () => apiClient.get("/common/onboarding-fees/config", { contextModule: "admin" }),
+  updateConfig: (role, body) => apiClient.put(`/common/onboarding-fees/config/${role}`, body ?? {}, { contextModule: "admin" }),
+  getPayments: (params = {}) => apiClient.get("/common/onboarding-fees/payments", { params, contextModule: "admin" })
+};

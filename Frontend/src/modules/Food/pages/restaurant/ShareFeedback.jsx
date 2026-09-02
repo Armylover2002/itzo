@@ -127,11 +127,11 @@ export default function ShareFeedback() {
 
         {/* Illustration placeholder */}
         <div className="mt-10 flex items-center justify-center">
-          <div className="w-full max-w-xs h-48 rounded-3xl bg-gradient-to-r from-orange-100 via-pink-100 to-yellow-100 flex items-end justify-center px-6 pb-6">
+          <div className="w-full max-w-xs h-48 rounded-3xl bg-gradient-to-r from-[#e7eaef] via-pink-100 to-yellow-100 flex items-end justify-center px-6 pb-6">
             <div className="flex items-end gap-2 w-full justify-between">
-              <div className="w-10 h-20 rounded-full bg-orange-300" />
+              <div className="w-10 h-20 rounded-full bg-[#9eadbd]" />
               <div className="w-10 h-32 rounded-full bg-pink-300" />
-              <div className="w-10 h-24 rounded-full bg-orange-300" />
+              <div className="w-10 h-24 rounded-full bg-[#9eadbd]" />
               <div className="w-10 h-28 rounded-full bg-green-300" />
               <div className="w-10 h-22 rounded-full bg-yellow-300" />
             </div>

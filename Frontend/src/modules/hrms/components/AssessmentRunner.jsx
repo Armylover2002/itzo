@@ -199,7 +199,7 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
     if (loading) {
         return (
             <div className="flex flex-col items-center justify-center py-20">
-                <div className="w-12 h-12 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+                <div className="w-12 h-12 border-4 border-[#d8c4f1] border-t-[#6412c6] rounded-full animate-spin mb-4"></div>
                 <p className="text-slate-500 font-medium">Initializing Assessment...</p>
             </div>
         );
@@ -258,7 +258,7 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                         )}
                         <button 
                             onClick={() => onComplete(result)}
-                            className="w-full sm:w-auto px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-colors shadow-lg shadow-orange-500/30"
+                            className="w-full sm:w-auto px-8 py-3 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl transition-colors shadow-lg shadow-[#6412c6]/30"
                         >
                             Proceed to Submit Application
                         </button>
@@ -269,12 +269,12 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                 {!result.isPassed && (
                     <div className="mt-8 pt-6 border-t border-slate-100">
                         {retakeAlreadySent ? (
-                            <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                            <div className="bg-[#f7f3fc] border border-[#d8c4f1] rounded-xl p-5">
                                 <div className="flex items-center justify-center gap-2 mb-2">
-                                    <CheckCircle2 className="w-5 h-5 text-orange-600" />
-                                    <p className="text-sm font-semibold text-orange-700">Retake Request Already Sent</p>
+                                    <CheckCircle2 className="w-5 h-5 text-[#550fa8]" />
+                                    <p className="text-sm font-semibold text-[#460d8b]">Retake Request Already Sent</p>
                                 </div>
-                                <p className="text-xs text-orange-500">
+                                <p className="text-xs text-[#6412c6]">
                                     Your request has been submitted. An admin will review and reset your attempt so you can retake the test. Please check back later.
                                 </p>
                             </div>
@@ -330,7 +330,7 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                         <h4 className="text-lg font-bold text-slate-900">Question {currentIndex + 1} of {questions.length}</h4>
                         <div className="w-full bg-slate-200 h-1.5 rounded-full mt-3 overflow-hidden">
                             <div 
-                                className="bg-orange-500 h-full rounded-full transition-all duration-300"
+                                className="bg-[#6412c6] h-full rounded-full transition-all duration-300"
                                 style={{ width: `${(answeredCount / questions.length) * 100}%` }}
                             />
                         </div>
@@ -357,18 +357,18 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                                 onClick={() => handleOptionSelect(idx)}
                                 className={`w-full text-left p-4 sm:p-5 rounded-xl border-2 transition-all flex items-start gap-4 ${
                                     currentQuestion.selectedOptionIndex === idx
-                                        ? 'border-orange-500 bg-orange-50'
-                                        : 'border-slate-200 hover:border-orange-300 hover:bg-slate-50'
+                                        ? 'border-[#6412c6] bg-[#f7f3fc]'
+                                        : 'border-slate-200 hover:border-[#c1a0e8] hover:bg-slate-50'
                                 }`}
                             >
                                 <div className="mt-0.5 flex-shrink-0">
                                     {currentQuestion.selectedOptionIndex === idx ? (
-                                        <CheckCircle2 className="w-5 h-5 text-orange-500" />
+                                        <CheckCircle2 className="w-5 h-5 text-[#6412c6]" />
                                     ) : (
                                         <Circle className="w-5 h-5 text-slate-300" />
                                     )}
                                 </div>
-                                <span className={`text-base ${currentQuestion.selectedOptionIndex === idx ? 'text-orange-900 font-medium' : 'text-slate-700'}`}>
+                                <span className={`text-base ${currentQuestion.selectedOptionIndex === idx ? 'text-[#28074f] font-medium' : 'text-slate-700'}`}>
                                     {option}
                                 </span>
                             </button>
@@ -429,7 +429,7 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                                 onClick={() => setCurrentIndex(idx)}
                                 className={`
                                     w-full aspect-square rounded-lg text-sm font-semibold flex items-center justify-center transition-all
-                                    ${isCurrent ? 'ring-2 ring-orange-500 ring-offset-1' : ''}
+                                    ${isCurrent ? 'ring-2 ring-[#6412c6] ring-offset-1' : ''}
                                     ${isAnswered 
                                         ? 'bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200' 
                                         : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
@@ -453,7 +453,7 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                 
                 <button
                     onClick={() => syncProgress(sessionToken, questions)}
-                    className="mt-6 w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-500 hover:text-orange-500 py-2 border border-slate-200 rounded-lg transition-colors"
+                    className="mt-6 w-full flex items-center justify-center gap-2 text-xs font-medium text-slate-500 hover:text-[#6412c6] py-2 border border-slate-200 rounded-lg transition-colors"
                 >
                     <Save className="w-3.5 h-3.5" /> Save Progress
                 </button>

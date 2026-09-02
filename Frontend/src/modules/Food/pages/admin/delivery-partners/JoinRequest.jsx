@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react"
-import { Search, Filter, Eye, Check, X, Package, ArrowUpDown, FileText, FileSpreadsheet, Loader2, Download, ExternalLink, Calendar, MapPin, CreditCard, User, Mail, Phone, Bike, FileCheck } from "lucide-react"
+import { Search, Filter, Eye, Check, X, Package, ArrowUpDown, FileText, FileSpreadsheet, Loader2, Download, ExternalLink, Calendar, MapPin, CreditCard, User, Mail, Phone, Bike, FileCheck, RotateCw, Sparkles } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@food/components/ui/dialog"
@@ -12,6 +12,7 @@ const debugError = (...args) => {}
 
 export default function JoinRequest() {
   const [activeTab, setActiveTab] = useState("pending")
+  const [applicationTypeTab, setApplicationTypeTab] = useState("all") // "all" | "new" | "reapplied"
   const [searchQuery, setSearchQuery] = useState("")
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,6 +28,7 @@ export default function JoinRequest() {
     zone: "",
     jobType: "",
     vehicleType: "",
+    applicationType: "",
   })
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [debouncedSearch, setDebouncedSearch] = useState("")
@@ -63,6 +65,14 @@ export default function JoinRequest() {
         status: activeTab === "pending" ? "pending" : "denied",
         page: 1,
         limit: 1000,
+      }
+
+      if (activeTab === "pending" && applicationTypeTab !== "all") {
+        params.applicationType = applicationTypeTab
+      }
+
+      if (filters.applicationType) {
+        params.applicationType = filters.applicationType
       }
 
       if (debouncedSearch.trim()) {
@@ -108,13 +118,13 @@ export default function JoinRequest() {
     }
   }
 
-  // Single effect: fetch only when tab, debounced search, filters, or filter dialog state change (avoids multiple calls on mount)
+  // Single effect: fetch only when tab, sub-tab, debounced search, filters, or filter dialog state change
   useEffect(() => {
     if (!isFilterOpen) {
       fetchJoinRequests()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, debouncedSearch, filters, isFilterOpen])
+  }, [activeTab, applicationTypeTab, debouncedSearch, filters, isFilterOpen])
 
   const filteredRequests = useMemo(() => {
     let result = [...requests]
@@ -227,13 +237,15 @@ export default function JoinRequest() {
   }
 
   const handleResetFilters = () => {
-    setFilters({ zone: "", jobType: "", vehicleType: "" })
+    setFilters({ zone: "", jobType: "", vehicleType: "", applicationType: "" })
+    setApplicationTypeTab("all")
   }
 
   const handleTabChange = (tab) => {
     setActiveTab(tab)
+    setApplicationTypeTab("all")
     setSearchQuery("") // Reset search when changing tabs
-    setFilters({ zone: "", jobType: "", vehicleType: "" }) // Reset filters
+    setFilters({ zone: "", jobType: "", vehicleType: "", applicationType: "" }) // Reset filters
   }
 
   const activeFiltersCount = Object.values(filters).filter(v => v).length
@@ -251,12 +263,12 @@ export default function JoinRequest() {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-200 mb-6">
+          <div className="flex items-center gap-2 border-b border-slate-200 mb-4">
             <button
               onClick={() => handleTabChange("pending")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === "pending"
-                  ? "border-primary text-primary"
+                  ? "border-primary text-primary font-bold"
                   : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -266,13 +278,51 @@ export default function JoinRequest() {
               onClick={() => handleTabChange("denied")}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === "denied"
-                  ? "border-primary text-primary"
+                  ? "border-primary text-primary font-bold"
                   : "border-transparent text-slate-600 hover:text-slate-900"
               }`}
             >
               Denied Deliveryman
             </button>
           </div>
+
+          {/* Sub-tabs for Pending Applications */}
+          {activeTab === "pending" && (
+            <div className="flex flex-wrap items-center gap-2 mb-5">
+              <button
+                onClick={() => setApplicationTypeTab("all")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  applicationTypeTab === "all"
+                    ? "bg-slate-900 text-white shadow-sm"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                All Pending ({requests.length})
+              </button>
+              <button
+                onClick={() => setApplicationTypeTab("new")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  applicationTypeTab === "new"
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20"
+                    : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                }`}
+              >
+                <Sparkles className="w-3 h-3" />
+                New Apply
+              </button>
+              <button
+                onClick={() => setApplicationTypeTab("reapplied")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  applicationTypeTab === "reapplied"
+                    ? "bg-purple-600 text-white shadow-sm shadow-purple-600/20"
+                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                }`}
+              >
+                <RotateCw className="w-3 h-3" />
+                Re-applied
+              </button>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
@@ -366,6 +416,12 @@ export default function JoinRequest() {
                     </th>
                     <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                       <div className="flex items-center gap-2">
+                        <span>Type</span>
+                        <ArrowUpDown className="w-3 h-3 text-slate-400 cursor-pointer hover:text-slate-600" />
+                      </div>
+                    </th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                      <div className="flex items-center gap-2">
                         <span>Zone</span>
                         <ArrowUpDown className="w-3 h-3 text-slate-400 cursor-pointer hover:text-slate-600" />
                       </div>
@@ -384,7 +440,7 @@ export default function JoinRequest() {
                     </th>
                     <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                       <div className="flex items-center gap-2">
-                        <span>Availability Status</span>
+                        <span>Status</span>
                         <ArrowUpDown className="w-3 h-3 text-slate-400 cursor-pointer hover:text-slate-600" />
                       </div>
                     </th>
@@ -394,7 +450,7 @@ export default function JoinRequest() {
                 <tbody className="bg-white divide-y divide-slate-100">
                   {filteredRequests.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-6 py-20 text-center">
+                      <td colSpan={9} className="px-6 py-20 text-center">
                         <p className="text-sm text-slate-500">
                           {error ? "Error loading requests" : "No requests found"}
                         </p>
@@ -437,6 +493,20 @@ export default function JoinRequest() {
                             <span className="text-sm text-slate-700">{request.email}</span>
                             <span className="text-xs text-slate-500">{request.phone}</span>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {request.applicationType === "reapplied" ? (
+                            <span 
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200"
+                              title={request.reappliedAt ? `Re-applied: ${new Date(request.reappliedAt).toLocaleString()}` : "Re-applied"}
+                            >
+                              <RotateCw className="w-3 h-3" /> Re-applied
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                              <Sparkles className="w-3 h-3" /> New Apply
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm text-slate-700">{request.zone}</span>
@@ -635,8 +705,23 @@ export default function JoinRequest() {
                       <p className="text-sm font-medium text-slate-900 mt-1">{viewDetails.deliveryId || "N/A"}</p>
                     </div>
                     <div>
+                      <label className="text-xs font-semibold text-slate-500 uppercase">Application Type</label>
+                      <div className="mt-1">
+                        {viewDetails.applicationType === "reapplied" ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                            <RotateCw className="w-3 h-3" /> Re-applied Application
+                            {viewDetails.reapplicationCount > 0 && ` (Attempt #${viewDetails.reapplicationCount})`}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                            <Sparkles className="w-3 h-3" /> New Application
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div>
                       <label className="text-xs font-semibold text-slate-500 uppercase">Status</label>
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
+                      <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium mt-1 ${
                         viewDetails.status === 'pending' ? 'bg-orange-100 text-orange-700' :
                         viewDetails.status === 'approved' || viewDetails.status === 'active' ? 'bg-green-100 text-green-700' :
                         viewDetails.status === 'blocked' ? 'bg-red-100 text-red-700' :
@@ -645,6 +730,18 @@ export default function JoinRequest() {
                         {viewDetails.status === 'blocked' ? 'Rejected' : (viewDetails.status?.charAt(0).toUpperCase() + viewDetails.status?.slice(1) || "N/A")}
                       </span>
                     </div>
+                    {viewDetails.reappliedAt && (
+                      <div className="col-span-2 p-2.5 bg-purple-50 rounded-lg border border-purple-200">
+                        <p className="text-xs font-semibold text-purple-800">Latest Re-application Submitted</p>
+                        <p className="text-xs text-purple-900 mt-0.5">{new Date(viewDetails.reappliedAt).toLocaleString()}</p>
+                      </div>
+                    )}
+                    {viewDetails.previousRejectionReason && (
+                      <div className="col-span-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                        <p className="text-xs font-semibold text-amber-800">Previous Rejection Reason (Before Re-apply)</p>
+                        <p className="text-xs text-amber-900 mt-0.5 italic">"{viewDetails.previousRejectionReason}"</p>
+                      </div>
+                    )}
                     {viewDetails.rejectionReason && (
                       <div className="col-span-2">
                         <label className="text-xs font-semibold text-slate-500 uppercase text-red-600">Rejection Reason</label>
@@ -1004,6 +1101,18 @@ export default function JoinRequest() {
                 {allZones.map(zone => (
                   <option key={zone._id} value={zone.name}>{zone.name}</option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Application Type</label>
+              <select
+                value={filters.applicationType}
+                onChange={(e) => setFilters({ ...filters, applicationType: e.target.value })}
+                className="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              >
+                <option value="">All Application Types</option>
+                <option value="new">New Applications</option>
+                <option value="reapplied">Re-applied Applications</option>
               </select>
             </div>
             <div>

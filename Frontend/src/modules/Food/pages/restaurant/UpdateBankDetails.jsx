@@ -331,7 +331,7 @@ export default function UpdateBankDetails() {
             <button
               type="submit"
               disabled={saving || uploadingQr}
-              className="w-full bg-primary hover:bg-primary/90 disabled:bg-orange-400 disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg text-base transition-colors"
+              className="w-full bg-primary hover:bg-primary/90 disabled:bg-[#566f8c] disabled:cursor-not-allowed text-white font-bold py-4 rounded-lg text-base transition-colors"
             >
               {saving ? "Saving..." : "Submit"}
             </button>

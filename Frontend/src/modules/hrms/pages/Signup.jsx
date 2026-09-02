@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
+import { getAppLogo, getCompanyName } from '@/modules/common/utils/businessSettings';
 import AssessmentRunner from '../components/AssessmentRunner';
 import {
     Building2, User, Mail, Phone, Lock, MapPin, FileText,
@@ -250,7 +251,7 @@ export default function Signup() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
                 <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-                    <div className="h-1.5 bg-orange-500 hover:bg-orange-600" />
+                    <div className="h-1.5 bg-[#6412c6] hover:bg-[#550fa8]" />
                     <div className="p-10 text-center">
                         <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Check className="w-10 h-10 text-emerald-500" />
@@ -279,7 +280,7 @@ export default function Signup() {
         );
     }
 
-    const inputClass = "w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all text-sm";
+    const inputClass = "w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 focus:border-[#6412c6] transition-all text-sm";
     const labelClass = "text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 block";
 
     return (
@@ -287,14 +288,19 @@ export default function Signup() {
             <div className="w-full max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-orange-500/20 overflow-hidden">
-                        {hrmsSettings?.companyLogoUrl ? (
-                            <img src={hrmsSettings.companyLogoUrl} alt="Logo" className="w-full h-full object-cover bg-white" />
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#6412c6] to-[#550fa8] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#6412c6]/20 overflow-hidden">
+                        {(hrmsSettings?.companyLogoUrl || getAppLogo('admin')) ? (
+                            <img 
+                                src={hrmsSettings?.companyLogoUrl || getAppLogo('admin')} 
+                                alt="Logo" 
+                                className="w-full h-full object-cover bg-white"
+                                onError={(e) => { e.target.src = '/itzo-logo-transparent.png'; }}
+                            />
                         ) : (
                             <Building2 className="w-7 h-7 text-white" />
                         )}
                     </div>
-                    <h1 className="text-2xl font-bold text-slate-900">Join {hrmsSettings?.companyName || 'ItzoFood'}</h1>
+                    <h1 className="text-2xl font-bold text-slate-900">Join {hrmsSettings?.companyName || getCompanyName() || 'ItzoFood'}</h1>
                     <p className="text-sm text-slate-500 mt-1">Submit your joining request</p>
                 </div>
 
@@ -304,7 +310,7 @@ export default function Signup() {
                         <div key={i} className="flex items-center gap-2">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                                 i < currentStep ? 'bg-emerald-500 text-white'
-                                : i === currentStep ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                                : i === currentStep ? 'bg-[#6412c6] text-white shadow-lg shadow-[#6412c6]/30'
                                 : 'bg-slate-200 text-slate-500'
                             }`}>
                                 {i < currentStep ? <Check className="w-4 h-4" /> : i + 1}
@@ -319,7 +325,7 @@ export default function Signup() {
 
                 {/* Form Card */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-                    <div className="h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600" />
+                    <div className="h-1 bg-gradient-to-r from-[#6412c6] via-amber-500 to-[#550fa8]" />
                     <div className="p-6 sm:p-8">
                         {/* Step 1: Personal Info */}
                         {currentStep === 0 && (
@@ -356,7 +362,7 @@ export default function Signup() {
                                         <div className="flex gap-4">
                                             {['Male', 'Female', 'Other'].map(g => (
                                                 <label key={g} className="flex items-center gap-2 cursor-pointer">
-                                                    <input type="radio" name="gender" value={g} checked={form.gender === g} onChange={e => updateField('gender', e.target.value)} className="accent-orange-500" />
+                                                    <input type="radio" name="gender" value={g} checked={form.gender === g} onChange={e => updateField('gender', e.target.value)} className="accent-[#6412c6]" />
                                                     <span className="text-sm text-slate-300">{g}</span>
                                                 </label>
                                             ))}
@@ -370,7 +376,7 @@ export default function Signup() {
                                                 <label key={opt.value}
                                                     className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                                                         form.employeeType === opt.value
-                                                            ? 'border-orange-500 bg-orange-50'
+                                                            ? 'border-[#6412c6] bg-[#f7f3fc]'
                                                             : 'border-slate-200 hover:border-slate-300'
                                                     }`}>
                                                     <input type="radio" name="employeeType" value={opt.value}
@@ -378,12 +384,12 @@ export default function Signup() {
                                                         onChange={e => updateField('employeeType', e.target.value)}
                                                         className="hidden" />
                                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                        form.employeeType === opt.value ? 'bg-orange-500 text-white' : 'bg-slate-100 text-slate-500'
+                                                        form.employeeType === opt.value ? 'bg-[#6412c6] text-white' : 'bg-slate-100 text-slate-500'
                                                     }`}>
                                                         <opt.icon className="w-4 h-4" />
                                                     </div>
                                                     <div>
-                                                        <p className={`text-sm font-semibold ${form.employeeType === opt.value ? 'text-orange-600' : 'text-slate-700'}`}>{opt.label}</p>
+                                                        <p className={`text-sm font-semibold ${form.employeeType === opt.value ? 'text-[#550fa8]' : 'text-slate-700'}`}>{opt.label}</p>
                                                         <p className="text-[10px] text-slate-400">{opt.desc}</p>
                                                     </div>
                                                 </label>
@@ -423,7 +429,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload Aadhaar</label>
                                         <div className="relative">
                                             <input type="file" id="aadhaar-upload" className="hidden" accept="image/*,.pdf" onChange={e => handleFileUpload('aadhaar', e.target.files?.[0])} />
-                                            <label htmlFor="aadhaar-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.aadhaarPhotoUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
+                                            <label htmlFor="aadhaar-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.aadhaarPhotoUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.aadhaar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.aadhaar ? 'Uploading...' : form.aadhaarPhotoUrl ? 'Uploaded' : 'Upload File'}</span>
                                             </label>
@@ -437,7 +443,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload PAN</label>
                                         <div className="relative">
                                             <input type="file" id="pan-upload" className="hidden" accept="image/*,.pdf" onChange={e => handleFileUpload('pan', e.target.files?.[0])} />
-                                            <label htmlFor="pan-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.panPhotoUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
+                                            <label htmlFor="pan-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.panPhotoUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.pan ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.pan ? 'Uploading...' : form.panPhotoUrl ? 'Uploaded' : 'Upload File'}</span>
                                             </label>
@@ -447,7 +453,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload Profile Photo</label>
                                         <div className="relative">
                                             <input type="file" id="profile-upload" className="hidden" accept="image/*" onChange={e => handleFileUpload('profilePhoto', e.target.files?.[0])} />
-                                            <label htmlFor="profile-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.profilePhotoUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
+                                            <label htmlFor="profile-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.profilePhotoUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.profilePhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.profilePhoto ? 'Uploading...' : form.profilePhotoUrl ? 'Uploaded' : 'Upload Photo'}</span>
                                             </label>
@@ -457,7 +463,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload Resume / CV</label>
                                         <div className="relative">
                                             <input type="file" id="resume-upload" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={e => handleFileUpload('resume', e.target.files?.[0])} />
-                                            <label htmlFor="resume-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.resumeUrl ? 'text-orange-500 border-orange-300' : 'text-slate-400'}`}>
+                                            <label htmlFor="resume-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.resumeUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.resume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.resume ? 'Uploading...' : form.resumeUrl ? 'Uploaded' : 'Upload Resume'}</span>
                                             </label>
@@ -651,7 +657,7 @@ export default function Signup() {
 
                                 <button
                                     onClick={nextStep}
-                                    className="flex items-center gap-2 px-5 h-11 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition-all text-sm"
+                                    className="flex items-center gap-2 px-5 h-11 bg-gradient-to-r from-[#6412c6] to-[#550fa8] hover:from-[#550fa8] hover:to-[#460d8b] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/25 transition-all text-sm"
                                 >
                                     {currentStep === 3 ? 'Start Assessment' : 'Next'}
                                     <ChevronRight className="w-4 h-4" />

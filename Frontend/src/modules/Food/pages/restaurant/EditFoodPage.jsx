@@ -645,7 +645,7 @@ export default function EditFoodPage() {
                     />
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-orange-100 bg-orange-50 px-4 py-3 text-sm text-orange-700">
+                  <div className="rounded-lg border border-[#e7eaef] bg-[#f3f5f7] px-4 py-3 text-sm text-[#092240]">
                     This item uses variants. Customers will see the lowest variant price as "Starting from".
                   </div>
                 )}

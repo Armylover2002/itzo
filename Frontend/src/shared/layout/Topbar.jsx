@@ -165,8 +165,8 @@ const Topbar = ({ onMenuClick }) => {
                     <div className={cn(
                         "h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-lg group-hover:scale-105 transition-transform",
                         isSeller
-                            ? "bg-gradient-to-br from-primary-orange to-primary-dark shadow-orange-500/20"
-                            : "bg-gradient-to-br from-primary to-orange-600 shadow-primary/20"
+                            ? "bg-gradient-to-br from-[#E71D28] to-primary-dark shadow-[#e71d28]/20"
+                            : "bg-gradient-to-br from-primary to-[#c41922] shadow-primary/20"
                     )}>
                         {user?.name?.[0] || 'A'}
                     </div>

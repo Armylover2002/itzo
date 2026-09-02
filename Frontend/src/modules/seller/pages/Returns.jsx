@@ -377,7 +377,7 @@ const Returns = () => {
                                             {activeTab === tab && (
                                                 <motion.div
                                                     layoutId="returns-tab-underline"
-                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-orange rounded-full mx-2 sm:mx-4"
+                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E71D28] rounded-full mx-2 sm:mx-4"
                                                 />
                                             )}
                                         </button>
@@ -621,7 +621,7 @@ const Returns = () => {
                                                     Delivery Partner
                                                 </p>
                                                 <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center gap-3">
-                                                    <div className="h-10 w-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center shrink-0">
+                                                    <div className="h-10 w-10 bg-[#fde8ea] text-[#c41922] rounded-full flex items-center justify-center shrink-0">
                                                         <HiOutlineTruck className="h-5 w-5" />
                                                     </div>
                                                     <div>
@@ -663,7 +663,7 @@ const Returns = () => {
                                                 Reject
                                             </Button>
                                             <Button
-                                                className="text-xs font-bold bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors shadow-md"
+                                                className="text-xs font-bold bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors shadow-md"
                                                 onClick={() => handleApprove(selectedReturn.orderId)}
                                             >
                                                 Approve

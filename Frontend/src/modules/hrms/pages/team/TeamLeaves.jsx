@@ -60,7 +60,7 @@ export default function TeamLeaves() {
     if (loading && leaves.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -83,7 +83,7 @@ export default function TeamLeaves() {
                             onClick={() => setStatusFilter(status)}
                             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                                 statusFilter === status 
-                                    ? 'bg-white text-orange-600 shadow-sm' 
+                                    ? 'bg-white text-[#550fa8] shadow-sm' 
                                     : 'text-slate-600 hover:text-slate-900'
                             }`}
                         >
@@ -116,7 +116,7 @@ export default function TeamLeaves() {
                                             <span className="text-xs font-mono text-slate-500">({leave.employeeId?.employeeId})</span>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 mb-2">
-                                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
+                                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-[#f7f3fc] text-[#460d8b] border border-[#f0e7f9]">
                                                 {leave.leaveType}
                                             </span>
                                             <span className={`px-2 py-0.5 rounded text-xs font-medium border

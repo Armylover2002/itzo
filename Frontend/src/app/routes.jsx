@@ -108,18 +108,20 @@ const RedirectLegacyQuickCommerce = () => {
 };
 
 const SellerAuthEntry = () => {
-  return <SellerAuthPage />
+  return <div className="seller-theme"><SellerAuthPage /></div>
 }
 
 const SellerAppWrapper = () => {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <ProtectedRoute>
-        <RoleGuard allowedRoles={[UserRole.SELLER]}>
-          <SellerApp />
-        </RoleGuard>
-      </ProtectedRoute>
-    </Suspense>
+    <div className="seller-theme">
+      <Suspense fallback={<PageLoader />}>
+        <ProtectedRoute>
+          <RoleGuard allowedRoles={[UserRole.SELLER]}>
+            <SellerApp />
+          </RoleGuard>
+        </ProtectedRoute>
+      </Suspense>
+    </div>
   )
 }
 

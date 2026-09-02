@@ -161,7 +161,7 @@ export default function ConversationListPage() {
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {conversation.role && (
-                        <span className="bg-orange-100 text-[#ff8100] text-xs font-medium px-2 py-0.5 rounded-md whitespace-nowrap">
+                        <span className="bg-[#e7eaef] text-[#ff8100] text-xs font-medium px-2 py-0.5 rounded-md whitespace-nowrap">
                           {conversation.role}
                         </span>
                       )}

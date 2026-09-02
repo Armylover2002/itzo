@@ -250,6 +250,9 @@ export default function SignupStep1() {
         aadharNumber: formData.aadharNumber.replace(/\s/g, "")
       }
       sessionStorage.setItem("deliverySignupDetails", JSON.stringify(details))
+      if (details.phone) {
+        localStorage.setItem(`deliverySignup_${details.phone}_details`, JSON.stringify(details))
+      }
       toast.success("Details saved")
       navigate("/food/delivery/signup/documents")
     } catch (error) {

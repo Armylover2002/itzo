@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@core/context/AuthContext';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
+import { getAppLogo } from '@/modules/common/utils/businessSettings';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
 import { Lock, Mail, Building2, Eye, EyeOff } from 'lucide-react';
@@ -55,14 +56,19 @@ export default function Login() {
                 {/* Card */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden relative z-10">
                     {/* Header Gradient Bar */}
-                    <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600" />
+                    <div className="h-1.5 bg-gradient-to-r from-[#9359d7] via-[#6412c6] to-[#460d8b]" />
 
                     <div className="p-8 sm:p-10">
                         {/* Logo */}
                         <div className="text-center mb-8">
-                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-orange-500/25 rotate-3 hover:rotate-0 transition-transform duration-300 overflow-hidden">
-                                {hrmsSettings?.companyLogoUrl ? (
-                                    <img src={hrmsSettings.companyLogoUrl} alt="Logo" className="w-full h-full object-cover bg-white" />
+                            <div className="w-16 h-16 bg-gradient-to-br from-[#6412c6] to-[#550fa8] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-[#6412c6]/25 rotate-3 hover:rotate-0 transition-transform duration-300 overflow-hidden">
+                                {(hrmsSettings?.companyLogoUrl || getAppLogo('admin')) ? (
+                                    <img 
+                                        src={hrmsSettings?.companyLogoUrl || getAppLogo('admin')} 
+                                        alt="Logo" 
+                                        className="w-full h-full object-cover bg-white"
+                                        onError={(e) => { e.target.src = '/itzo-logo-transparent.png'; }}
+                                    />
                                 ) : (
                                     <Building2 className="w-8 h-8 text-white" />
                                 )}
@@ -80,7 +86,7 @@ export default function Login() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full h-12 pl-11 pr-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all text-sm shadow-sm"
+                                        className="w-full h-12 pl-11 pr-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/50 focus:border-[#6412c6]/50 transition-all text-sm shadow-sm"
                                         placeholder="your@email.com"
                                         required
                                     />
@@ -95,7 +101,7 @@ export default function Login() {
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full h-12 pl-11 pr-11 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 transition-all text-sm shadow-sm"
+                                        className="w-full h-12 pl-11 pr-11 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/50 focus:border-[#6412c6]/50 transition-all text-sm shadow-sm"
                                         placeholder="••••••••"
                                         required
                                     />
@@ -112,7 +118,7 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-12 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                className="w-full h-12 bg-gradient-to-r from-[#6412c6] to-[#550fa8] hover:from-[#550fa8] hover:to-[#460d8b] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/25 hover:shadow-[#6412c6]/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -125,7 +131,7 @@ export default function Login() {
 
                         <div className="mt-8 text-center text-sm text-slate-500 font-medium">
                             Want to join {hrmsSettings?.companyName || 'ItzoFood'}?{' '}
-                            <Link to="/hrms/signup" className="text-orange-500 hover:text-orange-600 font-bold">
+                            <Link to="/hrms/signup" className="text-[#6412c6] hover:text-[#550fa8] font-bold">
                                 Submit a joining request
                             </Link>
                         </div>
@@ -134,15 +140,15 @@ export default function Login() {
                         <div className="mt-5 pt-4 border-t border-slate-100 text-center">
                             <p className="text-[11px] text-slate-400 font-medium mb-1.5">By continuing, you agree to our</p>
                             <div className="flex justify-center items-center gap-1.5 flex-wrap text-[11px]">
-                                <Link to="/profile/terms" className="text-orange-500 font-bold hover:underline">
+                                <Link to="/profile/terms" className="text-[#6412c6] font-bold hover:underline">
                                     Terms & Conditions
                                 </Link>
                                 <span className="text-slate-300">•</span>
-                                <Link to="/profile/privacy" className="text-orange-500 font-bold hover:underline">
+                                <Link to="/profile/privacy" className="text-[#6412c6] font-bold hover:underline">
                                     Privacy Policy
                                 </Link>
                                 <span className="text-slate-300">•</span>
-                                <Link to="/profile/support-policy" className="text-orange-500 font-bold hover:underline">
+                                <Link to="/profile/support-policy" className="text-[#6412c6] font-bold hover:underline">
                                     Support
                                 </Link>
                             </div>

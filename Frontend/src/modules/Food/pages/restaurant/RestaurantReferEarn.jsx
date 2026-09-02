@@ -151,7 +151,7 @@ export default function RestaurantReferEarn() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">Reward per referral</p>
-                <p className="text-lg font-bold text-orange-600">{"\u20B9"}{stats.rewardAmount}</p>
+                <p className="text-lg font-bold text-[#0b2a4d]">{"\u20B9"}{stats.rewardAmount}</p>
               </div>
               <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">Total earned</p>
@@ -164,7 +164,7 @@ export default function RestaurantReferEarn() {
               type="button"
               onClick={handleShare}
               disabled={!referralLink}
-              className="w-full mt-3 h-11 rounded-xl bg-orange-600 hover:bg-orange-700 text-white"
+              className="w-full mt-3 h-11 rounded-xl bg-[#0b2a4d] hover:bg-[#092240] text-white"
             >
               <Share2 className="h-4 w-4 mr-2" />
               Share Referral Link

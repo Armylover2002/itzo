@@ -62,7 +62,7 @@ export default function MyTeam() {
     if (loading) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -75,7 +75,7 @@ export default function MyTeam() {
                     <p className="text-sm text-slate-500 mt-1">Manage your direct reports</p>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                    <span className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg font-semibold">{team.length} Members</span>
+                    <span className="px-3 py-1.5 bg-[#f7f3fc] text-[#460d8b] rounded-lg font-semibold">{team.length} Members</span>
                 </div>
             </div>
 
@@ -84,7 +84,7 @@ export default function MyTeam() {
                     onClick={() => setActiveTab('team')}
                     className={`pb-4 px-4 text-sm font-medium border-b-2 transition-colors ${
                         activeTab === 'team'
-                            ? 'border-orange-500 text-orange-600'
+                            ? 'border-[#6412c6] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -94,7 +94,7 @@ export default function MyTeam() {
                     onClick={() => setActiveTab('add')}
                     className={`pb-4 px-4 text-sm font-medium border-b-2 transition-colors ${
                         activeTab === 'add'
-                            ? 'border-orange-500 text-orange-600'
+                            ? 'border-[#6412c6] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -111,7 +111,7 @@ export default function MyTeam() {
                             placeholder="Search team members..."
                             value={searchTeam}
                             onChange={(e) => setSearchTeam(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                         />
                     </div>
 
@@ -122,7 +122,7 @@ export default function MyTeam() {
                             <p className="text-slate-500 text-sm">You don't have any employees reporting to you yet.</p>
                             <button
                                 onClick={() => setActiveTab('add')}
-                                className="mt-4 px-4 py-2 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors"
+                                className="mt-4 px-4 py-2 bg-[#f7f3fc] text-[#550fa8] rounded-lg text-sm font-medium hover:bg-[#f0e7f9] transition-colors"
                             >
                                 Add Members
                             </button>
@@ -158,7 +158,7 @@ export default function MyTeam() {
                                         </div>
                                         <div>
                                             <span className="text-slate-400 block mb-0.5">Employee Type</span>
-                                             <span className={`inline-flex items-center gap-1 font-medium ${member.employeeType === 'Field' ? 'text-orange-600' : 'text-emerald-600'}`}>
+                                             <span className={`inline-flex items-center gap-1 font-medium ${member.employeeType === 'Field' ? 'text-[#550fa8]' : 'text-emerald-600'}`}>
                                                 {member.employeeType === 'Field' ? <MapPin className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
                                                 {member.employeeType || 'Office'}
                                             </span>
@@ -177,11 +177,11 @@ export default function MyTeam() {
 
             {activeTab === 'add' && (
                 <div className="space-y-4">
-                    <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 flex gap-3">
-                        <ShieldAlert className="w-5 h-5 text-orange-500 shrink-0 mt-0.5" />
+                    <div className="bg-[#f7f3fc] border border-[#f0e7f9] rounded-xl p-4 flex gap-3">
+                        <ShieldAlert className="w-5 h-5 text-[#6412c6] shrink-0 mt-0.5" />
                         <div>
-                            <h4 className="text-sm font-semibold text-orange-800">Assigning Members</h4>
-                            <p className="text-xs text-orange-600 mt-1">You can only add employees who are currently unassigned. Employees already assigned to another manager are shown for visibility but cannot be added. To transfer an employee, please contact the Admin.</p>
+                            <h4 className="text-sm font-semibold text-[#370a6d]">Assigning Members</h4>
+                            <p className="text-xs text-[#550fa8] mt-1">You can only add employees who are currently unassigned. Employees already assigned to another manager are shown for visibility but cannot be added. To transfer an employee, please contact the Admin.</p>
                         </div>
                     </div>
 
@@ -204,7 +204,7 @@ export default function MyTeam() {
                             placeholder="Search employees..."
                             value={searchAdd}
                             onChange={(e) => setSearchAdd(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                         />
                     </div>
 
@@ -249,7 +249,7 @@ export default function MyTeam() {
                                                 <td className="px-5 py-3.5 text-slate-600 font-mono text-xs">{member.employeeId}</td>
                                                 <td className="px-5 py-3.5 text-slate-600">{member.department || '—'}</td>
                                                 <td className="px-5 py-3.5">
-                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${member.employeeType === 'Field' ? 'bg-orange-50 text-orange-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${member.employeeType === 'Field' ? 'bg-[#f7f3fc] text-[#460d8b]' : 'bg-emerald-50 text-emerald-700'}`}>
                                                         {member.employeeType === 'Field' ? <MapPin className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
                                                         {member.employeeType || 'Office'}
                                                     </span>
@@ -277,7 +277,7 @@ export default function MyTeam() {
                                                         <button
                                                             onClick={() => handleAddMember(member._id)}
                                                             disabled={actionLoading === member._id}
-                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg font-medium text-xs transition-colors disabled:opacity-50"
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f7f3fc] text-[#550fa8] hover:bg-[#f0e7f9] rounded-lg font-medium text-xs transition-colors disabled:opacity-50"
                                                         >
                                                             {actionLoading === member._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
                                                             Add

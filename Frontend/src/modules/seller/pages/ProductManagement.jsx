@@ -393,7 +393,7 @@ const ProductManagement = () => {
               Product List
               <Badge
                 variant="primary"
-                className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-orange-100 text-orange-700">
+                className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-[#fde8ea] text-[#a2141c]">
                 Live
               </Badge>
             </h1>
@@ -403,8 +403,8 @@ const ProductManagement = () => {
           </div>
           <ShimmerButton
             onClick={() => navigate("/seller/products/add")}
-            className="px-6 py-2.5 rounded-lg text-xs font-bold shadow-xl flex items-center space-x-2 text-white bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors"
-            background="#FE5502">
+            className="px-6 py-2.5 rounded-lg text-xs font-bold shadow-xl flex items-center space-x-2 text-white bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark transition-colors"
+            background="#E71D28">
             <HiOutlinePlus className="h-4 w-4 mr-2" />
             <span>ADD NEW PRODUCT</span>
           </ShimmerButton>
@@ -419,7 +419,7 @@ const ProductManagement = () => {
             val: stats.total,
             icon: HiOutlineCube,
             color: "text-primary",
-            bg: "bg-orange-50",
+            bg: "bg-[#fef4f4]",
             status: "All",
           },
           {
@@ -427,7 +427,7 @@ const ProductManagement = () => {
             val: stats.active,
             icon: HiOutlineCheckCircle,
             color: "text-primary",
-            bg: "bg-orange-50",
+            bg: "bg-[#fef4f4]",
             status: "Active",
           },
           {
@@ -453,7 +453,7 @@ const ProductManagement = () => {
               className={cn(
                 "cursor-pointer rounded-lg transition-all duration-300",
                 filterStatus === stat.status
-                  ? "ring-2 ring-primary-orange shadow-lg"
+                  ? "ring-2 ring-[#E71D28] shadow-lg"
                   : "hover:shadow-md",
               )}>
               <MagicCard
@@ -677,7 +677,7 @@ const ProductManagement = () => {
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => openEditModal(p)}
-                          className="p-2 hover:bg-white hover:text-primary-orange rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-200">
+                          className="p-2 hover:bg-white hover:text-[#E71D28] rounded-lg transition-all text-slate-600 shadow-sm ring-1 ring-slate-200">
                           <HiOutlinePencilSquare className="h-4 w-4" />
                         </button>
                         <button
@@ -820,7 +820,7 @@ const ProductManagement = () => {
                     <div className="flex items-center space-x-2 mt-0.5">
                       <Badge
                         variant="primary"
-                        className="text-[7px] font-bold uppercase tracking-widest px-1 bg-orange-100 text-orange-700">
+                        className="text-[7px] font-bold uppercase tracking-widest px-1 bg-[#fde8ea] text-[#a2141c]">
                         SELLER
                       </Badge>
                       <HiOutlineChevronRight className="h-2.5 w-2.5 text-slate-300" />
@@ -878,8 +878,8 @@ const ProductManagement = () => {
                   ))}
 
                   <div className="pt-8 px-4">
-                    <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                      <p className="text-[9px] font-bold text-primary-orange uppercase tracking-widest mb-1">
+                    <div className="p-4 bg-[#fef4f4] rounded-2xl border border-[#fde8ea]">
+                      <p className="text-[9px] font-bold text-[#E71D28] uppercase tracking-widest mb-1">
                         Status
                       </p>
                       <select
@@ -887,7 +887,7 @@ const ProductManagement = () => {
                         onChange={(e) =>
                           setFormData({ ...formData, status: e.target.value })
                         }
-                        className="w-full bg-transparent border-none text-xs font-bold text-orange-700 outline-none p-0 cursor-pointer focus:ring-0">
+                        className="w-full bg-transparent border-none text-xs font-bold text-[#a2141c] outline-none p-0 cursor-pointer focus:ring-0">
                         <option value="active">PUBLISHED</option>
                         <option value="inactive">DRAFT</option>
                       </select>
@@ -1007,7 +1007,7 @@ const ProductManagement = () => {
                           />
                         </div>
                         <div className="space-y-1.5 flex flex-col">
-                          <label className="text-[9px] font-bold text-primary-orange uppercase tracking-widest ml-1">
+                          <label className="text-[9px] font-bold text-[#E71D28] uppercase tracking-widest ml-1">
                             Discounted Price (₹)
                           </label>
                           <input
@@ -1019,7 +1019,7 @@ const ProductManagement = () => {
                                 salePrice: e.target.value,
                               })
                             }
-                            className="w-full px-4 py-3 bg-orange-50/50 shadow-sm ring-1 ring-orange-100 border-none rounded-xl text-lg font-bold text-orange-700 outline-none focus:ring-2 focus:ring-orange-200"
+                            className="w-full px-4 py-3 bg-[#fef4f4]/50 shadow-sm ring-1 ring-[#fde8ea] border-none rounded-xl text-lg font-bold text-[#a2141c] outline-none focus:ring-2 focus:ring-[#f9c7c9]"
                           />
                         </div>
                       </div>
@@ -1230,7 +1230,7 @@ const ProductManagement = () => {
                 </button>
                 <button
                   onClick={handleSave}
-                  className="bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all">
+                  className="bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white px-10 py-2.5 rounded-xl text-xs font-bold shadow-xl hover:-translate-y-0.5 transition-all">
                   SAVE CHANGES
                 </button>
               </div>
@@ -1347,7 +1347,7 @@ const ProductManagement = () => {
           <div className="mt-8 flex justify-end">
             <button
               onClick={() => setIsVariantsViewModalOpen(false)}
-              className="bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
+              className="bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:-translate-y-0.5 transition-all active:scale-95"
             >
               CLOSE VIEWER
             </button>

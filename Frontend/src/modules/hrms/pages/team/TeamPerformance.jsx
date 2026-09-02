@@ -72,8 +72,8 @@ export default function TeamPerformance() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-orange-600" />
+                        <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                            <Users className="w-5 h-5 text-[#550fa8]" />
                         </div>
                         Team Performance
                     </h1>
@@ -86,11 +86,11 @@ export default function TeamPerformance() {
                         type="month" 
                         value={period}
                         onChange={(e) => setPeriod(e.target.value)}
-                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                     />
                     <button
                         onClick={() => fetchPerformance(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-xs transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-xs transition-colors"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -100,7 +100,7 @@ export default function TeamPerformance() {
 
             {loading ? (
                 <div className="flex flex-col justify-center items-center py-24">
-                    <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mb-3" />
+                    <RefreshCw className="w-8 h-8 text-[#6412c6] animate-spin mb-3" />
                     <p className="text-slate-400 font-medium text-sm">Loading team data...</p>
                 </div>
             ) : !teamData ? (
@@ -118,7 +118,7 @@ export default function TeamPerformance() {
                                 <p className="text-xs font-medium text-slate-500">Team Size</p>
                                 <p className="text-2xl font-bold text-slate-900 mt-0.5">{teamData.teamSize} <span className="text-sm font-normal text-slate-400">members</span></p>
                             </div>
-                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+                            <div className="w-10 h-10 bg-[#f7f3fc] rounded-xl flex items-center justify-center text-[#550fa8]">
                                 <Users className="w-5 h-5" />
                             </div>
                         </div>
@@ -129,7 +129,7 @@ export default function TeamPerformance() {
                                     <p className="text-xs font-medium text-slate-500">Average Score</p>
                                     <p className="text-2xl font-bold text-slate-900 mt-0.5">{teamData.averageTeamScore} <span className="text-sm font-normal text-slate-400">/ 100</span></p>
                                 </div>
-                                <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600">
+                                <div className="w-10 h-10 bg-[#f7f3fc] rounded-xl flex items-center justify-center text-[#550fa8]">
                                     <BarChart2 className="w-5 h-5" />
                                 </div>
                             </div>
@@ -265,7 +265,7 @@ export default function TeamPerformance() {
                                             <td className="py-3.5 px-5 text-right">
                                                 <button
                                                     onClick={() => handleViewMember(item.member?._id)}
-                                                    className="px-3 py-1.5 bg-slate-50 hover:bg-orange-50 hover:text-orange-600 text-slate-600 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1 ml-auto"
+                                                    className="px-3 py-1.5 bg-slate-50 hover:bg-[#f7f3fc] hover:text-[#550fa8] text-slate-600 rounded-lg font-semibold text-xs transition-colors flex items-center gap-1 ml-auto"
                                                 >
                                                     View <ChevronRight className="w-3.5 h-3.5" />
                                                 </button>
@@ -285,7 +285,7 @@ export default function TeamPerformance() {
                     <div className="bg-white rounded-2xl w-full max-w-3xl shadow-xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
                         <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
                             <div>
-                                <span className="text-xs font-semibold text-orange-600">Employee Scorecard</span>
+                                <span className="text-xs font-semibold text-[#550fa8]">Employee Scorecard</span>
                                 <h3 className="text-lg font-bold text-slate-900 mt-0.5">
                                     {memberPerformance?.employeeDetails?.name || 'Employee'}
                                 </h3>
@@ -304,7 +304,7 @@ export default function TeamPerformance() {
                         <div className="p-5 overflow-y-auto flex-1 space-y-5">
                             {loadingMember ? (
                                 <div className="flex justify-center items-center py-20">
-                                    <RefreshCw className="w-7 h-7 text-orange-500 animate-spin" />
+                                    <RefreshCw className="w-7 h-7 text-[#6412c6] animate-spin" />
                                 </div>
                             ) : !memberPerformance ? (
                                 <p className="text-center py-10 text-slate-400 font-medium">Failed to load scorecard.</p>
@@ -331,7 +331,7 @@ export default function TeamPerformance() {
                                         </div>
                                         <div className="bg-white p-3.5 rounded-xl border border-slate-200">
                                             <span className="text-xs text-slate-400 block font-medium">Net Profit</span>
-                                            <span className="text-sm font-bold text-orange-600">{formatCurrency(memberPerformance.financialBreakdown?.netProfit)}</span>
+                                            <span className="text-sm font-bold text-[#550fa8]">{formatCurrency(memberPerformance.financialBreakdown?.netProfit)}</span>
                                         </div>
                                     </div>
 
@@ -363,7 +363,7 @@ export default function TeamPerformance() {
                                                         <td className="py-3 px-4 text-right text-slate-500">
                                                             {resItem.kpi?.weightage}%
                                                         </td>
-                                                        <td className="py-3 px-4 text-right font-bold text-orange-600">
+                                                        <td className="py-3 px-4 text-right font-bold text-[#550fa8]">
                                                             {resItem.result?.scorePercentage}%
                                                         </td>
                                                     </tr>

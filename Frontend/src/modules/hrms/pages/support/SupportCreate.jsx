@@ -110,7 +110,7 @@ export default function SupportCreate() {
     if (settingsLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -134,7 +134,7 @@ export default function SupportCreate() {
                         value={form.subject}
                         onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
                         placeholder="Brief summary of the issue"
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-100 focus:border-orange-400 outline-none transition-all"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] outline-none transition-all"
                         required
                     />
                 </div>
@@ -145,7 +145,7 @@ export default function SupportCreate() {
                         <select
                             value={form.category}
                             onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-100 focus:border-orange-400 outline-none transition-all"
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] outline-none transition-all"
                             required
                         >
                             <option value="" disabled>Select category</option>
@@ -158,7 +158,7 @@ export default function SupportCreate() {
                         <select
                             value={form.priority}
                             onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-100 focus:border-orange-400 outline-none transition-all"
+                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] outline-none transition-all"
                             required
                         >
                             {priorities.map(p => <option key={p} value={p}>{p}</option>)}
@@ -173,7 +173,7 @@ export default function SupportCreate() {
                         onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                         placeholder="Provide detailed information about your request..."
                         rows={6}
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-100 focus:border-orange-400 outline-none transition-all resize-y"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] outline-none transition-all resize-y"
                         required
                     />
                 </div>
@@ -232,7 +232,7 @@ export default function SupportCreate() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex items-center gap-2 bg-orange-500 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors shadow-sm shadow-orange-500/20 disabled:opacity-70"
+                        className="flex items-center gap-2 bg-[#6412c6] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#550fa8] transition-colors shadow-sm shadow-[#6412c6]/20 disabled:opacity-70"
                     >
                         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                         Submit Request

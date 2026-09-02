@@ -514,8 +514,8 @@ export default function EditRestaurantAddress() {
           </h2>
           
           {/* Informational Banner */}
-          <div className="bg-orange-50 border border-orange-100 rounded-lg px-4 py-3 mb-4">
-            <p className="text-xs text-orange-800 leading-tight">
+          <div className="bg-[#f3f5f7] border border-[#e7eaef] rounded-lg px-4 py-3 mb-4">
+            <p className="text-xs text-[#071b32] leading-tight">
               Customers and delivery partners will use this pin to locate your outlet. Please ensure it's accurate.
             </p>
           </div>

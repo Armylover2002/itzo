@@ -107,7 +107,7 @@ export default function SupportDetails() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full min-h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -132,7 +132,7 @@ export default function SupportDetails() {
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-500 uppercase tracking-wider shrink-0">
                             {ticket.ticketId}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 text-orange-600 uppercase tracking-wider shrink-0 border border-orange-100">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#f7f3fc] text-[#550fa8] uppercase tracking-wider shrink-0 border border-[#f0e7f9]">
                             {ticket.status}
                         </span>
                     </div>
@@ -158,7 +158,7 @@ export default function SupportDetails() {
                         <div key={msg._id || index} className={`flex ${isEmployee ? 'justify-end' : 'justify-start'}`}>
                             <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] ${isEmployee ? 'flex-row-reverse' : 'flex-row'}`}>
                                 {/* Avatar */}
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isEmployee ? 'bg-gradient-to-br from-orange-500 to-amber-500 text-white' : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isEmployee ? 'bg-gradient-to-br from-[#6412c6] to-amber-500 text-white' : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'}`}>
                                     {isEmployee ? <User className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
                                 </div>
                                 
@@ -168,14 +168,14 @@ export default function SupportDetails() {
                                         {isEmployee ? 'You' : 'HR/Admin'} • {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                     
-                                    <div className={`p-4 ${isEmployee ? 'bg-orange-50 text-slate-800 rounded-br-none border border-orange-100' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'}`}>
+                                    <div className={`p-4 ${isEmployee ? 'bg-[#f7f3fc] text-slate-800 rounded-br-none border border-[#f0e7f9]' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'}`}>
                                         {msg.message && (
                                             <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
                                         )}
                                         
                                         {/* Attachments */}
                                         {msg.attachments && msg.attachments.length > 0 && (
-                                            <div className={`flex flex-wrap gap-2 ${msg.message ? 'mt-3 pt-3 border-t' : ''} ${isEmployee ? 'border-orange-400/50' : 'border-slate-100'}`}>
+                                            <div className={`flex flex-wrap gap-2 ${msg.message ? 'mt-3 pt-3 border-t' : ''} ${isEmployee ? 'border-[#9359d7]/50' : 'border-slate-100'}`}>
                                                 {msg.attachments.map((att, i) => (
                                                     <a 
                                                         key={i} 
@@ -184,7 +184,7 @@ export default function SupportDetails() {
                                                         rel="noreferrer"
                                                         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                                                             isEmployee 
-                                                                ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                                                                ? 'bg-[#550fa8] hover:bg-[#460d8b] text-white' 
                                                                 : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
                                                         }`}
                                                     >
@@ -216,13 +216,13 @@ export default function SupportDetails() {
                         {attachments.length > 0 && (
                             <div className="flex flex-wrap gap-2 px-1">
                                 {attachments.map((att, i) => (
-                                    <div key={i} className="flex items-center gap-1.5 bg-orange-50 border border-orange-100 text-orange-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                                    <div key={i} className="flex items-center gap-1.5 bg-[#f7f3fc] border border-[#f0e7f9] text-[#460d8b] px-3 py-1.5 rounded-lg text-xs font-medium">
                                         <Paperclip className="w-3.5 h-3.5" />
                                         <span className="truncate max-w-[120px]">{att.name}</span>
                                         <button
                                             type="button"
                                             onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))}
-                                            className="ml-1 text-orange-400 hover:text-red-500 bg-white rounded-full p-0.5"
+                                            className="ml-1 text-[#9359d7] hover:text-red-500 bg-white rounded-full p-0.5"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
@@ -236,7 +236,7 @@ export default function SupportDetails() {
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading || sending}
-                                className="p-3.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all disabled:opacity-50 shrink-0"
+                                className="p-3.5 text-slate-400 hover:text-[#6412c6] hover:bg-[#f7f3fc] rounded-xl transition-all disabled:opacity-50 shrink-0"
                             >
                                 {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                             </button>
@@ -252,7 +252,7 @@ export default function SupportDetails() {
                                 value={replyText}
                                 onChange={e => setReplyText(e.target.value)}
                                 placeholder="Type your reply here..."
-                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 resize-none max-h-32 min-h-[50px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-orange-200 [&::-webkit-scrollbar-thumb]:rounded-full"
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] resize-none max-h-32 min-h-[50px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#d8c4f1] [&::-webkit-scrollbar-thumb]:rounded-full"
                                 rows={1}
                                 onKeyDown={e => {
                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -265,7 +265,7 @@ export default function SupportDetails() {
                             <button
                                 type="submit"
                                 disabled={sending || (!replyText.trim() && attachments.length === 0)}
-                                className="p-3.5 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-sm shadow-orange-500/20 disabled:opacity-50 disabled:shadow-none shrink-0"
+                                className="p-3.5 bg-[#6412c6] text-white rounded-xl hover:bg-[#550fa8] transition-all shadow-sm shadow-[#6412c6]/20 disabled:opacity-50 disabled:shadow-none shrink-0"
                             >
                                 {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                             </button>

@@ -244,7 +244,7 @@ export default function RestaurantConsultingSettings() {
     return (
       <div className="h-full overflow-y-auto bg-slate-50 p-4 lg:p-6 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FE5502] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6412C6] mx-auto"></div>
           <p className="mt-4 text-slate-600 font-semibold">Loading consulting page configuration...</p>
         </div>
       </div>
@@ -283,7 +283,7 @@ export default function RestaurantConsultingSettings() {
               ))}
             </div>
 
-            <Button onClick={() => handleSave()} disabled={saving} className="bg-[#FE5502] text-white font-bold hover:bg-[#E64D02] flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg">
+            <Button onClick={() => handleSave()} disabled={saving} className="bg-[#6412C6] text-white font-bold hover:bg-[#4E0E9A] flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg">
               <Save className="h-4 w-4" />
               {saving ? 'Saving...' : 'Save Settings'}
             </Button>
@@ -304,7 +304,7 @@ export default function RestaurantConsultingSettings() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-all ${
                 activeTab === tab.id
-                  ? "border-[#FE5502] text-[#FE5502]"
+                  ? "border-[#6412C6] text-[#6412C6]"
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
@@ -330,7 +330,7 @@ export default function RestaurantConsultingSettings() {
                     value={pageData.heroTitle}
                     onChange={(e) => setPageData(prev => ({ ...prev, heroTitle: e.target.value }))}
                     placeholder="Partner with Us & Scale Your Business"
-                    className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                    className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                   />
                 </div>
                 <div className="space-y-2">
@@ -340,7 +340,7 @@ export default function RestaurantConsultingSettings() {
                     value={pageData.heroCtaText}
                     onChange={(e) => setPageData(prev => ({ ...prev, heroCtaText: e.target.value }))}
                     placeholder="Become a Partner"
-                    className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                    className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                   />
                 </div>
               </div>
@@ -353,7 +353,7 @@ export default function RestaurantConsultingSettings() {
                   onChange={(e) => setPageData(prev => ({ ...prev, heroSubtitle: e.target.value }))}
                   placeholder="Get your licenses and onboard within 24 hours..."
                   rows={3}
-                  className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                  className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                 />
               </div>
 
@@ -364,7 +364,7 @@ export default function RestaurantConsultingSettings() {
                   value={pageData.heroBannerImage}
                   onChange={(e) => setPageData(prev => ({ ...prev, heroBannerImage: e.target.value }))}
                   placeholder="https://example.com/banner.jpg"
-                  className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                  className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                 />
                 <p className="text-xs text-slate-500">Leave blank to use the modern default CSS banner gradient.</p>
               </div>
@@ -379,7 +379,7 @@ export default function RestaurantConsultingSettings() {
                       value={pageData.applyButtonLabel}
                       onChange={(e) => setPageData(prev => ({ ...prev, applyButtonLabel: e.target.value }))}
                       placeholder="Apply Here"
-                      className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                      className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -389,7 +389,7 @@ export default function RestaurantConsultingSettings() {
                       value={pageData.applyFormUrl}
                       onChange={(e) => setPageData(prev => ({ ...prev, applyFormUrl: e.target.value }))}
                       placeholder="https://docs.google.com/forms/..."
-                      className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                      className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                     />
                   </div>
                 </div>
@@ -422,7 +422,7 @@ export default function RestaurantConsultingSettings() {
                           value={doc.title}
                           onChange={(e) => updateDocument(idx, 'title', e.target.value)}
                           placeholder="FSSAI License"
-                          className="text-xs border-slate-200 focus-visible:ring-[#FE5502] mt-1"
+                          className="text-xs border-slate-200 focus-visible:ring-[#6412C6] mt-1"
                         />
                       </div>
                       <div>
@@ -451,7 +451,7 @@ export default function RestaurantConsultingSettings() {
                         value={doc.description}
                         onChange={(e) => updateDocument(idx, 'description', e.target.value)}
                         placeholder="Food safety licensing detail"
-                        className="text-xs border-slate-200 focus-visible:ring-[#FE5502] mt-1"
+                        className="text-xs border-slate-200 focus-visible:ring-[#6412C6] mt-1"
                       />
                     </div>
 
@@ -462,7 +462,7 @@ export default function RestaurantConsultingSettings() {
                         onChange={(e) => updateDocument(idx, 'requirementExplanation', e.target.value)}
                         placeholder="Why is this document mandatory..."
                         rows={3}
-                        className="text-xs border-slate-200 focus-visible:ring-[#FE5502] mt-1"
+                        className="text-xs border-slate-200 focus-visible:ring-[#6412C6] mt-1"
                       />
                     </div>
                   </CardContent>
@@ -484,7 +484,7 @@ export default function RestaurantConsultingSettings() {
                 <CardTitle className="text-xl font-bold text-slate-950">Consulting Content Sections</CardTitle>
                 <CardDescription>Configure help cards explaining compliance details (e.g. FSSAI assistance, GST assistance)</CardDescription>
               </div>
-              <Button onClick={addContentSection} size="sm" className="bg-[#FE5502] text-white font-bold hover:bg-[#E64D02] rounded-xl">
+              <Button onClick={addContentSection} size="sm" className="bg-[#6412C6] text-white font-bold hover:bg-[#4E0E9A] rounded-xl">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Help Card
               </Button>
@@ -499,7 +499,7 @@ export default function RestaurantConsultingSettings() {
                         value={sec.heading}
                         onChange={(e) => updateContentSection(idx, 'heading', e.target.value)}
                         placeholder="FSSAI Registration"
-                        className="border-slate-200 text-sm focus-visible:ring-[#FE5502] mt-1 bg-white"
+                        className="border-slate-200 text-sm focus-visible:ring-[#6412C6] mt-1 bg-white"
                       />
                     </div>
                     <div className="md:col-span-2 space-y-1">
@@ -509,7 +509,7 @@ export default function RestaurantConsultingSettings() {
                         onChange={(e) => updateContentSection(idx, 'description', e.target.value)}
                         placeholder="We help restaurants acquire..."
                         rows={2}
-                        className="border-slate-200 text-sm focus-visible:ring-[#FE5502] mt-1 bg-white"
+                        className="border-slate-200 text-sm focus-visible:ring-[#6412C6] mt-1 bg-white"
                       />
                     </div>
                   </div>
@@ -537,7 +537,7 @@ export default function RestaurantConsultingSettings() {
                 <CardTitle className="text-xl font-bold text-slate-950">Compliance Partners & Consultants</CardTitle>
                 <CardDescription>Configure external experts restaurant owners can reach out to directly</CardDescription>
               </div>
-              <Button onClick={openAddVendorModal} size="sm" className="bg-[#FE5502] text-white font-bold hover:bg-[#E64D02] rounded-xl">
+              <Button onClick={openAddVendorModal} size="sm" className="bg-[#6412C6] text-white font-bold hover:bg-[#4E0E9A] rounded-xl">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Consultant
               </Button>
@@ -608,7 +608,7 @@ export default function RestaurantConsultingSettings() {
                 <CardTitle className="text-xl font-bold text-slate-950">Terms & Disclaimers</CardTitle>
                 <CardDescription>Add disclaimers, support processes, and terms of consulting support</CardDescription>
               </div>
-              <Button onClick={addTerm} size="sm" className="bg-[#FE5502] text-white font-bold hover:bg-[#E64D02] rounded-xl">
+              <Button onClick={addTerm} size="sm" className="bg-[#6412C6] text-white font-bold hover:bg-[#4E0E9A] rounded-xl">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Disclaimer
               </Button>
@@ -623,7 +623,7 @@ export default function RestaurantConsultingSettings() {
                     value={term}
                     onChange={(e) => updateTerm(idx, e.target.value)}
                     placeholder="Enter compliance disclaimer here..."
-                    className="border-slate-200 text-sm focus-visible:ring-[#FE5502] flex-1 rounded-xl"
+                    className="border-slate-200 text-sm focus-visible:ring-[#6412C6] flex-1 rounded-xl"
                   />
                   <Button
                     variant="ghost"
@@ -648,12 +648,12 @@ export default function RestaurantConsultingSettings() {
       {showVendorModal && (
         <div className="fixed inset-0 z-50 bg-black/55 backdrop-blur-sm flex items-center justify-center p-4 transition-all">
           <Card className="w-full max-w-lg border-none shadow-2xl rounded-3xl overflow-hidden animate-in zoom-in-95 duration-150">
-            <CardHeader className="bg-[#FE5502] text-white p-6 flex flex-row items-center justify-between">
+            <CardHeader className="bg-[#6412C6] text-white p-6 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-bold">
                   {editingVendorIndex !== null ? 'Edit Consultant' : 'Add Compliance Consultant'}
                 </CardTitle>
-                <p className="text-xs text-orange-100 mt-1">Configure compliance agencies, consultants or lawyers</p>
+                <p className="text-xs text-purple-100 mt-1">Configure compliance agencies, consultants or lawyers</p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setShowVendorModal(false)} className="text-white/80 hover:text-white hover:bg-white/10 rounded-full">
                 <X className="h-5 w-5" />
@@ -668,7 +668,7 @@ export default function RestaurantConsultingSettings() {
                     value={vendorForm.name}
                     onChange={(e) => setVendorForm(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Licensing Masters"
-                    className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                    className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -695,7 +695,7 @@ export default function RestaurantConsultingSettings() {
                   value={vendorForm.logo}
                   onChange={(e) => setVendorForm(prev => ({ ...prev, logo: e.target.value }))}
                   placeholder="https://example.com/logo.png"
-                  className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                  className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                 />
               </div>
 
@@ -707,7 +707,7 @@ export default function RestaurantConsultingSettings() {
                   onChange={(e) => setVendorForm(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Expert FSSAI license consultancy with 10+ years experience..."
                   rows={2}
-                  className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                  className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                 />
               </div>
 
@@ -719,7 +719,7 @@ export default function RestaurantConsultingSettings() {
                     value={vendorForm.services}
                     onChange={(e) => setVendorForm(prev => ({ ...prev, services: e.target.value }))}
                     placeholder="FSSAI Basic, State & Central, GST"
-                    className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                    className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                   />
                 </div>
                 <div className="space-y-1">
@@ -729,7 +729,7 @@ export default function RestaurantConsultingSettings() {
                     value={vendorForm.pricingInfo}
                     onChange={(e) => setVendorForm(prev => ({ ...prev, pricingInfo: e.target.value }))}
                     placeholder="Starts at ₹1,999 + Govt Fees"
-                    className="rounded-xl border-slate-200 focus-visible:ring-[#FE5502]"
+                    className="rounded-xl border-slate-200 focus-visible:ring-[#6412C6]"
                   />
                 </div>
               </div>
@@ -741,15 +741,15 @@ export default function RestaurantConsultingSettings() {
                   value={vendorForm.contactDetails}
                   onChange={(e) => setVendorForm(prev => ({ ...prev, contactDetails: e.target.value }))}
                   placeholder="+91 98765 43210 / info@masters.com"
-                  className="rounded-xl border-slate-200 font-mono focus-visible:ring-[#FE5502]"
+                  className="rounded-xl border-slate-200 font-mono focus-visible:ring-[#6412C6]"
                 />
               </div>
 
               <div className="flex justify-end gap-3 border-t pt-4">
-                <Button variant="outline" onClick={() => setShowVendorModal(false)} className="rounded-xl hover:bg-orange-50 hover:text-[#FE5502] hover:border-[#FE5502]">
+                <Button variant="outline" onClick={() => setShowVendorModal(false)} className="rounded-xl hover:bg-purple-50 hover:text-[#6412C6] hover:border-[#6412C6]">
                   Cancel
                 </Button>
-                <Button onClick={saveVendor} className="bg-[#FE5502] text-white hover:bg-[#E64D02] rounded-xl px-5 font-bold">
+                <Button onClick={saveVendor} className="bg-[#6412C6] text-white hover:bg-[#4E0E9A] rounded-xl px-5 font-bold">
                   {editingVendorIndex !== null ? 'Update Consultant' : 'Add Consultant'}
                 </Button>
               </div>

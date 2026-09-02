@@ -197,7 +197,7 @@ export default function BusinessPlanPage() {
               </div>
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="bg-[#FE5502] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Active Plan</span>
+                  <span className="bg-[#0D315B] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">Active Plan</span>
                 </div>
                 <h2 className="text-3xl font-black mb-1">{activeSub.planId?.name}</h2>
                 <p className="text-slate-400 text-sm mb-6 max-w-md">{activeSub.planId?.description}</p>
@@ -268,7 +268,7 @@ export default function BusinessPlanPage() {
                 <motion.div 
                   key={plan._id} 
                   whileHover={{ y: -5 }}
-                  className={`bg-white rounded-3xl p-6 border-2 transition-all shadow-sm flex flex-col ${isCurrentPlan ? 'border-[#FE5502]' : 'border-slate-100'}`}
+                  className={`bg-white rounded-3xl p-6 border-2 transition-all shadow-sm flex flex-col ${isCurrentPlan ? 'border-[#0D315B]' : 'border-slate-100'}`}
                 >
                   <div className="flex-1">
                     <h3 className="text-xl font-black text-slate-900 mb-2">{plan.name}</h3>
@@ -292,12 +292,12 @@ export default function BusinessPlanPage() {
                     <div className="bg-slate-50 border border-slate-200 rounded-3xl p-5 relative overflow-hidden group/info">
                       <div className="flex items-start gap-3 relative z-10">
                         <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
-                          <Info className="w-4 h-4 text-slate-400 group-hover/info:text-[#FE5502] transition-colors" />
+                          <Info className="w-4 h-4 text-slate-400 group-hover/info:text-[#0D315B] transition-colors" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-bold text-slate-900 text-sm">Auto Activated</p>
-                            <span className="bg-[#FE5502]/10 text-[#FE5502] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Smart Flow</span>
+                            <span className="bg-[#0D315B]/10 text-[#0D315B] text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">Smart Flow</span>
                           </div>
                           <p className="text-slate-500 text-[11px] leading-relaxed">
                             One-Day Pass is activated automatically when you turn ON delivery. 
@@ -306,14 +306,14 @@ export default function BusinessPlanPage() {
                         </div>
                       </div>
                       <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover/info:opacity-[0.07] transition-opacity">
-                        <Zap className="w-16 h-16 text-[#FE5502]" />
+                        <Zap className="w-16 h-16 text-[#0D315B]" />
                       </div>
                     </div>
                   ) : (
                     <Button 
                       onClick={() => handlePurchase(plan)}
                       disabled={!!purchasing || hasLockedSubscription}
-                      className={`w-full h-12 rounded-2xl font-bold text-sm tracking-wide transition-all ${(isCurrentPlan || isLocked) ? 'bg-slate-100 text-slate-400' : 'bg-[#FE5502] hover:bg-[#E64D02] text-white shadow-lg shadow-[#FE5502]/20'}`}
+                      className={`w-full h-12 rounded-2xl font-bold text-sm tracking-wide transition-all ${(isCurrentPlan || isLocked) ? 'bg-slate-100 text-slate-400' : 'bg-[#0D315B] hover:bg-[#0b2a4d] text-white shadow-lg shadow-[#0D315B]/20'}`}
                     >
                       {purchasing === plan._id ? (
                         <Loader2 className="w-5 h-5 animate-spin" />

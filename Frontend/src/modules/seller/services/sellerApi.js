@@ -23,6 +23,10 @@ export const sellerApi = {
   requestOtp: (phone) =>
     call(axiosInstance.post("/seller/auth/request-otp", { phone })),
 
+  getTerms: () => call(axiosInstance.get("/food/pages/terms?role=seller")),
+  getPrivacy: () => call(axiosInstance.get("/food/pages/privacy?role=seller")),
+  getSupport: () => call(axiosInstance.get("/food/pages/support?role=seller")),
+
   verifyOtp: (phone, otp) =>
     call(axiosInstance.post("/seller/auth/verify-otp", { phone, otp })),
 
@@ -69,6 +73,7 @@ export const sellerApi = {
 
   getProfile: () => call(axiosInstance.get("/seller/profile")),
 
+  getPublicZones: () => call(axiosInstance.get("/quick-commerce/zones/public")),
   getQuickZonesPublic: () => call(axiosInstance.get("/quick-commerce/zones/public")),
 
   updateProfile: (data = {}) =>

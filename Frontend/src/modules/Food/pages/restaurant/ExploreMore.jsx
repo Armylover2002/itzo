@@ -1517,7 +1517,7 @@ export default function ExploreMore() {
               {/* Content */}
               <div className="px-6 py-6">
                 {/* Status Message */}
-                <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="mb-6 p-4 bg-[#f3f5f7] rounded-lg border border-[#c3ccd6]">
                   <p className="text-base font-semibold text-gray-900 mb-1">
                     Restaurant is scheduled off
                   </p>

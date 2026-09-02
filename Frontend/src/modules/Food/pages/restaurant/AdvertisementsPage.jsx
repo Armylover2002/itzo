@@ -166,8 +166,8 @@ export default function AdvertisementsPage() {
                         </h3>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                           ad.status === "Running"
-                            ? "bg-orange-100 text-orange-700"
-                            : "bg-orange-100 text-orange-700"
+                            ? "bg-[#e7eaef] text-[#092240]"
+                            : "bg-[#e7eaef] text-[#092240]"
                         }`}>
                           {ad.status}
                         </span>

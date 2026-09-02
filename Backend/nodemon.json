@@ -1,7 +1,8 @@
 {
   "watch": ["src", "server.js", ".env"],
-  "ext": "js,mjs,cjs,json",
+  "ext": "js,mjs,cjs,json,env",
   "ignore": ["node_modules", "logs"],
-  "signal": "SIGTERM",
-  "delay": "2500"
+  "signal": "SIGUSR2",
+  "delay": "2500",
+  "legacyWatch": true
 }

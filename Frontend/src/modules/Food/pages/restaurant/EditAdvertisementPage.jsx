@@ -410,7 +410,7 @@ export default function EditAdvertisementPage() {
 
                 {/* Preview Button */}
                 <div className="absolute top-4 right-4 flex flex-col items-center gap-2">
-                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-[#e7eaef] rounded-lg flex items-center justify-center">
                     <Megaphone className="w-5 h-5 text-primary" />
                   </div>
                   <button className="px-3 py-1 bg-[#ff8100] hover:bg-[#e67300] text-white text-xs font-medium rounded-lg transition-colors">

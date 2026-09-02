@@ -213,7 +213,7 @@ const AddProduct = () => {
           <Button
             onClick={handleSave}
             disabled={isSaving}
-            className="min-w-[140px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
+            className="min-w-[140px] bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
             {isSaving ? (
               <>
                 <HiOutlineArrowPath className="mr-2 h-5 w-5 animate-spin" />
@@ -242,7 +242,7 @@ const AddProduct = () => {
               className={cn(
                 "w-full flex items-center space-x-3 px-4 py-3 rounded-md text-xs font-bold transition-all text-left",
                 modalTab === tab.id
-                  ? "bg-white text-primary-orange shadow-sm ring-1 ring-slate-100"
+                  ? "bg-white text-[#E71D28] shadow-sm ring-1 ring-slate-100"
                   : "text-slate-600 hover:bg-slate-100",
               )}>
               <tab.icon className="h-4 w-4" />

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import ms from 'ms';
 import { FoodDeliveryPartner } from '../models/deliveryPartner.model.js';
 import { DeliverySupportTicket } from '../models/supportTicket.model.js';
 import { DeliveryBonusTransaction } from '../../admin/models/deliveryBonusTransaction.model.js';
@@ -8,6 +9,9 @@ import { uploadImageBuffer } from '../../../../services/upload.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { getDeliveryCashLimitSettings } from '../../admin/services/admin.service.js';
 import { ensureDailyPassEligibility, activateDailyPass } from '../../subscriptions/services/wallet.service.js';
+import { signAccessToken, signRefreshToken } from '../../../../core/auth/token.util.js';
+import { FoodRefreshToken } from '../../../../core/refreshTokens/refreshToken.model.js';
+import { config } from '../../../../config/env.js';
 
 export const registerDeliveryPartner = async (payload, files) => {
     const { 
@@ -17,14 +21,20 @@ export const registerDeliveryPartner = async (payload, files) => {
     } = payload;
     const refRaw = typeof payload?.ref === 'string' ? String(payload.ref).trim() : '';
 
-    const existing = await FoodDeliveryPartner.findOne({ phone });
+    const digits = String(phone || '').replace(/\D/g, '');
+    const normalizedPhone = digits.slice(-10);
+
+    const existing = await FoodDeliveryPartner.findOne({
+        $or: [
+            { phone: phone },
+            { phone: normalizedPhone },
+            { phone: { $regex: new RegExp(normalizedPhone + '$') } }
+        ]
+    });
+
     if (existing) {
-        if (!existing.isDeleted && existing.status !== 'rejected') {
-            throw new ValidationError('Delivery partner with this phone already exists');
-        }
-        if (existing.status === 'rejected' && !existing.isDeleted) {
-            // If rejected, delete the old record so they can start fresh with same phone
-            await FoodDeliveryPartner.deleteMany({ phone });
+        if (!existing.isDeleted && existing.status === 'approved') {
+            throw new ValidationError('Delivery partner with this phone already exists and is active. Please login.');
         }
     }
 
@@ -48,31 +58,45 @@ export const registerDeliveryPartner = async (payload, files) => {
 
     let partner;
 
-    if (existing && existing.isDeleted) {
-        // Resurrect soft-deleted account
+    if (existing) {
+        const isReapplied = existing.status === 'rejected' || existing.status === 'pending';
+
         existing.isDeleted = false;
         existing.deletedAt = undefined;
         existing.status = 'pending';
-        existing.isActive = false;
-        
+        existing.isActive = true;
+
+        if (isReapplied) {
+            existing.applicationType = 'reapplied';
+            existing.reappliedAt = new Date();
+            existing.reapplicationCount = (existing.reapplicationCount || 0) + 1;
+            if (existing.rejectionReason) {
+                existing.previousRejectionReason = existing.rejectionReason;
+            }
+            existing.rejectionReason = undefined;
+            existing.rejectedAt = undefined;
+            existing.rejectedBy = undefined;
+        }
+
         existing.name = name;
+        existing.phone = phone;
         if (email && String(email).trim()) existing.email = String(email).trim();
-        existing.countryCode = countryCode;
-        existing.address = address;
-        existing.city = city;
-        existing.state = state;
-        existing.vehicleType = vehicleType;
-        existing.vehicleName = vehicleName;
-        existing.vehicleNumber = vehicleNumber;
-        existing.drivingLicenseNumber = drivingLicenseNumber;
-        existing.panNumber = panNumber;
-        existing.aadharNumber = aadharNumber;
-        
+        if (countryCode) existing.countryCode = countryCode;
+        if (address) existing.address = address;
+        if (city) existing.city = city;
+        if (state) existing.state = state;
+        if (vehicleType) existing.vehicleType = vehicleType;
+        if (vehicleName) existing.vehicleName = vehicleName;
+        if (vehicleNumber) existing.vehicleNumber = vehicleNumber;
+        if (drivingLicenseNumber) existing.drivingLicenseNumber = drivingLicenseNumber;
+        if (panNumber) existing.panNumber = panNumber;
+        if (aadharNumber) existing.aadharNumber = aadharNumber;
+
         if (images.profilePhoto) existing.profilePhoto = images.profilePhoto;
         if (images.aadharPhoto) existing.aadharPhoto = images.aadharPhoto;
         if (images.panPhoto) existing.panPhoto = images.panPhoto;
         if (images.drivingLicensePhoto) existing.drivingLicensePhoto = images.drivingLicensePhoto;
-        
+
         await existing.save();
         partner = existing;
     } else {
@@ -80,7 +104,7 @@ export const registerDeliveryPartner = async (payload, files) => {
             name,
             phone,
             email: email && String(email).trim() ? String(email).trim() : undefined,
-            countryCode,
+            countryCode: countryCode || '+91',
             address,
             city,
             state,
@@ -91,6 +115,7 @@ export const registerDeliveryPartner = async (payload, files) => {
             panNumber,
             aadharNumber,
             status: 'pending',
+            applicationType: 'new',
             ...images
         });
     }
@@ -102,11 +127,13 @@ export const registerDeliveryPartner = async (payload, files) => {
         } else {
             partner.fcmTokens = [fcmToken];
         }
+        await partner.save();
     }
 
     // Ensure referralCode exists for sharing.
     if (!partner.referralCode) {
         partner.referralCode = String(partner._id);
+        await partner.save();
     }
 
     // Store referredBy (no credit here; credit happens on admin approval).
@@ -126,12 +153,11 @@ export const registerDeliveryPartner = async (payload, files) => {
             }).select('_id').lean();
         }
 
-        if (referrer) {
+        if (referrer && (!partner.referredBy || String(partner.referredBy) !== String(referrer._id))) {
             partner.referredBy = referrer._id;
+            await partner.save();
         }
     }
-
-    await partner.save();
 
     try {
         const { notifyAdminsSafely } = await import('../../../../core/notifications/firebase.service.js');
@@ -149,7 +175,91 @@ export const registerDeliveryPartner = async (payload, files) => {
         console.error('Failed to notify admins of new delivery partner registration:', e);
     }
 
-    return partner.toObject();
+    return partner.toObject ? partner.toObject() : partner;
+};
+
+export const getDeliveryOnboardingStatus = async (phone) => {
+    if (!phone) {
+        throw new ValidationError('Phone number is required');
+    }
+    const digits = String(phone).replace(/\D/g, '');
+    const last10 = digits.slice(-10);
+
+    const partner = await FoodDeliveryPartner.findOne({
+        $or: [
+            { phone: String(phone).trim() },
+            { phone: digits },
+            { phone: last10 },
+            { phone: { $regex: new RegExp(last10 + '$') } }
+        ]
+    });
+
+    if (!partner || partner.isDeleted) {
+        return { exists: false };
+    }
+
+    let auth = null;
+    if (partner.status === 'approved' && partner.isActive !== false) {
+        const payload = {
+            userId: partner._id.toString(),
+            role: 'DELIVERY_PARTNER'
+        };
+        const accessToken = signAccessToken(payload);
+        const refreshToken = signRefreshToken(payload);
+        const ttlMs = ms(config.jwtRefreshExpiresIn || '7d');
+        const expiresAt = new Date(Date.now() + ttlMs);
+
+        await FoodRefreshToken.create({
+            userId: partner._id,
+            token: refreshToken,
+            expiresAt
+        });
+
+        auth = {
+            accessToken,
+            refreshToken,
+            user: partner
+        };
+    }
+
+    return {
+        exists: true,
+        status: partner.status || 'pending',
+        applicationType: partner.applicationType || 'new',
+        reappliedAt: partner.reappliedAt || null,
+        reapplicationCount: partner.reapplicationCount || 0,
+        createdAt: partner.createdAt,
+        updatedAt: partner.updatedAt,
+        rejectionReason: partner.rejectionReason || null,
+        previousRejectionReason: partner.previousRejectionReason || null,
+        data: {
+            _id: partner._id,
+            name: partner.name || '',
+            phone: partner.phone || '',
+            email: partner.email || '',
+            countryCode: partner.countryCode || '+91',
+            address: partner.address || '',
+            city: partner.city || '',
+            state: partner.state || '',
+            vehicleType: partner.vehicleType || '',
+            vehicleName: partner.vehicleName || '',
+            vehicleNumber: partner.vehicleNumber || '',
+            drivingLicenseNumber: partner.drivingLicenseNumber || '',
+            panNumber: partner.panNumber || '',
+            aadharNumber: partner.aadharNumber || '',
+            profilePhoto: partner.profilePhoto || null,
+            aadharPhoto: partner.aadharPhoto || null,
+            panPhoto: partner.panPhoto || null,
+            drivingLicensePhoto: partner.drivingLicensePhoto || null,
+            bankAccountHolderName: partner.bankAccountHolderName || '',
+            bankAccountNumber: partner.bankAccountNumber || '',
+            bankIfscCode: partner.bankIfscCode || '',
+            bankName: partner.bankName || '',
+            upiId: partner.upiId || '',
+            upiQrCode: partner.upiQrCode || null
+        },
+        auth
+    };
 };
 
 export const updateDeliveryPartnerProfile = async (userId, payload, files) => {

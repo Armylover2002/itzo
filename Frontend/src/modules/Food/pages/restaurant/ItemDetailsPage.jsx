@@ -1348,7 +1348,7 @@ export default function ItemDetailsPage() {
                   </div>
                 </div>
               ) : (
-                <div className="rounded-lg border border-orange-100 bg-orange-50 px-3 py-2 text-sm text-orange-700">
+                <div className="rounded-lg border border-[#e7eaef] bg-[#f3f5f7] px-3 py-2 text-sm text-[#092240]">
                   Customers will see the lowest variant price first.
                 </div>
               )}
@@ -1362,7 +1362,7 @@ export default function ItemDetailsPage() {
                   <button
                     type="button"
                     onClick={handleAddVariant}
-                    className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-3 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-100"
+                    className="inline-flex items-center gap-1 rounded-full border border-[#c3ccd6] bg-[#f3f5f7] px-3 py-1.5 text-xs font-semibold text-[#092240] hover:bg-[#e7eaef]"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     Add variant
@@ -1478,7 +1478,7 @@ export default function ItemDetailsPage() {
             <button
               onClick={() => setIsRecommended(!isRecommended)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isRecommended
-                ? "bg-orange-100 text-orange-700"
+                ? "bg-[#e7eaef] text-[#092240]"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
             >

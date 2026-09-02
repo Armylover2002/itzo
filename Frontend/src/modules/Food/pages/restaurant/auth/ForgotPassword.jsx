@@ -203,7 +203,7 @@ export default function RestaurantForgotPassword() {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center text-white pointer-events-none">
-          <div className="bg-[#FE5502]/80 rounded-r-full py-10 xl:py-20 pl-10 xl:pl-14 pr-10 xl:pr-20 max-w-[70%] shadow-xl backdrop-blur-[1px]">
+          <div className="bg-[#0D315B]/80 rounded-r-full py-10 xl:py-20 pl-10 xl:pl-14 pr-10 xl:pr-20 max-w-[70%] shadow-xl backdrop-blur-[1px]">
             <h1 className="text-3xl xl:text-4xl font-extrabold mb-4 tracking-wide leading-tight">
               RESET YOUR
               <br />
@@ -265,7 +265,7 @@ export default function RestaurantForgotPassword() {
 
                 <Button
                   type="submit"
-                  className="h-11 w-full bg-[#FE5502] hover:bg-[#FE5502]/90 text-white"
+                  className="h-11 w-full bg-[#0D315B] hover:bg-[#0D315B]/90 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "Sending..." : "Send Verification Code"}
@@ -295,7 +295,7 @@ export default function RestaurantForgotPassword() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="h-14 w-14 text-center text-2xl font-semibold border-2 focus-visible:ring-2 focus-visible:ring-[#FE5502]"
+                        className="h-14 w-14 text-center text-2xl font-semibold border-2 focus-visible:ring-2 focus-visible:ring-[#0D315B]"
                         disabled={isLoading}
                       />
                     ))}
@@ -309,7 +309,7 @@ export default function RestaurantForgotPassword() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex items-center gap-2 text-[#FE5502] hover:text-[#FE5502]/80 transition-colors"
+                    className="flex items-center gap-2 text-[#0D315B] hover:text-[#0D315B]/80 transition-colors"
                     disabled={isLoading}
                   >
                     <ArrowLeft className="h-4 w-4" />
@@ -319,7 +319,7 @@ export default function RestaurantForgotPassword() {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={resendTimer > 0 || isLoading}
-                    className="text-[#FE5502] hover:underline font-medium disabled:text-gray-400 disabled:no-underline"
+                    className="text-[#0D315B] hover:underline font-medium disabled:text-gray-400 disabled:no-underline"
                   >
                     {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend code"}
                   </button>
@@ -327,7 +327,7 @@ export default function RestaurantForgotPassword() {
 
                 <Button
                   type="submit"
-                  className="h-11 w-full bg-[#FE5502] hover:bg-[#FE5502]/90 text-white"
+                  className="h-11 w-full bg-[#0D315B] hover:bg-[#0D315B]/90 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "Verifying..." : "Verify Code"}
@@ -399,7 +399,7 @@ export default function RestaurantForgotPassword() {
 
                 <Button
                   type="submit"
-                  className="h-11 w-full bg-[#FE5502] hover:bg-[#FE5502]/90 text-white"
+                  className="h-11 w-full bg-[#0D315B] hover:bg-[#0D315B]/90 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? "Resetting..." : "Reset Password"}
@@ -410,7 +410,7 @@ export default function RestaurantForgotPassword() {
             <div className="pt-4 border-t">
               <button
                 onClick={() => navigate("/restaurant/login")}
-                className="flex items-center gap-2 text-sm text-[#FE5502] hover:text-[#FE5502]/80 transition-colors"
+                className="flex items-center gap-2 text-sm text-[#0D315B] hover:text-[#0D315B]/80 transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to login

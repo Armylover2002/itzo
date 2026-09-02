@@ -469,9 +469,9 @@ export default function DiningReservations() {
                         transition={{ duration: 0.3 }}
                         className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow"
                     >
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50/50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-[#f3f5f7]/50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                         <div className="flex items-center gap-4 relative">
-                            <div className="bg-primary p-3 rounded-xl text-white shadow-lg shadow-orange-200">
+                            <div className="bg-primary p-3 rounded-xl text-white shadow-lg shadow-[#c3ccd6]">
                                 <Users className="w-6 h-6" />
                             </div>
                             <div>
@@ -507,9 +507,9 @@ export default function DiningReservations() {
                         transition={{ duration: 0.3, delay: 0.2 }}
                         className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow"
                     >
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50/50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-[#f3f5f7]/50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                         <div className="flex items-center gap-4 relative">
-                            <div className="bg-orange-600 p-3 rounded-xl text-white shadow-lg shadow-orange-200">
+                            <div className="bg-[#0b2a4d] p-3 rounded-xl text-white shadow-lg shadow-[#c3ccd6]">
                                 <Clock4 className="w-6 h-6" />
                             </div>
                             <div>
@@ -940,8 +940,8 @@ export default function DiningReservations() {
                                                             <Badge className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
                                                                 String(booking.status || "").toLowerCase() === 'confirmed' ? 'bg-amber-100 text-amber-700' :
                                                                 String(booking.status || "").toLowerCase() === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
-                                                                String(booking.status || "").toLowerCase() === 'checked-in' ? 'bg-orange-100 text-orange-700' :
-                                                                String(booking.status || "").toLowerCase() === 'completed' ? 'bg-orange-100 text-orange-700' :
+                                                                String(booking.status || "").toLowerCase() === 'checked-in' ? 'bg-[#e7eaef] text-[#092240]' :
+                                                                String(booking.status || "").toLowerCase() === 'completed' ? 'bg-[#e7eaef] text-[#092240]' :
                                                                 'bg-rose-100 text-rose-700'
                                                             }`}>
                                                                 {booking.status}
@@ -969,7 +969,7 @@ export default function DiningReservations() {
                                                             {String(booking.status || "").toLowerCase() === 'accepted' && (
                                                                 <button
                                                                     onClick={() => handleStatusUpdate(booking._id, 'checked-in')}
-                                                                    className="px-3 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+                                                                    className="px-3 py-1.5 bg-[#0b2a4d] text-white text-xs font-bold rounded-lg hover:bg-[#092240] transition-colors shadow-sm"
                                                                 >
                                                                     Check-in
                                                                 </button>
@@ -985,7 +985,7 @@ export default function DiningReservations() {
                                                             {booking.specialRequest && (
                                                                 <button
                                                                     title={booking.specialRequest}
-                                                                    className="p-2 text-primary hover:bg-orange-50 rounded-lg transition-colors border border-orange-100 bg-orange-50/50"
+                                                                    className="p-2 text-primary hover:bg-[#f3f5f7] rounded-lg transition-colors border border-[#e7eaef] bg-[#f3f5f7]/50"
                                                                 >
                                                                     <MessageSquare className="w-4 h-4" />
                                                                 </button>
@@ -1024,8 +1024,8 @@ export default function DiningReservations() {
                                                 <Badge className={`rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${
                                                     String(booking.status || "").toLowerCase() === 'confirmed' ? 'bg-amber-100 text-amber-700' :
                                                     String(booking.status || "").toLowerCase() === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
-                                                    String(booking.status || "").toLowerCase() === 'checked-in' ? 'bg-orange-100 text-orange-700' :
-                                                    String(booking.status || "").toLowerCase() === 'completed' ? 'bg-orange-100 text-orange-700' :
+                                                    String(booking.status || "").toLowerCase() === 'checked-in' ? 'bg-[#e7eaef] text-[#092240]' :
+                                                    String(booking.status || "").toLowerCase() === 'completed' ? 'bg-[#e7eaef] text-[#092240]' :
                                                     'bg-rose-100 text-rose-700'
                                                 }`}>
                                                     {booking.status}
@@ -1054,7 +1054,7 @@ export default function DiningReservations() {
                                             </div>
 
                                             {booking.specialRequest && (
-                                                <div className="flex items-start gap-2 p-3 bg-orange-50 text-orange-700 rounded-xl mb-4 text-xs font-medium border border-orange-100">
+                                                <div className="flex items-start gap-2 p-3 bg-[#f3f5f7] text-[#092240] rounded-xl mb-4 text-xs font-medium border border-[#e7eaef]">
                                                     <MessageSquare className="w-4 h-4 mt-0.5 shrink-0" />
                                                     <p>{booking.specialRequest}</p>
                                                 </div>
@@ -1080,7 +1080,7 @@ export default function DiningReservations() {
                                                 {String(booking.status || "").toLowerCase() === 'accepted' && (
                                                     <button
                                                         onClick={() => handleStatusUpdate(booking._id, 'checked-in')}
-                                                        className="flex-1 py-2.5 bg-orange-600 text-white text-xs font-black rounded-xl hover:bg-orange-700 transition-colors uppercase tracking-widest"
+                                                        className="flex-1 py-2.5 bg-[#0b2a4d] text-white text-xs font-black rounded-xl hover:bg-[#092240] transition-colors uppercase tracking-widest"
                                                     >
                                                         Check-in
                                                     </button>

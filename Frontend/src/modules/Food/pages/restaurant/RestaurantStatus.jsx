@@ -481,7 +481,7 @@ export default function RestaurantStatus() {
             <div className="flex-1">
               <p className="text-base font-bold text-gray-900 mb-1.5">Delivery status</p>
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${deliveryStatus ? 'bg-[#FE5502]' : 'bg-gray-600'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${deliveryStatus ? 'bg-[#0D315B]' : 'bg-gray-600'}`}></div>
                 <p className="text-sm text-gray-500">
                   {deliveryStatus ? 'Receiving orders' : 'Not receiving orders'}
                 </p>
@@ -490,7 +490,7 @@ export default function RestaurantStatus() {
             <Switch
               checked={deliveryStatus}
               onCheckedChange={handleDeliveryStatusChange}
-              className="ml-4 data-[state=unchecked]:bg-gray-300 data-[state=checked]:bg-[#FE5502]"
+              className="ml-4 data-[state=unchecked]:bg-gray-300 data-[state=checked]:bg-[#0D315B]"
             />
           </div>
 
@@ -544,8 +544,8 @@ export default function RestaurantStatus() {
       <Dialog open={showOutletClosedDialog} onOpenChange={setShowOutletClosedDialog}>
         <DialogContent className="sm:max-w-md p-4 w-[90%] gap-2 flex flex-col">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
-              <Clock className="h-8 w-8 text-orange-600" />
+            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#e7eaef]">
+              <Clock className="h-8 w-8 text-[#0b2a4d]" />
             </div>
             <DialogTitle className="text-lg font-semibold text-gray-900 text-center">
               Outlet Timings Closed
@@ -573,7 +573,7 @@ export default function RestaurantStatus() {
       <Dialog open={showOutsideTimingsDialog} onOpenChange={setShowOutsideTimingsDialog}>
         <DialogContent className="sm:max-w-md p-4 w-[90%] gap-2 flex flex-col">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
+            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-[#e7eaef]">
               <span className="text-3xl">??</span>
             </div>
             <DialogTitle className="text-lg font-semibold text-gray-900 text-center">
@@ -622,11 +622,11 @@ export default function RestaurantStatus() {
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left space-y-2">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Benefits</p>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#FE5502]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#0D315B]" />
                   <p className="text-xs text-slate-700">Start receiving orders immediately</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#FE5502]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#0D315B]" />
                   <p className="text-xs text-slate-700">Valid until midnight tonight</p>
                 </div>
               </div>

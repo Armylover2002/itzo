@@ -403,7 +403,7 @@ export default function SubscriptionManagement() {
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                        <Settings2 className="w-7 h-7 text-[#FE5502]" />
+                        <Settings2 className="w-7 h-7 text-[#6412C6]" />
                         <span>Subscription Management</span>
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">Manage plans for restaurants and delivery partners</p>
@@ -411,7 +411,7 @@ export default function SubscriptionManagement() {
                 {canCreatePlan && (
                     <button 
                         onClick={() => handleOpenModal()}
-                        className="bg-[#FE5502] hover:bg-[#E64D02] text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                        className="bg-[#6412C6] hover:bg-[#4E0E9A] text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm"
                     >
                         <Plus className="w-5 h-5" />
                         <span>Create New Plan</span>
@@ -439,7 +439,7 @@ export default function SubscriptionManagement() {
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1">
                     <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                        <CreditCard className="w-4 h-4 text-[#FE5502]" />
+                        <CreditCard className="w-4 h-4 text-[#6412C6]" />
                         Require subscription for {activeTab === "RESTAURANT" ? "restaurants" : "delivery partners"}
                     </h3>
                     <p className="text-xs text-slate-500 mt-1 max-w-2xl">
@@ -467,7 +467,7 @@ export default function SubscriptionManagement() {
                     onClick={() => handleToggleEnforcement(!enforcement[enforcementKey])}
                     title={!canEditPlan ? "You don't have permission to change this" : undefined}
                     className={`relative w-14 h-7 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed ${
-                        enforcement[enforcementKey] ? "bg-[#FE5502]" : "bg-slate-300"
+                        enforcement[enforcementKey] ? "bg-[#6412C6]" : "bg-slate-300"
                     }`}
                 >
                     <span
@@ -487,7 +487,7 @@ export default function SubscriptionManagement() {
                 <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Active Subscribers</p>
                     <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                        {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin inline text-[#FE5502]" /> : overviewData?.activeSubscribers?.total || 0}
+                        {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin inline text-[#6412C6]" /> : overviewData?.activeSubscribers?.total || 0}
                     </h3>
                 </div>
                 <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -506,7 +506,7 @@ export default function SubscriptionManagement() {
                             placeholder="Search by plan name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 focus:border-[#FE5502] transition-all"
+                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 focus:border-[#6412C6] transition-all"
                         />
                     </div>
                     
@@ -515,7 +515,7 @@ export default function SubscriptionManagement() {
                             onClick={() => setShowInactive(!showInactive)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                                 showInactive 
-                                    ? 'bg-orange-50 text-[#FE5502] border border-orange-200' 
+                                    ? 'bg-purple-50 text-[#6412C6] border border-purple-200' 
                                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                             }`}
                         >
@@ -541,7 +541,7 @@ export default function SubscriptionManagement() {
                                 <tr>
                                     <td colSpan="5" className="px-6 py-12 text-center">
                                         <div className="flex flex-col items-center gap-2">
-                                            <Loader2 className="w-8 h-8 text-[#FE5502] animate-spin" />
+                                            <Loader2 className="w-8 h-8 text-[#6412C6] animate-spin" />
                                             <p className="text-sm text-slate-500">Loading plans...</p>
                                         </div>
                                     </td>
@@ -586,7 +586,7 @@ export default function SubscriptionManagement() {
                                                 {canEditPlan && (
                                                     <button 
                                                         onClick={() => handleOpenModal(plan)}
-                                                        className="p-2 text-slate-400 hover:text-primary hover:bg-orange-50 rounded-lg transition-all"
+                                                        className="p-2 text-slate-400 hover:text-primary hover:bg-purple-50 rounded-lg transition-all"
                                                     >
                                                         <Edit3 className="w-4 h-4" />
                                                     </button>
@@ -615,7 +615,7 @@ export default function SubscriptionManagement() {
             {/* SECTION: SUBSCRIPTION BUSINESS OVERVIEW */}
             <div className="mb-6">
                 <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <Layers className="w-6 h-6 text-[#FE5502]" />
+                    <Layers className="w-6 h-6 text-[#6412C6]" />
                     <span>Subscription Business Overview</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-1">Real-time revenue monitoring, active subscriber metrics, and daily pass accounting</p>
@@ -632,11 +632,11 @@ export default function SubscriptionManagement() {
                         <div>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Revenue</p>
                             <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#FE5502]" /> : `₹${overviewData?.totalRevenue || 0}`}
+                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#6412C6]" /> : `₹${overviewData?.totalRevenue || 0}`}
                             </h3>
                             <p className="text-[10px] text-slate-400 mt-1">All time collected</p>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-orange-50 text-[#FE5502] transition-colors group-hover:bg-[#FE5502] group-hover:text-white">
+                        <div className="p-2.5 rounded-lg bg-purple-50 text-[#6412C6] transition-colors group-hover:bg-[#6412C6] group-hover:text-white">
                             <DollarSign className="w-5 h-5" />
                         </div>
                     </div>
@@ -651,13 +651,13 @@ export default function SubscriptionManagement() {
                         <div>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Paid Users</p>
                             <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#FE5502]" /> : overviewData?.activeSubscribers?.total || 0}
+                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#6412C6]" /> : overviewData?.activeSubscribers?.total || 0}
                             </h3>
                             <p className="text-[10px] text-slate-500 mt-1 font-medium">
                                 {overviewData?.activeSubscribers?.restaurants || 0} Restaurants | {overviewData?.activeSubscribers?.deliveryPartners || 0} Delivery
                             </p>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-orange-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                        <div className="p-2.5 rounded-lg bg-purple-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                             <Activity className="w-5 h-5" />
                         </div>
                     </div>
@@ -672,13 +672,13 @@ export default function SubscriptionManagement() {
                         <div>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Daily Pass Count</p>
                             <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#FE5502]" /> : overviewData?.oneDayPassCount || 0}
+                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#6412C6]" /> : overviewData?.oneDayPassCount || 0}
                             </h3>
                             <p className="text-[10px] text-red-500 mt-1 font-semibold">
                                 Spend: ₹{overviewData?.oneDayPassSpend || 0} (Not counted in revenue)
                             </p>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-orange-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                        <div className="p-2.5 rounded-lg bg-purple-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                             <Truck className="w-5 h-5" />
                         </div>
                     </div>
@@ -693,7 +693,7 @@ export default function SubscriptionManagement() {
                         <div>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Recharge Revenue</p>
                             <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#FE5502]" /> : `₹${overviewData?.walletRechargeRevenue || 0}`}
+                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#6412C6]" /> : `₹${overviewData?.walletRechargeRevenue || 0}`}
                             </h3>
                             <p className="text-[10px] text-slate-400 mt-1">Wallet recharge payments</p>
                         </div>
@@ -712,11 +712,11 @@ export default function SubscriptionManagement() {
                         <div>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Recurring Revenue</p>
                             <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#FE5502]" /> : `₹${overviewData?.recurringPlanRevenue || 0}`}
+                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#6412C6]" /> : `₹${overviewData?.recurringPlanRevenue || 0}`}
                             </h3>
                             <p className="text-[10px] text-slate-400 mt-1">Weekly + Monthly plans</p>
                         </div>
-                        <div className="p-2.5 rounded-lg bg-orange-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                        <div className="p-2.5 rounded-lg bg-purple-50 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                             <Code className="w-5 h-5" />
                         </div>
                     </div>
@@ -731,7 +731,7 @@ export default function SubscriptionManagement() {
                         <div>
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Expiring Soon</p>
                             <h3 className="text-2xl font-bold text-slate-900 mt-2">
-                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#FE5502]" /> : overviewData?.expiringSoon || 0}
+                                {overviewLoading ? <Loader2 className="w-5 h-5 animate-spin text-[#6412C6]" /> : overviewData?.expiringSoon || 0}
                             </h3>
                             <p className="text-[10px] text-slate-400 mt-1">Expiring in next 3 days</p>
                         </div>
@@ -752,7 +752,7 @@ export default function SubscriptionManagement() {
                     <div className="h-[250px] w-full">
                         {analyticsLoading ? (
                             <div className="h-full flex items-center justify-center">
-                                <Loader2 className="w-8 h-8 text-[#FE5502] animate-spin" />
+                                <Loader2 className="w-8 h-8 text-[#6412C6] animate-spin" />
                             </div>
                         ) : !analyticsData?.revenueTrend || analyticsData.revenueTrend.length === 0 ? (
                             <div className="h-full flex items-center justify-center text-xs text-slate-400">
@@ -763,15 +763,15 @@ export default function SubscriptionManagement() {
                                 <AreaChart data={analyticsData.revenueTrend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#FE5502" stopOpacity={0.2}/>
-                                            <stop offset="95%" stopColor="#FE5502" stopOpacity={0}/>
+                                            <stop offset="5%" stopColor="#6412C6" stopOpacity={0.2}/>
+                                            <stop offset="95%" stopColor="#6412C6" stopOpacity={0}/>
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                                     <XAxis dataKey="date" tickFormatter={(d) => dayjs(d).format('DD MMM')} tick={{ fontSize: 10, fill: '#64748b' }} />
                                     <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
                                     <ChartTooltip labelFormatter={(l) => dayjs(l).format('DD MMMM YYYY')} />
-                                    <Area type="monotone" dataKey="revenue" name="Total Revenue" stroke="#FE5502" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
+                                    <Area type="monotone" dataKey="revenue" name="Total Revenue" stroke="#6412C6" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         )}
@@ -785,7 +785,7 @@ export default function SubscriptionManagement() {
                         <div className="h-[180px] w-full relative">
                             {analyticsLoading ? (
                                 <div className="h-full flex items-center justify-center">
-                                    <Loader2 className="w-8 h-8 text-[#FE5502] animate-spin" />
+                                    <Loader2 className="w-8 h-8 text-[#6412C6] animate-spin" />
                                 </div>
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
@@ -802,7 +802,7 @@ export default function SubscriptionManagement() {
                                             paddingAngle={4}
                                             dataKey="value"
                                         >
-                                            <Cell fill="#FE5502" />
+                                            <Cell fill="#6412C6" />
                                             <Cell fill="#0ea5e9" />
                                         </Pie>
                                         <ChartTooltip />
@@ -814,7 +814,7 @@ export default function SubscriptionManagement() {
                     <div className="flex flex-col gap-2 text-xs mt-4 pt-3 border-t border-slate-100">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2.5 h-2.5 rounded-full bg-[#FE5502]" />
+                                <span className="w-2.5 h-2.5 rounded-full bg-[#6412C6]" />
                                 <span className="text-slate-600 font-medium">Restaurants</span>
                             </div>
                             <span className="font-bold text-slate-900">₹{analyticsData?.userSplit?.restaurant || 0}</span>
@@ -848,7 +848,7 @@ export default function SubscriptionManagement() {
                             </button>
                             <button
                                 onClick={handleExportCSV}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#FE5502] hover:bg-[#E64D02] text-white rounded-lg text-xs font-bold transition-all shadow-sm shadow-orange-100"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6412C6] hover:bg-[#4E0E9A] text-white rounded-lg text-xs font-bold transition-all shadow-sm shadow-purple-100"
                             >
                                 <Download className="w-3.5 h-3.5" />
                                 <span>Export CSV</span>
@@ -865,7 +865,7 @@ export default function SubscriptionManagement() {
                                 placeholder="Search by name, email, phone..."
                                 value={historySearch}
                                 onChange={(e) => updateFilter("search", e.target.value)}
-                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 focus:border-[#FE5502] bg-white transition-all"
+                                className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 focus:border-[#6412C6] bg-white transition-all"
                             />
                         </div>
 
@@ -874,7 +874,7 @@ export default function SubscriptionManagement() {
                             <select
                                 value={historyUserType}
                                 onChange={(e) => updateFilter("userType", e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 bg-white cursor-pointer"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 bg-white cursor-pointer"
                             >
                                 <option value="All">All Wallet Types</option>
                                 <option value="RESTAURANT">Restaurant</option>
@@ -887,7 +887,7 @@ export default function SubscriptionManagement() {
                             <select
                                 value={historyType}
                                 onChange={(e) => updateFilter("type", e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 bg-white cursor-pointer"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 bg-white cursor-pointer"
                             >
                                 <option value="All">All Action Types</option>
                                 <option value="TOPUP">Wallet Topup</option>
@@ -902,7 +902,7 @@ export default function SubscriptionManagement() {
                             <select
                                 value={historyStatus}
                                 onChange={(e) => updateFilter("status", e.target.value)}
-                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 bg-white cursor-pointer"
+                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 bg-white cursor-pointer"
                             >
                                 <option value="All">All Statuses</option>
                                 <option value="Active">Active</option>
@@ -922,7 +922,7 @@ export default function SubscriptionManagement() {
                                 type="date"
                                 value={historyStartDate}
                                 onChange={(e) => updateFilter("startDate", e.target.value)}
-                                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 bg-white cursor-pointer"
+                                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 bg-white cursor-pointer"
                             />
                         </div>
 
@@ -933,7 +933,7 @@ export default function SubscriptionManagement() {
                                 type="date"
                                 value={historyEndDate}
                                 onChange={(e) => updateFilter("endDate", e.target.value)}
-                                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#FE5502]/20 bg-white cursor-pointer"
+                                className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-[#6412C6]/20 bg-white cursor-pointer"
                             />
                         </div>
                     </div>
@@ -961,7 +961,7 @@ export default function SubscriptionManagement() {
                                 <tr>
                                     <td colSpan="10" className="px-5 py-12 text-center">
                                         <div className="flex flex-col items-center gap-2">
-                                            <Loader2 className="w-8 h-8 text-[#FE5502] animate-spin" />
+                                            <Loader2 className="w-8 h-8 text-[#6412C6] animate-spin" />
                                             <p className="text-sm text-slate-500">Loading audit history...</p>
                                         </div>
                                     </td>
@@ -995,14 +995,14 @@ export default function SubscriptionManagement() {
                                                 <div className="flex flex-col">
                                                     <a 
                                                         href={userSearchPath}
-                                                        className="text-xs font-bold text-[#FE5502] hover:underline flex items-center gap-1"
+                                                        className="text-xs font-bold text-[#6412C6] hover:underline flex items-center gap-1"
                                                     >
                                                         <span>{item.userName || 'Unnamed'}</span>
                                                         <ArrowUpRight className="w-3 h-3" />
                                                     </a>
                                                     <span className="text-[10px] text-slate-500">{item.userEmail || item.userPhone || ''}</span>
                                                     <span className={`inline-block w-fit px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider mt-1 ${
-                                                        item.userType === 'RESTAURANT' ? 'bg-orange-50 text-[#FE5502]' : 'bg-orange-50 text-primary'
+                                                        item.userType === 'RESTAURANT' ? 'bg-purple-50 text-[#6412C6]' : 'bg-purple-50 text-primary'
                                                     }`}>
                                                         {item.userType === 'RESTAURANT' ? 'Restaurant' : 'Delivery boy'}
                                                     </span>
@@ -1130,8 +1130,8 @@ export default function SubscriptionManagement() {
                 <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden border-none shadow-2xl rounded-3xl">
                     <DialogHeader className="px-6 pt-6 pb-4 bg-slate-50/50 border-b border-slate-100">
                         <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                                <Plus className="w-5 h-5 text-[#FE5502]" />
+                            <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
+                                <Plus className="w-5 h-5 text-[#6412C6]" />
                             </div>
                             {editingPlan ? 'Edit Subscription Plan' : 'Create New Subscription Plan'}
                         </DialogTitle>
@@ -1146,7 +1146,7 @@ export default function SubscriptionManagement() {
                                 value={formData.name}
                                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                                 placeholder="e.g. Premium Monthly"
-                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#FE5502]/10 focus:border-[#FE5502] transition-all placeholder:text-slate-400"
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#6412C6]/10 focus:border-[#6412C6] transition-all placeholder:text-slate-400"
                             />
                         </div>
 
@@ -1157,7 +1157,7 @@ export default function SubscriptionManagement() {
                                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                                 placeholder="What's included in this plan? (e.g. Priority support, lower commissions)"
                                 rows="3"
-                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#FE5502]/10 focus:border-[#FE5502] transition-all placeholder:text-slate-400 resize-none"
+                                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#6412C6]/10 focus:border-[#6412C6] transition-all placeholder:text-slate-400 resize-none"
                             />
                         </div>
 
@@ -1173,7 +1173,7 @@ export default function SubscriptionManagement() {
                                         value={formData.price}
                                         onChange={(e) => setFormData({...formData, price: e.target.value})}
                                         placeholder="0.00"
-                                        className="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#FE5502]/10 focus:border-[#FE5502] transition-all"
+                                        className="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:outline-none focus:ring-4 focus:ring-[#6412C6]/10 focus:border-[#6412C6] transition-all"
                                     />
                                 </div>
                             </div>
@@ -1183,7 +1183,7 @@ export default function SubscriptionManagement() {
                                     <select 
                                         value={formData.durationUnit}
                                         onChange={(e) => setFormData({...formData, durationUnit: e.target.value})}
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#FE5502]/10 focus:border-[#FE5502] transition-all appearance-none cursor-pointer"
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#6412C6]/10 focus:border-[#6412C6] transition-all appearance-none cursor-pointer"
                                     >
                                         {DURATION_UNITS.map(unit => (
                                             <option key={unit.value} value={unit.value}>{unit.label}</option>
@@ -1203,15 +1203,15 @@ export default function SubscriptionManagement() {
                                     min="1"
                                     value={formData.durationValue}
                                     onChange={(e) => setFormData({...formData, durationValue: Number(e.target.value)})}
-                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#FE5502]/10 focus:border-[#FE5502] transition-all"
+                                    className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-[#6412C6]/10 focus:border-[#6412C6] transition-all"
                                 />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-slate-700">Payment Behavior</label>
                                 <div className={`h-[42px] px-4 rounded-xl text-[10px] font-black tracking-wider flex items-center justify-center border transition-colors ${
                                     formData.durationUnit === 'DAY' 
-                                        ? 'bg-orange-50 text-primary border-orange-100' 
-                                        : 'bg-orange-50 text-[#FE5502] border-orange-100'
+                                        ? 'bg-purple-50 text-primary border-purple-100' 
+                                        : 'bg-purple-50 text-[#6412C6] border-purple-100'
                                 }`}>
                                     {formData.durationUnit === 'DAY' ? 'ONE-TIME CHECKOUT' : 'RECURRING SUBSCRIPTION'}
                                 </div>
@@ -1251,7 +1251,7 @@ export default function SubscriptionManagement() {
                             <button 
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="bg-[#FE5502] hover:bg-[#E64D02] text-white px-8 py-2.5 rounded-xl font-bold flex items-center gap-2 disabled:opacity-70 transition-all shadow-lg shadow-orange-200"
+                                className="bg-[#6412C6] hover:bg-[#4E0E9A] text-white px-8 py-2.5 rounded-xl font-bold flex items-center gap-2 disabled:opacity-70 transition-all shadow-lg shadow-purple-200"
                             >
                                 {isSubmitting ? (
                                     <>

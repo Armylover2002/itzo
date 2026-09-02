@@ -841,13 +841,32 @@ export default function RestaurantOnboarding() {
       try {
         setLoading(true)
         const hasRestaurantToken = !!localStorage.getItem("restaurant_token")
-        
+
         let data = null;
         if (hasRestaurantToken) {
           const res = await restaurantAPI.getCurrentRestaurant()
           data = res?.data?.data?.restaurant || res?.data?.restaurant
+        } else if (searchParams.get("fresh") !== "1") {
+          // Reapplying after rejection: no login session exists yet (rejected/
+          // pending restaurants are never issued a token), so restore the
+          // previously submitted application by phone instead — same shape as
+          // getCurrentRestaurant, so the mapping below needs no changes.
+          // Skipped when `?fresh=1` (the "Start New Application" choice), which
+          // intentionally begins with a blank form under the same phone number.
+          const pendingPhone = localStorage.getItem("restaurant_pendingPhone")
+          if (pendingPhone) {
+            try {
+              const res = await restaurantAPI.getOnboardingStatus(pendingPhone)
+              const status = res?.data?.data || res?.data
+              if (status?.exists && status.status !== "approved") {
+                data = status.data
+              }
+            } catch (e) {
+              debugWarn("Failed to restore onboarding data for reapply:", e)
+            }
+          }
         }
-        
+
         if (data) {
           setIsEditing(false)
           // Map Step 1
@@ -1377,7 +1396,7 @@ export default function RestaurantOnboarding() {
                 onClick={() => isEditing && setStep1({ ...step1, businessType: "Fixed Restaurant" })}
                 className={`px-3 py-1.5 text-xs rounded-full border ${
                   step1.businessType === "Fixed Restaurant"
-                    ? "bg-orange-600 text-white border-orange-600"
+                    ? "bg-[#0b2a4d] text-white border-[#0b2a4d]"
                     : "bg-white text-gray-700 border-gray-200"
                 } ${!isEditing ? "opacity-70 cursor-not-allowed" : ""}`}
               >
@@ -1388,7 +1407,7 @@ export default function RestaurantOnboarding() {
                 onClick={() => isEditing && setStep1({ ...step1, businessType: "Street Food Vendor" })}
                 className={`px-3 py-1.5 text-xs rounded-full border ${
                   step1.businessType === "Street Food Vendor"
-                    ? "bg-orange-600 text-white border-orange-600"
+                    ? "bg-[#0b2a4d] text-white border-[#0b2a4d]"
                     : "bg-white text-gray-700 border-gray-200"
                 } ${!isEditing ? "opacity-70 cursor-not-allowed" : ""}`}
               >
@@ -2573,7 +2592,7 @@ export default function RestaurantOnboarding() {
                 onClick={() => setIsEditing(true)}
                 variant="outline"
                 size="sm"
-                className="text-xs bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100 flex items-center gap-1.5"
+                className="text-xs bg-[#f3f5f7] border-[#9eadbd] text-[#092240] hover:bg-[#e7eaef] flex items-center gap-1.5"
                 title="Edit Details"
               >
                 <Sparkles className="w-3 h-3" />

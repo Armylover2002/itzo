@@ -67,6 +67,7 @@ const sellerShopInfoSchema = new mongoose.Schema(
     zoneId: { type: mongoose.Schema.Types.ObjectId, default: null },
     zoneSource: { type: String, enum: ["food", "quick", ""], default: "" },
     zoneName: { type: String, trim: true, default: "" },
+    shopImage: { type: String, trim: true, default: "" },
   },
   { _id: false },
 );
@@ -75,13 +76,13 @@ const sellerSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
     },
     shopName: {
       type: String,
-      required: true,
       trim: true,
+      default: "",
     },
     email: {
       type: String,
@@ -99,6 +100,14 @@ const sellerSchema = new mongoose.Schema(
       trim: true,
     },
     phoneLast10: {
+      type: String,
+      trim: true,
+    },
+    alternatePhoneDigits: {
+      type: String,
+      trim: true,
+    },
+    alternatePhoneLast10: {
       type: String,
       trim: true,
     },
@@ -139,6 +148,18 @@ const sellerSchema = new mongoose.Schema(
     rejectedAt: {
       type: Date,
       default: null,
+    },
+    wasEverApproved: {
+      type: Boolean,
+      default: false,
+    },
+    pendingProfileChanges: {
+      hasPendingUpdate: { type: Boolean, default: false },
+      proposed: { type: mongoose.Schema.Types.Mixed, default: null },
+      previous: { type: mongoose.Schema.Types.Mixed, default: null },
+      changeTypes: { type: [String], default: [] },
+      reason: { type: String, trim: true, default: "" },
+      requestedAt: { type: Date, default: null },
     },
     location: {
       type: sellerLocationSchema,

@@ -858,7 +858,7 @@ export default function HubFinance() {
                 <h2 className="text-base font-bold text-gray-900">Referral earnings</h2>
                 <button 
                   onClick={() => navigate("/restaurant/refer-earn")}
-                  className="text-sm font-medium text-orange-600 hover:underline"
+                  className="text-sm font-medium text-[#0b2a4d] hover:underline"
                 >
                   Refer more
                 </button>
@@ -873,8 +873,8 @@ export default function HubFinance() {
                       From {referralStats?.referralCount || 0} approved referrals
                     </p>
                   </div>
-                  <div className="bg-orange-50 p-3 rounded-full">
-                    <Gift className="w-6 h-6 text-orange-600" />
+                  <div className="bg-[#f3f5f7] p-3 rounded-full">
+                    <Gift className="w-6 h-6 text-[#0b2a4d]" />
                   </div>
                 </div>
                 <p className="text-[11px] text-gray-500 mt-4 border-t pt-3">

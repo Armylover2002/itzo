@@ -57,8 +57,8 @@ export default function EmployeePerformance() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2.5">
-                        <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                            <Target className="w-5 h-5 text-orange-600" />
+                        <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                            <Target className="w-5 h-5 text-[#550fa8]" />
                         </div>
                         My Performance
                     </h1>
@@ -71,11 +71,11 @@ export default function EmployeePerformance() {
                         type="month" 
                         value={period}
                         onChange={(e) => setPeriod(e.target.value)}
-                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                     />
                     <button
                         onClick={() => fetchPerformance(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold text-xs transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-xs transition-colors"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -85,7 +85,7 @@ export default function EmployeePerformance() {
 
             {loading ? (
                 <div className="flex flex-col justify-center items-center py-24">
-                    <RefreshCw className="w-8 h-8 text-orange-500 animate-spin mb-3" />
+                    <RefreshCw className="w-8 h-8 text-[#6412c6] animate-spin mb-3" />
                     <p className="text-slate-400 font-medium text-sm">Loading your scorecard...</p>
                 </div>
             ) : !performanceData ? (
@@ -99,11 +99,11 @@ export default function EmployeePerformance() {
                     {/* Overall Score Card */}
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center flex-shrink-0">
-                                <Trophy className="w-7 h-7 text-orange-500" />
+                            <div className="w-14 h-14 rounded-2xl bg-[#f7f3fc] flex items-center justify-center flex-shrink-0">
+                                <Trophy className="w-7 h-7 text-[#6412c6]" />
                             </div>
                             <div>
-                                <span className="text-xs font-semibold text-orange-600 block mb-1">
+                                <span className="text-xs font-semibold text-[#550fa8] block mb-1">
                                     Monthly Performance
                                 </span>
                                 <h2 className="text-xl font-bold text-slate-900">
@@ -159,12 +159,12 @@ export default function EmployeePerformance() {
                         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
                             <div>
                                 <span className="text-xs font-medium text-slate-500 block">Net Profit Contribution</span>
-                                <span className="text-xl font-bold text-orange-600 mt-0.5 block">
+                                <span className="text-xl font-bold text-[#550fa8] mt-0.5 block">
                                     {formatCurrency(performanceData.financialBreakdown?.netProfit)}
                                 </span>
                                 <span className="text-xs text-slate-400 mt-0.5 block">After all deductions</span>
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
+                            <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center text-[#550fa8]">
                                 <Zap className="w-5 h-5" />
                             </div>
                         </div>
@@ -224,11 +224,11 @@ export default function EmployeePerformance() {
                         <h3 className="text-base font-bold text-slate-900 mb-4">KPI Breakdown</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {performanceData.results?.map((kpiData, idx) => (
-                                <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:border-orange-200 transition-all duration-200">
+                                <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between hover:border-[#d8c4f1] transition-all duration-200">
                                     <div>
                                         <div className="flex justify-between items-start mb-3 gap-2">
                                             <div>
-                                                <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md">
+                                                <span className="text-[11px] font-semibold text-[#550fa8] bg-[#f7f3fc] px-2 py-0.5 rounded-md">
                                                     {kpiData.kpi?.categoryId?.name || 'General'}
                                                 </span>
                                                 <h4 className="font-semibold text-slate-900 text-sm mt-1.5">{kpiData.kpi.name}</h4>
@@ -255,7 +255,7 @@ export default function EmployeePerformance() {
                                                 </span>
                                             </div>
                                             <span className={`text-lg font-bold ${
-                                                kpiData.result.scorePercentage >= 80 ? 'text-emerald-600' : kpiData.result.scorePercentage >= 50 ? 'text-orange-500' : 'text-red-500'
+                                                kpiData.result.scorePercentage >= 80 ? 'text-emerald-600' : kpiData.result.scorePercentage >= 50 ? 'text-[#6412c6]' : 'text-red-500'
                                             }`}>
                                                 {kpiData.result.scorePercentage}%
                                             </span>
@@ -265,7 +265,7 @@ export default function EmployeePerformance() {
                                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                             <div 
                                                 className={`h-full rounded-full transition-all duration-1000 ${
-                                                    kpiData.result.scorePercentage >= 80 ? 'bg-emerald-500' : kpiData.result.scorePercentage >= 50 ? 'bg-orange-500' : 'bg-red-500'
+                                                    kpiData.result.scorePercentage >= 80 ? 'bg-emerald-500' : kpiData.result.scorePercentage >= 50 ? 'bg-[#6412c6]' : 'bg-red-500'
                                                 }`}
                                                 style={{ width: `${Math.min(100, kpiData.result.scorePercentage)}%` }}
                                             />

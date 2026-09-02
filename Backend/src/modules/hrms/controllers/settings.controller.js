@@ -1,4 +1,5 @@
 import { HrmsSettings } from '../models/settings.model.js';
+import { GlobalSettings } from '../../common/models/settings.model.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 
 /**
@@ -120,15 +121,21 @@ export const updateSettingsSection = async (req, res, next) => {
 export const getPublicSettings = async (req, res, next) => {
     try {
         let settings = await HrmsSettings.findOne().select('companyInfo organization shifts').lean();
-        // If settings don't exist yet, return the defaults
-        const info = settings?.companyInfo || {
-            companyName: 'ItzoFood',
-            companyAddress: '123 Tech Park, Bangalore, India',
-            supportEmail: 'support@itzofood.com',
-            supportPhone: '',
-            companyLogoUrl: '',
-            currency: 'INR',
-            currencySymbol: '₹'
+        const globalSettings = await GlobalSettings.findOne().select('companyName adminLogo adminFavicon').lean();
+
+        const defaultLogo = globalSettings?.adminLogo?.url || '';
+        const defaultFavicon = globalSettings?.adminFavicon?.url || '';
+        const defaultName = globalSettings?.companyName || 'ItzoFood';
+
+        const info = {
+            companyName: settings?.companyInfo?.companyName || defaultName,
+            companyAddress: settings?.companyInfo?.companyAddress || '123 Tech Park, Bangalore, India',
+            supportEmail: settings?.companyInfo?.supportEmail || 'support@itzofood.com',
+            supportPhone: settings?.companyInfo?.supportPhone || '',
+            companyLogoUrl: settings?.companyInfo?.companyLogoUrl || defaultLogo,
+            companyFaviconUrl: defaultFavicon,
+            currency: settings?.companyInfo?.currency || 'INR',
+            currencySymbol: settings?.companyInfo?.currencySymbol || '₹'
         };
         const organization = settings?.organization || {
             departments: [

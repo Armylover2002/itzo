@@ -27,16 +27,16 @@ const WorkingTimer = ({ attendance, isCheckedIn, isDone }) => {
 
     return (
         <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center border-4 ${
-            isDone ? 'border-slate-100 bg-slate-50' : 'border-orange-100 bg-orange-50'
+            isDone ? 'border-slate-100 bg-slate-50' : 'border-[#f0e7f9] bg-[#f7f3fc]'
         }`}>
             {isDone ? (
                 <span className="text-base font-bold text-slate-500">
                     {Math.floor(attendance?.workingHours || 0)}h {Math.round(((attendance?.workingHours || 0) % 1) * 60)}m
                 </span>
             ) : isCheckedIn ? (
-                <span className="text-lg font-bold text-orange-600">{elapsed}</span>
+                <span className="text-lg font-bold text-[#550fa8]">{elapsed}</span>
             ) : (
-                <Timer className="w-8 h-8 text-orange-500" />
+                <Timer className="w-8 h-8 text-[#6412c6]" />
             )}
         </div>
     );
@@ -280,7 +280,7 @@ export default function Dashboard() {
     const firstName = user?.name?.split(' ')[0] || 'Employee';
 
     if (loading) {
-        return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
+        return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
     }
 
     return (
@@ -289,7 +289,7 @@ export default function Dashboard() {
             {showReportPopup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5">
+                        <div className="bg-gradient-to-r from-amber-500 to-[#6412c6] px-6 py-5">
                             <div className="flex items-center gap-3 text-white">
                                 <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
                                     <ClipboardList className="w-6 h-6" />
@@ -312,7 +312,7 @@ export default function Dashboard() {
                         <div className="px-6 pb-5 flex flex-col gap-2.5">
                             <button
                                 onClick={() => { setShowReportPopup(false); navigate('/hrms/reports/create'); }}
-                                className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                                className="w-full h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/20 transition-all flex items-center justify-center gap-2"
                             >
                                 <ClipboardList className="w-4 h-4" /> Submit Report Now
                             </button>
@@ -333,15 +333,15 @@ export default function Dashboard() {
                 </div>
             )}
             {/* Welcome Banner */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-orange-500/15">
+            <div className="bg-gradient-to-r from-[#6412c6] to-amber-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-[#6412c6]/15">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {firstName}!</h1>
-                        <p className="text-orange-100 mt-1 text-sm sm:text-base">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p className="text-[#f0e7f9] mt-1 text-sm sm:text-base">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
                         {employeeProfile?.hrmsRole === 'Manager' && (
-                            <div className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 bg-white text-orange-600 shadow-sm">
+                            <div className="px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 bg-white text-[#550fa8] shadow-sm">
                                 <Briefcase className="w-3.5 h-3.5" /> Manager
                             </div>
                         )}
@@ -359,8 +359,8 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {/* Check-in Card */}
-                <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isDone ? 'border-slate-200' : isCheckedIn ? 'border-orange-300' : 'border-orange-200'}`}>
-                    <div className={`h-1 ${isDone ? 'bg-slate-300' : 'bg-gradient-to-r from-orange-500 to-amber-500'}`} />
+                <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isDone ? 'border-slate-200' : isCheckedIn ? 'border-[#c1a0e8]' : 'border-[#d8c4f1]'}`}>
+                    <div className={`h-1 ${isDone ? 'bg-slate-300' : 'bg-gradient-to-r from-[#6412c6] to-amber-500'}`} />
                     <div className="p-6 text-center">
                         <WorkingTimer attendance={attendance} isCheckedIn={isCheckedIn} isDone={isDone} />
                         <h3 className="font-bold text-slate-900 text-lg mb-1">
@@ -395,7 +395,7 @@ export default function Dashboard() {
 
                         {/* Location Status Indicator */}
                         {locationStatus === 'fetching' && (
-                            <div className="flex items-center justify-center gap-2 text-xs text-orange-500 mb-3">
+                            <div className="flex items-center justify-center gap-2 text-xs text-[#6412c6] mb-3">
                                 <Loader2 className="w-3 h-3 animate-spin" /> Verifying your location...
                             </div>
                         )}
@@ -425,8 +425,8 @@ export default function Dashboard() {
 
                         {/* Assigned Office Info (Before or During Check-in) */}
                         {employeeProfile?.employeeType === 'Office' && (
-                            <div className="mb-4 bg-orange-50/50 border border-orange-100 rounded-xl p-3 flex flex-col items-center justify-center text-center">
-                                <div className="text-xs font-semibold text-orange-800 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                            <div className="mb-4 bg-[#f7f3fc]/50 border border-[#f0e7f9] rounded-xl p-3 flex flex-col items-center justify-center text-center">
+                                <div className="text-xs font-semibold text-[#370a6d] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                                     <Building2 className="w-3.5 h-3.5" /> Your Office Location
                                 </div>
                                 <div className="text-sm font-medium text-slate-800">
@@ -442,14 +442,14 @@ export default function Dashboard() {
 
                         {!attendance?.checkInTime && (
                             <button onClick={handleCheckIn} disabled={actionLoading}
-                                className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                className="w-full h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
                                 {actionLoading ? 'Verifying Location...' : 'Check In'}
                             </button>
                         )}
                         {isCheckedIn && (
                             <button onClick={handleCheckOut} disabled={actionLoading}
-                                className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                className="w-full h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
                                 {actionLoading ? 'Verifying Location...' : 'Check Out'}
                             </button>
@@ -459,11 +459,11 @@ export default function Dashboard() {
 
                 {/* Leave Balance */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="h-1 bg-gradient-to-r from-orange-500 to-amber-500" />
+                    <div className="h-1 bg-gradient-to-r from-[#6412c6] to-amber-500" />
                     <div className="p-6">
                         <div className="flex items-center gap-3 mb-5">
-                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                                <CalendarDays className="w-5 h-5 text-orange-600" />
+                            <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                                <CalendarDays className="w-5 h-5 text-[#550fa8]" />
                             </div>
                             <h3 className="font-bold text-slate-900">Leave Balance</h3>
                         </div>
@@ -475,11 +475,11 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-slate-500">Used This Month</span>
-                                    <span className="font-bold text-orange-500">{leaveBalance.monthly?.used || 0}</span>
+                                    <span className="font-bold text-[#6412c6]">{leaveBalance.monthly?.used || 0}</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-slate-100">
                                     <span className="text-sm font-medium text-slate-700">Remaining</span>
-                                    <span className="font-bold text-lg text-orange-600">{leaveBalance.monthly?.remaining || 4}</span>
+                                    <span className="font-bold text-lg text-[#550fa8]">{leaveBalance.monthly?.remaining || 4}</span>
                                 </div>
                             </div>
                         ) : (
@@ -490,20 +490,20 @@ export default function Dashboard() {
 
                 {/* Quick Actions */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden md:col-span-2 xl:col-span-1">
-                    <div className="h-1 bg-gradient-to-r from-orange-500 to-amber-500" />
+                    <div className="h-1 bg-gradient-to-r from-[#6412c6] to-amber-500" />
                     <div className="p-6">
                         <div className="flex items-center gap-3 mb-5">
-                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                                <TrendingUp className="w-5 h-5 text-orange-600" />
+                            <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 text-[#550fa8]" />
                             </div>
                             <h3 className="font-bold text-slate-900">Quick Actions</h3>
                         </div>
                         <div className="space-y-2.5">
                             {[
-                                { label: 'Apply for Leave', path: '/hrms/leave', icon: CalendarDays, color: 'text-orange-600 bg-orange-50' },
-                                { label: 'Submit Expense', path: '/hrms/expenses', icon: Wallet, color: 'text-orange-600 bg-orange-50' },
-                                { label: 'View Attendance', path: '/hrms/attendance', icon: Clock, color: 'text-orange-600 bg-orange-50' },
-                                { label: 'View Payslip', path: '/hrms/salary', icon: FileCheck, color: 'text-orange-600 bg-orange-50' },
+                                { label: 'Apply for Leave', path: '/hrms/leave', icon: CalendarDays, color: 'text-[#550fa8] bg-[#f7f3fc]' },
+                                { label: 'Submit Expense', path: '/hrms/expenses', icon: Wallet, color: 'text-[#550fa8] bg-[#f7f3fc]' },
+                                { label: 'View Attendance', path: '/hrms/attendance', icon: Clock, color: 'text-[#550fa8] bg-[#f7f3fc]' },
+                                { label: 'View Payslip', path: '/hrms/salary', icon: FileCheck, color: 'text-[#550fa8] bg-[#f7f3fc]' },
                             ].map((item) => (
                                 <button key={item.path} onClick={() => navigate(item.path)}
                                     className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all text-left group">

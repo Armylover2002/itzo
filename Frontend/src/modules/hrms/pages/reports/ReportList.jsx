@@ -43,7 +43,7 @@ export default function ReportList() {
             case 'Rejected': return 'bg-red-50 text-red-600 border-red-200';
             case 'Draft': return 'bg-slate-100 text-slate-600 border-slate-200';
             case 'Revision Requested': return 'bg-amber-50 text-amber-600 border-amber-200';
-            default: return 'bg-orange-50 text-orange-600 border-orange-200'; // Submitted, Under Review
+            default: return 'bg-[#f7f3fc] text-[#550fa8] border-[#d8c4f1]'; // Submitted, Under Review
         }
     };
 
@@ -57,7 +57,7 @@ export default function ReportList() {
                 </div>
                 <button
                     onClick={() => navigate('/hrms/reports/create')}
-                    className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-semibold shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-[#6412c6] hover:bg-[#550fa8] text-white px-4 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center justify-center gap-2"
                 >
                     <Plus className="w-5 h-5" />
                     Submit Report
@@ -71,7 +71,7 @@ export default function ReportList() {
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
-                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
+                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
                     >
                         <option value="All">All Statuses</option>
                         <option value="Draft">Draft</option>
@@ -100,7 +100,7 @@ export default function ReportList() {
                             {loading ? (
                                 <tr>
                                     <td colSpan="4" className="px-5 py-10 text-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6] mx-auto" />
                                     </td>
                                 </tr>
                             ) : reports.length === 0 ? (
@@ -112,10 +112,10 @@ export default function ReportList() {
                                 </tr>
                             ) : (
                                 reports.map(report => (
-                                    <tr key={report._id} className="hover:bg-orange-50/30 transition-colors group">
+                                    <tr key={report._id} className="hover:bg-[#f7f3fc]/30 transition-colors group">
                                         <td className="px-5 py-4 align-top">
                                             <div className="flex flex-col gap-1">
-                                                <span className="font-semibold text-slate-800 line-clamp-1 group-hover:text-orange-600 transition-colors">
+                                                <span className="font-semibold text-slate-800 line-clamp-1 group-hover:text-[#550fa8] transition-colors">
                                                     {new Date(report.reportDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </span>
                                                 <span className="text-xs text-slate-400">{report.tasks?.length || 0} tasks reported</span>
@@ -132,7 +132,7 @@ export default function ReportList() {
                                         <td className="px-5 py-4 align-middle text-right">
                                             <button
                                                 onClick={() => navigate(report.status === 'Draft' || report.status === 'Revision Requested' ? `/hrms/reports/create?id=${report._id}` : `/hrms/reports/${report._id}`)}
-                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-300 px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
+                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-[#550fa8] hover:border-[#c1a0e8] px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
                                             >
                                                 {report.status === 'Draft' || report.status === 'Revision Requested' ? 'Edit' : 'View'} <ChevronRight className="w-3.5 h-3.5" />
                                             </button>

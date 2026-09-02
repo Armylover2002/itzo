@@ -92,7 +92,7 @@ export default function RestaurantGoogleCallback() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-yellow-50/30 via-white to-orange-50/20 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-yellow-50/30 via-white to-[#f3f5f7]/20 p-4">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6 space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">

@@ -50,7 +50,7 @@ const NotificationPopup = ({ notifications, onMarkAsRead, onMarkAllAsRead, onClo
                                         "h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110",
                                         notif.type === 'order' ? "bg-emerald-50 text-emerald-600" :
                                             notif.type === 'payment' ? "bg-amber-50 text-amber-600" :
-                                                "bg-orange-50 text-primary"
+                                                "bg-[#fef4f4] text-primary"
                                     )}>
                                         {notif.type === 'order' ? <HiOutlineCheckCircle size={20} /> :
                                             notif.type === 'payment' ? <HiOutlineClock size={20} /> :

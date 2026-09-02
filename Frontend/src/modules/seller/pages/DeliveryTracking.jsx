@@ -130,7 +130,7 @@ const DeliveryTracking = () => {
         value: deliveries.filter((d) => d.status === "On the Way").length,
         icon: HiOutlineTruck,
         color: "text-primary",
-        bg: "bg-orange-50",
+        bg: "bg-[#fef4f4]",
       },
       {
         label: "At Store",
@@ -144,7 +144,7 @@ const DeliveryTracking = () => {
         value: deliveries.filter((d) => d.status === "Delivered").length,
         icon: HiOutlineCheckCircle,
         color: "text-primary",
-        bg: "bg-orange-50",
+        bg: "bg-[#fef4f4]",
       },
     ],
     [deliveries],
@@ -172,7 +172,7 @@ const DeliveryTracking = () => {
               Delivery Tracking
               <Badge
                 variant="primary"
-                className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-orange-100 text-orange-700">
+                className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-[#fde8ea] text-[#a2141c]">
                 Live Fleet
               </Badge>
             </h1>
@@ -239,14 +239,14 @@ const DeliveryTracking = () => {
                         className={cn(
                           "relative py-5 px-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
                           activeTab === tab
-                            ? "text-primary-orange bg-white/50"
+                            ? "text-[#E71D28] bg-white/50"
                             : "text-slate-600 hover:text-slate-700",
                         )}>
                         {tab}
                         {activeTab === tab && (
                           <motion.div
                             layoutId="tab-underline-tracking"
-                            className="absolute bottom-0 left-0 right-0 h-1 bg-primary-orange rounded-t-full mx-4"
+                            className="absolute bottom-0 left-0 right-0 h-1 bg-[#E71D28] rounded-t-full mx-4"
                           />
                         )}
                       </button>
@@ -375,7 +375,7 @@ const DeliveryTracking = () => {
 
                         {/* Action Button Section */}
                         <div className="lg:w-16 flex items-center justify-center p-2 sm:p-3 shrink-0">
-                          <button className="h-10 w-10 lg:h-full lg:w-full bg-primary-orange hover:bg-primary-hover active:bg-primary-dark rounded-lg lg:rounded-r-lg lg:rounded-l-none flex items-center justify-center text-white transition-all duration-500 shadow-xl">
+                          <button className="h-10 w-10 lg:h-full lg:w-full bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark rounded-lg lg:rounded-r-lg lg:rounded-l-none flex items-center justify-center text-white transition-all duration-500 shadow-xl">
                             <HiOutlineTruck className="h-5 w-5 group-hover:scale-125 transition-transform" />
                           </button>
                         </div>

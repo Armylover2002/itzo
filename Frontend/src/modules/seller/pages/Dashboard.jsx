@@ -103,7 +103,7 @@ const Dashboard = () => {
       change: "+12.5%",
       changeType: "increase",
       icon: IndianRupee,
-      iconBg: "bg-orange-50",
+      iconBg: "bg-[#fef4f4]",
       iconColor: "text-primary",
       description: "vs last month",
     },
@@ -113,7 +113,7 @@ const Dashboard = () => {
       change: "+8.2%",
       changeType: "increase",
       icon: ShoppingBag,
-      iconBg: "bg-orange-50",
+      iconBg: "bg-[#fef4f4]",
       iconColor: "text-primary",
       description: "vs last month",
     },
@@ -123,7 +123,7 @@ const Dashboard = () => {
       change: "+2",
       changeType: "increase",
       icon: Package,
-      iconBg: "bg-orange-50",
+      iconBg: "bg-[#fef4f4]",
       iconColor: "text-primary",
       description: "per order",
     },
@@ -308,11 +308,11 @@ const Dashboard = () => {
               className={cn(
                 "p-6 rounded-xl text-left transition-all duration-200 shadow-sm hover:shadow-md border-2",
                 isPrimary &&
-                  "bg-primary-orange border-primary-orange text-white hover:bg-primary-hover active:bg-primary-dark hover:border-primary-hover",
+                  "bg-[#E71D28] border-[#E71D28] text-white hover:bg-primary-hover active:bg-primary-dark hover:border-primary-hover",
                 action.variant === "outline" &&
-                  "bg-white border-slate-200 text-slate-900 hover:border-primary-orange hover:bg-primary-orange/5",
+                  "bg-white border-slate-200 text-slate-900 hover:border-[#E71D28] hover:bg-[#E71D28]/5",
                 isEmerald &&
-                  "bg-white border-slate-200 text-slate-900 hover:border-primary-orange hover:bg-primary-orange/5",
+                  "bg-white border-slate-200 text-slate-900 hover:border-[#E71D28] hover:bg-[#E71D28]/5",
               )}>
               <div className="flex items-start gap-4">
                 <div
@@ -480,7 +480,7 @@ const Dashboard = () => {
         actions={
           <button
             onClick={() => navigate("/seller/orders")}
-            className="text-sm font-medium text-primary-orange hover:text-primary-hover active:text-primary-dark flex items-center gap-1">
+            className="text-sm font-medium text-[#E71D28] hover:text-primary-hover active:text-primary-dark flex items-center gap-1">
             View All
             <ArrowUpRight className="h-4 w-4" />
           </button>
@@ -758,12 +758,12 @@ const Dashboard = () => {
                         getStatusColor(selectedOrder.status) === "warning"
                           ? "bg-amber-100 text-amber-700 focus:ring-amber-200"
                           : getStatusColor(selectedOrder.status) === "info"
-                            ? "bg-orange-100 text-orange-700 focus:ring-orange-200"
+                            ? "bg-[#fde8ea] text-[#a2141c] focus:ring-[#f9c7c9]"
                             : getStatusColor(selectedOrder.status) === "primary"
-                              ? "bg-orange-100 text-orange-700 focus:ring-orange-200"
+                              ? "bg-[#fde8ea] text-[#a2141c] focus:ring-[#f9c7c9]"
                               : getStatusColor(selectedOrder.status) ===
                                   "secondary"
-                                ? "bg-orange-100 text-orange-700 focus:ring-orange-200"
+                                ? "bg-[#fde8ea] text-[#a2141c] focus:ring-[#f9c7c9]"
                                 : getStatusColor(selectedOrder.status) ===
                                     "success"
                                   ? "bg-emerald-100 text-emerald-700 focus:ring-emerald-200"

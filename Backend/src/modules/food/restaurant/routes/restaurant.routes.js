@@ -2,6 +2,7 @@ import express from 'express';
 import { upload } from '../../../../middleware/upload.js';
 import {
     registerRestaurantController,
+    getRestaurantOnboardingStatusController,
     listApprovedRestaurantsController,
     getApprovedRestaurantController,
     listPublicOffersController,
@@ -80,6 +81,7 @@ const uploadFields = upload.fields([
 ]);
 
 router.post('/register', uploadFields, registerRestaurantController);
+router.get('/onboarding-status', getRestaurantOnboardingStatusController);
 
 // Public: approved restaurants list (for user app)
 router.get('/restaurants', cacheResponse(300, 'restaurants'), listApprovedRestaurantsController);

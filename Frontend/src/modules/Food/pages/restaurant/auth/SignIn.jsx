@@ -229,7 +229,7 @@ export default function RestaurantSignIn() {
           </div>
 
           {/* Demo credentials / info bar */}
-          <div className="mt-8 w-full max-w-lg rounded-lg border border-orange-100 bg-orange-50 px-4 py-3 text-xs sm:text-sm text-gray-800 flex items-start gap-3">
+          <div className="mt-8 w-full max-w-lg rounded-lg border border-[#e7eaef] bg-[#f3f5f7] px-4 py-3 text-xs sm:text-sm text-gray-800 flex items-start gap-3">
             <div className="mt-0.5 text-primary-orange">
               <CheckSquare className="h-4 w-4" />
             </div>

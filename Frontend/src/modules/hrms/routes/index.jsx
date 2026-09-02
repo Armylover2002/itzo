@@ -35,10 +35,22 @@ const HrmsLiveTrackingAdmin = lazy(() => import('../../Food/pages/admin/hrms/Hrm
 const EmployeePerformance = lazy(() => import('../pages/performance/EmployeePerformance'));
 const TeamPerformance = lazy(() => import('../pages/team/TeamPerformance'));
 
+import { getAppFavicon, updateBrowserFavicon, loadBusinessSettings } from '@/modules/common/utils/businessSettings';
+
 export default function HrmsEmployeeApp() {
+    React.useEffect(() => {
+        const fav = getAppFavicon('admin');
+        if (fav) updateBrowserFavicon(fav);
+        loadBusinessSettings().then(() => {
+            const freshFav = getAppFavicon('admin');
+            if (freshFav) updateBrowserFavicon(freshFav);
+        }).catch(() => {});
+    }, []);
+
     return (
+        <div className="hrms-theme">
         <HrmsSettingsProvider>
-            <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-8 h-8 animate-spin border-4 border-orange-500 border-t-transparent rounded-full" /></div>}>
+            <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-8 h-8 animate-spin border-4 border-[#6412C6] border-t-transparent rounded-full" /></div>}>
                 <Routes>
                     {/* Public Routes */}
                     <Route path="login" element={<Login />} />
@@ -97,5 +109,6 @@ export default function HrmsEmployeeApp() {
                 </Routes>
             </Suspense>
         </HrmsSettingsProvider>
+        </div>
     );
 }

@@ -400,13 +400,13 @@ const DashboardLayout = ({ children, navItems, title }) => {
                             className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100"
                         >
                             <div className="flex flex-col items-center text-center">
-                                <div className="h-20 w-20 bg-orange-50 rounded-full flex items-center justify-center mb-6 animate-bounce">
-                                    <BellRing className="h-10 w-10 text-orange-600" />
+                                <div className="h-20 w-20 bg-[#fef4f4] rounded-full flex items-center justify-center mb-6 animate-bounce">
+                                    <BellRing className="h-10 w-10 text-[#c41922]" />
                                 </div>
 
                                 <h2 className="text-2xl font-black text-slate-900 mb-2">New Order Received!</h2>
                                 <p className="text-slate-600 font-medium mb-6">
-                                    You have a new order <span className="text-orange-600 font-bold">#{newOrderAlert.orderId}</span> for <span className="text-slate-900 font-bold">Rs {resolveSellerReceivable(newOrderAlert).toFixed(2)}</span>
+                                    You have a new order <span className="text-[#c41922] font-bold">#{newOrderAlert.orderId}</span> for <span className="text-slate-900 font-bold">Rs {resolveSellerReceivable(newOrderAlert).toFixed(2)}</span>
                                 </p>
 
                                 {/* Timer Bar — width from real server deadline */}
@@ -414,7 +414,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
                                     <div
                                         className={cn(
                                             "h-full transition-[width] duration-1000 ease-linear",
-                                            timeLeft < 15 ? "bg-rose-500" : "bg-orange-600",
+                                            timeLeft < 15 ? "bg-rose-500" : "bg-[#c41922]",
                                         )}
                                         style={{
                                             width: `${acceptWindowTotalRef.current > 0 ? (timeLeft / acceptWindowTotalRef.current) * 100 : 0}%`,
@@ -439,7 +439,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
                                     </button>
                                     <button
                                         onClick={() => handleAcceptOrder(newOrderAlert.orderId)}
-                                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-orange-600 text-white font-bold hover:bg-orange-700 shadow-xl shadow-orange-500/20 transition-all active:scale-95"
+                                        className="flex items-center justify-center gap-2 py-4 rounded-2xl bg-[#c41922] text-white font-bold hover:bg-[#a2141c] shadow-xl shadow-[#e71d28]/20 transition-all active:scale-95"
                                     >
                                         <Check className="h-5 w-5" />
                                         Accept

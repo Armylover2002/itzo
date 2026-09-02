@@ -191,13 +191,13 @@ export default function Expense() {
             Pending: 'bg-amber-50 text-amber-700 border-amber-200',
             Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
             Rejected: 'bg-red-50 text-red-700 border-red-200',
-            Reimbursed: 'bg-orange-50 text-orange-700 border-orange-200'
+            Reimbursed: 'bg-[#f7f3fc] text-[#460d8b] border-[#d8c4f1]'
         };
         return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${styles[s] || ''}`}>{s}</span>;
     };
 
-    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all";
-    const numberInputClass = "w-full h-10 px-2 border border-slate-200 rounded-xl text-sm text-right focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all";
+    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 transition-all";
+    const numberInputClass = "w-full h-10 px-2 border border-slate-200 rounded-xl text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 transition-all";
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6">
@@ -210,7 +210,7 @@ export default function Expense() {
                 <button onClick={showForm ? handleCloseForm : handleOpenForm}
                     className={`flex items-center gap-2 px-4 h-10 font-medium rounded-xl shadow-sm transition-all text-sm ${showForm
                         ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
-                        : 'bg-orange-500 hover:bg-orange-600 text-white'
+                        : 'bg-[#6412c6] hover:bg-[#550fa8] text-white'
                         }`}>
                     {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {showForm ? 'Cancel' : 'New Monthly Expense'}
@@ -222,7 +222,7 @@ export default function Expense() {
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="p-6 border-b border-slate-100">
                         <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-orange-500" />
+                            <Calendar className="w-5 h-5 text-[#6412c6]" />
                             Submit Monthly Expense Claim
                         </h3>
 
@@ -322,7 +322,7 @@ export default function Expense() {
                                 </thead>
                                 <tbody>
                                     {entries.map((entry, idx) => (
-                                        <tr key={idx} className="border-b border-slate-50 hover:bg-orange-50/30 transition-colors">
+                                        <tr key={idx} className="border-b border-slate-50 hover:bg-[#f7f3fc]/30 transition-colors">
                                             <td className="px-3 py-2 text-slate-400 font-mono text-xs">{idx + 1}</td>
                                             <td className="px-3 py-2">
                                                 <input type="date" className={inputClass + ' text-xs'} min={dateMin} max={dateMax}
@@ -371,7 +371,7 @@ export default function Expense() {
 
                             {/* Add entry + Grand total */}
                             <div className="p-4 flex items-center justify-between border-t border-slate-100">
-                                <button onClick={addEntry} className="flex items-center gap-1.5 text-sm text-orange-600 hover:text-orange-700 font-medium transition-colors">
+                                <button onClick={addEntry} className="flex items-center gap-1.5 text-sm text-[#550fa8] hover:text-[#460d8b] font-medium transition-colors">
                                     <Plus className="w-4 h-4" /> Add Entry
                                 </button>
                                 <div className="flex items-center gap-6">
@@ -383,7 +383,7 @@ export default function Expense() {
                             {/* Submit button */}
                             <div className="p-4 border-t border-slate-100 flex justify-end">
                                 <button onClick={handleSubmit} disabled={submitLoading || !canSubmit}
-                                    className="px-6 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                    className="px-6 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                                     {submitLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {existingBatch?.status === 'Rejected' ? 'Resubmit Expenses' : 'Submit Monthly Expense'}
                                 </button>
@@ -421,15 +421,15 @@ export default function Expense() {
                                         className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors text-left"
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                                                <Calendar className="w-5 h-5 text-orange-500" />
+                                            <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                                                <Calendar className="w-5 h-5 text-[#6412c6]" />
                                             </div>
                                             <div>
                                                 <p className="font-semibold text-slate-900">{monthLabel} {batch.year}</p>
                                                 <p className="text-xs text-slate-500 mt-0.5">
                                                     {batch.entries?.length || 0} {(batch.entries?.length || 0) === 1 ? 'entry' : 'entries'}
                                                     {batch.isLegacy && <span className="ml-2 text-amber-500 font-medium">(Legacy)</span>}
-                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-orange-500 font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
+                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-[#6412c6] font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
                                                 </p>
                                             </div>
                                         </div>
@@ -455,9 +455,9 @@ export default function Expense() {
                                                 </div>
                                             )}
                                             {batch.resubmissionNote && (
-                                                <div className="mx-5 mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
-                                                    <p className="text-xs font-semibold text-orange-700">Resubmission Note:</p>
-                                                    <p className="text-sm text-orange-600 mt-0.5">{batch.resubmissionNote}</p>
+                                                <div className="mx-5 mt-3 p-3 bg-[#f7f3fc] border border-[#d8c4f1] rounded-xl">
+                                                    <p className="text-xs font-semibold text-[#460d8b]">Resubmission Note:</p>
+                                                    <p className="text-sm text-[#550fa8] mt-0.5">{batch.resubmissionNote}</p>
                                                 </div>
                                             )}
                                             <div className="overflow-x-auto p-4">

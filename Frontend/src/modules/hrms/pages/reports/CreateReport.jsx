@@ -243,9 +243,9 @@ export default function CreateReport() {
         }
     };
 
-    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
+    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
 
-    const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400";
+    const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]";
     const labelClass = "block text-xs font-semibold text-slate-500 mb-1.5";
 
     // Metrics to render as simple number inputs (excluding restaurantsVisited which gets special treatment)
@@ -279,7 +279,7 @@ export default function CreateReport() {
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
                     <div className="flex justify-between items-center mb-4 border-b pb-2">
                         <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">Today's Tasks <span className="text-red-500">*</span></h3>
-                        <button onClick={addTask} className="text-xs font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1"><Plus className="w-3.5 h-3.5"/> Add Task</button>
+                        <button onClick={addTask} className="text-xs font-bold text-[#550fa8] hover:text-[#460d8b] flex items-center gap-1"><Plus className="w-3.5 h-3.5"/> Add Task</button>
                     </div>
                     <div className="space-y-3">
                         {formData.tasks.map((task, i) => (
@@ -312,7 +312,7 @@ export default function CreateReport() {
                         <div className="mb-5">
                             <label className={labelClass}>
                                 <span className="flex items-center gap-1.5">
-                                    <Store className="w-3.5 h-3.5 text-orange-500" />
+                                    <Store className="w-3.5 h-3.5 text-[#6412c6]" />
                                     Restaurants Visited ({formData.metrics.restaurantsVisitedNames.length})
                                 </span>
                             </label>
@@ -321,10 +321,10 @@ export default function CreateReport() {
                             {formData.metrics.restaurantsVisitedNames.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mb-3">
                                     {formData.metrics.restaurantsVisitedNames.map((name, i) => (
-                                        <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
+                                        <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f7f3fc] border border-[#d8c4f1] rounded-lg text-sm font-medium text-[#460d8b]">
                                             <Store className="w-3 h-3" />
                                             {name}
-                                            <button type="button" onClick={() => removeRestaurant(i)} className="text-orange-400 hover:text-red-500 transition-colors">
+                                            <button type="button" onClick={() => removeRestaurant(i)} className="text-[#9359d7] hover:text-red-500 transition-colors">
                                                 <X className="w-3.5 h-3.5" />
                                             </button>
                                         </span>
@@ -349,7 +349,7 @@ export default function CreateReport() {
                                         className={`${inputClass} pl-9 pr-10`}
                                     />
                                     {restaurantSearchLoading && (
-                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-500 animate-spin" />
+                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6412c6] animate-spin" />
                                     )}
                                 </div>
 
@@ -366,7 +366,7 @@ export default function CreateReport() {
                                                     type="button"
                                                     disabled={alreadyAdded}
                                                     onClick={() => { addRestaurant(r.name); setShowRestaurantDropdown(false); }}
-                                                    className={`w-full text-left px-4 py-2.5 hover:bg-orange-50 flex items-center justify-between text-sm transition-colors border-b border-slate-50 last:border-0 ${alreadyAdded ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                                    className={`w-full text-left px-4 py-2.5 hover:bg-[#f7f3fc] flex items-center justify-between text-sm transition-colors border-b border-slate-50 last:border-0 ${alreadyAdded ? 'opacity-40 cursor-not-allowed' : ''}`}
                                                 >
                                                     <span className="flex flex-col">
                                                         <span className="font-medium text-slate-700">{r.name}</span>
@@ -447,8 +447,8 @@ export default function CreateReport() {
                         ))}
                     </div>
 
-                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading || formData.attachments.length >= (settings?.maxAttachments || 5)} className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-xl p-8 hover:bg-slate-50 hover:border-orange-300 transition-colors disabled:opacity-50">
-                        {uploading ? <Loader2 className="w-6 h-6 text-orange-500 animate-spin" /> : <Upload className="w-6 h-6 text-slate-400" />}
+                    <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading || formData.attachments.length >= (settings?.maxAttachments || 5)} className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-xl p-8 hover:bg-slate-50 hover:border-[#c1a0e8] transition-colors disabled:opacity-50">
+                        {uploading ? <Loader2 className="w-6 h-6 text-[#6412c6] animate-spin" /> : <Upload className="w-6 h-6 text-slate-400" />}
                         <span className="text-sm font-medium text-slate-600">{uploading ? 'Uploading...' : 'Click to upload files'}</span>
                     </button>
                     <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={settings?.allowedFileTypes?.join(',')} />
@@ -467,7 +467,7 @@ export default function CreateReport() {
                 <button
                     onClick={() => handleSubmit('Submitted')}
                     disabled={saving || uploading}
-                    className="px-6 py-2.5 rounded-xl bg-orange-500 text-white font-semibold hover:bg-orange-600 shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-xl bg-[#6412c6] text-white font-semibold hover:bg-[#550fa8] shadow-lg shadow-[#6412c6]/20 transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Submit Report
                 </button>

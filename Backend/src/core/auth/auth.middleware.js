@@ -153,3 +153,29 @@ export const checkPermission = (permissionKey, action) => {
     };
 };
 
+export const sellerProfileAuth = (req, res, next) => {
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
+
+    if (!token) {
+        return sendError(res, 401, 'Authentication token missing');
+    }
+
+    try {
+        const decoded = verifyAccessToken(token);
+
+        if (String(decoded.role || '').toUpperCase() === 'SELLER' && decoded.userId) {
+            req.user = {
+                userId: decoded.userId,
+                role: 'SELLER',
+            };
+            return next();
+        }
+
+        return sendError(res, 403, 'Seller access required');
+    } catch {
+        return sendError(res, 401, 'Invalid or expired token');
+    }
+};
+
+

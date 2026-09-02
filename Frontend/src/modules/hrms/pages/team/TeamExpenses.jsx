@@ -68,7 +68,7 @@ export default function TeamExpenses() {
     if (loading && batches.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -144,13 +144,13 @@ export default function TeamExpenses() {
                                 <div className="p-5">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-3">
-                                            <Calendar className="w-5 h-5 text-orange-400" />
+                                            <Calendar className="w-5 h-5 text-[#9359d7]" />
                                             <div>
                                                 <h3 className="text-sm font-bold text-slate-900">{monthLabel} {batch.year}</h3>
                                                 <p className="text-xs text-slate-500 mt-0.5">
                                                     {batch.entries?.length || 0} {(batch.entries?.length || 0) === 1 ? 'visit entry' : 'visit entries'}
                                                     {batch.isLegacy && <span className="ml-2 text-amber-500 font-medium">(Migrated)</span>}
-                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-orange-500 font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
+                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-[#6412c6] font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
                                                 </p>
                                             </div>
                                         </div>
@@ -163,7 +163,7 @@ export default function TeamExpenses() {
                                     {/* Expandable entries */}
                                     <button
                                         onClick={() => setExpandedBatch(isExpanded ? null : batch._id)}
-                                        className="w-full flex items-center justify-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium py-2 rounded-lg hover:bg-orange-50 transition-colors"
+                                        className="w-full flex items-center justify-center gap-1 text-xs text-[#550fa8] hover:text-[#460d8b] font-medium py-2 rounded-lg hover:bg-[#f7f3fc] transition-colors"
                                     >
                                         {isExpanded ? 'Hide' : 'View'} Entries
                                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -172,9 +172,9 @@ export default function TeamExpenses() {
                                     {isExpanded && (
                                         <div className="mt-3 overflow-x-auto">
                                             {batch.resubmissionNote && (
-                                                <div className="mb-3 p-2.5 bg-orange-50 border border-orange-200 rounded-lg">
-                                                    <p className="text-xs font-semibold text-orange-700">Resubmission Note:</p>
-                                                    <p className="text-xs text-orange-600 mt-0.5">{batch.resubmissionNote}</p>
+                                                <div className="mb-3 p-2.5 bg-[#f7f3fc] border border-[#d8c4f1] rounded-lg">
+                                                    <p className="text-xs font-semibold text-[#460d8b]">Resubmission Note:</p>
+                                                    <p className="text-xs text-[#550fa8] mt-0.5">{batch.resubmissionNote}</p>
                                                 </div>
                                             )}
                                             <table className="w-full text-xs">

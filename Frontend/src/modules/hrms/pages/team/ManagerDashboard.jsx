@@ -85,15 +85,15 @@ export default function ManagerDashboard() {
     if (loading) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
 
     const statCards = [
-        { title: 'Pending Leaves', value: stats?.pendingLeaves || 0, icon: CalendarDays, color: 'bg-orange-500', link: '/hrms/team/leaves' },
+        { title: 'Pending Leaves', value: stats?.pendingLeaves || 0, icon: CalendarDays, color: 'bg-[#6412c6]', link: '/hrms/team/leaves' },
         { title: 'Pending Expenses', value: stats?.pendingExpenses || 0, icon: Receipt, color: 'bg-emerald-500', link: '/hrms/team/expenses' },
-        { title: 'Reports Today', value: stats?.reports?.todayCount || 0, icon: ClipboardList, color: 'bg-orange-500', link: '/hrms/team/reports' },
+        { title: 'Reports Today', value: stats?.reports?.todayCount || 0, icon: ClipboardList, color: 'bg-[#6412c6]', link: '/hrms/team/reports' },
     ];
 
     return (
@@ -116,7 +116,7 @@ export default function ManagerDashboard() {
                                 <card.icon className="w-6 h-6" />
                             </div>
                         </div>
-                        <Link to={card.link} className="flex items-center text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors mt-4 relative z-10">
+                        <Link to={card.link} className="flex items-center text-sm font-medium text-[#550fa8] hover:text-[#460d8b] transition-colors mt-4 relative z-10">
                             View Details <ChevronRight className="w-4 h-4 ml-1" />
                         </Link>
                     </div>
@@ -128,7 +128,7 @@ export default function ManagerDashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-orange-50 text-orange-600 rounded-xl">
+                            <div className="p-2 bg-[#f7f3fc] text-[#550fa8] rounded-xl">
                                 <TrendingUp className="w-5 h-5" />
                             </div>
                             <h2 className="text-lg font-bold text-slate-900">Team Performance Overview</h2>
@@ -146,7 +146,7 @@ export default function ManagerDashboard() {
                                 {(stats?.averageTeamScore || 0) >= 80 ? 'Excellent' : (stats?.averageTeamScore || 0) >= 60 ? 'Good' : 'Needs Focus'}
                             </span>
                         </div>
-                        <Link to="/hrms/team/performance" className="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center gap-1 bg-orange-50 hover:bg-orange-100/80 px-3 py-2 rounded-xl transition-colors">
+                        <Link to="/hrms/team/performance" className="text-sm font-semibold text-[#550fa8] hover:text-[#460d8b] flex items-center gap-1 bg-[#f7f3fc] hover:bg-[#f0e7f9]/80 px-3 py-2 rounded-xl transition-colors">
                             Detailed View <ChevronRight className="w-4 h-4" />
                         </Link>
                     </div>
@@ -219,7 +219,7 @@ export default function ManagerDashboard() {
                             <CalendarDays className="w-5 h-5 text-slate-400" />
                             <h2 className="text-lg font-bold text-slate-900">Pending Leaves</h2>
                         </div>
-                        <Link to="/hrms/team/leaves" className="text-sm font-medium text-orange-600 hover:text-orange-700">View All</Link>
+                        <Link to="/hrms/team/leaves" className="text-sm font-medium text-[#550fa8] hover:text-[#460d8b]">View All</Link>
                     </div>
                     <div className="p-0 flex-1 overflow-y-auto max-h-[400px]">
                         {stats?.recentLeaves.length === 0 ? (
@@ -234,7 +234,7 @@ export default function ManagerDashboard() {
                                     <div key={leave._id} className="p-4 hover:bg-slate-50 transition-colors">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="font-semibold text-sm text-slate-900">{leave.employeeId?.adminId?.name}</div>
-                                            <div className="text-xs font-medium px-2 py-1 bg-orange-50 text-orange-700 rounded-md border border-orange-100">{leave.leaveType}</div>
+                                            <div className="text-xs font-medium px-2 py-1 bg-[#f7f3fc] text-[#460d8b] rounded-md border border-[#f0e7f9]">{leave.leaveType}</div>
                                         </div>
                                         <div className="text-xs text-slate-500 mb-2">
                                             {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()} ({leave.totalDays} Days)
@@ -254,7 +254,7 @@ export default function ManagerDashboard() {
                             <Receipt className="w-5 h-5 text-slate-400" />
                             <h2 className="text-lg font-bold text-slate-900">Pending Expenses</h2>
                         </div>
-                        <Link to="/hrms/team/expenses" className="text-sm font-medium text-orange-600 hover:text-orange-700">View All</Link>
+                        <Link to="/hrms/team/expenses" className="text-sm font-medium text-[#550fa8] hover:text-[#460d8b]">View All</Link>
                     </div>
                     <div className="p-0 flex-1 overflow-y-auto max-h-[400px]">
                         {stats?.recentExpenses.length === 0 ? (

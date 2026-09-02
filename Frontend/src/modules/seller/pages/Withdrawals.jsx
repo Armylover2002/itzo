@@ -199,7 +199,7 @@ const Withdrawals = () => {
                     <div>
                         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                             Money Requests
-                            <div className="p-1.5 bg-orange-100 rounded-lg">
+                            <div className="p-1.5 bg-[#fde8ea] rounded-lg">
                                 <Wallet className="h-5 w-5 text-primary" />
                             </div>
                         </h1>
@@ -207,7 +207,7 @@ const Withdrawals = () => {
                     </div>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="px-6 py-3 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
+                        className="px-6 py-3 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
                     >
                         <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         New Request
@@ -223,12 +223,12 @@ const Withdrawals = () => {
                     { label: 'Last Withdrawal', value: `₹${balances.lastWithdrawal.toLocaleString()}`, icon: CheckCircle2, color: 'orange', sub: 'Sent to bank' },
                 ].map((stat, i) => (
                     <BlurFade key={i} delay={0.2 + i * 0.1}>
-                        <Card className="p-6 border-none shadow-sm ring-1 ring-slate-100 hover:ring-orange-200 transition-all bg-white group relative overflow-hidden">
+                        <Card className="p-6 border-none shadow-sm ring-1 ring-slate-100 hover:ring-[#f9c7c9] transition-all bg-white group relative overflow-hidden">
                             <div className="relative z-10">
                                 <div className={cn(
                                     "h-10 w-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110",
-                                    stat.color === 'emerald' ? 'bg-orange-50 text-primary' :
-                                        stat.color === 'amber' ? 'bg-amber-50 text-amber-600' : 'bg-orange-50 text-primary'
+                                    stat.color === 'emerald' ? 'bg-[#fef4f4] text-primary' :
+                                        stat.color === 'amber' ? 'bg-amber-50 text-amber-600' : 'bg-[#fef4f4] text-primary'
                                 )}>
                                     <stat.icon className="h-5 w-5" />
                                 </div>
@@ -306,7 +306,7 @@ const Withdrawals = () => {
                                             <p className="text-xs font-bold text-slate-600">{item.customer}</p>
                                             {(item.status === 'Settled' || item.status === 'Rejected') && (item.adminNote || item.orderId) && (
                                                 <div className="mt-1.5 text-left bg-slate-50 rounded-lg p-2 border border-slate-100">
-                                                    {item.orderId && <p className="text-[9px] font-bold text-primary-orange uppercase">Txn: {item.orderId}</p>}
+                                                    {item.orderId && <p className="text-[9px] font-bold text-[#E71D28] uppercase">Txn: {item.orderId}</p>}
                                                     {item.adminNote && <p className="text-[9px] font-medium text-slate-500 mt-0.5 italic">{item.adminNote}</p>}
                                                 </div>
                                             )}
@@ -353,7 +353,7 @@ const Withdrawals = () => {
                     <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-center justify-between">
                         <div>
                             <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">Available to Withdraw</p>
-                            <h4 className="text-2xl font-black text-primary-orange">₹{balances.available.toLocaleString()}</h4>
+                            <h4 className="text-2xl font-black text-[#E71D28]">₹{balances.available.toLocaleString()}</h4>
                         </div>
                         <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
                             <Info className="h-6 w-6 text-slate-300" />
@@ -403,7 +403,7 @@ const Withdrawals = () => {
 
                         {/* UPI Details */}
                         {paymentMethod === 'upi' && (
-                            <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
+                            <div className="p-4 bg-[#fef4f4]/50 rounded-2xl border border-[#fde8ea]/50 space-y-3">
                                 <p className="text-[10px] font-black text-primary uppercase tracking-widest">UPI Details</p>
                                 <input
                                     type="text"
@@ -417,7 +417,7 @@ const Withdrawals = () => {
 
                         {/* QR Code Upload */}
                         {paymentMethod === 'qr' && (
-                            <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
+                            <div className="p-4 bg-[#fef4f4]/50 rounded-2xl border border-[#fde8ea]/50 space-y-3">
                                 <p className="text-[10px] font-black text-primary uppercase tracking-widest">Upload QR Code</p>
                                 {qrPreview ? (
                                     <div className="relative">
@@ -443,7 +443,7 @@ const Withdrawals = () => {
 
                         {/* Bank Details */}
                         {paymentMethod === 'bank_transfer' && (
-                            <div className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100/50 space-y-3">
+                            <div className="p-4 bg-[#fef4f4]/50 rounded-2xl border border-[#fde8ea]/50 space-y-3">
                                 <p className="text-[10px] font-black text-primary uppercase tracking-widest">Bank Details</p>
                                 <input
                                     type="text"
@@ -481,7 +481,7 @@ const Withdrawals = () => {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-4 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95"
+                            className="w-full py-4 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 transition-all active:scale-95"
                         >
                             {isSubmitting ? <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : 'SUBMIT REQUEST'}
                         </button>

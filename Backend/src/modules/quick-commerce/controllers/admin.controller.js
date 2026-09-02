@@ -4,15 +4,20 @@ import { QuickCategory } from '../models/category.model.js';
 import { QuickProduct } from '../models/product.model.js';
 import { QuickOrder } from '../models/order.model.js';
 import { Seller } from '../seller/models/seller.model.js';
+import { SellerNotification } from '../seller/models/sellerNotification.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { updateSellerProfileData } from '../seller/controllers/seller.controller.js';
 import { QuickZone } from '../models/quick_zone.model.js';
 import { capPolygonPoints } from '../../../utils/geo.js';
 import { QuickCoupon } from '../models/coupon.model.js';
 import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
-import { uploadImageBuffer } from '../../../services/upload.service.js';
 import { processRefund as processFoodRefund } from '../../food/admin/services/admin.service.js';
 import { getIO, rooms } from '../../../config/socket.js';
+import {
+  buildApplySellerPendingProfileChanges,
+  buildDiscardSellerPendingProfileChanges,
+} from '../shared/pendingProfileChanges.js';
+import { upsertSellerNotification } from '../seller/services/sellerNotify.service.js';
 import {
   getQuickExperienceSections,
   createQuickExperienceSection,
@@ -89,6 +94,47 @@ const toProduct = (product) => ({
   seller: product.seller || null,
   storeName: product.storeName || '',
   restaurantName: product.restaurantName || '',
+});
+
+const toSellerRequest = (seller, extras = {}) => ({
+  id: seller._id,
+  _id: seller._id,
+  shopName: seller.shopName || seller.name || 'Store',
+  ownerName: seller.name || 'Seller',
+  email: seller.email || '',
+  phone: seller.phoneLast10 || seller.phone || '',
+  location: seller.location?.formattedAddress || seller.location?.address || '',
+  category: seller.shopInfo?.businessType || 'General',
+  applicationDate: seller.createdAt,
+  approvedAt: seller.approvedAt || null,
+  zoneId: seller.shopInfo?.zoneId || null,
+  zoneName: seller.shopInfo?.zoneName || '',
+  productCount: Number(extras.productCount) || 0,
+  status:
+    seller.approvalStatus ||
+    (seller.approved === false ? 'pending' : 'approved'),
+  approvalStatus:
+    seller.approvalStatus ||
+    (seller.approved === false ? 'pending' : 'approved'),
+  approved: seller.approved !== false,
+  onboardingSubmitted: seller.onboardingSubmitted === true,
+  bankInfo: seller.bankInfo || {},
+  documents: seller.documents || {},
+  shopInfo: seller.shopInfo || {},
+  approvalNotes: seller.approvalNotes || '',
+  wasEverApproved: seller.wasEverApproved === true,
+  hasPendingProfileUpdate: seller.pendingProfileChanges?.hasPendingUpdate === true,
+  pendingProfileChanges: seller.pendingProfileChanges?.hasPendingUpdate
+    ? {
+        hasPendingUpdate: true,
+        proposed: seller.pendingProfileChanges.proposed || {},
+        previous: seller.pendingProfileChanges.previous || {},
+        changeTypes: seller.pendingProfileChanges.changeTypes || [],
+        reason: seller.pendingProfileChanges.reason || '',
+        requestedAt: seller.pendingProfileChanges.requestedAt || null,
+      }
+    : null,
+  profileUpdateRequestedAt: seller.pendingProfileChanges?.requestedAt || null,
 });
 
 const buildProductSellerMap = async (products = []) => {
@@ -318,28 +364,6 @@ const buildCategoryTree = (categories) => {
 
   return roots;
 };
-
-const toSellerRequest = (seller) => ({
-  id: seller._id,
-  _id: seller._id,
-  shopName: seller.shopName || seller.name || 'Store',
-  ownerName: seller.name || 'Seller',
-  email: seller.email || '',
-  phone: seller.phoneLast10 || seller.phone || '',
-  location: seller.location?.formattedAddress || seller.location?.address || '',
-  category: seller.shopInfo?.businessType || 'General',
-  applicationDate: seller.createdAt,
-  status:
-    seller.approvalStatus ||
-    (seller.approved === false ? 'pending' : 'approved'),
-  approved: seller.approved !== false,
-  onboardingSubmitted: seller.onboardingSubmitted === true,
-  serviceRadius: Number(seller.serviceRadius || 0),
-  bankInfo: seller.bankInfo || {},
-  documents: seller.documents || {},
-  shopInfo: seller.shopInfo || {},
-  approvalNotes: seller.approvalNotes || '',
-});
 
 export const getAdminStats = async (_req, res) => {
   await ensureQuickCommerceSeedData();
@@ -1276,7 +1300,30 @@ export const getAdminSellerRequests = async (req, res) => {
   const { status = 'pending', page = 1, limit = 50, search = '' } = req.query || {};
   const currentPage = Math.max(1, parseInt(page, 10) || 1);
   const perPage = Math.max(1, Math.min(parseInt(limit, 10) || 50, 100));
-  const query = {};
+  const query = {
+    $nor: [
+      {
+        approvalStatus: 'draft',
+        onboardingSubmitted: { $ne: true },
+        'shopInfo.businessType': { $in: ['', null] },
+        $and: [
+          {
+            $or: [
+              { name: { $in: ['', null] } },
+              { name: { $regex: /^Seller(\s+\d+)?$/i } },
+            ],
+          },
+          {
+            $or: [
+              { shopName: { $in: ['', null] } },
+              { shopName: { $regex: /^Store(\s+\d+)?$/i } },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
   if (status === 'deleted') {
     query.isDeleted = true;
   } else {
@@ -1285,6 +1332,12 @@ export const getAdminSellerRequests = async (req, res) => {
     else if (status === 'approved') query.approvalStatus = 'approved';
     else if (status === 'rejected') query.approvalStatus = 'rejected';
     else if (status === 'draft') query.approvalStatus = 'draft';
+    else if (status === 'review_queue') {
+      query.$or = [
+        { approvalStatus: { $in: ['pending', 'rejected'] } },
+        { 'pendingProfileChanges.hasPendingUpdate': true },
+      ];
+    }
   }
 
   const searchText = String(search || '').trim();
@@ -1306,10 +1359,34 @@ export const getAdminSellerRequests = async (req, res) => {
     Seller.countDocuments(query),
   ]);
 
+  const productCountBySeller = {};
+  if (items.length > 0) {
+    const counts = await QuickProduct.aggregate([
+      {
+        $match: {
+          sellerId: { $in: items.map((seller) => seller._id) },
+        },
+      },
+      {
+        $group: {
+          _id: '$sellerId',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    counts.forEach((row) => {
+      productCountBySeller[String(row._id)] = Number(row.count) || 0;
+    });
+  }
+
   return res.json({
     success: true,
     result: {
-      items: items.map(toSellerRequest),
+      items: items.map((seller) =>
+        toSellerRequest(seller, {
+          productCount: productCountBySeller[String(seller._id)] || 0,
+        }),
+      ),
       page: currentPage,
       limit: perPage,
       total,
@@ -1400,13 +1477,70 @@ export const approveAdminSellerRequest = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Seller request not found' });
   }
 
+  const isProfileReapproval =
+    seller.approvalStatus === 'approved' &&
+    seller.pendingProfileChanges?.hasPendingUpdate === true;
+
+  if (isProfileReapproval) {
+    const applyUpdate = buildApplySellerPendingProfileChanges(seller.pendingProfileChanges);
+    const updated = await Seller.findByIdAndUpdate(sellerId, applyUpdate, {
+      new: true,
+      runValidators: false,
+    });
+
+    await upsertSellerNotification(updated._id, {
+      key: `profile-update:${String(updated._id)}:approved`,
+      type: 'system',
+      title: 'Profile update approved',
+      message: 'Your requested profile changes are now live.',
+      link: '/seller/profile',
+    });
+
+    try {
+      const io = getIO();
+      if (io) {
+        io.to(rooms.seller(updated._id)).emit('seller_live_update', {
+          type: 'seller_profile_approved',
+          seller: toSellerRequest(updated),
+        });
+      }
+    } catch {}
+
+    return res.json({
+      success: true,
+      message: 'Seller profile update approved',
+      result: toSellerRequest(updated),
+    });
+  }
+
   seller.approved = true;
   seller.approvalStatus = 'approved';
   seller.onboardingSubmitted = true;
+  seller.wasEverApproved = true;
   seller.approvedAt = new Date();
   seller.rejectedAt = null;
   seller.approvalNotes = String(req.body?.approvalNotes || '').trim();
   await seller.save();
+
+  await upsertSellerNotification(seller._id, {
+    key: `onboarding:${String(seller._id)}:decision`,
+    type: 'system',
+    title: 'Your store is approved',
+    message: seller.approvalNotes
+      ? `Your seller account is approved and live. Note from our team: ${seller.approvalNotes}`
+      : 'Your seller account is approved. You can start adding products and taking orders.',
+    link: '/seller',
+  });
+
+  try {
+    const io = getIO();
+    if (io) {
+      io.to(rooms.seller(seller._id)).emit('seller_live_update', {
+        type: 'seller_approved',
+        seller: toSellerRequest(seller),
+      });
+    }
+  } catch {}
 
   return res.json({
     success: true,
@@ -1423,13 +1557,73 @@ export const rejectAdminSellerRequest = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Seller request not found' });
   }
 
+  const reason = String(req.body?.approvalNotes || req.body?.reason || '').trim();
+  const isProfileReapproval =
+    seller.approvalStatus === 'approved' &&
+    seller.pendingProfileChanges?.hasPendingUpdate === true;
+
+  if (isProfileReapproval) {
+    const discardUpdate = buildDiscardSellerPendingProfileChanges();
+    const updated = await Seller.findByIdAndUpdate(
+      sellerId,
+      { $unset: discardUpdate.$unset },
+      { new: true, runValidators: false },
+    );
+
+    await upsertSellerNotification(updated._id, {
+      key: `profile-update:${String(updated._id)}:rejected`,
+      type: 'system',
+      title: 'Profile update rejected',
+      message: reason
+        ? `Your requested profile changes were rejected. Reason: ${reason}`
+        : 'Your requested profile changes were rejected. Your current approved details remain active.',
+      link: '/seller/profile',
+    });
+
+    try {
+      const io = getIO();
+      if (io) {
+        io.to(rooms.seller(updated._id)).emit('seller_live_update', {
+          type: 'seller_profile_rejected',
+          seller: toSellerRequest(updated),
+        });
+      }
+    } catch {}
+
+    return res.json({
+      success: true,
+      message: 'Seller profile update rejected',
+      result: toSellerRequest(updated),
+    });
+  }
+
   seller.approved = false;
   seller.approvalStatus = 'rejected';
   seller.onboardingSubmitted = true;
   seller.approvedAt = null;
   seller.rejectedAt = new Date();
-  seller.approvalNotes = String(req.body?.approvalNotes || req.body?.reason || '').trim();
+  seller.approvalNotes = reason;
   await seller.save();
+
+  await upsertSellerNotification(seller._id, {
+    key: `onboarding:${String(seller._id)}:decision`,
+    type: 'system',
+    title: 'Your application needs changes',
+    message: reason
+      ? `Your application was not approved. Note from our team: ${reason}`
+      : 'Your application needs updates. Please correct your details and submit again.',
+    link: '/seller/onboarding',
+  });
+
+  try {
+    const io = getIO();
+    if (io) {
+      io.to(rooms.seller(seller._id)).emit('seller_live_update', {
+        type: 'seller_rejected',
+        seller: toSellerRequest(seller),
+      });
+    }
+  } catch {}
 
   return res.json({
     success: true,

@@ -407,7 +407,7 @@ export default function AdminHome() {
                 title="Net revenue"
                 value={formatCurrency(subOverview?.totalRevenue || 0)}
                 helper="Gross collected all-time"
-                icon={<DollarSign className="h-5 w-5 text-[#FE5502]" />}
+                icon={<DollarSign className="h-5 w-5 text-[#6412C6]" />}
                 accent="bg-orange-100/40"
                 path="/ecs/food/subscriptions?source=revenue"
               />

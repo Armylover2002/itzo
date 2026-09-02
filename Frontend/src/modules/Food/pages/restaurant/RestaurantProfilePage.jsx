@@ -132,7 +132,7 @@ export default function RestaurantProfilePage() {
           <CardContent className="p-6">
             <div className="flex flex-col items-center text-center">
               <div className="relative mb-4">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-orange-50">
+                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-[#f3f5f7]">
                   {userData.profileImage?.url ? (
                     <img src={userData.profileImage.url} alt={userData.name} className="w-full h-full object-cover" />
                   ) : (
@@ -147,7 +147,7 @@ export default function RestaurantProfilePage() {
                 </button>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-1">{userData.name}</h2>
-              <div className="flex items-center gap-1.5 bg-orange-50 text-orange-700 px-3 py-1 rounded-full mb-4">
+              <div className="flex items-center gap-1.5 bg-[#f3f5f7] text-[#092240] px-3 py-1 rounded-full mb-4">
                 <ShieldCheck className="w-4 h-4" />
                 <span className="text-xs font-bold uppercase tracking-wider">{userData.role}</span>
               </div>

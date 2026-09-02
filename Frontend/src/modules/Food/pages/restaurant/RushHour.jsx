@@ -68,7 +68,7 @@ export default function RushHour() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
         {/* Informational Banner */}
-        <div className="bg-orange-50 rounded-lg p-4 mb-6 flex items-start gap-4">
+        <div className="bg-[#f3f5f7] rounded-lg p-4 mb-6 flex items-start gap-4">
           <div className="w-14 h-14 rounded-full bg-black flex items-center justify-center shrink-0">
             <Zap className="w-7 h-7 text-white" strokeWidth={2.5} fill="white" />
           </div>

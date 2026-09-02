@@ -14,8 +14,9 @@ let currentAppType = 'user'; // Default to user app
  * Detect app type from URL if not set
  */
 const detectAppType = () => {
+  if (typeof window === 'undefined') return 'user';
   const path = window.location.pathname;
-  if (path.includes('/ecs')) return 'admin';
+  if (path.includes('/ecs') || path.includes('/hrms')) return 'admin';
   if (path.includes('/restaurant')) return 'restaurant';
   if (path.includes('/delivery')) return 'delivery';
   if (path.includes('/seller')) return 'seller';
@@ -215,9 +216,11 @@ export const getAppLogo = (appType) => {
   const settings = getCachedSettings();
   if (!settings) return '/itzo-logo-transparent.png';
   
+  const target = appType || detectAppType();
   let logo = null;
-  switch(appType) {
-    case 'admin': logo = settings.adminLogo?.url; break;
+  switch(target) {
+    case 'admin':
+    case 'hrms': logo = settings.adminLogo?.url; break;
     case 'user': logo = settings.userLogo?.url; break;
     case 'delivery': logo = settings.deliveryLogo?.url; break;
     case 'restaurant': logo = settings.restaurantLogo?.url; break;
@@ -234,8 +237,10 @@ export const getAppFavicon = (appType) => {
   const settings = getCachedSettings();
   if (!settings) return null;
   
-  switch(appType) {
-    case 'admin': return settings.adminFavicon?.url;
+  const target = appType || detectAppType();
+  switch(target) {
+    case 'admin':
+    case 'hrms': return settings.adminFavicon?.url;
     case 'user': return settings.userFavicon?.url;
     case 'delivery': return settings.deliveryFavicon?.url;
     case 'restaurant': return settings.restaurantFavicon?.url;
@@ -268,14 +273,25 @@ export const getCompanyName = () => {
   return settings?.companyName || "Appzeto";
 };
 
-/**
- * Get company name asynchronously (loads if not cached)
- */
-export const getCompanyNameAsync = async () => {
-  try {
-    const settings = await loadBusinessSettings();
-    return settings?.companyName || "Appzeto";
-  } catch (error) {
-    return "Appzeto";
+export const getCompanyNameAsync = async () => getCompanyName();
+
+export const getSellerLoginBanner = () => {
+  const settings = getCachedSettings();
+  return settings?.sellerLoginBanner || { url: '', active: true };
+};
+
+export const getRestaurantLoginBanner = () => {
+  const settings = getCachedSettings();
+  return settings?.restaurantLoginBanner || { url: '', active: true };
+};
+
+export const subscribeBusinessSettings = (callback) => {
+  if (typeof window === 'undefined' || typeof callback !== 'function') {
+    return () => {};
   }
+  const handler = (event) => {
+    callback(event?.detail || getCachedSettings());
+  };
+  window.addEventListener('businessSettingsUpdated', handler);
+  return () => window.removeEventListener('businessSettingsUpdated', handler);
 };

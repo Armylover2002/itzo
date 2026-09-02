@@ -44,7 +44,7 @@ const ManagerGuard = ({ children }) => {
     if (isLoading) {
         return (
             <div className="flex h-64 w-full items-center justify-center bg-transparent">
-                <Loader className="w-8 h-8 text-orange-500 animate-spin" />
+                <Loader className="w-8 h-8 text-[#6412c6] animate-spin" />
             </div>
         );
     }

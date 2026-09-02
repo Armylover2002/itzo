@@ -323,7 +323,7 @@ const Orders = () => {
         value: safeOrders.length,
         icon: HiOutlineArchiveBoxXMark,
         color: "text-primary",
-        bg: "bg-orange-50",
+        bg: "bg-[#fef4f4]",
       },
       {
         label: "Pending",
@@ -339,7 +339,7 @@ const Orders = () => {
           .length,
         icon: HiOutlineCheck,
         color: "text-primary",
-        bg: "bg-orange-50",
+        bg: "bg-[#fef4f4]",
       },
       {
         label: "Delivered",
@@ -347,7 +347,7 @@ const Orders = () => {
           .length,
         icon: HiOutlineCheck,
         color: "text-primary",
-        bg: "bg-orange-50",
+        bg: "bg-[#fef4f4]",
       },
     ],
     [safeOrders],
@@ -520,7 +520,7 @@ const Orders = () => {
               Order Management
               <Badge
                 variant="primary"
-                className="text-[10px] px-1.5 py-0 font-bold tracking-wider uppercase bg-orange-100 text-orange-700">
+                className="text-[10px] px-1.5 py-0 font-bold tracking-wider uppercase bg-[#fde8ea] text-[#a2141c]">
                 Real-time
               </Badge>
             </h1>
@@ -538,8 +538,8 @@ const Orders = () => {
             </Button>
             <ShimmerButton
               onClick={() => setIsQuickViewModalOpen(true)}
-              background="#FE5502"
-              className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white shadow-xl flex items-center space-x-1.5 sm:space-x-2 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark transition-colors">
+              background="#E71D28"
+              className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white shadow-xl flex items-center space-x-1.5 sm:space-x-2 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark transition-colors">
               <HiOutlineEye className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-0" />
               <span className="hidden sm:inline">QUICK VIEW</span>
             </ShimmerButton>
@@ -1095,22 +1095,22 @@ const Orders = () => {
                   <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                     {/* Summary Grid */}
                     <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                      <div className="p-3 sm:p-4 rounded-2xl bg-orange-50 border border-orange-100">
-                        <p className="text-[10px] sm:text-xs font-bold text-orange-400 uppercase tracking-widest mb-1">
+                      <div className="p-3 sm:p-4 rounded-2xl bg-[#fef4f4] border border-[#fde8ea]">
+                        <p className="text-[10px] sm:text-xs font-bold text-[#ee6169] uppercase tracking-widest mb-1">
                           Total Revenue
                         </p>
-                        <p className="text-base sm:text-xl font-black text-orange-700 truncate">
+                        <p className="text-base sm:text-xl font-black text-[#a2141c] truncate">
                           ₹
                           {safeOrders
                             .reduce((acc, o) => acc + o.total, 0)
                             .toLocaleString()}
                         </p>
                       </div>
-                      <div className="p-3 sm:p-4 rounded-2xl bg-orange-50 border border-orange-100">
-                        <p className="text-[10px] sm:text-xs font-bold text-primary-orange uppercase tracking-widest mb-1">
+                      <div className="p-3 sm:p-4 rounded-2xl bg-[#fef4f4] border border-[#fde8ea]">
+                        <p className="text-[10px] sm:text-xs font-bold text-[#E71D28] uppercase tracking-widest mb-1">
                           Avg. Order Value
                         </p>
-                        <p className="text-base sm:text-xl font-black text-orange-700">
+                        <p className="text-base sm:text-xl font-black text-[#a2141c]">
                           ₹
                           {safeOrders.length
                             ? (

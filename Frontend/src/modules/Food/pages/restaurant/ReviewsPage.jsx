@@ -142,7 +142,7 @@ export default function ReviewsPage() {
                     }}
                     className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg ${
                       review.hasReply
-                        ? "bg-orange-100 hover:bg-orange-200 text-orange-700"
+                        ? "bg-[#e7eaef] hover:bg-[#c3ccd6] text-[#092240]"
                         : "bg-[#ff8100] hover:bg-[#e67300] text-white"
                     }`}
                   >

@@ -150,7 +150,7 @@ export default function Salary() {
     }, [selectedYear]);
 
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const statusColor = { Draft: 'bg-slate-100 text-slate-600', Approved: 'bg-orange-50 text-orange-700', Paid: 'bg-emerald-50 text-emerald-700' };
+    const statusColor = { Draft: 'bg-slate-100 text-slate-600', Approved: 'bg-[#f7f3fc] text-[#460d8b]', Paid: 'bg-emerald-50 text-emerald-700' };
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
@@ -160,14 +160,14 @@ export default function Salary() {
                     <p className="text-sm text-slate-500 mt-1">View your salary history and download payslips</p>
                 </div>
                 <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}
-                    className="h-10 px-4 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30">
+                    className="h-10 px-4 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30">
                     {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
             </div>
 
             <div className="flex gap-2">
-                <button onClick={() => setTab('overview')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'overview' ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Salary Overview</button>
-                <button onClick={() => setTab('payslips')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payslips' ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payslips</button>
+                <button onClick={() => setTab('overview')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'overview' ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Salary Overview</button>
+                <button onClick={() => setTab('payslips')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payslips' ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payslips</button>
             </div>
 
             {/* Payslip Detail Modal */}
@@ -237,19 +237,19 @@ export default function Salary() {
                                         <td className="px-5 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${statusColor[r.status] || ''}`}>{r.status}</span></td>
                                         <td className="px-5 py-3.5">
                                             {tab === 'overview' ? (
-                                                <button onClick={() => setSelectedPayslip(r)} className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
+                                                <button onClick={() => setSelectedPayslip(r)} className="flex items-center gap-1.5 text-[#550fa8] hover:text-[#460d8b] font-medium text-xs">
                                                     <Eye className="w-3.5 h-3.5" /> View Breakdown
                                                 </button>
                                             ) : (
                                                 r.payslipUrl ? (
                                                     <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <button onClick={() => setPreviewPdf(r.payslipUrl)} className="text-orange-600 hover:text-orange-700 text-xs font-semibold flex items-center gap-1 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors" title="View Payslip">
+                                                        <button onClick={() => setPreviewPdf(r.payslipUrl)} className="text-[#550fa8] hover:text-[#460d8b] text-xs font-semibold flex items-center gap-1 bg-[#f7f3fc] hover:bg-[#f0e7f9] px-2 py-1 rounded-lg transition-colors" title="View Payslip">
                                                             <Eye className="w-3.5 h-3.5" /> View
                                                         </button>
                                                         <button onClick={() => handleProxyDownload(r.payslipUrl)} className="text-emerald-600 hover:text-emerald-700 text-xs font-semibold flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg transition-colors" title="Download Payslip">
                                                             <Download className="w-3.5 h-3.5" /> Download
                                                         </button>
-                                                        <button onClick={() => handleProxyPrint(r.payslipUrl)} className="text-orange-600 hover:text-orange-700 text-xs font-semibold flex items-center gap-1 bg-orange-50 hover:bg-orange-100 px-2 py-1 rounded-lg transition-colors" title="Print Payslip">
+                                                        <button onClick={() => handleProxyPrint(r.payslipUrl)} className="text-[#550fa8] hover:text-[#460d8b] text-xs font-semibold flex items-center gap-1 bg-[#f7f3fc] hover:bg-[#f0e7f9] px-2 py-1 rounded-lg transition-colors" title="Print Payslip">
                                                             <Printer className="w-3.5 h-3.5" /> Print
                                                         </button>
                                                     </div>
@@ -271,7 +271,7 @@ export default function Salary() {
                 <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 backdrop-blur-md">
                     <div className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 text-white shadow-lg">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400">
+                            <div className="w-8 h-8 rounded-lg bg-[#6412c6]/20 flex items-center justify-center text-[#9359d7]">
                                 <FileText className="w-4 h-4" />
                             </div>
                             <div>
@@ -289,7 +289,7 @@ export default function Salary() {
                             </button>
                             <button
                                 onClick={() => handleProxyDownload(previewPdf)}
-                                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-orange-500/20 transition-all flex items-center gap-2 transform hover:scale-105"
+                                className="px-4 py-2 bg-gradient-to-r from-[#6412c6] to-amber-500 hover:from-[#550fa8] hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center gap-2 transform hover:scale-105"
                                 title="Download Payslip"
                             >
                                 <Download className="w-3.5 h-3.5" /> Download PDF
@@ -299,7 +299,7 @@ export default function Salary() {
                                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border border-slate-700"
                                 title="Print Payslip"
                             >
-                                <Printer className="w-3.5 h-3.5 text-orange-400" /> Print
+                                <Printer className="w-3.5 h-3.5 text-[#9359d7]" /> Print
                             </button>
                             <button
                                 onClick={() => setPreviewPdf(null)}
@@ -312,7 +312,7 @@ export default function Salary() {
                     <div className="flex-1 w-full h-full p-6 flex items-center justify-center overflow-hidden bg-slate-950/50">
                         {previewLoading ? (
                             <div className="flex flex-col items-center gap-4">
-                                <Loader2 className="w-10 h-10 animate-spin text-orange-400" />
+                                <Loader2 className="w-10 h-10 animate-spin text-[#9359d7]" />
                                 <p className="text-slate-400 text-sm">Loading payslip...</p>
                             </div>
                         ) : previewBlobUrl ? (
@@ -322,7 +322,7 @@ export default function Salary() {
                                 <FileText className="w-12 h-12 text-slate-500" />
                                 <p className="text-slate-400 text-sm">Could not load payslip.</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => handleProxyOpen(previewPdf)} className="px-4 py-2 bg-orange-500 text-white rounded-xl text-xs font-bold">
+                                    <button onClick={() => handleProxyOpen(previewPdf)} className="px-4 py-2 bg-[#6412c6] text-white rounded-xl text-xs font-bold">
                                         Open in Tab
                                     </button>
                                     <button onClick={() => handleProxyDownload(previewPdf)} className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold">

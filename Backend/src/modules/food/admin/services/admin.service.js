@@ -3870,11 +3870,15 @@ export async function expireExpiredOffers() {
 }
 // ----- Delivery join requests -----
 export async function getDeliveryJoinRequests(query) {
-    const { status = 'pending', page = 1, limit = 1000, search, zone, vehicleType } = query;
+    const { status = 'pending', page = 1, limit = 1000, search, zone, vehicleType, applicationType } = query;
     const filter = {};
     if (status === 'pending') filter.status = 'pending';
     else if (status === 'denied' || status === 'rejected') filter.status = 'rejected';
     else filter.status = status;
+
+    if (applicationType && applicationType !== 'all') {
+        filter.applicationType = applicationType;
+    }
 
     const andParts = [];
     if (search && typeof search === 'string' && search.trim()) {
@@ -3899,7 +3903,7 @@ export async function getDeliveryJoinRequests(query) {
     const limitNum = Math.max(1, Math.min(1000, Number(limit) || 100));
 
     const list = await FoodDeliveryPartner.find(filter)
-        .sort({ createdAt: -1 })
+        .sort({ updatedAt: -1, createdAt: -1 })
         .lean();
 
     // Fetch all active zones for detection
@@ -3932,7 +3936,13 @@ export async function getDeliveryJoinRequests(query) {
         zone: doc.detectedZoneName,
         vehicleType: doc.vehicleType || '',
         status: doc.status === 'rejected' ? 'denied' : doc.status,
+        applicationType: doc.applicationType || 'new',
+        reappliedAt: doc.reappliedAt || undefined,
+        reapplicationCount: doc.reapplicationCount || 0,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt,
         rejectionReason: doc.rejectionReason || undefined,
+        previousRejectionReason: doc.previousRejectionReason || undefined,
         profilePhoto: doc.profilePhoto || null,
         profileImage: doc.profilePhoto ? { url: doc.profilePhoto } : null
     }));
@@ -4719,6 +4729,10 @@ export async function getDeliveryPartnerById(id) {
         deliveryId,
         detectedZone: detectedZone || partner.city || partner.state || 'N/A',
         status: partner.status === 'rejected' ? 'blocked' : partner.status,
+        applicationType: partner.applicationType || 'new',
+        reappliedAt: partner.reappliedAt || null,
+        reapplicationCount: partner.reapplicationCount || 0,
+        previousRejectionReason: partner.previousRejectionReason || null,
         isActive: partner.isActive !== false,
         profileImage: partner.profilePhoto ? { url: partner.profilePhoto } : null,
         documents: {

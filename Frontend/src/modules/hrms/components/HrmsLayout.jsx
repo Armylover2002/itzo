@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@core/context/AuthContext';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
+import { getAppLogo, getCompanyName } from '@/modules/common/utils/businessSettings';
 import axiosInstance from '@core/api/axios';
 import {
     LayoutDashboard, Clock, CalendarDays, Wallet, FileText,
@@ -110,15 +111,20 @@ export default function HrmsLayout() {
                 {/* Sidebar Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200">
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20 overflow-hidden">
-                            {hrmsSettings?.companyLogoUrl ? (
-                                <img src={hrmsSettings.companyLogoUrl} alt="Logo" className="w-full h-full object-cover bg-white" />
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6412c6] to-[#550fa8] flex items-center justify-center shadow-lg shadow-[#6412c6]/20 overflow-hidden">
+                            {(hrmsSettings?.companyLogoUrl || getAppLogo('admin')) ? (
+                                <img 
+                                    src={hrmsSettings?.companyLogoUrl || getAppLogo('admin')} 
+                                    alt="Logo" 
+                                    className="w-full h-full object-cover bg-white"
+                                    onError={(e) => { e.target.src = '/itzo-logo-transparent.png'; }}
+                                />
                             ) : (
                                 <Building2 className="w-5 h-5 text-white" />
                             )}
                         </div>
                         <div>
-                            <h1 className="text-slate-900 font-bold text-base tracking-tight">{hrmsSettings?.companyName || 'ItzoFood'}</h1>
+                            <h1 className="text-slate-900 font-bold text-base tracking-tight">{hrmsSettings?.companyName || getCompanyName() || 'ItzoFood'}</h1>
                             <p className="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Employee Portal</p>
                         </div>
                     </div>
@@ -148,7 +154,7 @@ export default function HrmsLayout() {
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/50 hover:[&::-webkit-scrollbar-thumb]:bg-orange-500/50 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-700/50 hover:[&::-webkit-scrollbar-thumb]:bg-[#6412c6]/50 [&::-webkit-scrollbar-thumb]:rounded-full">
                     {dynamicNavItems.map((item) => (
                         <div key={item.label}>
                             {item.subItems ? (
@@ -156,12 +162,12 @@ export default function HrmsLayout() {
                                     <button
                                         onClick={() => toggleMenu(item.label)}
                                         className={`w-full group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
-                                            ${openMenus[item.label] ? 'text-[#FE5502] bg-orange-50' : 'text-slate-600 hover:text-[#FE5502] hover:bg-orange-50'}
+                                            ${openMenus[item.label] ? 'text-[#6412C6] bg-[#f7f3fc]' : 'text-slate-600 hover:text-[#6412C6] hover:bg-[#f7f3fc]'}
                                         `}
                                     >
                                         <item.icon className="w-[18px] h-[18px] shrink-0" />
                                         <span className="truncate">{item.label}</span>
-                                        <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${openMenus[item.label] ? 'rotate-180 text-orange-400' : 'opacity-60'}`} />
+                                        <ChevronDown className={`w-4 h-4 ml-auto transition-transform ${openMenus[item.label] ? 'rotate-180 text-[#9359d7]' : 'opacity-60'}`} />
                                     </button>
                                     {openMenus[item.label] && (
                                         <div className="mt-1 ml-4 pl-3 border-l border-slate-200 space-y-1">
@@ -174,8 +180,8 @@ export default function HrmsLayout() {
                                                         group flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium
                                                         transition-all duration-200
                                                         ${isActive
-                                                            ? 'bg-orange-50 text-[#FE5502] font-semibold'
-                                                            : 'text-slate-600 hover:text-[#FE5502] hover:bg-orange-50'
+                                                            ? 'bg-[#f7f3fc] text-[#6412C6] font-semibold'
+                                                            : 'text-slate-600 hover:text-[#6412C6] hover:bg-[#f7f3fc]'
                                                         }
                                                     `}
                                                 >
@@ -194,8 +200,8 @@ export default function HrmsLayout() {
                                         group flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
                                         transition-all duration-200
                                         ${isActive
-                                            ? 'bg-orange-50 text-[#FE5502] font-semibold shadow-sm border border-orange-500/10'
-                                            : 'text-slate-600 hover:text-[#FE5502] hover:bg-orange-50'
+                                            ? 'bg-[#f7f3fc] text-[#6412C6] font-semibold shadow-sm border border-[#6412c6]/10'
+                                            : 'text-slate-600 hover:text-[#6412C6] hover:bg-[#f7f3fc]'
                                         }
                                     `}
                                 >
@@ -244,7 +250,7 @@ export default function HrmsLayout() {
                     </div>
                     <div className="flex items-center gap-3">
                         <span className="hidden md:inline text-sm text-slate-500">{user?.name || 'Employee'}</span>
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6412c6] to-amber-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
                             {user?.profileImage ? (
                                 <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
                             ) : (

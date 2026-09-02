@@ -43,7 +43,7 @@ export default function Documents() {
                     onClick={() => setActiveTab('Offer Letter')}
                     className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
                         activeTab === 'Offer Letter'
-                            ? 'border-orange-500 text-orange-600'
+                            ? 'border-[#6412c6] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -53,7 +53,7 @@ export default function Documents() {
                     onClick={() => setActiveTab('Other Documents')}
                     className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
                         activeTab === 'Other Documents'
-                            ? 'border-orange-500 text-orange-600'
+                            ? 'border-[#6412c6] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -75,17 +75,17 @@ export default function Documents() {
                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                                     />
                                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-[2px]">
-                                        <button onClick={() => openPreview(offerLetter.url)} className="p-3 bg-white text-slate-900 rounded-full hover:bg-orange-50 hover:text-orange-600 transition-colors shadow-lg" title="Full-Screen Preview">
+                                        <button onClick={() => openPreview(offerLetter.url)} className="p-3 bg-white text-slate-900 rounded-full hover:bg-[#f7f3fc] hover:text-[#550fa8] transition-colors shadow-lg" title="Full-Screen Preview">
                                             <ZoomIn className="w-5 h-5" />
                                         </button>
-                                        <a href={offerLetter.url} download target="_blank" rel="noopener noreferrer" className="p-3 bg-white text-slate-900 rounded-full hover:bg-orange-50 hover:text-orange-600 transition-colors shadow-lg" title="Download">
+                                        <a href={offerLetter.url} download target="_blank" rel="noopener noreferrer" className="p-3 bg-white text-slate-900 rounded-full hover:bg-[#f7f3fc] hover:text-[#550fa8] transition-colors shadow-lg" title="Download">
                                             <Download className="w-5 h-5" />
                                         </a>
                                     </div>
                                 </div>
                                 <div className="p-5">
                                     <div className="flex items-center gap-3 mb-2">
-                                        <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                                        <div className="p-2 bg-[#f0e7f9] text-[#550fa8] rounded-lg">
                                             <FileText className="w-5 h-5" />
                                         </div>
                                         <div>
@@ -124,7 +124,7 @@ export default function Documents() {
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {otherDocuments.map(doc => (
-                                    <div key={doc._id} className="border border-slate-200 rounded-xl overflow-hidden hover:shadow-md hover:border-orange-200 transition-all group">
+                                    <div key={doc._id} className="border border-slate-200 rounded-xl overflow-hidden hover:shadow-md hover:border-[#d8c4f1] transition-all group">
                                         <div className="h-36 bg-slate-100 relative overflow-hidden border-b border-slate-200">
                                             <img 
                                                 src={doc.url} 
@@ -133,17 +133,17 @@ export default function Documents() {
                                                 onError={(e) => { e.target.onerror = null; e.target.src = appLogo; }}
                                             />
                                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-[2px]">
-                                                <button onClick={() => openPreview(doc.url)} className="p-2.5 bg-white text-slate-900 rounded-full hover:bg-orange-50 hover:text-orange-600 transition-colors shadow-lg" title="Full-Screen Preview">
+                                                <button onClick={() => openPreview(doc.url)} className="p-2.5 bg-white text-slate-900 rounded-full hover:bg-[#f7f3fc] hover:text-[#550fa8] transition-colors shadow-lg" title="Full-Screen Preview">
                                                     <ZoomIn className="w-4 h-4" />
                                                 </button>
-                                                <a href={doc.url} download target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white text-slate-900 rounded-full hover:bg-orange-50 hover:text-orange-600 transition-colors shadow-lg" title="Download">
+                                                <a href={doc.url} download target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white text-slate-900 rounded-full hover:bg-[#f7f3fc] hover:text-[#550fa8] transition-colors shadow-lg" title="Download">
                                                     <Download className="w-4 h-4" />
                                                 </a>
                                             </div>
                                         </div>
                                         <div className="p-4">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <FileText className="w-4 h-4 text-orange-500 shrink-0" />
+                                                <FileText className="w-4 h-4 text-[#6412c6] shrink-0" />
                                                 <h3 className="font-semibold text-slate-900 text-sm truncate">{doc.name}</h3>
                                             </div>
                                             <p className="text-xs text-slate-400 pl-6">
@@ -163,7 +163,7 @@ export default function Documents() {
                 <div className="fixed inset-0 z-[100] flex flex-col bg-black/95 backdrop-blur-md">
                     <div className="flex items-center justify-end p-4">
                         <div className="flex items-center gap-4">
-                            <a href={selectedImage} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white hover:text-orange-400 transition-colors font-medium">
+                            <a href={selectedImage} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-white hover:text-[#9359d7] transition-colors font-medium">
                                 <Download className="w-4 h-4" /> Download
                             </a>
                             <button onClick={() => setPreviewModalOpen(false)} className="p-2 text-white hover:bg-white/10 rounded-full transition-colors">

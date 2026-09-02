@@ -41,6 +41,49 @@ import NotificationsV2 from './pages/NotificationsV2';
 import SubscriptionV2 from './pages/SubscriptionV2';
 import DeliveryReturns from './pages/DeliveryReturns';
 
+/**
+ * Fallback landing spot whenever something in the reapply/onboarding flow can't
+ * find its in-progress data (e.g. `sessionStorage` cleared mid-flow) and used to
+ * unconditionally bounce the user to the login screen — a dead end for a rejected
+ * delivery partner, since it discarded their rejection reason and the "Re-apply"
+ * entry point. It now recovers whatever is available instead:
+ *   1. A pending/rejected application phone -> back to the verification screen
+ *      (shows the rejection reason again, with working Re-apply / New application
+ *      buttons).
+ *   2. Partially-filled onboarding details -> back into the signup form.
+ *   3. Nothing at all -> login, same as before.
+ */
+const DeliverySignupEntry = () => {
+  const location = useLocation();
+
+  const pendingPhone =
+    sessionStorage.getItem("deliveryPendingPhone") ||
+    localStorage.getItem("deliveryPendingPhone");
+  if (pendingPhone) {
+    return <Navigate to="/food/delivery/verification" state={{ phone: pendingPhone }} replace />;
+  }
+
+  let hasSavedDetails = Boolean(sessionStorage.getItem("deliverySignupDetails"));
+  if (!hasSavedDetails) {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("deliverySignup_") && key.endsWith("_details")) {
+          hasSavedDetails = true;
+          break;
+        }
+      }
+    } catch (_) {
+      // localStorage unavailable — fall through to login below.
+    }
+  }
+  if (hasSavedDetails) {
+    return <Navigate to={`/food/delivery/signup/details${location.search}`} replace />;
+  }
+
+  return <Navigate to={`/food/delivery/login${location.search}`} replace />;
+};
+
 const DeliveryV2Router = () => {
   const location = useLocation();
 
@@ -66,7 +109,7 @@ const DeliveryV2Router = () => {
         <Route path="welcome" element={<Welcome />} />
         <Route path="login" element={<SignIn />} />
         <Route path="otp" element={<OTP />} />
-        <Route path="signup" element={<Navigate to={`/food/delivery/login${location.search}`} replace />} />
+        <Route path="signup" element={<DeliverySignupEntry />} />
         <Route path="signup/details" element={<SignupStep1 />} />
         <Route path="signup/documents" element={<SignupStep2 />} />
         <Route path="verification" element={<PendingVerification />} />

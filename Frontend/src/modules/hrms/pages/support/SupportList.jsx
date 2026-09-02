@@ -39,7 +39,7 @@ export default function SupportList() {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'Open': return 'bg-orange-50 text-orange-600 border-orange-200';
+            case 'Open': return 'bg-[#f7f3fc] text-[#550fa8] border-[#d8c4f1]';
             case 'In Progress': return 'bg-amber-50 text-amber-600 border-amber-200';
             case 'Waiting for Employee': return 'bg-amber-50 text-amber-600 border-amber-200';
             case 'Resolved': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
@@ -53,7 +53,7 @@ export default function SupportList() {
             case 'Low': return 'text-slate-500 bg-slate-100';
             case 'Urgent': return 'text-red-600 bg-red-100';
             case 'High': return 'text-amber-600 bg-amber-100';
-            case 'Medium': return 'text-orange-500 bg-orange-100';
+            case 'Medium': return 'text-[#6412c6] bg-[#f0e7f9]';
             default: return 'text-slate-500 bg-slate-100';
         }
     };
@@ -77,7 +77,7 @@ export default function SupportList() {
                 </div>
                 <button
                     onClick={() => navigate('/hrms/support/create')}
-                    className="flex items-center gap-2 bg-orange-500 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-orange-600 transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-[#6412c6] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#550fa8] transition-colors shadow-sm"
                 >
                     <Plus className="w-4 h-4" />
                     Raise Request
@@ -85,14 +85,14 @@ export default function SupportList() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-orange-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="flex gap-2 overflow-x-auto pb-2 [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#d8c4f1] [&::-webkit-scrollbar-thumb]:rounded-full">
                 {['All', 'Open', 'In Progress', 'Waiting for Employee', 'Resolved', 'Closed'].map(status => (
                     <button
                         key={status}
                         onClick={() => setStatusFilter(status)}
                         className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${
                             statusFilter === status
-                                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
+                                ? 'bg-[#6412c6] text-white shadow-md shadow-[#6412c6]/20'
                                 : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                         }`}
                     >
@@ -105,7 +105,7 @@ export default function SupportList() {
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
                     </div>
                 ) : tickets.length === 0 ? (
                     <div className="text-center py-20 px-6">
@@ -119,7 +119,7 @@ export default function SupportList() {
                             <div
                                 key={ticket._id}
                                 onClick={() => navigate(`/hrms/support/${ticket._id}`)}
-                                className="p-4 sm:p-5 hover:bg-orange-50/30 transition-colors cursor-pointer group flex items-start gap-4"
+                                className="p-4 sm:p-5 hover:bg-[#f7f3fc]/30 transition-colors cursor-pointer group flex items-start gap-4"
                             >
                                 <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center mt-1 border ${getStatusColor(ticket.status)}`}>
                                     <StatusIcon status={ticket.status} className="w-5 h-5" />
@@ -138,7 +138,7 @@ export default function SupportList() {
                                             </span>
                                         )}
                                     </div>
-                                    <h3 className="text-base font-semibold text-slate-800 truncate group-hover:text-orange-600 transition-colors">
+                                    <h3 className="text-base font-semibold text-slate-800 truncate group-hover:text-[#550fa8] transition-colors">
                                         {ticket.subject}
                                     </h3>
                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-slate-500">
@@ -152,7 +152,7 @@ export default function SupportList() {
                                     <div className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(ticket.status)}`}>
                                         {ticket.status}
                                     </div>
-                                    <ChevronRight className="w-5 h-5 text-slate-300 ml-4 group-hover:text-orange-400 transition-colors" />
+                                    <ChevronRight className="w-5 h-5 text-slate-300 ml-4 group-hover:text-[#9359d7] transition-colors" />
                                 </div>
                             </div>
                         ))}

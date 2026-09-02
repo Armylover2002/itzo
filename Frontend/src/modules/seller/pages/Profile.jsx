@@ -1,1042 +1,1005 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  User,
-  Mail,
-  Phone,
-  Store,
   Shield,
   Edit2,
   Save,
-  X,
-  Rocket,
-  Globe,
   MapPin,
-  UploadCloud,
-  ArrowLeft,
+  Clock3,
+  Upload,
+  Loader2,
+  LogOut,
+  Trash2,
+  AlertTriangle,
+  Check,
 } from "lucide-react";
 import { sellerApi } from "../services/sellerApi";
-import { adminApi } from "../../quickCommerce/admin/services/adminApi";
 import { toast } from "sonner";
-import Card from "@shared/components/ui/Card";
-import Button from "@shared/components/ui/Button";
-import MapPicker from "../../../shared/components/MapPicker";
+import MapPicker from "@shared/components/MapPicker";
+import { clearModuleAuth } from "@food/utils/auth";
+import { useAuth } from "@core/context/AuthContext";
+import { formatOpeningHoursAMPM } from "@shared/utils/timeFormat";
+import { isPointInZone } from "@shared/utils/pointInZone";
+import {
+  parseOpeningHours,
+  buildOpeningHoursLabel,
+  normalizeTimeValue,
+  timeOptions,
+} from "../utils/openingHours";
+import { SELLER_LIVE_UPDATE_EVENT } from "../components/SellerLiveUpdates";
 
-const SellerProfile = ({ asAdmin = false, adminSellerId = null, onBack = null, onProfileLoad = null, children = null }) => {
+const toDateInputValue = (value) => {
+  if (!value) return "";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? String(value).slice(0, 10)
+    : parsed.toLocaleDateString("en-CA");
+};
+
+const profileToForm = (data = {}) => ({
+  name: data.name || "",
+  shopName: data.shopName || "",
+  phone: data.phone || "",
+  email: data.email || "",
+  alternatePhone: data.shopInfo?.alternatePhone || "",
+  supportEmail: data.shopInfo?.supportEmail || "",
+  openingHours: data.shopInfo?.openingHours || "",
+  zoneId: data.shopInfo?.zoneId ? String(data.shopInfo.zoneId) : "",
+  zoneSource: data.shopInfo?.zoneSource || "",
+  zoneName: data.shopInfo?.zoneName || "",
+  shopImage: data.shopInfo?.shopImage || "",
+  businessType: data.shopInfo?.businessType || "",
+  lat: data.location?.latitude ?? data.location?.coordinates?.[1] ?? "",
+  lng: data.location?.longitude ?? data.location?.coordinates?.[0] ?? "",
+  address: data.address || data.location?.formattedAddress || "",
+  bankName: data.bankInfo?.bankName || "",
+  accountHolderName: data.bankInfo?.accountHolderName || "",
+  accountNumber: data.bankInfo?.accountNumber || "",
+  ifscCode: data.bankInfo?.ifscCode || "",
+  accountType: data.bankInfo?.accountType || "",
+  upiId: data.bankInfo?.upiId || "",
+  upiQrImage: data.bankInfo?.upiQrImage || "",
+  panNumber: data.documents?.panNumber || "",
+  gstRegistered: data.documents?.gstRegistered === true,
+  gstNumber: data.documents?.gstNumber || "",
+  gstLegalName: data.documents?.gstLegalName || "",
+  fssaiNumber: data.documents?.fssaiNumber || "",
+  fssaiExpiry: toDateInputValue(data.documents?.fssaiExpiry),
+  fssaiImage: data.documents?.fssaiImage || "",
+  shopLicenseNumber: data.documents?.shopLicenseNumber || "",
+  shopLicenseExpiry: toDateInputValue(data.documents?.shopLicenseExpiry),
+  shopLicenseImage: data.documents?.shopLicenseImage || "",
+});
+
+const inputClass =
+  "w-full px-3 py-1.5 bg-slate-50/70 border border-slate-200 rounded-lg text-xs font-normal text-slate-900 outline-none focus:bg-white focus:border-[#e71d28] focus:ring-1 focus:ring-[#e71d28]/20 transition-all disabled:opacity-70";
+
+const PAN_NUMBER_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+const GST_NUMBER_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+const GST_LEGAL_NAME_REGEX = /^[A-Za-z][A-Za-z\s]{1,}$/;
+
+const Field = ({ label, value, pending, proposedValue, children, editing }) => (
+  <div className="space-y-1">
+    <label className="text-xs font-medium text-slate-700 block">
+      {label}
+      {pending ? (
+        <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-600">
+          Pending
+        </span>
+      ) : null}
+    </label>
+    {editing ? (
+      children
+    ) : (
+      <div className="space-y-1">
+        <p className="w-full px-3 py-1.5 bg-slate-50/70 border border-slate-200 rounded-lg text-xs font-normal text-slate-900 break-words min-h-[34px] flex items-center">
+          {value || "—"}
+        </p>
+        {pending && proposedValue ? (
+          <p className="rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 border border-amber-100">
+            Requested: {proposedValue}
+          </p>
+        ) : null}
+      </div>
+    )}
+  </div>
+);
+
+const ImageField = ({ label, url, pending, proposedUrl, editing, uploading, onSelect }) => (
+  <div className="space-y-1.5">
+    <p className="text-xs font-medium text-slate-700">
+      {label}
+      {pending ? <span className="ml-1.5 text-[10px] font-semibold text-amber-600">Pending</span> : null}
+    </p>
+    {url ? (
+      <img src={url} alt={label} className="h-24 w-full max-w-[180px] rounded-lg border border-slate-200 object-cover" />
+    ) : (
+      <div className="flex h-24 w-full max-w-[180px] items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 text-[11px] font-medium text-slate-400">
+        No image
+      </div>
+    )}
+    {pending && proposedUrl && proposedUrl !== url ? (
+      <div className="space-y-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">Requested image</p>
+        <img src={proposedUrl} alt={`${label} pending`} className="h-20 w-full max-w-[140px] rounded-lg border border-amber-200 object-cover" />
+      </div>
+    ) : null}
+    {editing ? (
+      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-red-700 transition-colors">
+        {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+        {uploading ? "Uploading…" : "Replace"}
+        <input type="file" accept="image/*" className="hidden" disabled={uploading} onChange={onSelect} />
+      </label>
+    ) : null}
+  </div>
+);
+
+const SellerProfile = () => {
+  const { logout, refreshUser } = useAuth();
   const [profile, setProfile] = useState(null);
+  const pendingUpdateRef = useRef(false);
+  const isEditingRef = useRef(false);
+  const [formData, setFormData] = useState(profileToForm());
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLocationSaving, setIsLocationSaving] = useState(false);
   const [isMapOpen, setIsMapOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    shopName: "",
-    phone: "",
-    email: "",
-    lat: null,
-    lng: null,
-    radius: 5,
-    address: "",
-    bankName: "",
-    accountHolderName: "",
-    accountNumber: "",
-    ifscCode: "",
-    accountType: "",
-    upiId: "",
-    panNumber: "",
-    gstRegistered: false,
-    gstNumber: "",
-    gstLegalName: "",
-    fssaiNumber: "",
-    fssaiExpiry: "",
-    shopLicenseNumber: "",
-    shopLicenseExpiry: "",
-  });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [uploadingImageKey, setUploadingImageKey] = useState(null);
+  const [zones, setZones] = useState([]);
+  const [zonesLoading, setZonesLoading] = useState(true);
+  const [hoursDraft, setHoursDraft] = useState({ openingTime: "", closingTime: "" });
+  const [isSavingHours, setIsSavingHours] = useState(false);
+  const [justApprovedUpdate, setJustApprovedUpdate] = useState(false);
 
-  const [qrFile, setQrFile] = useState(null);
-  const [qrPreview, setQrPreview] = useState(null);
-  const [licenseFile, setLicenseFile] = useState(null);
-  const [licensePreview, setLicensePreview] = useState(null);
-  const [panFile, setPanFile] = useState(null);
-  const [panPreview, setPanPreview] = useState(null);
-  const [gstFile, setGstFile] = useState(null);
-  const [gstPreview, setGstPreview] = useState(null);
-  const [fssaiFile, setFssaiFile] = useState(null);
-  const [fssaiPreview, setFssaiPreview] = useState(null);
+  isEditingRef.current = isEditing;
+  const hasPendingUpdate = profile?.hasPendingProfileUpdate === true;
+  const proposed = profile?.pendingProfileChanges?.proposed || {};
 
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  const pendingField = (path, liveValue) => {
+    const parts = String(path).split(".");
+    let node = proposed;
+    for (const part of parts) {
+      if (!node || typeof node !== "object") {
+        return { liveValue, pending: false, proposedValue: null };
+      }
+      node = node[part];
+    }
+    if (node === undefined || node === null || node === "") {
+      return { liveValue, pending: false, proposedValue: null };
+    }
+    if (path === "location" && typeof node === "object") {
+      return {
+        liveValue,
+        pending: true,
+        proposedValue: node.formattedAddress || node.address || "",
+      };
+    }
+    return { liveValue, pending: true, proposedValue: node };
+  };
 
-  const fetchProfile = async () => {
-    setIsLoading(true);
+  const fetchProfile = useCallback(async ({ silent = false } = {}) => {
+    const sellerToken = localStorage.getItem("auth_seller");
+    if (!sellerToken) {
+      setIsLoading(false);
+      return;
+    }
     try {
-      let data = null;
-      if (asAdmin && adminSellerId) {
-        const response = await adminApi.getSellerById(adminSellerId);
-        data = response?.data?.result;
-        if (!data) {
-          toast.error("Seller not found");
-          setIsLoading(false);
-          return;
-        }
-      } else {
-        const sellerToken = localStorage.getItem("auth_seller");
-        if (!sellerToken) {
-          setIsLoading(false);
-          return;
-        }
-        const response = await sellerApi.getProfile();
-        data = response.data.result;
-      }
+      const response = await sellerApi.getProfile({ forceRefresh: true });
+      const data = response.data.result;
+      const wasPending = pendingUpdateRef.current;
+      const isPending = data?.hasPendingProfileUpdate === true;
+      pendingUpdateRef.current = isPending;
       setProfile(data);
-      if (onProfileLoad) onProfileLoad(data);
-      setFormData({
-        name: data.name,
-        shopName: data.shopName,
-        phone: data.phone,
-        email: data.email,
-        lat: (data.location?.coordinates && data.location.coordinates[1] !== undefined) ? data.location.coordinates[1] : null,
-        lng: (data.location?.coordinates && data.location.coordinates[0] !== undefined) ? data.location.coordinates[0] : null,
-        radius: data.serviceRadius || 5,
-        address: data.address || "",
-        bankName: data.bankInfo?.bankName || "",
-        accountHolderName: data.bankInfo?.accountHolderName || "",
-        accountNumber: data.bankInfo?.accountNumber || "",
-        ifscCode: data.bankInfo?.ifscCode || "",
-        accountType: data.bankInfo?.accountType || "",
-        upiId: data.bankInfo?.upiId || "",
-        panNumber: data.documents?.panNumber || "",
-        gstRegistered: data.documents?.gstRegistered || false,
-        gstNumber: data.documents?.gstNumber || "",
-        gstLegalName: data.documents?.gstLegalName || "",
-        fssaiNumber: data.documents?.fssaiNumber || "",
-        fssaiExpiry: data.documents?.fssaiExpiry ? new Date(data.documents.fssaiExpiry).toISOString().split('T')[0] : "",
-        shopLicenseNumber: data.documents?.shopLicenseNumber || "",
-        shopLicenseExpiry: data.documents?.shopLicenseExpiry ? new Date(data.documents.shopLicenseExpiry).toISOString().split('T')[0] : "",
-      });
-      if (data.bankInfo?.upiQrImage) setQrPreview(data.bankInfo.upiQrImage);
-      if (data.documents?.shopLicenseImage) setLicensePreview(data.documents.shopLicenseImage);
-      if (data.documents?.panImage) setPanPreview(data.documents.panImage);
-      if (data.documents?.gstImage) setGstPreview(data.documents.gstImage);
-      if (data.documents?.fssaiImage) setFssaiPreview(data.documents.fssaiImage);
-    } catch (error) {
-      if (error?.response?.status !== 401) {
-        toast.error("Failed to fetch profile");
+      if (!isEditingRef.current) {
+        setFormData(profileToForm(data));
+        setHoursDraft(parseOpeningHours(data?.shopInfo?.openingHours || ""));
       }
+      if (wasPending && !isPending) {
+        setJustApprovedUpdate(true);
+        toast.success("Your profile update was approved. Details are now live.");
+        refreshUser({ forceRefresh: true }).catch(() => {});
+      }
+    } catch (error) {
+      if (!silent && error?.response?.status !== 401) toast.error("Failed to fetch profile");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [refreshUser]);
 
-  const handleDeleteAccount = async () => {
-    if (window.confirm("Are you sure you want to permanently delete your account? This action cannot be undone.")) {
-      setIsLoading(true);
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    const onLive = () => {
+      fetchProfile({ silent: true });
+    };
+    window.addEventListener(SELLER_LIVE_UPDATE_EVENT, onLive);
+    return () => window.removeEventListener(SELLER_LIVE_UPDATE_EVENT, onLive);
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    if (!hasPendingUpdate) return undefined;
+    const timer = setInterval(() => {
+      fetchProfile({ silent: true });
+    }, 12000);
+    return () => clearInterval(timer);
+  }, [hasPendingUpdate, fetchProfile]);
+
+  useEffect(() => {
+    const loadZones = async () => {
       try {
-        await sellerApi.deleteProfile();
-        toast.success("Account deleted successfully.");
-        localStorage.removeItem("auth_seller");
-        localStorage.removeItem("seller_id");
-        window.location.href = "/seller/auth/login";
-      } catch (error) {
-        toast.error("Failed to delete account. Please try again.");
-        setIsLoading(false);
+        setZonesLoading(true);
+        const quickResponse = await sellerApi.getQuickZonesPublic();
+        const quickZones = Array.isArray(quickResponse?.data?.result?.zones)
+          ? quickResponse.data.result.zones
+          : Array.isArray(quickResponse?.data?.data?.zones)
+            ? quickResponse.data.data.zones
+            : [];
+        setZones(
+          quickZones.map((zone) => ({
+            ...zone,
+            source: "quick",
+            label: zone?.name || zone?.zoneName || zone?.serviceLocation || "Quick Zone",
+          })),
+        );
+      } catch {
+        setZones([]);
+      } finally {
+        setZonesLoading(false);
       }
-    }
+    };
+    loadZones();
+  }, []);
+
+  const selectedZone = useMemo(
+    () =>
+      zones.find(
+        (zone) =>
+          String(zone?._id || zone?.id || "") === String(formData.zoneId || "") &&
+          String(zone?.source || "") === String(formData.zoneSource || ""),
+      ) || null,
+    [formData.zoneId, formData.zoneSource, zones],
+  );
+
+  const updateField = (field, value) => {
+    setFormData((prev) => {
+      if (field === "gstRegistered" && value !== true) {
+        return {
+          ...prev,
+          gstRegistered: false,
+          gstNumber: "",
+          gstLegalName: "",
+        };
+      }
+      return { ...prev, [field]: value };
+    });
   };
 
-  const syncLocationProfileState = (location) => {
+  const handleZoneChange = (value) => {
+    const [zoneSource, zoneId] = value.split(":");
+    const nextZone =
+      zones.find(
+        (zone) =>
+          String(zone?._id || zone?.id || "") === String(zoneId || "") &&
+          String(zone?.source || "") === String(zoneSource || ""),
+      ) || null;
     setFormData((prev) => ({
       ...prev,
-      lat: location.lat,
-      lng: location.lng,
-      radius: location.radius,
-      address: location.address || location.formattedAddress || "",
+      zoneSource: zoneSource || "",
+      zoneId: zoneId || "",
+      zoneName: nextZone?.label || "",
+      lat: "",
+      lng: "",
+      address: "",
     }));
   };
 
+  const handleImageSelect = async (fieldKey, file) => {
+    if (!file) return;
+    setUploadingImageKey(fieldKey);
+    try {
+      const payload = new FormData();
+      payload.append(fieldKey, file);
+      const response = await sellerApi.updateProfile(payload);
+      const result = response?.data?.result || {};
+      await fetchProfile();
+      toast.success(
+        result?.hasPendingProfileUpdate
+          ? "Image submitted for admin review"
+          : "Image saved",
+      );
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to upload image");
+    } finally {
+      setUploadingImageKey(null);
+    }
+  };
+
+  const handleOpeningHoursChange = (key, value) => {
+    setHoursDraft((prev) => ({ ...prev, [key]: normalizeTimeValue(value) }));
+  };
+
+  const handleSaveOpeningHours = async () => {
+    if (!hoursDraft.openingTime || !hoursDraft.closingTime) {
+      toast.error("Select both opening and closing time");
+      return;
+    }
+    const openingHoursLabel = buildOpeningHoursLabel(
+      hoursDraft.openingTime,
+      hoursDraft.closingTime,
+    );
+    setIsSavingHours(true);
+    try {
+      updateField("openingHours", openingHoursLabel);
+      const response = await sellerApi.updateProfile({ openingHours: openingHoursLabel });
+      const result = response?.data?.result || {};
+      setProfile(result);
+      setFormData(profileToForm(result));
+      setHoursDraft(parseOpeningHours(result?.shopInfo?.openingHours || openingHoursLabel));
+      toast.success(
+        result?.hasPendingProfileUpdate
+          ? "Opening hours submitted for admin review"
+          : "Opening hours saved",
+      );
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to save opening hours");
+    } finally {
+      setIsSavingHours(false);
+    }
+  };
+
   const handleLocationSelect = async (location) => {
-    const nextLocation = {
+    if (
+      selectedZone?.coordinates?.length >= 3 &&
+      !isPointInZone(location.lat, location.lng, selectedZone.coordinates)
+    ) {
+      toast.error(
+        `Store location must be inside ${selectedZone.label}. Pin your shop within the selected zone.`,
+      );
+      return;
+    }
+    const next = {
       lat: location.lat,
       lng: location.lng,
-      radius: location.radius,
       address: location.address || location.formattedAddress || "",
     };
-
-    syncLocationProfileState(nextLocation);
-    setIsLocationSaving(true);
-
+    setFormData((prev) => ({ ...prev, ...next }));
     try {
-      await sellerApi.updateProfile(nextLocation);
-      setProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              serviceRadius: nextLocation.radius,
-              address: nextLocation.address,
-              location: {
-                ...(prev.location || {}),
-                type: "Point",
-                coordinates: [nextLocation.lng, nextLocation.lat],
-                latitude: nextLocation.lat,
-                longitude: nextLocation.lng,
-                formattedAddress: nextLocation.address,
-                address: nextLocation.address,
-              },
-            }
-          : prev,
-      );
-      toast.success("Location updated successfully");
+      await sellerApi.updateProfile(next);
+      toast.success("Location change submitted for admin review");
       await fetchProfile();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update location");
-      fetchProfile();
-    } finally {
-      setIsLocationSaving(false);
+      toast.error(error?.response?.data?.message || "Failed to update location");
+      await fetchProfile();
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "name") {
-      // Disallow numbers in seller name
-      const cleaned = value.replace(/[0-9]/g, "");
-      setFormData({ ...formData, [name]: cleaned });
-    } else if (name === "phone") {
-      // Allow only digits, max 10 characters
-      const digitsOnly = value.replace(/[^0-9]/g, "").slice(0, 10);
-      setFormData({ ...formData, [name]: digitsOnly });
-    } else if (name === "email") {
-      // Trim spaces, keep as-is otherwise; HTML5 type=email will help validate shape
-      setFormData({ ...formData, [name]: value.trimStart() });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const initialLocation = useMemo(
-    () => (formData.lat ? { lat: formData.lat, lng: formData.lng } : null),
-    [formData.lat, formData.lng],
-  );
-
-  const handleSubmit = async (e) => {
-    e?.preventDefault?.();
-
-    const normalizedPhone = String(formData.phone || "")
-      .replace(/[^0-9]/g, "")
-      .slice(-10);
-    const trimmedEmail = String(formData.email || "").trim().toLowerCase();
-
-    // Seller phone is required, but email is optional in the backend model.
-    if (!/^[0-9]{10}$/.test(normalizedPhone)) {
-      toast.error("Please enter a valid 10-digit phone number.");
+  const handleSubmit = async () => {
+    if (!formData.zoneId) {
+      toast.error("Please select a service zone");
       return;
     }
-
-    if (trimmedEmail && !/^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(trimmedEmail)) {
-      toast.error("Please enter a valid email address.");
+    if (formData.panNumber && !PAN_NUMBER_REGEX.test(String(formData.panNumber).toUpperCase())) {
+      toast.error("Invalid PAN format");
       return;
     }
-
-    if (formData.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber)) {
-      toast.error("Invalid PAN format. Must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)");
-      return;
-    }
-
     if (formData.gstRegistered) {
-      if (!formData.gstNumber || !formData.gstLegalName) {
-        toast.error("GST number and GST legal name are required when GST is registered");
+      if (!String(formData.gstNumber || "").trim()) {
+        toast.error("GST number is required");
         return;
       }
-      if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber)) {
-        toast.error("Invalid GST format. Must be 15 characters (e.g. 22ABCDE1234F1Z5)");
+      if (!GST_NUMBER_REGEX.test(String(formData.gstNumber).toUpperCase())) {
+        toast.error("Invalid GST format");
+        return;
+      }
+      if (!String(formData.gstLegalName || "").trim()) {
+        toast.error("GST legal name is required");
+        return;
+      }
+      if (!GST_LEGAL_NAME_REGEX.test(String(formData.gstLegalName).trim())) {
+        toast.error("GST legal name must contain only letters");
         return;
       }
     }
-
-    if (formData.fssaiExpiry && formData.fssaiExpiry < new Date().toISOString().split("T")[0]) {
-      toast.error("FSSAI expiry date cannot be a past date");
-      return;
-    }
-
-    if (formData.shopLicenseNumber && !/^[A-Za-z0-9\/\-]{5,20}$/.test(formData.shopLicenseNumber)) {
-      toast.error("Shop license number must be 5–20 characters (letters, numbers, / and - only)");
-      return;
-    }
-
-    if (formData.shopLicenseExpiry && formData.shopLicenseExpiry < new Date().toISOString().split("T")[0]) {
-      toast.error("Shop license expiry date cannot be a past date");
-      return;
-    }
-
-    if (formData.accountNumber && !/^\d{6,20}$/.test(formData.accountNumber)) {
-      toast.error("Account number must be 6–20 digits (numbers only)");
-      return;
-    }
-
-    if (formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode)) {
-      toast.error("Invalid IFSC code. Format: 4 letters + 0 + 6 alphanumeric (e.g. ABCD0EF1234)");
-      return;
-    }
-
-    if (formData.upiId && !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/.test(formData.upiId)) {
-      toast.error("Invalid UPI ID. Format: username@bankhandle (e.g. name@okhdfcbank)");
-      return;
+    if (formData.lat && formData.lng && selectedZone?.coordinates?.length >= 3) {
+      if (!isPointInZone(formData.lat, formData.lng, selectedZone.coordinates)) {
+        toast.error(
+          `Store location must be inside ${selectedZone.label}. Update your map pin.`,
+        );
+        return;
+      }
     }
 
     setIsSaving(true);
     try {
       const payload = new FormData();
-      const finalForm = {
+      const nextForm = {
         ...formData,
-        phone: normalizedPhone,
-        email: trimmedEmail,
-        ...(formData.gstRegistered === false && {
-          gstNumber: "",
-          gstLegalName: "",
-        }),
+        gstRegistered: Boolean(formData.gstRegistered),
+        gstNumber: formData.gstRegistered ? formData.gstNumber : "",
+        gstLegalName: formData.gstRegistered ? formData.gstLegalName : "",
       };
-      
-      Object.entries(finalForm).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          payload.append(
-            key,
-            typeof value === "boolean" ? String(value) : String(value)
-          );
-        }
+      Object.entries(nextForm).forEach(([key, value]) => {
+        if (["lat", "lng", "address", "businessType"].includes(key)) return;
+        payload.append(key, typeof value === "boolean" ? String(value) : String(value ?? ""));
       });
-
-      if (qrFile) payload.append("upiQrImage", qrFile);
-      if (licenseFile) payload.append("shopLicenseImage", licenseFile);
-      if (panFile) payload.append("panImage", panFile);
-      if (gstFile) payload.append("gstImage", gstFile);
-      if (fssaiFile) payload.append("fssaiImage", fssaiFile);
-
-      if (asAdmin && adminSellerId) {
-        await adminApi.updateSellerProfile(adminSellerId, payload);
-      } else {
-        await sellerApi.updateProfile(payload);
+      if (formData.lat !== "" && formData.lng !== "") {
+        payload.append("lat", String(formData.lat));
+        payload.append("lng", String(formData.lng));
+        payload.append("address", formData.address || "");
       }
-      toast.success("Profile updated successfully");
+
+      const response = await sellerApi.updateProfile(payload);
+      const result = response?.data?.result || {};
+      setProfile(result);
+      setFormData(profileToForm(result));
+      setHoursDraft(parseOpeningHours(result?.shopInfo?.openingHours || ""));
       setIsEditing(false);
+      toast.success(
+        result?.hasPendingProfileUpdate
+          ? "Changes submitted for admin approval"
+          : "Profile updated successfully",
+      );
       await fetchProfile();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update profile");
+      toast.error(error?.response?.data?.message || "Failed to update profile");
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (isDeleting) return;
+    setIsDeleting(true);
+    try {
+      await sellerApi.deleteAccount();
+      clearModuleAuth("seller");
+      toast.success("Account deleted successfully");
+      window.location.href = "/seller/auth";
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const initialLocation = useMemo(
+    () =>
+      formData.lat !== "" && formData.lng !== ""
+        ? { lat: Number(formData.lat), lng: Number(formData.lng) }
+        : null,
+    [formData.lat, formData.lng],
+  );
+
+  const openingHoursPreview =
+    buildOpeningHoursLabel(hoursDraft.openingTime, hoursDraft.closingTime) ||
+    formData.openingHours ||
+    "Not set";
+
+  const displayShopImage = formData.shopImage || profile?.shopInfo?.shopImage || "";
+  const pendingShopImage = pendingField("shopInfo.shopImage", displayShopImage);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-2 sm:px-6 md:px-8 py-4 font-['Outfit']">
-      {/* Header Section */}
-      <div className="relative mb-8 sm:mb-12 md:mb-24">
-        {/* MOBILE HEADER (Unified Dark Card, no empty black rectangle!) */}
-        <div className="md:hidden bg-gradient-to-br from-slate-900 via-slate-950 to-black rounded-3xl p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden flex flex-col items-center text-center">
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
-            <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-          </div>
-
-          {/* Avatar Inside Card */}
-          <div className="h-28 w-28 sm:h-32 sm:w-32 rounded-full bg-white p-1.5 shadow-[0_15px_40px_rgba(0,0,0,0.4)] relative z-10 mb-4">
-            <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center border-4 border-slate-100">
-              <span className="text-5xl sm:text-6xl font-black text-slate-900">
-                {profile?.name?.charAt(0) || "S"}
-              </span>
-            </div>
-          </div>
-
-          {/* Badges Inside Card */}
-          <div className="flex flex-wrap items-center justify-center gap-2.5 mb-3 relative z-10">
-            <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
-              {profile?.role || "SELLER"}
-            </span>
-            <span
-              className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
-                profile?.isActive !== false
-                  ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                  : "bg-red-500/10 text-red-400 border-red-500/20"
-              }`}
-            >
-              {profile?.isActive !== false ? "Active" : "Inactive"}
-            </span>
-          </div>
-
-          {/* Name & Shop Inside Card */}
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="absolute top-6 left-6 z-20 flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 border border-white/20"
-            >
-              <ArrowLeft size={20} />
-            </button>
-          )}
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight drop-shadow-sm mb-1 relative z-10">
-            {profile?.name || "Seller Profile"}
+    <div className="space-y-4 px-3.5 md:px-4 max-w-5xl md:max-w-none mx-auto w-full pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60 mb-1">
+        <div>
+          <h1 className="text-lg sm:text-xl font-semibold text-[#1c1c1e] tracking-tight">
+            Seller Profile
           </h1>
-          <p className="text-white/70 font-bold tracking-wide text-sm sm:text-base mb-6 relative z-10">
-            {profile?.shopName || "My Store"}
+          <p className="text-xs font-normal text-slate-500 mt-0.5">
+            Manage your store details, documents, banking, and location.
           </p>
+        </div>
+      </div>
 
-          {/* Action Button Inside Card */}
-          <div className="w-full max-w-sm relative z-10">
-            {!isEditing ? (
-              <Button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="w-full bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-xl px-6 py-4 flex items-center justify-center gap-3 font-black tracking-[2px] text-xs shadow-lg"
-              >
-                <Edit2 size={16} /> EDIT PROFILE
-              </Button>
+      <div className="rounded-xl border border-slate-200/80 bg-gradient-to-r from-rose-50/70 via-white to-amber-50/60 p-3 sm:p-4 shadow-xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full overflow-hidden bg-rose-500 text-white font-semibold text-base sm:text-lg flex items-center justify-center shadow-xs border-2 border-white shrink-0">
+            {displayShopImage ? (
+              <img src={displayShopImage} alt="Shop" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex gap-3 w-full">
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  variant="outline"
-                  className="h-12 w-12 flex items-center justify-center bg-white/10 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-xl shadow-lg transition-all backdrop-blur-md flex-shrink-0"
-                >
-                  <X size={20} className="stroke-[2.5]" />
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={isSaving}
-                  className="flex-1 bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-6 py-4 font-black tracking-[2px] text-xs flex items-center justify-center gap-2 shadow-lg h-12"
-                >
-                  {isSaving ? "UPDATING..." : (
-                    <>
-                      <Save size={18} /> SAVE CHANGES
-                    </>
-                  )}
-                </Button>
-              </div>
+              <span>{profile?.name?.charAt(0)?.toUpperCase() || "S"}</span>
             )}
           </div>
-        </div>
-
-        {/* DESKTOP HEADER (Exact same structure that looks perfect on Web View!) */}
-        <div className="hidden md:block">
-          <div className="bg-gradient-to-r from-slate-900 via-slate-950 to-black h-64 rounded-3xl shadow-xl relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20">
-              <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-              <div className="absolute bottom-0 right-0 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
-            </div>
-            {/* Desktop internal text */}
-            <div className="absolute bottom-8 left-64 pl-6 right-12 flex items-end justify-between gap-6 z-10">
-              <div className="flex-1 pb-2 flex items-center gap-4">
-                {onBack && (
-                  <button
-                    type="button"
-                    onClick={onBack}
-                    className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur-md transition hover:bg-white/20 border border-white/20 flex-shrink-0"
-                  >
-                    <ArrowLeft size={24} />
-                  </button>
-                )}
-                <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="px-3.5 py-1 bg-white/10 backdrop-blur-xl text-white text-[10px] font-black uppercase tracking-[2px] rounded-full border border-white/20">
-                    {profile?.role || "SELLER"}
-                  </span>
-                  <span
-                    className={`px-3.5 py-1 text-[10px] font-black uppercase tracking-[2px] rounded-full border ${
-                      profile?.isActive !== false
-                        ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                        : "bg-red-500/10 text-red-400 border-red-500/20"
-                    }`}
-                    style={{ backdropFilter: "blur(12px)" }}
-                  >
-                    {profile?.isActive !== false ? "Active" : "Inactive"}
-                  </span>
-                </div>
-                <h1 className="text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-sm mb-1 truncate">
-                  {profile?.name || "Seller Profile"}
-                </h1>
-                <p className="text-white/70 font-bold tracking-wide text-base">
-                  {profile?.shopName || "My Store"}
-                </p>
-              </div>
-              </div>
-              <div className="pb-2 flex-shrink-0">
-                {!isEditing ? (
-                  <Button
-                    type="button"
-                    onClick={() => setIsEditing(true)}
-                    className="bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white hover:text-slate-950 transition-all rounded-xl px-8 py-4 flex items-center gap-3 font-black tracking-[2px] text-xs shadow-lg hover:scale-[1.03] active:scale-[0.98]"
-                  >
-                    <Edit2 size={16} /> EDIT PROFILE
-                  </Button>
-                ) : (
-                  <div className="flex gap-3">
-                    <Button
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                      variant="outline"
-                      className="h-14 w-14 flex items-center justify-center bg-white/10 text-white border border-white/20 hover:bg-white hover:text-slate-900 rounded-xl shadow-lg transition-all backdrop-blur-md"
-                    >
-                      <X size={22} className="stroke-[2.5]" />
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={isSaving}
-                      className="bg-white text-slate-950 hover:bg-slate-100 rounded-xl px-8 py-4 font-black tracking-[2px] text-xs flex items-center gap-3 shadow-lg h-14"
-                    >
-                      {isSaving ? "UPDATING..." : (
-                        <>
-                          <Save size={18} /> SAVE CHANGES
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Avatar Container (Absolute over left edge of banner) */}
-          <div className="absolute bottom-6 left-12 z-20 flex flex-col items-center">
-            <div className="h-44 w-44 rounded-full bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex-shrink-0">
-              <div className="h-full w-full rounded-full bg-slate-50 flex items-center justify-center border-4 border-slate-100">
-                <span className="text-7xl font-black text-slate-900">
-                  {profile?.name?.charAt(0) || "S"}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <h2 className="text-sm sm:text-base font-semibold text-[#1c1c1e] tracking-tight truncate">
+                {profile?.shopName || profile?.name || "Merchant Store"}
+              </h2>
+              <span className="px-1.5 py-0.5 bg-rose-100/80 text-rose-700 text-[10px] font-medium uppercase rounded border border-rose-200/60">
+                {formData.businessType || "Seller"}
+              </span>
+              {formData.zoneName ? (
+                <span className="px-1.5 py-0.5 bg-red-50 text-red-700 text-[10px] font-medium rounded border border-red-200/60 truncate max-w-[140px]">
+                  {formData.zoneName}
                 </span>
-              </div>
+              ) : null}
             </div>
+            <p className="text-xs text-slate-500 font-normal truncate mt-0.5">
+              {profile?.name || "Seller"}
+            </p>
           </div>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-        {/* Main Info Card */}
-        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl">
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
-              Business Profile
-            </h3>
-
-            <form className="space-y-6 sm:space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
-                    Seller Identity
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors">
-                      <User size={18} />
-                    </div>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
-                    Store Name
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors">
-                      <Store size={18} />
-                    </div>
-                    <input
-                      type="text"
-                      name="shopName"
-                      value={formData.shopName}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
-                    Contact Number
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-slate-900 transition-colors">
-                      <Phone size={18} />
-                    </div>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">
-                    User Id
-                  </label>
-                  <div className="relative group">
-                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300">
-                      <Mail size={18} />
-                    </div>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className="w-full pl-14 pr-6 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70"
-                    />
-                  </div>
-                </div>
-              </div>
-            </form>
-          </Card>
-
-          {/* Location & Radius Settings Card */}
-          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
-              <h3 className="text-lg sm:text-xl font-black text-slate-900">
-                Location & Service Settings
-              </h3>
-              {!isEditing && (
-                <Button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-primary-orange text-white hover:bg-primary-hover active:bg-primary-dark rounded-lg px-6 py-2 text-[10px] font-black tracking-[2px] transition-colors">
-                  MANAGE
-                </Button>
-              )}
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-slate-50 p-4 sm:p-6 rounded-2xl border-2 border-slate-100/50 space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-                  <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-                    <div
-                      className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
-                        formData.lat
-                          ? "bg-orange-100 text-primary-orange shadow-[0_8px_20px_-6px_rgba(254,85,2,0.3)]"
-                          : "bg-white text-slate-400 shadow-sm"
-                      }`}>
-                      <MapPin size={24} />
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-black text-slate-900">
-                        {formData.lat
-                          ? "Store Location Pin"
-                          : "Location Not Defined"}
-                      </p>
-                      <p className="text-xs text-slate-500 font-medium max-w-[400px] leading-relaxed">
-                        {formData.address ||
-                          "Click change to precisely mark your shop location on the map for delivery accuracy."}
-                      </p>
-                    </div>
-                  </div>
-                  {isEditing && (
-                    <Button
-                      type="button"
-                      onClick={() => setIsMapOpen(true)}
-                      disabled={isLocationSaving}
-                      className="w-full sm:w-auto bg-white text-slate-900 border-2 border-slate-200 hover:border-slate-900 rounded-lg px-6 sm:px-8 py-3 text-[10px] font-black tracking-[2px] shadow-sm hover:shadow-md transition-all whitespace-nowrap">
-                      {isLocationSaving ? "UPDATING..." : "CHANGE PIN"}
-                    </Button>
-                  )}
-                </div>
-
-                {formData.lat !== null && formData.lat !== undefined && (
-                  <div className="pt-6 border-t border-slate-200/60 grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-8">
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                        Latitude
-                      </span>
-                      <span className="text-sm font-bold text-slate-700 tabular-nums">
-                        {formData.lat.toFixed(6)}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
-                        Longitude
-                      </span>
-                      <span className="text-sm font-bold text-slate-700 tabular-nums">
-                        {formData.lng.toFixed(6)}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
-                <Shield size={16} className="text-amber-600 mt-0.5" />
-                <p className="text-xs text-amber-700 font-medium leading-relaxed">
-                  Your shop location determines which
-                  customers can view your products. Ensure the marker is placed
-                  exactly at your physical storefront for accurate delivery
-                  assignments.
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          {/* Banking & UPI Card */}
-          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl mt-6 sm:mt-8">
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
-              Banking & UPI
-            </h3>
-            <div className="space-y-6 sm:space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
-                {/* Bank Name */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Bank Name</label>
-                  <input type="text" name="bankName" value={formData.bankName} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
-                </div>
-                {/* Account Holder Name */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Account Holder Name</label>
-                  <input type="text" name="accountHolderName" value={formData.accountHolderName} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
-                </div>
-                {/* Account Number */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Account Number</label>
-                  <input type="text" name="accountNumber" value={formData.accountNumber} onChange={(e) => setFormData({...formData, accountNumber: e.target.value.replace(/\D/g, "").slice(0, 20)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.accountNumber && !/^\d{6,20}$/.test(formData.accountNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                  {isEditing && formData.accountNumber && !/^\d{6,20}$/.test(formData.accountNumber) && (
-                    <p className="text-[10px] font-black text-red-500 ml-1">Must be 6–20 digits</p>
-                  )}
-                </div>
-                {/* IFSC Code */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">IFSC Code</label>
-                  <input type="text" name="ifscCode" value={formData.ifscCode} onChange={(e) => setFormData({...formData, ifscCode: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 11)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                  {isEditing && formData.ifscCode && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(formData.ifscCode) && (
-                    <p className="text-[10px] font-black text-red-500 ml-1">Invalid IFSC format</p>
-                  )}
-                </div>
-                {/* Account Type */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Account Type</label>
-                  <select name="accountType" value={formData.accountType} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70 appearance-none">
-                    <option value="">Select type</option>
-                    <option value="Savings">Savings Account</option>
-                    <option value="Current">Current Account</option>
-                  </select>
-                </div>
-                {/* UPI ID */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">UPI ID</label>
-                  <input type="text" name="upiId" value={formData.upiId} onChange={handleChange} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
-                </div>
-              </div>
-              {/* UPI QR Code */}
-              <div className="space-y-3 pt-4 border-t border-slate-50">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">UPI QR Code</label>
-                {isEditing ? (
-                  <div className="flex flex-col items-start gap-4">
-                    {qrPreview && <img src={qrPreview} alt="UPI QR" className="h-32 w-32 object-contain rounded-xl border-2 border-slate-100" />}
-                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
-                      <UploadCloud size={16} /> Upload New QR
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setQrFile(file);
-                          setQrPreview(URL.createObjectURL(file));
-                        }
-                      }} />
-                    </label>
-                  </div>
-                ) : (
-                  <div>
-                    {qrPreview ? (
-                      <img src={qrPreview} alt="UPI QR" className="h-32 w-32 object-contain rounded-xl border-2 border-slate-100" />
-                    ) : (
-                      <p className="text-sm font-bold text-slate-400">No QR Code uploaded</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-
-          {/* Compliance & Licenses Card */}
-          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-3xl mt-6 sm:mt-8">
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 mb-6 sm:mb-8 border-b border-slate-50 pb-4">
-              Compliance & Licenses
-            </h3>
-            <div className="space-y-6 sm:space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
-                {/* PAN Number */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">PAN Number</label>
-                  <input type="text" name="panNumber" value={formData.panNumber} onChange={(e) => setFormData({...formData, panNumber: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                  {isEditing && formData.panNumber && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.panNumber) && (
-                    <p className="text-[10px] font-black text-red-500 ml-1">Invalid PAN format</p>
-                  )}
-                </div>
-                
-                {/* GST Logic */}
-                <div className="space-y-3 sm:col-span-2">
-                  <label className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-xl border border-slate-100 w-fit cursor-pointer disabled:opacity-70">
-                    <input type="checkbox" checked={formData.gstRegistered} onChange={(e) => setFormData({...formData, gstRegistered: e.target.checked})} disabled={!isEditing} className="accent-slate-900 w-4 h-4 disabled:opacity-70" />
-                    <span className="text-xs font-black uppercase tracking-widest text-slate-700">GST Registered</span>
-                  </label>
-                </div>
-                
-                {formData.gstRegistered && (
-                  <>
-                    {/* GST Number */}
-                    <div className="space-y-3">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">GST Number</label>
-                      <input type="text" name="gstNumber" value={formData.gstNumber} onChange={(e) => setFormData({...formData, gstNumber: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 15)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                      {isEditing && formData.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstNumber) && (
-                        <p className="text-[10px] font-black text-red-500 ml-1">Invalid GST format</p>
-                      )}
-                    </div>
-                    {/* GST Legal Name */}
-                    <div className="space-y-3">
-                      <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">GST Legal Name</label>
-                      <input type="text" name="gstLegalName" value={formData.gstLegalName} onChange={(e) => setFormData({...formData, gstLegalName: e.target.value.replace(/[^a-zA-Z\s]/g, "")})} disabled={!isEditing} className="w-full px-5 py-4 bg-slate-50 border-2 border-transparent rounded-lg text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-slate-100 transition-all disabled:opacity-70" />
-                    </div>
-                  </>
-                )}
-
-                {/* FSSAI Number */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">FSSAI Number</label>
-                  <input type="text" name="fssaiNumber" value={formData.fssaiNumber} onChange={(e) => setFormData({...formData, fssaiNumber: e.target.value.replace(/\D/g, "").slice(0, 14)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.fssaiNumber && !/^\d{14}$/.test(formData.fssaiNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                  {isEditing && formData.fssaiNumber && !/^\d{14}$/.test(formData.fssaiNumber) && (
-                    <p className="text-[10px] font-black text-red-500 ml-1">Must be exactly 14 digits</p>
-                  )}
-                </div>
-                {/* FSSAI Expiry */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">FSSAI Expiry Date</label>
-                  <input type="date" name="fssaiExpiry" value={formData.fssaiExpiry} min={new Date().toISOString().split("T")[0]} onChange={handleChange} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.fssaiExpiry && formData.fssaiExpiry < new Date().toISOString().split("T")[0] ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                </div>
-
-                {/* Shop License Number */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Number</label>
-                  <input type="text" name="shopLicenseNumber" value={formData.shopLicenseNumber} onChange={(e) => setFormData({...formData, shopLicenseNumber: e.target.value.toUpperCase().replace(/[^A-Z0-9\/\-]/g, "").slice(0, 20)})} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.shopLicenseNumber && !/^[A-Z0-9\/\-]{5,20}$/.test(formData.shopLicenseNumber) ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                  {isEditing && formData.shopLicenseNumber && !/^[A-Z0-9\/\-]{5,20}$/.test(formData.shopLicenseNumber) && (
-                    <p className="text-[10px] font-black text-red-500 ml-1">Must be 5-20 characters</p>
-                  )}
-                </div>
-                {/* Shop License Expiry */}
-                <div className="space-y-3">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Expiry Date</label>
-                  <input type="date" name="shopLicenseExpiry" value={formData.shopLicenseExpiry} min={new Date().toISOString().split("T")[0]} onChange={handleChange} disabled={!isEditing} className={`w-full px-5 py-4 bg-slate-50 border-2 rounded-lg text-sm font-bold text-slate-700 outline-none transition-all disabled:opacity-70 ${isEditing && formData.shopLicenseExpiry && formData.shopLicenseExpiry < new Date().toISOString().split("T")[0] ? "border-red-400 bg-red-50 focus:bg-red-50 focus:border-red-500" : "border-transparent focus:bg-white focus:border-slate-100"}`} />
-                </div>
-              </div>
-
-              {/* PAN Image */}
-              <div className="space-y-3 pt-4 border-t border-slate-50">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">PAN Document Image</label>
-                {isEditing ? (
-                  <div className="flex flex-col items-start gap-4">
-                    {panPreview && <img src={panPreview} alt="PAN Document" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
-                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
-                      <UploadCloud size={16} /> Upload New PAN
-                      <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setPanFile(file);
-                          setPanPreview(URL.createObjectURL(file));
-                        }
-                      }} />
-                    </label>
-                  </div>
-                ) : (
-                  <div>
-                    {panPreview ? (
-                      <img src={panPreview} alt="PAN Document" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
-                    ) : (
-                      <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* GST Image */}
-              {formData.gstRegistered && (
-                <div className="space-y-3 pt-4 border-t border-slate-50">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">GST Certificate Image</label>
-                  {isEditing ? (
-                    <div className="flex flex-col items-start gap-4">
-                      {gstPreview && <img src={gstPreview} alt="GST Certificate" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
-                      <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
-                        <UploadCloud size={16} /> Upload New GST Certificate
-                        <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setGstFile(file);
-                            setGstPreview(URL.createObjectURL(file));
-                          }
-                        }} />
-                      </label>
-                    </div>
-                  ) : (
-                    <div>
-                      {gstPreview ? (
-                        <img src={gstPreview} alt="GST Certificate" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
-                      ) : (
-                        <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* FSSAI Image */}
-              <div className="space-y-3 pt-4 border-t border-slate-50">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">FSSAI License Image</label>
-                {isEditing ? (
-                  <div className="flex flex-col items-start gap-4">
-                    {fssaiPreview && <img src={fssaiPreview} alt="FSSAI License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
-                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
-                      <UploadCloud size={16} /> Upload New FSSAI License
-                      <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFssaiFile(file);
-                          setFssaiPreview(URL.createObjectURL(file));
-                        }
-                      }} />
-                    </label>
-                  </div>
-                ) : (
-                  <div>
-                    {fssaiPreview ? (
-                      <img src={fssaiPreview} alt="FSSAI License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
-                    ) : (
-                      <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Shop License Image */}
-              <div className="space-y-3 pt-4 border-t border-slate-50">
-                <label className="text-xs font-black uppercase tracking-widest text-slate-600 ml-1">Shop License Document</label>
-                {isEditing ? (
-                  <div className="flex flex-col items-start gap-4">
-                    {licensePreview && <img src={licensePreview} alt="Shop License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />}
-                    <label className="flex items-center gap-2 cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-4 py-2 rounded-lg text-xs transition-colors">
-                      <UploadCloud size={16} /> Upload New License
-                      <input type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setLicenseFile(file);
-                          setLicensePreview(URL.createObjectURL(file));
-                        }
-                      }} />
-                    </label>
-                  </div>
-                ) : (
-                  <div>
-                    {licensePreview ? (
-                      <img src={licensePreview} alt="Shop License" className="h-32 w-48 object-contain rounded-xl border-2 border-slate-100" />
-                    ) : (
-                      <p className="text-sm font-bold text-slate-400">No Document uploaded</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div className="space-y-6 sm:space-y-8">
-          <Card className="p-5 sm:p-8 border-none shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-2xl sm:rounded-[40px] bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800 text-white">
-            <h4 className="text-[10px] font-black uppercase tracking-[4px] text-white/40 mb-6">
-              Security & Trust
-            </h4>
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Shield size={20} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-white/60">
-                    Verification
-                  </p>
-                  <p className="text-sm font-bold">
-                    {profile?.isVerified
-                      ? "Verified Merchant"
-                      : "Verification Pending"}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Rocket size={20} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-white/60">
-                    Partner Tier
-                  </p>
-                  <p className="text-sm font-bold">Standard Growth</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
-                  <Globe size={20} className="text-white" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-white/60">
-                    Region
-                  </p>
-                  <p className="text-sm font-bold">Pan India Reach</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-          
-          {!asAdmin && (
-            <Card className="p-5 sm:p-8 border border-red-100 shadow-[0_20px_50px_rgba(239,68,68,0.05)] rounded-2xl sm:rounded-[40px] bg-red-50/30">
-              <h4 className="text-[10px] font-black uppercase tracking-[4px] text-red-600 mb-4">
-                Danger Zone
-              </h4>
-              <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed">
-                Permanently delete your account and all associated data. This action cannot be undone.
-              </p>
-              <Button
-                variant="danger"
-                className="w-full sm:w-auto"
-                onClick={handleDeleteAccount}
-                disabled={isLoading}
+        <div className="shrink-0">
+          {!isEditing ? (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-xs transition-all"
+            >
+              <Edit2 className="h-3.5 w-3.5 text-slate-500" />
+              <span>Edit</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsEditing(false);
+                  setFormData(profileToForm(profile));
+                  setHoursDraft(parseOpeningHours(profile?.shopInfo?.openingHours || ""));
+                }}
+                className="px-2.5 py-1.5 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-50"
               >
-                Delete Account
-              </Button>
-            </Card>
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSaving || Boolean(uploadingImageKey)}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs disabled:opacity-70"
+              >
+                <Save className="h-3.5 w-3.5" />
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
           )}
         </div>
       </div>
 
-      {isMapOpen && (
+      {hasPendingUpdate ? (
+        <div className="rounded-xl border border-amber-200/70 bg-amber-50/80 p-3 flex items-start gap-2.5">
+          <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+          <div>
+            <p className="text-xs font-semibold text-amber-900">Changes pending admin approval</p>
+            <p className="mt-0.5 text-[11px] font-normal text-amber-800 leading-normal">
+              Customers still see your approved details until admin reviews the updates.
+            </p>
+          </div>
+        </div>
+      ) : justApprovedUpdate ? (
+        <div className="rounded-xl border border-emerald-200/70 bg-emerald-50/80 p-3 flex items-start gap-2.5">
+          <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+          <div>
+            <p className="text-xs font-semibold text-emerald-900">Profile update approved</p>
+            <p className="mt-0.5 text-[11px] font-normal text-emerald-800 leading-normal">
+              Your latest details are now live. Check the notification bell for the confirmation.
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+        <div className="md:col-span-2 space-y-3.5 sm:space-y-4">
+          <div className="p-3.5 sm:p-5 rounded-xl border border-slate-200/80 bg-white shadow-xs">
+            <h3 className="text-xs sm:text-sm font-semibold text-[#1c1c1e] tracking-tight mb-3 pb-2 border-b border-slate-100">
+              Store details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                ["name", "Owner name"],
+                ["shopName", "Shop name"],
+                ["phone", "Primary phone"],
+                ["email", "Email"],
+                ["alternatePhone", "Alternate phone"],
+                ["supportEmail", "Support email"],
+              ].map(([key, label]) => {
+                const pathName = key === "alternatePhone" || key === "supportEmail" ? `shopInfo.${key}` : key;
+                const display = pendingField(pathName, formData[key]);
+                return (
+                  <Field
+                    key={key}
+                    label={label}
+                    value={display.liveValue}
+                    proposedValue={display.proposedValue}
+                    pending={display.pending}
+                    editing={isEditing}
+                  >
+                    <input
+                      value={formData[key] || ""}
+                      onChange={(e) => updateField(key, e.target.value)}
+                      disabled={key === "phone"}
+                      className={inputClass}
+                    />
+                  </Field>
+                );
+              })}
+
+              <Field
+                label="Service zone"
+                value={formData.zoneName || "—"}
+                proposedValue={pendingField("shopInfo.zoneName", formData.zoneName).proposedValue}
+                pending={pendingField("shopInfo.zoneName", formData.zoneName).pending}
+                editing={isEditing}
+              >
+                <select
+                  value={`${formData.zoneSource}:${formData.zoneId}`}
+                  onChange={(e) => handleZoneChange(e.target.value)}
+                  disabled={zonesLoading}
+                  className={inputClass}
+                >
+                  <option value=":">{zonesLoading ? "Loading zones…" : "Select a service zone"}</option>
+                  {zones.map((zone) => {
+                    const zoneId = String(zone?._id || zone?.id || "");
+                    const zoneSource = String(zone?.source || "");
+                    return (
+                      <option key={`${zoneSource}-${zoneId}`} value={`${zoneSource}:${zoneId}`}>
+                        {zone.label}
+                      </option>
+                    );
+                  })}
+                </select>
+              </Field>
+
+              <Field label="Business type" value={formData.businessType} editing={false} />
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <ImageField
+                label="Shop photo"
+                url={displayShopImage}
+                proposedUrl={pendingShopImage.proposedValue}
+                pending={pendingShopImage.pending}
+                editing={isEditing}
+                uploading={uploadingImageKey === "shopImage"}
+                onSelect={(e) => handleImageSelect("shopImage", e.target.files?.[0])}
+              />
+            </div>
+          </div>
+
+          <div className="p-3.5 sm:p-5 rounded-xl border border-slate-200/80 bg-white shadow-xs space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+              <h3 className="text-xs sm:text-sm font-semibold text-[#1c1c1e] tracking-tight">Opening hours</h3>
+              <span className="rounded-md bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 border border-slate-100">
+                {isEditing
+                  ? openingHoursPreview
+                  : formatOpeningHoursAMPM(formData.openingHours) || formData.openingHours || "Not set"}
+              </span>
+            </div>
+            {!isEditing && pendingField("shopInfo.openingHours", formData.openingHours).pending ? (
+              <p className="rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 border border-amber-100">
+                Requested:{" "}
+                {formatOpeningHoursAMPM(pendingField("shopInfo.openingHours", formData.openingHours).proposedValue) ||
+                  pendingField("shopInfo.openingHours", formData.openingHours).proposedValue}
+              </p>
+            ) : null}
+            {isEditing ? (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="space-y-1">
+                    <span className="text-xs font-medium text-slate-700">Opens at</span>
+                    <select
+                      className={inputClass}
+                      value={hoursDraft.openingTime}
+                      onChange={(e) => handleOpeningHoursChange("openingTime", e.target.value)}
+                    >
+                      <option value="">Select opening time</option>
+                      {timeOptions.map((time) => (
+                        <option key={time.value} value={time.value}>{time.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-xs font-medium text-slate-700">Closes at</span>
+                    <select
+                      className={inputClass}
+                      value={hoursDraft.closingTime}
+                      onChange={(e) => handleOpeningHoursChange("closingTime", e.target.value)}
+                    >
+                      <option value="">Select closing time</option>
+                      {timeOptions.map((time) => (
+                        <option key={time.value} value={time.value}>{time.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveOpeningHours}
+                    disabled={isSavingHours}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 disabled:opacity-70"
+                  >
+                    {isSavingHours ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                    {isSavingHours ? "Saving…" : "Save hours"}
+                  </button>
+                </div>
+              </>
+            ) : null}
+          </div>
+
+          <div className="p-3.5 sm:p-5 rounded-xl border border-slate-200/80 bg-white shadow-xs space-y-3">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h3 className="text-xs sm:text-sm font-semibold text-[#1c1c1e] tracking-tight">Store location</h3>
+              {isEditing ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!selectedZone) {
+                      toast.error("Select a service zone before pinning your store");
+                      return;
+                    }
+                    setIsMapOpen(true);
+                  }}
+                  disabled={!selectedZone}
+                  className="bg-white text-slate-700 border border-slate-200 hover:border-slate-800 rounded-md px-3 py-1.5 text-xs font-medium shadow-xs disabled:opacity-60"
+                >
+                  {formData.lat !== "" && formData.lng !== "" ? "Change pin" : "Pick on map"}
+                </button>
+              ) : null}
+            </div>
+
+            {selectedZone ? (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-red-600">Selected zone</p>
+                <p className="mt-0.5 text-xs font-semibold text-red-900">{selectedZone.label}</p>
+              </div>
+            ) : null}
+
+            <div className="bg-slate-50/70 p-3 rounded-lg border border-slate-200/60 space-y-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                    formData.lat !== "" && formData.lng !== ""
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-white text-slate-400 border border-slate-200"
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-[#1c1c1e] truncate">
+                    {formData.lat !== "" && formData.lng !== "" ? "Store location pin set" : "Location not defined"}
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-normal truncate mt-0.5">
+                    {formData.address || "Mark your shop on the map for delivery accuracy."}
+                  </p>
+                </div>
+              </div>
+              {pendingField("location", formData.address).pending ? (
+                <p className="rounded-md bg-amber-50 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 border border-amber-100">
+                  Requested: {pendingField("location", formData.address).proposedValue}
+                </p>
+              ) : null}
+              {formData.lat !== "" && formData.lng !== "" ? (
+                <div className="pt-2.5 border-t border-slate-200/60 flex flex-wrap gap-4 text-xs">
+                  <div>
+                    <span className="text-[10px] font-medium text-slate-500 uppercase block">Latitude</span>
+                    <span className="font-semibold text-slate-800 tabular-nums">{Number(formData.lat).toFixed(6)}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-medium text-slate-500 uppercase block">Longitude</span>
+                    <span className="font-semibold text-slate-800 tabular-nums">{Number(formData.lng).toFixed(6)}</span>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="flex items-start gap-2 p-2.5 bg-amber-50/80 rounded-lg border border-amber-200/60">
+              <Shield className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-amber-800 font-normal leading-normal">
+                Pin must stay inside your selected service zone. Place the marker at your physical storefront.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-3.5 sm:p-5 rounded-xl border border-slate-200/80 bg-white shadow-xs">
+            <h3 className="text-xs sm:text-sm font-semibold text-[#1c1c1e] tracking-tight mb-3 pb-2 border-b border-slate-100">
+              Compliance
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="sm:col-span-2 flex h-10 items-center gap-3 rounded-lg border border-slate-200 bg-slate-50/70 px-3 text-xs font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={formData.gstRegistered === true}
+                  disabled={!isEditing}
+                  onChange={(e) => updateField("gstRegistered", e.target.checked)}
+                  className="h-4 w-4 accent-red-600"
+                />
+                GST registered
+              </label>
+              {[
+                ["panNumber", "PAN number"],
+                ...(formData.gstRegistered
+                  ? [
+                      ["gstNumber", "GST number"],
+                      ["gstLegalName", "GST legal name"],
+                    ]
+                  : []),
+                ["fssaiNumber", "FSSAI number"],
+                ["fssaiExpiry", "FSSAI expiry"],
+                ["shopLicenseNumber", "Shop license"],
+                ["shopLicenseExpiry", "Shop license expiry"],
+              ].map(([key, label]) => {
+                const display = pendingField(`documents.${key}`, formData[key]);
+                return (
+                  <Field
+                    key={key}
+                    label={label}
+                    value={display.liveValue}
+                    proposedValue={display.proposedValue}
+                    pending={display.pending}
+                    editing={isEditing}
+                  >
+                    <input
+                      type={String(key).includes("Expiry") ? "date" : "text"}
+                      value={formData[key] || ""}
+                      onChange={(e) => updateField(key, e.target.value)}
+                      className={inputClass}
+                    />
+                  </Field>
+                );
+              })}
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100 grid gap-3 sm:grid-cols-2">
+              <ImageField
+                label="FSSAI image"
+                url={formData.fssaiImage}
+                proposedUrl={pendingField("documents.fssaiImage", formData.fssaiImage).proposedValue}
+                pending={pendingField("documents.fssaiImage", formData.fssaiImage).pending}
+                editing={isEditing}
+                uploading={uploadingImageKey === "fssaiImage"}
+                onSelect={(e) => handleImageSelect("fssaiImage", e.target.files?.[0])}
+              />
+              <ImageField
+                label="Shop license image"
+                url={formData.shopLicenseImage}
+                proposedUrl={pendingField("documents.shopLicenseImage", formData.shopLicenseImage).proposedValue}
+                pending={pendingField("documents.shopLicenseImage", formData.shopLicenseImage).pending}
+                editing={isEditing}
+                uploading={uploadingImageKey === "shopLicenseImage"}
+                onSelect={(e) => handleImageSelect("shopLicenseImage", e.target.files?.[0])}
+              />
+            </div>
+          </div>
+
+          <div className="p-3.5 sm:p-5 rounded-xl border border-slate-200/80 bg-white shadow-xs">
+            <h3 className="text-xs sm:text-sm font-semibold text-[#1c1c1e] tracking-tight mb-3 pb-2 border-b border-slate-100">
+              Bank & UPI
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                ["bankName", "Bank name"],
+                ["accountHolderName", "Account holder"],
+                ["accountNumber", "Account number"],
+                ["ifscCode", "IFSC code"],
+                ["accountType", "Account type"],
+                ["upiId", "UPI ID"],
+              ].map(([key, label]) => {
+                const display = pendingField(`bankInfo.${key}`, formData[key]);
+                return (
+                  <Field
+                    key={key}
+                    label={label}
+                    value={display.liveValue}
+                    proposedValue={display.proposedValue}
+                    pending={display.pending}
+                    editing={isEditing}
+                  >
+                    <input
+                      value={formData[key] || ""}
+                      onChange={(e) => updateField(key, e.target.value)}
+                      className={inputClass}
+                    />
+                  </Field>
+                );
+              })}
+            </div>
+            <div className="mt-3 pt-3 border-t border-slate-100">
+              <ImageField
+                label="UPI QR image"
+                url={formData.upiQrImage}
+                proposedUrl={pendingField("bankInfo.upiQrImage", formData.upiQrImage).proposedValue}
+                pending={pendingField("bankInfo.upiQrImage", formData.upiQrImage).pending}
+                editing={isEditing}
+                uploading={uploadingImageKey === "upiQrImage"}
+                onSelect={(e) => handleImageSelect("upiQrImage", e.target.files?.[0])}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3.5 sm:space-y-4">
+          <div className="p-3.5 sm:p-4 rounded-xl border border-amber-200/70 bg-[#FFFDF5] shadow-xs space-y-3">
+            <h4 className="text-xs font-semibold text-amber-900 pb-2 border-b border-amber-200/60">
+              Security & Trust
+            </h4>
+            <div className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-lg bg-amber-100/80 flex items-center justify-center shrink-0">
+                <Shield className="h-4 w-4 text-amber-700" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-[#1c1c1e]">Verified seller account</p>
+                <p className="text-[11px] text-slate-500">Keep docs and bank details up to date.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200/80 bg-white shadow-xs space-y-3">
+            <h4 className="text-xs font-semibold text-[#1c1c1e] pb-2 border-b border-slate-100">Account</h4>
+            <button
+              type="button"
+              onClick={logout}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg text-xs font-semibold shadow-xs"
+            >
+              <LogOut className="h-3.5 w-3.5" /> Sign out
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-lg text-xs font-semibold"
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete account
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {showDeleteConfirm ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-xl bg-white p-5 shadow-2xl border border-slate-200">
+            <div className="mb-2 flex items-center gap-2.5 text-red-600">
+              <AlertTriangle className="h-5 w-5" />
+              <h3 className="text-sm font-semibold text-[#1c1c1e]">Delete seller account?</h3>
+            </div>
+            <p className="text-xs font-normal text-slate-500 leading-relaxed">
+              This disables your shop and catalog listings. Transaction records remain archived.
+            </p>
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                className="flex-1 px-3 py-1.5 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-medium hover:bg-slate-50"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                Keep it
+              </button>
+              <button
+                type="button"
+                className="flex-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold disabled:opacity-70"
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting…" : "Yes, delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {isMapOpen ? (
         <MapPicker
           isOpen={isMapOpen}
           onClose={() => setIsMapOpen(false)}
           onConfirm={handleLocationSelect}
           initialLocation={initialLocation}
-          initialRadius={formData.radius}
+          zoneCoordinates={selectedZone?.coordinates || []}
+          zoneLabel={selectedZone?.label || formData.zoneName || ""}
         />
-      )}
+      ) : null}
     </div>
   );
-};
+}
 
 export default SellerProfile;

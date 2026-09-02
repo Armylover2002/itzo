@@ -104,6 +104,32 @@
   --font-outfit: var(--font-outfit);
 }
 
+/* ECS Admin Panel theme override: matches the purple ITZO ECS admin logo,
+   scoped to .admin-theme (AdminLayout root) so the rest of the app
+   (consumer/restaurant/delivery) keeps the orange brand color. */
+.admin-theme {
+  --primary: #6412C6;
+  --ring: #6412C6;
+}
+
+/* Seller partner app theme override: matches the red ITZO SELLER logo. */
+.seller-theme {
+  --primary: #E71D28;
+  --ring: #E71D28;
+}
+
+/* Restaurant partner app theme override: matches the navy ITZO RESTAURANT logo. */
+.restaurant-theme {
+  --primary: #0D315B;
+  --ring: #0D315B;
+}
+
+/* HRMS Employee Portal theme override: matches the purple ITZO ECS logo (same as admin). */
+.hrms-theme {
+  --primary: #6412C6;
+  --ring: #6412C6;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);

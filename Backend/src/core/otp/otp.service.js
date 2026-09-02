@@ -35,9 +35,14 @@ const getPhoneCandidates = (phone) => {
  */
 const sendSmsViaIndiaHub = async (phone, otp) => {
     try {
-        // Normalize phone: strip non-digits, ensure 91 country code prefix
+        // Normalize phone: extract last 10 digits and prefix with 91
         const digits = String(phone || '').replace(/\D/g, '');
-        const msisdn = digits.startsWith('91') ? digits : `91${digits}`;
+        const last10 = digits.slice(-10);
+        if (last10.length !== 10) {
+            logger.error(`[SMS] Invalid phone number ${phone} — exactly 10 digits required`);
+            return;
+        }
+        const msisdn = `91${last10}`;
 
         // EXACT DLT TEMPLATE approved on SMS India Hub (Template Id 1007282516644508833, SenderId BGADEC).
         // Per SMS India Hub's own account-generated sample request, there is NO space between the
@@ -101,7 +106,12 @@ export const sendCustomSms = async (phone, message, dltTemplateId = null) => {
             return;
         }
         const digits = String(phone || '').replace(/\D/g, '');
-        const msisdn = digits.startsWith('91') ? digits : `91${digits}`;
+        const last10 = digits.slice(-10);
+        if (last10.length !== 10) {
+            logger.error(`[SMS] Invalid phone number ${phone} — exactly 10 digits required`);
+            return;
+        }
+        const msisdn = `91${last10}`;
 
         const url = new URL('http://cloud.smsindiahub.in/vendorsms/pushsms.aspx');
         url.searchParams.append('APIKey', config.smsApiKey);

@@ -649,7 +649,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
             "flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-300 ease-out menu-item-animate text-left",
             isInSection ? "text-sm font-semibold" : "text-sm",
             isActive(item.path)
-              ? "bg-orange-50 text-[#FE5502] font-semibold"
+              ? "bg-purple-50 text-[#6412C6] font-semibold"
               : "text-black hover:bg-gray-50",
             isCollapsed && "justify-center px-2"
           )}
@@ -659,7 +659,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
           <Icon className={cn(
             "shrink-0 transition-all duration-300 text-left",
             isInSection ? "w-4 h-4" : "w-4 h-4",
-            isActive(item.path) ? "text-[#FE5502] scale-110" : "text-black"
+            isActive(item.path) ? "text-[#6412C6] scale-110" : "text-black"
           )} />
           {!isCollapsed && (
             <div className="flex-1 flex items-center justify-between overflow-hidden">
@@ -717,7 +717,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
             )}
           >
             <div className="flex items-center gap-2.5 text-left flex-1 min-w-0">
-              <Icon className={cn("w-4 h-4 shrink-0 transition-transform duration-300", isExpanded ? "text-[#FE5502]" : "text-black")} />
+              <Icon className={cn("w-4 h-4 shrink-0 transition-transform duration-300", isExpanded ? "text-[#6412C6]" : "text-black")} />
               <span className="font-medium text-left truncate">{item.label}</span>
               {getBadgeCount(item.label, item.path) > 0 && (
                 <span className="shrink-0 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 min-w-[18px] text-center">
@@ -745,14 +745,14 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all duration-300 ease-out text-sm font-normal text-left",
                       isActive(subItem.path, allSubPaths)
-                        ? "bg-orange-50 text-[#FE5502] font-semibold"
+                        ? "bg-purple-50 text-[#6412C6] font-semibold"
                         : "text-black hover:bg-gray-50"
                     )}
                     style={{ animationDelay: `${subIndex * 0.03}s` }}
                   >
                     <span className={cn(
                       "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300",
-                      isActive(subItem.path, allSubPaths) ? "bg-[#FE5502] scale-125" : "bg-gray-300"
+                      isActive(subItem.path, allSubPaths) ? "bg-[#6412C6] scale-125" : "bg-gray-300"
                     )}></span>
                     <span className="text-left flex-1 truncate">{subItem.label}</span>
                     {getBadgeCount(subItem.label, subItem.path) > 0 && (
@@ -935,7 +935,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                       className={cn(
                         "rounded-lg px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all",
                         !isQuickAdmin && !isCommonAdmin
-                          ? "bg-[#FE5502] text-white shadow"
+                          ? "bg-[#6412C6] text-white shadow"
                           : "text-gray-500 hover:text-gray-800"
                       )}
                     >
@@ -950,7 +950,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                       className={cn(
                         "rounded-lg px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all",
                         isQuickAdmin
-                          ? "bg-[#FE5502] text-white shadow-[0_6px_20px_rgba(254,85,2,0.35)]"
+                          ? "bg-[#6412C6] text-white shadow-[0_6px_20px_rgba(100, 18, 198,0.35)]"
                           : "text-gray-500 hover:text-gray-800"
                       )}
                     >
@@ -966,7 +966,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                       className={cn(
                         "rounded-lg px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all col-span-2",
                         isCommonAdmin
-                          ? "bg-[#FE5502] text-white shadow-[0_6px_20px_rgba(254,85,2,0.35)]"
+                          ? "bg-[#6412C6] text-white shadow-[0_6px_20px_rgba(100, 18, 198,0.35)]"
                           : "text-gray-500 hover:text-gray-800"
                       )}
                     >
@@ -988,7 +988,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  "w-full pl-9 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FE5502]/40 focus:border-[#FE5502] transition-all duration-200 text-left",
+                  "w-full pl-9 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#6412C6]/40 focus:border-[#6412C6] transition-all duration-200 text-left",
                   searchQuery ? "pr-9" : "pr-3"
                 )}
               />

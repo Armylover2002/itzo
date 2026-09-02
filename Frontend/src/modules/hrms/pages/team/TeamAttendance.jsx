@@ -90,7 +90,7 @@ export default function TeamAttendance() {
     if (loading && records.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -113,7 +113,7 @@ export default function TeamAttendance() {
                         placeholder="Search employee..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                     />
                 </div>
                 <div>
@@ -121,13 +121,13 @@ export default function TeamAttendance() {
                         type="date"
                         value={dateFilter}
                         onChange={e => setDateFilter(e.target.value)}
-                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                     />
                 </div>
                 <select 
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                    className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                 >
                     <option value="All">All Statuses</option>
                     <option value="Present">Present</option>
@@ -177,7 +177,7 @@ export default function TeamAttendance() {
                                                 ${record.status === 'Present' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : ''}
                                                 ${record.status === 'Absent' ? 'bg-red-50 text-red-700 border border-red-200' : ''}
                                                 ${record.status === 'Late' ? 'bg-amber-50 text-amber-700 border border-amber-200' : ''}
-                                                ${record.status === 'Half_Day' ? 'bg-orange-50 text-orange-700 border border-orange-200' : ''}
+                                                ${record.status === 'Half_Day' ? 'bg-[#f7f3fc] text-[#460d8b] border border-[#d8c4f1]' : ''}
                                                 ${record.status === 'Week_Off' ? 'bg-slate-100 text-slate-600 border border-slate-200' : ''}
                                                 ${record.status === 'Holiday' ? 'bg-purple-50 text-purple-700 border border-purple-200' : ''}
                                             `}>

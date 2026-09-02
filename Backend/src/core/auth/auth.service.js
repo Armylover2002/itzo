@@ -597,6 +597,9 @@ export const verifyDeliveryOtpAndLogin = async (phone, otp, fcmToken, platform) 
     const isRejected = deliveryPartner.status === "rejected";
     return {
       pendingApproval: true,
+      status: deliveryPartner.status,
+      phone: deliveryPartner.phone,
+      applicationType: deliveryPartner.applicationType || "new",
       isRejected,
       rejectionReason: isRejected ? deliveryPartner.rejectionReason : null,
       message:

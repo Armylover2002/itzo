@@ -18,21 +18,21 @@ import AdminModuleSwitcher from "@/shared/components/AdminModuleSwitcher";
 
 const colorMap = {
   indigo:
-    "text-primary bg-orange-50 border-orange-100 group-hover:bg-orange-100/50",
+    "text-primary bg-[#fef4f4] border-[#fde8ea] group-hover:bg-[#fde8ea]/50",
   rose: "text-rose-600 bg-rose-50 border-rose-100 group-hover:bg-rose-100/50",
   amber:
     "text-amber-600 bg-amber-50 border-amber-100 group-hover:bg-amber-100/50",
-  blue: "text-primary bg-orange-50 border-orange-100 group-hover:bg-orange-100/50",
+  blue: "text-primary bg-[#fef4f4] border-[#fde8ea] group-hover:bg-[#fde8ea]/50",
   emerald:
     "text-emerald-600 bg-emerald-50 border-emerald-100 group-hover:bg-emerald-100/50",
   violet:
-    "text-primary bg-orange-50 border-orange-100 group-hover:bg-orange-100/50",
-  cyan: "text-primary bg-orange-50 border-orange-100 group-hover:bg-orange-100/50",
+    "text-primary bg-[#fef4f4] border-[#fde8ea] group-hover:bg-[#fde8ea]/50",
+  cyan: "text-primary bg-[#fef4f4] border-[#fde8ea] group-hover:bg-[#fde8ea]/50",
   orange:
-    "text-orange-600 bg-orange-50 border-orange-100 group-hover:bg-orange-100/50",
+    "text-[#c41922] bg-[#fef4f4] border-[#fde8ea] group-hover:bg-[#fde8ea]/50",
   green:
     "text-green-600 bg-green-50 border-green-100 group-hover:bg-green-100/50",
-  sky: "text-primary bg-orange-50 border-orange-100 group-hover:bg-orange-100/50",
+  sky: "text-primary bg-[#fef4f4] border-[#fde8ea] group-hover:bg-[#fde8ea]/50",
   pink: "text-pink-600 bg-pink-50 border-pink-100 group-hover:bg-pink-100/50",
   fuchsia:
     "text-fuchsia-600 bg-fuchsia-50 border-fuchsia-100 group-hover:bg-fuchsia-100/50",
@@ -92,7 +92,7 @@ const SidebarItem = ({
               className={cn(
                 "p-1.5 rounded-lg transition-all duration-500 shadow-lg",
                 isChildActive || isOpen
-                  ? "bg-primary-orange text-white shadow-primary-orange/40 ring-2 ring-primary-orange/20"
+                  ? "bg-[#E71D28] text-white shadow-[#E71D28]/40 ring-2 ring-[#E71D28]/20"
                   : "bg-white/5 text-gray-500 group-hover:bg-white/10 group-hover:text-gray-300",
               )}>
               {item.icon && <item.icon className="h-4 w-4" />}
@@ -109,7 +109,7 @@ const SidebarItem = ({
             className={cn(
               "transition-all duration-300 z-10",
               isOpen
-                ? "rotate-180 text-primary-orange"
+                ? "rotate-180 text-[#E71D28]"
                 : "rotate-0 text-gray-600 group-hover:text-gray-400",
             )}>
             <HiChevronDown className="h-4 w-4" />
@@ -133,7 +133,7 @@ const SidebarItem = ({
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 rounded-full bg-primary-orange shadow-[0_0_10px_rgba(254,85,2,0.5)]" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 rounded-full bg-[#E71D28] shadow-[0_0_10px_rgba(231, 29, 40,0.5)]" />
                     )}
                     {child.label}
                   </>
@@ -156,7 +156,7 @@ const SidebarItem = ({
         cn(
           "flex items-center space-x-2.5 rounded-lg px-3 py-2.5 transition-all duration-300 group relative overflow-hidden",
           isActive
-            ? "bg-primary-orange text-white shadow-[0_10px_30px_rgba(254,85,2,0.3)]"
+            ? "bg-[#E71D28] text-white shadow-[0_10px_30px_rgba(231, 29, 40,0.3)]"
             : "text-gray-400 hover:text-white",
         )
       }>
@@ -250,7 +250,7 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
     return () => window.removeEventListener('businessSettingsUpdated', handleUpdate);
   }, [appType]);
 
-  const displayLogoUrl = isSellerPanel ? '/itzo-food-logo.jpg' : logoUrl;
+  const displayLogoUrl = logoUrl;
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -272,7 +272,7 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
             <h1 className="text-base font-black tracking-tight text-white leading-none">
               {companyName || 'App'}
             </h1>
-            <span className="text-[9px] font-black text-primary-orange uppercase tracking-[0.2em] mt-1 block">
+            <span className="text-[9px] font-black text-[#E71D28] uppercase tracking-[0.2em] mt-1 block">
               {title}
             </span>
           </div>
@@ -321,27 +321,6 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
           ))}
         </AnimatePresence>
       </nav>
-
-      <div className="p-4 border-t border-white/5 bg-gradient-to-t from-white/[0.02] to-transparent flex-shrink-0">
-        <div className="bg-white/5 rounded-lg p-3 shadow-sm border border-white/5 hover:bg-white/[0.08] hover:border-white/10 transition-all group cursor-pointer">
-          <div className="flex items-center space-x-2.5">
-            <div className="relative group">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-orange via-orange-500 to-primary-dark flex items-center justify-center text-white font-black text-xs shadow-lg group-hover:scale-110 transition-all duration-500">
-                A
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 rounded-full border-2 border-[#0a0c10] shadow-sm animate-pulse"></div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate group-hover:text-primary-orange transition-colors">
-                {title?.toLowerCase().includes('seller') ? 'Seller Console' : 'Admin Console'}
-              </p>
-              <p className="text-[9px] text-gray-500 truncate font-black uppercase tracking-widest">
-                {title?.toLowerCase().includes('seller') ? 'Seller' : 'Super Admin'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

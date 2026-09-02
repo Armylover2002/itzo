@@ -30,7 +30,7 @@ const STATUS_OPTIONS = [
 
 const getStatusStyle = (status) => {
   if (status === "resolved") return "bg-emerald-100 text-emerald-700 border-emerald-200"
-  if (status === "in-progress") return "bg-orange-100 text-orange-700 border-orange-200"
+  if (status === "in-progress") return "bg-[#e7eaef] text-[#092240] border-[#c3ccd6]"
   return "bg-amber-100 text-amber-700 border-amber-200"
 }
 
@@ -134,9 +134,9 @@ export default function RestaurantSupport() {
             <p className="text-xs text-amber-700">Open</p>
             <p className="text-lg font-bold text-amber-800">{stats.open}</p>
           </div>
-          <div className="rounded-xl border border-orange-200 bg-orange-50 p-3">
-            <p className="text-xs text-orange-700">In progress</p>
-            <p className="text-lg font-bold text-orange-800">{stats.inProgress}</p>
+          <div className="rounded-xl border border-[#c3ccd6] bg-[#f3f5f7] p-3">
+            <p className="text-xs text-[#092240]">In progress</p>
+            <p className="text-lg font-bold text-[#071b32]">{stats.inProgress}</p>
           </div>
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
             <p className="text-xs text-emerald-700">Resolved</p>
@@ -264,9 +264,9 @@ export default function RestaurantSupport() {
                     </p>
                   ) : null}
                   {ticket.adminResponse ? (
-                    <div className="mt-3 rounded-lg border border-orange-200 bg-orange-50 p-2.5">
-                      <p className="text-[11px] font-semibold text-orange-700 uppercase">ECS Response</p>
-                      <p className="text-sm text-orange-900 mt-1 whitespace-pre-wrap">{ticket.adminResponse}</p>
+                    <div className="mt-3 rounded-lg border border-[#c3ccd6] bg-[#f3f5f7] p-2.5">
+                      <p className="text-[11px] font-semibold text-[#092240] uppercase">ECS Response</p>
+                      <p className="text-sm text-[#051424] mt-1 whitespace-pre-wrap">{ticket.adminResponse}</p>
                     </div>
                   ) : null}
                 </div>

@@ -30,6 +30,8 @@ export const dispatchAdminNotificationsUpdated = () => {
   window.dispatchEvent(new Event(UPDATE_EVENT));
 };
 
+export const refreshAdminAlerts = dispatchAdminNotificationsUpdated;
+
 const toDateValue = (value) => {
   const date = value ? new Date(value) : null;
   return date && !Number.isNaN(date.getTime()) ? date.getTime() : 0;

@@ -65,6 +65,7 @@ export default function RestaurantRouter() {
   }, [])
 
   return (
+    <div className="restaurant-theme">
     <LiveLocationProvider>
       <Suspense fallback={<Loader />}>
         <Routes>
@@ -123,5 +124,6 @@ export default function RestaurantRouter() {
         </Routes>
       </Suspense>
     </LiveLocationProvider>
+    </div>
   )
 }

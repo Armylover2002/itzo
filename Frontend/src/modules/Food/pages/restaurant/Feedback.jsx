@@ -428,7 +428,7 @@ export default function Feedback() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${
-                activeTab === tab.id ? "bg-[#FE5502] text-white shadow-lg shadow-[#FE5502]/20" : "bg-white text-gray-600 border border-gray-200"
+                activeTab === tab.id ? "bg-[#0D315B] text-white shadow-lg shadow-[#0D315B]/20" : "bg-white text-gray-600 border border-gray-200"
               }`}
             >
               {tab.label}
@@ -466,7 +466,7 @@ export default function Feedback() {
                     <div key={complaint._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3">
                       <div className="flex justify-between items-center">
                         <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${
-                          complaint.status === 'open' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'
+                          complaint.status === 'open' ? 'bg-[#e7eaef] text-[#0b2a4d]' : 'bg-green-100 text-green-600'
                         }`}>{complaint.status || 'open'}</span>
                         <span className="text-[10px] text-gray-400 font-bold">{new Date(complaint.createdAt).toLocaleDateString()}</span>
                       </div>
@@ -487,9 +487,9 @@ export default function Feedback() {
                       </div>
 
                       {complaint.adminResponse && (
-                        <div className="bg-orange-50 rounded-xl p-3 border border-orange-100">
+                        <div className="bg-[#f3f5f7] rounded-xl p-3 border border-[#e7eaef]">
                           <p className="text-[9px] font-black text-primary uppercase mb-1">ECS Response</p>
-                          <p className="text-sm text-orange-900 font-medium">{complaint.adminResponse}</p>
+                          <p className="text-sm text-[#051424] font-medium">{complaint.adminResponse}</p>
                         </div>
                       )}
                     </div>
@@ -520,7 +520,7 @@ export default function Feedback() {
                   <div className="flex items-center gap-3">
                     <img src={review.userImage} className="w-8 h-8 rounded-full border border-gray-100" />
                     <p className="font-bold text-gray-900 text-sm">{review.userName}</p>
-                    <div className="ml-auto flex items-center gap-1 bg-[#FE5502] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
+                    <div className="ml-auto flex items-center gap-1 bg-[#0D315B] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
                       {review.rating} <Star className="w-2 h-2 fill-current" />
                     </div>
                   </div>

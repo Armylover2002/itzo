@@ -43,7 +43,7 @@ const Transactions = () => {
       value: `₹${(data?.balances?.settledBalance || 0).toLocaleString()}`,
       icon: HiOutlineBanknotes,
       color: "text-primary",
-      bg: "bg-orange-50",
+      bg: "bg-[#fef4f4]",
     },
     {
       label: "Pending Payouts",
@@ -57,7 +57,7 @@ const Transactions = () => {
       value: `₹${(data?.balances?.totalRevenue || 0).toLocaleString()}`,
       icon: HiOutlineCreditCard,
       color: "text-primary",
-      bg: "bg-orange-50",
+      bg: "bg-[#fef4f4]",
     },
   ];
 
@@ -151,7 +151,7 @@ const Transactions = () => {
               Transaction Ledger
               <Badge
                 variant="primary"
-                className="text-[10px] sm:text-xs px-1.5 py-0 font-bold tracking-wider uppercase bg-orange-100 text-orange-700">
+                className="text-[10px] sm:text-xs px-1.5 py-0 font-bold tracking-wider uppercase bg-[#fde8ea] text-[#a2141c]">
                 Audit Trail
               </Badge>
             </h1>
@@ -193,7 +193,7 @@ const Transactions = () => {
                   setIsDownloading(false);
                 }
               }}
-              className="rounded-lg px-4 py-2 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors disabled:opacity-50"
+              className="rounded-lg px-4 py-2 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors disabled:opacity-50"
               disabled={isDownloading || filteredTransactions.length === 0}>
               <HiOutlineDocumentText className="h-4 w-4 mr-2" />
               {isDownloading ? "DOWNLOADING..." : "DOWNLOAD STATEMENTS"}
@@ -309,7 +309,7 @@ const Transactions = () => {
                             className={cn(
                               "h-10 w-10 rounded-lg flex items-center justify-center font-black transition-all group-hover:scale-110",
                               txn.amount > 0
-                                ? "bg-orange-50 text-primary-orange"
+                                ? "bg-[#fef4f4] text-[#E71D28]"
                                 : "bg-rose-50 text-rose-600",
                             )}>
                             {txn.amount > 0 ? (
@@ -346,7 +346,7 @@ const Transactions = () => {
                           className={cn(
                             "text-sm font-black tracking-tight",
                             Number(txn.amount ?? 0) > 0
-                              ? "text-primary-orange"
+                              ? "text-[#E71D28]"
                               : "text-rose-600",
                           )}>
                           {Number(txn.amount ?? 0) > 0 ? "+" : ""}₹
@@ -424,7 +424,7 @@ const Transactions = () => {
               <h2
                 className={cn(
                   "text-4xl font-black tracking-tight",
-                  Number(selectedTxn.amount ?? 0) > 0 ? "text-primary-orange" : "text-rose-600",
+                  Number(selectedTxn.amount ?? 0) > 0 ? "text-[#E71D28]" : "text-rose-600",
                 )}>
                 {Number(selectedTxn.amount ?? 0) > 0 ? "+" : ""}₹
                 {Math.abs(Number(selectedTxn.amount ?? 0)).toLocaleString()}
@@ -491,7 +491,7 @@ const Transactions = () => {
               </Button>
               <Button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="rounded-lg py-4 font-black bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
+                className="rounded-lg py-4 font-black bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
                 CLOSE
               </Button>
             </div>

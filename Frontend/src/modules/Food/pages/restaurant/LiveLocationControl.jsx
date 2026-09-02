@@ -23,7 +23,7 @@ export default function LiveLocationControl() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-4 border-[#0d315b] border-t-transparent rounded-full animate-spin"></div>
       </div>
     )
   }
@@ -97,7 +97,7 @@ export default function LiveLocationControl() {
         <Card className="bg-white border-none shadow-sm rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-start gap-3 mb-4">
-              <div className="p-2.5 bg-orange-50 text-orange-600 rounded-xl shrink-0">
+              <div className="p-2.5 bg-[#f3f5f7] text-[#0b2a4d] rounded-xl shrink-0">
                 <MapPin className="w-5 h-5" />
               </div>
               <div>
@@ -113,10 +113,10 @@ export default function LiveLocationControl() {
             <button
               onClick={handleUpdateLocationManually}
               disabled={isUpdatingLocation || isOffline}
-              className={`w-full py-3.5 text-sm font-bold rounded-xl transition-colors shadow-sm shadow-orange-200 
+              className={`w-full py-3.5 text-sm font-bold rounded-xl transition-colors shadow-sm shadow-[#c3ccd6] 
                 ${(isUpdatingLocation || isOffline)
                   ? "bg-gray-200 text-gray-500 cursor-not-allowed shadow-none" 
-                  : "bg-orange-500 hover:bg-orange-600 text-white"}`}
+                  : "bg-[#0d315b] hover:bg-[#0b2a4d] text-white"}`}
             >
               Update Location Now
             </button>
