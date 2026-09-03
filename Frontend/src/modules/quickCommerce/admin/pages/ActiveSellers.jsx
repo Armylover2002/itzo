@@ -14,7 +14,7 @@ import {
   HiOutlineXMark,
 } from 'react-icons/hi2';
 import { toast } from 'sonner';
-import { Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Power } from 'lucide-react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import { adminApi } from '../services/adminApi';
@@ -48,13 +48,10 @@ const ActiveSellers = () => {
   const [sellers, setSellers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(null); // { seller }
-  const [deleting, setDeleting] = useState(false);
-  const [deletePassword, setDeletePassword] = useState("");
-  const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [filter, setFilter] = useState('active');
   const [viewingSeller, setViewingSeller] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
 
   const loadActiveSellers = async (currentFilter = filter) => {
     setIsLoading(true);
@@ -97,38 +94,31 @@ const ActiveSellers = () => {
     );
   }, [searchTerm, sellers]);
 
-  const handleDeleteClick = (seller) => {
-    setDeleteConfirmDialog({ seller });
-    setDeletePassword("");
-    setShowDeletePassword(false);
-  };
-
-  const confirmDelete = async () => {
-    if (!deleteConfirmDialog) return;
-    if (!deletePassword.trim()) {
-      toast.error("Please enter the password");
-      return;
-    }
-
-    const { seller } = deleteConfirmDialog;
+  // Sellers are switched on/off instead of deleted. An inactive shop keeps its
+  // catalogue, but its products stop being served to customers.
+  const toggleSellerStatus = async (seller) => {
+    const id = seller._id || seller.id;
+    const nextActive = seller.isActive === false;
+    setTogglingId(id);
     try {
-      setDeleting(true);
-      await adminApi.softDeleteSeller(seller._id || seller.id, deletePassword);
-      
-      setSellers(prev => prev.filter(s => (s._id || s.id) !== (seller._id || seller.id)));
-      setDeleteConfirmDialog(null);
-      setDeletePassword("");
-      toast.success(`Seller "${seller.shopName || seller.name || 'Seller'}" deleted successfully!`);
+      const res = await adminApi.updateSellerStatus(id, nextActive);
+      const productCount = res.data?.result?.productCount || 0;
+      const shopName = seller.shopName || seller.name || 'Seller';
+      toast.success(
+        nextActive
+          ? `"${shopName}" activated${productCount ? ` — ${productCount} product${productCount === 1 ? '' : 's'} visible again` : ''}`
+          : `"${shopName}" deactivated${productCount ? ` — ${productCount} product${productCount === 1 ? '' : 's'} hidden from customers` : ''}`,
+      );
+      setSellers((prev) =>
+        prev.map((item) =>
+          (item._id || item.id) === id ? { ...item, isActive: nextActive } : item,
+        ),
+      );
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete seller. Please try again.");
+      toast.error(error.response?.data?.message || 'Could not change the seller status');
     } finally {
-      setDeleting(false);
+      setTogglingId(null);
     }
-  };
-
-  const cancelDelete = () => {
-    setDeleteConfirmDialog(null);
-    setDeletePassword("");
   };
 
   const stats = useMemo(
@@ -260,11 +250,29 @@ const ActiveSellers = () => {
                   <tr key={seller._id || seller.id} className="hover:bg-slate-50/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl overflow-hidden bg-slate-100 ring-2 ring-slate-100 flex items-center justify-center text-slate-400">
-                          <HiOutlineBuildingOffice2 className="h-5 w-5" />
+                        <div className="h-10 w-10 shrink-0 rounded-xl overflow-hidden bg-slate-100 ring-2 ring-slate-100 flex items-center justify-center text-slate-400">
+                          {seller.shopInfo?.shopImage ? (
+                            <img
+                              src={seller.shopInfo.shopImage}
+                              alt={seller.shopName || 'Shop'}
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <HiOutlineBuildingOffice2 className="h-5 w-5" />
+                          )}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900">{seller.shopName || 'Store'}</p>
+                          <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                            {seller.shopName || 'Store'}
+                            {seller.isActive === false && (
+                              <span className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-600">
+                                Off
+                              </span>
+                            )}
+                          </p>
                           <p className="text-[10px] font-bold text-slate-400">{seller.ownerName || 'Seller'}</p>
                           <p className="mt-1 text-[11px] font-medium text-slate-500">
                             {seller.location || 'Location not added yet'}
@@ -303,22 +311,29 @@ const ActiveSellers = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
+                          title={`View ${seller.shopName || 'seller'}`}
                           onClick={() => { setViewingSeller(seller); setIsViewModalOpen(true); }}
-                          className="inline-flex items-center gap-2 rounded-xl bg-[#6412C6] hover:bg-[#520da8] px-4 py-2 text-[10px] font-bold text-white shadow-lg shadow-[#6412C6]/20 transition-colors"
+                          className="p-2 rounded-lg text-[#6412C6] hover:bg-[#6412C6]/10 transition-colors"
                         >
-                          <HiOutlineEye className="h-3.5 w-3.5" />
-                          View
+                          <HiOutlineEye className="h-4 w-4" />
                         </button>
-                        {!seller.isDeleted && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteClick(seller)}
-                            className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"
-                            title="Delete Seller"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          disabled={togglingId === (seller._id || seller.id)}
+                          onClick={() => toggleSellerStatus(seller)}
+                          title={
+                            seller.isActive === false
+                              ? 'Activate — products become visible to customers'
+                              : 'Deactivate — hides this shop and its products from customers'
+                          }
+                          className={`p-2 rounded-lg transition-colors disabled:opacity-40 ${
+                            seller.isActive === false
+                              ? 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                              : 'text-emerald-600 hover:bg-emerald-50'
+                          }`}
+                        >
+                          <Power className="h-4 w-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -584,79 +599,6 @@ const ActiveSellers = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirmDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={cancelDelete}>
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                  <Trash2 className="w-6 h-6 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">Delete Seller</h3>
-                  <p className="text-sm text-slate-600">
-                    {deleteConfirmDialog.seller.shopName || deleteConfirmDialog.seller.name || 'Seller'}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-sm text-red-800 bg-red-50 p-3 rounded-lg border border-red-200 mb-4">
-                Are you sure you want to delete <strong>{deleteConfirmDialog.seller.shopName || deleteConfirmDialog.seller.name || 'Seller'}</strong>? This action will hide the seller from the admin panel and the seller will be shown that their account was deleted by admin.
-              </p>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Enter Password to Confirm
-                </label>
-                <div className="relative">
-                  <input
-                    type={showDeletePassword ? "text" : "password"}
-                    value={deletePassword}
-                    onChange={(e) => setDeletePassword(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") confirmDelete() }}
-                    placeholder="Enter admin password"
-                    className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
-                    autoFocus
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowDeletePassword(!showDeletePassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
-                  >
-                    {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={cancelDelete}
-                  disabled={deleting}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={deleting || !deletePassword.trim()}
-                  className="flex-1 px-4 py-2.5 text-sm font-medium rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {deleting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Deleting...
-                    </span>
-                  ) : (
-                    "Delete Seller"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { FoodUser } from '../../../core/users/user.model.js';
+import { FoodRefreshToken } from '../../../core/refreshTokens/refreshToken.model.js';
 import { QuickCategory } from '../models/category.model.js';
 import { QuickProduct } from '../models/product.model.js';
 import { QuickOrder } from '../models/order.model.js';
@@ -118,6 +119,9 @@ const toSellerRequest = (seller, extras = {}) => {
       seller.approvalStatus ||
       (seller.approved === false ? 'pending' : 'approved'),
     approved: seller.approved !== false,
+    // Drives the on/off switch in the admin list: an inactive seller keeps its
+    // catalogue but is hidden from the storefront.
+    isActive: seller.isActive !== false,
     onboardingSubmitted: seller.onboardingSubmitted === true,
     bankInfo: seller.bankInfo || {},
     documents: seller.documents || {},
@@ -1361,8 +1365,7 @@ export const getAdminCustomerById = async (req, res) => {
   }
 
   const orders = await QuickOrder.find({
-    userId: user._id,
-    orderType: { $in: ['quick', 'mixed'] }
+    userId: { $in: [user._id, String(user._id)] }
   })
     .sort({ createdAt: -1 })
     .limit(50)
@@ -1393,17 +1396,21 @@ export const getAdminCustomerById = async (req, res) => {
     phone: user.phone || '',
     avatar: user.profileImage || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
     status: user.isActive === false ? 'inactive' : 'active',
+    isActive: user.isActive !== false,
+    walletBalance: Number(user.walletBalance || 0),
+    isVerified: Boolean(user.isVerified),
+    isCodAllowed: user.isCodAllowed !== false,
     joinedDate: user.createdAt,
     totalOrders: orders.length,
     totalSpent,
     lastOrderDate: orders[0]?.createdAt || null,
     addresses: (user.addresses || []).map(addr => ({
       id: addr._id,
-      label: addr.label,
-      fullAddress: `${addr.street}, ${addr.city}, ${addr.state} - ${addr.zipCode}`,
-      city: addr.city,
-      state: addr.state,
-      pincode: addr.zipCode,
+      label: addr.label || 'Home',
+      fullAddress: [addr.street, addr.city, addr.state, addr.zipCode].filter(Boolean).join(', '),
+      city: addr.city || '',
+      state: addr.state || '',
+      pincode: addr.zipCode || '',
       isDefault: addr.isDefault
     })),
     recentOrders: orders.slice(0, 10).map(o => {
@@ -1421,6 +1428,7 @@ export const getAdminCustomerById = async (req, res) => {
 
       return {
         id: `#${o.orderId || o._id}`,
+        rawId: String(o.orderId || o._id),
         date: o.createdAt,
         status: legacyQuickStatusFromOrder(o),
         amount: payableTotal,
@@ -1432,6 +1440,49 @@ export const getAdminCustomerById = async (req, res) => {
   return res.json({
     success: true,
     result
+  });
+};
+
+export const updateAdminCustomerStatus = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.isValidObjectId(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid customer ID' });
+  }
+
+  const { isActive } = req.body || {};
+  if (typeof isActive !== 'boolean') {
+    return res.status(400).json({ success: false, message: 'isActive must be a boolean' });
+  }
+
+  const updateFields = { isActive };
+  if (isActive) {
+    updateFields.isDeleted = false;
+    updateFields['deletionRequest.status'] = 'none';
+  }
+
+  const user = await FoodUser.findByIdAndUpdate(
+    id,
+    { $set: updateFields },
+    { new: true }
+  ).lean();
+
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'Customer not found' });
+  }
+
+  // If customer is being deactivated, delete all active refresh tokens to terminate sessions
+  if (!isActive) {
+    await FoodRefreshToken.deleteMany({ userId: user._id });
+  }
+
+  return res.json({
+    success: true,
+    message: `Customer ${isActive ? 'activated' : 'deactivated'} successfully`,
+    result: {
+      id: String(user._id),
+      status: user.isActive === false ? 'inactive' : 'active',
+      isActive: user.isActive !== false,
+    }
   });
 };
 
@@ -1617,6 +1668,44 @@ export const getAdminSellerById = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message || 'Failed to fetch seller details' });
   }
+};
+
+/**
+ * Switches a seller on or off. An inactive seller keeps its catalogue, but the
+ * storefront stops serving that seller's products (see the catalog controller's
+ * hidden-seller filter), so nothing has to be deleted to take a shop offline.
+ */
+export const updateAdminSellerStatus = async (req, res) => {
+  const sellerId = req.params.id;
+  if (!sellerId || !mongoose.Types.ObjectId.isValid(sellerId)) {
+    return res.status(400).json({ success: false, message: 'Invalid seller ID' });
+  }
+
+  const seller = await Seller.findById(sellerId).select('_id shopName name isActive isDeleted');
+  if (!seller || seller.isDeleted) {
+    return res.status(404).json({ success: false, message: 'Seller not found' });
+  }
+
+  const makeActive =
+    typeof req.body?.isActive === 'boolean'
+      ? req.body.isActive
+      : String(req.body?.isActive ?? req.body?.status ?? '').toLowerCase() === 'true' ||
+        String(req.body?.status || '').toLowerCase() === 'active';
+
+  seller.isActive = makeActive;
+  await seller.save();
+
+  const productCount = await QuickProduct.countDocuments({ sellerId: seller._id });
+
+  return res.json({
+    success: true,
+    result: {
+      id: seller._id,
+      isActive: seller.isActive,
+      shopName: seller.shopName || seller.name || 'Store',
+      productCount,
+    },
+  });
 };
 
 export const softDeleteAdminSeller = async (req, res) => {

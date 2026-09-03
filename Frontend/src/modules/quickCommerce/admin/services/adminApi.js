@@ -301,7 +301,9 @@ export const adminApi = {
   updateOrderStatus: () => emptyResponse({ updated: false, unsupported: true }),
 
   getUsers: (params) => axiosInstance.get('/quick-commerce/admin/customers', { params }),
-  getUserById: () => emptyResponse({}),
+  getUserById: (id) => axiosInstance.get(`/quick-commerce/admin/customers/${id}`),
+  updateCustomerStatus: (id, isActive) =>
+    axiosInstance.patch(`/quick-commerce/admin/customers/${id}/status`, { isActive }),
   approveSeller: (sellerId, data = {}) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/approve`, data),
   getAdminWalletData: () => emptyResponse({}),
   getReports: () => emptyResponse([]),
@@ -350,6 +352,9 @@ export const adminApi = {
   getSellerRequests: (params) => axiosInstance.get('/quick-commerce/admin/seller-requests', { params }),
   rejectSeller: (sellerId, data = {}) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/reject`, data),
   updateSellerProfile: (sellerId, data) => axiosInstance.put(`/quick-commerce/admin/seller-requests/${sellerId}/profile`, data),
+  updateSellerStatus: (sellerId, isActive) =>
+    axiosInstance.patch(`/quick-commerce/admin/sellers/${sellerId}/status`, { isActive }),
+
   softDeleteSeller: (sellerId, password) => axiosInstance.patch(`/quick-commerce/admin/sellers/${sellerId}/soft-delete`, { password }),
   getTickets: (params = {}) => axiosInstance.get('/quick-commerce/admin/support-tickets', { params }),
   updateTicketStatus: (id, status) =>
@@ -365,11 +370,6 @@ export const adminApi = {
   getSellerTransactions: () => emptyResponse({ items: [], total: 0 }),
   updateWithdrawalStatus: (id, body = {}) =>
     axiosInstance.patch(`/quick-commerce/admin/withdrawals/${String(id)}`, body),
-  getFAQs: () => emptyResponse({ items: [], total: 0 }),
-  createFAQ: () => emptyResponse({}),
-  updateFAQ: () => emptyResponse({}),
-  deleteFAQ: () => emptyResponse({}),
-  getPublicFAQs: () => emptyResponse({ items: [] }),
   getCoupons: (params) => axiosInstance.get('/quick-commerce/admin/coupons', { params }),
   createCoupon: (payload) => axiosInstance.post('/quick-commerce/admin/coupons', payload),
   updateCoupon: (id, payload) => axiosInstance.put(`/quick-commerce/admin/coupons/${id}`, payload),

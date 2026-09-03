@@ -10,6 +10,8 @@ const DEFAULT_QUICK_FEE_SETTINGS = {
   platformFee: 0,
   gstRate: 0,
   returnDeliveryCommission: 0,
+  minWithdrawal: undefined,
+  maxWithdrawal: undefined,
   isActive: true,
 };
 
@@ -188,6 +190,12 @@ export async function upsertFeeSettings(body) {
       $set.returnDeliveryCommission = body.returnDeliveryCommission;
     }
 
+    if (body.minWithdrawal === null) $unset.minWithdrawal = 1;
+    else if (body.minWithdrawal !== undefined) $set.minWithdrawal = body.minWithdrawal;
+
+    if (body.maxWithdrawal === null) $unset.maxWithdrawal = 1;
+    else if (body.maxWithdrawal !== undefined) $set.maxWithdrawal = body.maxWithdrawal;
+
     if (body.isActive !== undefined) $set.isActive = body.isActive;
 
     const update = {};
@@ -211,6 +219,8 @@ export async function upsertFeeSettings(body) {
   }
   if (body.platformFee !== undefined && body.platformFee !== null) payload.platformFee = body.platformFee;
   if (body.gstRate !== undefined && body.gstRate !== null) payload.gstRate = body.gstRate;
+  if (body.minWithdrawal !== undefined && body.minWithdrawal !== null) payload.minWithdrawal = body.minWithdrawal;
+  if (body.maxWithdrawal !== undefined && body.maxWithdrawal !== null) payload.maxWithdrawal = body.maxWithdrawal;
 
   const created = await QuickFeeSettings.create(payload);
   clearFeeSettingsCache();

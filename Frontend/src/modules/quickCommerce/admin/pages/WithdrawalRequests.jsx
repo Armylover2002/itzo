@@ -11,7 +11,6 @@ import {
     Filter,
     ChevronRight,
     Building2,
-    Truck,
     ArrowUpRight,
     CreditCard,
     MoreVertical,
@@ -20,7 +19,8 @@ import {
     CheckCircle,
     FileText,
     AlertCircle,
-    RotateCw
+    RotateCw,
+    Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,6 @@ import { adminApi } from "../services/adminApi";
 import { toast } from "sonner";
 
 const WithdrawalRequests = () => {
-    const [activeTab, setActiveTab] = useState('sellers');
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [selectedRequest, setSelectedRequest] = useState(null);
@@ -37,23 +36,24 @@ const WithdrawalRequests = () => {
     const [actionModal, setActionModal] = useState({ isOpen: false, type: null, request: null });
     const [settleTxnId, setSettleTxnId] = useState('');
     const [settleAdminNote, setSettleAdminNote] = useState('');
+    const [settingsModal, setSettingsModal] = useState(false);
+    const [minWithdrawal, setMinWithdrawal] = useState('');
+    const [maxWithdrawal, setMaxWithdrawal] = useState('');
+    const [settingsSaving, setSettingsSaving] = useState(false);
 
     const [sellerRequests, setSellerRequests] = useState([]);
-    const [deliveryRequests, setDeliveryRequests] = useState([]);
     const [sellerPage, setSellerPage] = useState(1);
-    const [deliveryPage, setDeliveryPage] = useState(1);
     const [pageSize, setPageSize] = useState(25);
     const [sellerTotal, setSellerTotal] = useState(0);
-    const [deliveryTotal, setDeliveryTotal] = useState(0);
     const [financeSummary, setFinanceSummary] = useState({});
 
-    const fetchData = async (sellerPageNum = 1, deliveryPageNum = 1) => {
+    const fetchData = async (sellerPageNum = 1) => {
         try {
             setLoading(true);
-            const [sellerRes, deliveryRes, financeSummaryRes] = await Promise.all([
+            const [sellerRes, financeSummaryRes, feeSettingsRes] = await Promise.all([
                 adminApi.getSellerWithdrawals({ page: sellerPageNum, limit: pageSize }).catch(err => ({ data: { success: false, result: {} } })),
-                adminApi.getDeliveryWithdrawals({ page: deliveryPageNum, limit: pageSize }).catch(err => ({ data: { success: false, result: {} } })),
                 adminApi.getFinanceSummary().catch(() => ({ data: { success: false, result: {} } })),
+                adminApi.getFeeSettings().catch(() => ({ data: { success: false, data: {} } })),
             ]);
 
             if (sellerRes.data.success) {
@@ -63,16 +63,12 @@ const WithdrawalRequests = () => {
                 setSellerTotal(typeof payload.total === 'number' ? payload.total : items.length);
                 setSellerPage(typeof payload.page === 'number' ? payload.page : sellerPageNum);
             }
-            if (deliveryRes.data.success) {
-                const payload = deliveryRes.data.result || {};
-                const items = Array.isArray(payload.items) ? payload.items : (deliveryRes.data.results || []);
-                setDeliveryRequests(items);
-                setDeliveryTotal(typeof payload.total === 'number' ? payload.total : items.length);
-                setDeliveryPage(typeof payload.page === 'number' ? payload.page : deliveryPageNum);
-            }
             if (financeSummaryRes.data.success) {
                 setFinanceSummary(financeSummaryRes.data.result || {});
             }
+            const feeSettings = feeSettingsRes.data?.data?.feeSettings || {};
+            setMinWithdrawal(feeSettings.minWithdrawal != null ? feeSettings.minWithdrawal : '');
+            setMaxWithdrawal(feeSettings.maxWithdrawal != null ? feeSettings.maxWithdrawal : '');
         } catch (error) {
             console.error("Fetch error:", error);
             toast.error("Failed to fetch requests");
@@ -82,22 +78,17 @@ const WithdrawalRequests = () => {
     };
 
     useEffect(() => {
-        fetchData(sellerPage, deliveryPage);
+        fetchData(sellerPage);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pageSize]);
 
     const fetchSellerPage = (p) => {
-        fetchData(p, deliveryPage);
+        fetchData(p);
         setSellerPage(p);
-    };
-    const fetchDeliveryPage = (p) => {
-        fetchData(sellerPage, p);
-        setDeliveryPage(p);
     };
 
     const stats = useMemo(() => {
         const sData = Array.isArray(sellerRequests) ? sellerRequests : [];
-        const dData = Array.isArray(deliveryRequests) ? deliveryRequests : [];
 
         return {
             sellers: {
@@ -105,21 +96,15 @@ const WithdrawalRequests = () => {
                 amount: Math.abs(sData.filter(r => r.status === 'Pending' || r.status === 'Processing').reduce((acc, r) => acc + (Number(r.amount) || 0), 0)),
                 processed: sData.filter(r => r.status === 'Settled').length
             },
-            delivery: {
-                pending: dData.filter(r => r.status === 'Pending' || r.status === 'Processing').length,
-                amount: Math.abs(dData.filter(r => r.status === 'Pending' || r.status === 'Processing').reduce((acc, r) => acc + (Number(r.amount) || 0), 0)),
-                processed: dData.filter(r => r.status === 'Settled').length
-            },
             sellerPendingToDistribute: Math.max(0, Number(financeSummary?.sellerPendingPayouts) || 0),
             unpaidWithdrawalPayout: Math.abs(
-                (Number(sData.filter(r => r.status === 'Pending' || r.status === 'Processing').reduce((acc, r) => acc + (Number(r.amount) || 0), 0)) || 0) +
-                (Number(dData.filter(r => r.status === 'Pending' || r.status === 'Processing').reduce((acc, r) => acc + (Number(r.amount) || 0), 0)) || 0)
+                Number(sData.filter(r => r.status === 'Pending' || r.status === 'Processing').reduce((acc, r) => acc + (Number(r.amount) || 0), 0) || 0)
             )
         };
-    }, [sellerRequests, deliveryRequests, financeSummary]);
+    }, [sellerRequests, financeSummary]);
 
     const currentData = useMemo(() => {
-        const data = activeTab === 'sellers' ? (sellerRequests || []) : (deliveryRequests || []);
+        const data = sellerRequests || [];
         return data.filter(r => {
             const name = r.user?.shopName || r.user?.name || "";
             const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -127,7 +112,31 @@ const WithdrawalRequests = () => {
             const matchesStatus = filterStatus === 'all' || r.status?.toLowerCase() === filterStatus.toLowerCase();
             return matchesSearch && matchesStatus;
         });
-    }, [activeTab, sellerRequests, deliveryRequests, searchTerm, filterStatus]);
+    }, [sellerRequests, searchTerm, filterStatus]);
+
+    const handleSaveWithdrawalSettings = async () => {
+        try {
+            setSettingsSaving(true);
+            const min = minWithdrawal === '' ? undefined : Number(minWithdrawal);
+            const max = maxWithdrawal === '' ? undefined : Number(maxWithdrawal);
+            if (min !== undefined && max !== undefined && min > max) {
+                toast.error('Minimum withdrawal cannot be greater than maximum');
+                return;
+            }
+            const res = await adminApi.createOrUpdateFeeSettings({
+                minWithdrawal: min,
+                maxWithdrawal: max
+            });
+            if (res.data.success) {
+                toast.success('Withdrawal limits saved successfully');
+                setSettingsModal(false);
+            }
+        } catch (error) {
+            toast.error("Failed to save settings");
+        } finally {
+            setSettingsSaving(false);
+        }
+    };
 
     const handleAction = (type, request) => {
         setActionModal({ isOpen: true, type, request });
@@ -151,7 +160,7 @@ const WithdrawalRequests = () => {
             });
             if (res.data.success) {
                 toast.success(`Request ${status} successfully`);
-                fetchData(sellerPage, deliveryPage);
+                fetchData(sellerPage);
                 setActionModal({ isOpen: false, type: null, request: null });
                 setSettleTxnId('');
                 setSettleAdminNote('');
@@ -172,11 +181,18 @@ const WithdrawalRequests = () => {
                         Withdrawal Requests
                         <Badge variant="primary" className="text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">Financial Hub</Badge>
                     </h1>
-                    <p className="ds-description mt-1">Review and process fund disbursement requests from sellers and delivery partners.</p>
+                    <p className="ds-description mt-1">Review and process fund disbursement requests from sellers.</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => fetchData(sellerPage, deliveryPage)}
+                        onClick={() => setSettingsModal(true)}
+                        className="p-2.5 bg-white ring-1 ring-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"
+                        title="Withdrawal Limits"
+                    >
+                        <Settings className="h-4 w-4" />
+                    </button>
+                    <button
+                        onClick={() => fetchData(sellerPage)}
                         className="p-2.5 bg-white ring-1 ring-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"
                     >
                         <RotateCw className={cn("h-4 w-4", loading && "animate-spin")} />
@@ -193,7 +209,7 @@ const WithdrawalRequests = () => {
                 {[
                     { label: 'Total Pending', value: `₹${(stats.sellerPendingToDistribute || 0).toLocaleString()}`, icon: Clock, color: 'amber', bg: 'bg-amber-50', iconColor: 'text-amber-500' },
                     { label: 'Pending Payout', value: `₹${(stats.unpaidWithdrawalPayout || 0).toLocaleString()}`, icon: Banknote, color: 'orange', bg: 'bg-orange-50', iconColor: 'text-primary' },
-                    { label: 'Settled Today', value: stats.sellers.processed + stats.delivery.processed, icon: CheckCircle2, color: 'emerald', bg: 'bg-emerald-50', iconColor: 'text-emerald-500' },
+                    { label: 'Settled Today', value: stats.sellers.processed, icon: CheckCircle2, color: 'emerald', bg: 'bg-emerald-50', iconColor: 'text-emerald-500' },
                 ].map((stat, i) => (
                     <Card key={i} className="p-6 border-none shadow-sm ring-1 ring-slate-100 bg-white">
                         <div className="flex items-center gap-4">
@@ -209,38 +225,15 @@ const WithdrawalRequests = () => {
                 ))}
             </div>
 
-            {/* Main Interface Tab Structure */}
+            {/* Main Interface */}
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex bg-slate-100 p-1.5 rounded-2xl w-fit">
-                        <button
-                            onClick={() => setActiveTab('sellers')}
-                            className={cn(
-                                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all",
-                                activeTab === 'sellers' ? "bg-white text-slate-900 shadow-md" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
+                        <div className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-900 shadow-md">
                             <Building2 className="h-4 w-4" />
                             SELLER REQUESTS
-                            <span className={cn(
-                                "ml-1 px-2 py-0.5 rounded-full text-[10px]",
-                                activeTab === 'sellers' ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-600"
-                            )}>{sellerRequests.length}</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('delivery')}
-                            className={cn(
-                                "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all",
-                                activeTab === 'delivery' ? "bg-white text-slate-900 shadow-md" : "text-slate-500 hover:text-slate-700"
-                            )}
-                        >
-                            <Truck className="h-4 w-4" />
-                            DELIVERY PARTNERS
-                            <span className={cn(
-                                "ml-1 px-2 py-0.5 rounded-full text-[10px]",
-                                activeTab === 'delivery' ? "bg-slate-900 text-white" : "bg-slate-200 text-slate-600"
-                            )}>{deliveryRequests.length}</span>
-                        </button>
+                            <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-slate-900 text-white">{sellerRequests.length}</span>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -289,11 +282,14 @@ const WithdrawalRequests = () => {
                                     <tr key={req._id} className="group hover:bg-slate-50/30 transition-all">
                                         <td className="px-6 py-5 pl-8">
                                             <div className="flex items-center gap-4">
-                                                <div className={cn(
-                                                    "h-12 w-12 rounded-2xl flex items-center justify-center shadow-inner",
-                                                    activeTab === 'sellers' ? "bg-orange-50 text-primary" : "bg-emerald-50 text-emerald-600"
-                                                )}>
-                                                    {activeTab === 'sellers' ? <Building2 className="h-6 w-6" /> : <Truck className="h-6 w-6" />}
+                                                <div className="h-12 w-12 rounded-2xl overflow-hidden shadow-inner ring-1 ring-slate-100 bg-orange-50">
+                                                    {req.user?.shopImage ? (
+                                                        <img src={req.user.shopImage} alt="Shop" className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center text-primary">
+                                                            <Building2 className="h-6 w-6" />
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-bold text-slate-900 group-hover:text-primary transition-colors cursor-pointer" onClick={() => setSelectedRequest(req)}>
@@ -356,7 +352,7 @@ const WithdrawalRequests = () => {
                                                 <div className="p-4 bg-slate-50 rounded-full mb-4">
                                                     <FileText className="h-8 w-8 text-slate-200" />
                                                 </div>
-                                                <p className="text-slate-400 font-bold text-sm">No withdrawal requests found for this category.</p>
+                                                <p className="text-slate-400 font-bold text-sm">No withdrawal requests found.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -366,15 +362,14 @@ const WithdrawalRequests = () => {
                     </div>
                     <div className="px-6 py-3 border-t border-slate-100">
                         <Pagination
-                            page={activeTab === 'sellers' ? sellerPage : deliveryPage}
-                            totalPages={Math.ceil((activeTab === 'sellers' ? sellerTotal : deliveryTotal) / pageSize) || 1}
-                            total={activeTab === 'sellers' ? sellerTotal : deliveryTotal}
+                            page={sellerPage}
+                            totalPages={Math.ceil(sellerTotal / pageSize) || 1}
+                            total={sellerTotal}
                             pageSize={pageSize}
-                            onPageChange={activeTab === 'sellers' ? fetchSellerPage : fetchDeliveryPage}
+                            onPageChange={fetchSellerPage}
                             onPageSizeChange={(newSize) => {
                                 setPageSize(newSize);
                                 setSellerPage(1);
-                                setDeliveryPage(1);
                             }}
                             loading={loading}
                         />
@@ -392,11 +387,14 @@ const WithdrawalRequests = () => {
                 {selectedRequest && (
                     <div className="ds-section-spacing">
                         <div className="flex items-center gap-6 p-6 bg-slate-50 rounded-xl border border-slate-100">
-                            <div className={cn(
-                                "h-20 w-20 rounded-xl flex items-center justify-center shadow-xl",
-                                activeTab === 'sellers' ? "bg-primary text-white" : "bg-emerald-600 text-white"
-                            )}>
-                                {activeTab === 'sellers' ? <Building2 className="h-10 w-10" /> : <Truck className="h-10 w-10" />}
+                            <div className="h-20 w-20 rounded-xl overflow-hidden shadow-xl ring-1 ring-slate-100 bg-primary">
+                                {selectedRequest.user?.shopImage ? (
+                                    <img src={selectedRequest.user.shopImage} alt="Shop" className="h-full w-full object-cover" />
+                                ) : (
+                                    <div className="h-full w-full flex items-center justify-center text-white">
+                                        <Building2 className="h-10 w-10" />
+                                    </div>
+                                )}
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedRequest.user?.shopName || selectedRequest.user?.name || "Unknown"}</h3>
@@ -473,6 +471,69 @@ const WithdrawalRequests = () => {
                         </div>
                     </div>
                 )}
+            </Modal>
+
+            {/* Withdrawal Limits Settings Modal */}
+            <Modal
+                isOpen={settingsModal}
+                onClose={() => !settingsSaving && setSettingsModal(false)}
+                title="Withdrawal Limit Settings"
+                size="sm"
+            >
+                <div className="space-y-5 py-2">
+                    <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                        <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Info</p>
+                        <p className="text-xs font-semibold text-slate-700">Set minimum and maximum withdrawal amounts for sellers. Leave blank to disable a limit.</p>
+                    </div>
+
+                    <div>
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2 block ml-1">Minimum Withdrawal Amount (₹)</label>
+                        <div className="relative group">
+                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-300 group-focus-within:text-primary transition-colors">₹</span>
+                            <input
+                                type="number"
+                                value={minWithdrawal}
+                                onChange={(e) => setMinWithdrawal(e.target.value)}
+                                placeholder="e.g. 100"
+                                min="0"
+                                className="w-full pl-12 pr-6 py-3.5 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-2xl text-base font-black outline-none transition-all placeholder:text-slate-200"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-2 block ml-1">Maximum Withdrawal Amount (₹)</label>
+                        <div className="relative group">
+                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-300 group-focus-within:text-primary transition-colors">₹</span>
+                            <input
+                                type="number"
+                                value={maxWithdrawal}
+                                onChange={(e) => setMaxWithdrawal(e.target.value)}
+                                placeholder="e.g. 50000"
+                                min="0"
+                                className="w-full pl-12 pr-6 py-3.5 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 rounded-2xl text-base font-black outline-none transition-all placeholder:text-slate-200"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 pt-2">
+                        <button
+                            onClick={handleSaveWithdrawalSettings}
+                            disabled={settingsSaving}
+                            className="w-full py-3.5 bg-[#6412C6] hover:bg-[#6412C6]/90 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-[#6412C6]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {settingsSaving && <RotateCw className="h-4 w-4 animate-spin" />}
+                            {settingsSaving ? 'SAVING...' : 'SAVE SETTINGS'}
+                        </button>
+                        <button
+                            onClick={() => setSettingsModal(false)}
+                            disabled={settingsSaving}
+                            className="w-full py-3 bg-slate-50 text-slate-500 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-100 transition-all disabled:opacity-50"
+                        >
+                            CANCEL
+                        </button>
+                    </div>
+                </div>
             </Modal>
 
             {/* Action Confirmation Modal */}

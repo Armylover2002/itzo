@@ -10,7 +10,6 @@ import {
     Eye,
     Phone,
     ShoppingBag,
-    MoreVertical,
     UserPlus,
     RotateCw,
     Activity,
@@ -76,6 +75,30 @@ const CustomerManagement = () => {
         } finally {
             setLoading(false);
             setIsRefreshing(false);
+        }
+    };
+
+    const [statusUpdatingId, setStatusUpdatingId] = useState(null);
+
+    const handleToggleCustomerStatus = async (cust) => {
+        const nextIsActive = cust.status !== 'active';
+        setStatusUpdatingId(cust.id);
+        try {
+            const { data } = await adminApi.updateCustomerStatus(cust.id, nextIsActive);
+            if (data.success) {
+                const nextStatus = nextIsActive ? 'active' : 'inactive';
+                setCustomers((prev) =>
+                    prev.map((c) => (c.id === cust.id ? { ...c, status: nextStatus } : c))
+                );
+                toast.success(`Customer ${cust.name || ''} marked as ${nextStatus}`);
+            } else {
+                toast.error(data.message || 'Failed to update customer status');
+            }
+        } catch (error) {
+            console.error('Error toggling customer status:', error);
+            toast.error(error.response?.data?.message || 'Failed to update customer status');
+        } finally {
+            setStatusUpdatingId(null);
         }
     };
 
@@ -305,23 +328,48 @@ const CustomerManagement = () => {
                                             ₹{(cust.totalSpent || 0).toLocaleString()}
                                         </td>
                                         <td className="ds-table-cell">
-                                            <Badge
-                                                variant={cust.status === 'active' ? 'success' : 'error'}
-                                                className="ds-badge"
-                                            >
-                                                {cust.status}
-                                            </Badge>
+                                            <div className="flex items-center gap-2.5">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleCustomerStatus(cust)}
+                                                    disabled={statusUpdatingId === cust.id}
+                                                    className={cn(
+                                                        "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                                                        cust.status === 'active' ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-slate-300 hover:bg-slate-400',
+                                                        statusUpdatingId === cust.id && 'opacity-60 cursor-not-allowed'
+                                                    )}
+                                                    title={cust.status === 'active' ? 'Click to Deactivate Customer' : 'Click to Activate Customer'}
+                                                >
+                                                    <span
+                                                        className={cn(
+                                                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out flex items-center justify-center",
+                                                            cust.status === 'active' ? 'translate-x-5' : 'translate-x-0'
+                                                        )}
+                                                    >
+                                                        {statusUpdatingId === cust.id ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin text-slate-500" />
+                                                        ) : (
+                                                            <span className={cn("h-1.5 w-1.5 rounded-full", cust.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400')} />
+                                                        )}
+                                                    </span>
+                                                </button>
+                                                <Badge
+                                                    variant={cust.status === 'active' ? 'success' : 'error'}
+                                                    className="ds-badge cursor-pointer select-none"
+                                                    onClick={() => handleToggleCustomerStatus(cust)}
+                                                >
+                                                    {cust.status}
+                                                </Badge>
+                                            </div>
                                         </td>
                                         <td className="ds-table-cell text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => navigate(`/ecs/quick-commerce/customers/${cust.id}`)}
                                                     className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
+                                                    title="View Profile"
                                                 >
                                                     <Eye className="ds-icon-sm" />
-                                                </button>
-                                                <button className="p-2 bg-gray-50 text-gray-400 rounded-lg hover:bg-gray-900 hover:text-white transition-all">
-                                                    <MoreVertical className="ds-icon-sm" />
                                                 </button>
                                             </div>
                                         </td>

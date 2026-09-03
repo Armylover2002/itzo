@@ -48,11 +48,13 @@ import {
   processRefund,
   getAdminCustomers,
   getAdminCustomerById,
+  updateAdminCustomerStatus,
   deleteAdminOrder,
   getAdminProducts,
   getAdminStats,
   rejectAdminSellerRequest,
   softDeleteAdminSeller,
+  updateAdminSellerStatus,
   getAdminSellerById,
   removeCategory,
   getCategoryDeleteImpact,
@@ -111,6 +113,8 @@ import {
 import { authMiddleware } from "../../../core/auth/auth.middleware.js";
 import { requireRoles } from "../../../core/roles/role.middleware.js";
 import { verifyAccessToken } from "../../../core/auth/token.util.js";
+import { FoodUser } from "../../../core/users/user.model.js";
+import { sendError } from "../../../utils/response.js";
 
 /**
  * Express 4 does not forward rejected promises from async handlers, so a throw
@@ -120,7 +124,7 @@ import { verifyAccessToken } from "../../../core/auth/token.util.js";
 const wrap = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
 
-const optionalAuth = (req, res, next) => {
+const optionalAuth = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ")
     ? authHeader.substring(7)
@@ -128,6 +132,13 @@ const optionalAuth = (req, res, next) => {
   if (token) {
     try {
       const decoded = verifyAccessToken(token);
+      const role = String(decoded.role || 'USER').toUpperCase();
+      if (role === 'USER' || role === 'CUSTOMER' || role === 'FOOD_USER') {
+        const doc = await FoodUser.findById(decoded.userId).select('isActive').lean();
+        if (doc && doc.isActive === false) {
+          return sendError(res, 401, 'User account is deactivated');
+        }
+      }
       req.user = { userId: decoded.userId, role: decoded.role };
     } catch (e) {
       // ignore guest
@@ -245,6 +256,11 @@ router.patch(
 );
 router.get("/admin/customers", ...adminOnly, getAdminCustomers);
 router.get("/admin/customers/:id", ...adminOnly, getAdminCustomerById);
+router.patch(
+  "/admin/customers/:id/status",
+  ...adminOnly,
+  wrap(updateAdminCustomerStatus),
+);
 router.get(
   "/admin/support-tickets",
   ...adminOnly,
@@ -271,6 +287,11 @@ router.put(
   ...adminOnly,
   sellerProfileUpload,
   updateAdminSellerProfile
+);
+router.patch(
+  "/admin/sellers/:id/status",
+  ...adminOnly,
+  wrap(updateAdminSellerStatus),
 );
 router.patch(
   "/admin/sellers/:id/soft-delete",

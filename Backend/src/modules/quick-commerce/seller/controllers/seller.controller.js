@@ -47,6 +47,7 @@ import {
   resolveSellerCategoryIds,
   syncSellerInventoryNotification,
 } from "../services/sellerCatalog.service.js";
+import { getActiveFeeSettings } from "../../admin/services/billing.service.js";
 
 const STATUS_LABELS = {
   pending: "Pending",
@@ -2378,6 +2379,16 @@ export const requestSellerWithdrawalController = async (req, res) => {
     ).toLowerCase();
     if (!amount) {
       return sendError(res, 400, "Enter a valid withdrawal amount");
+    }
+
+    const feeSettings = await getActiveFeeSettings();
+    const minW = Number(feeSettings?.minWithdrawal ?? 0);
+    const maxW = feeSettings?.maxWithdrawal != null ? Number(feeSettings.maxWithdrawal) : null;
+    if (minW > 0 && amount < minW) {
+      return sendError(res, 400, `Minimum withdrawal amount is ${currency(minW)}`);
+    }
+    if (maxW != null && maxW > 0 && amount > maxW) {
+      return sendError(res, 400, `Maximum withdrawal amount is ${currency(maxW)}`);
     }
 
     // Validate the requested payment method and its required fields

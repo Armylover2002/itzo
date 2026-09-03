@@ -20,7 +20,6 @@ const WithdrawalRequests = React.lazy(() => import("../pages/WithdrawalRequests"
 const SellerTransactions = React.lazy(() => import("../pages/SellerTransactions"))
 const CustomerManagement = React.lazy(() => import("../pages/CustomerManagement"))
 const CustomerDetail = React.lazy(() => import("../pages/CustomerDetail"))
-const FAQManagement = React.lazy(() => import("../pages/FAQManagement"))
 const OrdersList = React.lazy(() => import("../pages/OrdersList"))
 const OrderDetail = React.lazy(() => import("../pages/OrderDetail"))
 const SellerDetail = React.lazy(() => import("../pages/SellerDetail"))
@@ -68,7 +67,6 @@ function QuickCommerceAdminRoutesInner() {
       <Route path="/seller-transactions" element={<SellerTransactions />} />
       <Route path="/customers" element={<CustomerManagement />} />
       <Route path="/customers/:id" element={<CustomerDetail />} />
-      <Route path="/faqs" element={<FAQManagement />} />
       <Route path="/orders/:status" element={<OrdersList />} />
       <Route path="/orders/view/:orderId" element={<OrderDetail />} />
       <Route path="/billing" element={<BillingCharges />} />

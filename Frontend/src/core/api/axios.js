@@ -181,27 +181,30 @@ axiosInstance.interceptors.response.use(
                         : path.startsWith('/hrms')
                             ? 'hrms'
                             : 'customer';
+            const isDeactivated = error.response?.data?.message === 'User account is deactivated' ||
+                error.response?.data?.code === 'ACCOUNT_DEACTIVATED';
+
+            const isCustomerEndpoint =
+                requestUrl.startsWith('/user') ||
+                requestUrl.startsWith('/customer') ||
+                requestUrl.startsWith('/auth') ||
+                (requestUrl.startsWith('/quick-commerce') && !requestUrl.includes('/admin') && !requestUrl.includes('/seller'));
+
             const requestModule = requestUrl.startsWith('/seller')
                 ? 'seller'
-                : requestUrl.startsWith('/ecs')
+                : requestUrl.startsWith('/ecs') || requestUrl.includes('/admin')
                     ? 'admin'
                     : requestUrl.startsWith('/delivery')
                         ? 'delivery'
                         : requestUrl.startsWith('/hrms')
                             ? 'hrms'
-                            : requestUrl.startsWith('/user') || requestUrl.startsWith('/customer') || requestUrl.startsWith('/auth')
+                            : isCustomerEndpoint
                                 ? 'customer'
                                 : null;
 
             // Prevent cross-module (and unclassifiable) 401s from logging out the
-            // active session. Many real endpoints (e.g. /food/admin/*,
-            // /quick-commerce/admin/*) don't start with any of the recognized
-            // prefixes, so requestModule comes back null for them — that must
-            // NOT be treated as "same module as the current page", or a stale
-            // token on any of those calls force-logs-out the whole session.
-            // Only log out when we're confident the failing request actually
-            // belongs to the module currently being viewed.
-            if (requestModule !== currentModule) {
+            // active session, UNLESS the account is explicitly deactivated.
+            if (!isDeactivated && requestModule !== currentModule) {
                 return Promise.reject(error);
             }
 
@@ -212,8 +215,14 @@ axiosInstance.interceptors.response.use(
                 hrms: ['auth_hrms'],
                 customer: ['auth_customer', 'user_accessToken', 'accessToken', 'token'],
             };
-            const keysToClear = moduleStorageKeys[currentModule] || ['token'];
+            const targetModule = isDeactivated ? 'customer' : currentModule;
+            const keysToClear = moduleStorageKeys[targetModule] || ['token'];
             keysToClear.forEach((key) => localStorage.removeItem(key));
+            try {
+                window.dispatchEvent(new Event('userAuthChanged'));
+            } catch {
+                // ignore
+            }
 
             // Use hash navigation if in a native-like shell (HashRouter),
             // otherwise use standard navigation (BrowserRouter).

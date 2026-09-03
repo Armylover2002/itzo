@@ -67,6 +67,30 @@ const publicProductFilter = {
   ],
 };
 
+/**
+ * Sellers that must not appear on the storefront (switched off, not approved, or
+ * deleted). Their products stay in the catalogue but are hidden from customers.
+ * Admin-owned products carry no sellerId and are never affected by this.
+ */
+const getHiddenSellerIds = async () => {
+  const hidden = await Seller.find({
+    $or: [{ isActive: false }, { approved: false }, { isDeleted: true }],
+  })
+    .select('_id')
+    .lean();
+  return hidden.map((seller) => seller._id);
+};
+
+/**
+ * Adds "not from a hidden seller" to a product query. Products without a seller
+ * (admin catalogue) still match, because $nin also matches null/missing values.
+ */
+const withVisibleSellerFilter = async (query = {}) => {
+  const hiddenSellerIds = await getHiddenSellerIds();
+  if (!hiddenSellerIds.length) return query;
+  return { ...query, sellerId: { $nin: hiddenSellerIds } };
+};
+
 const mapCategory = (category) => ({
   id: category._id,
   _id: category._id,
@@ -151,7 +175,7 @@ export const getHomeData = async (req, res) => {
 
   const [categories, products, settings, banners] = await Promise.all([
     getQuickCategories(),
-    QuickProduct.find(publicProductFilter).sort({ createdAt: -1 }).limit(18).lean(),
+    QuickProduct.find(await withVisibleSellerFilter(publicProductFilter)).sort({ createdAt: -1 }).limit(18).lean(),
     getQuickSettings(),
     getPublicQuickBanners({
       zoneId,
@@ -351,7 +375,7 @@ export const getProducts = async (req, res) => {
       sortOption = { price: 1, createdAt: -1 };
   }
   
-  const products = await QuickProduct.find(query).sort(sortOption).limit(parsedLimit).lean();
+  const products = await QuickProduct.find(await withVisibleSellerFilter(query)).sort(sortOption).limit(parsedLimit).lean();
   const sellerMap = await buildSellerMap(products);
 
   return res.json({
@@ -366,7 +390,9 @@ export const getProductById = async (req, res) => {
   setPublicCache(res, 600); // 10 minutes cache
   await ensureQuickCommerceSeedData();
 
-  const product = await QuickProduct.findOne({ _id: req.params.productId, ...publicProductFilter }).lean();
+  const product = await QuickProduct.findOne(
+    await withVisibleSellerFilter({ _id: req.params.productId, ...publicProductFilter }),
+  ).lean();
 
   if (!product) {
     return res.status(404).json({ success: false, message: 'Product not found' });

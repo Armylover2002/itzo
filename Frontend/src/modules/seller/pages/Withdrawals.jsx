@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import Button from '@shared/components/ui/Button';
@@ -41,6 +41,32 @@ const Withdrawals = () => {
     const [ifscCode, setIfscCode] = useState('');
     const [qrPreview, setQrPreview] = useState('');
     const [qrBase64, setQrBase64] = useState('');
+    const [minWithdrawal, setMinWithdrawal] = useState(null);
+    const [maxWithdrawal, setMaxWithdrawal] = useState(null);
+    const [limitsLoading, setLimitsLoading] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        const loadLimits = async () => {
+            try {
+                setLimitsLoading(true);
+                const resp = await sellerApi.getWithdrawalLimits();
+                const settings = resp?.data?.result;
+                if (!cancelled) {
+                    const minV = settings?.minWithdrawal;
+                    const maxV = settings?.maxWithdrawal;
+                    setMinWithdrawal(minV != null && Number(minV) > 0 ? Number(minV) : null);
+                    setMaxWithdrawal(maxV != null && Number(maxV) > 0 ? Number(maxV) : null);
+                }
+            } catch (err) {
+                // silent — limits are just UX hints; backend always enforces
+            } finally {
+                if (!cancelled) setLimitsLoading(false);
+            }
+        };
+        loadLimits();
+        return () => { cancelled = true; };
+    }, []);
 
     const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
     const withdrawalHistory = ledger.filter((t) => (t.type || '').toString() === 'Withdrawal');
@@ -132,9 +158,22 @@ const Withdrawals = () => {
         e.preventDefault();
         const settled = Number(data?.balances?.settledBalance ?? 0);
         const available = Math.max(0, settled);
+        const amtNum = parseFloat(amount);
 
-        if (!amount || parseFloat(amount) <= 0 || parseFloat(amount) > available) {
-            toast.error(`Please enter a valid amount within your available balance (₹${available}).`);
+        if (!amount || amtNum <= 0) {
+            toast.error('Please enter a valid withdrawal amount.');
+            return;
+        }
+        if (minWithdrawal != null && amtNum < minWithdrawal) {
+            toast.error(`Minimum withdrawal amount is ₹${minWithdrawal.toLocaleString()}.`);
+            return;
+        }
+        if (maxWithdrawal != null && amtNum > maxWithdrawal) {
+            toast.error(`Maximum withdrawal amount is ₹${maxWithdrawal.toLocaleString()}.`);
+            return;
+        }
+        if (amtNum > available) {
+            toast.error(`Insufficient balance. Available: ₹${available.toLocaleString()}.`);
             return;
         }
 
@@ -214,6 +253,34 @@ const Withdrawals = () => {
                     </button>
                 </div>
             </BlurFade>
+
+            {/* Withdrawal Limits Info Banner */}
+            {(minWithdrawal != null || maxWithdrawal != null) && (
+                <BlurFade delay={0.18}>
+                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#fde8ea] bg-[#fef4f4]/70 px-5 py-4 shadow-sm">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary shadow-sm ring-1 ring-slate-100">
+                            <Info className="h-4.5 w-4.5" />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                            {minWithdrawal != null && (
+                                <p className="text-xs font-black text-slate-700 uppercase tracking-widest">
+                                    Minimum&nbsp;Withdrawal&nbsp;
+                                    <span className="text-primary">₹{minWithdrawal.toLocaleString()}</span>
+                                </p>
+                            )}
+                            {minWithdrawal != null && maxWithdrawal != null && (
+                                <span className="h-3 w-px rounded-full bg-[#f9c7c9]" />
+                            )}
+                            {maxWithdrawal != null && (
+                                <p className="text-xs font-black text-slate-700 uppercase tracking-widest">
+                                    Maximum&nbsp;Withdrawal&nbsp;
+                                    <span className="text-primary">₹{maxWithdrawal.toLocaleString()}</span>
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </BlurFade>
+            )}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -360,6 +427,17 @@ const Withdrawals = () => {
                         </div>
                     </div>
 
+                    {(minWithdrawal != null || maxWithdrawal != null) && (
+                        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-amber-100 bg-amber-50/70 px-4 py-3">
+                            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                            <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">
+                                {minWithdrawal != null && <>Min&nbsp;₹{minWithdrawal.toLocaleString()}</>}
+                                {minWithdrawal != null && maxWithdrawal != null && <> • </>}
+                                {maxWithdrawal != null && <>Max&nbsp;₹{maxWithdrawal.toLocaleString()}</>}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="space-y-4">
                         <div>
                             <label className="text-xs font-black text-slate-600 uppercase tracking-widest mb-2 block ml-1">Enter Amount</label>
@@ -369,10 +447,26 @@ const Withdrawals = () => {
                                     type="number"
                                     value={amount}
                                     onChange={(e) => setAmount(e.target.value)}
-                                    placeholder="0.00"
+                                    placeholder={
+                                        minWithdrawal != null && maxWithdrawal != null
+                                            ? `${minWithdrawal.toLocaleString()} - ${maxWithdrawal.toLocaleString()}`
+                                            : minWithdrawal != null
+                                            ? `Min ${minWithdrawal.toLocaleString()}`
+                                            : maxWithdrawal != null
+                                            ? `Max ${maxWithdrawal.toLocaleString()}`
+                                            : '0.00'
+                                    }
                                     className="w-full pl-12 pr-6 py-4 bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary rounded-2xl text-xl font-black outline-none transition-all placeholder:text-slate-200"
                                 />
                             </div>
+                            {(minWithdrawal != null || maxWithdrawal != null) && (
+                                <p className="mt-2 text-[11px] font-semibold text-slate-500 ml-1 flex items-center gap-1.5">
+                                    <span className="w-1 h-1 rounded-full bg-slate-300" />
+                                    {minWithdrawal != null && <>Minimum <span className="text-primary font-black">₹{minWithdrawal.toLocaleString()}</span></>}
+                                    {minWithdrawal != null && maxWithdrawal != null && <>&nbsp;·&nbsp;</>}
+                                    {maxWithdrawal != null && <>Maximum <span className="text-primary font-black">₹{maxWithdrawal.toLocaleString()}</span></>}
+                                </p>
+                            )}
                         </div>
 
                         {/* Payment Method Selector */}

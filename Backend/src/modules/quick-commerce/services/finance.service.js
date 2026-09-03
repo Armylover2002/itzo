@@ -356,7 +356,7 @@ export async function getQuickCommerceSellerWithdrawals({
 
   const [items, total] = await Promise.all([
     SellerTransaction.find(filter)
-      .populate("sellerId", "name shopName phone phoneLast10 email bankInfo")
+      .populate("sellerId", "name shopName phone phoneLast10 email bankInfo shopImage")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(safeLimit)
@@ -381,6 +381,7 @@ export async function getQuickCommerceSellerWithdrawals({
           shopName: seller.shopName || seller.name || "Seller",
           phone: seller.phoneLast10 || seller.phone || "",
           email: seller.email || "",
+          shopImage: seller.shopImage || "",
         },
         bankDetails: item.bankDetails || {
           bankName: seller.bankInfo?.bankName || "",

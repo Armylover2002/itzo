@@ -17,6 +17,8 @@ const quickFeeSettingsSchema = new mongoose.Schema(
     platformFee: { type: Number, min: 0 },
     gstRate: { type: Number, min: 0, max: 100 },
     returnDeliveryCommission: { type: Number, min: 0, default: 0 },
+    minWithdrawal: { type: Number, min: 0 },
+    maxWithdrawal: { type: Number, min: 0 },
     isActive: { type: Boolean, default: true, index: true },
   },
   { collection: 'quick_fee_settings', timestamps: true },

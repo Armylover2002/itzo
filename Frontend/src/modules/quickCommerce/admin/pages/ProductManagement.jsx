@@ -9,6 +9,7 @@ import {
     HiOutlineMagnifyingGlass,
     HiOutlineFunnel,
     HiOutlineTrash,
+    HiOutlinePower,
     HiOutlinePencilSquare,
     HiOutlinePhoto,
     HiOutlineArchiveBox,
@@ -43,8 +44,7 @@ const ProductManagement = () => {
     const [filterStatus, setFilterStatus] = useState('all'); // Added filterStatus
 
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [itemToDelete, setItemToDelete] = useState(null);
+    const [togglingId, setTogglingId] = useState(null);
     const [editingItem, setEditingItem] = useState(null);
     const [modalTab, setModalTab] = useState('general');
 
@@ -173,14 +173,25 @@ const ProductManagement = () => {
         }
     };
 
-    const confirmDelete = async () => {
+    // Products are switched on/off rather than deleted, so a hidden product keeps
+    // its history and can be brought back at any time.
+    const toggleProductStatus = async (product) => {
+        const nextStatus = product.status === 'active' ? 'inactive' : 'active';
+        setTogglingId(product._id);
         try {
-            await adminApi.deleteProduct(itemToDelete._id);
-            toast.success('Product deleted');
-            setIsDeleteModalOpen(false);
+            const payload = new FormData();
+            payload.append('status', nextStatus);
+            await adminApi.updateProduct(product._id, payload);
+            toast.success(
+                nextStatus === 'active'
+                    ? `"${product.name}" is now visible to customers`
+                    : `"${product.name}" is hidden from customers`,
+            );
             fetchProducts(page);
         } catch (error) {
-            toast.error('Failed to delete product');
+            toast.error(error.response?.data?.message || 'Could not change the status');
+        } finally {
+            setTogglingId(null);
         }
     };
 
@@ -492,10 +503,20 @@ const ProductManagement = () => {
                                                 <HiOutlinePencilSquare className="h-3.5 w-3.5" />
                                             </button>
                                             <button
-                                                onClick={() => (setItemToDelete(p), setIsDeleteModalOpen(true))}
-                                                className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all text-gray-400 shadow-sm ring-1 ring-gray-100"
+                                                onClick={() => toggleProductStatus(p)}
+                                                disabled={togglingId === p._id}
+                                                title={
+                                                    p.status === 'active'
+                                                        ? 'Hide from customers'
+                                                        : 'Show to customers'
+                                                }
+                                                className={`p-1.5 rounded-lg transition-all shadow-sm ring-1 ring-gray-100 disabled:opacity-40 ${
+                                                    p.status === 'active'
+                                                        ? 'text-emerald-600 hover:bg-emerald-50'
+                                                        : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+                                                }`}
                                             >
-                                                <HiOutlineTrash className="h-3.5 w-3.5" />
+                                                <HiOutlinePower className="h-3.5 w-3.5" />
                                             </button>
                                         </div>
                                     </td>
@@ -941,40 +962,6 @@ const ProductManagement = () => {
                     </div>
                 )}
             </AnimatePresence>
-            {/* Delete Confirmation Modal */}
-            <Modal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                title="Confirm Deletion"
-                size="sm"
-                footer={
-                    <>
-                        <button
-                            onClick={() => setIsDeleteModalOpen(false)}
-                            className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors"
-                        >
-                            CANCEL
-                        </button>
-                        <button
-                            onClick={confirmDelete}
-                            className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-rose-100 hover:bg-rose-700 transition-all active:scale-95"
-                        >
-                            DELETE PRODUCT
-                        </button>
-                    </>
-                }
-            >
-                <div className="flex flex-col items-center text-center py-4">
-                    <div className="h-16 w-16 bg-rose-50 rounded-full flex items-center justify-center mb-4">
-                        <HiOutlineExclamationCircle className="h-10 w-10 text-rose-500" />
-                    </div>
-                    <h3 className="text-lg font-black text-slate-900 mb-2 uppercase tracking-tight">Delete Product?</h3>
-                    <p className="text-sm text-slate-500 font-medium">
-                        Are you sure you want to delete <span className="font-bold text-slate-900">"{itemToDelete?.name}"</span>?
-                        This action cannot be undone.
-                    </p>
-                </div>
-            </Modal>
 
             {/* Viewing Variants Modal */}
             <Modal

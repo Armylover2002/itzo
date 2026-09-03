@@ -95,11 +95,16 @@ export const requestUserOtp = async (phone) => {
     throw new ValidationError("Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.");
   }
 
-  // Block OTP generation for deleted users
-  const user = await FoodUser.findOne({ phone: digits, role: 'USER' }).select('isDeleted name').lean();
+  // Block OTP generation for deleted and deactivated users
+  const user = await FoodUser.findOne({ phone: digits, role: 'USER' }).select('isDeleted isActive name').lean();
   if (user && user.isDeleted) {
     const err = new AuthError("Your account has been deleted.");
     err.code = "ACCOUNT_DELETED";
+    throw err;
+  }
+  if (user && user.isActive === false) {
+    const err = new AuthError("Your account has been deactivated. Please contact support.");
+    err.code = "ACCOUNT_DEACTIVATED";
     throw err;
   }
 

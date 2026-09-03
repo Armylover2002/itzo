@@ -101,6 +101,9 @@ export const sellerApi = {
   requestWithdrawal: (data = {}) =>
     call(axiosInstance.post("/seller/withdrawals", data)),
 
+  getWithdrawalLimits: () =>
+    call(axiosInstance.get("/quick-commerce/billing/settings")),
+
   getReturns: () => call(axiosInstance.get("/seller/returns")),
 
   approveReturn: (orderId, data = {}) =>

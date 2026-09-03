@@ -61,7 +61,6 @@ export const quickAdminSidebarMenu = [
       { type: "link", label: "Money Requests", permissionKey: "withdrawals", path: "/ecs/quick-commerce/withdrawals", icon: "CreditCard" },
       { type: "link", label: "Seller Payments", permissionKey: "seller_payments", path: "/ecs/quick-commerce/seller-transactions", icon: "Receipt" },
       { type: "link", label: "Customers", permissionKey: "customers", path: "/ecs/quick-commerce/customers", icon: "Users" },
-      { type: "link", label: "FAQs", permissionKey: "faqs", path: "/ecs/quick-commerce/faqs", icon: "MessageSquare" },
       {
         type: "expandable",
         label: "Orders",

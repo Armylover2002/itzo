@@ -121,7 +121,7 @@ const CustomerAuth = () => {
             setTimer(30);
             toast.success('OTP sent!');
         } catch (error) {
-            toast.error('Failed to send OTP');
+            toast.error(error.response?.data?.message || 'Failed to send OTP');
         } finally {
             setIsLoading(false);
         }

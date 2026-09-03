@@ -127,6 +127,29 @@ export const AuthProvider = ({ children }) => {
         };
 
         fetchProfile();
+
+        // For customer sessions, validate session periodically and when tab becomes active
+        // so that deactivated accounts are logged out in real-time
+        let interval;
+        if (token && currentRole === 'customer') {
+            interval = setInterval(() => {
+                if (!document.hidden) {
+                    fetchProfile();
+                }
+            }, 15000);
+        }
+
+        const handleVisibility = () => {
+            if (!document.hidden && token && currentRole === 'customer') {
+                fetchProfile();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            if (interval) clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, [token, currentRole]);
 
     const login = (userData) => {
