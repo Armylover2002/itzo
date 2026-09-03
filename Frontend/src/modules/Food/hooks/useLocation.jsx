@@ -242,32 +242,30 @@ const reverseGeocodeDirect = async (latitude, longitude, forceFresh = false) => 
   globalReverseGeocodeLastCoords = { latitude, longitude }
 
   const run = (async () => {
-    // 1. Try Google Geocoding REST API if the API key is available
-    const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-    if (googleApiKey) {
-      try {
-        const controller = new AbortController()
-        const abortTimeout = setTimeout(() => controller.abort(), 4000) // 4s timeout for Google
-
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleApiKey}&language=en`
-        const res = await fetch(url, { signal: controller.signal })
-        clearTimeout(abortTimeout)
-
-        if (res.ok) {
-          const data = await res.json()
-          if (data.status === "OK" && data.results && data.results[0]) {
-            const parsed = buildGoogleAddress(data, latitude, longitude)
-            if (parsed && parsed.address && parsed.address.trim() !== "") {
-              globalReverseGeocodeLastSuccess = parsed
-              return parsed
-            }
-          } else {
-            debugWarn("Google Geocoding API returned status:", data.status)
-          }
+    // 1. Try secure backend reverse-geocode endpoint (keeps Google API key hidden on server)
+    try {
+      const response = await locationAPI.reverseGeocode(latitude, longitude)
+      if (response?.data?.success && response.data.data) {
+        const d = response.data.data
+        const parsed = {
+          area: d.area || d.neighborhood || d.city || "",
+          city: d.city || "Indore",
+          state: d.state || "Madhya Pradesh",
+          country: d.country || "India",
+          postalCode: d.pincode || d.postalCode || "",
+          address: d.formattedAddress || d.shortAddress || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+          formattedAddress: d.formattedAddress || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`,
+          shortAddress: d.shortAddress || d.area || d.city || "",
+          latitude,
+          longitude,
         }
-      } catch (googleErr) {
-        debugWarn("Google Geocoding failed, falling back to Nominatim:", googleErr.message)
+        if (parsed.address && parsed.address.trim() !== "") {
+          globalReverseGeocodeLastSuccess = parsed
+          return parsed
+        }
       }
+    } catch (apiErr) {
+      debugWarn("Backend reverse geocoding failed, falling back to Nominatim:", apiErr.message)
     }
 
     // 2. Try Nominatim as a fallback for detailed street-level data

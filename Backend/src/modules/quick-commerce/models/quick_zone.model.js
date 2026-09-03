@@ -70,7 +70,6 @@ const quickZoneSchema = new mongoose.Schema(
     },
   },
   {
-    collection: 'quick_zone',
     timestamps: true,
   },
 );

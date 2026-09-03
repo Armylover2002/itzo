@@ -40,7 +40,7 @@ export const customerApi = {
   },
   requestAccountRecovery: (data) => api.auth.requestAccountRecovery(data.phone, data.otp),
   getProfile: () =>
-    axiosInstance.get("/auth/me", withQuickSession()).then((res) => {
+    getWithDedupe("/auth/me", {}, { ttl: 5000, ...withQuickSession() }).then((res) => {
       const user =
         res?.data?.data?.user ??
         res?.data?.user ??
@@ -56,7 +56,7 @@ export const customerApi = {
       };
     }),
 
-  getCart: () => axiosInstance.get("/quick-commerce/cart", withQuickSession()),
+  getCart: () => quickGetWithDedupe("/quick-commerce/cart", {}, { ttl: 5000 }),
   addToCart: (data) => {
     invalidateCache("/quick-commerce/cart");
     return axiosInstance.post("/quick-commerce/cart/add", data, withQuickSession());
@@ -101,6 +101,11 @@ export const customerApi = {
   addAddress: (data) => axiosInstance.post("/quick-commerce/addresses", data, withQuickSession()),
   updateAddress: (id, data) => axiosInstance.put(`/quick-commerce/addresses/${id}`, data, withQuickSession()),
   deleteAddress: (id) => axiosInstance.delete(`/quick-commerce/addresses/${id}`, withQuickSession()),
+
+  reverseGeocode: (lat, lng, options = {}) =>
+    quickGetWithDedupe("/quick-commerce/location/reverse-geocode", { lat, lng }, options),
+  geocode: (address, options = {}) =>
+    quickGetWithDedupe("/quick-commerce/location/geocode", { address }, options),
 
   getStores: (params) => quickGetWithDedupe("/quick-commerce/stores", params),
   getStoreDetails: (storeId) => quickGetWithDedupe(`/quick-commerce/stores/${storeId}`, {}),

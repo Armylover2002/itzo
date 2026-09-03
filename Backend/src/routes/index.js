@@ -30,7 +30,7 @@ import { getGlobalSettings as getPublicSettings } from '../modules/common/contro
 import jobApplicationRoutes from '../modules/food/admin/routes/jobApplication.route.js';
 import licensingRoutes from '../modules/food/licensing/routes/licensingRoutes.js';
 import hrmsRoutes from '../modules/hrms/routes/index.routes.js';
-
+import { reverseGeocode, geocodeAddress } from '../modules/quick-commerce/controllers/location.controller.js';
 
 const router = express.Router();
 
@@ -78,7 +78,10 @@ router.use('/v1/food/orders', authMiddleware, requireRoles('USER'), orderUserRou
 router.use('/v1/food/payments', authMiddleware, paymentRoutes);
 router.use('/v1/payments/webhook', webhookRoutes);
 router.use('/v1/fcm-tokens', fcmRoutes);
-router.use('/fcm-tokens', fcmRoutes);
+// Location reverse-geocoding and geocoding public proxies
+router.get('/v1/location/reverse-geocode', reverseGeocode);
+router.get('/v1/location/geocode', geocodeAddress);
+
 router.use('/v1/quick-commerce/returns', quickCommerceReturnRoutes);
 router.use('/v1/quick-commerce', quickCommerceRoutes);
 router.use('/v1/seller', sellerRoutes);

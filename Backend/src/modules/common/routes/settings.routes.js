@@ -6,8 +6,8 @@ import { requireRoles } from '../../../core/roles/role.middleware.js';
 
 const router = express.Router();
 
-// Public endpoint for app logo/theme
-router.get('/public', settingsController.getGlobalSettings);
+// Public endpoint for app logo/theme (sensitive admin-only fields stripped)
+router.get('/public', settingsController.getPublicGlobalSettings);
 
 // Protected admin endpoints
 router.get('/', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), settingsController.getGlobalSettings);

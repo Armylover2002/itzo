@@ -197,18 +197,49 @@ export const supportAPI = {
     }),
 };
 
+/** Single in-flight + short cache for notifications inbox - avoids duplicate calls. */
+let inboxInFlight = null;
+let inboxCached = null;
+let inboxCacheTime = 0;
+let inboxCacheKey = "";
+const INBOX_CACHE_MS = 3000;
+
+const clearInboxCache = () => {
+  inboxCached = null;
+  inboxCacheTime = 0;
+};
+
+const getInboxOnce = (params = {}, config = {}) => {
+  const paramsKey = JSON.stringify(params || {});
+  const now = Date.now();
+  if (inboxCached && paramsKey === inboxCacheKey && now - inboxCacheTime < INBOX_CACHE_MS) {
+    return Promise.resolve(inboxCached);
+  }
+  if (inboxInFlight && paramsKey === inboxCacheKey) {
+    return inboxInFlight;
+  }
+  inboxCacheKey = paramsKey;
+  inboxInFlight = apiClient
+    .get("/food/notifications/inbox", { params, ...config })
+    .then((res) => {
+      inboxCached = res;
+      inboxCacheTime = Date.now();
+      return res;
+    })
+    .finally(() => {
+      inboxInFlight = null;
+    });
+  return inboxInFlight;
+};
+
 export const notificationAPI = {
-  getInbox: (params = {}, config = {}) =>
-    apiClient.get("/food/notifications/inbox", {
-      params,
-      ...config,
-    }),
+  getInbox: (params = {}, config = {}) => getInboxOnce(params, config),
   markAsRead: (id, config = {}) =>
-    apiClient.patch(`/food/notifications/${String(id)}/read`, {}, config),
+    apiClient.patch(`/food/notifications/${String(id)}/read`, {}, config).finally(clearInboxCache),
   dismiss: (id, config = {}) =>
-    apiClient.delete(`/food/notifications/${String(id)}`, config),
+    apiClient.delete(`/food/notifications/${String(id)}`, config).finally(clearInboxCache),
   dismissAll: (config = {}) =>
-    apiClient.delete("/food/notifications/inbox/all", config),
+    apiClient.delete("/food/notifications/inbox/all", config).finally(clearInboxCache),
 };
 
 /** Admin API - new backend only (GET /auth/me, PATCH /auth/admin/profile, POST /auth/admin/change-password) */
@@ -2434,7 +2465,16 @@ export const userAPI = {
   getFoodWishlist: () => apiClient.get("/food/user/wishlist", { contextModule: "user" }),
   toggleFoodWishlist: (body) => apiClient.post("/food/user/wishlist/toggle", body ?? {}, { contextModule: "user" }),
 };
-export const locationAPI = createStubAPI();
+export const locationAPI = {
+  reverseGeocode: (lat, lng) =>
+    apiClient.get("/location/reverse-geocode", {
+      params: { lat, lng },
+    }),
+  geocode: (address) =>
+    apiClient.get("/location/geocode", {
+      params: { address },
+    }),
+};
 
 export const sellerAPI = {
   saveFcmToken: (token, platform = "web") => {
