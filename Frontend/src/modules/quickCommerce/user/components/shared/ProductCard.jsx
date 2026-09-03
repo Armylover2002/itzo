@@ -4,6 +4,7 @@ import { Heart, Plus, Minus, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWishlist } from "../../context/WishlistContext";
 import { useCart } from "../../context/CartContext";
+import { useProductDetail } from "../../context/ProductDetailContext";
 import { useToast } from "@shared/components/ui/Toast";
 import { useCartAnimation } from "../../context/CartAnimationContext";
 import { resolveQuickImageUrl } from "../../utils/image";
@@ -14,52 +15,54 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getQuickProductPath } from "../../utils/routes";
 import { useSettings } from "@core/context/SettingsContext";
 
-const ScallopedBadge = ({ text, className }) => (
-  <div className={cn("relative w-9 h-9 flex items-center justify-center", className)}>
-    <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full drop-shadow-[0_1px_3px_rgba(168,85,247,0.4)]">
-      <path
-        fill="#A364FF"
-        d="M50 0 C 54 0, 56 4, 61 5 C 66 6, 70 2, 75 5 C 80 8, 81 14, 84 18 C 88 22, 94 23, 96 28 C 98 33, 94 38, 94 43 C 94 48, 98 52, 98 57 C 98 62, 94 66, 92 71 C 90 76, 92 82, 88 86 C 84 90, 78 89, 73 92 C 68 95, 66 100, 61 100 C 56 100, 53 96, 48 96 C 43 96, 40 100, 35 99 C 30 98, 28 92, 23 90 C 18 88, 12 89, 9 84 C 6 79, 10 74, 9 69 C 8 64, 2 61, 2 56 C 2 51, 6 47, 7 42 C 8 37, 4 31, 6 26 C 8 21, 14 20, 18 16 C 22 12, 24 6, 29 4 C 34 2, 38 6, 43 5 C 48 4, 49 0, 53 0"
-      />
-    </svg>
-    <div className="relative z-10 text-white font-black flex flex-col items-center justify-center leading-none text-center">
-      {text.includes('%') ? (
-        <>
-          <span className="text-[9px] leading-tight">{text.split(' ')[0]}</span>
-          <span className="text-[6px] opacity-90 tracking-tighter uppercase">{text.split(' ')[1] || 'OFF'}</span>
-        </>
-      ) : (
-        <span className="text-[8px] uppercase tracking-tighter">{text}</span>
-      )}
+const ScallopedBadge = ({ text, className }) => {
+  if (!text) return null;
+  const strText = String(text);
+  return (
+    <div className={cn("relative w-9 h-9 flex items-center justify-center", className)}>
+      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full drop-shadow-[0_1px_3px_rgba(168,85,247,0.4)]">
+        <path
+          fill="#A364FF"
+          d="M50 0 C 54 0, 56 4, 61 5 C 66 6, 70 2, 75 5 C 80 8, 81 14, 84 18 C 88 22, 94 23, 96 28 C 98 33, 94 38, 94 43 C 94 48, 98 52, 98 57 C 98 62, 94 66, 92 71 C 90 76, 92 82, 88 86 C 84 90, 78 89, 73 92 C 68 95, 66 100, 61 100 C 56 100, 53 96, 48 96 C 43 96, 40 100, 35 99 C 30 98, 28 92, 23 90 C 18 88, 12 89, 9 84 C 6 79, 10 74, 9 69 C 8 64, 2 61, 2 56 C 2 51, 6 47, 7 42 C 8 37, 4 31, 6 26 C 8 21, 14 20, 18 16 C 22 12, 24 6, 29 4 C 34 2, 38 6, 43 5 C 48 4, 49 0, 53 0"
+        />
+      </svg>
+      <div className="relative z-10 text-white font-black flex flex-col items-center justify-center leading-none text-center">
+        {strText.includes('%') ? (
+          <>
+            <span className="text-[9px] leading-tight">{strText.split(' ')[0]}</span>
+            <span className="text-[6px] opacity-90 tracking-tighter uppercase">{strText.split(' ')[1] || 'OFF'}</span>
+          </>
+        ) : (
+          <span className="text-[8px] uppercase tracking-tighter">{strText}</span>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const ProductCard = React.memo(
-  ({ product, badge, className, compact = false, neutralBg = false, curvedInfo = false }) => {
+  ({ product, badge, className, compact = false, neutralBg = false, curvedInfo = false, isStoreClosed = false }) => {
+    const isClosed = isStoreClosed || product.isShopOpen === false || product.seller?.isShopOpen === false;
     const navigate = useNavigate();
     const { toggleWishlist: toggleWishlistGlobal, isInWishlist } =
       useWishlist();
-    const { cart, addToCart, updateQuantity, removeFromCart } = useCart();
+    const { cart, addToCart, updateQuantity, removeFromCart, getCartItemKey, getItemCartKey } = useCart();
+    const { openProduct } = useProductDetail();
     const { showToast } = useToast();
     const { animateAddToCart, animateRemoveFromCart } = useCartAnimation();
 
     const [showHeartPopup, setShowHeartPopup] = React.useState(false);
     const imageRef = React.useRef(null);
 
-    const getComparableProductId = React.useCallback(
-      (value) => String(value ?? "").split("::")[0],
-      [],
-    );
+    // Cards default to the first variant — a picker (the detail sheet) only
+    // opens when there's more than one to choose from.
+    const defaultVariant = Array.isArray(product.variants) ? product.variants[0] : null;
+    const hasMultipleVariants = Array.isArray(product.variants) && product.variants.length > 1;
+    const cardCartKey = getCartItemKey(product, defaultVariant);
 
     const cartItem = React.useMemo(
-      () =>
-        cart.find(
-          (item) =>
-            getComparableProductId(item.productId || item.itemId || item.id || item._id) ===
-            getComparableProductId(product.id || product._id),
-        ),
-      [cart, getComparableProductId, product.id, product._id],
+      () => cart.find((item) => getItemCartKey(item) === cardCartKey),
+      [cart, getItemCartKey, cardCartKey],
     );
     const quantity = cartItem ? cartItem.quantity : 0;
     const isWishlisted = isInWishlist(product.id || product._id);
@@ -98,7 +101,17 @@ const ProductCard = React.memo(
       (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const stock = Number(product.stock ?? Infinity);
+        if (isClosed) {
+          showToast("This store is currently closed. Cannot order products now.", "error");
+          return;
+        }
+        // Multiple variants — let the customer pick one in the detail sheet
+        // instead of silently adding the default.
+        if (hasMultipleVariants) {
+          openProduct(product);
+          return;
+        }
+        const stock = Number(defaultVariant?.stock ?? product.stock ?? Infinity);
         if (stock <= 0) {
           showToast("This product is out of stock", "error");
           return;
@@ -110,23 +123,23 @@ const ProductCard = React.memo(
             resolvedSrc,
           );
         }
-        addToCart(product);
+        addToCart(product, defaultVariant);
       },
-      [animateAddToCart, product, addToCart],
+      [animateAddToCart, product, addToCart, hasMultipleVariants, defaultVariant, openProduct],
     );
 
     const handleIncrement = React.useCallback(
       (e) => {
         e.preventDefault();
         e.stopPropagation();
-        const stock = Number(product.stock ?? Infinity);
+        const stock = Number(defaultVariant?.stock ?? product.stock ?? Infinity);
         if (quantity >= stock) {
           showToast(`Only ${stock} in stock`, "error");
           return;
         }
-        updateQuantity(product.id || product._id, 1);
+        updateQuantity(cardCartKey, 1);
       },
-      [updateQuantity, product.id, product._id],
+      [updateQuantity, cardCartKey, quantity, defaultVariant, product.stock],
     );
 
     const handleDecrement = React.useCallback(
@@ -136,9 +149,9 @@ const ProductCard = React.memo(
 
         if (quantity === 1) {
           animateRemoveFromCart(product.image);
-          removeFromCart(product.id || product._id);
+          removeFromCart(cardCartKey);
         } else {
-          updateQuantity(product.id || product._id, -1);
+          updateQuantity(cardCartKey, -1);
         }
       },
       [
@@ -146,8 +159,7 @@ const ProductCard = React.memo(
         animateRemoveFromCart,
         product.image,
         removeFromCart,
-        product.id,
-        product._id,
+        cardCartKey,
         updateQuantity,
       ],
     );
@@ -206,6 +218,14 @@ const ProductCard = React.memo(
               )}
             </AnimatePresence>
 
+            {isClosed && (
+              <div className="absolute top-1.5 left-1.5 z-20 pointer-events-none">
+                <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-slate-900/80 text-white shadow-xs backdrop-blur-xs">
+                  Store Closed
+                </span>
+              </div>
+            )}
+
             <div className="w-full h-full rounded-md overflow-hidden bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
               <img
                 ref={imageRef}
@@ -231,9 +251,11 @@ const ProductCard = React.memo(
               <h3 className="text-[11px] md:text-[12.5px] font-bold text-slate-900 line-clamp-1 leading-tight">
                 {product.name}
               </h3>
-              <p className="text-[8px] md:text-[10px] text-slate-400 font-semibold italic">
-                {product.weight || "1 unit"}
-              </p>
+              {defaultVariant?.name && (
+                <p className="text-[8px] md:text-[10px] text-slate-400 font-semibold italic">
+                  {defaultVariant.name}
+                </p>
+              )}
             </div>
 
             <div className="mt-auto flex items-center justify-between gap-1 pt-0.5 border-t border-slate-200/20">
@@ -248,7 +270,18 @@ const ProductCard = React.memo(
                 )}
               </div>
 
-              {quantity > 0 ? (
+              {isClosed ? (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showToast("This store is currently closed.", "error");
+                  }}
+                  className="px-1.5 py-0.5 md:px-2 md:py-1 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-md md:rounded-lg text-[8px] md:text-[9.5px] font-bold tracking-tight cursor-not-allowed whitespace-nowrap"
+                >
+                  Store Closed
+                </button>
+              ) : quantity > 0 ? (
                 <div className="flex items-center bg-[#FE5502] text-white rounded-lg md:rounded-xl shadow-md h-6 md:h-7.5 overflow-hidden ring-1 ring-[#FE5502]/20">
                   <button
                     onClick={handleDecrement}

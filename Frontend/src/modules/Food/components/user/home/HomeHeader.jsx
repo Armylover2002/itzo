@@ -50,16 +50,16 @@ const withAlpha = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const quickTheme = (baseColor) => {
-  const base = normalizeHex(baseColor, "#FE5502");
+const quickTheme = () => {
+  const base = "#FE5502";
   return {
-    topBg: `linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 100%), ${base}`,
+    topBg: "linear-gradient(180deg, #FE5502 0%, #FF6F00 100%)",
     accent: base,
     text: "#ffffff",
-    activeBg: base,
-    activeText: "#ffffff",
-    inactiveBg: "rgba(0,0,0,0.3)",
-    inactiveBorder: "rgba(255,255,255,0.08)",
+    activeBg: "#ffffff",
+    activeText: base,
+    inactiveBg: "rgba(255,255,255,0.2)",
+    inactiveBorder: "rgba(255,255,255,0.3)",
   };
 };
 
@@ -267,23 +267,8 @@ export default function HomeHeader({
       }`}
       style={{ background: theme.topBg, color: theme.text }}
     >
-      {headerVideoUrl && (
+      {isFood && headerVideoUrl && (
         <div className="absolute inset-0 z-0 flex justify-center overflow-hidden">
-            {/* Video temporarily removed to improve loading time
-            <video
-              ref={videoRef}
-              src={headerVideoUrl}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              aria-hidden="true"
-              className={`h-full w-full object-cover object-center transition-opacity duration-200 ${
-                isFood ? "opacity-100" : "opacity-0"
-              }`}
-            />
-            */}
           <div 
             className="absolute inset-0 transition-colors duration-700" 
             style={{ 
@@ -299,15 +284,17 @@ export default function HomeHeader({
         </div>
       )}
 
-      <div
-        className="absolute inset-0 z-[1] opacity-[0.25] pointer-events-none"
-        style={{
-          backgroundImage: `url(${foodPattern})`,
-          backgroundSize: "200px",
-          backgroundRepeat: "repeat",
-          mixBlendMode: "overlay",
-        }}
-      />
+      {isFood && (
+        <div
+          className="absolute inset-0 z-[1] opacity-[0.25] pointer-events-none"
+          style={{
+            backgroundImage: `url(${foodPattern})`,
+            backgroundSize: "200px",
+            backgroundRepeat: "repeat",
+            mixBlendMode: "overlay",
+          }}
+        />
+      )}
 
       {isFood && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">

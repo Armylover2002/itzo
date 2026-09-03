@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { QuickCategory } from '../models/category.model.js';
 import { QuickProduct } from '../models/product.model.js';
 import { QuickReview } from '../models/review.model.js';
@@ -11,6 +12,7 @@ import {
   getQuickSettings,
 } from '../services/content.service.js';
 import { getPublicQuickBanners } from '../services/banner.service.js';
+import { isShopCurrentlyOpen } from '../utils/shopTiming.js';
 
 const setNoCache = (res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -115,7 +117,7 @@ const buildSellerMap = async (products = []) => {
   if (!sellerIds.length) return {};
 
   const sellers = await Seller.find({ _id: { $in: sellerIds } })
-    .select('_id shopName name')
+    .select('_id shopName name phone email address shopInfo logo avatar image')
     .lean();
 
   return sellers.reduce((acc, seller) => {
@@ -126,6 +128,8 @@ const buildSellerMap = async (products = []) => {
 
 const mapProduct = (product, sellerMap = {}) => {
   const seller = sellerMap[String(product?.sellerId || '')] || null;
+  const timing = isShopCurrentlyOpen(seller?.shopInfo?.openingHours);
+
   return ({
   id: product._id,
   _id: product._id,
@@ -140,25 +144,32 @@ const mapProduct = (product, sellerMap = {}) => {
   price: product.price,
   salePrice: product.salePrice || 0,
   originalPrice: product.mrp,
-  weight: product.unit,
-  unit: product.unit,
   stock: Number(product.stock || 0),
   status: product.status || (product.isActive ? 'active' : 'inactive'),
   brand: product.brand || '',
   description: product.description || '',
-  tags: Array.isArray(product.tags) ? product.tags : [],
   variants: Array.isArray(product.variants) ? product.variants : [],
   deliveryTime: product.deliveryTime,
   rating: product.rating,
   badge: product.badge,
   approvalStatus: product.approvalStatus || 'approved',
   sellerId: product.sellerId || seller?._id || null,
+  isShopOpen: seller ? timing.isOpen : true,
+  shopStatus: seller ? timing.statusText : 'Open Now',
+  shopTiming: seller ? timing.timingText : '',
+  shopHours: seller?.shopInfo?.openingHours || '',
   seller: seller
     ? {
         _id: seller._id,
         id: seller._id,
         name: seller.name || '',
         shopName: seller.shopName || seller.name || 'Store',
+        shopImage: seller.shopInfo?.shopImage || seller.logo || seller.image || seller.avatar || '',
+        openingHours: seller.shopInfo?.openingHours || '',
+        isShopOpen: timing.isOpen,
+        shopStatus: timing.statusText,
+        timingText: timing.timingText,
+        hoursLabel: timing.hoursLabel,
       }
     : null,
   storeName: seller?.shopName || seller?.name || '',
@@ -315,11 +326,60 @@ export const getCategories = async (req, res) => {
   return res.json({ success: true, results: mapped });
 };
 
+export const getCategoryById = async (req, res) => {
+  setPublicCache(res, 300);
+  const { categoryId } = req.params;
+  if (!categoryId) return res.status(400).json({ success: false, message: 'Category ID is required' });
+
+  let category = null;
+  if (mongoose.isValidObjectId(categoryId)) {
+    category = await QuickCategory.findById(categoryId).lean();
+  }
+  if (!category) {
+    category = await QuickCategory.findOne({ slug: categoryId }).lean();
+  }
+  if (!category) {
+    return res.status(404).json({ success: false, message: 'Category not found' });
+  }
+
+  // Get subcategories
+  let subcategories = [];
+  if (category.type === 'category' || category.type === 'header') {
+    subcategories = await QuickCategory.find({
+      $or: [
+        { parentId: category._id },
+        { headerId: category._id }
+      ],
+      isActive: { $ne: false },
+      approvalStatus: { $ne: 'rejected' }
+    }).sort({ order: 1, name: 1 }).lean();
+  } else if (category.parentId) {
+    // If it's already a subcategory, find its sibling subcategories
+    subcategories = await QuickCategory.find({
+      parentId: category.parentId,
+      isActive: { $ne: false },
+      approvalStatus: { $ne: 'rejected' }
+    }).sort({ order: 1, name: 1 }).lean();
+  }
+
+  return res.json({
+    success: true,
+    result: {
+      category: mapCategory(category),
+      subcategories: subcategories.map(mapCategory)
+    }
+  });
+};
+
 export const getProducts = async (req, res) => {
   setPublicCache(res, 60);
 
-  const { categoryId, search, limit, sortBy, lat, lng } = req.query;
+  const { categoryId, search, limit, sortBy, lat, lng, sellerId } = req.query;
   const query = { ...publicProductFilter };
+
+  if (sellerId) {
+    query.sellerId = sellerId;
+  }
 
   if (lat && lng) {
     const latNum = Number(lat);
@@ -338,28 +398,73 @@ export const getProducts = async (req, res) => {
         const sellerIds = localSellers.map((s) => s._id);
         
         // Include products from local sellers, or admin products (sellerId: null/missing)
-        query.$or = query.$or || [];
-        query.$or.push({ sellerId: { $in: sellerIds } }, { sellerId: { $exists: false } }, { sellerId: null });
-      } else {
-        // If the user has a location but is not in any active zone, show nothing
-        query._id = null;
+        const sellerOr = [
+          { sellerId: { $in: sellerIds } },
+          { sellerId: { $exists: false } },
+          { sellerId: null }
+        ];
+        if (query.$and) {
+          query.$and.push({ $or: sellerOr });
+        } else {
+          query.$or = sellerOr;
+        }
       }
     }
   }
 
   // Handle category filtering
   if (categoryId) {
-    // If we already have an $or from the seller filter, we need to use $and to combine them
+    const categoryIds = [categoryId];
+    if (mongoose.isValidObjectId(categoryId)) {
+      categoryIds.push(new mongoose.Types.ObjectId(categoryId));
+    }
+
+    // Also include all subcategories if this is a parent category or header category
+    const childCats = await QuickCategory.find({
+      $or: [
+        { parentId: { $in: categoryIds } },
+        { headerId: { $in: categoryIds } },
+      ],
+    }).select('_id').lean();
+    childCats.forEach((c) => {
+      categoryIds.push(c._id);
+      categoryIds.push(String(c._id));
+    });
+
     const categoryOr = [
-      { categoryId: categoryId },
-      { subcategoryId: categoryId },
-      { headerId: categoryId }
+      { categoryId: { $in: categoryIds } },
+      { subcategoryId: { $in: categoryIds } },
+      { headerId: { $in: categoryIds } },
     ];
-    if (query.$or) {
+
+    if (query.$and) {
+      query.$and.push({ $or: categoryOr });
+    } else if (query.$or) {
       query.$and = [{ $or: query.$or }, { $or: categoryOr }];
       delete query.$or;
     } else {
       query.$or = categoryOr;
+    }
+  }
+
+  // Handle subcategory filtering if specified
+  const { subcategoryId } = req.query;
+  if (subcategoryId && subcategoryId !== 'all') {
+    const subcategoryIds = [subcategoryId];
+    if (mongoose.isValidObjectId(subcategoryId)) {
+      subcategoryIds.push(new mongoose.Types.ObjectId(subcategoryId));
+    }
+    const subcategoryOr = [
+      { subcategoryId: { $in: subcategoryIds } },
+      { categoryId: { $in: subcategoryIds } },
+    ];
+    if (query.$and) {
+      query.$and.push({ $or: subcategoryOr });
+    } else if (query.$or) {
+      query.$and = [{ $or: query.$or }, { $or: subcategoryOr }];
+      delete query.$or;
+    } else {
+      query.$or = subcategoryOr;
     }
   }
   if (search) query.name = { $regex: String(search).trim(), $options: 'i' };
@@ -471,6 +576,167 @@ export const submitProductReview = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to submit review',
+    });
+  }
+};
+
+export const getPublicShops = async (req, res) => {
+  setPublicCache(res, 30);
+  const { search, openOnly } = req.query;
+
+  try {
+    const filter = {
+      isActive: true,
+      approved: true,
+      isDeleted: { $ne: true },
+    };
+
+    if (search) {
+      filter.$or = [
+        { shopName: { $regex: String(search).trim(), $options: 'i' } },
+        { name: { $regex: String(search).trim(), $options: 'i' } },
+        { 'shopInfo.businessType': { $regex: String(search).trim(), $options: 'i' } },
+      ];
+    }
+
+    const sellers = await Seller.find(filter)
+      .select('_id shopName name phone email address shopInfo logo avatar image createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Count active products for each seller
+    const sellerIds = sellers.map((s) => s._id);
+    const productCounts = await QuickProduct.aggregate([
+      { $match: { sellerId: { $in: sellerIds }, ...publicProductFilter } },
+      { $group: { _id: '$sellerId', count: { $sum: 1 } } },
+    ]);
+
+    const countMap = productCounts.reduce((acc, curr) => {
+      acc[String(curr._id)] = curr.count;
+      return acc;
+    }, {});
+
+    let mappedShops = sellers.map((seller) => {
+      const timing = isShopCurrentlyOpen(seller.shopInfo?.openingHours);
+      const shopImage =
+        seller.shopInfo?.shopImage ||
+        seller.logo ||
+        seller.image ||
+        seller.avatar ||
+        '';
+      const address = seller.address?.street
+        ? `${seller.address.street}, ${seller.address.city || ''}`
+        : seller.shopInfo?.zoneName || 'Local Store';
+
+      return {
+        id: String(seller._id),
+        _id: String(seller._id),
+        shopName: seller.shopName || seller.name || 'Store',
+        sellerName: seller.name || '',
+        phone: seller.phone || '',
+        email: seller.email || '',
+        businessType: seller.shopInfo?.businessType || 'Retail Store',
+        openingHours: seller.shopInfo?.openingHours || '',
+        hoursLabel: timing.hoursLabel,
+        isOpen: timing.isOpen,
+        statusText: timing.statusText,
+        timingText: timing.timingText,
+        shopImage,
+        address,
+        city: seller.address?.city || '',
+        pincode: seller.address?.pincode || '',
+        itemCount: countMap[String(seller._id)] || 0,
+      };
+    });
+
+    if (openOnly === 'true' || openOnly === true) {
+      mappedShops = mappedShops.filter((s) => s.isOpen);
+    }
+
+    return res.json({
+      success: true,
+      results: mappedShops,
+      total: mappedShops.length,
+    });
+  } catch (error) {
+    console.error('Error fetching shops:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch shops',
+    });
+  }
+};
+
+export const getPublicShopById = async (req, res) => {
+  setPublicCache(res, 30);
+  const { shopId } = req.params;
+
+  try {
+    const seller = await Seller.findOne({
+      _id: shopId,
+      isActive: true,
+      approved: true,
+      isDeleted: { $ne: true },
+    })
+      .select('_id shopName name phone email address shopInfo logo avatar image')
+      .lean();
+
+    if (!seller) {
+      return res.status(404).json({ success: false, message: 'Store not found or unavailable' });
+    }
+
+    const timing = isShopCurrentlyOpen(seller.shopInfo?.openingHours);
+    const shopImage =
+      seller.shopInfo?.shopImage ||
+      seller.logo ||
+      seller.image ||
+      seller.avatar ||
+      '';
+    const address = seller.address?.street
+      ? `${seller.address.street}, ${seller.address.city || ''}`
+      : seller.shopInfo?.zoneName || 'Local Store';
+
+    // Fetch products for this shop
+    const products = await QuickProduct.find({
+      sellerId: seller._id,
+      ...publicProductFilter,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const sellerMap = { [String(seller._id)]: seller };
+    const mappedProducts = products.map((p) => mapProduct(p, sellerMap));
+
+    return res.json({
+      success: true,
+      result: {
+        shop: {
+          id: String(seller._id),
+          _id: String(seller._id),
+          shopName: seller.shopName || seller.name || 'Store',
+          sellerName: seller.name || '',
+          phone: seller.phone || '',
+          email: seller.email || '',
+          businessType: seller.shopInfo?.businessType || 'Retail Store',
+          openingHours: seller.shopInfo?.openingHours || '',
+          hoursLabel: timing.hoursLabel,
+          isOpen: timing.isOpen,
+          statusText: timing.statusText,
+          timingText: timing.timingText,
+          shopImage,
+          address,
+          city: seller.address?.city || '',
+          pincode: seller.address?.pincode || '',
+          itemCount: products.length,
+        },
+        products: mappedProducts,
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching shop details:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch store details',
     });
   }
 };

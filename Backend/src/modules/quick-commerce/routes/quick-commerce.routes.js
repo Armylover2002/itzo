@@ -2,6 +2,7 @@ import express from "express";
 import { upload } from "../../../middleware/upload.js";
 import {
   getCategories,
+  getCategoryById,
   getCoupons,
   applyCoupon,
   getHomeData,
@@ -10,6 +11,8 @@ import {
   getProductReviews,
   submitProductReview,
   getProducts,
+  getPublicShops,
+  getPublicShopById,
 } from "../controllers/catalog.controller.js";
 import {
   addToCart,
@@ -154,10 +157,13 @@ router.get("/banners/public", getPublicBanners);
 router.get("/coupons", getCoupons);
 router.post("/coupons/apply", applyCoupon);
 router.get("/categories", getCategories);
+router.get("/categories/:categoryId", getCategoryById);
 router.get("/products", getProducts);
 router.get("/products/:productId/reviews", getProductReviews);
 router.post("/products/reviews", optionalAuth, submitProductReview);
 router.get("/products/:productId", getProductById);
+router.get("/shops", getPublicShops);
+router.get("/shops/:shopId", getPublicShopById);
 router.get("/zones/public", listPublicZones);
 router.get("/billing/settings", getPublicBillingSettings);
 

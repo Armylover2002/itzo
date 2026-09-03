@@ -36,6 +36,8 @@ const sellerOnly = [authMiddleware, requireRoles("SELLER")];
 const productUpload = upload.fields([
   { name: "mainImage", maxCount: 1 },
   { name: "galleryImages", maxCount: 8 },
+  // Up to 5 variants, each with up to 3 new image files.
+  ...Array.from({ length: 5 }, (_, index) => ({ name: `variantImages_${index}`, maxCount: 3 })),
 ]);
 export const sellerProfileUpload = upload.fields([
   { name: "shopImage", maxCount: 1 },

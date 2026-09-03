@@ -40,6 +40,7 @@ import { Skeleton } from "@food/components/ui/skeleton";
 import QuickCategorySlider from "../components/home/QuickCategorySlider";
 import QuickProductShelf from "../components/home/QuickProductShelf";
 import LowestPriceEverSection from "../components/home/LowestPriceEverSection";
+import CategoryProductSection from "../components/home/CategoryProductSection";
 import { useLocation } from "../context/LocationContext";
 import { resolveQuickImageUrl } from "../utils/image";
 import { getCloudinarySrcSet } from "@/shared/utils/cloudinaryUtils";
@@ -240,27 +241,85 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     return map;
   }, [products]);
 
-  const effectiveQuickCategories = quickCategories;
+  const isAllActive = useMemo(() => {
+    const activeCatId = String(activeCategory?._id || activeCategory?.id || "");
+    return (
+      !activeCatId ||
+      activeCatId === "all" ||
+      String(activeCategory?.slug || "").toLowerCase() === "all" ||
+      String(activeCategory?.name || "").toLowerCase() === "all"
+    );
+  }, [activeCategory]);
+
+  const effectiveQuickCategories = useMemo(() => {
+    if (isAllActive) return quickCategories;
+
+    const activeCatId = String(activeCategory?._id || activeCategory?.id || "");
+    const filtered = quickCategories.filter((cat) => {
+      const parentId = String(cat.parentId?._id || cat.parentId || cat.headerId?._id || cat.headerId || "");
+      return parentId === activeCatId || String(cat.id || cat._id) === activeCatId;
+    });
+
+    return filtered.length > 0 ? filtered : quickCategories;
+  }, [quickCategories, activeCategory, isAllActive]);
 
   // Filter products by active header category
   // Prefer server-fetched categoryProducts when a specific category is active
   const filteredProducts = useMemo(() => {
-    const activeCatId = activeCategory?._id || activeCategory?.id;
-    if (!activeCatId || activeCatId === "all") return products;
+    if (isAllActive) return products;
 
-    // Use server-fetched category products if available
-    if (categoryProducts !== null) return categoryProducts;
+    // Use server-fetched category products if available and non-empty
+    if (categoryProducts !== null && Array.isArray(categoryProducts) && categoryProducts.length > 0) {
+      return categoryProducts;
+    }
 
-    // Fallback: client-side filter by categoryId parentId
-    return products.filter((p) => {
-      const productCatId = p.categoryId?._id || p.categoryId || p.category?._id || p.category;
-      if (!productCatId) return false;
-      const cat = categoryMap[String(productCatId)];
-      if (!cat) return false;
-      const parentHeaderId = cat.parentId || cat.headerId || cat.parent?._id || cat.header?._id;
-      return String(parentHeaderId) === String(activeCatId) || String(productCatId) === String(activeCatId);
+    const activeCatId = String(activeCategory?._id || activeCategory?.id || "");
+
+    // Fallback: client-side filter by categoryId parentId or headerId
+    const clientFiltered = products.filter((p) => {
+      const productCatId = String(p.categoryId?._id || p.categoryId || p.category?._id || p.category || "");
+      const productSubId = String(p.subcategoryId?._id || p.subcategoryId || "");
+      const productHeaderId = String(p.headerId?._id || p.headerId || "");
+
+      if (productHeaderId === activeCatId || productCatId === activeCatId || productSubId === activeCatId) {
+        return true;
+      }
+      const cat = categoryMap[productCatId];
+      if (cat) {
+        const parentHeaderId = String(cat.parentId?._id || cat.parentId || cat.headerId?._id || cat.headerId || "");
+        if (parentHeaderId === activeCatId) return true;
+      }
+      return false;
     });
-  }, [products, categoryProducts, activeCategory, categoryMap]);
+
+    return clientFiltered.length > 0 ? clientFiltered : (categoryProducts || products);
+  }, [products, categoryProducts, activeCategory, categoryMap, isAllActive]);
+
+  // Group products by each main category (headline + products)
+  const categorySections = useMemo(() => {
+    if (!Array.isArray(effectiveQuickCategories) || !Array.isArray(filteredProducts)) return [];
+
+    return effectiveQuickCategories.map((cat) => {
+      const targetId = String(cat._id || cat.id);
+      const catProducts = filteredProducts.filter((p) => {
+        const pCatId = String(p.categoryId?._id || p.categoryId || "");
+        const pSubId = String(p.subcategoryId?._id || p.subcategoryId || "");
+
+        if (pCatId === targetId) return true;
+        if (pSubId) {
+          const sub = subcategoryMap[pSubId] || categoryMap[pSubId];
+          const parent = String(sub?.parentId?._id || sub?.parentId || "");
+          if (parent === targetId) return true;
+        }
+        return false;
+      });
+
+      return {
+        category: cat,
+        products: catProducts,
+      };
+    }).filter((section) => section.products.length > 0);
+  }, [effectiveQuickCategories, filteredProducts, categoryMap, subcategoryMap]);
 
   const opacity = useTransform(scrollY, [0, 300], [1, 0.6]);
   const y = useTransform(scrollY, [0, 300], [0, 80]);
@@ -391,42 +450,19 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
           )}
 
           {/* Promo Marquee Strip */}
-          <div className={cn("w-full md:-mt-[2px] mb-4", embedded ? "-mt-[1px]" : "-mt-[2px]")}>
-            <div
-              className={cn(
-                "relative overflow-hidden",
-                embedded
-                  ? "border-y-0 shadow-none"
-                  : "border-y border-[#e6ddc4] bg-[#f7f0df] shadow-[0_10px_30px_rgba(15,23,42,0.08)]",
-              )}
-              style={embedded ? { backgroundColor: activeCategory?.headerColor || ALL_CATEGORY.headerColor } : undefined}>
-              <div
-                className={cn(
-                  "absolute inset-y-0 left-0 w-10 pointer-events-none",
-                  embedded ? "bg-none" : "bg-gradient-to-r from-[#f7f0df] via-[#f7f0df]/90 to-transparent",
-                )}
-                style={embedded ? { backgroundImage: `linear-gradient(to right, ${activeCategory?.headerColor || ALL_CATEGORY.headerColor}, ${activeCategory?.headerColor || ALL_CATEGORY.headerColor}E6, transparent)` } : undefined}
-              />
-              <div
-                className={cn(
-                  "absolute inset-y-0 right-0 w-10 pointer-events-none",
-                  embedded ? "bg-none" : "bg-gradient-to-l from-[#f7f0df] via-[#f7f0df]/90 to-transparent",
-                )}
-                style={embedded ? { backgroundImage: `linear-gradient(to left, ${activeCategory?.headerColor || ALL_CATEGORY.headerColor}, ${activeCategory?.headerColor || ALL_CATEGORY.headerColor}E6, transparent)` } : undefined}
-              />
-              <div
-                className={cn(
-                  "classic-marquee-track flex w-max items-center gap-4 px-3 md:px-6 py-4 text-sm md:text-base font-semibold -translate-y-[4px]",
-                  embedded ? "text-white/90" : "text-[#4b463f]",
-                )}>
+          <div className="w-full -mt-[1px] mb-4">
+            <div className="relative overflow-hidden bg-gradient-to-r from-[#FE5502] via-[#FF6F00] to-[#FE5502] text-white shadow-xs">
+              <div className="absolute inset-y-0 left-0 w-8 pointer-events-none bg-gradient-to-r from-[#FE5502] to-transparent z-10" />
+              <div className="absolute inset-y-0 right-0 w-8 pointer-events-none bg-gradient-to-l from-[#FE5502] to-transparent z-10" />
+              <div className="classic-marquee-track flex w-max items-center gap-4 px-3 md:px-6 py-2 text-xs md:text-sm font-bold text-white tracking-wide">
                 {[...MARQUEE_MESSAGES, ...MARQUEE_MESSAGES].map((message, idx) => (
                   <React.Fragment key={`${message}-${idx}`}>
                     <span className="whitespace-nowrap">{message}</span>
-                    <span className="text-[#8a7f66]">•</span>
+                    <span className="text-white/80 font-bold">•</span>
                   </React.Fragment>
                 ))}
-                <span className="whitespace-nowrap">❤️</span>
-                <span className="whitespace-nowrap">🎁</span>
+                <span className="whitespace-nowrap">⚡</span>
+                <span className="whitespace-nowrap">🛒</span>
               </div>
             </div>
           </div>
@@ -435,7 +471,20 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
           <QuickCategorySlider categories={effectiveQuickCategories} activeCategory={activeCategory} embedded={embedded} />
 
           {/* New LOWEST PRICE EVER section */}
-          <LowestPriceEverSection products={products} />
+          <LowestPriceEverSection products={filteredProducts} />
+
+          {/* Main Category Headlines & Products Sections */}
+          {categorySections.length > 0 && (
+            <div className="w-full space-y-2 md:space-y-4 pt-1 pb-6">
+              {categorySections.map((section) => (
+                <CategoryProductSection
+                  key={section.category._id || section.category.id}
+                  category={section.category}
+                  products={section.products}
+                />
+              ))}
+            </div>
+          )}
 
           {embedded && (
             <>

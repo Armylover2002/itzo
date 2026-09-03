@@ -14,6 +14,15 @@ const sellerStockAdjustmentSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    variantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+    variantName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     type: {
       type: String,
       enum: ["Restock", "Correction", "Remove", "Sale"],

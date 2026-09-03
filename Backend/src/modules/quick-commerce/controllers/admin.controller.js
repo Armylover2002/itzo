@@ -69,14 +69,11 @@ const toProduct = (product) => ({
   price: product.price,
   mrp: product.mrp,
   salePrice: product.salePrice || 0,
-  unit: product.unit,
   description: product.description || '',
   stock: Number(product.stock || 0),
   status: product.status || (product.isActive ? 'active' : 'inactive'),
   brand: product.brand || '',
-  weight: product.weight || '',
   sku: product.sku || '',
-  tags: Array.isArray(product.tags) ? product.tags : [],
   variants: Array.isArray(product.variants) ? product.variants : [],
   isFeatured: Boolean(product.isFeatured),
   badge: product.badge,
@@ -921,7 +918,6 @@ export const createProduct = async (req, res) => {
     price,
     mrp,
     salePrice,
-    unit,
     badge,
     description,
     stock,
@@ -929,9 +925,7 @@ export const createProduct = async (req, res) => {
     status,
     approvalStatus,
     brand,
-    weight,
     sku,
-    tags,
     isFeatured,
     deliveryTime,
     variants,
@@ -964,8 +958,6 @@ export const createProduct = async (req, res) => {
     price: Number(price || 0),
     mrp: Number(mrp || salePrice || price || 0),
     salePrice: Number(salePrice || 0),
-    unit: unit || '',
-    weight: weight || '',
     brand: brand || '',
     sku: sku || '',
     stock: parseNumber(stock, 0),
@@ -974,10 +966,6 @@ export const createProduct = async (req, res) => {
     approvalStatus: approvalStatus || 'approved',
     approvedAt: (approvalStatus || 'approved') === 'approved' ? new Date() : null,
     isFeatured: parseBool(isFeatured, false),
-    tags: String(tags || '')
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean),
     variants: parseVariants(variants),
     deliveryTime: deliveryTime || '10 mins',
     badge: badge || '',
@@ -993,8 +981,25 @@ export const updateProduct = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Product not found' });
   }
 
-  const images = await getProductImages(req);
   const body = req.body || {};
+
+  // Admin is view-only on seller-owned products — the only write it may make
+  // is toggling visibility (status). Full edits (variants, pricing, photos,
+  // etc.) stay with the seller.
+  if (product.sellerId) {
+    const allowedKeys = new Set(['status']);
+    const requestedKeys = Object.keys(body);
+    const hasFiles = req.files && Object.keys(req.files).length > 0;
+    const hasDisallowedField = requestedKeys.some((key) => !allowedKeys.has(key));
+    if (hasFiles || hasDisallowedField) {
+      return res.status(403).json({
+        success: false,
+        message: 'Admins can only show or hide seller products, not edit them',
+      });
+    }
+  }
+
+  const images = await getProductImages(req);
 
   // Remembered before the assignments below so we can tell whether the product
   // was actually moved to a different category.
@@ -1014,8 +1019,6 @@ export const updateProduct = async (req, res) => {
     product.mrp = parseNumber(body.mrp, parseNumber(body.salePrice, parseNumber(body.price, product.mrp)));
   }
   if (body.salePrice !== undefined) product.salePrice = parseNumber(body.salePrice, 0);
-  if (body.unit !== undefined) product.unit = body.unit || '';
-  if (body.weight !== undefined) product.weight = body.weight || '';
   if (body.brand !== undefined) product.brand = body.brand || '';
   if (body.sku !== undefined) product.sku = body.sku || '';
   if (body.stock !== undefined) product.stock = parseNumber(body.stock, 0);
@@ -1029,12 +1032,6 @@ export const updateProduct = async (req, res) => {
     product.approvedAt = product.approvalStatus === 'approved' ? new Date() : null;
   }
   if (body.isFeatured !== undefined) product.isFeatured = parseBool(body.isFeatured, false);
-  if (body.tags !== undefined) {
-    product.tags = String(body.tags || '')
-      .split(',')
-      .map((tag) => tag.trim())
-      .filter(Boolean);
-  }
   if (body.variants !== undefined) product.variants = parseVariants(body.variants);
   if (body.deliveryTime !== undefined) product.deliveryTime = body.deliveryTime || '10 mins';
   if (body.badge !== undefined) product.badge = body.badge || '';

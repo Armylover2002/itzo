@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { QuickCart } from '../models/cart.model.js';
 import { QuickProduct } from '../models/product.model.js';
+import { Seller } from '../seller/models/seller.model.js';
+import { isShopCurrentlyOpen } from '../utils/shopTiming.js';
 import { calculateQuickPricing } from '../admin/services/billing.service.js';
 
 const approvedProductFilter = {
@@ -79,7 +81,6 @@ const mapCart = async (idQuery) => {
         salePrice: Number(product.salePrice || 0),
         mrp,
         originalPrice: mrp,
-        unit: product.unit,
         quantity: item.quantity,
         lineTotal: item.quantity * unitPrice,
       };
@@ -116,7 +117,7 @@ export const getCart = async (req, res) => {
 
 export const addToCart = async (req, res) => {
   const idQuery = resolveId(req);
-  const { productId } = req.body;
+  const { productId, clearPrevious } = req.body;
   const quantity = Number(req.body.quantity || 1);
 
   if (!idQuery || !productId) {
@@ -128,11 +129,55 @@ export const addToCart = async (req, res) => {
     return res.status(404).json({ success: false, message: 'Product not found' });
   }
 
+  // Check if seller's store is open
+  if (product.sellerId) {
+    const seller = await Seller.findById(product.sellerId)
+      .select('shopName shopInfo isActive approved isDeleted')
+      .lean();
+    if (seller) {
+      if (seller.isActive === false || seller.approved === false || seller.isDeleted === true) {
+        return res.status(400).json({
+          success: false,
+          message: 'This store is currently unavailable.',
+          isShopClosed: true,
+        });
+      }
+      const timing = isShopCurrentlyOpen(seller.shopInfo?.openingHours);
+      if (!timing.isOpen) {
+        return res.status(400).json({
+          success: false,
+          message: `${seller.shopName || 'This store'} is currently closed (${timing.timingText}). You cannot order products from a closed store.`,
+          isShopClosed: true,
+        });
+      }
+    }
+  }
+
   const cart = await QuickCart.findOneAndUpdate(
     idQuery,
     { $setOnInsert: buildCartInsertDoc(idQuery) },
     { upsert: true, new: true }
   );
+
+  // Single-seller rule: Discard or reject if cart contains items from another store
+  if (clearPrevious) {
+    cart.items = [];
+  } else if (product.sellerId && cart.items.length > 0) {
+    const existingProductIds = cart.items.map((it) => it.productId);
+    const existingProducts = await QuickProduct.find({ _id: { $in: existingProductIds } })
+      .select('sellerId')
+      .lean();
+    const hasDifferentSeller = existingProducts.some(
+      (p) => p.sellerId && String(p.sellerId) !== String(product.sellerId)
+    );
+    if (hasDifferentSeller) {
+      return res.status(409).json({
+        success: false,
+        conflict: true,
+        message: 'Your cart contains items from another store. Clear your cart to add items from this store.',
+      });
+    }
+  }
 
   const itemIndex = cart.items.findIndex((item) => String(item.productId) === String(productId));
   if (itemIndex >= 0) {

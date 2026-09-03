@@ -48,7 +48,6 @@ const SearchPage = () => {
             image: p.mainImage || p.image || 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2',
             price: p.salePrice || p.price,
             originalPrice: p.price,
-            weight: p.weight || '1 unit',
             deliveryTime: '8-15 mins'
         }));
 

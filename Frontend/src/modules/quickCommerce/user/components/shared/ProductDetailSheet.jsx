@@ -1,21 +1,18 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { motion, AnimatePresence, useAnimation, useDragControls } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
-import { X, ChevronDown, Share2, Heart, Search, Clock, Minus, Plus, ShoppingBag, Star, MessageSquare, ArrowLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronDown, Share2, Heart, Search, Clock, Minus, Plus, ShoppingBag, ArrowLeft, ChevronRight } from 'lucide-react';
 import { useProductDetail } from '../../context/ProductDetailContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '@shared/components/ui/Toast';
 import { useSettings } from '@core/context/SettingsContext';
 import { cn } from '@/lib/utils';
-import { customerApi } from '../../services/customerApi';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { getQuickCartPath, getQuickCheckoutPath } from '../../utils/routes';
 
 const ProductDetailSheet = () => {
     const { selectedProduct, isOpen, closeProduct } = useProductDetail();
-    const { cart, cartCount, addToCart, updateQuantity, removeFromCart } = useCart();
+    const { cart, cartCount, addToCart, updateQuantity, removeFromCart, getCartItemKey, getItemCartKey } = useCart();
     const { toggleWishlist: toggleWishlistGlobal, isInWishlist } = useWishlist();
     const { showToast } = useToast();
     const { settings } = useSettings();
@@ -30,11 +27,6 @@ const ProductDetailSheet = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-    const [reviews, setReviews] = useState([]);
-    const [reviewLoading, setReviewLoading] = useState(true);
-    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-    const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
 
     const scrollRef = useRef(null);
 
@@ -58,47 +50,7 @@ const ProductDetailSheet = () => {
             setSelectedVariant(null);
         }
         setActiveImageIndex(0);
-
-        if (selectedProduct?.id || selectedProduct?._id) {
-            fetchReviews(selectedProduct.id || selectedProduct._id);
-        }
     }, [selectedProduct]);
-
-    const fetchReviews = async (productId) => {
-        try {
-            setReviewLoading(true);
-            const res = await customerApi.getProductReviews(productId);
-            if (res.data.success) {
-                setReviews(res.data.results);
-            }
-        } catch (error) {
-            console.error("Fetch reviews error:", error);
-        } finally {
-            setReviewLoading(false);
-        }
-    };
-
-    const handleReviewSubmit = async (e) => {
-        e.preventDefault();
-        if (!newReview.comment.trim()) return;
-
-        try {
-            setIsSubmittingReview(true);
-            const res = await customerApi.submitReview({
-                productId: selectedProduct.id || selectedProduct._id,
-                rating: newReview.rating,
-                comment: newReview.comment
-            });
-            if (res.data.success) {
-                showToast("Review submitted for moderation", "success");
-                setNewReview({ rating: 5, comment: '' });
-            }
-        } catch (error) {
-            showToast(error.response?.data?.message || "Failed to submit review", "error");
-        } finally {
-            setIsSubmittingReview(false);
-        }
-    };
 
     // If no product selected, don't render anything (well, Context handles isOpen, but still good check)
     // Removed early return to satisfy Rules of Hooks (hooks must be called in same order)
@@ -121,13 +73,9 @@ const ProductDetailSheet = () => {
         return text;
     };
 
-    const getComparableProductId = (value) => String(value ?? "").split("::")[0];
+    const selectedCartKey = selectedProduct ? getCartItemKey(selectedProduct, selectedVariant) : null;
     const cartItem = selectedProduct
-        ? cart.find(
-            (item) =>
-                getComparableProductId(item.productId || item.itemId || item.id || item._id) ===
-                getComparableProductId(selectedProduct.id || selectedProduct._id),
-          )
+        ? cart.find((item) => getItemCartKey(item) === selectedCartKey)
         : null;
     const quantity = cartItem ? cartItem.quantity : 0;
     const isWishlisted = selectedProduct
@@ -180,18 +128,24 @@ const ProductDetailSheet = () => {
         );
     };
 
+    const isClosed = selectedProduct?.isShopOpen === false || selectedProduct?.seller?.isShopOpen === false;
+
     const handleAddToCart = () => {
-        addToCart(selectedProduct);
+        if (isClosed) {
+            showToast('This store is currently closed. Cannot order products now.', 'error');
+            return;
+        }
+        addToCart(selectedProduct, selectedVariant);
         showToast(`${selectedProduct.name} added to cart`, 'success');
     };
 
-    const handleIncrement = () => updateQuantity(selectedProduct.id || selectedProduct._id, 1);
+    const handleIncrement = () => updateQuantity(selectedCartKey, 1);
 
     const handleDecrement = () => {
         if (quantity === 1) {
-            removeFromCart(selectedProduct.id || selectedProduct._id);
+            removeFromCart(selectedCartKey);
         } else {
-            updateQuantity(selectedProduct.id || selectedProduct._id, -1);
+            updateQuantity(selectedCartKey, -1);
         }
     };
 
@@ -366,16 +320,6 @@ const ProductDetailSheet = () => {
                                                     💰 Save ₹{selectedProduct.originalPrice - selectedProduct.price}
                                                 </motion.div>
                                             )}
-                                            <motion.div
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.2 }}
-                                                className="flex items-center gap-1 px-2.5 py-1.5 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-lg text-[10px] font-[700] border border-orange-100/50 dark:border-orange-900/30"
-                                            >
-                                                <Star size={10} fill="currentColor" />
-                                                {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '4.8'}
-                                                <span className="text-orange-400 dark:text-orange-500 font-medium">({reviews.length > 0 ? reviews.length : '120+'})</span>
-                                            </motion.div>
                                         </div>
 
                                         {/* Product Name */}
@@ -388,8 +332,8 @@ const ProductDetailSheet = () => {
                                                 {selectedProduct.name}
                                             </h1>
                                             <div className="flex items-center gap-3 mb-2">
-                                                {selectedProduct.weight && (
-                                                    <span className="text-[13px] text-gray-400 font-[600]">{selectedProduct.weight}</span>
+                                                {selectedVariant?.name && (
+                                                    <span className="text-[13px] text-gray-400 font-[600]">{selectedVariant.name}</span>
                                                 )}
                                                 <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-white/5 rounded-full">
                                                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -444,6 +388,10 @@ const ProductDetailSheet = () => {
                                                             <motion.button whileTap={{ scale: 0.85 }} onClick={handleIncrement} className="w-9 h-9 bg-primary-orange hover:bg-primary-hover active:bg-primary-dark rounded-lg flex items-center justify-center text-white transition-colors shadow-sm">
                                                                 <Plus size={16} strokeWidth={2.5} />
                                                             </motion.button>
+                                                        </div>
+                                                    ) : isClosed ? (
+                                                        <div className="bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 h-11 px-5 rounded-xl font-[800] text-[12px] flex items-center gap-2 border border-slate-300 dark:border-slate-700 select-none cursor-not-allowed">
+                                                            Store Closed
                                                         </div>
                                                     ) : (
                                                         <motion.button
@@ -593,97 +541,6 @@ const ProductDetailSheet = () => {
                                                     <p className="text-[8px] text-gray-400 dark:text-slate-500 font-[500] mt-0.5">{t.sub}</p>
                                                 </div>
                                             ))}
-                                        </motion.div>
-
-                                        {/* Decorative Divider */}
-                                        <div className="relative">
-                                            <div className="h-px bg-gradient-to-r from-transparent via-gray-200/80 dark:via-slate-800 to-transparent" />
-                                            <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/5 rounded-full" />
-                                        </div>
-
-                                        {/* Reviews */}
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{ delay: 0.45 }}
-                                            className="space-y-4"
-                                        >
-                                            <h3 className="text-[14px] font-[700] text-gray-900 dark:text-slate-100 flex items-center justify-between tracking-tight">
-                                                <span className="flex items-center gap-2">
-                                                    <span className="w-0.5 h-4 bg-orange-400 rounded-full" />
-                                                    Customer Reviews
-                                                </span>
-                                                <div className="flex items-center gap-1 px-2.5 py-1 bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-lg text-[10px] font-[700] border border-orange-100/50 dark:border-orange-900/30">
-                                                    <Star size={10} fill="currentColor" />
-                                                    {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '4.8'}
-                                                    <span className="text-orange-400 dark:text-orange-500 font-[500] text-[9px]">({reviews.length > 0 ? reviews.length : '120+'} reviews)</span>
-                                                </div>
-                                            </h3>
-
-                                            {/* Review Form */}
-                                            <div className="bg-gradient-to-br from-slate-50/80 to-gray-50/80 dark:from-slate-900/80 dark:to-slate-950/80 p-4 rounded-xl border border-slate-100/70 dark:border-white/5 transition-colors">
-                                                <h4 className="font-[700] text-gray-800 dark:text-slate-200 text-[13px] mb-2.5 flex items-center gap-2">
-                                                    <MessageSquare size={13} className="text-[#FE5502]" />
-                                                    Rate this product
-                                                </h4>
-                                                <form onSubmit={handleReviewSubmit} className="space-y-2.5">
-                                                    <div className="flex gap-1.5">
-                                                        {[1, 2, 3, 4, 5].map((s) => (
-                                                            <motion.button
-                                                                key={s}
-                                                                type="button"
-                                                                whileHover={{ scale: 1.12 }}
-                                                                whileTap={{ scale: 0.9 }}
-                                                                onClick={() => setNewReview({ ...newReview, rating: s })}
-                                                                className={cn(
-                                                                    'h-8 w-8 rounded-lg flex items-center justify-center transition-all',
-                                                                    newReview.rating >= s ? 'bg-orange-100 dark:bg-orange-950/50 text-orange-500 shadow-sm shadow-orange-100 dark:shadow-none' : 'bg-white dark:bg-slate-800 text-gray-300 dark:text-slate-600 border border-gray-100 dark:border-white/5 hover:border-orange-200'
-                                                                )}
-                                                            >
-                                                                <Star size={14} className={cn(newReview.rating >= s && 'fill-current')} />
-                                                            </motion.button>
-                                                        ))}
-                                                    </div>
-                                                    <textarea value={newReview.comment} onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })} placeholder="Share your experience..." className="w-full bg-white dark:bg-slate-800 border border-gray-100 dark:border-white/5 rounded-lg p-3 text-[12px] font-[500] min-h-[70px] outline-none focus:border-[#FE5502]/40 focus:ring-2 focus:ring-green-50 dark:focus:ring-green-900/20 transition-all resize-none dark:text-slate-200" />
-                                                    <Button type="submit" disabled={isSubmittingReview} className="w-full h-9 bg-gray-900 dark:bg-foreground hover:bg-gray-800 dark:text-background font-[700] rounded-lg text-[10px] uppercase tracking-widest transition-all hover:shadow-md active:scale-[0.98]">
-                                                        {isSubmittingReview ? 'Submitting...' : 'Post Review'}
-                                                    </Button>
-                                                </form>
-                                            </div>
-
-                                            {/* Reviews List */}
-                                            <div className="space-y-2.5">
-                                                {reviewLoading ? (
-                                                    <div className="flex justify-center py-6"><Loader2 className="animate-spin text-[#FE5502]" size={20} /></div>
-                                                ) : reviews.length > 0 ? (
-                                                    reviews.map((r, rIdx) => (
-                                                        <motion.div
-                                                            key={r._id}
-                                                            initial={{ opacity: 0, y: 6 }}
-                                                            animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ delay: 0.08 * rIdx }}
-                                                            className="p-3 rounded-lg border border-gray-100/70 dark:border-white/5 space-y-1.5 hover:shadow-sm hover:border-gray-200/70 dark:hover:border-white/10 transition-all duration-300 bg-white dark:bg-card"
-                                                        >
-                                                            <div className="flex justify-between items-start">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="h-7 w-7 rounded-full bg-gradient-to-br from-green-100 to-emerald-50 dark:from-emerald-900 dark:to-green-950 flex items-center justify-center text-[9px] font-[800] text-[#FE5502] dark:text-emerald-400 ring-1 ring-green-50 dark:ring-white/5">{r.userId?.name?.[0] || 'A'}</div>
-                                                                    <div>
-                                                                        <p className="text-[11px] font-[700] text-gray-800 dark:text-slate-200">{r.userId?.name || 'Anonymous'}</p>
-                                                                        <div className="flex gap-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={9} className={cn(i < r.rating ? 'text-orange-400 fill-orange-400' : 'text-gray-200 dark:text-slate-800')} />)}</div>
-                                                                    </div>
-                                                                </div>
-                                                                <span className="text-[9px] font-[600] text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
-                                                            </div>
-                                                            <p className="text-[11px] text-gray-500 dark:text-slate-400 font-[500] leading-relaxed pl-9">{r.comment}</p>
-                                                        </motion.div>
-                                                    ))
-                                                ) : (
-                                                    <div className="py-8 text-center bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-950 rounded-xl border border-dashed border-gray-200 dark:border-white/5">
-                                                        <MessageSquare size={20} className="text-gray-300 mx-auto mb-1.5" />
-                                                        <p className="text-[10px] font-[600] text-gray-400 uppercase tracking-widest">No reviews yet — be the first!</p>
-                                                    </div>
-                                                )}
-                                            </div>
                                         </motion.div>
 
                                         {/* Bottom spacer */}
@@ -882,91 +739,6 @@ const ProductDetailSheet = () => {
                                     </div>
                                 </div>
 
-                                <div className="h-px bg-gray-100 my-8" />
-
-                                {/* Reviews Section */}
-                                <div className="space-y-6">
-                                    <h3 className="text-xl font-black text-gray-900 flex items-center justify-between">
-                                        Customer Reviews
-                                        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold">
-                                            <Star size={14} fill="currentColor" />
-                                            {reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '4.8'}
-                                        </div>
-                                    </h3>
-
-                                    {/* Submissions form (Foldable or inline) */}
-                                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                                        <h4 className="font-bold text-gray-800 text-sm mb-1">Rate this product</h4>
-                                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-4">Reviews are moderated</p>
-
-                                        <form onSubmit={handleReviewSubmit} className="space-y-4">
-                                            <div className="flex gap-2">
-                                                {[1, 2, 3, 4, 5].map((s) => (
-                                                    <button
-                                                        key={s}
-                                                        type="button"
-                                                        onClick={() => setNewReview({ ...newReview, rating: s })}
-                                                        className={cn(
-                                                            "h-10 w-10 rounded-xl flex items-center justify-center transition-all",
-                                                            newReview.rating >= s ? "bg-orange-100 text-orange-500" : "bg-white text-gray-300 border border-gray-100"
-                                                        )}
-                                                    >
-                                                        <Star size={18} className={cn(newReview.rating >= s && "fill-current")} />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <textarea
-                                                value={newReview.comment}
-                                                onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-                                                placeholder="Write your experience..."
-                                                className="w-full bg-white border border-gray-100 rounded-2xl p-4 text-sm font-medium min-h-[100px] outline-none focus:border-primary/50 transition-all resize-none"
-                                            />
-                                            <Button
-                                                type="submit"
-                                                disabled={isSubmittingReview}
-                                                className="w-full h-12 bg-gray-900 hover:bg-black text-white font-black rounded-xl text-xs uppercase tracking-widest"
-                                            >
-                                                {isSubmittingReview ? "Submitting..." : "Post Review"}
-                                            </Button>
-                                        </form>
-                                    </div>
-
-                                    {/* Reviews List */}
-                                    <div className="space-y-4">
-                                        {reviewLoading ? (
-                                            <div className="flex justify-center py-8">
-                                                <Loader2 className="animate-spin text-primary" size={24} />
-                                            </div>
-                                        ) : reviews.length > 0 ? (
-                                            reviews.map((r) => (
-                                                <div key={r._id} className="p-5 rounded-2xl border border-gray-100 space-y-2">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-8 w-8 rounded-full bg-orange-50 flex items-center justify-center text-[10px] font-black text-primary">
-                                                                {r.userId?.name?.[0] || "A"}
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-xs font-black text-gray-800">{r.userId?.name || "Anonymous"}</p>
-                                                                <div className="flex gap-0.5">
-                                                                    {[...Array(5)].map((_, i) => (
-                                                                        <Star key={i} size={10} className={cn(i < r.rating ? "text-orange-400 fill-orange-400" : "text-gray-200")} />
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <span className="text-[10px] font-bold text-gray-400">{new Date(r.createdAt).toLocaleDateString()}</span>
-                                                    </div>
-                                                    <p className="text-xs text-gray-600 font-medium leading-relaxed">{r.comment}</p>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="py-10 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No reviews yet</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
                                 <div className="h-24" /> {/* Bottom spacer for sticky bar */}
                             </div>
                         </div>
@@ -1008,6 +780,10 @@ const ProductDetailSheet = () => {
                                             >
                                                 <Plus size={18} strokeWidth={3} />
                                             </motion.button>
+                                        </div>
+                                    ) : isClosed ? (
+                                        <div className="flex-1 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 h-[52px] rounded-xl font-black text-sm flex items-center justify-center gap-2 select-none cursor-not-allowed">
+                                            STORE CURRENTLY CLOSED
                                         </div>
                                     ) : (
                                         <motion.button

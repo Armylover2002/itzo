@@ -112,112 +112,64 @@ const lightenHex = (hex, amount = 0.18) => {
 };
 
 /** Full-width bottom stroke + tab curve; l/r are 0–100% of column where the inner bump sits. */
-function buildActiveTabPath(l, r) {
-  const y = 20;
-  const mapX = (x) => l + ((x - 1.5) / (98.5 - 1.5)) * (r - l);
-  return `M 0 ${y} L ${l} ${y} L ${l} 12 C ${mapX(2.6)} 7 ${mapX(8.2)} 1.55 ${mapX(15)} 1.55 L ${mapX(85)} 1.55 C ${mapX(91.8)} 1.55 ${mapX(97.4)} 7 ${mapX(98.5)} 12 V ${y} L 100 ${y}`;
-}
-
 function CategoryNavColumn({
   cat,
   isActive,
   categoryAccent,
   onCategorySelect,
 }) {
-  const iconColor = "#ffffff";
-  const colRef = useRef(null);
-  const labelRef = useRef(null);
-  const [lr, setLr] = useState({ l: 22, r: 78 });
-
-  const measure = () => {
-    if (!isActive || !colRef.current || !labelRef.current) return;
-    const col = colRef.current.getBoundingClientRect();
-    const lab = labelRef.current.getBoundingClientRect();
-    if (col.width < 4) return;
-    const pad = 5;
-    const l = Math.max(0, ((lab.left - col.left - pad) / col.width) * 100);
-    const r = Math.min(100, ((lab.right - col.left + pad) / col.width) * 100);
-    if (r - l > 6) setLr({ l, r });
-  };
-
-  useLayoutEffect(() => {
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (colRef.current) ro.observe(colRef.current);
-    window.addEventListener("resize", measure);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measure);
-    };
-  }, [isActive, cat.name]);
-
-  const pathD = isActive ? buildActiveTabPath(lr.l, lr.r) : "";
-
   return (
     <motion.div
-      ref={colRef}
       layout
-      whileTap={{ scale: 0.96 }}
-      transition={{
-        layout: { type: "spring", stiffness: 520, damping: 38, mass: 0.55 },
-      }}
+      whileTap={{ scale: 0.95 }}
       onClick={() => onCategorySelect && onCategorySelect(cat)}
-      className="relative z-[2] flex min-w-[48px] shrink-0 cursor-pointer flex-col items-center gap-0.5 px-2 pb-0.5 pt-0.5 snap-start md:min-w-[58px] transition-all duration-300"
+      className={cn(
+        "relative z-[2] flex min-w-[54px] shrink-0 cursor-pointer flex-col items-center justify-center gap-0.5 px-2.5 py-1.5 snap-start md:min-w-[64px] transition-all duration-200 rounded-xl",
+        isActive ? "text-white" : "text-white/80 hover:text-white"
+      )}
     >
-      <div className="relative z-10 flex h-9 w-9 items-center justify-center md:h-11 md:w-11">
+      <div className="relative z-10 flex h-8 w-8 items-center justify-center md:h-10 md:w-10">
         {typeof cat.icon === "function" ||
           (typeof cat.icon === "object" && cat.icon.$$typeof) ? (
           <cat.icon
             sx={{
-              fontSize: { xs: 20, md: 24 },
+              fontSize: { xs: 20, md: 22 },
               color: "#ffffff",
-              opacity: isActive ? 1 : 0.8,
-              transition: "opacity 0.2s, transform 0.2s",
+              opacity: isActive ? 1 : 0.75,
+              transform: isActive ? "scale(1.08)" : "scale(1)",
+              transition: "all 0.2s ease-out",
             }}
           />
         ) : (
           <img
             src={cat.icon}
             alt={cat.name}
-            className={cn("h-4 w-4 object-contain md:h-5 md:w-5", isActive ? "opacity-100 brightness-200" : "opacity-80 brightness-0 invert")}
+            className={cn(
+              "h-4 w-4 object-contain md:h-5 md:w-5 transition-transform",
+              isActive ? "opacity-100 brightness-200 scale-110" : "opacity-75 brightness-0 invert"
+            )}
           />
         )}
       </div>
-      <div className="relative mt-px w-full">
+
+      <div className="relative w-full flex flex-col items-center">
         <span
-          ref={labelRef}
           className={cn(
-            "relative z-10 mx-auto block max-w-[72px] truncate px-1 pb-1 text-center text-[9px] uppercase tracking-tight md:max-w-[88px] md:text-[11px]",
-            isActive ? "font-black" : "font-semibold",
+            "relative z-10 block max-w-[76px] truncate text-center text-[9px] uppercase tracking-tight md:max-w-[90px] md:text-[10.5px]",
+            isActive ? "font-black text-white" : "font-semibold text-white/80",
           )}
-          style={{
-            color: "#ffffff",
-            opacity: isActive ? 1 : 0.94,
-          }}>
+        >
           {cat.name}
         </span>
+        {isActive && (
+          <span className="h-[2px] w-4 bg-white rounded-full mt-0.5 shadow-sm" />
+        )}
       </div>
-      
-      {isActive && pathD && (
-        <svg
-          className="pointer-events-none absolute bottom-0 left-0 h-[20px] w-[100%] drop-shadow-[0_1px_2px_rgba(255,255,255,0.3)]"
-          preserveAspectRatio="none"
-          viewBox="0 0 100 20"
-        >
-          <path
-            d={pathD}
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="2.5"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
-      )}
 
       {isActive && (
         <motion.div
           layoutId="active-nav-glow"
-          className="absolute inset-0 bg-white/10 rounded-t-2xl rounded-b-sm -z-10"
+          className="absolute inset-0 bg-white/20 rounded-xl -z-10 border border-white/25 shadow-xs"
         />
       )}
     </motion.div>
@@ -404,14 +356,9 @@ const MainLocationHeader = ({
   const displayNav = embedded ? "flex" : rawDisplayNav;
   const displayCart = embedded ? "block" : rawDisplayCart;
 
-  const baseHeaderColor =
-    (embedded && embeddedHeaderColor) || activeCategory?.headerColor || null;
-  const headerGradient = baseHeaderColor
-    ? embedded
-      ? `linear-gradient(180deg, ${baseHeaderColor} 0%, ${lightenHex(baseHeaderColor, 0.2)} 100%)`
-      : buildHeaderGradient(baseHeaderColor)
-    : "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)";
-  const searchBarBg = buildSearchBarBackgroundColor(baseHeaderColor || "#1e293b");
+  const baseHeaderColor = "#FE5502";
+  const headerGradient = buildHeaderGradient("#FE5502");
+  const searchBarBg = buildSearchBarBackgroundColor("#FE5502");
   const categoryAccent = "#ffffff";
 
   const luminance = getLuminance(baseHeaderColor || "#0f172a");

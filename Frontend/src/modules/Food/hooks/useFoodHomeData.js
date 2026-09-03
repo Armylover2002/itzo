@@ -16,13 +16,18 @@ let globalHomeCache = {
 };
 
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+const RESTAURANTS_PAGE_SIZE = 20;
 
-export const useFoodHomeData = ({ 
-  zoneId, 
-  location, 
-  vegMode, 
+export const useFoodHomeData = ({
+  zoneId,
+  location,
+  vegMode,
   backendOrigin,
-  availabilityTick 
+  availabilityTick,
+  // Skips the restaurant fetch entirely until the Food tab is actually active —
+  // the Home page also renders the Quick Commerce tab, and there is no reason
+  // to pull restaurant data while the customer hasn't opened Food.
+  activeTab = "food",
 }) => {
   // Use cache as initial state if valid
   const hasValidCache = globalHomeCache.bootstrap && (Date.now() - globalHomeCache.lastFetched < CACHE_EXPIRY_MS);
@@ -53,7 +58,9 @@ export const useFoodHomeData = ({
   // --- Restaurants State ---
   const [restaurantsData, setRestaurantsData] = useState(globalHomeCache.restaurants || []);
   const [loadingRestaurants, setLoadingRestaurants] = useState(!globalHomeCache.restaurants);
-  const [visibleRestaurantCount, setVisibleRestaurantCount] = useState(6);
+  const [isLoadingMoreRestaurants, setIsLoadingMoreRestaurants] = useState(false);
+  const [restaurantsPage, setRestaurantsPage] = useState(1);
+  const [totalRestaurants, setTotalRestaurants] = useState(globalHomeCache.restaurants?.length || 0);
   const [isLoadingFilterResults, setIsLoadingFilterResults] = useState(false);
   
   // ... existing filter state ...
@@ -190,12 +197,15 @@ export const useFoodHomeData = ({
     return () => { cancelled = true; };
   }, [zoneId, normalizeImageUrl]);
 
-  // --- Fetch Restaurants ---
-  const fetchRestaurants = useCallback(async (filters = {}) => {
+  // --- Fetch Restaurants (server-paginated — a home page never needs 1000
+  // restaurants in one response; more is fetched on demand via "load more") ---
+  const fetchRestaurants = useCallback(async (filters = {}, page = 1, append = false) => {
     const requestSeq = ++restaurantsRequestSeqRef.current;
     try {
-      setLoadingRestaurants(true);
-      const params = {};
+      if (append) setIsLoadingMoreRestaurants(true);
+      else setLoadingRestaurants(true);
+
+      const params = { limit: RESTAURANTS_PAGE_SIZE, page };
       if (Number.isFinite(location?.latitude) && Number.isFinite(location?.longitude)) {
         params.lat = location.latitude;
         params.lng = location.longitude;
@@ -207,7 +217,7 @@ export const useFoodHomeData = ({
       // Map local active filters to API params
       if (filters.activeFilters?.has("rating-45-plus")) params.minRating = 4.5;
       else if (filters.activeFilters?.has("rating-4-plus")) params.minRating = 4.0;
-      
+
       const response = await restaurantAPI.getRestaurants(params);
       if (requestSeq !== restaurantsRequestSeqRef.current) return;
 
@@ -216,7 +226,7 @@ export const useFoodHomeData = ({
           const profileImageCandidates = buildRestaurantImageCandidates(restaurant.profileImage || restaurant.image);
           const coverImages = extractImages(restaurant.coverImages || restaurant.coverImage);
           const allImages = Array.from(new Set([...profileImageCandidates, ...coverImages].filter(Boolean)));
-          
+
           return {
             id: restaurant.restaurantId || restaurant._id,
             mongoId: restaurant._id,
@@ -224,8 +234,8 @@ export const useFoodHomeData = ({
             cuisine: restaurant.cuisines?.[0] || "Multi-cuisine",
             rating: Number(restaurant.rating) || 0,
             deliveryTime: restaurant.estimatedDeliveryTime || "25-30 mins",
-            distance: restaurant.distanceInKm 
-              ? `${restaurant.distanceInKm} km` 
+            distance: restaurant.distanceInKm
+              ? `${restaurant.distanceInKm} km`
               : (restaurant.distance ? String(restaurant.distance).includes("km") ? restaurant.distance : `${restaurant.distance} km` : `${(2 + Math.random()).toFixed(1)} km`),
             featuredDish: restaurant.featuredDish || "Special Dish",
             featuredPrice: restaurant.featuredPrice || (restaurant.restaurantName === "Sayaji" ? "249" : "199"),
@@ -246,21 +256,37 @@ export const useFoodHomeData = ({
           };
         });
 
+        const total = Number(response.data?.data?.total ?? transformed.length);
+
         startTransition(() => {
-          setRestaurantsData(transformed);
-          globalHomeCache.restaurants = transformed;
+          setRestaurantsData((prev) => {
+            const next = append ? [...prev, ...transformed] : transformed;
+            globalHomeCache.restaurants = next;
+            return next;
+          });
+          setTotalRestaurants(total);
+          setRestaurantsPage(page);
         });
       }
     } catch (err) {
-      setRestaurantsData([]);
+      if (!append) setRestaurantsData([]);
     } finally {
-      if (requestSeq === restaurantsRequestSeqRef.current) setLoadingRestaurants(false);
+      if (requestSeq === restaurantsRequestSeqRef.current) {
+        setLoadingRestaurants(false);
+        setIsLoadingMoreRestaurants(false);
+      }
     }
   }, [location, zoneId, buildRestaurantImageCandidates, extractImages]);
 
   useEffect(() => {
-    fetchRestaurants(appliedFilters);
-  }, [appliedFilters, fetchRestaurants]);
+    if (activeTab !== "food") {
+      // Nothing on the Quick Commerce tab needs restaurant data — skip the
+      // network call entirely instead of fetching it just to hide it with CSS.
+      setLoadingRestaurants(false);
+      return;
+    }
+    fetchRestaurants(appliedFilters, 1, false);
+  }, [appliedFilters, fetchRestaurants, activeTab]);
 
   // --- Menu Context Fetching (Veg Mode) ---
   const menuUnionRestaurantIdsKey = restaurantsData.map(r => r.mongoId || r.id).join(",");
@@ -342,9 +368,6 @@ export const useFoodHomeData = ({
     return filtered;
   }, [deferredRestaurants, vegMode, sortBy, availabilityTick]);
 
-  const visibleRestaurants = useMemo(() => 
-    filteredRestaurants.slice(0, visibleRestaurantCount), [filteredRestaurants, visibleRestaurantCount]);
-
   const displayCategories = useMemo(() => {
     if (realCategories.length > 0) return realCategories;
     if (menuCategories.length > 0) return menuCategories;
@@ -376,22 +399,26 @@ export const useFoodHomeData = ({
     const state = { activeFilters: new Set(nextFilters), sortBy: nextSortBy, selectedCuisine: nextCuisine };
     setAppliedFilters(state);
     setIsLoadingFilterResults(true);
-    await fetchRestaurants(state);
+    await fetchRestaurants(state, 1, false);
     setIsLoadingFilterResults(false);
   }, [fetchRestaurants]);
 
+  // Fetches the next page from the server instead of merely revealing more of
+  // an already-fully-downloaded list — the initial load only pulls 20 rows.
   const loadMoreRestaurants = useCallback(() => {
-    setVisibleRestaurantCount(prev => Math.min(prev + 6, filteredRestaurants.length));
-  }, [filteredRestaurants.length]);
+    if (isLoadingMoreRestaurants || restaurantsData.length >= totalRestaurants) return;
+    fetchRestaurants(appliedFilters, restaurantsPage + 1, true);
+  }, [fetchRestaurants, appliedFilters, restaurantsPage, isLoadingMoreRestaurants, restaurantsData.length, totalRestaurants]);
 
   return {
     banners: { images: heroBannerImages, data: heroBannersData, loading: loadingBanners },
     categories: { display: displayCategories, loading: loadingRealCategories || loadingMenuCategories },
-    restaurants: { 
-      visible: visibleRestaurants, 
-      loading: loadingRestaurants, 
+    restaurants: {
+      visible: filteredRestaurants,
+      loading: loadingRestaurants,
       isLoadingFilterResults,
-      hasMore: visibleRestaurantCount < filteredRestaurants.length 
+      isLoadingMore: isLoadingMoreRestaurants,
+      hasMore: restaurantsData.length < totalRestaurants,
     },
     landing: { exploreMore: landingExploreMore, heading: exploreMoreHeading, loading: loadingLandingConfig, videoUrl: headerVideoUrl },
     meta: { recommended: recommendedForYouRestaurants },

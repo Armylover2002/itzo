@@ -113,12 +113,8 @@ const Withdrawals = () => {
         };
         loadLimitsAndProfile();
 
-        const onFocus = () => refreshLimits();
-        window.addEventListener('focus', onFocus);
-
         return () => {
             cancelled = true;
-            window.removeEventListener('focus', onFocus);
         };
     }, []);
 

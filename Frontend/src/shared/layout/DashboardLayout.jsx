@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import Sidebar from './Sidebar';
@@ -15,7 +15,7 @@ import SellerEarningsContext, { defaultEarnings } from '@/modules/seller/context
 import { getOrderSocket, onSellerOrderNew, onOrderStatusUpdate, onOrderCancelled, onSellerHandoffOtp } from '@/core/services/orderSocket';
 import alertSound from '@/modules/Food/assets/audio/alert.mp3';
 
-const POLL_INTERVAL_MS = 15000;
+const POLL_INTERVAL_MS = 30000;
 
 const resolveAudioSource = (source, cacheKey = 'seller-alert') => {
     if (!source) return source;
@@ -86,10 +86,10 @@ const DashboardLayout = ({ children, navItems, title }) => {
             setOrdersLoading(false);
             return;
         }
-        setOrdersLoading(true);
 
-        const fetchOrders = async () => {
+        const fetchOrders = async (isInitial = false) => {
             try {
+                if (isInitial) setOrdersLoading(true);
                 const res = await sellerApi.getOrders();
                 if (!res?.data?.success) return;
 
@@ -139,13 +139,13 @@ const DashboardLayout = ({ children, navItems, title }) => {
             } catch (error) {
                 console.error("Polling Error:", error);
             } finally {
-                setOrdersLoading(false);
+                if (isInitial) setOrdersLoading(false);
             }
         };
 
-        fetchOrdersRef.current = fetchOrders;
-        fetchOrders();
-        const pollInterval = setInterval(fetchOrders, POLL_INTERVAL_MS);
+        fetchOrdersRef.current = () => fetchOrders(false);
+        fetchOrders(true);
+        const pollInterval = setInterval(() => fetchOrders(false), POLL_INTERVAL_MS);
         return () => clearInterval(pollInterval);
     }, [role]);
 
@@ -256,19 +256,20 @@ const DashboardLayout = ({ children, navItems, title }) => {
         if (!isEarningsRoute(location.pathname)) return undefined;
 
         const timer = setInterval(() => {
-            refreshEarnings();
-        }, POLL_INTERVAL_MS);
+            refreshEarnings(true);
+        }, 45000);
 
         return () => clearInterval(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [role, location.pathname]);
 
-    const refreshOrders = () => {
+    const refreshOrders = useCallback(() => {
         if (fetchOrdersRef.current) fetchOrdersRef.current();
-    };
-    const refreshEarnings = () => {
+    }, []);
+
+    const refreshEarnings = useCallback((isSilent = false) => {
         earningsFetchedRef.current = false;
-        setEarningsLoading(true);
+        if (!isSilent) setEarningsLoading(true);
         sellerApi
             .getEarnings()
             .then((response) => {
@@ -292,10 +293,22 @@ const DashboardLayout = ({ children, navItems, title }) => {
                 }
             })
             .finally(() => {
-                setEarningsLoading(false);
+                if (!isSilent) setEarningsLoading(false);
                 earningsFetchedRef.current = true;
             });
-    };
+    }, []);
+
+    const sellerOrdersValue = useMemo(() => ({
+        orders: role === 'seller' ? sellerOrders : [],
+        ordersLoading: role === 'seller' ? ordersLoading : false,
+        refreshOrders,
+    }), [role, sellerOrders, ordersLoading, refreshOrders]);
+
+    const sellerEarningsValue = useMemo(() => ({
+        earningsData: role === 'seller' ? sellerEarningsData : defaultEarnings,
+        earningsLoading: role === 'seller' ? earningsLoading : false,
+        refreshEarnings,
+    }), [role, sellerEarningsData, earningsLoading, refreshEarnings]);
 
     useEffect(() => {
         setIsSidebarOpen(false);
@@ -303,29 +316,25 @@ const DashboardLayout = ({ children, navItems, title }) => {
 
     // Timer: driven by server expiry (sellerPendingExpiresAt), not a local 60s from modal open
     useEffect(() => {
-        if (!newOrderAlert) return undefined;
+        if (newOrderAlert) {
+            const rawSec = newOrderAlert.acceptanceWindowSeconds ?? newOrderAlert.acceptanceWindow ?? 60;
+            const validSec = Math.max(5, Math.min(180, Number(rawSec) || 60));
+            acceptWindowTotalRef.current = validSec;
+            setTimeLeft(validSec);
 
-        const left = secondsLeftUntilSellerExpiry(newOrderAlert);
-        if (left <= 0) {
-            setNewOrderAlert(null);
-            toast.error("This order has already expired — you can no longer accept it.");
-            return undefined;
+            const timer = setInterval(() => {
+                setTimeLeft((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
+                        setNewOrderAlert(null);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(timer);
         }
-
-        acceptWindowTotalRef.current = left;
-        setTimeLeft(left);
-
-        const timer = setInterval(() => {
-            const next = secondsLeftUntilSellerExpiry(newOrderAlertRef.current);
-            setTimeLeft(next);
-            if (next <= 0) {
-                clearInterval(timer);
-                setNewOrderAlert(null);
-                toast.error("Order timed out!");
-            }
-        }, 1000);
-
-        return () => clearInterval(timer);
     }, [newOrderAlert]);
 
     const handleAcceptOrder = async (orderId) => {
@@ -370,18 +379,8 @@ const DashboardLayout = ({ children, navItems, title }) => {
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
                 <main className={cn("min-h-[calc(100vh-4rem)]", (role === "admin" || role === "seller") ? "pb-24 md:pb-8" : "pb-20")}>
                     <div className="w-full px-3 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
-                        <SellerOrdersContext.Provider
-                            value={{
-                                orders: role === 'seller' ? sellerOrders : [],
-                                ordersLoading: role === 'seller' ? ordersLoading : false,
-                                refreshOrders,
-                            }}>
-                            <SellerEarningsContext.Provider
-                                value={{
-                                    earningsData: role === 'seller' ? sellerEarningsData : defaultEarnings,
-                                    earningsLoading: role === 'seller' ? earningsLoading : false,
-                                    refreshEarnings,
-                                }}>
+                        <SellerOrdersContext.Provider value={sellerOrdersValue}>
+                            <SellerEarningsContext.Provider value={sellerEarningsValue}>
                                 {children}
                             </SellerEarningsContext.Provider>
                         </SellerOrdersContext.Provider>

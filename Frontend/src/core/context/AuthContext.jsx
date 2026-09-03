@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import axiosInstance from '@core/api/axios';
 import { getWithDedupe } from '@core/api/dedupe';
 import { isTokenExpired } from '@core/utils/token';
@@ -232,7 +232,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const refreshUser = async () => {
+    const refreshUser = useCallback(async () => {
         if (token) {
             try {
                 const response = await axiosInstance.get(getProfileEndpoint(currentRole));
@@ -243,20 +243,22 @@ export const AuthProvider = ({ children }) => {
                 console.error('Failed to refresh profile:', error);
             }
         }
-    };
+    }, [token, currentRole]);
+
+    const contextValue = useMemo(() => ({
+        user,
+        token, // Added token to context
+        role: currentRole,
+        isAuthenticated,
+        isLoading,
+        authData,
+        login,
+        logout,
+        refreshUser
+    }), [user, token, currentRole, isAuthenticated, isLoading, authData, login, logout, refreshUser]);
 
     return (
-        <AuthContext.Provider value={{
-            user,
-            token, // Added token to context
-            role: currentRole,
-            isAuthenticated,
-            isLoading,
-            authData,
-            login,
-            logout,
-            refreshUser
-        }}>
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     );

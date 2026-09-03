@@ -71,7 +71,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
 
     try {
       const homeParams = {};
-      const productParams = { limit: 20 };
+      const productParams = { limit: 100 };
       if (hasValidLocation) {
         homeParams.lat = lat;
         homeParams.lng = lng;
@@ -147,7 +147,17 @@ export const useQuickHomeData = ({ currentLocation }) => {
         setActiveCategory(initialActive);
         newDataCache.activeCategory = initialActive;
 
-        const formattedQuickCats = dbCats.filter((cat) => cat.type === "category").map((cat) => ({ id: cat._id, name: cat.name, image: getQuickCategoryImage(cat) }));
+        const formattedQuickCats = dbCats
+          .filter((cat) => cat.type === "category")
+          .map((cat) => ({
+            ...cat,
+            id: cat._id,
+            _id: cat._id,
+            name: cat.name,
+            parentId: cat.parentId?._id || cat.parentId || null,
+            headerId: cat.headerId?._id || cat.headerId || cat.parentId?._id || cat.parentId || null,
+            image: getQuickCategoryImage(cat),
+          }));
         setQuickCategories(formattedQuickCats);
         newDataCache.quickCategories = formattedQuickCats;
       }
@@ -160,7 +170,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
           ...p, id: p._id || p.id, image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
           price: Number(p.salePrice || 0) > 0 ? Number(p.salePrice) : Number(p.price || 0),
           originalPrice: Number(p.originalPrice || p.mrp || p.price || p.salePrice || 0),
-          weight: p.weight || "1 unit", deliveryTime: "8-15 mins"
+          deliveryTime: "8-15 mins"
         }));
         setProducts(formattedProds);
         newDataCache.products = formattedProds;
@@ -200,7 +210,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
         return;
       }
       try {
-        const res = await customerApi.getProducts({ categoryId: headerId, limit: 50 });
+        const res = await customerApi.getProducts({ categoryId: headerId, limit: 100 });
         if (res?.data?.success) {
           const rawResult = res.data.result;
           const dbProds = Array.isArray(res.data.results)
@@ -216,7 +226,6 @@ export const useQuickHomeData = ({ currentLocation }) => {
             image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
             price: Number(p.salePrice || 0) > 0 ? Number(p.salePrice) : Number(p.price || 0),
             originalPrice: Number(p.originalPrice || p.mrp || p.price || p.salePrice || 0),
-            weight: p.weight || "1 unit",
             deliveryTime: "8-15 mins",
           }));
           globalQuickHomeCache.categoryProducts.set(headerId, formatted);

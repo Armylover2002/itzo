@@ -85,6 +85,33 @@ export const serializeVariantsForApi = (variants = []) =>
       .slice(0, MAX_VARIANT_IMAGES).length,
   }));
 
+/**
+ * Validates variants client-side before submit, mirroring the backend's
+ * 1-5 variant / name+price / 1-3 image rules so the seller gets instant
+ * feedback instead of a round-trip error.
+ */
+export const validateVariantsForSubmit = (variants = []) => {
+  const list = Array.isArray(variants) ? variants : [];
+  if (list.length === 0) return "At least one variant is required";
+  if (list.length > MAX_PRODUCT_VARIANTS) {
+    return `A product can have at most ${MAX_PRODUCT_VARIANTS} variants`;
+  }
+  for (const variant of list) {
+    const name = String(variant?.name || "").trim();
+    if (!name) return "Every variant needs a name";
+    if (!(Number(variant?.price) > 0)) {
+      return `"${name}" needs a price greater than 0`;
+    }
+    if (variant?.stock === "" || variant?.stock == null || Number(variant.stock) < 0) {
+      return `"${name}" needs a stock quantity`;
+    }
+    if (countVariantMedia(variant) < MIN_VARIANT_IMAGES) {
+      return `"${name}" needs at least ${MIN_VARIANT_IMAGES} image`;
+    }
+  }
+  return null;
+};
+
 export const appendVariantImageFiles = (formData, variants = []) => {
   const sharedFiles = [];
   variants.forEach((variant, variantIndex) => {

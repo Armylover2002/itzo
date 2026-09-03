@@ -173,7 +173,13 @@ export default function Home() {
   const [showAllCategoriesModal, setShowAllCategoriesModal] = useState(false);
   const [availabilityTick, setAvailabilityTick] = useState(Date.now());
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState("food");
+  const routerLocation = useRouterLocation();
+  // Derived from the URL on first render (not corrected afterwards via effect)
+  // so the Food tab's restaurant fetch never fires even for a single render
+  // when landing directly on /quick.
+  const [activeTab, setActiveTab] = useState(() =>
+    routerLocation.pathname.endsWith("/quick") ? "quick" : "food",
+  );
   const [quickThemeColor, setQuickThemeColor] = useState("#FE5502");
   const [showToast, setShowToast] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -181,7 +187,6 @@ export default function Home() {
   const heroShellRef = useRef(null);
   const restaurantLoadMoreRef = useRef(null);
   const isHandlingSwitchOff = useRef(false);
-  const routerLocation = useRouterLocation();
 
   // --- Location Logic ---
   const { location } = useLocation();
@@ -222,7 +227,8 @@ export default function Home() {
     location: effectiveLocation,
     vegMode,
     backendOrigin: BACKEND_ORIGIN,
-    availabilityTick
+    availabilityTick,
+    activeTab
   });
 
   // --- UI Effects ---
@@ -453,8 +459,8 @@ export default function Home() {
                         <Suspense fallback={<div className="h-screen w-full bg-white dark:bg-[#0a0a0a]" />}>
                           <QuickCommerceHomePage
                             embedded
-                            onThemeChange={({ color }) => color && setQuickThemeColor(color)}
-                            embeddedHeaderColor={quickThemeColor}
+                            onThemeChange={() => {}}
+                            embeddedHeaderColor="#FE5502"
                           />
                         </Suspense>
                       </div>

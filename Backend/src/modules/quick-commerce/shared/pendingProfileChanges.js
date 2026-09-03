@@ -32,7 +32,6 @@ export const REVIEWABLE_DOCUMENT_FIELDS = [
 export const REVIEWABLE_SHOP_FIELDS = [
   "alternatePhone",
   "supportEmail",
-  "openingHours",
   "zoneId",
   "zoneSource",
   "zoneName",

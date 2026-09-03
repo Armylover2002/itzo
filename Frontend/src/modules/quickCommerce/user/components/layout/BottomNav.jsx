@@ -1,12 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, LayoutGrid, ShoppingBag, User } from 'lucide-react';
+import { Home, LayoutGrid, Store, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     getQuickCategoriesPath,
     getQuickHomePath,
-    getQuickOrdersPath,
     getQuickProfilePath,
 } from '../../utils/routes';
 
@@ -18,7 +17,7 @@ const BottomNav = () => {
     const navItems = [
         { label: 'Home', icon: Home, path: getQuickHomePath(location.pathname) },
         { label: 'Category', icon: LayoutGrid, path: getQuickCategoriesPath() },
-        { label: 'Orders', icon: ShoppingBag, path: getQuickOrdersPath() },
+        { label: 'Shop', icon: Store, path: '/quick/shops' },
         { label: 'Profile', icon: User, path: getQuickProfilePath() },
     ];
     const isActivePath = (targetPath) => {

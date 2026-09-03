@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import MainLocationHeader from '../components/shared/MainLocationHeader';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Search, ShoppingBag } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 import { customerApi } from '../services/customerApi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getQuickCategoryPath } from '../utils/routes';
@@ -48,6 +49,8 @@ const CategoryCard = ({ category, isFlipped }) => {
 };
 
 const CategoriesPage = () => {
+    const navigate = useNavigate();
+    const { cartCount } = useCart();
     const [groups, setGroups] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [flippedCategoryId, setFlippedCategoryId] = useState(null);
@@ -122,14 +125,52 @@ const CategoriesPage = () => {
 
     return (
         <div className="min-h-screen bg-background transition-colors duration-500">
-            <MainLocationHeader 
-                showCategories={false} 
-                hideDeliveryTime={true} 
-                hideLogo={true} 
-                activeCategory={{ headerColor: '#FE5502' }}
-            />
+            {/* Dedicated Clean Categories Header */}
+            <div className="sticky top-0 z-40 bg-gradient-to-r from-[#FE5502] via-[#FF6A1A] to-[#FF8533] text-white shadow-md">
+                <div className="max-w-[1400px] mx-auto px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="p-1.5 rounded-full hover:bg-white/20 active:scale-95 transition-all text-white"
+                            aria-label="Back"
+                        >
+                            <ArrowLeft size={22} />
+                        </button>
+                        <div>
+                            <h1 className="text-lg md:text-xl font-black tracking-tight text-white leading-none">
+                                All Categories
+                            </h1>
+                            <p className="text-[11px] text-white/80 font-medium mt-0.5">
+                                Explore grocery, food & essentials
+                            </p>
+                        </div>
+                    </div>
 
-            <div className="max-w-[1400px] mx-auto px-3 pt-[206px] md:pt-[240px] pb-20">
+                    <div className="flex items-center gap-2">
+                        <Link
+                            to="/quick/search"
+                            className="p-2 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all text-white"
+                            aria-label="Search"
+                        >
+                            <Search size={19} />
+                        </Link>
+                        <Link
+                            to="/quick/cart"
+                            className="p-2 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 transition-all text-white relative"
+                            aria-label="Cart"
+                        >
+                            <ShoppingBag size={19} />
+                            {Number(cartCount || 0) > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-white text-primary-orange font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-[1400px] mx-auto px-3 pt-5 pb-24">
                 <AnimatePresence mode='wait'>
                     {isLoading ? (
                         <motion.div

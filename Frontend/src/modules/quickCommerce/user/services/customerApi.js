@@ -88,11 +88,13 @@ export const customerApi = {
   createSupportTicket: (data) => axiosInstance.post("/quick-commerce/support/ticket", data, withQuickSession()),
   getSupportTickets: (params = {}) => quickGetWithDedupe("/quick-commerce/support/my-tickets", params),
 
-  getProducts: (params) => quickGetWithDedupe("/quick-commerce/products", params),
-  searchProducts: (params) => quickGetWithDedupe("/quick-commerce/products", params),
+  getProducts: (params, options = {}) => quickGetWithDedupe("/quick-commerce/products", params, options),
+  searchProducts: (params, options = {}) => quickGetWithDedupe("/quick-commerce/products", params, options),
   getCategories: (params = {}) => quickGetWithDedupe("/quick-commerce/categories", params),
-  getCategoryProducts: (categoryId, params) =>
-    quickGetWithDedupe("/quick-commerce/products", { categoryId, ...params }),
+  getCategoryDetails: (categoryId, options = {}) =>
+    quickGetWithDedupe(`/quick-commerce/categories/${categoryId}`, {}, options),
+  getCategoryProducts: (categoryId, params, options = {}) =>
+    quickGetWithDedupe("/quick-commerce/products", { categoryId, ...params }, options),
   getProductDetails: (productId) => quickGetWithDedupe(`/quick-commerce/products/${productId}`, {}),
 
   getAddresses: () => axiosInstance.get("/quick-commerce/addresses", withQuickSession()),
@@ -102,6 +104,8 @@ export const customerApi = {
 
   getStores: (params) => quickGetWithDedupe("/quick-commerce/stores", params),
   getStoreDetails: (storeId) => quickGetWithDedupe(`/quick-commerce/stores/${storeId}`, {}),
+  getShops: (params) => quickGetWithDedupe("/quick-commerce/shops", params),
+  getShopById: (shopId) => quickGetWithDedupe(`/quick-commerce/shops/${shopId}`, {}),
 
   getProductReviews: async (productId) => {
     try {

@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import { customerApi } from "../services/customerApi";
 import { useAuth } from "@core/context/AuthContext";
@@ -340,12 +341,20 @@ export const LocationProvider = ({ children }) => {
         return [];
       }
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?._id]);
 
-  // On mount: hydrate saved addresses from profile (only when customer is logged in)
+  const lastFetchedUserIdRef = useRef(null);
+
+  // On mount or user switch: hydrate saved addresses (only when customer is logged in)
   useEffect(() => {
+    if (!isAuthenticated) {
+      lastFetchedUserIdRef.current = null;
+      return;
+    }
+    if (lastFetchedUserIdRef.current === user?._id) return;
+    lastFetchedUserIdRef.current = user?._id;
     refreshAddresses();
-  }, [refreshAddresses]);
+  }, [isAuthenticated, user?._id, refreshAddresses]);
 
   // On mount: only restore from cache. Do NOT auto-fetch – browsers block the
   // location prompt unless it's triggered by a user gesture (e.g. tap).

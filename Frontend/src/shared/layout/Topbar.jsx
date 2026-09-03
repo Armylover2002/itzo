@@ -54,9 +54,14 @@ const Topbar = ({ onMenuClick }) => {
 
     React.useEffect(() => {
         fetchNotifications();
-        // Polling every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
+        // Polling every 60 seconds
+        const interval = setInterval(fetchNotifications, 60000);
+        const onUpdate = () => fetchNotifications();
+        window.addEventListener('sellerNotificationsUpdated', onUpdate);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('sellerNotificationsUpdated', onUpdate);
+        };
     }, [isSeller]);
 
     // Handle Click Outside

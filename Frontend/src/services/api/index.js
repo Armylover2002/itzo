@@ -2526,47 +2526,71 @@ export const orderAPI = {
     apiClient.post("/food/orders/verify-payment", body ?? {}, {
       contextModule: "user",
     }),
-  getOrders: (params = {}) =>
-    apiClient
-      .get("/food/orders", {
-        params: { limit: 20, page: 1, ...params },
-        contextModule: "user",
-      })
-      .then((res) => {
-        const payload = res?.data?.data;
-
-        // Normalize backend paginated shape:
-        // { data: { data: [...], meta: { total, page, limit, totalPages } } }
-        // into UI-friendly:
-        // { data: { orders: [...], pagination: { total, page, limit, pages } } }
-        if (
-          payload &&
-          typeof payload === "object" &&
-          Array.isArray(payload.data) &&
-          payload.meta &&
-          typeof payload.meta === "object"
-        ) {
-          const meta = payload.meta;
-          return {
-            ...res,
-            data: {
-              ...res.data,
+  getOrders: (() => {
+    let inFlight = null;
+    let cached = null;
+    let cacheTime = 0;
+    let lastParamsKey = "";
+    const CACHE_MS = 3000;
+    const fn = (params = {}) => {
+      const paramsKey = JSON.stringify(params || {});
+      const now = Date.now();
+      if (cached && paramsKey === lastParamsKey && now - cacheTime < CACHE_MS) {
+        return Promise.resolve(cached);
+      }
+      if (inFlight && paramsKey === lastParamsKey) {
+        return inFlight;
+      }
+      lastParamsKey = paramsKey;
+      inFlight = apiClient
+        .get("/food/orders", {
+          params: { limit: 20, page: 1, ...params },
+          contextModule: "user",
+        })
+        .then((res) => {
+          const payload = res?.data?.data;
+          let result = res;
+          if (
+            payload &&
+            typeof payload === "object" &&
+            Array.isArray(payload.data) &&
+            payload.meta &&
+            typeof payload.meta === "object"
+          ) {
+            const meta = payload.meta;
+            result = {
+              ...res,
               data: {
-                ...payload,
-                orders: payload.data,
-                pagination: {
-                  total: Number(meta.total || 0),
-                  page: Number(meta.page || 1),
-                  limit: Number(meta.limit || params.limit || 20),
-                  pages: Number(meta.totalPages || 1),
+                ...res.data,
+                data: {
+                  ...payload,
+                  orders: payload.data,
+                  pagination: {
+                    total: Number(meta.total || 0),
+                    page: Number(meta.page || 1),
+                    limit: Number(meta.limit || params.limit || 20),
+                    pages: Number(meta.totalPages || 1),
+                  },
                 },
               },
-            },
-          };
-        }
-
-        return res;
-      }),
+            };
+          }
+          cached = result;
+          cacheTime = Date.now();
+          return result;
+        })
+        .finally(() => {
+          inFlight = null;
+        });
+      return inFlight;
+    };
+    fn.invalidateCache = () => {
+      inFlight = null;
+      cached = null;
+      cacheTime = 0;
+    };
+    return fn;
+  })(),
   getOrderDetails: (() => {
     const inFlight = new Map();
     const cache = new Map();

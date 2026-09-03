@@ -10,10 +10,8 @@ import {
   HiOutlinePencilSquare,
   HiOutlineEye,
   HiOutlinePhoto,
-  HiOutlineCurrencyDollar,
   HiOutlineArchiveBox,
   HiOutlineTag,
-  HiOutlineScale,
   HiOutlineArrowPath,
   HiOutlineXMark,
   HiOutlineChevronRight,
@@ -29,6 +27,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { sellerApi } from "../services/sellerApi";
 import { toast } from "sonner";
+import VariantEditor, { newVariant } from "../components/VariantEditor";
+import {
+  validateVariantsForSubmit,
+  appendVariantImageFiles,
+  buildVariantMediaFromImages,
+} from "@/shared/utils/variantMedia";
 
 import { MagicCard } from "@/components/ui/magic-card";
 import { BlurFade } from "@/components/ui/blur-fade";
@@ -152,22 +156,13 @@ const ProductManagement = () => {
     slug: "",
     sku: "",
     description: "",
-    price: "",
-    salePrice: "",
-    stock: "",
     lowStockAlert: 5,
     category: "",
     header: "",
     subcategory: "",
     status: "active",
-    tags: "",
-    weight: "",
     brand: "",
-    mainImage: null,
-    galleryImages: [],
-    variants: [
-      { id: Date.now(), name: "Default", price: "", salePrice: "", stock: "", sku: "" },
-    ],
+    variants: [newVariant()],
   });
 
   const safeProducts = useMemo(
@@ -230,8 +225,15 @@ const ProductManagement = () => {
 
   const handleSave = async () => {
     try {
-      if (!formData.name || !formData.price || !formData.stock || !formData.header || !formData.category || !formData.subcategory) {
+      if (!formData.name || !formData.header || !formData.category || !formData.subcategory) {
         toast.error("Please fill all required fields, including categories");
+        return;
+      }
+
+      const variantError = validateVariantsForSubmit(formData.variants);
+      if (variantError) {
+        toast.error(variantError);
+        setModalTab("variants");
         return;
       }
 
@@ -240,24 +242,21 @@ const ProductManagement = () => {
       data.append("slug", formData.slug);
       data.append("sku", formData.sku);
       data.append("description", formData.description);
-      data.append("price", Number(formData.price));
-      data.append("salePrice", Number(formData.salePrice) || 0);
-      data.append("stock", Number(formData.stock));
       data.append("headerId", formData.header);
       data.append("categoryId", formData.category);
       data.append("subcategoryId", formData.subcategory);
       data.append("status", formData.status);
       data.append("brand", formData.brand);
-      data.append("weight", formData.weight);
-      data.append("tags", formData.tags);
-      data.append("variants", JSON.stringify(formData.variants));
 
-      if (formData.mainImageFile) {
-        data.append("mainImage", formData.mainImageFile);
-      }
-      if (formData.galleryFiles && formData.galleryFiles.length > 0) {
-        formData.galleryFiles.forEach((file) => data.append("galleryImages", file));
-      }
+      // Variants carry price/stock/sku/images — the only source of truth now.
+      const serializedVariants = formData.variants.map(({ id, media, ...rest }) => ({
+        ...rest,
+        images: (media || [])
+          .filter((item) => item?.url && !String(item.url).startsWith("data:"))
+          .map((item) => item.url),
+      }));
+      data.append("variants", JSON.stringify(serializedVariants));
+      appendVariantImageFiles(data, formData.variants);
 
       if (editingItem) {
         await sellerApi.updateProduct(editingItem._id || editingItem.id, data);
@@ -275,24 +274,6 @@ const ProductManagement = () => {
     }
   };
 
-  const handleImageUpload = (e, type) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (type === "main") {
-          setFormData({ ...formData, mainImage: reader.result, mainImageFile: file });
-        } else {
-          setFormData({
-            ...formData,
-            galleryImages: [...formData.galleryImages, reader.result],
-            galleryFiles: [...(formData.galleryFiles || []), file]
-          });
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const exportProducts = () => {
     console.log("Exporting products...");
@@ -318,34 +299,40 @@ const ProductManagement = () => {
 
   const openEditModal = (item = null) => {
     if (item) {
+      const legacyImages = [item.mainImage, ...(item.galleryImages || [])].filter(Boolean);
+      const variants =
+        item.variants && item.variants.length > 0
+          ? item.variants.map((v) => ({
+              ...v,
+              id: v._id || newVariant().id,
+              media: buildVariantMediaFromImages(
+                Array.isArray(v.images) && v.images.length > 0 ? v.images : legacyImages,
+              ),
+            }))
+          : [
+              {
+                ...newVariant(),
+                name: "Default",
+                price: item.price || "",
+                salePrice: item.salePrice || "",
+                stock: item.stock || "",
+                sku: item.sku || "",
+                media: buildVariantMediaFromImages(legacyImages),
+              },
+            ];
+
       setFormData({
         name: item.name || "",
         slug: item.slug || "",
         sku: item.sku || "",
         description: item.description || "",
-        price: item.price || "",
-        salePrice: item.salePrice || "",
-        stock: item.stock || "",
         lowStockAlert: item.lowStockAlert || 5,
         header: item.headerId?._id || item.headerId || "",
         category: item.categoryId?._id || item.categoryId || "",
         subcategory: item.subcategoryId?._id || item.subcategoryId || "",
         status: item.status || "active",
-        tags: Array.isArray(item.tags) ? item.tags.join(", ") : item.tags || "",
-        weight: item.weight || "",
         brand: item.brand || "",
-        mainImage: item.mainImage || null,
-        galleryImages: item.galleryImages || [],
-        variants: (item.variants && item.variants.length > 0) ? item.variants.map(v => ({ ...v, id: v._id || Date.now() })) : [
-          {
-            id: Date.now(),
-            name: "Default",
-            price: item.price || "",
-            salePrice: item.salePrice || "",
-            stock: item.stock || "",
-            sku: item.sku || "",
-          },
-        ],
+        variants,
       });
       setEditingItem(item);
     } else {
@@ -354,28 +341,12 @@ const ProductManagement = () => {
         slug: "",
         sku: "",
         description: "",
-        price: "",
-        salePrice: "",
-        stock: "",
         lowStockAlert: 5,
         category: "",
         header: "",
         status: "active",
-        tags: "",
-        weight: "",
         brand: "",
-        mainImage: null,
-        galleryImages: [],
-        variants: [
-          {
-            id: Date.now(),
-            name: "Default",
-            price: "",
-            salePrice: "",
-            stock: "",
-            sku: "",
-          },
-        ],
+        variants: [newVariant()],
       });
       setEditingItem(null);
     }
@@ -847,11 +818,6 @@ const ProductManagement = () => {
                       icon: HiOutlineTag,
                     },
                     {
-                      id: "pricing",
-                      label: "Pricing & Stock",
-                      icon: HiOutlineCurrencyDollar,
-                    },
-                    {
                       id: "variants",
                       label: "Item Variants",
                       icon: HiOutlineSwatch,
@@ -861,7 +827,6 @@ const ProductManagement = () => {
                       label: "Groups",
                       icon: HiOutlineFolderOpen,
                     },
-                    { id: "media", label: "Photos", icon: HiOutlinePhoto },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -987,79 +952,6 @@ const ProductManagement = () => {
                     </div>
                   )}
 
-                  {modalTab === "pricing" && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-                      <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-1.5 flex flex-col">
-                          <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
-                            Price (₹)
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.price}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                price: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-3 bg-white shadow-sm ring-1 ring-slate-200 border-none rounded-xl text-lg font-bold outline-none focus:ring-2 focus:ring-primary/10"
-                          />
-                        </div>
-                        <div className="space-y-1.5 flex flex-col">
-                          <label className="text-[9px] font-bold text-[#E71D28] uppercase tracking-widest ml-1">
-                            Discounted Price (₹)
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.salePrice}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                salePrice: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-3 bg-[#fef4f4]/50 shadow-sm ring-1 ring-[#fde8ea] border-none rounded-xl text-lg font-bold text-[#a2141c] outline-none focus:ring-2 focus:ring-[#f9c7c9]"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-1.5 flex flex-col">
-                          <label className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
-                            How many in stock
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.stock}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                stock: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm font-bold outline-none ring-primary/5 focus:ring-2"
-                          />
-                        </div>
-                        <div className="space-y-1.5 flex flex-col">
-                          <label className="text-[9px] font-bold text-rose-500 uppercase tracking-widest ml-1">
-                            Alert me when stock is below
-                          </label>
-                          <input
-                            type="number"
-                            value={formData.lowStockAlert}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                lowStockAlert: e.target.value,
-                              })
-                            }
-                            className="w-full px-4 py-2.5 bg-rose-50/30 border-none rounded-xl text-sm font-bold text-rose-600 outline-none ring-rose-100 focus:ring-2"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                   {/* Additional tabs populated as needed */}
                   {modalTab === "category" && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
@@ -1129,94 +1021,11 @@ const ProductManagement = () => {
                     </div>
                   )}
 
-                  {modalTab === "media" && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-right-2 duration-300">
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
-                          Main Cover Photo
-                        </label>
-                        <div className="flex flex-col md:flex-row items-start gap-6">
-                          <div className="w-48 aspect-square rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center group hover:border-primary hover:bg-primary/5 transition-all cursor-pointer overflow-hidden relative">
-                            <input
-                              type="file"
-                              className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                              onChange={(e) => handleImageUpload(e, "main")}
-                            />
-                            {formData.mainImage ? (
-                              <img src={formData.mainImage} alt="Main Preview" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="flex flex-col items-center">
-                                <HiOutlinePhoto className="h-10 w-10 text-slate-200" />
-                                <p className="text-[10px] text-slate-600 font-bold mt-2">UPLOAD</p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   {modalTab === "variants" && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-bold">Product Variants</h4>
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, variants: [...formData.variants, { id: Date.now(), name: "", price: "", salePrice: "", stock: "", sku: "" }] })}
-                          className="bg-primary/10 text-primary px-3 py-1 rounded-lg text-[10px] font-bold">+ ADD</button>
-                      </div>
-                      <div className="space-y-3">
-                        {formData.variants.map((v, i) => (
-                          <div key={v.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
-                            <div className="md:col-span-2 space-y-1">
-                              <label className="text-[8px] font-bold text-slate-600 uppercase tracking-widest ml-1">Variant Name</label>
-                              <input value={v.name} onChange={e => {
-                                const news = [...formData.variants];
-                                news[i].name = e.target.value;
-                                setFormData({ ...formData, variants: news });
-                              }} placeholder="e.g. 1kg" className="w-full bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[8px] font-bold text-slate-600 uppercase tracking-widest ml-1">Price</label>
-                              <input type="number" value={v.price} onChange={e => {
-                                const news = [...formData.variants];
-                                news[i].price = e.target.value;
-                                setFormData({ ...formData, variants: news });
-                              }} placeholder="Price" className="w-full bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest ml-1">Sale Price</label>
-                              <input type="number" value={v.salePrice} onChange={e => {
-                                const news = [...formData.variants];
-                                news[i].salePrice = e.target.value;
-                                setFormData({ ...formData, variants: news });
-                              }} placeholder="Sale" className="w-full bg-emerald-50/50 px-3 py-2 rounded-xl text-xs ring-1 ring-emerald-100 text-emerald-700 outline-none" />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[8px] font-bold text-slate-600 uppercase tracking-widest ml-1">Stock</label>
-                              <input type="number" value={v.stock} onChange={e => {
-                                const news = [...formData.variants];
-                                news[i].stock = e.target.value;
-                                setFormData({ ...formData, variants: news });
-                              }} placeholder="Stock" className="w-full bg-white px-3 py-2 rounded-xl text-xs ring-1 ring-slate-100 outline-none" />
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 space-y-1">
-                                <label className="text-[8px] font-bold text-slate-600 uppercase tracking-widest ml-1">SKU</label>
-                                <input value={v.sku} onChange={e => {
-                                  const news = [...formData.variants];
-                                  news[i].sku = e.target.value;
-                                  setFormData({ ...formData, variants: news });
-                                }} placeholder="SKU" className="w-full bg-white px-3 py-2 rounded-xl text-[10px] ring-1 ring-slate-100 outline-none" />
-                              </div>
-                              <button type="button" onClick={() => setFormData({ ...formData, variants: formData.variants.filter((_, idx) => idx !== i) })} className="text-rose-500 p-2 hover:bg-rose-50 rounded-lg shrink-0 mb-0.5">
-                                <HiOutlineTrash className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <VariantEditor
+                      variants={formData.variants}
+                      onChange={(variants) => setFormData({ ...formData, variants })}
+                    />
                   )}
                 </div>
               </div>

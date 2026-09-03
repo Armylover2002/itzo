@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Store } from "lucide-react";
 import { customerApi } from "../services/customerApi";
 import { useAuth } from "@core/context/AuthContext";
 
@@ -84,6 +85,41 @@ const getQuickStoreId = (product) =>
   product?.seller?.id ||
   "quick-commerce";
 
+const getSellerId = (product) => {
+  const candidate =
+    product?.sellerId?._id ||
+    product?.sellerId?.id ||
+    (typeof product?.sellerId === "string" ? product?.sellerId : "") ||
+    product?.seller?._id ||
+    product?.seller?.id ||
+    (typeof product?.seller === "string" ? product?.seller : "") ||
+    product?.storeId?._id ||
+    product?.storeId?.id ||
+    (typeof product?.storeId === "string" ? product?.storeId : "") ||
+    product?.store?._id ||
+    product?.store?.id ||
+    product?.quickStoreId ||
+    "";
+  return candidate ? String(candidate).trim() : "";
+};
+
+const getSellerName = (product) => {
+  return (
+    product?.seller?.shopName ||
+    product?.seller?.name ||
+    product?.sellerId?.shopName ||
+    product?.sellerId?.name ||
+    product?.storeName ||
+    product?.store?.shopName ||
+    product?.store?.name ||
+    product?.storeId?.name ||
+    product?.restaurant ||
+    product?.restaurantName ||
+    product?.quickStoreName ||
+    "Current Store"
+  );
+};
+
 const normalizeQuickProductForSharedCart = (product) => {
   const id = getProductId(product);
   const quickStoreId = getQuickStoreId(product);
@@ -137,8 +173,6 @@ const shrinkCartItem = (item) => {
     quantity: Number(item.quantity || 0),
     image: item.image,
     mainImage: item.mainImage,
-    weight: item.weight,
-    unit: item.unit,
     categoryId: item.categoryId || null,
     subcategoryId: item.subcategoryId || null,
     headerId: item.headerId || null,
@@ -188,9 +222,37 @@ const useStandaloneQuickCart = () => {
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(() => readStoredQuickCart());
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [conflictData, setConflictData] = useState(null);
 
   const [loading, setLoading] = useState(Boolean(isAuthenticated));
   const pendingRequestsRef = useRef(0);
+  const debounceTimersRef = useRef(new Map());
+  const pendingSyncRef = useRef(new Map());
+
+  // Cleanup pending debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      debounceTimersRef.current.forEach((timer) => clearTimeout(timer));
+      debounceTimersRef.current.clear();
+      pendingSyncRef.current.clear();
+    };
+  }, []);
+
+  const resolveConflict = async (proceed) => {
+    if (!proceed || !conflictData) {
+      setConflictData(null);
+      return;
+    }
+    const { product, variant } = conflictData;
+    setConflictData(null);
+
+    // Optimistically clear local cart
+    setCart([]);
+    localStorage.removeItem(QUICK_CART_STORAGE_KEY);
+
+    // Add new product with bypassConflict = true
+    addToCart(product, variant, true);
+  };
 
   const normalizeBackendCart = (items) => {
     if (!items) return [];
@@ -299,9 +361,28 @@ const useStandaloneQuickCart = () => {
     persistQuickCartSnapshot(cart);
   }, [cart]);
 
-  const addToCart = async (product, variant = null) => {
+  const addToCart = async (product, variant = null, bypassConflict = false) => {
     const baseId = getProductId(product);
-    if (!baseId) return;
+    if (!baseId) return false;
+
+    const newSellerId = getSellerId(product);
+    const newSellerName = getSellerName(product);
+
+    // Single-seller rule: Check if cart already has items from another store
+    if (!bypassConflict && cart.length > 0 && newSellerId) {
+      const existingSellerItem = cart.find((it) => getSellerId(it));
+      const existingSellerId = existingSellerItem ? getSellerId(existingSellerItem) : null;
+      if (existingSellerId && String(existingSellerId) !== String(newSellerId)) {
+        setConflictData({
+          existingStoreName: getSellerName(existingSellerItem),
+          newStoreName: newSellerName,
+          product,
+          variant,
+        });
+        return false;
+      }
+    }
+
     const cartKey = getCartItemKey(product, variant);
 
     // Build variant-aware price fields
@@ -313,7 +394,8 @@ const useStandaloneQuickCart = () => {
     const effectiveStock = variant ? Number(variant.stock ?? product.stock ?? Infinity) : Number(product.stock ?? Infinity);
 
     setCart((prev) => {
-      const existingItem = prev.find((item) => {
+      const currentList = bypassConflict ? [] : prev;
+      const existingItem = currentList.find((item) => {
         const itemKey = item.variantId
           ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantId}`
           : item.variantName
@@ -323,8 +405,8 @@ const useStandaloneQuickCart = () => {
       });
       if (existingItem) {
         const stock = Number(existingItem.stock ?? effectiveStock);
-        if (existingItem.quantity >= stock) return prev; // already at stock limit
-        return prev.map((item) => {
+        if (existingItem.quantity >= stock) return currentList; // already at stock limit
+        return currentList.map((item) => {
           const itemKey = item.variantId
             ? `${normalizeProductId(item.productId || item.id || item._id)}::${item.variantId}`
             : item.variantName
@@ -334,7 +416,7 @@ const useStandaloneQuickCart = () => {
         });
       }
       return [
-        ...prev,
+        ...currentList,
         {
           ...product,
           id: cartKey,
@@ -344,6 +426,8 @@ const useStandaloneQuickCart = () => {
           baseProductId: baseId,
           orderType: "quick",
           type: "quick",
+          sellerId: newSellerId,
+          sellerName: newSellerName,
           quickStoreId: getQuickStoreId(product),
           quickStoreName: getQuickStoreName(product),
           sourceId: getQuickStoreId(product),
@@ -371,7 +455,11 @@ const useStandaloneQuickCart = () => {
     if (isAuthenticated) {
       pendingRequestsRef.current += 1;
       try {
-        const response = await customerApi.addToCart({ productId: baseId, quantity: 1 });
+        const response = await customerApi.addToCart({
+          productId: baseId,
+          quantity: 1,
+          clearPrevious: bypassConflict,
+        });
         pendingRequestsRef.current -= 1;
         // Skip syncing backend response when variant is involved, because the backend
         // has no variant awareness and would overwrite variant-specific prices with
@@ -393,32 +481,69 @@ const useStandaloneQuickCart = () => {
     return baseId;
   };
 
-  const removeFromCart = async (cartKeyOrProductId) => {
-    if (!cartKeyOrProductId) return;
-    const isCompositeKey = String(cartKeyOrProductId).includes("::");
-    const baseProductId = normalizeProductId(cartKeyOrProductId);
+  const scheduleBackendSync = (baseProductId, targetQuantity) => {
+    if (!isAuthenticated || !baseProductId) return;
 
-    setCart((prev) => prev.filter((item) => {
-      if (isCompositeKey) {
-        return getItemCartKey(item) !== cartKeyOrProductId;
-      }
-      return getItemCartKey(item) !== cartKeyOrProductId;
-    }));
+    // Record the latest intended quantity
+    pendingSyncRef.current.set(baseProductId, targetQuantity);
 
-    if (isAuthenticated) {
+    // Cancel existing pending debounce timer for this product
+    if (debounceTimersRef.current.has(baseProductId)) {
+      clearTimeout(debounceTimersRef.current.get(baseProductId));
+    }
+
+    const timer = setTimeout(async () => {
+      debounceTimersRef.current.delete(baseProductId);
+      const finalQty = pendingSyncRef.current.get(baseProductId);
+      pendingSyncRef.current.delete(baseProductId);
+
+      if (finalQty === undefined) return;
+
       pendingRequestsRef.current += 1;
       try {
-        const response = await customerApi.removeFromCart(baseProductId);
-        pendingRequestsRef.current -= 1;
-        syncCart(response.data?.result?.items || response.data?.items);
+        if (finalQty <= 0) {
+          const response = await customerApi.removeFromCart(baseProductId);
+          pendingRequestsRef.current -= 1;
+          syncCart(response.data?.result?.items || response.data?.items);
+        } else {
+          const response = await customerApi.updateCartQuantity({
+            productId: baseProductId,
+            quantity: finalQty,
+          });
+          pendingRequestsRef.current -= 1;
+          syncCart(response.data?.result?.items || response.data?.items);
+        }
       } catch (error) {
         pendingRequestsRef.current -= 1;
-        if (pendingRequestsRef.current === 0) await fetchCart();
+        // If item not found in backend cart, try fallback addToCart
+        if (error?.response?.status === 404 && finalQty > 0) {
+          try {
+            await customerApi.addToCart({
+              productId: baseProductId,
+              quantity: finalQty,
+            });
+          } catch (addError) {
+            console.error("Failed to fallback-add item to cart", addError);
+          }
+        } else if (pendingRequestsRef.current === 0) {
+          await fetchCart();
+        }
       }
-    }
+    }, 450); // 450ms debounce window to prevent rapid successive API calls
+
+    debounceTimersRef.current.set(baseProductId, timer);
   };
 
-  const updateQuantity = async (cartKeyOrProductId, delta) => {
+  const removeFromCart = (cartKeyOrProductId) => {
+    if (!cartKeyOrProductId) return;
+    const baseProductId = normalizeProductId(cartKeyOrProductId);
+
+    setCart((prev) => prev.filter((item) => getItemCartKey(item) !== cartKeyOrProductId));
+
+    scheduleBackendSync(baseProductId, 0);
+  };
+
+  const updateQuantity = (cartKeyOrProductId, delta) => {
     if (!cartKeyOrProductId) return;
     const baseProductId = normalizeProductId(cartKeyOrProductId);
 
@@ -436,34 +561,15 @@ const useStandaloneQuickCart = () => {
         getItemCartKey(item) === cartKeyOrProductId ? { ...item, quantity: newQty } : item,
       ),
     );
-      if (isAuthenticated) {
-      pendingRequestsRef.current += 1;
-      try {
-        await customerApi.updateCartQuantity({
-          productId: baseProductId,
-          quantity: newQty,
-        });
-        pendingRequestsRef.current -= 1;
-      } catch (error) {
-        pendingRequestsRef.current -= 1;
-        // If item not found in backend cart, try adding it
-        if (error?.response?.status === 404) {
-          try {
-            await customerApi.addToCart({
-              productId: baseProductId,
-              quantity: newQty,
-            });
-          } catch (addError) {
-            console.error("Failed to fallback-add item to cart", addError);
-          }
-        } else if (pendingRequestsRef.current === 0) {
-          await fetchCart();
-        }
-      }
-    }
+
+    scheduleBackendSync(baseProductId, newQty);
   };
 
   const clearCart = async () => {
+    debounceTimersRef.current.forEach((timer) => clearTimeout(timer));
+    debounceTimersRef.current.clear();
+    pendingSyncRef.current.clear();
+
     setCart([]); // optimistic clear immediately
 
     if (isAuthenticated) {
@@ -492,10 +598,55 @@ const useStandaloneQuickCart = () => {
     loading,
     appliedCoupon,
     setAppliedCoupon,
+    conflictData,
+    resolveConflict,
+    getCartItemKey,
+    getItemCartKey,
   };
 };
 
 export const CartProvider = ({ children }) => {
   const standaloneCart = useStandaloneQuickCart();
-  return <CartContext.Provider value={standaloneCart}>{children}</CartContext.Provider>;
+  const { conflictData, resolveConflict } = standaloneCart;
+
+  return (
+    <CartContext.Provider value={standaloneCart}>
+      {children}
+      {conflictData && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-card w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-100 dark:border-border text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-[#FE5502] flex items-center justify-center mx-auto shadow-inner">
+              <Store size={28} />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-base md:text-lg font-black text-slate-900 dark:text-foreground">
+                Replace cart items?
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Your cart already contains items from <span className="font-bold text-slate-900 dark:text-slate-100">"{conflictData.existingStoreName}"</span>. Do you want to clear your current cart and add items from <span className="font-bold text-[#FE5502]">"{conflictData.newStoreName}"</span>?
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => resolveConflict(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 dark:border-border text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => resolveConflict(true)}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-[#FE5502] hover:bg-[#ea580c] text-xs font-black text-white shadow-md transition-all active:scale-95"
+              >
+                Discard & Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </CartContext.Provider>
+  );
 };

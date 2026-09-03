@@ -61,17 +61,36 @@ const StockManagement = () => {
 
                 const safeProducts = Array.isArray(rawProducts) ? rawProducts : [];
 
-                setInventory(
-                    safeProducts.map(p => ({
-                        ...p,
-                        id: p._id,
-                        threshold: p.lowStockAlert || 5,
-                        status:
-                            p.stock === 0
+                // One row per variant — stock and price are always variant-specific now.
+                const rows = safeProducts.flatMap((p) => {
+                    const variants = Array.isArray(p.variants) && p.variants.length > 0
+                        ? p.variants
+                        : [{ _id: null, name: 'Default', price: p.price, salePrice: p.salePrice, stock: p.stock, sku: p.sku, images: [] }];
+                    const threshold = p.lowStockAlert || 5;
+
+                    return variants.map((v) => {
+                        const stock = Number(v.stock) || 0;
+                        const price = Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0;
+                        return {
+                            id: `${p._id}::${v._id || 'default'}`,
+                            productId: p._id,
+                            variantId: v._id || null,
+                            variantName: v.name || 'Default',
+                            hasMultipleVariants: variants.length > 1,
+                            name: p.name,
+                            sku: v.sku || p.sku,
+                            mainImage: (Array.isArray(v.images) && v.images[0]) || p.mainImage,
+                            stock,
+                            price,
+                            threshold,
+                            status: stock === 0
                                 ? 'Out of Stock'
-                                : (p.stock <= (p.lowStockAlert || 5) ? 'Low Stock' : 'In Stock')
-                    }))
-                );
+                                : (stock <= threshold ? 'Low Stock' : 'In Stock'),
+                        };
+                    });
+                });
+
+                setInventory(rows);
             }
         } catch (error) {
             toast.error("Failed to load inventory");
@@ -133,7 +152,8 @@ const StockManagement = () => {
 
         try {
             const res = await sellerApi.adjustStock({
-                productId: selectedItem.id,
+                productId: selectedItem.productId,
+                variantId: selectedItem.variantId || undefined,
                 type: adjustType === 'Restock' ? 'Restock' : 'Correction',
                 quantity: adjustType === 'Restock' ? value : -value,
                 note: adjustNote
@@ -296,6 +316,9 @@ const StockManagement = () => {
                                                                     <div>
                                                                         <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">
                                                                             {item.name}
+                                                                            {item.hasMultipleVariants && (
+                                                                                <span className="ml-1.5 text-primary font-bold">— {item.variantName}</span>
+                                                                            )}
                                                                         </h4>
                                                                         <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
                                                                             Product Code: {item.sku || 'N/A'}
@@ -463,7 +486,12 @@ const StockManagement = () => {
                                         ) : <HiOutlineCube className="h-6 w-6" />}
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-black text-slate-900">{selectedItem.name}</h4>
+                                        <h4 className="text-sm font-black text-slate-900">
+                                            {selectedItem.name}
+                                            {selectedItem.hasMultipleVariants && (
+                                                <span className="ml-1.5 text-primary font-bold">— {selectedItem.variantName}</span>
+                                            )}
+                                        </h4>
                                         <p className="text-[10px] font-bold text-slate-600">CURRENT STOCK: <span className="text-slate-900 font-black">{selectedItem.stock} UNITS</span></p>
                                     </div>
                                 </div>

@@ -375,9 +375,11 @@ const CartPage = () => {
                       <h2 className="line-clamp-2 text-base font-semibold text-slate-900">
                         {item.name}
                       </h2>
-                      <p className="mt-1 text-xs font-medium text-slate-500">
-                        {item.weight || item.unit || "1 unit"}
-                      </p>
+                      {item.variantName && (
+                        <p className="mt-1 text-xs font-medium text-slate-500">
+                          {item.variantName}
+                        </p>
+                      )}
                     </div>
 
                     <button

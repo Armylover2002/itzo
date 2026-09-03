@@ -29,8 +29,6 @@ const normalizeWishlistProduct = (item, fallback = {}) => {
     ),
     image: source.image || source.mainImage,
     mainImage: source.mainImage || source.image,
-    weight: source.weight,
-    unit: source.unit,
     deliveryTime: source.deliveryTime,
     discount: source.discount,
   };

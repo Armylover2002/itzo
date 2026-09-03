@@ -137,7 +137,7 @@ const Transactions = () => {
     }
   };
 
-  if (loading) {
+  if (loading && (!data?.ledger || data.ledger.length === 0)) {
     return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING TRANSACTIONS...</div>;
   }
 

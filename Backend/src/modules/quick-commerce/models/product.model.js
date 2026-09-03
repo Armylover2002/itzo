@@ -6,6 +6,7 @@ const quickVariantSchema = new mongoose.Schema({
   salePrice: { type: Number, default: 0 },
   stock: { type: Number, default: 0 },
   sku: { type: String, default: '' },
+  images: { type: [String], default: [] },
 }, { _id: true });
 
 const quickProductSchema = new mongoose.Schema({
@@ -21,8 +22,6 @@ const quickProductSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   price: { type: Number, required: true, min: 0 },
   mrp: { type: Number, required: true, min: 0 },
-  unit: { type: String, default: '' },
-  weight: { type: String, default: '' },
   brand: { type: String, default: '' },
   sku: { type: String, default: '' },
   stock: { type: Number, default: 0 },
@@ -32,7 +31,6 @@ const quickProductSchema = new mongoose.Schema({
   approvalStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'approved', index: true },
   approvedAt: { type: Date, default: null },
   isFeatured: { type: Boolean, default: false },
-  tags: { type: [String], default: [] },
   variants: { type: [quickVariantSchema], default: [] },
   deliveryTime: { type: String, default: '10 mins' },
   badge: { type: String, default: '' },

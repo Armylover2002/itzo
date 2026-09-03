@@ -14,6 +14,7 @@ import { getIO, rooms } from "../../../../config/socket.js";
 import { logger } from "../../../../utils/logger.js";
 import { uploadImageBuffer } from "../../../../services/upload.service.js";
 import { sendError, sendResponse } from "../../../../utils/response.js";
+import { ValidationError } from "../../../../core/auth/errors.js";
 import { Seller } from "../models/seller.model.js";
 import { SellerNotification } from "../models/sellerNotification.model.js";
 import { SellerOrder } from "../models/sellerOrder.model.js";
@@ -451,20 +452,17 @@ const uploadFileOrBase64ToCloudinary = async (fileOrUrl, folder) => {
   return typeof fileOrUrl === "string" ? fileOrUrl : "";
 };
 
-const parseTags = (value) => {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item || "").trim()).filter(Boolean);
-  }
-  if (typeof value === "string") {
-    return value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-  return [];
-};
+const MAX_PRODUCT_VARIANTS = 5;
+const MAX_VARIANT_IMAGES = 3;
+const MIN_VARIANT_IMAGES = 1;
 
-const parseVariants = (raw, fallback = {}) => {
+/**
+ * Parses the seller's variants payload, uploads each variant's new image
+ * files (multipart field `variantImages_<index>`), merges them with any
+ * kept existing image URLs, and enforces the 1-5 variant / 1-3 image rules.
+ * Every product is variant-only now — there is no separate base price/stock.
+ */
+const parseVariants = async (raw, req, fallback = {}) => {
   let parsed = raw;
   if (typeof raw === "string" && raw.trim()) {
     try {
@@ -474,29 +472,55 @@ const parseVariants = (raw, fallback = {}) => {
     }
   }
 
-  const variants = arr(parsed)
-    .map((variant, index) => ({
-      name: str(variant?.name) || `Variant ${index + 1}`,
-      price: num(variant?.price, fallback.price),
+  const list = arr(parsed).filter((variant) => str(variant?.name));
+  if (list.length === 0) {
+    throw new ValidationError("At least one variant is required");
+  }
+  if (list.length > MAX_PRODUCT_VARIANTS) {
+    throw new ValidationError(`A product can have at most ${MAX_PRODUCT_VARIANTS} variants`);
+  }
+
+  const variants = [];
+  for (let index = 0; index < list.length; index += 1) {
+    const variant = list[index];
+    const name = str(variant?.name) || `Variant ${index + 1}`;
+
+    const existingImages = arr(variant?.images)
+      .map((url) => str(url))
+      .filter((url) => url.startsWith("http"));
+
+    const newFiles = arr(req.files?.[`variantImages_${index}`]);
+    const uploadedNew = newFiles.length
+      ? (
+          await Promise.all(
+            newFiles.map((file) =>
+              uploadFileOrBase64ToCloudinary(file, "quick-commerce/products/variants"),
+            ),
+          )
+        ).filter(Boolean)
+      : [];
+
+    const images = [...existingImages, ...uploadedNew].slice(0, MAX_VARIANT_IMAGES);
+    if (images.length < MIN_VARIANT_IMAGES) {
+      throw new ValidationError(`"${name}" needs at least ${MIN_VARIANT_IMAGES} image`);
+    }
+
+    const price = num(variant?.price, fallback.price);
+    if (!(price > 0)) {
+      throw new ValidationError(`"${name}" needs a price greater than 0`);
+    }
+
+    variants.push({
+      name,
+      price,
       salePrice: num(variant?.salePrice, fallback.salePrice),
       stock: Math.max(0, num(variant?.stock, fallback.stock)),
       sku: str(variant?.sku) || fallback.sku || createSellerSku(),
-    }))
-    .filter((variant) => variant.name);
-
-  if (variants.length > 0) {
-    return variants;
+      images,
+    });
   }
 
-  return [
-    {
-      name: str(fallback.weight) || "Default",
-      price: num(fallback.price),
-      salePrice: num(fallback.salePrice),
-      stock: Math.max(0, num(fallback.stock)),
-      sku: str(fallback.sku) || createSellerSku(),
-    },
-  ];
+  return variants;
 };
 
 const populateProductQuery = (query) =>
@@ -643,41 +667,20 @@ const reconcileSellerDeliveredOrders = async (sellerId) => {
 };
 
 const parseProductPayloadAsync = async (req, existingProduct = null) => {
-  const mainUpload = arr(req.files?.mainImage)[0];
-  const galleryUploads = arr(req.files?.galleryImages);
-  const variants = parseVariants(req.body?.variants, {
+  // Every product is variant-only now: price, stock, and photos all come
+  // from the variants array — there is no separate base price/stock/photo.
+  const variants = await parseVariants(req.body?.variants, req, {
     price: req.body?.price,
     salePrice: req.body?.salePrice,
     stock: req.body?.stock,
     sku: req.body?.sku,
-    weight: req.body?.weight,
   });
-  const firstVariant = variants[0] || {};
+  const firstVariant = variants[0];
 
-  let mainImageUrl = existingProduct?.mainImage || "";
-  const mainImageInput = mainUpload || str(req.body?.mainImage);
-  if (mainImageInput) {
-    const uploadedUrl = await uploadFileOrBase64ToCloudinary(mainImageInput, "quick-commerce/products/main");
-    if (uploadedUrl) mainImageUrl = uploadedUrl;
-  }
-
-  let finalGalleryUrls = arr(existingProduct?.galleryImages);
-  if (galleryUploads.length > 0) {
-    const uploadedGallery = await Promise.all(
-      galleryUploads.map(file => uploadFileOrBase64ToCloudinary(file, "quick-commerce/products/gallery"))
-    );
-    finalGalleryUrls = uploadedGallery.filter(Boolean);
-  } else if (req.body?.galleryImages) {
-    const bodyGallery = arr(req.body.galleryImages);
-    if (bodyGallery.length > 0) {
-      const uploadedGallery = await Promise.all(
-        bodyGallery.map(img => uploadFileOrBase64ToCloudinary(img, "quick-commerce/products/gallery"))
-      );
-      if (uploadedGallery.some(Boolean)) {
-         finalGalleryUrls = uploadedGallery.filter(Boolean);
-      }
-    }
-  }
+  const totalStock = variants.reduce((sum, v) => sum + Math.max(0, num(v.stock)), 0);
+  const allVariantImages = variants.flatMap((v) => v.images);
+  const mainImageUrl = allVariantImages[0] || existingProduct?.mainImage || "";
+  const finalGalleryUrls = allVariantImages.slice(1);
 
   return {
     name: str(req.body?.name) || existingProduct?.name || "Untitled Product",
@@ -692,42 +695,20 @@ const parseProductPayloadAsync = async (req, existingProduct = null) => {
       createSellerSku(),
     description:
       str(req.body?.description) || existingProduct?.description || "",
-    price: num(
-      req.body?.price,
-      firstVariant?.price ?? existingProduct?.price ?? 0,
-    ),
-    salePrice: num(
-      req.body?.salePrice,
-      firstVariant?.salePrice ?? existingProduct?.salePrice ?? 0,
-    ),
-    stock: Math.max(
-      0,
-      num(req.body?.stock, firstVariant?.stock ?? existingProduct?.stock ?? 0),
-    ),
+    // Price/stock/MRP always reflect the current variants — they are the
+    // single source of truth, never a stale value carried over from before.
+    price: firstVariant.price,
+    salePrice: firstVariant.salePrice,
+    stock: totalStock,
     lowStockAlert: Math.max(
       0,
       num(req.body?.lowStockAlert, existingProduct?.lowStockAlert ?? 5),
     ),
     brand: str(req.body?.brand) || existingProduct?.brand || "",
-    weight: str(req.body?.weight) || existingProduct?.weight || "",
-    tags: parseTags(req.body?.tags ?? existingProduct?.tags),
     mainImage: mainImageUrl,
     image: mainImageUrl || existingProduct?.image || "",
     galleryImages: finalGalleryUrls,
-    mrp: num(
-      req.body?.mrp,
-      req.body?.salePrice ??
-        req.body?.price ??
-        existingProduct?.mrp ??
-        firstVariant?.salePrice ??
-        firstVariant?.price ??
-        0,
-    ),
-    unit:
-      str(req.body?.unit) ||
-      str(req.body?.weight) ||
-      existingProduct?.unit ||
-      "",
+    mrp: num(req.body?.mrp, firstVariant.price ?? existingProduct?.mrp ?? 0),
     status:
       str(req.body?.status).toLowerCase() === "inactive"
         ? "inactive"
@@ -1032,6 +1013,9 @@ export const createSellerProductController = async (req, res) => {
       .status(201)
       .json({ success: true, result: serializeProduct(populated) });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return sendError(res, 400, error.message);
+    }
     if (error?.code === 11000) {
       return sendError(res, 400, "Product slug or SKU already exists");
     }
@@ -1070,6 +1054,9 @@ export const updateSellerProductController = async (req, res) => {
 
     return res.json({ success: true, result: serializeProduct(populated) });
   } catch (error) {
+    if (error instanceof ValidationError) {
+      return sendError(res, 400, error.message);
+    }
     if (error?.code === 11000) {
       return sendError(res, 400, "Product slug or SKU already exists");
     }
@@ -1133,6 +1120,7 @@ export const adjustSellerStockController = async (req, res) => {
   try {
     const sellerId = sellerScope(req);
     const productId = str(req.body?.productId);
+    const variantId = str(req.body?.variantId);
     const quantity = num(req.body?.quantity);
     const type = str(req.body?.type) || "Correction";
 
@@ -1140,19 +1128,33 @@ export const adjustSellerStockController = async (req, res) => {
     if (!product) {
       return sendError(res, 404, "Product not found");
     }
-
-    const nextStock = Math.max(0, num(product.stock) + quantity);
-    product.stock = nextStock;
-    product.status = nextStock === 0 ? "inactive" : "active";
-    product.isActive = nextStock > 0;
-    if (Array.isArray(product.variants) && product.variants.length > 0) {
-      product.variants[0].stock = nextStock;
+    if (!Array.isArray(product.variants) || product.variants.length === 0) {
+      return sendError(res, 400, "Product has no variants to adjust");
     }
+
+    // Adjust the requested variant (or the only one, if the product has just one).
+    const variant = variantId
+      ? product.variants.id(variantId)
+      : product.variants.length === 1
+        ? product.variants[0]
+        : null;
+    if (!variant) {
+      return sendError(res, 400, "variantId is required for products with multiple variants");
+    }
+
+    const nextVariantStock = Math.max(0, num(variant.stock) + quantity);
+    variant.stock = nextVariantStock;
+
+    const totalStock = product.variants.reduce((sum, v) => sum + Math.max(0, num(v.stock)), 0);
+    product.stock = totalStock;
+    product.status = totalStock === 0 ? "inactive" : "active";
     await product.save();
 
     await SellerStockAdjustment.create({
       sellerId,
       productId: product._id,
+      variantId: variant._id,
+      variantName: variant.name,
       type,
       quantity,
       note: str(req.body?.note),

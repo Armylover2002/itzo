@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/core/context/AuthContext";
 import { useSettings } from "@/core/context/SettingsContext";
@@ -275,7 +275,7 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
       } catch (e) {}
     };
     fetchUnread();
-    const interval = setInterval(fetchUnread, 30000);
+    const interval = setInterval(fetchUnread, 60000);
     const onUpdate = () => fetchUnread();
     window.addEventListener('sellerNotificationsUpdated', onUpdate);
     return () => {
@@ -285,12 +285,14 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
     };
   }, [isSellerPanel]);
 
-  const enhancedItems = items.map((it) => {
-    if (it.path?.includes('notifications')) {
-      return { ...it, badge: unreadCount > 0 ? unreadCount : null };
-    }
-    return it;
-  });
+  const enhancedItems = useMemo(() => {
+    return items.map((it) => {
+      if (it.path?.includes('notifications')) {
+        return { ...it, badge: unreadCount > 0 ? unreadCount : null };
+      }
+      return it;
+    });
+  }, [items, unreadCount]);
 
   const displayLogoUrl = logoUrl;
 

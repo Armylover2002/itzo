@@ -7,6 +7,7 @@ const sellerVariantSchema = new mongoose.Schema(
     salePrice: { type: Number, min: 0, default: 0 },
     stock: { type: Number, min: 0, default: 0 },
     sku: { type: String, trim: true, default: "" },
+    images: { type: [String], default: [] },
   },
   { _id: true },
 );
@@ -46,6 +47,11 @@ const sellerProductSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
+    mrp: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
     salePrice: {
       type: Number,
       min: 0,
@@ -56,6 +62,10 @@ const sellerProductSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
+    image: {
+      type: String,
+      default: "",
+    },
     lowStockAlert: {
       type: Number,
       min: 0,
@@ -65,15 +75,6 @@ const sellerProductSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
-    },
-    weight: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    tags: {
-      type: [String],
-      default: [],
     },
     mainImage: {
       type: String,

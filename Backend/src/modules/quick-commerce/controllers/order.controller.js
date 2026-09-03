@@ -23,6 +23,7 @@ import {
   getActiveFeeSettings,
 } from '../admin/services/billing.service.js';
 import { haversineDistanceMeters } from '../../../utils/geo.js';
+import { isShopCurrentlyOpen } from '../utils/shopTiming.js';
 import * as foodTransactionService from '../../food/orders/services/foodTransaction.service.js';
 import { deductWalletBalance, refundWalletBalance } from '../../food/user/services/userWallet.service.js';
 import { emitQuickCommerceStatusUpdate } from '../services/quickStatusRealtime.service.js';
@@ -346,6 +347,30 @@ export const placeOrder = async (req, res) => {
     if (items.length === 0) {
       logger.warn(`Quick placeOrder: No valid items found for productIds: ${JSON.stringify(productIds)} using idQuery: ${JSON.stringify(idQuery)}`);
       return res.status(400).json({ success: false, message: 'No valid items found in cart' });
+    }
+
+    // Verify all sellers for the items are currently open
+    const orderSellerIds = [...new Set(items.map((it) => it.sellerId).filter(Boolean))];
+    if (orderSellerIds.length > 0) {
+      const orderSellers = await Seller.find({ _id: { $in: orderSellerIds } })
+        .select('shopName shopInfo isActive approved isDeleted')
+        .lean();
+
+      for (const seller of orderSellers) {
+        if (seller.isActive === false || seller.approved === false || seller.isDeleted === true) {
+          return res.status(400).json({
+            success: false,
+            message: `${seller.shopName || 'A store in your cart'} is currently unavailable.`,
+          });
+        }
+        const timing = isShopCurrentlyOpen(seller.shopInfo?.openingHours);
+        if (!timing.isOpen) {
+          return res.status(400).json({
+            success: false,
+            message: `${seller.shopName || 'Store'} is currently closed (${timing.timingText}). Cannot place order while store is closed.`,
+          });
+        }
+      }
     }
 
     const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);

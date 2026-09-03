@@ -76,7 +76,7 @@ const Dashboard = () => {
   }, []);
 
   const safeOrders = Array.isArray(ordersFromContext) ? ordersFromContext : [];
-  const loadingOrStats = loading || ordersLoading;
+  const isInitialLoading = (loading && !statsData) || (ordersLoading && safeOrders.length === 0 && !statsData);
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const revenueChartData = React.useMemo(() => {
@@ -240,10 +240,10 @@ const Dashboard = () => {
     }
   };
 
-  if (loadingOrStats) {
+  if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center h-screen font-bold text-slate-600">
-        Updating Dashboard...
+        Loading Dashboard...
       </div>
     );
   }

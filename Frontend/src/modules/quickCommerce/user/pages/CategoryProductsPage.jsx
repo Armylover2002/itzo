@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, Heart, Search, Minus, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useProductDetail } from '../context/ProductDetailContext';
 import { useToast } from '@shared/components/ui/Toast';
 import { cn } from '@/lib/utils';
 
@@ -22,10 +23,11 @@ const CategoryProductsPage = () => {
     const { categoryId: catId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { currentLocation } = useAppLocation();
-    const initialSubcategoryId = location.state?.activeSubcategoryId || 'all';
+    const urlSubCategoryId = searchParams.get('subCategory') || location.state?.activeSubcategoryId || 'all';
     const { isOpen: isProductDetailOpen } = useProductDetail();
-    const [selectedSubCategory, setSelectedSubCategory] = useState(initialSubcategoryId);
+    const [selectedSubCategory, setSelectedSubCategory] = useState(urlSubCategoryId);
     const [category, setCategory] = useState(null);
     const [subCategories, setSubCategories] = useState([{ id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' }]);
     const [products, setProducts] = useState([]);
@@ -54,6 +56,17 @@ const CategoryProductsPage = () => {
         }
     }, []);
 
+    const handleSelectSubCategory = (subId) => {
+        setSelectedSubCategory(subId);
+        const newParams = new URLSearchParams(searchParams);
+        if (subId === 'all') {
+            newParams.delete('subCategory');
+        } else {
+            newParams.set('subCategory', subId);
+        }
+        setSearchParams(newParams, { replace: true });
+    };
+
     const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -61,21 +74,64 @@ const CategoryProductsPage = () => {
                 Number.isFinite(currentLocation?.latitude) &&
                 Number.isFinite(currentLocation?.longitude);
 
-            const [prodRes, catRes] = await Promise.all([
-                hasValidLocation
-                    ? customerApi.getProducts({
-                        categoryId: catId,
-                        lat: currentLocation.latitude,
-                        lng: currentLocation.longitude,
-                    })
-                    : Promise.resolve({ data: { success: true, result: { items: [] } } }),
-                customerApi.getCategories({ tree: true })
+            const productParams = {
+                categoryId: catId,
+                limit: 100,
+                ...(hasValidLocation ? { lat: currentLocation.latitude, lng: currentLocation.longitude } : {})
+            };
+
+            const [catResult, prodResult] = await Promise.allSettled([
+                customerApi.getCategoryDetails(catId, { forceRefresh: true }),
+                customerApi.getProducts(productParams, { forceRefresh: true }),
             ]);
 
-            if (prodRes.data?.success) {
-                const rawResult = prodRes.data.result;
-                const dbProds = Array.isArray(prodRes.data.results)
-                    ? prodRes.data.results
+            // 1. Process Category & Subcategories (Fast single-category endpoint)
+            if (catResult.status === 'fulfilled' && catResult.value?.data?.success) {
+                const data = catResult.value.data.result || {};
+                const currentCat = data.category;
+                const subs = Array.isArray(data.subcategories) ? data.subcategories : [];
+
+                if (currentCat) {
+                    setCategory(currentCat);
+                    const formattedSubs = subs.map(s => ({
+                        id: s._id || s.id,
+                        name: s.name,
+                        icon: s.image || 'https://cdn-icons-png.flaticon.com/128/2321/2321801.png'
+                    }));
+                    setSubCategories([
+                        { id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' },
+                        ...formattedSubs
+                    ]);
+                }
+            } else {
+                // Fallback: fetch shallow categories if single lookup fails
+                try {
+                    const fallbackCatRes = await customerApi.getCategories();
+                    const allCats = fallbackCatRes?.data?.results || fallbackCatRes?.data?.result || [];
+                    const currentCat = allCats.find(c => String(c._id || c.id) === String(catId));
+                    if (currentCat) {
+                        setCategory(currentCat);
+                        const subs = allCats.filter(c => String(c.parentId?._id || c.parentId || '') === String(catId));
+                        const formattedSubs = subs.map(s => ({
+                            id: s._id || s.id,
+                            name: s.name,
+                            icon: s.image || 'https://cdn-icons-png.flaticon.com/128/2321/2321801.png'
+                        }));
+                        setSubCategories([
+                            { id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' },
+                            ...formattedSubs
+                        ]);
+                    }
+                } catch (e) {
+                    console.error("Fallback category fetch error:", e);
+                }
+            }
+
+            // 2. Process Products
+            if (prodResult.status === 'fulfilled' && prodResult.value?.data?.success) {
+                const rawResult = prodResult.value.data.result;
+                const dbProds = Array.isArray(prodResult.value.data.results)
+                    ? prodResult.value.data.results
                     : Array.isArray(rawResult?.items)
                         ? rawResult.items
                         : Array.isArray(rawResult)
@@ -84,83 +140,43 @@ const CategoryProductsPage = () => {
 
                 const formattedProds = dbProds.map(p => ({
                     ...p,
-                    id: p._id,
+                    id: p._id || p.id,
                     image: p.mainImage || p.image || "https://images.unsplash.com/photo-1550989460-0adf9ea622e2",
-                    price: p.salePrice || p.price,
-                    originalPrice: p.price,
-                    weight: p.weight || "1 unit",
+                    price: Number(p.salePrice || 0) > 0 ? Number(p.salePrice) : Number(p.price || 0),
+                    originalPrice: Number(p.originalPrice || p.mrp || p.price || 0),
                     deliveryTime: "8-15 mins"
                 }));
-                setProducts(Array.isArray(formattedProds) ? formattedProds : []);
-            }
-
-            if (catRes.data?.success) {
-                const results = catRes.data.results || catRes.data.result || [];
-                const allCats = Array.isArray(results) ? results : [];
-
-                const fullMap = {};
-                
-                const flatten = (items) => {
-                    items.forEach(item => {
-                        fullMap[item._id] = item;
-                        if (item.children && item.children.length > 0) flatten(item.children);
-                    });
-                };
-                flatten(allCats);
-
-                // Find the current category in the flattened map
-                let currentCat = fullMap[catId];
-                
-                if (currentCat) {
-                    setCategory(currentCat);
-                    
-                    // Populate subcategories
-                    let subs = [];
-                    let isDirectSub = false;
-
-                    if (currentCat.children && currentCat.children.length > 0) {
-                        // It's a parent category, show its children
-                        subs = currentCat.children;
-                    } else if (currentCat.parentId) {
-                        // It's a subcategory, find its parent and show all siblings
-                        const parent = fullMap[currentCat.parentId?._id || currentCat.parentId];
-                        if (parent && parent.children) {
-                            subs = parent.children;
-                        }
-                        isDirectSub = true;
-                    }
-
-                    const formattedSubs = subs.map(s => ({
-                        id: s._id,
-                        name: s.name,
-                        icon: s.image || 'https://cdn-icons-png.flaticon.com/128/2321/2321801.png'
-                    }));
-                    
-                    setSubCategories([{ id: 'all', name: 'All', icon: 'https://cdn-icons-png.flaticon.com/128/2321/2321831.png' }, ...formattedSubs]);
-                    
-                    // If we arrived here directly with a subcategory ID, select it
-                    if (isDirectSub && selectedSubCategory === 'all' && !location.state?.activeSubcategoryId) {
-                        setSelectedSubCategory(currentCat._id);
-                    }
-                }
+                setProducts(formattedProds);
             }
         } catch (error) {
-            console.error("Error fetching category data:", error);
+            console.error("Error fetching category products:", error);
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
+        const subParam = searchParams.get('subCategory');
+        if (subParam) {
+            setSelectedSubCategory(subParam);
+        } else if (!location.state?.activeSubcategoryId) {
+            setSelectedSubCategory('all');
+        }
+    }, [searchParams]);
+
+    useEffect(() => {
         fetchData();
-        setSelectedSubCategory(location.state?.activeSubcategoryId || 'all');
-    }, [catId, location.state?.activeSubcategoryId, currentLocation?.latitude, currentLocation?.longitude]);
+    }, [catId, currentLocation?.latitude, currentLocation?.longitude]);
 
     const safeProducts = Array.isArray(products) ? products : [];
 
-    const filteredProducts = safeProducts.filter(p =>
-        selectedSubCategory === 'all' || p.subcategoryId?._id === selectedSubCategory || p.subcategoryId === selectedSubCategory
-    );
+    const filteredProducts = safeProducts.filter(p => {
+        if (selectedSubCategory === 'all') return true;
+        const pSubId = String(p.subcategoryId?._id || p.subcategoryId || '');
+        const pCatId = String(p.categoryId?._id || p.categoryId || '');
+        const targetId = String(selectedSubCategory);
+        return pSubId === targetId || pCatId === targetId;
+    });
 
     const productsById = React.useMemo(() => {
         const map = {};
@@ -206,7 +222,7 @@ const CategoryProductsPage = () => {
                         {subCategories.map((cat) => (
                             <button
                                 key={cat.id}
-                                onClick={() => setSelectedSubCategory(cat.id)}
+                                onClick={() => handleSelectSubCategory(cat.id)}
                                 className={cn(
                                     "flex flex-col items-center py-4 px-1 gap-2 transition-all relative border-l-4",
                                     selectedSubCategory === cat.id
