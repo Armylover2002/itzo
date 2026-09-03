@@ -5,44 +5,67 @@ import { v2 as cloudinary } from 'cloudinary';
 import { uploadImageBufferDetailed, uploadBufferDetailed, uploadFileDetailed } from '../../../services/upload.service.js';
 import { updateSettingsCache } from '../utils/settingsCache.js';
 
+async function loadCleanedGlobalSettings() {
+    let settings = await GlobalSettings.findOne();
+    if (!settings) {
+        try {
+            settings = await GlobalSettings.create({
+                companyName: 'Appzeto',
+                email: 'admin@appzeto.com'
+            });
+        } catch (err) {
+            // If duplicate key error occurs due to concurrent requests, re-query
+            settings = await GlobalSettings.findOne();
+        }
+    }
+
+    const rawSettings = settings && typeof settings.toObject === 'function'
+        ? settings.toObject()
+        : (settings ? { ...settings } : { companyName: 'Appzeto', email: 'admin@appzeto.com', modules: {} });
+
+    const allowedModules = ['food', 'quickCommerce'];
+    const cleanedModules = {};
+
+    allowedModules.forEach(mod => {
+        cleanedModules[mod] = (rawSettings.modules && rawSettings.modules[mod] !== undefined)
+            ? !!rawSettings.modules[mod]
+            : true;
+    });
+    rawSettings.modules = cleanedModules;
+
+    // Subscription enforcement defaults to ON so a missing/partial record never
+    // silently disables the paywall.
+    const rawEnforcement = rawSettings.subscriptionEnforcement || {};
+    rawSettings.subscriptionEnforcement = {
+        deliveryPartner: rawEnforcement.deliveryPartner !== false,
+        restaurant: rawEnforcement.restaurant !== false
+    };
+
+    return rawSettings;
+}
+
 export async function getGlobalSettings(req, res, next) {
     try {
-        let settings = await GlobalSettings.findOne();
-        if (!settings) {
-            try {
-                settings = await GlobalSettings.create({
-                    companyName: 'Appzeto',
-                    email: 'admin@appzeto.com'
-                });
-            } catch (err) {
-                // If duplicate key error occurs due to concurrent requests, re-query
-                settings = await GlobalSettings.findOne();
-            }
-        }
-
-        const rawSettings = settings && typeof settings.toObject === 'function' 
-            ? settings.toObject() 
-            : (settings ? { ...settings } : { companyName: 'Appzeto', email: 'admin@appzeto.com', modules: {} });
-
-        const allowedModules = ['food', 'quickCommerce'];
-        const cleanedModules = {};
-        
-        allowedModules.forEach(mod => {
-            cleanedModules[mod] = (rawSettings.modules && rawSettings.modules[mod] !== undefined) 
-                ? !!rawSettings.modules[mod] 
-                : true;
-        });
-        rawSettings.modules = cleanedModules;
-
-        // Subscription enforcement defaults to ON so a missing/partial record never
-        // silently disables the paywall.
-        const rawEnforcement = rawSettings.subscriptionEnforcement || {};
-        rawSettings.subscriptionEnforcement = {
-            deliveryPartner: rawEnforcement.deliveryPartner !== false,
-            restaurant: rawEnforcement.restaurant !== false
-        };
-
+        const rawSettings = await loadCleanedGlobalSettings();
         return sendResponse(res, 200, 'Global settings fetched successfully', rawSettings);
+    } catch (error) {
+        next(error);
+    }
+}
+
+// Fields that must never reach the unauthenticated /public endpoint, even though
+// the admin dashboard needs them (e.g. contactsViewPassword gates a separate,
+// auth-protected admin action and has no reason to travel to anonymous clients).
+const PUBLIC_SETTINGS_EXCLUDED_FIELDS = ['contactsViewPassword', '_id', '__v'];
+
+export async function getPublicGlobalSettings(req, res, next) {
+    try {
+        const rawSettings = await loadCleanedGlobalSettings();
+        const publicSettings = { ...rawSettings };
+        PUBLIC_SETTINGS_EXCLUDED_FIELDS.forEach((field) => {
+            delete publicSettings[field];
+        });
+        return sendResponse(res, 200, 'Global settings fetched successfully', publicSettings);
     } catch (error) {
         next(error);
     }

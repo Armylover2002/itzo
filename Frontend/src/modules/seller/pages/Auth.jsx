@@ -337,10 +337,15 @@ export default function SellerAuth() {
         return;
       }
 
+      // Ensure seller token is saved in localStorage so Onboarding page can access it
+      localStorage.setItem("auth_seller", accessToken);
+      localStorage.setItem("token", accessToken);
+      window.dispatchEvent(new Event("sellerAuthChanged"));
+
       login(userPayload);
       toast.success(
         sellerUser?.approved === false
-          ? "OTP verified. Continue your seller setup."
+          ? "OTP verified. Welcome to seller onboarding!"
           : "Seller login successful",
       );
       navigate(
@@ -350,7 +355,13 @@ export default function SellerAuth() {
         { replace: true },
       );
     } catch (error) {
-      toast.error(error?.response?.data?.message || error?.message || "OTP verification failed");
+      const apiMessage = error?.response?.data?.message || error?.message || "OTP verification failed";
+      if (apiMessage.toLowerCase().includes("seller account not found")) {
+        toast.info("Please complete your seller registration.");
+        navigate("/seller/onboarding", { replace: true });
+        return;
+      }
+      toast.error(apiMessage);
       setOtp(["", "", "", ""]);
     } finally {
       setIsLoading(false);

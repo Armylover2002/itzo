@@ -902,20 +902,37 @@ export const verifySellerOtpController = async (req, res) => {
       return sendError(res, 403, "Your account has been deleted by admin. Please contact support.");
     }
 
+    let isNewSeller = false;
     if (!seller) {
-      return sendError(res, 404, "Seller account not found. Please register or apply for a seller account.");
+      isNewSeller = true;
+      seller = new Seller({
+        phone,
+        phoneDigits: digits,
+        phoneLast10: phoneSuffix,
+        role: "SELLER",
+        isVerified: true,
+        isActive: false,
+        approved: false,
+        approvalStatus: "draft",
+        onboardingSubmitted: false,
+        shopInfo: {
+          businessType: "Quick Commerce",
+        },
+      });
+      await seller.save();
+    } else {
+      seller.isVerified = true;
+      seller.lastLogin = new Date();
+      await seller.save();
     }
-
-    seller.isVerified = true;
-    seller.lastLogin = new Date();
-    await seller.save();
 
     const { accessToken, refreshToken } = await createAuthTokens(seller._id);
 
-    return sendResponse(res, 200, "Seller login successful", {
+    return sendResponse(res, 200, isNewSeller ? "Phone verified. Welcome to seller onboarding." : "Seller login successful", {
       accessToken,
       refreshToken,
       seller: serializeSellerProfile(seller),
+      isNewSeller,
     });
   } catch (error) {
     return sendError(res, 400, error.message || "OTP verification failed");

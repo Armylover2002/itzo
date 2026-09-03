@@ -71,11 +71,22 @@ if (cachedSettings) {
 }
 
 let inFlightSettingsPromise = null;
+let lastFetchTime = 0;
+// Business settings change rarely (admin-edited); reusing the last fetch for a
+// few minutes avoids re-hitting /common/settings/public from every navbar,
+// footer, and layout component that calls loadBusinessSettings() on mount.
+// An admin save already pushes fresh data via setCachedSettings(), so this
+// window never serves stale data after an actual edit.
+const SETTINGS_CACHE_TTL_MS = 5 * 60 * 1000;
 
 /**
  * Load business settings from backend (public endpoint - no auth required)
  */
 export const loadBusinessSettings = async () => {
+  if (cachedSettings && Date.now() - lastFetchTime < SETTINGS_CACHE_TTL_MS) {
+    return cachedSettings;
+  }
+
   try {
     const endpoint = API_ENDPOINTS.ADMIN.BUSINESS_SETTINGS_PUBLIC;
     if (!endpoint || (typeof endpoint === "string" && !endpoint.trim())) {
@@ -93,13 +104,14 @@ export const loadBusinessSettings = async () => {
 
       if (settings) {
         cachedSettings = settings;
+        lastFetchTime = Date.now();
         try {
           localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
         } catch (e) {}
-        
+
         updateTitle(settings.companyName);
         updateThemeColor(settings.themeColor);
-        
+
         // Auto update favicon based on current app type
         const favicon = getAppFavicon(currentAppType);
         if (favicon) updateFavicon(favicon);
@@ -160,6 +172,7 @@ export const updateTitle = (companyName) => {
 export const setCachedSettings = (settings) => {
   if (settings) {
     cachedSettings = settings;
+    lastFetchTime = Date.now();
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     } catch (e) {}

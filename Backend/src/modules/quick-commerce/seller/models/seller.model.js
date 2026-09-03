@@ -230,7 +230,6 @@ const sellerSchema = new mongoose.Schema(
     }
   },
   {
-    collection: 'quick_seller_profiles',
     timestamps: true,
   },
 );
