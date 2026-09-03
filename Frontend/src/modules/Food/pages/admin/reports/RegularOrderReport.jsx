@@ -24,13 +24,13 @@ const debugError = (...args) => {}
 
 const statusMeta = {
   Scheduled: { label: "Scheduled Orders", color: "text-amber-600", bg: "bg-amber-50", icon: scheduledIcon },
-  Pending: { label: "Pending Orders", color: "text-primary", bg: "bg-orange-50", icon: pendingIcon },
-  Accepted: { label: "Accepted Orders", color: "text-primary", bg: "bg-orange-50", icon: acceptedIcon },
-  Processing: { label: "Processing Orders", color: "text-primary", bg: "bg-orange-50", icon: processingIcon },
-  "Food On The Way": { label: "Food On The Way", color: "text-primary", bg: "bg-orange-50", icon: onTheWayIcon },
+  Pending: { label: "Pending Orders", color: "text-primary", bg: "bg-[#f7f3fc]", icon: pendingIcon },
+  Accepted: { label: "Accepted Orders", color: "text-primary", bg: "bg-[#f7f3fc]", icon: acceptedIcon },
+  Processing: { label: "Processing Orders", color: "text-primary", bg: "bg-[#f7f3fc]", icon: processingIcon },
+  "Food On The Way": { label: "Food On The Way", color: "text-primary", bg: "bg-[#f7f3fc]", icon: onTheWayIcon },
   Delivered: { label: "Delivered", color: "text-emerald-600", bg: "bg-emerald-50", icon: deliveredIcon },
   Canceled: { label: "Canceled", color: "text-red-600", bg: "bg-red-50", icon: canceledIcon },
-  "Payment Failed": { label: "Payment Failed", color: "text-orange-600", bg: "bg-orange-50", icon: paymentFailedIcon },
+  "Payment Failed": { label: "Payment Failed", color: "text-[#550fa8]", bg: "bg-[#f7f3fc]", icon: paymentFailedIcon },
   Refunded: { label: "Refunded", color: "text-teal-600", bg: "bg-teal-50", icon: refundedIcon },
 }
 
@@ -454,12 +454,12 @@ export default function RegularOrderReport() {
             <button 
               onClick={handleFilterApply}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all whitespace-nowrap relative ${
-                activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
               }`}
             >
               Filter
               {activeFiltersCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white rounded-full text-[8px] flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#6412c6] text-white rounded-full text-[8px] flex items-center justify-center font-bold">
                   {activeFiltersCount}
                 </span>
               )}
@@ -698,7 +698,7 @@ export default function RegularOrderReport() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

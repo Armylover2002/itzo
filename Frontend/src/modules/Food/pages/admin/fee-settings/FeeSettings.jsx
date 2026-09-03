@@ -225,7 +225,7 @@ export default function FeeSettings() {
             <Button
               onClick={handleSaveFeeSettings}
               disabled={savingFeeSettings || loadingFeeSettings}
-              className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+              className="bg-[#6412c6] hover:bg-[#550fa8] text-white flex items-center gap-2"
             >
               {savingFeeSettings ? (
                 <>
@@ -345,7 +345,7 @@ export default function FeeSettings() {
                               <div className="flex items-center justify-center gap-2">
                                 <button
                                   onClick={() => handleEditRule(index)}
-                                  className="p-1.5 text-primary hover:bg-orange-50 rounded transition-colors"
+                                  className="p-1.5 text-primary hover:bg-[#f7f3fc] rounded transition-colors"
                                   title="Edit"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -449,7 +449,7 @@ export default function FeeSettings() {
                     )}
                     <Button
                       onClick={editingRuleIndex === null ? handleAddRule : handleSaveRule}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="bg-[#6412c6] hover:bg-[#550fa8] text-white"
                     >
                       {editingRuleIndex === null ? (
                         <>

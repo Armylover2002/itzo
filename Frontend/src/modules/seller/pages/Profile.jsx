@@ -191,6 +191,7 @@ const SellerProfile = () => {
       const isPending = data?.hasPendingProfileUpdate === true;
       pendingUpdateRef.current = isPending;
       setProfile(data);
+      window.dispatchEvent(new CustomEvent('sellerProfileUpdated', { detail: data }));
       if (!isEditingRef.current) {
         setFormData(profileToForm(data));
         setHoursDraft(parseOpeningHours(data?.shopInfo?.openingHours || ""));

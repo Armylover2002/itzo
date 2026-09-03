@@ -43,7 +43,6 @@ import {
 import { upsertSellerNotification } from "../services/sellerNotify.service.js";
 import {
   buildSellerCategoryTree,
-  ensureSellerCategoriesSeeded,
   resolveSellerCategoryIds,
   syncSellerInventoryNotification,
 } from "../services/sellerCatalog.service.js";
@@ -923,28 +922,13 @@ export const verifySellerOtpController = async (req, res) => {
     }
 
     if (!seller) {
-      const suffix = phoneSuffix || digits || Date.now().toString().slice(-4);
-      seller = await Seller.create({
-        name: `Seller ${suffix.slice(-4)}`,
-        shopName: `Store ${suffix.slice(-4)}`,
-        phone,
-        email: `seller${suffix}@seller.local`,
-        isVerified: true,
-        isActive: true,
-        approved: false,
-        approvalStatus: "draft",
-        onboardingSubmitted: false,
-        approvedAt: null,
-        rejectedAt: null,
-        lastLogin: new Date(),
-      });
-    } else {
-      seller.isVerified = true;
-      seller.lastLogin = new Date();
-      await seller.save();
+      return sendError(res, 404, "Seller account not found. Please register or apply for a seller account.");
     }
 
-    await ensureSellerCategoriesSeeded();
+    seller.isVerified = true;
+    seller.lastLogin = new Date();
+    await seller.save();
+
     const { accessToken, refreshToken } = await createAuthTokens(seller._id);
 
     return sendResponse(res, 200, "Seller login successful", {
@@ -2396,6 +2380,7 @@ export const requestSellerWithdrawalController = async (req, res) => {
       return sendError(res, 400, "Select a payment method: QR Code, UPI, or Bank Transfer");
     }
 
+    const sellerDoc = await Seller.findById(sellerId).lean();
     const bodyUpiId = str(req.body?.upiId).trim();
     const bodyBankName = str(req.body?.bankName).trim();
     const bodyAccountHolder = str(req.body?.accountHolderName).trim();
@@ -2403,14 +2388,21 @@ export const requestSellerWithdrawalController = async (req, res) => {
     const bodyIfsc = str(req.body?.ifscCode).trim().toUpperCase();
     const bodyQrImage = str(req.body?.qrCodeImage).trim();
 
-    if (requestedMethod === "qr" && !bodyQrImage) {
-      return sendError(res, 400, "Please upload your QR code image");
+    const finalUpiId = bodyUpiId || str(sellerDoc?.bankInfo?.upiId).trim();
+    const finalQrImage = bodyQrImage || str(sellerDoc?.bankInfo?.upiQrImage).trim();
+    const finalBankName = bodyBankName || str(sellerDoc?.bankInfo?.bankName).trim();
+    const finalAccountHolder = bodyAccountHolder || str(sellerDoc?.bankInfo?.accountHolderName).trim() || str(sellerDoc?.name).trim();
+    const finalAccountNumber = bodyAccountNumber || str(sellerDoc?.bankInfo?.accountNumber).trim();
+    const finalIfsc = bodyIfsc || (sellerDoc?.bankInfo?.ifscCode ? str(sellerDoc.bankInfo.ifscCode).trim().toUpperCase() : "");
+
+    if (requestedMethod === "qr" && !finalQrImage) {
+      return sendError(res, 400, "Please upload your QR code image or save it in profile");
     }
-    if (requestedMethod === "upi" && !bodyUpiId) {
-      return sendError(res, 400, "Please enter your UPI ID");
+    if (requestedMethod === "upi" && !finalUpiId) {
+      return sendError(res, 400, "Please enter your UPI ID or save it in profile");
     }
     if (requestedMethod === "bank_transfer") {
-      if (!bodyBankName || !bodyAccountHolder || !bodyAccountNumber || !bodyIfsc) {
+      if (!finalBankName || !finalAccountHolder || !finalAccountNumber || !finalIfsc) {
         return sendError(res, 400, "Please fill all bank details (Bank Name, Account Holder, Account Number, IFSC)");
       }
     }
@@ -2481,12 +2473,13 @@ export const requestSellerWithdrawalController = async (req, res) => {
       customer: customerLabel,
       paymentMethod: requestedMethod,
       bankDetails: {
-        bankName: bodyBankName,
-        accountHolderName: bodyAccountHolder,
-        accountNumberLast4: bodyAccountNumber ? bodyAccountNumber.slice(-4) : "",
-        ifscCode: bodyIfsc,
-        upiId: bodyUpiId,
-        qrCodeImage: bodyQrImage,
+        bankName: finalBankName,
+        accountHolderName: finalAccountHolder,
+        accountNumber: finalAccountNumber,
+        accountNumberLast4: finalAccountNumber ? finalAccountNumber.slice(-4) : "",
+        ifscCode: finalIfsc,
+        upiId: finalUpiId,
+        qrCodeImage: finalQrImage,
       },
     });
 

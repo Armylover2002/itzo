@@ -237,7 +237,7 @@ export default function AddEmployee() {
         {/* Header */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <div className="w-10 h-10 rounded-lg bg-[#6412c6] flex items-center justify-center shadow-lg shadow-[#6412c6]/20">
               <UserPlus className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900">{isEditMode ? 'Update Employee' : 'Add New Employee'}</h1>
@@ -266,7 +266,7 @@ export default function AddEmployee() {
                       value={formData.firstName}
                       onChange={(e) => handleInputChange("firstName", e.target.value)}
                       placeholder="Ex: John"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm ${errors.firstName ? "border-red-500" : "border-slate-300"}`}
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm ${errors.firstName ? "border-red-500" : "border-slate-300"}`}
                     />
                     {errors.firstName && <p className="mt-1 text-xs text-red-600">{errors.firstName}</p>}
                   </div>
@@ -281,7 +281,7 @@ export default function AddEmployee() {
                       value={formData.lastName}
                       onChange={(e) => handleInputChange("lastName", e.target.value)}
                       placeholder="Ex: Doe"
-                      className={`w-full px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm ${errors.lastName ? "border-red-500" : "border-slate-300"}`}
+                      className={`w-full px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm ${errors.lastName ? "border-red-500" : "border-slate-300"}`}
                     />
                     {errors.lastName && <p className="mt-1 text-xs text-red-600">{errors.lastName}</p>}
                   </div>
@@ -297,7 +297,7 @@ export default function AddEmployee() {
                       <select
                         value={formData.zone}
                         onChange={(e) => handleInputChange("zone", e.target.value)}
-                        className="w-full px-4 py-2.5 pr-8 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm appearance-none cursor-pointer"
+                        className="w-full px-4 py-2.5 pr-8 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm appearance-none cursor-pointer"
                       >
                         <option value="All">All</option>
                         {zones.map(z => (
@@ -317,7 +317,7 @@ export default function AddEmployee() {
                       <select
                         value={formData.role}
                         onChange={(e) => handleInputChange("role", e.target.value)}
-                        className={`w-full px-4 py-2.5 pr-8 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm appearance-none cursor-pointer ${errors.role ? "border-red-500" : "border-slate-300"}`}
+                        className={`w-full px-4 py-2.5 pr-8 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm appearance-none cursor-pointer ${errors.role ? "border-red-500" : "border-slate-300"}`}
                       >
                         <option value="">Select Role</option>
                         {roles.filter(r => r.status === 'active').map(r => (
@@ -340,7 +340,7 @@ export default function AddEmployee() {
                       <select
                         value={formData.phoneCode}
                         onChange={(e) => handleInputChange("phoneCode", e.target.value)}
-                        className="px-4 py-2.5 pr-8 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm appearance-none cursor-pointer"
+                        className="px-4 py-2.5 pr-8 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm appearance-none cursor-pointer"
                       >
                         <option value="+91">🇮🇳 +91</option>
                       </select>
@@ -353,7 +353,7 @@ export default function AddEmployee() {
                       placeholder="Phone number"
                       inputMode="numeric"
                       maxLength={10}
-                      className={`flex-1 px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm ${errors.phone ? "border-red-500" : "border-slate-300"}`}
+                      className={`flex-1 px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm ${errors.phone ? "border-red-500" : "border-slate-300"}`}
                     />
                   </div>
                   {errors.phone && <p className="mt-1 text-xs text-red-600">{errors.phone}</p>}
@@ -365,7 +365,7 @@ export default function AddEmployee() {
                 <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Employee image
                 </label>
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-orange-500 transition-colors cursor-pointer">
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-[#6412c6] transition-colors cursor-pointer">
                   <input
                     type="file"
                     accept="image/jpeg,image/jpg,image/png,image/gif"
@@ -417,7 +417,7 @@ export default function AddEmployee() {
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="Ex: ex@gmail.com"
-                  className={`w-full px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm ${errors.email ? "border-red-500" : "border-slate-300"}`}
+                  className={`w-full px-4 py-2.5 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm ${errors.email ? "border-red-500" : "border-slate-300"}`}
                 />
                 {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
               </div>
@@ -433,7 +433,7 @@ export default function AddEmployee() {
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     placeholder="Password length 8+"
-                    className={`w-full px-4 py-2.5 pr-10 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm ${errors.password ? "border-red-500" : "border-slate-300"}`}
+                    className={`w-full px-4 py-2.5 pr-10 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm ${errors.password ? "border-red-500" : "border-slate-300"}`}
                   />
                   <button
                     type="button"
@@ -457,7 +457,7 @@ export default function AddEmployee() {
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                     placeholder="Password length 8+"
-                    className={`w-full px-4 py-2.5 pr-10 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm ${errors.confirmPassword ? "border-red-500" : "border-slate-300"}`}
+                    className={`w-full px-4 py-2.5 pr-10 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] text-sm ${errors.confirmPassword ? "border-red-500" : "border-slate-300"}`}
                   />
                   <button
                     type="button"
@@ -484,7 +484,7 @@ export default function AddEmployee() {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/30 active:scale-95 disabled:opacity-50"
+              className="px-6 py-2.5 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-lg shadow-[#6412c6]/30 active:scale-95 disabled:opacity-50"
             >
               {loading ? "Submitting..." : isEditMode ? "Update" : "Submit"}
             </button>

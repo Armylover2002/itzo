@@ -99,7 +99,7 @@ export default function DisbursementPage({
   const getStatusColor = (status) => {
     const statusLower = status.toLowerCase()
     if (statusLower === "pending") {
-      return "bg-orange-100 text-orange-700"
+      return "bg-[#f0e7f9] text-[#460d8b]"
     }
     if (statusLower === "processing") {
       return "bg-yellow-100 text-yellow-700"
@@ -108,7 +108,7 @@ export default function DisbursementPage({
       return "bg-green-100 text-green-700"
     }
     if (statusLower === "partially completed") {
-      return "bg-orange-100 text-orange-700"
+      return "bg-[#f0e7f9] text-[#460d8b]"
     }
     if (statusLower === "canceled") {
       return "bg-red-100 text-red-700"
@@ -193,13 +193,13 @@ export default function DisbursementPage({
             <button 
               onClick={() => setIsFilterOpen(true)}
               className={`px-4 py-2.5 text-sm font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-all relative ${
-                activeFiltersCount > 0 ? "border-emerald-500 bg-emerald-50" : ""
+                activeFiltersCount > 0 ? "border-[#6412c6] bg-[#f0e7f9]" : ""
               }`}
             >
               <Filter className="w-4 h-4" />
               <span className="text-black font-bold">Filter</span>
               {activeFiltersCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                   {activeFiltersCount}
                 </span>
               )}
@@ -402,7 +402,7 @@ export default function DisbursementPage({
           <DialogFooter className="px-6 pb-6">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

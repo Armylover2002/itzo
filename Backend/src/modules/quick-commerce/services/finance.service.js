@@ -356,7 +356,7 @@ export async function getQuickCommerceSellerWithdrawals({
 
   const [items, total] = await Promise.all([
     SellerTransaction.find(filter)
-      .populate("sellerId", "name shopName phone phoneLast10 email bankInfo shopImage")
+      .populate("sellerId", "name shopName phone phoneLast10 email bankInfo shopImage shopInfo")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(safeLimit)
@@ -381,14 +381,16 @@ export async function getQuickCommerceSellerWithdrawals({
           shopName: seller.shopName || seller.name || "Seller",
           phone: seller.phoneLast10 || seller.phone || "",
           email: seller.email || "",
-          shopImage: seller.shopImage || "",
+          shopImage: seller.shopInfo?.shopImage || seller.shopImage || "",
         },
-        bankDetails: item.bankDetails || {
-          bankName: seller.bankInfo?.bankName || "",
-          accountHolderName: seller.bankInfo?.accountHolderName || "",
-          accountNumberLast4: String(seller.bankInfo?.accountNumber || "").slice(-4),
-          ifscCode: seller.bankInfo?.ifscCode || "",
-          upiId: seller.bankInfo?.upiId || "",
+        bankDetails: {
+          bankName: item.bankDetails?.bankName || seller.bankInfo?.bankName || "",
+          accountHolderName: item.bankDetails?.accountHolderName || seller.bankInfo?.accountHolderName || "",
+          accountNumber: item.bankDetails?.accountNumber || seller.bankInfo?.accountNumber || "",
+          accountNumberLast4: item.bankDetails?.accountNumberLast4 || String(item.bankDetails?.accountNumber || seller.bankInfo?.accountNumber || "").slice(-4),
+          ifscCode: item.bankDetails?.ifscCode || seller.bankInfo?.ifscCode || "",
+          upiId: item.bankDetails?.upiId || seller.bankInfo?.upiId || "",
+          qrCodeImage: item.bankDetails?.qrCodeImage || seller.bankInfo?.upiQrImage || "",
         },
         sellerId: seller._id || item.sellerId,
       };

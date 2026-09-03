@@ -19,8 +19,10 @@ import {
 } from '../../food/orders/helpers/razorpay.helper.js';
 import {
   calculateQuickPricing,
-  getRiderEarning as getQuickRiderEarning,
+  calculateDeliverySplit,
+  getActiveFeeSettings,
 } from '../admin/services/billing.service.js';
+import { haversineDistanceMeters } from '../../../utils/geo.js';
 import * as foodTransactionService from '../../food/orders/services/foodTransaction.service.js';
 import { deductWalletBalance, refundWalletBalance } from '../../food/user/services/userWallet.service.js';
 import { emitQuickCommerceStatusUpdate } from '../services/quickStatusRealtime.service.js';
@@ -383,6 +385,74 @@ export const placeOrder = async (req, res) => {
     }
 
     const tip = Number(req.body?.selectedTip || req.body?.tip || 0);
+    const deliveryAddress = normalizeDeliveryAddress(req.body?.address);
+
+    const sellerBuckets = new Map();
+    items.forEach((item) => {
+      const sellerId = item.sellerId ? String(item.sellerId) : '';
+      if (!sellerId) {
+        logger.warn(`Quick placeOrder fan-out skipped: Product has no sellerId.`, {
+          productId: item.productId,
+          name: item.name,
+          isPlatformFulfilled: true,
+        });
+        return;
+      }
+      if (!sellerBuckets.has(sellerId)) sellerBuckets.set(sellerId, []);
+      sellerBuckets.get(sellerId).push(item);
+    });
+
+    const sellerIds = Array.from(sellerBuckets.keys());
+    const sellers = sellerIds.length > 0 ? await Seller.find({ _id: { $in: sellerIds } }).lean() : [];
+    const sellerMap = sellers.reduce((acc, seller) => {
+      acc[String(seller._id)] = seller;
+      return acc;
+    }, {});
+
+    // Distance-based delivery fee is computed per seller (their pickup point vs the
+    // delivery address) and split between the customer and that seller per the
+    // matched sponsor rule, then aggregated into the order-level delivery fee.
+    const feeSettings = await getActiveFeeSettings();
+    const customerCoords = Array.isArray(deliveryAddress?.location?.coordinates) && deliveryAddress.location.coordinates.length === 2
+      ? deliveryAddress.location.coordinates
+      : null;
+
+    const sellerDeliverySplits = new Map();
+    let aggUserDeliveryFee = 0;
+    let aggSellerDeliveryFee = 0;
+    let aggTotalDeliveryFee = 0;
+    let maxDistanceKm = 0;
+    const sponsorTypesSeen = new Set();
+
+    for (const [sellerId, sellerItems] of sellerBuckets.entries()) {
+      const seller = sellerMap[sellerId];
+      const sellerSubtotal = sellerItems.reduce(
+        (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+        0,
+      );
+      const sellerCoords = seller?.location?.coordinates;
+      const distanceKm = Array.isArray(sellerCoords) && sellerCoords.length === 2 && customerCoords
+        ? haversineDistanceMeters(sellerCoords[1], sellerCoords[0], customerCoords[1], customerCoords[0]) / 1000
+        : 0;
+
+      const split = calculateDeliverySplit(sellerSubtotal, distanceKm, feeSettings);
+      sellerDeliverySplits.set(sellerId, { ...split, sellerSubtotal });
+      aggUserDeliveryFee += split.userDeliveryFee;
+      aggSellerDeliveryFee += split.sellerDeliveryFee;
+      aggTotalDeliveryFee += split.totalDeliveryFee;
+      maxDistanceKm = Math.max(maxDistanceKm, distanceKm);
+      sponsorTypesSeen.add(split.deliverySponsorType);
+    }
+
+    // No items carried a sellerId (platform-fulfilled order) — fall back to a
+    // single flat split on the whole subtotal so delivery fee is never silently 0.
+    if (sellerBuckets.size === 0) {
+      const fallbackSplit = calculateDeliverySplit(subtotal, 0, feeSettings);
+      aggUserDeliveryFee = fallbackSplit.userDeliveryFee;
+      aggSellerDeliveryFee = fallbackSplit.sellerDeliveryFee;
+      aggTotalDeliveryFee = fallbackSplit.totalDeliveryFee;
+      sponsorTypesSeen.add(fallbackSplit.deliverySponsorType);
+    }
 
     const { pricing } = await calculateQuickPricing({
       subtotal,
@@ -390,6 +460,29 @@ export const placeOrder = async (req, res) => {
       tip,
       products,
     });
+
+    // Override the flat single-distance estimate with the seller-aware aggregate.
+    pricing.deliveryFee = Number(aggUserDeliveryFee.toFixed(2));
+    pricing.totalDeliveryFee = Number(aggTotalDeliveryFee.toFixed(2));
+    pricing.userDeliveryFee = pricing.deliveryFee;
+    pricing.restaurantDeliveryFee = Number(aggSellerDeliveryFee.toFixed(2));
+    pricing.sponsoredDelivery = aggSellerDeliveryFee > 0;
+    pricing.sponsoredKm = Number(maxDistanceKm.toFixed(2));
+    pricing.deliveryDistanceKm = Number(maxDistanceKm.toFixed(2));
+    pricing.deliverySponsorType = sponsorTypesSeen.size === 1
+      ? [...sponsorTypesSeen][0]
+      : (sponsorTypesSeen.size > 1 ? 'SPLIT' : 'USER_FULL');
+    pricing.total = Math.max(
+      0,
+      Number(pricing.subtotal || 0) +
+        pricing.deliveryFee +
+        Number(pricing.handlingFee || 0) +
+        Number(pricing.platformFee || 0) +
+        Number(pricing.tax || 0) -
+        Number(pricing.discount || 0) +
+        Number(pricing.tip || 0),
+    );
+
     const deliveryFee = Number(pricing.deliveryFee || 0);
     const total = Number(pricing.total || 0);
     const orderNumber = `QC${Date.now().toString().slice(-8)}`;
@@ -397,7 +490,6 @@ export const placeOrder = async (req, res) => {
     const paymentMode = isOnlinePayment ? 'razorpay' : 'cash';
     const sellerPaymentMode = isOnlinePayment ? 'online' : 'cash';
     const shouldFanOutSellerOrders = true;
-    const deliveryAddress = normalizeDeliveryAddress(req.body?.address);
     const amountDue = Math.max(0, total);
 
     let razorpayPayload = null;
@@ -423,30 +515,10 @@ export const placeOrder = async (req, res) => {
       }
     }
 
-    // Calculate rider earning (using base payout if distance is unknown/short)
-    const riderEarning = await getQuickRiderEarning(0.1);
-
-    const sellerBuckets = new Map();
-    items.forEach((item) => {
-      const sellerId = item.sellerId ? String(item.sellerId) : '';
-      if (!sellerId) {
-        logger.warn(`Quick placeOrder fan-out skipped: Product has no sellerId.`, {
-          productId: item.productId,
-          name: item.name,
-          isPlatformFulfilled: true,
-        });
-        return;
-      }
-      if (!sellerBuckets.has(sellerId)) sellerBuckets.set(sellerId, []);
-      sellerBuckets.get(sellerId).push(item);
-    });
-
-    const sellerIds = Array.from(sellerBuckets.keys());
-    const sellers = sellerIds.length > 0 ? await Seller.find({ _id: { $in: sellerIds } }).lean() : [];
-    const sellerMap = sellers.reduce((acc, seller) => {
-      acc[String(seller._id)] = seller;
-      return acc;
-    }, {});
+    // Rider earning is the full distance-based delivery fee (before any
+    // user/seller sponsor split) — whoever pays for delivery, the full
+    // amount goes to the delivery partner as their earning.
+    const riderEarning = Number(pricing.totalDeliveryFee || 0);
 
     const pickupPoints = [];
     for (const [sellerId, sellerItems] of sellerBuckets.entries()) {
@@ -498,10 +570,11 @@ export const placeOrder = async (req, res) => {
       },
       orderStatus: 'placed',
       riderEarning: riderEarning || 0,
-      platformProfit: Math.max(
-        0,
-        deliveryFee + Number(pricing.platformFee || 0) - (riderEarning || 0),
-      ), // Initial guess, will be updated with commission
+      // Delivery fee is now a pure pass-through to the rider (riderEarning ==
+      // totalDeliveryFee), so it nets to zero here regardless of who paid for
+      // it — platform profit comes only from platformFee (+ seller commission
+      // below, once known).
+      platformProfit: Math.max(0, Number(pricing.platformFee || 0)), // Initial guess, will be updated with commission
       statusHistory: [
         {
           byRole: 'SYSTEM',
@@ -514,19 +587,20 @@ export const placeOrder = async (req, res) => {
 
     const sellerOrdersResults = sellerBuckets.size > 0
         ? await Promise.all(Array.from(sellerBuckets.entries()).map(async ([sellerId, sellerItems]) => {
-            const sellerSubtotal = sellerItems.reduce(
-              (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
-              0,
-            );
-            const allocatedDeliveryFee = Number(
-              ((deliveryFee * sellerSubtotal) / Math.max(subtotal, 1)).toFixed(2),
-            );
+            const delivery = sellerDeliverySplits.get(sellerId) || {
+              sellerSubtotal: 0,
+              userDeliveryFee: 0,
+              sellerDeliveryFee: 0,
+            };
+            const sellerSubtotal = delivery.sellerSubtotal;
 
             // Calculate commission for this specific seller
             const { commissionAmount } = await getSellerCommissionSnapshot(sellerId, sellerSubtotal);
+            // Sellers on a SELLER_FULL/SPLIT sponsor rule absorb their portion of the
+            // delivery fee, reducing what they receive for this order leg.
             const sellerReceivable = Math.max(
               0,
-              Number((sellerSubtotal - commissionAmount).toFixed(2)),
+              Number((sellerSubtotal - commissionAmount - delivery.sellerDeliveryFee).toFixed(2)),
             );
 
             return {
@@ -548,8 +622,9 @@ export const placeOrder = async (req, res) => {
               pricing: {
                 subtotal: sellerSubtotal,
                 commission: commissionAmount,
-                total: sellerSubtotal + allocatedDeliveryFee,
+                total: sellerSubtotal + delivery.userDeliveryFee,
                 receivable: sellerReceivable,
+                deliveryFeeBorne: delivery.sellerDeliveryFee,
               },
               status: 'pending',
               workflowStatus: 'SELLER_PENDING',
@@ -577,12 +652,10 @@ export const placeOrder = async (req, res) => {
     
     // Update the main order with the total commission
     if (totalSellerCommission > 0) {
+      // Delivery fee nets to zero (see placement above) — profit is platformFee + seller commission.
       const platformProfit = Math.max(
         0,
-        deliveryFee +
-          Number(pricing.platformFee || 0) +
-          totalSellerCommission -
-          (riderEarning || 0),
+        Number(pricing.platformFee || 0) + totalSellerCommission,
       );
       await QuickOrder.updateOne(
         { _id: order._id },

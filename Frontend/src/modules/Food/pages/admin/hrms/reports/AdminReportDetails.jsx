@@ -107,7 +107,7 @@ export default function AdminReportDetails() {
         }
     };
 
-    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
+    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
     if (!report) return null;
 
     const isPending = ['Submitted', 'Under Review'].includes(report.status);
@@ -159,7 +159,7 @@ export default function AdminReportDetails() {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-orange-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="flex-1 overflow-y-auto p-6 space-y-8 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#d8c4f1] [&::-webkit-scrollbar-thumb]:rounded-full">
                     {/* Tasks */}
                     <section>
                         <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs border-b pb-2 mb-4">Reported Tasks</h3>
@@ -178,8 +178,8 @@ export default function AdminReportDetails() {
                             ))}
                         </div>
                         {report.workSummary && (
-                            <div className="mt-4 p-4 bg-orange-50/50 rounded-xl border border-orange-100">
-                                <h4 className="text-xs font-bold text-orange-800 mb-1">Work Summary</h4>
+                            <div className="mt-4 p-4 bg-[#f7f3fc]/50 rounded-xl border border-[#f0e7f9]">
+                                <h4 className="text-xs font-bold text-[#370a6d] mb-1">Work Summary</h4>
                                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{report.workSummary}</p>
                             </div>
                         )}
@@ -196,7 +196,7 @@ export default function AdminReportDetails() {
                                     <p className="text-xs text-slate-500 mb-2 font-semibold">Restaurants Visited ({report.metrics.restaurantsVisitedNames.length})</p>
                                     <div className="flex flex-wrap gap-2">
                                         {report.metrics.restaurantsVisitedNames.map((name, i) => (
-                                            <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-50 border border-orange-200 rounded-lg text-xs font-medium text-orange-700">
+                                            <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#f7f3fc] border border-[#d8c4f1] rounded-lg text-xs font-medium text-[#460d8b]">
                                                 {name}
                                             </span>
                                         ))}
@@ -224,7 +224,7 @@ export default function AdminReportDetails() {
                         {report.achievements && <div><h3 className="font-bold text-emerald-700 uppercase tracking-wider text-xs mb-2">Achievements</h3><p className="text-sm text-slate-700 bg-emerald-50 p-3 rounded-xl">{report.achievements}</p></div>}
                         {report.problemsFaced && <div><h3 className="font-bold text-red-700 uppercase tracking-wider text-xs mb-2">Problems Faced</h3><p className="text-sm text-slate-700 bg-red-50 p-3 rounded-xl">{report.problemsFaced}</p></div>}
                         {report.pendingWork && <div><h3 className="font-bold text-amber-700 uppercase tracking-wider text-xs mb-2">Pending Work</h3><p className="text-sm text-slate-700 bg-amber-50 p-3 rounded-xl">{report.pendingWork}</p></div>}
-                        {report.tomorrowPlan && <div><h3 className="font-bold text-orange-700 uppercase tracking-wider text-xs mb-2">Tomorrow's Plan</h3><p className="text-sm text-slate-700 bg-orange-50 p-3 rounded-xl">{report.tomorrowPlan}</p></div>}
+                        {report.tomorrowPlan && <div><h3 className="font-bold text-[#460d8b] uppercase tracking-wider text-xs mb-2">Tomorrow's Plan</h3><p className="text-sm text-slate-700 bg-[#f7f3fc] p-3 rounded-xl">{report.tomorrowPlan}</p></div>}
                     </section>
 
                     {/* Attachments */}
@@ -233,8 +233,8 @@ export default function AdminReportDetails() {
                             <h3 className="font-bold text-slate-800 uppercase tracking-wider text-xs border-b pb-2 mb-4">Attachments</h3>
                             <div className="flex flex-wrap gap-3">
                                 {report.attachments.map((att, i) => (
-                                    <a key={i} href={att.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-orange-50 border border-slate-200 hover:border-orange-200 rounded-xl text-sm transition-colors group">
-                                        <FileText className="w-4 h-4 text-slate-400 group-hover:text-orange-500" />
+                                    <a key={i} href={att.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 bg-slate-50 hover:bg-[#f7f3fc] border border-slate-200 hover:border-[#d8c4f1] rounded-xl text-sm transition-colors group">
+                                        <FileText className="w-4 h-4 text-slate-400 group-hover:text-[#6412c6]" />
                                         <span className="text-slate-700 font-medium">{att.name}</span>
                                         <Download className="w-3.5 h-3.5 text-slate-400 ml-2" />
                                     </a>
@@ -251,7 +251,7 @@ export default function AdminReportDetails() {
                     <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Communication Thread</h2>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-white [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-orange-200 [&::-webkit-scrollbar-thumb]:rounded-full">
+                <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-white [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#d8c4f1] [&::-webkit-scrollbar-thumb]:rounded-full">
                     {comments.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-slate-400">
                             <MessageSquare className="w-8 h-8 mb-2 opacity-50" />
@@ -263,7 +263,7 @@ export default function AdminReportDetails() {
                             return (
                                 <div key={msg._id || index} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`flex items-end gap-2 max-w-[90%] sm:max-w-[85%] ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 shadow-sm ${!isMe ? 'bg-gradient-to-br from-slate-700 to-slate-900 text-white' : 'bg-gradient-to-br from-orange-500 to-amber-500 text-white'}`}>
+                                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 shadow-sm ${!isMe ? 'bg-gradient-to-br from-slate-700 to-slate-900 text-white' : 'bg-gradient-to-br from-[#6412c6] to-amber-500 text-white'}`}>
                                             {!isMe ? <User className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
                                         </div>
                                         
@@ -275,7 +275,7 @@ export default function AdminReportDetails() {
                                             <div className={`p-3 ${
                                                 !isMe 
                                                     ? 'bg-slate-50 text-slate-800 rounded-2xl rounded-bl-none border border-slate-200' 
-                                                    : 'bg-orange-50 border border-orange-100 text-slate-800 rounded-2xl rounded-br-none shadow-sm'
+                                                    : 'bg-[#f7f3fc] border border-[#f0e7f9] text-slate-800 rounded-2xl rounded-br-none shadow-sm'
                                             }`}>
                                                 {msg.message && <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>}
                                                 {msg.attachments && msg.attachments.length > 0 && (
@@ -302,7 +302,7 @@ export default function AdminReportDetails() {
                         {attachments.length > 0 && (
                             <div className="flex flex-wrap gap-2 px-1">
                                 {attachments.map((att, i) => (
-                                    <div key={i} className="flex items-center gap-1.5 bg-orange-50 border border-orange-100 text-orange-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                                    <div key={i} className="flex items-center gap-1.5 bg-[#f7f3fc] border border-[#f0e7f9] text-[#460d8b] px-3 py-1.5 rounded-lg text-xs font-medium">
                                         <Paperclip className="w-3.5 h-3.5" />
                                         <span className="truncate max-w-[120px]">{att.name}</span>
                                         <button type="button" onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500"><X className="w-3 h-3" /></button>
@@ -311,7 +311,7 @@ export default function AdminReportDetails() {
                             </div>
                         )}
                         <div className="flex items-end gap-2">
-                            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading || sending} className="p-3 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all disabled:opacity-50 shrink-0">
+                            <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading || sending} className="p-3 text-slate-400 hover:text-[#6412c6] hover:bg-[#f7f3fc] rounded-xl transition-all disabled:opacity-50 shrink-0">
                                 {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                             </button>
                             <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleFileChange} />
@@ -320,14 +320,14 @@ export default function AdminReportDetails() {
                                 value={replyText}
                                 onChange={e => setReplyText(e.target.value)}
                                 placeholder="Add a comment or reply..."
-                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 resize-none max-h-32 min-h-[50px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-orange-200 [&::-webkit-scrollbar-thumb]:rounded-full disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] resize-none max-h-32 min-h-[50px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#d8c4f1] [&::-webkit-scrollbar-thumb]:rounded-full disabled:bg-slate-100 disabled:cursor-not-allowed"
                                 rows={1}
                                 onKeyDown={e => {
                                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e); }
                                 }}
                             />
                             
-                            <button type="submit" disabled={sending || (!replyText.trim() && attachments.length === 0)} className="p-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-sm shadow-orange-500/20 disabled:opacity-50 disabled:shadow-none shrink-0">
+                            <button type="submit" disabled={sending || (!replyText.trim() && attachments.length === 0)} className="p-3 bg-[#6412c6] text-white rounded-xl hover:bg-[#550fa8] transition-all shadow-sm shadow-[#6412c6]/20 disabled:opacity-50 disabled:shadow-none shrink-0">
                                 {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                             </button>
                         </div>

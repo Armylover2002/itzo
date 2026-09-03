@@ -12,7 +12,7 @@ import { useSearchParams } from 'react-router-dom';
 
 const statusStyles = {
     Pending: 'bg-amber-50 text-amber-700 border-amber-200',
-    Under_Review: 'bg-orange-50 text-orange-700 border-orange-200',
+    Under_Review: 'bg-[#f7f3fc] text-[#460d8b] border-[#d8c4f1]',
     Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     Rejected: 'bg-red-50 text-red-700 border-red-200',
     Info_Requested: 'bg-violet-50 text-violet-700 border-violet-200',
@@ -165,7 +165,7 @@ export default function HrmsJoiningRequests() {
         }
     };
 
-    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30";
+    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30";
 
     return (
         <div className="space-y-6">
@@ -180,7 +180,7 @@ export default function HrmsJoiningRequests() {
                 <button onClick={() => setMainTab('joining')}
                     className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                         mainTab === 'joining'
-                            ? 'bg-orange-500 text-white shadow-md'
+                            ? 'bg-[#6412c6] text-white shadow-md'
                             : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                     }`}>
                     New Joining Requests
@@ -188,11 +188,11 @@ export default function HrmsJoiningRequests() {
                 <button onClick={() => setMainTab('edits')}
                     className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                         mainTab === 'edits'
-                            ? 'bg-orange-500 text-white shadow-md'
+                            ? 'bg-[#6412c6] text-white shadow-md'
                             : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                     }`}>
                     Edited Profile Approvals
-                    {pendingEdits.length > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-orange-500 text-white text-xs">{pendingEdits.length}</span>}
+                    {pendingEdits.length > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-[#6412c6] text-white text-xs">{pendingEdits.length}</span>}
                 </button>
             </div>
 
@@ -210,7 +210,7 @@ export default function HrmsJoiningRequests() {
                             <button key={tab.key} onClick={() => setStatusFilter(tab.key)}
                                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                                     statusFilter === tab.key
-                                        ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
+                                        ? 'bg-[#6412c6] text-white shadow-md shadow-[#6412c6]/20'
                                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                                 }`}>
                                 {tab.label} {tab.count !== undefined && <span className="ml-1.5 text-xs opacity-80">({tab.count})</span>}
@@ -222,7 +222,7 @@ export default function HrmsJoiningRequests() {
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, phone, or request ID..."
-                            className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white" />
+                            className="w-full h-11 pl-11 pr-4 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white" />
                     </div>
 
                     {/* Detail View */}
@@ -234,7 +234,7 @@ export default function HrmsJoiningRequests() {
                                     {selectedRequest.profilePhotoUrl ? (
                                         <img src={selectedRequest.profilePhotoUrl} alt={selectedRequest.fullName} className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shadow-sm" />
                                     ) : (
-                                        <div className="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xl shadow-sm">
+                                        <div className="w-14 h-14 rounded-2xl bg-[#f0e7f9] text-[#550fa8] flex items-center justify-center font-bold text-xl shadow-sm">
                                             {selectedRequest.fullName?.charAt(0) || 'U'}
                                         </div>
                                     )}
@@ -246,7 +246,7 @@ export default function HrmsJoiningRequests() {
                                                 {selectedRequest.status?.replace('_', ' ')}
                                             </span>
                                             {detailLoading && (
-                                                <span className="flex items-center gap-1.5 text-xs text-orange-600 font-medium animate-pulse">
+                                                <span className="flex items-center gap-1.5 text-xs text-[#550fa8] font-medium animate-pulse">
                                                     <Loader2 className="w-3.5 h-3.5 animate-spin" /> Fetching complete documents...
                                                 </span>
                                             )}
@@ -268,7 +268,7 @@ export default function HrmsJoiningRequests() {
                                 {/* Card 1: Personal & Contact Information */}
                                 <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
                                     <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
-                                        <UserPlus className="w-4 h-4 text-orange-500" /> Personal & Contact Information
+                                        <UserPlus className="w-4 h-4 text-[#6412c6]" /> Personal & Contact Information
                                     </h3>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
                                         <div>
@@ -305,7 +305,7 @@ export default function HrmsJoiningRequests() {
                                 {/* Card 2: Qualifications & Proposed Employment */}
                                 <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
                                     <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
-                                        <Award className="w-4 h-4 text-orange-500" /> Qualifications & Role Preferences
+                                        <Award className="w-4 h-4 text-[#6412c6]" /> Qualifications & Role Preferences
                                     </h3>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
                                         <div>
@@ -346,7 +346,7 @@ export default function HrmsJoiningRequests() {
                                 {/* Card 3: Bank Details */}
                                 <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
                                     <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
-                                        <Building className="w-4 h-4 text-orange-500" /> Bank & Payout Information
+                                        <Building className="w-4 h-4 text-[#6412c6]" /> Bank & Payout Information
                                     </h3>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4 text-sm">
                                         <div>
@@ -375,7 +375,7 @@ export default function HrmsJoiningRequests() {
                                 {/* Card 4: KYC Documents & Photos Verification */}
                                 <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80 space-y-4">
                                     <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2 border-b border-slate-200 pb-2.5">
-                                        <ShieldCheck className="w-4 h-4 text-orange-500" /> KYC Documents & Photos Verification
+                                        <ShieldCheck className="w-4 h-4 text-[#6412c6]" /> KYC Documents & Photos Verification
                                     </h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                         {/* Aadhaar */}
@@ -388,7 +388,7 @@ export default function HrmsJoiningRequests() {
                                             </div>
                                             {selectedRequest.aadhaarPhotoUrl ? (
                                                 <button onClick={() => window.open(selectedRequest.aadhaarPhotoUrl, '_blank')}
-                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    className="shrink-0 px-3 py-1.5 bg-[#f7f3fc] hover:bg-[#f0e7f9] text-[#550fa8] font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
                                                     <ExternalLink className="w-3 h-3" /> View Photo
                                                 </button>
                                             ) : (
@@ -400,13 +400,13 @@ export default function HrmsJoiningRequests() {
                                         <div className="p-3 bg-white rounded-xl border border-slate-200/80 flex items-center justify-between gap-3 shadow-sm">
                                             <div className="min-w-0">
                                                 <p className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                                                    <FileCheck className="w-3.5 h-3.5 text-orange-500" /> PAN Card
+                                                    <FileCheck className="w-3.5 h-3.5 text-[#6412c6]" /> PAN Card
                                                 </p>
                                                 <p className="text-xs font-mono text-slate-500 mt-0.5">{selectedRequest.panNumber || 'Number Not Provided'}</p>
                                             </div>
                                             {selectedRequest.panPhotoUrl ? (
                                                 <button onClick={() => window.open(selectedRequest.panPhotoUrl, '_blank')}
-                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    className="shrink-0 px-3 py-1.5 bg-[#f7f3fc] hover:bg-[#f0e7f9] text-[#550fa8] font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
                                                     <ExternalLink className="w-3 h-3" /> View Photo
                                                 </button>
                                             ) : (
@@ -424,7 +424,7 @@ export default function HrmsJoiningRequests() {
                                             </div>
                                             {selectedRequest.resumeUrl ? (
                                                 <button onClick={() => window.open(selectedRequest.resumeUrl, '_blank')}
-                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    className="shrink-0 px-3 py-1.5 bg-[#f7f3fc] hover:bg-[#f0e7f9] text-[#550fa8] font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
                                                     <Download className="w-3 h-3" /> Open File
                                                 </button>
                                             ) : (
@@ -442,7 +442,7 @@ export default function HrmsJoiningRequests() {
                                             </div>
                                             {selectedRequest.profilePhotoUrl ? (
                                                 <button onClick={() => window.open(selectedRequest.profilePhotoUrl, '_blank')}
-                                                    className="shrink-0 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
+                                                    className="shrink-0 px-3 py-1.5 bg-[#f7f3fc] hover:bg-[#f0e7f9] text-[#550fa8] font-semibold rounded-lg text-xs flex items-center gap-1 transition-colors">
                                                     <ExternalLink className="w-3 h-3" /> View Photo
                                                 </button>
                                             ) : (
@@ -478,21 +478,21 @@ export default function HrmsJoiningRequests() {
 
                             {/* Online Assessment Results Card (If taken) */}
                             {selectedRequest.assessmentAttemptId && typeof selectedRequest.assessmentAttemptId === 'object' && (
-                                <div className="bg-gradient-to-r from-orange-50/80 via-amber-50/50 to-orange-50/80 rounded-2xl p-5 border border-orange-200 shadow-sm space-y-4">
-                                    <div className="flex items-center justify-between flex-wrap gap-2 border-b border-orange-200/80 pb-3">
+                                <div className="bg-gradient-to-r from-[#f7f3fc]/80 via-amber-50/50 to-[#f7f3fc]/80 rounded-2xl p-5 border border-[#d8c4f1] shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between flex-wrap gap-2 border-b border-[#d8c4f1]/80 pb-3">
                                         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4 text-orange-600" /> Online Assessment Verification Scorecard
+                                            <CheckCircle className="w-4 h-4 text-[#550fa8]" /> Online Assessment Verification Scorecard
                                         </h3>
                                         <div className="flex items-center gap-2">
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${selectedRequest.assessmentAttemptId.isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-red-100 text-red-800 border border-red-300'}`}>
                                                 {selectedRequest.assessmentAttemptId.isPassed ? 'Passed Assessment' : 'Did Not Pass'}
                                             </span>
-                                            <span className="px-2.5 py-1 bg-white border border-orange-200 text-orange-800 rounded-lg text-xs font-semibold">
+                                            <span className="px-2.5 py-1 bg-white border border-[#d8c4f1] text-[#370a6d] rounded-lg text-xs font-semibold">
                                                 Status: {selectedRequest.assessmentAttemptId.status?.replace('_', ' ')}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center bg-white/80 p-4 rounded-xl border border-orange-100 shadow-sm">
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-center bg-white/80 p-4 rounded-xl border border-[#f0e7f9] shadow-sm">
                                         <div>
                                             <p className="text-[11px] font-semibold text-slate-400 uppercase">Total Score</p>
                                             <p className="text-xl font-black text-slate-900 mt-0.5">{selectedRequest.assessmentAttemptId.percentage || selectedRequest.assessmentAttemptId.score || 0}%</p>
@@ -532,7 +532,7 @@ export default function HrmsJoiningRequests() {
                             {selectedRequest.statusHistory?.length > 0 && (
                                 <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-200/80">
                                     <h4 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                        <Clock className="w-4 h-4 text-orange-500" /> Status & Audit Timeline
+                                        <Clock className="w-4 h-4 text-[#6412c6]" /> Status & Audit Timeline
                                     </h4>
                                     <div className="space-y-2">
                                         {selectedRequest.statusHistory.map((h, i) => (
@@ -550,8 +550,8 @@ export default function HrmsJoiningRequests() {
                             {selectedRequest.status !== 'Approved' && selectedRequest.status !== 'Rejected' && (
                                 <div className="space-y-4 pt-4 border-t border-slate-200">
                                     <details className="group">
-                                        <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-bold text-sm hover:text-orange-700 transition-colors bg-orange-50/60 p-3.5 rounded-xl border border-orange-200/60 shadow-xs">
-                                            <CheckCircle className="w-4 h-4 text-orange-600" /> Approve & Onboard as Active Employee
+                                        <summary className="flex items-center gap-2 cursor-pointer text-[#550fa8] font-bold text-sm hover:text-[#460d8b] transition-colors bg-[#f7f3fc]/60 p-3.5 rounded-xl border border-[#d8c4f1]/60 shadow-xs">
+                                            <CheckCircle className="w-4 h-4 text-[#550fa8]" /> Approve & Onboard as Active Employee
                                         </summary>
                                         <div className="mt-4 p-5 bg-slate-50/80 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <div>
@@ -621,7 +621,7 @@ export default function HrmsJoiningRequests() {
                                                             return selectableEmps.map(emp => {
                                                                 const isChecked = (approvalForm.assignedTeamMembers || []).includes(emp._id);
                                                                 return (
-                                                                    <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50/90 border border-orange-200 text-orange-900 font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
+                                                                    <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-[#f7f3fc]/90 border border-[#d8c4f1] text-[#28074f] font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
                                                                         <input type="checkbox" checked={isChecked} onChange={e => {
                                                                             const checked = e.target.checked;
                                                                             setApprovalForm(p => ({
@@ -630,7 +630,7 @@ export default function HrmsJoiningRequests() {
                                                                                     ? [...(p.assignedTeamMembers || []), emp._id]
                                                                                     : (p.assignedTeamMembers || []).filter(id => id !== emp._id)
                                                                             }));
-                                                                        }} className="rounded text-orange-500 focus:ring-orange-500 w-4 h-4" />
+                                                                        }} className="rounded text-[#6412c6] focus:ring-[#6412c6] w-4 h-4" />
                                                                         <span className="font-mono text-slate-500 text-[11px]">{emp.employeeId}</span>
                                                                         <span>{emp.adminId?.name || 'Unknown'}</span>
                                                                         <span className="text-slate-400 ml-auto">({emp.department || 'General'})</span>
@@ -643,7 +643,7 @@ export default function HrmsJoiningRequests() {
                                             )}
                                             <div className="sm:col-span-2 lg:col-span-3 pt-2">
                                                 <button onClick={handleApprove} disabled={actionLoading}
-                                                    className="px-6 h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 shadow-md flex items-center justify-center gap-2">
+                                                    className="px-6 h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-bold rounded-xl transition-all text-sm disabled:opacity-50 shadow-md flex items-center justify-center gap-2">
                                                     {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                                     {actionLoading ? 'Processing Approval...' : 'Approve Application & Create Employee Record'}
                                                 </button>
@@ -668,15 +668,15 @@ export default function HrmsJoiningRequests() {
                                     </details>
 
                                     <details className="group">
-                                        <summary className="flex items-center gap-2 cursor-pointer text-orange-600 font-bold text-sm hover:text-orange-700 transition-colors bg-orange-50/60 p-3.5 rounded-xl border border-orange-200/60 shadow-xs">
-                                            <MessageSquare className="w-4 h-4 text-orange-600" /> Request More Information / Clarification
+                                        <summary className="flex items-center gap-2 cursor-pointer text-[#550fa8] font-bold text-sm hover:text-[#460d8b] transition-colors bg-[#f7f3fc]/60 p-3.5 rounded-xl border border-[#d8c4f1]/60 shadow-xs">
+                                            <MessageSquare className="w-4 h-4 text-[#550fa8]" /> Request More Information / Clarification
                                         </summary>
-                                        <div className="mt-3 p-5 bg-orange-50/40 rounded-2xl border border-orange-200/80">
+                                        <div className="mt-3 p-5 bg-[#f7f3fc]/40 rounded-2xl border border-[#d8c4f1]/80">
                                             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Message to Applicant *</label>
                                             <textarea value={infoMessage} onChange={e => setInfoMessage(e.target.value)} rows={3} placeholder="Specify what documents or details need clarification..."
-                                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none bg-white" />
+                                                className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 resize-none bg-white" />
                                             <button onClick={handleRequestInfo} disabled={actionLoading}
-                                                className="mt-3 px-6 h-10 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">
+                                                className="mt-3 px-6 h-10 bg-[#550fa8] hover:bg-[#460d8b] text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50 shadow-sm flex items-center gap-2">
                                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
                                                 Send Information Request
                                             </button>
@@ -723,7 +723,7 @@ export default function HrmsJoiningRequests() {
                                                 </td>
                                                 <td className="px-5 py-3.5">
                                                     <button onClick={() => handleSelectRequest(r)}
-                                                        className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
+                                                        className="flex items-center gap-1.5 text-[#550fa8] hover:text-[#460d8b] font-medium text-xs">
                                                         <Eye className="w-3.5 h-3.5" /> View
                                                     </button>
                                                 </td>
@@ -767,10 +767,10 @@ export default function HrmsJoiningRequests() {
                                             <p className="text-xs text-slate-500 mt-0.5">ID: {edit.employeeId} · Dept: {edit.department}</p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => handleEditAction(edit._id, 'Approved')} className="px-4 h-9 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm">
+                                            <button onClick={() => handleEditAction(edit._id, 'Approved')} className="px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium transition-all shadow-sm">
                                                 Approve
                                             </button>
-                                            <button onClick={() => handleEditAction(edit._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">
+                                            <button onClick={() => handleEditAction(edit._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium transition-all shadow-sm">
                                                 Reject
                                             </button>
                                         </div>

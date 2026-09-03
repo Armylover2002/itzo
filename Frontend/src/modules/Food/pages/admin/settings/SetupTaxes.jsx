@@ -57,7 +57,7 @@ export default function SetupTaxes() {
                 </div>
               </label>
 
-              <label className="flex gap-3 rounded-lg border border-primary bg-orange-50 px-4 py-3 cursor-pointer">
+              <label className="flex gap-3 rounded-lg border border-primary bg-[#f7f3fc] px-4 py-3 cursor-pointer">
                 <input
                   type="radio"
                   name="price-mode"

@@ -118,9 +118,9 @@ export default function QuickCommerceAdminDashboard() {
         <div className="space-y-5 p-5">
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <StatCard title="Categories" value={stats.categories} icon={<Tags className="h-4 w-4 text-emerald-700" />} tone="border-emerald-100" />
-            <StatCard title="Products" value={stats.products} icon={<Package className="h-4 w-4 text-orange-700" />} tone="border-orange-100" />
+            <StatCard title="Products" value={stats.products} icon={<Package className="h-4 w-4 text-[#460d8b]" />} tone="border-[#f0e7f9]" />
             <StatCard title="Orders" value={stats.orders} icon={<ShoppingBag className="h-4 w-4 text-amber-700" />} tone="border-amber-100" />
-            <StatCard title="Revenue" value={money(stats.revenue)} icon={<IndianRupee className="h-4 w-4 text-orange-700" />} tone="border-orange-100" />
+            <StatCard title="Revenue" value={money(stats.revenue)} icon={<IndianRupee className="h-4 w-4 text-[#460d8b]" />} tone="border-[#f0e7f9]" />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">

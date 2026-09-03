@@ -298,7 +298,7 @@ export default function AdminHome() {
               value={formatCurrency(platformFeeTotal)}
               helper={`Platform service fees: ${periodLabel}`}
               icon={<CreditCard className="h-5 w-5 text-primary" />}
-              accent="bg-orange-200/40"
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/fee-settings"
             />
             <MetricCard
@@ -306,15 +306,15 @@ export default function AdminHome() {
               value={formatCurrency(deliveryFeeTotal)}
               helper={`Total delivery fees: ${periodLabel}`}
               icon={<Truck className="h-5 w-5 text-primary" />}
-              accent="bg-orange-200/40"
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/transaction-report"
             />
             <MetricCard
               title="GST"
               value={formatCurrency(gstTotal)}
               helper={`Total tax collected: ${periodLabel}`}
-              icon={<Receipt className="h-5 w-5 text-orange-600" />}
-              accent="bg-orange-200/40"
+              icon={<Receipt className="h-5 w-5 text-[#550fa8]" />}
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/tax-report"
             />
             <MetricCard
@@ -330,15 +330,15 @@ export default function AdminHome() {
               value={totalRestaurants.toLocaleString("en-IN")}
               helper="Approved restaurants"
               icon={<Store className="h-5 w-5 text-primary" />}
-              accent="bg-orange-200/40"
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/restaurants"
             />
             <MetricCard
               title="Restaurant request pending"
               value={pendingRestaurantRequests.toLocaleString("en-IN")}
               helper="Awaiting approval"
-              icon={<UserCheck className="h-5 w-5 text-orange-600" />}
-              accent="bg-orange-200/40"
+              icon={<UserCheck className="h-5 w-5 text-[#550fa8]" />}
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/restaurants/joining-request"
             />
             <MetricCard
@@ -346,7 +346,7 @@ export default function AdminHome() {
               value={totalDeliveryBoys.toLocaleString("en-IN")}
               helper="Approved delivery partners"
               icon={<Truck className="h-5 w-5 text-primary" />}
-              accent="bg-orange-200/40"
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/delivery-partners"
             />
             <MetricCard
@@ -362,7 +362,7 @@ export default function AdminHome() {
               value={totalFoods.toLocaleString("en-IN")}
               helper="Approved menu items"
               icon={<Package className="h-5 w-5 text-primary" />}
-              accent="bg-orange-200/40"
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/foods"
             />
             <MetricCard
@@ -378,7 +378,7 @@ export default function AdminHome() {
               value={totalCustomers.toLocaleString("en-IN")}
               helper="Registered users"
               icon={<UserCircle className="h-5 w-5 text-primary" />}
-              accent="bg-orange-200/40"
+              accent="bg-[#d8c4f1]/40"
               path="/ecs/food/customers"
             />
             <MetricCard
@@ -408,7 +408,7 @@ export default function AdminHome() {
                 value={formatCurrency(subOverview?.totalRevenue || 0)}
                 helper="Gross collected all-time"
                 icon={<DollarSign className="h-5 w-5 text-[#6412C6]" />}
-                accent="bg-orange-100/40"
+                accent="bg-[#f0e7f9]/40"
                 path="/ecs/food/subscriptions?source=revenue"
               />
               <MetricCard
@@ -416,7 +416,7 @@ export default function AdminHome() {
                 value={`${subOverview?.activeSubscribers?.total || 0} (${subOverview?.activeSubscribers?.restaurants || 0} R / ${subOverview?.activeSubscribers?.deliveryPartners || 0} D)`}
                 helper="Active subscription plans"
                 icon={<Activity className="h-5 w-5 text-primary" />}
-                accent="bg-orange-100/40"
+                accent="bg-[#f0e7f9]/40"
                 path="/ecs/food/subscriptions?status=active"
               />
               <MetricCard
@@ -424,7 +424,7 @@ export default function AdminHome() {
                 value={(subOverview?.oneDayPassCount || 0).toLocaleString("en-IN")}
                 helper="One day passes activated"
                 icon={<Truck className="h-5 w-5 text-primary" />}
-                accent="bg-orange-100/40"
+                accent="bg-[#f0e7f9]/40"
                 path="/ecs/food/subscriptions?type=DAILY_DEDUCTION"
               />
               <MetricCard
@@ -440,7 +440,7 @@ export default function AdminHome() {
                 value={formatCurrency(subOverview?.recurringPlanRevenue || 0)}
                 helper="Weekly & Monthly direct plans"
                 icon={<Package className="h-5 w-5 text-primary" />}
-                accent="bg-orange-100/40"
+                accent="bg-[#f0e7f9]/40"
                 path="/ecs/food/subscriptions?type=WEEKLY_SUBSCRIPTION"
               />
               <MetricCard
@@ -633,9 +633,9 @@ export default function AdminHome() {
                         case "order_cancelled":
                           return "bg-red-50"
                         case "restaurant":
-                          return "bg-orange-50"
+                          return "bg-[#f7f3fc]"
                         case "delivery":
-                          return "bg-orange-50"
+                          return "bg-[#f7f3fc]"
                         case "customer":
                           return "bg-pink-50"
                         default:

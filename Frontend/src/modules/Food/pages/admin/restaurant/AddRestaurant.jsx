@@ -965,7 +965,7 @@ export default function AddRestaurant() {
             />
             {isSearchingLocation && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-[#6412c6]" />
               </div>
             )}
           </div>
@@ -1000,7 +1000,7 @@ export default function AddRestaurant() {
                     setLocationSearchValue(display)
                     setLocationSuggestions([])
                   }}
-                  className="w-full px-4 py-2 text-left text-[13px] font-medium text-gray-700 hover:bg-orange-50 border-b border-gray-100 last:border-none"
+                  className="w-full px-4 py-2 text-left text-[13px] font-medium text-gray-700 hover:bg-[#f7f3fc] border-b border-gray-100 last:border-none"
                 >
                   <span className="truncate">{s.display}</span>
                 </button>

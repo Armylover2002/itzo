@@ -166,7 +166,7 @@ export default function LoginSetup() {
         {/* Page Header */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#9359d7] to-[#550fa8] flex items-center justify-center">
               <Monitor className="w-5 h-5 text-white" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900">Login Setup</h1>
@@ -180,7 +180,7 @@ export default function LoginSetup() {
               onClick={() => setActiveTab("customer-login")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === "customer-login"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-[#6412c6] text-white"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -190,7 +190,7 @@ export default function LoginSetup() {
               onClick={() => setActiveTab("panel-login")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === "panel-login"
-                  ? "bg-orange-500 text-white"
+                  ? "bg-[#6412c6] text-white"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
@@ -218,7 +218,7 @@ export default function LoginSetup() {
                     onClick={() => handleLoginOptionChange(option.key)}
                     className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       loginOptions[option.key]
-                        ? "border-orange-500 bg-orange-50"
+                        ? "border-[#6412c6] bg-[#f7f3fc]"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
@@ -234,8 +234,8 @@ export default function LoginSetup() {
                             e.stopPropagation()
                             handleLoginOptionChange(option.key)
                           }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                            loginOptions[option.key] ? "bg-orange-500" : "bg-slate-300"
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:ring-offset-2 ${
+                            loginOptions[option.key] ? "bg-[#6412c6]" : "bg-slate-300"
                           }`}
                         >
                           <span
@@ -255,7 +255,7 @@ export default function LoginSetup() {
             {/* Social Media Login Setup */}
             <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
               <p className="text-sm text-slate-600 mb-4">
-                <a href="#" className="text-orange-500 hover:text-orange-600 hover:underline">
+                <a href="#" className="text-[#6412c6] hover:text-[#550fa8] hover:underline">
                   Connect 3rd party login system from here
                 </a>
               </p>
@@ -273,7 +273,7 @@ export default function LoginSetup() {
                       onClick={() => handleSocialMediaChange(platform.key)}
                       className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                         socialMedia[platform.key]
-                          ? "border-orange-500 bg-orange-50"
+                          ? "border-[#6412c6] bg-[#f7f3fc]"
                           : "border-slate-200 bg-white hover:border-slate-300"
                       }`}
                     >
@@ -289,8 +289,8 @@ export default function LoginSetup() {
                               e.stopPropagation()
                               handleSocialMediaChange(platform.key)
                             }}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                              socialMedia[platform.key] ? "bg-orange-500" : "bg-slate-300"
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:ring-offset-2 ${
+                              socialMedia[platform.key] ? "bg-[#6412c6]" : "bg-slate-300"
                             }`}
                           >
                             <span
@@ -323,7 +323,7 @@ export default function LoginSetup() {
                     onClick={() => handleVerificationChange(verify.key)}
                     className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                       verification[verify.key]
-                        ? "border-orange-500 bg-orange-50"
+                        ? "border-[#6412c6] bg-[#f7f3fc]"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
                   >
@@ -339,8 +339,8 @@ export default function LoginSetup() {
                             e.stopPropagation()
                             handleVerificationChange(verify.key)
                           }}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
-                            verification[verify.key] ? "bg-orange-500" : "bg-slate-300"
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:ring-offset-2 ${
+                            verification[verify.key] ? "bg-[#6412c6]" : "bg-slate-300"
                           }`}
                         >
                           <span
@@ -444,12 +444,12 @@ export default function LoginSetup() {
                                   type="text"
                                   value={editUrl}
                                   onChange={(e) => setEditUrl(e.target.value)}
-                                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6]"
                                   placeholder="Enter login URL"
                                 />
                                 <button
                                   onClick={() => handleSaveUrl(panel.id)}
-                                  className="px-3 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                                  className="px-3 py-2 text-sm bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8] transition-colors"
                                 >
                                   Save
                                 </button>
@@ -467,7 +467,7 @@ export default function LoginSetup() {
                                   href={panel.loginUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-orange-500 hover:text-orange-600"
+                                  className="text-[#6412c6] hover:text-[#550fa8]"
                                   title="Open in new tab"
                                 >
                                   <ExternalLink className="w-4 h-4" />
@@ -490,7 +490,7 @@ export default function LoginSetup() {
                                 <>
                                   <button
                                     onClick={() => handleEditUrl(panel.id, panel.loginUrl)}
-                                    className="p-1.5 rounded text-orange-500 hover:bg-orange-50 transition-colors"
+                                    className="p-1.5 rounded text-[#6412c6] hover:bg-[#f7f3fc] transition-colors"
                                     title="Edit URL"
                                   >
                                     <Edit className="w-4 h-4" />
@@ -528,7 +528,7 @@ export default function LoginSetup() {
           <button
             type="button"
             onClick={handleSubmit}
-            className="px-6 py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+            className="px-6 py-2.5 bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8] transition-colors font-medium"
           >
             Submit
           </button>
@@ -561,11 +561,11 @@ export default function LoginSetup() {
                         type="checkbox"
                         checked={visibleColumns[key]}
                         onChange={() => toggleColumn(key)}
-                        className="w-4 h-4 text-orange-500 border-slate-300 rounded focus:ring-orange-500"
+                        className="w-4 h-4 text-[#6412c6] border-slate-300 rounded focus:ring-[#6412c6]"
                       />
                       <span className="text-sm text-slate-700">{label}</span>
                       {visibleColumns[key] && (
-                        <Check className="w-4 h-4 text-orange-500 ml-auto" />
+                        <Check className="w-4 h-4 text-[#6412c6] ml-auto" />
                       )}
                     </label>
                   ))}
@@ -580,7 +580,7 @@ export default function LoginSetup() {
                 </button>
                 <button
                   onClick={() => setIsSettingsOpen(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-all shadow-md"
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
                 >
                   Apply
                 </button>

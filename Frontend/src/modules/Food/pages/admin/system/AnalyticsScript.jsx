@@ -97,7 +97,7 @@ export default function AnalyticsScript() {
         </div>
 
         {/* Info Banner */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4 flex items-start gap-3">
+        <div className="bg-[#f7f3fc] border border-[#d8c4f1] rounded-lg p-3 mb-4 flex items-start gap-3">
           <Lightbulb className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-xs text-slate-700">
             In this page you can add credentials to show your analytics on the platform make sure fill with proper data other wise you can not see the analytics properly

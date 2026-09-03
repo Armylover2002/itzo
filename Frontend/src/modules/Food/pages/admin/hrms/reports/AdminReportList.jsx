@@ -53,7 +53,7 @@ export default function AdminReportList() {
             case 'Rejected': return 'bg-red-50 text-red-600 border-red-200';
             case 'Draft': return 'bg-slate-100 text-slate-600 border-slate-200';
             case 'Revision Requested': return 'bg-amber-50 text-amber-600 border-amber-200';
-            default: return 'bg-orange-50 text-orange-600 border-orange-200';
+            default: return 'bg-[#f7f3fc] text-[#550fa8] border-[#d8c4f1]';
         }
     };
 
@@ -75,7 +75,7 @@ export default function AdminReportList() {
                         placeholder="Search employee name..."
                         value={filters.search}
                         onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]"
                     />
                 </div>
                 
@@ -84,13 +84,13 @@ export default function AdminReportList() {
                         type="date"
                         value={filters.date}
                         onChange={(e) => setFilters(f => ({ ...f, date: e.target.value }))}
-                        className="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
+                        className="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
                     />
                     <Filter className="w-4 h-4 text-slate-400 ml-2" />
                     <select
                         value={filters.status}
                         onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
-                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
+                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
                     >
                         <option value="All">All Statuses</option>
                         <option value="Submitted">Submitted</option>
@@ -119,7 +119,7 @@ export default function AdminReportList() {
                             {loading ? (
                                 <tr>
                                     <td colSpan="5" className="px-5 py-10 text-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6] mx-auto" />
                                     </td>
                                 </tr>
                             ) : reports.length === 0 ? (
@@ -131,7 +131,7 @@ export default function AdminReportList() {
                                 </tr>
                             ) : (
                                 reports.map(report => (
-                                    <tr key={report._id} className="hover:bg-orange-50/30 transition-colors group">
+                                    <tr key={report._id} className="hover:bg-[#f7f3fc]/30 transition-colors group">
                                         <td className="px-5 py-4 align-top">
                                             <div className="flex flex-col gap-0.5">
                                                 <span className="font-semibold text-slate-800">{report.employeeId?.adminId?.name || 'Unknown'}</span>
@@ -157,7 +157,7 @@ export default function AdminReportList() {
                                         <td className="px-5 py-4 align-top text-right">
                                             <button
                                                 onClick={() => navigate(`/ecs/hrms/reports/${report._id}`)}
-                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-300 px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
+                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-[#550fa8] hover:border-[#c1a0e8] px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
                                             >
                                                 Review <ChevronRight className="w-3.5 h-3.5" />
                                             </button>

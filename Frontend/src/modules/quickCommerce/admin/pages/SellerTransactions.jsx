@@ -139,8 +139,8 @@ const SellerTransactions = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
                 <div className="relative">
-                    <Loader2 className="h-12 w-12 text-orange-500 animate-spin" />
-                    <div className="absolute inset-0 h-12 w-12 text-orange-500/20 blur-sm animate-pulse">
+                    <Loader2 className="h-12 w-12 text-[#6412c6] animate-spin" />
+                    <div className="absolute inset-0 h-12 w-12 text-[#6412c6]/20 blur-sm animate-pulse">
                         <Loader2 />
                     </div>
                 </div>
@@ -156,8 +156,8 @@ const SellerTransactions = () => {
                 <div>
                     <h1 className="ds-h1 flex items-center gap-3">
                         Shop Transactions
-                        <div className="p-1.5 bg-orange-100 rounded-lg">
-                            <Receipt className="h-5 w-5 text-orange-600" />
+                        <div className="p-1.5 bg-[#f0e7f9] rounded-lg">
+                            <Receipt className="h-5 w-5 text-[#550fa8]" />
                         </div>
                     </h1>
                     <p className="ds-description mt-1">Track sales, our share, and payments to shops.</p>
@@ -168,7 +168,7 @@ const SellerTransactions = () => {
                         disabled={isExporting}
                         className="flex items-center gap-2 px-5 py-3 bg-white ring-1 ring-slate-200 text-slate-700 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
                     >
-                        {isExporting ? <RotateCw className="h-4 w-4 animate-spin text-orange-500" /> : <Download className="h-4 w-4" />}
+                        {isExporting ? <RotateCw className="h-4 w-4 animate-spin text-[#6412c6]" /> : <Download className="h-4 w-4" />}
                         {isExporting ? 'Generating Report...' : 'Download Master Ledger'}
                     </button>
                     <button className="flex items-center gap-2 px-5 py-3 bg-primary text-primary-foreground rounded-2xl text-xs font-bold hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/20 active:scale-95 group">
@@ -182,11 +182,11 @@ const SellerTransactions = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total Sales', value: `₹${stats.totalGross.toLocaleString()}`, icon: ShoppingBag, bg: 'bg-emerald-50', color: 'text-emerald-600' },
-                    { label: 'Our Share', value: `₹${stats.totalCommission.toLocaleString()}`, icon: Percent, bg: 'bg-orange-50', color: 'text-orange-600' },
-                    { label: 'Total Paid Out', value: `₹${stats.totalPayouts.toLocaleString()}`, icon: Banknote, bg: 'bg-orange-50', color: 'text-primary' },
+                    { label: 'Our Share', value: `₹${stats.totalCommission.toLocaleString()}`, icon: Percent, bg: 'bg-[#f7f3fc]', color: 'text-[#550fa8]' },
+                    { label: 'Total Paid Out', value: `₹${stats.totalPayouts.toLocaleString()}`, icon: Banknote, bg: 'bg-[#f7f3fc]', color: 'text-primary' },
                     { label: 'Pending Total', value: `₹${stats.pendingSettlements.toLocaleString()}`, icon: Clock, bg: 'bg-amber-50', color: 'text-amber-600' },
                 ].map((stat, i) => (
-                    <Card key={i} className="px-5 py-4 border-none shadow-sm ring-1 ring-slate-100 hover:ring-orange-200 transition-all bg-white group overflow-hidden relative">
+                    <Card key={i} className="px-5 py-4 border-none shadow-sm ring-1 ring-slate-100 hover:ring-[#d8c4f1] transition-all bg-white group overflow-hidden relative">
                         <div className="relative z-10">
                             <div className={cn("p-2 rounded-xl w-fit mb-4 transition-transform group-hover:scale-110", stat.bg)}>
                                 <stat.icon className={cn("h-5 w-5", stat.color)} />
@@ -205,13 +205,13 @@ const SellerTransactions = () => {
             <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-xl">
                 <div className="flex flex-col lg:flex-row gap-4">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-[#6412c6] transition-colors" />
                         <input
                             type="text"
                             placeholder="Filter by Store, Order ID, or Txn Reference..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-orange-500/10 transition-all"
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#6412c6]/10 transition-all"
                         />
                     </div>
 
@@ -249,7 +249,7 @@ const SellerTransactions = () => {
                                     onClick={() => setFilterStatus(status)}
                                     className={cn(
                                         "px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight transition-all",
-                                        filterStatus === status ? "bg-white text-orange-600 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                                        filterStatus === status ? "bg-white text-[#550fa8] shadow-sm" : "text-slate-400 hover:text-slate-600"
                                     )}
                                 >
                                     {status}
@@ -282,7 +282,7 @@ const SellerTransactions = () => {
                                         <div className="flex items-center gap-3">
                                             <div className={cn(
                                                 "h-10 w-10 rounded-xl flex items-center justify-center shadow-sm",
-                                                txn.type === 'sale' ? "bg-orange-50 text-primary" : txn.type === 'payout' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                                txn.type === 'sale' ? "bg-[#f7f3fc] text-primary" : txn.type === 'payout' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
                                             )}>
                                                 {txn.type === 'sale' ? <ShoppingCart className="h-5 w-5" /> : txn.type === 'payout' ? <ArrowUpRight className="h-5 w-5" /> : <Undo2 className="h-5 w-5" />}
                                             </div>
@@ -301,7 +301,7 @@ const SellerTransactions = () => {
                                     <td className="px-6 py-5">
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-[10px] font-black text-slate-400 uppercase">{txn.type}</span>
-                                            {txn.orderId && <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest">{txn.orderId}</span>}
+                                            {txn.orderId && <span className="text-[10px] font-bold text-[#6412c6] uppercase tracking-widest">{txn.orderId}</span>}
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-center">
@@ -333,7 +333,7 @@ const SellerTransactions = () => {
                                     <td className="px-6 py-5 text-right pr-8">
                                         <button
                                             onClick={() => setSelectedTxn(txn)}
-                                            className="p-2 hover:bg-white hover:shadow-md rounded-xl text-slate-400 hover:text-orange-500 transition-all active:scale-90"
+                                            className="p-2 hover:bg-white hover:shadow-md rounded-xl text-slate-400 hover:text-[#6412c6] transition-all active:scale-90"
                                         >
                                             <Eye className="h-4 w-4" />
                                         </button>
@@ -379,7 +379,7 @@ const SellerTransactions = () => {
                         <div className="flex flex-col items-center text-center p-6 bg-slate-50 rounded-xl border border-slate-100">
                             <div className={cn(
                                 "h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 text-white",
-                                selectedTxn.type === 'sale' ? "bg-orange-500" : selectedTxn.type === 'payout' ? "bg-emerald-500" : "bg-rose-500"
+                                selectedTxn.type === 'sale' ? "bg-[#6412c6]" : selectedTxn.type === 'payout' ? "bg-emerald-500" : "bg-rose-500"
                             )}>
                                 {selectedTxn.type === 'sale' ? <ShoppingCart className="h-8 w-8" /> : selectedTxn.type === 'payout' ? <ArrowUpRight className="h-8 w-8" /> : <Undo2 className="h-8 w-8" />}
                             </div>
@@ -430,11 +430,11 @@ const SellerTransactions = () => {
                                         </div>
                                         <div className="flex justify-between items-center text-sm font-medium">
                                             <span className="opacity-60">ECS Fee ({selectedTxn.commissionRate}%)</span>
-                                            <span className="text-orange-400">-₹{selectedTxn.commissionAmount}</span>
+                                            <span className="text-[#9359d7]">-₹{selectedTxn.commissionAmount}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm font-medium">
                                             <span className="opacity-60">Tax & Surcharge</span>
-                                            <span className="text-orange-400">-₹{selectedTxn.taxAmount}</span>
+                                            <span className="text-[#9359d7]">-₹{selectedTxn.taxAmount}</span>
                                         </div>
                                         <div className="pt-4 border-t border-white/10 flex justify-between items-center">
                                             <span className="text-xs font-black uppercase tracking-widest">Merchant Net Payable</span>

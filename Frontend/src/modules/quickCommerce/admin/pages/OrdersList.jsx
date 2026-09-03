@@ -318,10 +318,10 @@ const OrdersList = () => {
     const getStatusStyles = (status) => {
         switch (status.toLowerCase()) {
             case 'pending': return 'bg-amber-100 text-amber-600 border-amber-200';
-            case 'confirmed': return 'bg-orange-100 text-primary border-orange-200';
-            case 'packed': return 'bg-orange-100 text-primary border-orange-200';
-            case 'ready_for_pickup': return 'bg-orange-100 text-primary border-orange-200';
-            case 'out_for_delivery': return 'bg-orange-100 text-primary border-orange-200';
+            case 'confirmed': return 'bg-[#f0e7f9] text-primary border-[#d8c4f1]';
+            case 'packed': return 'bg-[#f0e7f9] text-primary border-[#d8c4f1]';
+            case 'ready_for_pickup': return 'bg-[#f0e7f9] text-primary border-[#d8c4f1]';
+            case 'out_for_delivery': return 'bg-[#f0e7f9] text-primary border-[#d8c4f1]';
             case 'delivered': return 'bg-emerald-100 text-emerald-600 border-emerald-200';
             case 'cancelled': return 'bg-rose-100 text-rose-600 border-rose-200';
             case 'returned': return 'bg-slate-100 text-slate-600 border-slate-200';
@@ -384,8 +384,8 @@ const OrdersList = () => {
                 <div>
                     <h1 className="ds-h1 flex items-center gap-3">
                         {pageTitle}
-                        <div className="p-2 bg-fuchsia-100 rounded-xl">
-                            <ShoppingBag className="h-5 w-5 text-fuchsia-600" />
+                        <div className="p-2 bg-[#f0e7f9] rounded-xl">
+                            <ShoppingBag className="h-5 w-5 text-[#6412c6]" />
                         </div>
                     </h1>
                     <p className="ds-description mt-1">View and manage all orders.</p>
@@ -437,7 +437,7 @@ const OrdersList = () => {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, i) => (
-                    <Card key={i} className="p-5 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-fuchsia-200 transition-all text-left">
+                    <Card key={i} className="p-5 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-[#d8c4f1] transition-all text-left">
                         <div className="flex items-center justify-between mb-4">
                             <div className={cn("p-2 rounded-xl", `bg-${stat.color}-50`)}>
                                 <stat.icon className={cn("h-5 w-5", `text-${stat.color}-600`)} />
@@ -460,19 +460,19 @@ const OrdersList = () => {
             <Card className="border-none shadow-2xl ring-1 ring-slate-100/50 bg-white rounded-xl overflow-hidden">
                 <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="relative group flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-fuchsia-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-[#6412c6] transition-colors" />
                         <input
                             type="text"
                             placeholder="Search by Order ID, Customer, or Shop..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-fuchsia-500/10 transition-all"
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-[#6412c6]/10 transition-all"
                         />
                     </div>
                     <div className="flex items-center gap-2">
                         {isRefreshing && (
                             <div className="flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                                <div className="h-3.5 w-3.5 border-2 border-fuchsia-500 border-t-transparent rounded-full animate-spin" />
+                                <div className="h-3.5 w-3.5 border-2 border-[#6412c6] border-t-transparent rounded-full animate-spin" />
                                 Syncing
                             </div>
                         )}
@@ -496,7 +496,7 @@ const OrdersList = () => {
                                         }}
                                         className={cn(
                                             "w-full rounded-xl px-3 py-2 text-left text-xs font-bold transition-colors",
-                                            paymentFilter === option.id ? "bg-fuchsia-50 text-fuchsia-700" : "text-slate-600 hover:bg-slate-50"
+                                            paymentFilter === option.id ? "bg-[#f7f3fc] text-[#460d8b]" : "text-slate-600 hover:bg-slate-50"
                                         )}
                                     >
                                         {option.label}
@@ -524,7 +524,7 @@ const OrdersList = () => {
                                 <tr>
                                     <td colSpan="6" className="px-4 py-20 text-center">
                                         <div className="flex justify-center flex-col items-center gap-2">
-                                            <div className="h-8 w-8 border-4 border-fuchsia-600 border-t-transparent rounded-full animate-spin"></div>
+                                            <div className="h-8 w-8 border-4 border-[#6412c6] border-t-transparent rounded-full animate-spin"></div>
                                             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Orders...</p>
                                         </div>
                                     </td>
@@ -537,7 +537,7 @@ const OrdersList = () => {
                                 >
                                     <td className="px-4 py-5">
                                         <div className="flex items-center gap-4">
-                                            <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-white group-hover:shadow-sm transition-all text-slate-400 group-hover:text-fuchsia-500 font-bold text-xs">
+                                            <div className="p-3 bg-slate-50 rounded-2xl group-hover:bg-white group-hover:shadow-sm transition-all text-slate-400 group-hover:text-[#6412c6] font-bold text-xs">
                                                 <Package className="h-5 w-5" />
                                             </div>
                                             <div>
@@ -551,7 +551,7 @@ const OrdersList = () => {
                                                         className={cn(
                                                             "text-[9px] font-bold py-0.5 uppercase",
                                                             order.orderType === 'mixed'
-                                                                ? "bg-orange-50 text-orange-700 border-orange-200"
+                                                                ? "bg-[#f7f3fc] text-[#460d8b] border-[#d8c4f1]"
                                                                 : "border-slate-200 text-slate-400"
                                                         )}
                                                     >
@@ -600,7 +600,7 @@ const OrdersList = () => {
                                                     e.stopPropagation();
                                                     navigate(`/ecs/quick-commerce/orders/view/${order.id}`);
                                                 }}
-                                                className="p-2.5 bg-slate-50 text-slate-400 hover:text-fuchsia-600 hover:bg-fuchsia-50 rounded-xl transition-all"
+                                                className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#6412c6] hover:bg-[#f7f3fc] rounded-xl transition-all"
                                             >
                                                 <Eye className="h-4 w-4" />
                                             </button>
@@ -623,7 +623,7 @@ const OrdersList = () => {
                                                     {order.refundStatus === 'processed' || order.refundStatus === 'initiated' ? (
                                                         <span className={cn(
                                                             "px-2 py-1.5 rounded-lg text-[10px] font-bold text-center border",
-                                                            order.paymentMethod === "wallet" ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-emerald-50 text-emerald-600 border-emerald-200"
+                                                            order.paymentMethod === "wallet" ? "bg-[#f7f3fc] text-[#550fa8] border-[#d8c4f1]" : "bg-emerald-50 text-emerald-600 border-emerald-200"
                                                         )}>
                                                             {order.paymentMethod === "wallet" ? "Wallet Refunded" : "Refunded"}
                                                         </span>
@@ -635,7 +635,7 @@ const OrdersList = () => {
                                                             }}
                                                             className={cn(
                                                                 "px-2.5 py-2.5 text-white rounded-xl text-[10px] font-bold transition-all shadow-sm flex items-center gap-1",
-                                                                order.paymentMethod === "wallet" ? "bg-orange-500 hover:bg-orange-600" : "bg-fuchsia-600 hover:bg-fuchsia-700"
+                                                                order.paymentMethod === "wallet" ? "bg-[#6412c6] hover:bg-[#550fa8]" : "bg-[#6412c6] hover:bg-[#460d8b]"
                                                             )}
                                                             title="Process Refund"
                                                         >

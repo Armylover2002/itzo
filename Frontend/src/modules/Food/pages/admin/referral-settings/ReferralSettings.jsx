@@ -118,7 +118,7 @@ export default function ReferralSettings() {
     <div className="p-4 lg:p-6 bg-slate-50 min-h-screen">
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#9359d7] to-[#550fa8] flex items-center justify-center">
             <Gift className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Referral Settings</h1>
@@ -140,7 +140,7 @@ export default function ReferralSettings() {
             <Button
               onClick={handleSave}
               disabled={saving || loading}
-              className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2"
+              className="bg-[#550fa8] hover:bg-[#460d8b] text-white flex items-center gap-2"
             >
               {saving ? (
                 <>
@@ -158,7 +158,7 @@ export default function ReferralSettings() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-orange-600" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#550fa8]" />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -171,7 +171,7 @@ export default function ReferralSettings() {
                       value={settings.user.referrerReward}
                       onChange={onChange("user", "referrerReward")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 200"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Amount the person who shares gets</p>
@@ -182,7 +182,7 @@ export default function ReferralSettings() {
                       value={settings.user.refereeReward}
                       onChange={onChange("user", "refereeReward")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 50"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Amount the new user gets</p>
@@ -193,7 +193,7 @@ export default function ReferralSettings() {
                       value={settings.user.limit}
                       onChange={onChange("user", "limit")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 10"
                     />
                   </div>
@@ -209,7 +209,7 @@ export default function ReferralSettings() {
                       value={settings.delivery.referrerReward}
                       onChange={onChange("delivery", "referrerReward")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 1000"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Amount the existing delivery boy gets</p>
@@ -220,7 +220,7 @@ export default function ReferralSettings() {
                       value={settings.delivery.refereeReward}
                       onChange={onChange("delivery", "refereeReward")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 60"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Amount the new delivery boy gets</p>
@@ -231,7 +231,7 @@ export default function ReferralSettings() {
                       value={settings.delivery.limit}
                       onChange={onChange("delivery", "limit")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 5"
                     />
                   </div>
@@ -247,7 +247,7 @@ export default function ReferralSettings() {
                       value={settings.restaurant.referrerReward}
                       onChange={onChange("restaurant", "referrerReward")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 500"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Amount the existing restaurant gets</p>
@@ -258,7 +258,7 @@ export default function ReferralSettings() {
                       value={settings.restaurant.refereeReward}
                       onChange={onChange("restaurant", "refereeReward")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 100"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Amount the new restaurant gets</p>
@@ -269,7 +269,7 @@ export default function ReferralSettings() {
                       value={settings.restaurant.limit}
                       onChange={onChange("restaurant", "limit")}
                       inputMode="numeric"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#6412c6] focus:border-[#6412c6] outline-none transition-all"
                       placeholder="e.g. 3"
                     />
                   </div>

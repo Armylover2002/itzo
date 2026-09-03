@@ -290,14 +290,14 @@ export default function RestaurantReviews() {
                 <div className="bg-emerald-50 rounded-lg p-4"><p className="text-xs text-emerald-600 mb-1">Restaurant</p><p className="text-sm font-semibold text-emerald-700">{selectedReview.restaurant}</p></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-orange-50 rounded-lg p-4"><p className="text-xs text-primary mb-1">Customer</p><p className="text-sm font-semibold text-orange-700">{selectedReview.customer}</p></div>
-                <div className="bg-orange-50 rounded-lg p-4">
-                  <p className="text-xs text-orange-600 mb-2 font-semibold">Rating</p>
+                <div className="bg-[#f7f3fc] rounded-lg p-4"><p className="text-xs text-primary mb-1">Customer</p><p className="text-sm font-semibold text-[#460d8b]">{selectedReview.customer}</p></div>
+                <div className="bg-[#f7f3fc] rounded-lg p-4">
+                  <p className="text-xs text-[#550fa8] mb-2 font-semibold">Rating</p>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
                       {renderStars(selectedReview.rating)}
                     </div>
-                    <span className="text-lg font-bold text-orange-700">
+                    <span className="text-lg font-bold text-[#460d8b]">
                       {selectedReview.rating} / 5
                     </span>
                   </div>
@@ -316,7 +316,7 @@ export default function RestaurantReviews() {
         <DialogContent className="max-w-md bg-white p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
                 <Columns className="w-5 h-5 text-primary" />
               </div>
               <div>
@@ -338,11 +338,11 @@ export default function RestaurantReviews() {
                   onClick={() => toggleColumn(key)}
                   className={`group relative flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
                     visibleColumns[key]
-                      ? "bg-orange-50 border-primary text-orange-700 shadow-sm"
+                      ? "bg-[#f7f3fc] border-primary text-[#460d8b] shadow-sm"
                       : "bg-white border-slate-100 text-slate-500 hover:border-slate-200 hover:bg-slate-50"
                   }`}
                 >
-                  <span className={`text-sm font-semibold ${visibleColumns[key] ? "text-orange-700" : "text-slate-600"}`}>
+                  <span className={`text-sm font-semibold ${visibleColumns[key] ? "text-[#460d8b]" : "text-slate-600"}`}>
                     {label}
                   </span>
                   <div className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all ${

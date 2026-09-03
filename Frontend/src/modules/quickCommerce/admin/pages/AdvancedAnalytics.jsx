@@ -126,7 +126,7 @@ const AdvancedAnalytics = () => {
                     <Card key={i} className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-white group hover:scale-[1.02] transition-all">
                         <div className="flex items-center justify-between mb-4">
                             <div className={cn("p-2.5 rounded-2xl",
-                                goal.color === 'orange' && "bg-orange-50 text-primary",
+                                goal.color === 'orange' && "bg-[#f7f3fc] text-primary",
                                 goal.color === 'emerald' && "bg-emerald-50 text-emerald-600",
                                 goal.color === 'amber' && "bg-amber-50 text-amber-600",
                                 goal.color === 'rose' && "bg-rose-50 text-rose-600",
@@ -169,7 +169,7 @@ const AdvancedAnalytics = () => {
                                 <span className="text-[10px] font-black text-slate-600">REVENUE</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="h-2.5 w-2.5 rounded-full bg-orange-100" />
+                                <div className="h-2.5 w-2.5 rounded-full bg-[#f0e7f9]" />
                                 <span className="text-[10px] font-black text-slate-600">BENCHMARK</span>
                             </div>
                         </div>

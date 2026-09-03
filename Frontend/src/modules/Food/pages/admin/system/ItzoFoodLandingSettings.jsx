@@ -44,7 +44,7 @@ const InputField = ({ label, name, value, onChange, placeholder, info }) => {
         />
       </div>
       {info && (
-        <div className="mt-2 bg-[#FFF8F0] border border-orange-100 rounded-lg px-4 py-2 flex items-center gap-2">
+        <div className="mt-2 bg-[#FFF8F0] border border-[#f0e7f9] rounded-lg px-4 py-2 flex items-center gap-2">
           <span className="text-[11px] text-gray-500 italic">Example: {info.prefix}</span>
           <span className="text-[11px] bg-[#00BFA5] text-white px-2 py-0.5 rounded font-bold">{value || info.default}</span>
         </div>
@@ -61,7 +61,7 @@ const MediaUploadBox = ({ title, size, preview, onUpload, onClear, type = 'image
       <div className="flex items-center justify-between px-0.5">
         <label className="text-xs font-bold text-gray-500">{title}({size})</label>
       </div>
-      <div className="aspect-video w-full rounded-xl border border-dashed border-gray-300 bg-gray-50/50 relative overflow-hidden group hover:border-orange-300 transition-colors cursor-pointer flex items-center justify-center" onClick={() => fileInputRef.current?.click()}>
+      <div className="aspect-video w-full rounded-xl border border-dashed border-gray-300 bg-gray-50/50 relative overflow-hidden group hover:border-[#c1a0e8] transition-colors cursor-pointer flex items-center justify-center" onClick={() => fileInputRef.current?.click()}>
         {preview ? (
           type === 'video' ? (
             <video src={preview} className="w-full h-full object-cover" muted loop autoPlay playsInline />
@@ -288,13 +288,13 @@ const ItzoFoodLandingSettings = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-10 h-10 text-orange-600 animate-spin" />
+        <Loader2 className="w-10 h-10 text-[#550fa8] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 font-sans selection:bg-[#6412c6]/30">
 
       {/* Header */}
       <div className="mb-10 flex items-center justify-between">
@@ -376,8 +376,8 @@ const ItzoFoodLandingSettings = () => {
                 type="button"
                 onClick={() => handleChange('benefitsSectionEnabled', !formData.benefitsSectionEnabled)}
                 className={cn(
-                  "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2",
-                  formData.benefitsSectionEnabled ? "bg-orange-600" : "bg-gray-200"
+                  "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:ring-offset-2",
+                  formData.benefitsSectionEnabled ? "bg-[#550fa8]" : "bg-gray-200"
                 )}
               >
                 <span
@@ -464,7 +464,7 @@ const ItzoFoodLandingSettings = () => {
 
       {/* Persistence Controls */}
       <div className="fixed bottom-10 right-10 z-50">
-        <button onClick={handleUpdate} disabled={saving} className="bg-gradient-to-r from-orange-500 to-rose-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_15px_40px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-90 transition-all disabled:opacity-50">
+        <button onClick={handleUpdate} disabled={saving} className="bg-gradient-to-r from-[#6412c6] to-rose-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_15px_40px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-90 transition-all disabled:opacity-50">
           {saving ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
         </button>
       </div>

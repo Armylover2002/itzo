@@ -163,7 +163,7 @@ export default function ZoneSetup() {
             </button>
             <button
               onClick={() => navigate("/ecs/food/zone-setup/map")}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8] transition-colors"
             >
               <Map className="w-5 h-5" />
               <span>View Map</span>
@@ -232,7 +232,7 @@ export default function ZoneSetup() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => navigate(`/ecs/food/zone-setup/view/${zone._id || zone.id}`)}
-                      className="p-2 text-slate-600 hover:text-primary hover:bg-orange-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-600 hover:text-primary hover:bg-[#f7f3fc] rounded-lg transition-colors"
                       title="View"
                     >
                       <Eye className="w-4 h-4" />

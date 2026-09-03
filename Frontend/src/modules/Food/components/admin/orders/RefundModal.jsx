@@ -108,7 +108,7 @@ export default function RefundModal({ isOpen, onOpenChange, order, onConfirm, is
                 className={`w-full rounded-lg border-2 py-2.5 pl-11 pr-4 transition-colors focus:outline-none focus:ring-2 ${
                   error
                     ? "border-red-300 focus:border-red-500 focus:ring-red-200"
-                    : "border-slate-300 focus:border-primary focus:ring-orange-200"
+                    : "border-slate-300 focus:border-primary focus:ring-[#d8c4f1]"
                 } ${isProcessing || !supportsCustomAmount ? "cursor-not-allowed bg-slate-100" : "bg-white"}`}
               />
             </div>
@@ -139,9 +139,9 @@ export default function RefundModal({ isOpen, onOpenChange, order, onConfirm, is
                   disabled={isProcessing || refundMethodLocked}
                   className={`rounded-lg border px-4 py-3 text-left transition ${
                     refundTo === "gateway"
-                      ? "border-primary bg-orange-50 text-orange-900"
+                      ? "border-primary bg-[#f7f3fc] text-[#28074f]"
                       : "border-slate-200 bg-white text-slate-700"
-                  } ${isProcessing || refundMethodLocked ? "cursor-not-allowed opacity-70" : "hover:border-orange-300"}`}
+                  } ${isProcessing || refundMethodLocked ? "cursor-not-allowed opacity-70" : "hover:border-[#c1a0e8]"}`}
                 >
                   <p className="text-sm font-semibold">Original payment method</p>
                   <p className="mt-1 text-xs text-slate-500">Refund through Razorpay to the original source.</p>
@@ -154,9 +154,9 @@ export default function RefundModal({ isOpen, onOpenChange, order, onConfirm, is
                   disabled={isProcessing || refundMethodLocked}
                   className={`rounded-lg border px-4 py-3 text-left transition ${
                     refundTo === "wallet"
-                      ? "border-primary bg-orange-50 text-orange-900"
+                      ? "border-primary bg-[#f7f3fc] text-[#28074f]"
                       : "border-slate-200 bg-white text-slate-700"
-                  } ${isProcessing || refundMethodLocked ? "cursor-not-allowed opacity-70" : "hover:border-orange-300"}`}
+                  } ${isProcessing || refundMethodLocked ? "cursor-not-allowed opacity-70" : "hover:border-[#c1a0e8]"}`}
                 >
                   <p className="text-sm font-semibold">Wallet</p>
                   <p className="mt-1 text-xs text-slate-500">Refund to the customer wallet balance.</p>
@@ -165,8 +165,8 @@ export default function RefundModal({ isOpen, onOpenChange, order, onConfirm, is
             </div>
           ) : null}
 
-          <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
-            <p className="text-sm text-orange-800">
+          <div className="rounded-lg border border-[#d8c4f1] bg-[#f7f3fc] p-3">
+            <p className="text-sm text-[#370a6d]">
               <span className="font-semibold">Note:</span>{" "}
               {isWalletPayment
                 ? "Wallet orders are refunded back to the customer's wallet."

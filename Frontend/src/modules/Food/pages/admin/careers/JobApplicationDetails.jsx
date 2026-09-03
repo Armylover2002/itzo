@@ -73,7 +73,7 @@ export default function JobApplicationDetails() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
         <span className="text-sm text-slate-500 font-medium">Loading application details...</span>
       </div>
     );
@@ -84,11 +84,11 @@ export default function JobApplicationDetails() {
   const getStatusColor = (status) => {
     switch (status) {
       case "Applied":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-[#f0e7f9] text-[#370a6d] border-[#d8c4f1]";
       case "Shortlisted":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-[#f0e7f9] text-[#370a6d] border-[#d8c4f1]";
       case "Interview Scheduled":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-[#f0e7f9] text-[#370a6d] border-[#d8c4f1]";
       case "Rejected":
         return "bg-rose-100 text-rose-800 border-rose-200";
       case "Hired":
@@ -124,7 +124,7 @@ export default function JobApplicationDetails() {
         {/* Header Summary Card */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row justify-between gap-6 shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-orange-100/50 flex items-center justify-center border border-orange-200 shadow-sm text-orange-600 shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-[#f0e7f9]/50 flex items-center justify-center border border-[#d8c4f1] shadow-sm text-[#550fa8] shrink-0">
               <User className="w-7 h-7" />
             </div>
             <div>
@@ -155,7 +155,7 @@ export default function JobApplicationDetails() {
             {/* Personal Details */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <User className="w-4.5 h-4.5 text-orange-500" />
+                <User className="w-4.5 h-4.5 text-[#6412c6]" />
                 Personal Details
               </h2>
               
@@ -192,7 +192,7 @@ export default function JobApplicationDetails() {
             {/* Address Details */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <MapPin className="w-4.5 h-4.5 text-orange-500" />
+                <MapPin className="w-4.5 h-4.5 text-[#6412c6]" />
                 Address
               </h2>
               
@@ -219,7 +219,7 @@ export default function JobApplicationDetails() {
             {/* Professional Details */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <Award className="w-4.5 h-4.5 text-orange-500" />
+                <Award className="w-4.5 h-4.5 text-[#6412c6]" />
                 Professional Details
               </h2>
               
@@ -270,7 +270,7 @@ export default function JobApplicationDetails() {
             {/* Skills & Tags */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <Award className="w-4.5 h-4.5 text-orange-500" />
+                <Award className="w-4.5 h-4.5 text-[#6412c6]" />
                 Skills & Certifications
               </h2>
               
@@ -280,7 +280,7 @@ export default function JobApplicationDetails() {
                   {application.skills && application.skills.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {application.skills.map((skill, idx) => (
-                        <span key={idx} className="bg-orange-50 text-orange-600 font-semibold px-2.5 py-1 rounded-lg border border-orange-100">
+                        <span key={idx} className="bg-[#f7f3fc] text-[#550fa8] font-semibold px-2.5 py-1 rounded-lg border border-[#f0e7f9]">
                           {skill}
                         </span>
                       ))}
@@ -295,7 +295,7 @@ export default function JobApplicationDetails() {
                   {application.certifications && application.certifications.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {application.certifications.map((cert, idx) => (
-                        <span key={idx} className="bg-orange-50 text-primary font-semibold px-2.5 py-1 rounded-lg border border-orange-100">
+                        <span key={idx} className="bg-[#f7f3fc] text-primary font-semibold px-2.5 py-1 rounded-lg border border-[#f0e7f9]">
                           {cert}
                         </span>
                       ))}
@@ -325,7 +325,7 @@ export default function JobApplicationDetails() {
             {/* Additional Questions */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <FileText className="w-4.5 h-4.5 text-orange-500" />
+                <FileText className="w-4.5 h-4.5 text-[#6412c6]" />
                 Additional Questions
               </h2>
               
@@ -349,14 +349,14 @@ export default function JobApplicationDetails() {
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <FileText className="w-4.5 h-4.5 text-orange-500" />
+                  <FileText className="w-4.5 h-4.5 text-[#6412c6]" />
                   Resume Preview
                 </span>
                 <a 
                   href={application.resumeUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-orange-500 hover:text-orange-600 font-bold text-xs inline-flex items-center gap-1"
+                  className="text-[#6412c6] hover:text-[#550fa8] font-bold text-xs inline-flex items-center gap-1"
                 >
                   Open in New Tab
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -379,7 +379,7 @@ export default function JobApplicationDetails() {
                     </div>
                     <a 
                       href={application.resumeUrl} 
-                      className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
+                      className="inline-flex items-center gap-2 bg-[#6412c6] hover:bg-[#550fa8] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
                     >
                       <Download className="w-4 h-4" />
                       Download Resume
@@ -406,7 +406,7 @@ export default function JobApplicationDetails() {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
                   >
                     {STATUS_OPTIONS.map(opt => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -421,14 +421,14 @@ export default function JobApplicationDetails() {
                     onChange={(e) => setRemarks(e.target.value)}
                     rows="4"
                     placeholder="Enter review remarks..."
-                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors resize-none"
+                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors resize-none"
                   />
                 </div>
 
                 <button
                   onClick={handleUpdateStatus}
                   disabled={updatingStatus}
-                  className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="w-full py-2.5 bg-[#6412c6] hover:bg-[#550fa8] text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {updatingStatus ? (
                     <>
@@ -512,7 +512,7 @@ export default function JobApplicationDetails() {
                 {/* Resume download */}
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="w-4 h-4 text-orange-500 shrink-0" />
+                    <FileText className="w-4 h-4 text-[#6412c6] shrink-0" />
                     <span className="text-slate-700 truncate">Resume Document</span>
                   </div>
                   <a 
@@ -564,7 +564,7 @@ export default function JobApplicationDetails() {
                           href={file}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-orange-500 font-bold text-[10px] hover:underline"
+                          className="text-[#6412c6] font-bold text-[10px] hover:underline"
                         >
                           View
                         </a>

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { QuickCart } from '../models/cart.model.js';
 import { QuickProduct } from '../models/product.model.js';
-import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { calculateQuickPricing } from '../admin/services/billing.service.js';
 
 const approvedProductFilter = {
@@ -105,7 +104,6 @@ const mapCart = async (idQuery) => {
 };
 
 export const getCart = async (req, res) => {
-  await ensureQuickCommerceSeedData();
   const idQuery = resolveId(req);
 
   if (!idQuery) {
@@ -117,8 +115,6 @@ export const getCart = async (req, res) => {
 };
 
 export const addToCart = async (req, res) => {
-  await ensureQuickCommerceSeedData();
-
   const idQuery = resolveId(req);
   const { productId } = req.body;
   const quantity = Number(req.body.quantity || 1);
@@ -152,8 +148,6 @@ export const addToCart = async (req, res) => {
 };
 
 export const updateCartItem = async (req, res) => {
-  await ensureQuickCommerceSeedData();
-
   const idQuery = resolveId(req);
   const { productId, quantity } = req.body;
 
@@ -185,8 +179,6 @@ export const updateCartItem = async (req, res) => {
 };
 
 export const removeCartItem = async (req, res) => {
-  await ensureQuickCommerceSeedData();
-
   const idQuery = resolveId(req);
   const { productId } = req.params;
 
@@ -207,8 +199,6 @@ export const removeCartItem = async (req, res) => {
 };
 
 export const clearCart = async (req, res) => {
-  await ensureQuickCommerceSeedData();
-
   const idQuery = resolveId(req);
   if (!idQuery) {
     return res.status(400).json({ success: false, message: 'sessionId or userId is required' });

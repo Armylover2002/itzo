@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from "react"
 import { 
   Search, Plus, Edit, Trash2, ArrowUpDown, 
-  DollarSign, Percent, Loader2, X, Building2, IndianRupee
+  DollarSign, Percent, Loader2, X, Building2, IndianRupee, AlertTriangle
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@food/components/ui/dialog"
 import { adminApi } from "../services/adminApi"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 export default function SellerCommission() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -203,85 +204,92 @@ export default function SellerCommission() {
   }
 
   return (
-    <div className="p-4 lg:p-6 bg-slate-50 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-slate-900">Seller Commission</h1>
-              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-slate-100 text-slate-700">
+    <div className="ds-section-spacing animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="max-w-full mx-auto">
+        <div className="bg-white rounded-xl shadow-sm ring-1 ring-slate-100 p-5 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-3">
+              <h1 className="ds-h1">Seller Commission</h1>
+              <span className="px-3 py-1 rounded-full text-sm font-bold bg-[#6412C6]/10 text-[#6412C6]">
                 {filteredCommissions.length}
               </span>
             </div>
             <button 
               onClick={handleAdd}
-              className="px-4 py-2.5 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 transition-all shadow-md"
+              className="px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl bg-[#6412C6] text-white hover:bg-[#6412C6]/90 flex items-center gap-2 transition-all shadow-xl shadow-[#6412C6]/20 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               Add Commission
             </button>
           </div>
 
-          <div className="mb-4 flex items-center gap-3">
-            <div className="relative flex-1 sm:flex-initial min-w-[300px]">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="relative flex-1 sm:flex-initial min-w-[300px] group">
               <input
                 type="text"
                 placeholder="Search by seller name or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2.5 w-full text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="pl-11 pr-4 py-3 w-full text-sm rounded-2xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20 outline-none transition-all placeholder:text-slate-300 font-semibold"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#6412C6] transition-colors" />
             </div>
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-[#6412C6]" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-2xl ring-1 ring-slate-100">
               <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
+                <thead className="bg-slate-50/70 border-b border-slate-100">
                   <tr>
-                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider w-16">S.No</th>
-                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">Seller Name</th>
-                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">Seller ID</th>
-                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">Default Commission</th>
-                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-center text-[10px] font-bold text-slate-700 uppercase tracking-wider">Action</th>
+                    <th className="ds-table-header-cell w-16 pl-8">S.No</th>
+                    <th className="ds-table-header-cell">Seller Name</th>
+                    <th className="ds-table-header-cell">Seller ID</th>
+                    <th className="ds-table-header-cell">Default Commission</th>
+                    <th className="ds-table-header-cell">Status</th>
+                    <th className="ds-table-header-cell text-center pr-8">Action</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-slate-100">
+                <tbody className="bg-white divide-y divide-slate-50">
                   {filteredCommissions.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No commissions found</td>
+                      <td colSpan={6} className="px-6 py-16 text-center">
+                        <div className="flex flex-col items-center">
+                          <div className="p-4 bg-slate-50 rounded-full mb-4">
+                            <Percent className="h-8 w-8 text-slate-200" />
+                          </div>
+                          <p className="text-slate-400 font-bold text-sm">No commissions found.</p>
+                        </div>
+                      </td>
                     </tr>
                   ) : (
                     filteredCommissions.map((commission) => (
-                      <tr key={commission._id} className="hover:bg-slate-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{commission.sl}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-semibold text-emerald-700">{commission.sellerName}</span>
+                      <tr key={commission._id} className="hover:bg-slate-50/50 transition-colors group">
+                        <td className="px-6 py-5 pl-8 whitespace-nowrap text-sm font-semibold text-slate-600">{commission.sl}</td>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="text-sm font-black text-[#6412C6] group-hover:text-[#6412C6]/80 transition-colors">{commission.sellerName}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{commission.sellerIdDisplay}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-bold text-slate-900">
+                        <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-slate-500">{commission.sellerIdDisplay}</td>
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="text-sm font-black text-slate-900">
                             {commission.defaultCommission?.type === 'percentage' ? `${commission.defaultCommission.value}%` : `\u20B9${commission.defaultCommission.value}`}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-5 whitespace-nowrap">
                           <button
                             onClick={() => handleToggleStatus(commission)}
-                            className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${commission.status ? "bg-emerald-500" : "bg-slate-300"}`}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${commission.status ? "bg-[#6412C6]" : "bg-slate-300"}`}
                           >
-                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${commission.status ? "translate-x-6" : "translate-x-1"}`} />
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${commission.status ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <td className="px-6 py-5 whitespace-nowrap text-center pr-8">
                           <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => handleEdit(commission)} className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"><Edit className="w-4 h-4" /></button>
-                            <button onClick={() => handleDelete(commission)} className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => handleEdit(commission)} className="p-2 rounded-xl bg-[#6412C6]/10 text-[#6412C6] hover:bg-[#6412C6] hover:text-white transition-all active:scale-90"><Edit className="w-4 h-4" /></button>
+                            <button onClick={() => handleDelete(commission)} className="p-2 rounded-xl bg-[#6412C6]/10 text-[#6412C6] hover:bg-[#6412C6] hover:text-white transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -295,35 +303,42 @@ export default function SellerCommission() {
       </div>
 
       <Dialog open={isSellerSelectOpen} onOpenChange={setIsSellerSelectOpen}>
-        <DialogContent className="max-w-xl bg-white p-0">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-lg font-semibold">Select Seller</DialogTitle>
+        <DialogContent className="max-w-xl bg-white p-0 rounded-2xl ring-1 ring-slate-100 border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+            <DialogTitle className="text-lg font-black text-slate-900">Select Seller</DialogTitle>
           </DialogHeader>
-          <div className="p-4 space-y-4">
-            <div className="relative">
+          <div className="p-5 space-y-4">
+            <div className="relative group">
               <input 
                 type="text" 
                 placeholder="Search approved sellers..." 
                 value={searchQuery} 
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full text-sm rounded-lg border border-slate-300 bg-white focus:ring-2 focus:ring-emerald-500"
+                className="pl-11 pr-4 py-3 w-full text-sm rounded-2xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20 outline-none transition-all placeholder:text-slate-300 font-semibold"
               />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#6412C6] transition-colors" />
             </div>
             <div className="max-h-80 overflow-y-auto space-y-2">
               {filteredSellers.filter(s => !s.hasCommissionSetup).map((seller) => (
-                <button key={seller._id} onClick={() => handleSelectSeller(seller)} className="w-full p-3 text-left rounded-lg border hover:bg-emerald-50 hover:border-emerald-200 transition-all">
+                <button key={seller._id} onClick={() => handleSelectSeller(seller)} className="w-full p-4 text-left rounded-2xl ring-1 ring-slate-100 hover:bg-[#6412C6]/5 hover:ring-[#6412C6]/30 transition-all group">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-sm text-slate-900">{seller.shopName || seller.name}</p>
-                      <p className="text-xs text-slate-500">{String(seller._id).slice(-8).toUpperCase()}</p>
+                      <p className="font-black text-sm text-slate-900 group-hover:text-[#6412C6] transition-colors">{seller.shopName || seller.name}</p>
+                      <p className="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-wider">{String(seller._id).slice(-8).toUpperCase()}</p>
                     </div>
-                    <Building2 className="w-4 h-4 text-slate-400" />
+                    <div className="p-2 rounded-xl bg-slate-50 group-hover:bg-[#6412C6]/10 transition-all">
+                      <Building2 className="w-4 h-4 text-slate-400 group-hover:text-[#6412C6] transition-colors" />
+                    </div>
                   </div>
                 </button>
               ))}
               {filteredSellers.filter(s => !s.hasCommissionSetup).length === 0 && (
-                <p className="text-center text-sm text-slate-500 py-4">No sellers available for new setup</p>
+                <div className="flex flex-col items-center py-8">
+                  <div className="p-3 bg-slate-50 rounded-full mb-3">
+                    <Building2 className="h-6 w-6 text-slate-300" />
+                  </div>
+                  <p className="text-center text-sm font-semibold text-slate-500">No sellers available for new setup</p>
+                </div>
               )}
             </div>
           </div>
@@ -331,61 +346,66 @@ export default function SellerCommission() {
       </Dialog>
 
       <Dialog open={isAddEditOpen} onOpenChange={setIsAddEditOpen}>
-        <DialogContent className="max-w-2xl bg-white p-0">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b">
-            <DialogTitle className="text-lg font-semibold">{selectedCommission ? "Edit Seller Commission" : "Add Seller Commission"}</DialogTitle>
+        <DialogContent className="max-w-2xl bg-white p-0 rounded-2xl ring-1 ring-slate-100 border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+            <DialogTitle className="text-lg font-black text-slate-900">{selectedCommission ? "Edit Seller Commission" : "Add Seller Commission"}</DialogTitle>
           </DialogHeader>
           <div className="p-6 space-y-6">
             {selectedSeller && (
-              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center justify-between">
+              <div className="p-4 bg-[#6412C6]/5 rounded-2xl ring-1 ring-[#6412C6]/20 flex items-center justify-between">
                 <div>
-                  <p className="font-semibold text-sm text-emerald-900">{selectedSeller.shopName || selectedSeller.name}</p>
-                  <p className="text-xs text-emerald-700">{selectedSeller._id}</p>
+                  <p className="font-black text-sm text-[#6412C6]">{selectedSeller.shopName || selectedSeller.name}</p>
+                  <p className="text-xs font-bold text-[#6412C6]/70 uppercase tracking-wider mt-0.5">{selectedSeller._id}</p>
                 </div>
-                <Building2 className="w-5 h-5 text-emerald-500" />
+                <div className="p-2.5 rounded-xl bg-white ring-1 ring-[#6412C6]/20">
+                  <Building2 className="w-5 h-5 text-[#6412C6]" />
+                </div>
               </div>
             )}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Commission Type</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1 block">Commission Type</label>
                 <select 
                   value={formData.defaultCommission.type} 
                   onChange={(e) => setFormData(prev => ({ ...prev, defaultCommission: { ...prev.defaultCommission, type: e.target.value } }))}
-                  className="w-full px-3 py-2 text-sm border rounded-lg bg-white"
+                  className="w-full px-4 py-3.5 text-sm rounded-2xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20 outline-none transition-all font-bold appearance-none"
                 >
                   <option value="percentage">Percentage (%)</option>
                   <option value="amount">Fixed Amount (\u20B9)</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Value</label>
+              <div className="space-y-2.5">
+                <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1 block">Value</label>
                 <input 
                   type="number" 
                   value={formData.defaultCommission.value} 
                   onChange={(e) => setFormData(prev => ({ ...prev, defaultCommission: { ...prev.defaultCommission, value: e.target.value } }))}
-                  className={`w-full px-3 py-2 text-sm border rounded-lg ${formErrors.defaultCommission ? "border-red-500" : "border-slate-300"}`}
+                  className={cn(
+                    "w-full px-4 py-3.5 text-sm rounded-2xl bg-white ring-1 outline-none transition-all font-bold placeholder:text-slate-200",
+                    formErrors.defaultCommission ? "ring-rose-300 focus:ring-2 focus:ring-rose-200" : "ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20"
+                  )}
                   placeholder="e.g., 10"
                 />
-                {formErrors.defaultCommission && <p className="text-xs text-red-500">{formErrors.defaultCommission}</p>}
+                {formErrors.defaultCommission && <p className="text-[10px] font-black text-rose-600 uppercase tracking-wider ml-1">{formErrors.defaultCommission}</p>}
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Notes (Optional)</label>
+            <div className="space-y-2.5">
+              <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1 block">Notes (Optional)</label>
               <textarea 
                 value={formData.notes} 
                 onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-                className="w-full px-3 py-2 text-sm border rounded-lg resize-none" 
+                className="w-full px-4 py-3 text-sm rounded-2xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20 outline-none transition-all resize-none font-semibold placeholder:text-slate-200" 
                 rows="3" 
                 placeholder="Commission details or remarks..."
               />
             </div>
           </div>
-          <DialogFooter className="px-6 py-4 bg-slate-50 border-t">
-            <button onClick={() => setIsAddEditOpen(false)} className="px-4 py-2 text-sm font-medium rounded-lg border bg-white">Cancel</button>
+          <DialogFooter className="px-6 py-5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+            <button onClick={() => setIsAddEditOpen(false)} className="px-5 py-3 text-xs font-black uppercase tracking-widest rounded-2xl ring-1 ring-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">Cancel</button>
             <button 
               onClick={handleSave} 
               disabled={saving}
-              className="px-6 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+              className="px-6 py-3 text-xs font-black uppercase tracking-widest rounded-2xl bg-[#6412C6] text-white hover:bg-[#6412C6]/90 disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-[#6412C6]/20 transition-all active:scale-[0.98]"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {selectedCommission ? "Update Commission" : "Create Commission"}
@@ -395,12 +415,35 @@ export default function SellerCommission() {
       </Dialog>
 
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="max-w-md bg-white">
-          <DialogHeader><DialogTitle>Delete Seller Commission</DialogTitle></DialogHeader>
-          <div className="py-4"><p className="text-sm text-slate-700">Are you sure you want to delete commission for "{selectedCommission?.sellerName}"? This cannot be undone.</p></div>
-          <DialogFooter>
-            <button onClick={() => setIsDeleteOpen(false)} className="px-4 py-2 text-sm font-medium border rounded-lg bg-white">Cancel</button>
-            <button onClick={confirmDelete} disabled={deleting} className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">Delete</button>
+        <DialogContent className="max-w-md bg-white p-0 rounded-2xl ring-1 ring-slate-100 border-none shadow-2xl">
+          <DialogHeader className="px-6 pt-6 pb-3 border-b-0">
+            <DialogTitle className="text-xl font-black text-slate-900">Delete Seller Commission</DialogTitle>
+          </DialogHeader>
+          <div className="px-6 pt-2 pb-5 space-y-5">
+            <div className="flex items-start gap-4 p-4 rounded-2xl bg-rose-50/60 ring-1 ring-rose-100">
+              <div className="h-12 w-12 shrink-0 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-sm font-black text-slate-900">
+                  Delete commission for&nbsp;<span className="text-rose-600">"{selectedCommission?.sellerName}"</span>?
+                </p>
+                <p className="text-xs font-semibold text-slate-600 leading-relaxed">
+                  This action <span className="font-black uppercase">cannot be undone</span>. Seller will revert to the default platform commission rates immediately.
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="px-6 py-5 bg-slate-50/60 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+            <button onClick={() => setIsDeleteOpen(false)} className="px-5 py-3 text-xs font-black uppercase tracking-widest rounded-2xl ring-1 ring-slate-200 bg-white text-slate-500 hover:bg-slate-50 transition-all">Cancel</button>
+            <button 
+              onClick={confirmDelete} 
+              disabled={deleting} 
+              className="px-6 py-3 text-xs font-black uppercase tracking-widest rounded-2xl bg-[#6412C6] text-white hover:bg-[#6412C6]/90 disabled:opacity-50 flex items-center justify-center gap-2 shadow-xl shadow-[#6412C6]/20 transition-all active:scale-[0.98]"
+            >
+              {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+              {deleting ? "DELETING..." : "DELETE"}
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -116,7 +116,7 @@ export default function RoleList() {
       label: "TOTAL ROLES", 
       value: (roles || []).length, 
       icon: Layers, 
-      color: "bg-orange-500", 
+      color: "bg-[#6412c6]", 
       textColor: "text-white",
       sub: "Administrative Layers"
     },
@@ -124,7 +124,7 @@ export default function RoleList() {
       label: "ACTIVE", 
       value: (roles || []).filter(r => r.status === 'active').length, 
       icon: CheckCircle2, 
-      color: "bg-orange-400", 
+      color: "bg-[#9359d7]", 
       textColor: "text-white",
       sub: "Operational Access"
     },
@@ -132,7 +132,7 @@ export default function RoleList() {
       label: "INACTIVE", 
       value: (roles || []).filter(r => r.status !== 'active').length, 
       icon: ShieldAlert, 
-      color: "bg-orange-300", 
+      color: "bg-[#c1a0e8]", 
       textColor: "text-white",
       sub: "Restricted Access"
     }
@@ -144,8 +144,8 @@ export default function RoleList() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-3">
-             <div className="bg-orange-100 p-2.5 rounded-2xl">
-               <ShieldCheck className="w-8 h-8 text-orange-500" />
+             <div className="bg-[#f0e7f9] p-2.5 rounded-2xl">
+               <ShieldCheck className="w-8 h-8 text-[#6412c6]" />
              </div>
              <div>
                <h1 className="text-2xl font-black text-neutral-900 tracking-tighter">
@@ -162,7 +162,7 @@ export default function RoleList() {
         {canCreateRole && (
           <Button 
             onClick={() => navigate("/ecs/food/employee-role/create")}
-            className="bg-orange-500 hover:bg-orange-600 text-white h-12 px-8 rounded-2xl font-black shadow-2xl shadow-orange-500/20 transition-all active:scale-95"
+            className="bg-[#6412c6] hover:bg-[#550fa8] text-white h-12 px-8 rounded-2xl font-black shadow-2xl shadow-[#6412c6]/20 transition-all active:scale-95"
           >
             <Plus className="w-5 h-5 mr-2" />
             CREATE NEW ROLE
@@ -211,10 +211,10 @@ export default function RoleList() {
             </div>
           ) : filteredRoles.length === 0 ? (
             <div className="py-24 px-6 flex flex-col items-center justify-center text-center space-y-6">
-              <div className="w-24 h-24 bg-orange-50 rounded-[2.5rem] flex items-center justify-center relative">
-                <ShieldCheck className="w-12 h-12 text-orange-200" />
+              <div className="w-24 h-24 bg-[#f7f3fc] rounded-[2.5rem] flex items-center justify-center relative">
+                <ShieldCheck className="w-12 h-12 text-[#d8c4f1]" />
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center">
-                   <div className="w-4 h-4 bg-orange-500/20 rounded-full animate-ping" />
+                   <div className="w-4 h-4 bg-[#6412c6]/20 rounded-full animate-ping" />
                 </div>
               </div>
               <div className="space-y-2 max-w-sm">
@@ -226,7 +226,7 @@ export default function RoleList() {
               {canCreateRole && (
                 <Button 
                   onClick={() => navigate("/ecs/food/employee-role/create")}
-                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-2xl h-12 px-8 font-black shadow-xl shadow-orange-500/20"
+                  className="bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-2xl h-12 px-8 font-black shadow-xl shadow-[#6412c6]/20"
                 >
                   PROVISION FIRST ROLE <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -251,18 +251,18 @@ export default function RoleList() {
                         <div className="flex items-center gap-4">
                           <div className={cn(
                             "w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm shadow-inner transition-transform group-hover:scale-110 duration-300",
-                            role.status === 'active' ? "bg-orange-100 text-orange-500" : "bg-neutral-100 text-neutral-400"
+                            role.status === 'active' ? "bg-[#f0e7f9] text-[#6412c6]" : "bg-neutral-100 text-neutral-400"
                           )}>
                             {role.roleName.substring(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-black text-neutral-900 tracking-tight leading-none group-hover:text-orange-500 transition-colors">
+                            <p className="font-black text-neutral-900 tracking-tight leading-none group-hover:text-[#6412c6] transition-colors">
                               {role.roleName.toUpperCase()}
                             </p>
                             {role.isDefault && (
                               <div className="flex items-center gap-1.5 mt-1.5">
-                                 <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
-                                 <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest">SYSTEM CORE</span>
+                                 <div className="w-1.5 h-1.5 rounded-full bg-[#6412c6] shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+                                 <span className="text-[9px] font-black text-[#6412c6] uppercase tracking-widest">SYSTEM CORE</span>
                               </div>
                             )}
                           </div>
@@ -274,7 +274,7 @@ export default function RoleList() {
                         </p>
                       </td>
                       <td className="px-8 py-6 text-center">
-                        <Badge className="bg-orange-500 text-[10px] font-black text-white hover:bg-orange-600 transition-all px-3 py-1 rounded-xl shadow-lg shadow-orange-500/20">
+                        <Badge className="bg-[#6412c6] text-[10px] font-black text-white hover:bg-[#550fa8] transition-all px-3 py-1 rounded-xl shadow-lg shadow-[#6412c6]/20">
                           {Object.keys(role.permissions || {}).length} MODULES
                         </Badge>
                       </td>
@@ -285,7 +285,7 @@ export default function RoleList() {
                           className={cn(
                             "inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
                             role.status === 'active' 
-                            ? 'bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100' 
+                            ? 'bg-[#f7f3fc] text-[#550fa8] border border-[#f0e7f9] hover:bg-[#f0e7f9]' 
                             : 'bg-neutral-50 text-neutral-400 border border-neutral-100 hover:bg-neutral-100'
                           )}
                         >
@@ -305,7 +305,7 @@ export default function RoleList() {
                             <DropdownMenuSeparator className="bg-neutral-100" />
                             {canEditRole && (
                               <DropdownMenuItem 
-                                className="rounded-xl h-11 font-bold text-sm focus:bg-orange-50 focus:text-orange-500 cursor-pointer px-3"
+                                className="rounded-xl h-11 font-bold text-sm focus:bg-[#f7f3fc] focus:text-[#6412c6] cursor-pointer px-3"
                                 onClick={() => navigate(`/ecs/food/employee-role/edit/${role._id}`)}
                               >
                                 <Edit2 className="w-4 h-4 mr-3 opacity-60" /> Edit Configuration
@@ -340,7 +340,7 @@ export default function RoleList() {
              <span>RBAC v2.1.0</span>
            </div>
            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+              <div className="w-2 h-2 rounded-full bg-[#6412c6] shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
               NODE STATUS: STABLE
            </div>
         </div>

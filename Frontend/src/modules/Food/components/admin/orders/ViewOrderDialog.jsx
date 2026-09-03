@@ -14,17 +14,17 @@ const debugError = (...args) => {}
 const getStatusColor = (orderStatus) => {
   const colors = {
     "Delivered": "bg-emerald-100 text-emerald-700",
-    "Pending": "bg-orange-100 text-orange-700",
-    "Scheduled": "bg-orange-100 text-orange-700",
+    "Pending": "bg-[#f0e7f9] text-[#460d8b]",
+    "Scheduled": "bg-[#f0e7f9] text-[#460d8b]",
     "Accepted": "bg-green-100 text-green-700",
-    "Processing": "bg-orange-100 text-orange-700",
+    "Processing": "bg-[#f0e7f9] text-[#460d8b]",
     "Food On The Way": "bg-yellow-100 text-yellow-700",
     "Canceled": "bg-rose-100 text-rose-700",
     "Cancelled by Restaurant": "bg-red-100 text-red-700",
-    "Cancelled by User": "bg-orange-100 text-orange-700",
+    "Cancelled by User": "bg-[#f0e7f9] text-[#460d8b]",
     "Payment Failed": "bg-red-100 text-red-700",
-    "Refunded": "bg-orange-100 text-orange-700",
-    "Dine In": "bg-orange-100 text-orange-700",
+    "Refunded": "bg-[#f0e7f9] text-[#460d8b]",
+    "Dine In": "bg-[#f0e7f9] text-[#460d8b]",
     "Offline Payments": "bg-slate-100 text-slate-700",
   }
   return colors[orderStatus] || "bg-slate-100 text-slate-700"
@@ -103,7 +103,7 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
       <DialogContent className="max-w-4xl max-h-[90vh] bg-white p-0 overflow-y-auto">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200 sticky top-0 bg-white z-10">
           <DialogTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5 text-orange-600" />
+            <Eye className="w-5 h-5 text-[#550fa8]" />
             Order Details
           </DialogTitle>
           <DialogDescription>
@@ -130,7 +130,7 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
               </div>
               {order.orderOtp && (
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold text-orange-600 uppercase tracking-wider flex items-center gap-2 font-bold">
+                  <p className="text-xs font-semibold text-[#550fa8] uppercase tracking-wider flex items-center gap-2 font-bold">
                     <CheckCircle2 className="w-4 h-4" />
                     Handover Code (OTP)
                   </p>
@@ -305,7 +305,7 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order }) {
           {(order.billImageUrl || order.billImage || order.deliveryState?.billImageUrl) && (
             <div className="border-t border-slate-200 pt-4">
               <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-orange-600" />
+                <Receipt className="w-4 h-4 text-[#550fa8]" />
                 Bill Image (Captured by Delivery Boy)
               </h3>
               <div className="space-y-3">

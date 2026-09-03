@@ -26,7 +26,6 @@ import {
   emitReturnHandoffOtpToSeller,
 } from '../services/returnSocket.service.js';
 import { creditWallet } from '../../../../core/payments/wallet.service.js';
-import { getActiveFeeSettings } from '../../admin/services/billing.service.js';
 export const getAssignedReturns = async (req, res) => {
   try {
     const partnerId = req.user.userId;
@@ -60,8 +59,6 @@ export const getAssignedReturns = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const feeSettings = await getActiveFeeSettings();
-
     // Enrich returns with original order details for frontend rendering
     for (const ret of returns) {
       if (ret.returnRequestId && ret.returnRequestId.orderMongoId) {
@@ -79,12 +76,9 @@ export const getAssignedReturns = async (req, res) => {
             formattedAddress: addressParts.join(', ') || 'Customer Address',
           };
           
-          // Use configured return commission, falling back to riderEarning or pricing.deliveryFee
+          // A return pickup earns the same as the original delivery leg.
           if (!ret.returnDeliveryCommission || ret.returnDeliveryCommission === 0) {
-            ret.returnDeliveryCommission = Number(feeSettings?.returnDeliveryCommission || 0);
-            if (ret.returnDeliveryCommission <= 0) {
-              ret.returnDeliveryCommission = order.riderEarning || order.pricing?.deliveryFee || 0;
-            }
+            ret.returnDeliveryCommission = order.riderEarning || order.pricing?.deliveryFee || 0;
           }
         }
       }
@@ -349,14 +343,9 @@ export const verifySellerOtp = async (req, res) => {
     // Ensure returnDeliveryCommission is set (fallback for older returns or missed configs)
     let finalCommission = Number(leg.returnDeliveryCommission || 0);
     if (finalCommission <= 0) {
-      const feeSettings = await getActiveFeeSettings();
-      finalCommission = Number(feeSettings?.returnDeliveryCommission || 0);
-      
-      if (finalCommission <= 0) {
-        const originalOrder = await QuickOrder.findOne({ orderId: leg.orderId }).lean();
-        finalCommission = Number(originalOrder?.riderEarning || originalOrder?.pricing?.deliveryFee || 0);
-      }
-      
+      const originalOrder = await QuickOrder.findOne({ orderId: leg.orderId }).lean();
+      finalCommission = Number(originalOrder?.riderEarning || originalOrder?.pricing?.deliveryFee || 0);
+
       if (finalCommission > 0) {
         // Since it was 0 in DB, seller wasn't charged during approval. Charge them now.
         await SellerTransaction.create([{

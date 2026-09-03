@@ -133,7 +133,7 @@ const AdminWallet = () => {
             description: 'Total money collected',
             icon: TrendingUp,
             color: 'orange',
-            bg: 'bg-orange-50',
+            bg: 'bg-[#f7f3fc]',
             iconColor: 'text-primary'
         },
         {
@@ -142,7 +142,7 @@ const AdminWallet = () => {
             description: 'Net profit for platform',
             icon: DollarSign,
             color: 'orange',
-            bg: 'bg-orange-50',
+            bg: 'bg-[#f7f3fc]',
             iconColor: 'text-primary'
         },
         {
@@ -160,8 +160,8 @@ const AdminWallet = () => {
             description: 'Cash with delivery partners',
             icon: Clock,
             color: 'amber',
-            bg: 'bg-orange-50',
-            iconColor: 'text-orange-500'
+            bg: 'bg-[#f7f3fc]',
+            iconColor: 'text-[#6412c6]'
         },
         {
             label: 'Seller Pending Payouts',
@@ -169,7 +169,7 @@ const AdminWallet = () => {
             description: 'Owed to sellers',
             icon: CreditCard,
             color: 'orange',
-            bg: 'bg-orange-50',
+            bg: 'bg-[#f7f3fc]',
             iconColor: 'text-primary'
         },
         {
@@ -178,7 +178,7 @@ const AdminWallet = () => {
             description: 'Owed to delivery partners',
             icon: CreditCard,
             color: 'orange',
-            bg: 'bg-orange-50',
+            bg: 'bg-[#f7f3fc]',
             iconColor: 'text-primary'
         }
     ];
@@ -321,7 +321,7 @@ const AdminWallet = () => {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-orange-50 text-primary rounded-lg">
+                            <div className="p-2 bg-[#f7f3fc] text-primary rounded-lg">
                                 <History className="h-5 w-5" />
                             </div>
                             <h2 className="ds-h2">Recent Transactions</h2>
@@ -378,7 +378,7 @@ const AdminWallet = () => {
                                                 <tr key={req._id} className="group hover:bg-slate-50/50 transition-all">
                                                     <td className="px-6 py-5 pl-8">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                                                            <div className="h-10 w-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
                                                                 <Building2 className="h-5 w-5 text-primary" />
                                                             </div>
                                                             <div>
@@ -532,14 +532,14 @@ const AdminWallet = () => {
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-2xl border border-white/5">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-orange-400" />
+                                            <div className="h-2 w-2 rounded-full bg-[#9359d7]" />
                                             <span className="text-xs font-bold text-slate-300">Sellers</span>
                                         </div>
                                         <span className="text-xs font-black">₹{(walletData.stats?.sellerPendingPayouts || 0).toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-2xl border border-white/5">
                                         <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-orange-400" />
+                                            <div className="h-2 w-2 rounded-full bg-[#9359d7]" />
                                             <span className="text-xs font-bold text-slate-300">Riders</span>
                                         </div>
                                         <span className="text-xs font-black">₹{(walletData.stats?.deliveryPendingPayouts || 0).toLocaleString()}</span>
@@ -548,7 +548,7 @@ const AdminWallet = () => {
                                 <button
                                     onClick={handleProcessPayouts}
                                     disabled={isProcessing}
-                                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-900 rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 group disabled:opacity-50"
+                                    className="w-full py-4 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 group disabled:opacity-50"
                                 >
                                     {isProcessing ? <RotateCw className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4 group-hover:rotate-12 transition-transform" />}
                                     {isProcessing ? 'SETTLING...' : 'Bulk Settlement'}
@@ -563,7 +563,7 @@ const AdminWallet = () => {
                     {/* Quick Links */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-orange-50 text-primary rounded-lg">
+                            <div className="p-2 bg-[#f7f3fc] text-primary rounded-lg">
                                 <BarChart3 className="h-5 w-5" />
                             </div>
                             <h2 className="text-xl font-black text-slate-900">Analytics</h2>

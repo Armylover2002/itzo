@@ -551,7 +551,7 @@ export default function FoodsList() {
       {/* Header Section */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#9359d7] to-[#550fa8] flex items-center justify-center">
             <div className="grid grid-cols-2 gap-0.5">
               <div className="w-2 h-2 bg-white rounded-sm"></div>
               <div className="w-2 h-2 bg-white rounded-sm"></div>
@@ -694,7 +694,7 @@ export default function FoodsList() {
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleViewDetails(food)}
-                          className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                          className="p-1.5 rounded text-primary hover:bg-[#f7f3fc] transition-colors"
                           title="View"
                         >
                           <Eye className="w-4 h-4" />
@@ -1069,7 +1069,7 @@ export default function FoodsList() {
                 <button
                   type="button"
                   onClick={handleAddVariant}
-                  className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-white px-3 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-50"
+                  className="inline-flex items-center gap-1 rounded-full border border-[#d8c4f1] bg-white px-3 py-1.5 text-xs font-semibold text-[#460d8b] hover:bg-[#f7f3fc]"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add variant

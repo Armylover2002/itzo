@@ -184,7 +184,7 @@ export default function WithdrawMethod() {
                                 <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                                   field.required
                                     ? "bg-red-100 text-red-700"
-                                    : "bg-orange-100 text-orange-700"
+                                    : "bg-[#f0e7f9] text-[#460d8b]"
                                 }`}>
                                   {field.required ? "Required" : "Optional"}
                                 </span>
@@ -290,7 +290,7 @@ export default function WithdrawMethod() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

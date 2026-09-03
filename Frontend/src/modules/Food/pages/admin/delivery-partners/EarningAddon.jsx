@@ -273,10 +273,10 @@ export default function EarningAddon() {
   const getStatusBadge = (status, isValid) => {
     const statusConfig = {
       active: { bg: "bg-green-100", text: "text-green-700", label: "Active" },
-      upcoming: { bg: "bg-orange-100", text: "text-orange-700", label: "Upcoming" },
+      upcoming: { bg: "bg-[#f0e7f9]", text: "text-[#460d8b]", label: "Upcoming" },
       inactive: { bg: "bg-gray-100", text: "text-gray-700", label: "Inactive" },
       expired: { bg: "bg-red-100", text: "text-red-700", label: "Expired" },
-      completed: { bg: "bg-orange-100", text: "text-orange-700", label: "Completed" },
+      completed: { bg: "bg-[#f0e7f9]", text: "text-[#460d8b]", label: "Completed" },
     }
     const config = statusConfig[status] || statusConfig.inactive
     return (
@@ -311,7 +311,7 @@ export default function EarningAddon() {
               </div>
               <button
                 onClick={() => handleOpenDialog()}
-                className="px-4 py-2.5 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 flex items-center gap-2 transition-all"
+                className="px-4 py-2.5 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] flex items-center gap-2 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create Offer</span>

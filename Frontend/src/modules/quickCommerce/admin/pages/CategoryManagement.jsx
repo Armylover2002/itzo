@@ -294,7 +294,7 @@ const CategoryManagement = () => {
                                 ) : (
                                     <div className={cn(
                                         "h-8 w-8 rounded-lg flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-105",
-                                        level === 0 ? "bg-orange-50 text-primary ring-2 ring-orange-50" :
+                                        level === 0 ? "bg-[#f7f3fc] text-primary ring-2 ring-[#f7f3fc]" :
                                             level === 1 ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
                                     )}>
                                         {level === 0 ? <FolderOpen className="h-4 w-4" /> :
@@ -462,15 +462,15 @@ const CategoryManagement = () => {
                         </div>
                     </Card>
 
-                    <Card className="lg:col-span-1 border-none shadow-sm ring-1 ring-orange-50 bg-gradient-to-tr from-orange-50 to-white p-4 flex flex-col justify-between overflow-hidden relative">
+                    <Card className="lg:col-span-1 border-none shadow-sm ring-1 ring-[#f7f3fc] bg-gradient-to-tr from-[#f7f3fc] to-white p-4 flex flex-col justify-between overflow-hidden relative">
                         <div className="z-10">
-                            <p className="ds-label text-orange-400 mb-1">
+                            <p className="ds-label text-[#9359d7] mb-1">
                                 {activeView === 'tree' ? 'Total Groups' : 'Subcategories'}
                             </p>
-                            <h4 className="ds-stat-medium text-orange-900 line-height-none">
+                            <h4 className="ds-stat-medium text-[#28074f] line-height-none">
                                 {isLoading ? '...' : (activeView === 'tree' ? filteredCategories.length : filteredSubcategories.length)}
                             </h4>
-                            <p className="text-[10px] font-semibold text-orange-400 mt-1">Working Fine</p>
+                            <p className="text-[10px] font-semibold text-[#9359d7] mt-1">Working Fine</p>
                         </div>
                         {activeView === 'tree' ? (
                             <FolderOpen className="absolute -right-2 -bottom-2 h-16 w-16 text-primary/5 rotate-12" />
@@ -552,7 +552,7 @@ const CategoryManagement = () => {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <Badge variant="outline" className="text-[9px] font-bold bg-orange-50/50 text-primary border-orange-100">
+                                                        <Badge variant="outline" className="text-[9px] font-bold bg-[#f7f3fc]/50 text-primary border-[#f0e7f9]">
                                                             {sub.parentCategory || 'Unknown'}
                                                         </Badge>
                                                     </td>

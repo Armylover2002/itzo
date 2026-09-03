@@ -13,7 +13,6 @@ import { ValidationError, ForbiddenError, NotFoundError } from '../../../../core
 import { buildPaginationOptions, buildPaginatedResult } from '../../../../utils/helpers.js';
 import { FoodOffer } from '../../admin/models/offer.model.js';
 import { FoodOfferUsage } from '../../admin/models/offerUsage.model.js';
-import { FoodDeliveryCommissionRule } from '../../admin/models/deliveryCommissionRule.model.js';
 import {
   sendNotificationToOwner,
   sendNotificationToOwners,
@@ -2297,9 +2296,12 @@ export async function createOrder(userId, dto) {
     normalizedPricing.deliveryDistanceKm = Number(distanceKm.toFixed(2));
   }
 
+  // Rider earning is the full distance-based delivery fee (before any
+  // user/restaurant sponsor split) — whoever pays for delivery, the full
+  // amount goes to the delivery partner as their earning.
   const riderEarning =
     orderType === "food" || orderType === "quick" || orderType === "mixed"
-      ? await foodTransactionService.getRiderEarning(distanceKm)
+      ? Number(normalizedPricing.totalDeliveryFee || 0)
       : 0;
 
   const activeFeeSettings =

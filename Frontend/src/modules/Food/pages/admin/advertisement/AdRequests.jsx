@@ -231,13 +231,13 @@ export default function AdRequests() {
               <button 
                 onClick={() => setIsFilterOpen(true)}
                 className={`px-4 py-2.5 text-sm font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-all relative ${
-                  activeFiltersCount > 0 ? "border-emerald-500 bg-emerald-50" : ""
+                  activeFiltersCount > 0 ? "border-[#6412c6] bg-[#f0e7f9]" : ""
                 }`}
               >
                 <Filter className="w-4 h-4" />
                 <span className="text-black font-bold">Filters</span>
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -300,8 +300,8 @@ export default function AdRequests() {
                     {visibleColumns.restaurantInfo && (
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
-                            <Building2 className="w-5 h-5 text-orange-600" />
+                          <div className="w-10 h-10 rounded-full bg-[#f0e7f9] flex items-center justify-center flex-shrink-0">
+                            <Building2 className="w-5 h-5 text-[#550fa8]" />
                           </div>
                           <div className="flex flex-col">
                             <span className="text-sm font-medium text-slate-900">{request.restaurantName}</span>

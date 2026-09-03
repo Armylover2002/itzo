@@ -137,7 +137,7 @@ export default function DeliverySupportTickets() {
   const getStatusIcon = (status) => {
     switch (status) {
       case "open":
-        return <Clock className="w-5 h-5 text-orange-500" />
+        return <Clock className="w-5 h-5 text-[#6412c6]" />
       case "in_progress":
         return <Clock className="w-5 h-5 text-primary" />
       case "resolved":
@@ -152,9 +152,9 @@ export default function DeliverySupportTickets() {
   const getStatusColor = (status) => {
     switch (status) {
       case "open":
-        return "bg-orange-100 text-orange-700"
+        return "bg-[#f0e7f9] text-[#460d8b]"
       case "in_progress":
-        return "bg-orange-100 text-orange-700"
+        return "bg-[#f0e7f9] text-[#460d8b]"
       case "resolved":
         return "bg-green-100 text-green-700"
       case "closed":
@@ -204,12 +204,12 @@ export default function DeliverySupportTickets() {
                 <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
                 <p className="text-xs text-slate-600 mt-1">Total</p>
               </div>
-              <div className="bg-orange-50 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-orange-700">{stats.open}</p>
-                <p className="text-xs text-orange-600 mt-1">Open</p>
+              <div className="bg-[#f7f3fc] rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold text-[#460d8b]">{stats.open}</p>
+                <p className="text-xs text-[#550fa8] mt-1">Open</p>
               </div>
-              <div className="bg-orange-50 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-orange-700">{stats.inProgress}</p>
+              <div className="bg-[#f7f3fc] rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold text-[#460d8b]">{stats.inProgress}</p>
                 <p className="text-xs text-primary mt-1">In Progress</p>
               </div>
               <div className="bg-green-50 rounded-lg p-4 text-center">
@@ -316,7 +316,7 @@ export default function DeliverySupportTickets() {
                         </button>
                         <button
                           onClick={() => handleRespond(ticket)}
-                          className="p-2 hover:bg-orange-50 rounded-lg transition-colors"
+                          className="p-2 hover:bg-[#f7f3fc] rounded-lg transition-colors"
                           title={ticket.adminResponse ? "Edit Response" : "Send Response"}
                         >
                           <Edit className="w-4 h-4 text-primary" />
@@ -418,7 +418,7 @@ export default function DeliverySupportTickets() {
               {/* Delivery Partner Section */}
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-1 h-6 bg-orange-500 rounded"></div>
+                  <div className="w-1 h-6 bg-[#6412c6] rounded"></div>
                   <h3 className="text-base font-semibold text-gray-900">Delivery Partner</h3>
                 </div>
                 <div className="pl-4 space-y-3">
@@ -447,10 +447,10 @@ export default function DeliverySupportTickets() {
                     <h3 className="text-base font-semibold text-gray-900">ECS Response</h3>
                   </div>
                   <div className="pl-4">
-                    <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+                    <div className="bg-[#f7f3fc] border border-[#d8c4f1] p-4 rounded-lg">
                       <p className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">{selectedTicket.adminResponse}</p>
                       {selectedTicket.respondedAt && (
-                        <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-orange-200">
+                        <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-[#d8c4f1]">
                           Responded on: {formatDateTime(selectedTicket.respondedAt)}
                         </p>
                       )}
@@ -524,7 +524,7 @@ export default function DeliverySupportTickets() {
                 onChange={(e) => setResponseText(e.target.value)}
                 placeholder="Enter your response..."
                 rows={6}
-                className="min-h-[180px] resize-y rounded-xl border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-orange-100"
+                className="min-h-[180px] resize-y rounded-xl border-slate-300 bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-[#f0e7f9]"
               />
               <p className="mt-2 text-xs text-slate-500">
                 This message will be visible to the delivery partner in their support ticket.

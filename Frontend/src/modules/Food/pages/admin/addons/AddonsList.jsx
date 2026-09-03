@@ -366,7 +366,7 @@ export default function AddonsList() {
                       <div className="flex items-center justify-center gap-2 flex-wrap">
                         <button
                           onClick={() => handleViewDetails(addon)}
-                          className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                          className="p-1.5 rounded text-primary hover:bg-[#f7f3fc] transition-colors"
                           title="View"
                         >
                           <Eye className="w-4 h-4" />

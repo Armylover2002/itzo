@@ -13,8 +13,9 @@ import {
   updateBrowserFavicon
 } from "@/modules/common/utils/businessSettings";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, LogOut } from "lucide-react";
 import AdminModuleSwitcher from "@/shared/components/AdminModuleSwitcher";
+import { sellerApi } from "@/modules/seller/services/sellerApi";
 
 const colorMap = {
   indigo:
@@ -190,11 +191,20 @@ const SidebarItem = ({
           </div>
           <span
             className={cn(
-              "text-xs tracking-tight transition-all duration-300 z-10",
+              "text-xs tracking-tight transition-all duration-300 z-10 flex-1 text-left truncate",
               isActive ? "font-bold" : "font-semibold",
             )}>
             {item.label}
           </span>
+          {item.badge != null && Number(item.badge) > 0 && (
+            <span
+              className={cn(
+                "text-[10px] font-black px-1.5 py-0.5 rounded-full z-10 shadow-sm leading-none shrink-0",
+                isActive ? "bg-white text-[#E71D28]" : "bg-[#E71D28] text-white",
+              )}>
+              {item.badge}
+            </span>
+          )}
           {isActive && (
             <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/30 rounded-l-full animate-in slide-in-from-right-1" />
           )}
@@ -205,6 +215,7 @@ const SidebarItem = ({
 };
 
 const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hoveredIdx, setHoveredIdx }) => {
+  const { logout } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
   const isAdminPanel = location.pathname.startsWith("/ecs");
@@ -249,6 +260,37 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
     window.addEventListener('businessSettingsUpdated', handleUpdate);
     return () => window.removeEventListener('businessSettingsUpdated', handleUpdate);
   }, [appType]);
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!isSellerPanel) return;
+    let isMounted = true;
+    const fetchUnread = async () => {
+      try {
+        const res = await sellerApi.getNotifications();
+        if (isMounted && res?.data?.success) {
+          setUnreadCount(Number(res.data.result.unreadCount) || 0);
+        }
+      } catch (e) {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    const onUpdate = () => fetchUnread();
+    window.addEventListener('sellerNotificationsUpdated', onUpdate);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener('sellerNotificationsUpdated', onUpdate);
+    };
+  }, [isSellerPanel]);
+
+  const enhancedItems = items.map((it) => {
+    if (it.path?.includes('notifications')) {
+      return { ...it, badge: unreadCount > 0 ? unreadCount : null };
+    }
+    return it;
+  });
 
   const displayLogoUrl = logoUrl;
 
@@ -305,7 +347,7 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
           Core Management
         </p>
         <AnimatePresence>
-          {items.map((item, idx) => (
+          {enhancedItems.map((item, idx) => (
             <SidebarItem
               key={idx}
               item={item}
@@ -321,6 +363,22 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
           ))}
         </AnimatePresence>
       </nav>
+
+      {/* Sidebar Footer with Sign Out */}
+      <div className="flex-shrink-0 p-3 border-t border-white/5 bg-[#0a0c10]/95 backdrop-blur-md z-20">
+        <button
+          onClick={() => {
+            onClose?.();
+            logout();
+          }}
+          className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-rose-400 hover:text-white hover:bg-rose-500/15 active:bg-rose-500/25 border border-rose-500/20 hover:border-rose-500/40 transition-all duration-200 group text-xs font-bold shadow-sm"
+        >
+          <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 group-hover:bg-rose-600 group-hover:text-white transition-all duration-200">
+            <LogOut className="h-4 w-4" />
+          </div>
+          <span className="flex-1 text-left font-semibold">Sign Out</span>
+        </button>
+      </div>
     </div>
   );
 };
@@ -348,7 +406,7 @@ const Sidebar = ({ items, title, isOpen, onClose }) => {
     <>
       {/* Desktop Sidebar */}
       <aside className={cn(
-        "fixed left-0 inset-y-0 w-80 bg-[#0a0c10] text-gray-400 border-r border-white/5 shadow-[20px_0_60px_rgba(0,0,0,0.4)] md:flex flex-col z-50 transition-all duration-300",
+        "fixed left-0 inset-y-0 w-64 bg-[#0a0c10] text-gray-400 border-r border-white/5 shadow-[20px_0_60px_rgba(0,0,0,0.4)] md:flex flex-col z-50 transition-all duration-300",
         (role === "admin" || role === "seller") ? "hidden md:flex" : "flex",
       )}>
         <SidebarContent {...commonProps} />
@@ -368,7 +426,7 @@ const Sidebar = ({ items, title, isOpen, onClose }) => {
             />
 
             {/* Outer Container (Fixed Shell - NO TRANSFORM) */}
-            <div className="absolute left-0 inset-y-0 w-80 flex flex-col pointer-events-none">
+            <div className="absolute left-0 inset-y-0 w-64 flex flex-col pointer-events-none">
               {/* Inner Animation Wrapper (TRANSFORM APPLIED HERE) */}
               <motion.div
                 initial={{ x: "-100%" }}

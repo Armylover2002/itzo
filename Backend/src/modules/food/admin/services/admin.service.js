@@ -13,7 +13,6 @@ import { FoodOfferUsage } from '../models/offerUsage.model.js';
 import { DeliveryBonusTransaction } from '../models/deliveryBonusTransaction.model.js';
 import { FoodEarningAddon } from '../models/earningAddon.model.js';
 import { FoodEarningAddonHistory } from '../models/earningAddonHistory.model.js';
-import { FoodDeliveryCommissionRule } from '../models/deliveryCommissionRule.model.js';
 import { FoodFeeSettings } from '../models/feeSettings.model.js';
 import { FeedbackExperience } from '../models/feedbackExperience.model.js';
 import { FoodUser } from '../../../../core/users/user.model.js';
@@ -1730,126 +1729,6 @@ export async function updateSupportTicket(id, body = {}) {
     const model = source === 'restaurant' ? FoodRestaurantSupportTicket : FoodSupportTicket;
     const updated = await model.findByIdAndUpdate(id, { $set: set }, { new: true }).lean();
     return updated || null;
-}
-
-// ----- Delivery Boy Commission Rule (admin) -----
-export async function getDeliveryCommissionRules() {
-    const list = await FoodDeliveryCommissionRule.find({}).sort({ createdAt: -1 }).lean();
-    const commissions = list.map((r, index) => ({
-        _id: r._id,
-        sl: index + 1,
-        name: r.name || '',
-        minDistance: r.minDistance,
-        maxDistance: r.maxDistance ?? null,
-        commissionPerKm: r.commissionPerKm,
-        basePayout: r.basePayout,
-        status: r.status !== false
-    }));
-    return { commissions };
-}
-
-function validateCommissionRuleSet(rules) {
-    const active = (rules || []).filter((r) => r && r.status !== false);
-    if (!active.length) {
-        throw new ValidationError('A base slab with minDistance = 0 is required');
-    }
-    const baseRules = active.filter((r) => Number(r.minDistance || 0) === 0);
-    if (baseRules.length !== 1) {
-        throw new ValidationError('A base slab with minDistance = 0 is required');
-    }
-    const sorted = [...active].sort((a, b) => Number(a.minDistance || 0) - Number(b.minDistance || 0));
-    for (let i = 0; i < sorted.length; i += 1) {
-        const current = sorted[i];
-        const min = Number(current.minDistance || 0);
-        const max = current.maxDistance == null ? null : Number(current.maxDistance);
-        if (max != null && max <= min) {
-            throw new ValidationError('maxDistance must be greater than minDistance');
-        }
-        if (i > 0) {
-            const prev = sorted[i - 1];
-            const prevMin = Number(prev.minDistance || 0);
-            const prevMax = prev.maxDistance == null ? null : Number(prev.maxDistance);
-            const effectivePrevMax = prevMax == null ? Infinity : prevMax;
-            if (min < effectivePrevMax) {
-                throw new ValidationError('Distance slabs must not overlap');
-            }
-            if (min === prevMin) {
-                throw new ValidationError('Distance slabs must not share the same minDistance');
-            }
-        }
-    }
-}
-
-export async function createDeliveryCommissionRule(body) {
-    const existing = await FoodDeliveryCommissionRule.find({}).lean();
-    const candidate = [
-        ...existing,
-        {
-            minDistance: body.minDistance,
-            maxDistance: body.maxDistance ?? null,
-            commissionPerKm: body.commissionPerKm,
-            basePayout: body.basePayout,
-            status: body.status ?? true
-        }
-    ];
-    validateCommissionRuleSet(candidate);
-    const created = await FoodDeliveryCommissionRule.create({
-        name: body.name || '',
-        minDistance: body.minDistance,
-        maxDistance: body.maxDistance ?? null,
-        commissionPerKm: body.commissionPerKm,
-        basePayout: body.basePayout,
-        status: body.status ?? true
-    });
-    return created.toObject();
-}
-
-export async function updateDeliveryCommissionRule(id, body) {
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-    const existing = await FoodDeliveryCommissionRule.find({}).lean();
-    const candidate = existing.map((r) =>
-        String(r._id) === String(id)
-            ? {
-                  ...r,
-                  minDistance: body.minDistance,
-                  maxDistance: body.maxDistance ?? null,
-                  commissionPerKm: body.commissionPerKm,
-                  basePayout: body.basePayout,
-                  status: r.status !== false
-              }
-            : r
-    );
-    validateCommissionRuleSet(candidate);
-    const updated = await FoodDeliveryCommissionRule.findByIdAndUpdate(
-        id,
-        {
-            $set: {
-                name: body.name || '',
-                minDistance: body.minDistance,
-                maxDistance: body.maxDistance ?? null,
-                commissionPerKm: body.commissionPerKm,
-                basePayout: body.basePayout
-            }
-        },
-        { new: true }
-    ).lean();
-    return updated;
-}
-
-export async function deleteDeliveryCommissionRule(id) {
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-    const deleted = await FoodDeliveryCommissionRule.findByIdAndDelete(id).lean();
-    return deleted ? { id } : null;
-}
-
-export async function toggleDeliveryCommissionRuleStatus(id, status) {
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-    const updated = await FoodDeliveryCommissionRule.findByIdAndUpdate(
-        id,
-        { $set: { status: Boolean(status) } },
-        { new: true }
-    ).lean();
-    return updated;
 }
 
 // ----- Fee Settings (admin) -----
@@ -3679,8 +3558,15 @@ export async function approveRestaurant(id, performer = null) {
 
         if (updated.ownerEmail) {
             try {
-                const { sendRestaurantApprovalEmail } = await import('../../../../utils/email.js');
-                await sendRestaurantApprovalEmail(updated.ownerEmail, updated.restaurantName);
+                // Approval mail carries the partnership certificate as a PDF. This runs on
+                // every approval, including one that follows a rejection and re-application.
+                const { sendPartnerApprovalCertificateEmail } = await import('../../../../utils/email.js');
+                await sendPartnerApprovalCertificateEmail(updated.ownerEmail, {
+                    type: 'restaurant',
+                    partnerName: updated.restaurantName,
+                    partnerId: updated.restaurantId || String(updated._id),
+                    onboardingDate: updated.approvedAt || new Date(),
+                });
             } catch (e) {
                 console.error('Failed to send restaurant approval email:', e);
             }

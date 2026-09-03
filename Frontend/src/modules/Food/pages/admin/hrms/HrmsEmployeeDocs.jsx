@@ -188,7 +188,7 @@ export default function HrmsEmployeeDocs() {
                                 setUploadType('Other');
                                 setUploadModalOpen(true);
                             }}
-                            className="flex items-center gap-1.5 px-4 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors"
+                            className="flex items-center gap-1.5 px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium hover:bg-slate-800 transition-colors"
                         >
                             <Plus className="w-4 h-4" /> Upload Document
                         </button>
@@ -200,7 +200,7 @@ export default function HrmsEmployeeDocs() {
                             placeholder="Search employees..." 
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            className="pl-10 pr-4 h-10 w-full sm:w-64 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                            className="pl-10 pr-4 h-10 w-full sm:w-64 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                         />
                     </div>
                 </div>
@@ -212,7 +212,7 @@ export default function HrmsEmployeeDocs() {
                     onClick={() => setActiveTab('Offer Letter')}
                     className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
                         activeTab === 'Offer Letter'
-                            ? 'border-orange-500 text-orange-600'
+                            ? 'border-[#6412c6] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -222,7 +222,7 @@ export default function HrmsEmployeeDocs() {
                     onClick={() => setActiveTab('Other Docs')}
                     className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
                         activeTab === 'Other Docs'
-                            ? 'border-orange-500 text-orange-600'
+                            ? 'border-[#6412c6] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -257,7 +257,7 @@ export default function HrmsEmployeeDocs() {
                                         <tr key={emp._id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-xs">
+                                                    <div className="w-8 h-8 rounded-full bg-[#f0e7f9] text-[#550fa8] flex items-center justify-center font-bold text-xs">
                                                         {(emp.adminId?.name || 'E').charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
@@ -285,13 +285,13 @@ export default function HrmsEmployeeDocs() {
                                                 <div className="flex items-center justify-end gap-2">
                                                     {hasDoc ? (
                                                         <>
-                                                            <button onClick={() => openPreview(doc)} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Preview">
+                                                            <button onClick={() => openPreview(doc)} className="p-1.5 text-[#6412c6] hover:bg-[#f7f3fc] rounded-lg transition-colors" title="Preview">
                                                                 <Eye className="w-4 h-4" />
                                                             </button>
-                                                            <a href={doc.url} download target="_blank" rel="noopener noreferrer" className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Download">
+                                                            <a href={doc.url} download target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#6412c6] hover:bg-[#f7f3fc] rounded-lg transition-colors" title="Download">
                                                                 <Download className="w-4 h-4" />
                                                             </a>
-                                                            <button onClick={() => openUploadModal(emp, 'Offer Letter')} className="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors" title="Replace">
+                                                            <button onClick={() => openUploadModal(emp, 'Offer Letter')} className="p-1.5 text-[#550fa8] hover:bg-[#f7f3fc] rounded-lg transition-colors" title="Replace">
                                                                 <Upload className="w-4 h-4" />
                                                             </button>
                                                             <button onClick={() => handleDelete(doc._id, 'Offer Letter')} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
@@ -299,7 +299,7 @@ export default function HrmsEmployeeDocs() {
                                                             </button>
                                                         </>
                                                     ) : (
-                                                        <button onClick={() => openUploadModal(emp, 'Offer Letter')} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-medium hover:bg-slate-800 transition-colors">
+                                                        <button onClick={() => openUploadModal(emp, 'Offer Letter')} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-lg text-xs font-medium hover:bg-slate-800 transition-colors">
                                                             <Upload className="w-3.5 h-3.5" /> Upload
                                                         </button>
                                                     )}
@@ -369,10 +369,10 @@ export default function HrmsEmployeeDocs() {
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
-                                                            <button onClick={() => openPreview(doc)} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Preview">
+                                                            <button onClick={() => openPreview(doc)} className="p-1.5 text-[#6412c6] hover:bg-[#f7f3fc] rounded-lg transition-colors" title="Preview">
                                                                 <Eye className="w-4 h-4" />
                                                             </button>
-                                                            <a href={doc.url} download target="_blank" rel="noopener noreferrer" className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" title="Download">
+                                                            <a href={doc.url} download target="_blank" rel="noopener noreferrer" className="p-1.5 text-[#6412c6] hover:bg-[#f7f3fc] rounded-lg transition-colors" title="Download">
                                                                 <Download className="w-4 h-4" />
                                                             </a>
                                                             <button onClick={() => handleDelete(doc._id, doc.name)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
@@ -412,7 +412,7 @@ export default function HrmsEmployeeDocs() {
                                 <div className="mb-4">
                                     <label className="block text-sm font-semibold text-slate-700 mb-2">Select Employee</label>
                                     <select
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white"
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white"
                                         value=""
                                         onChange={(e) => {
                                             const emp = employees.find(em => em._id === e.target.value);
@@ -441,13 +441,13 @@ export default function HrmsEmployeeDocs() {
                                         onChange={(e) => setDocName(e.target.value)}
                                         placeholder="e.g. Experience Certificate, NDA, ID Proof..."
                                         maxLength={100}
-                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
                                     />
                                 </div>
                             )}
                             
                             <div 
-                                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${preview ? 'border-orange-500 bg-orange-50' : 'border-slate-200 hover:border-orange-500 hover:bg-orange-50/50'}`}
+                                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${preview ? 'border-[#6412c6] bg-[#f7f3fc]' : 'border-slate-200 hover:border-[#6412c6] hover:bg-[#f7f3fc]/50'}`}
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <input 
@@ -460,7 +460,7 @@ export default function HrmsEmployeeDocs() {
                                 {preview ? (
                                     <div className="space-y-3">
                                         <img src={preview} alt="Preview" className="h-32 object-contain mx-auto rounded-lg shadow-sm" />
-                                        <p className="text-sm font-medium text-orange-600">Click to change image</p>
+                                        <p className="text-sm font-medium text-[#550fa8]">Click to change image</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
@@ -478,7 +478,7 @@ export default function HrmsEmployeeDocs() {
                                 <button 
                                     onClick={handleUpload} 
                                     disabled={!file || uploading || (uploadType === 'Other' && !selectedEmployee) || (uploadType === 'Other' && !docName.trim())} 
-                                    className="px-4 h-10 bg-orange-500 text-white font-medium rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm"
+                                    className="px-4 h-10 bg-[#6412c6] text-white font-medium rounded-xl hover:bg-[#550fa8] transition-colors disabled:opacity-50 flex items-center gap-2 text-sm"
                                 >
                                     {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
                                     {uploading ? 'Uploading...' : 'Save Document'}
@@ -498,7 +498,7 @@ export default function HrmsEmployeeDocs() {
                             <p className="text-xs text-slate-400">Uploaded {new Date(selectedDocument.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <a href={selectedDocument.url} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm hover:text-orange-400 transition-colors">
+                            <a href={selectedDocument.url} download target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm hover:text-[#9359d7] transition-colors">
                                 <Download className="w-4 h-4" /> Download
                             </a>
                             <button onClick={() => setPreviewModalOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">

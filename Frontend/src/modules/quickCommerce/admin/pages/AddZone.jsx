@@ -552,7 +552,7 @@ export default function AddZone() {
       const pinElement = document.createElement('div')
       pinElement.style.width = '16px'
       pinElement.style.height = '16px'
-      pinElement.style.backgroundColor = '#FE5502'
+      pinElement.style.backgroundColor = '#6412C6'
       pinElement.style.borderRadius = '50%'
       pinElement.style.border = '2px solid white'
       pinElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)'
@@ -573,7 +573,7 @@ export default function AddZone() {
         icon: {
           path: window.google.maps.SymbolPath.CIRCLE,
           scale: 8,
-          fillColor: "#FE5502",
+          fillColor: "#6412C6",
           fillOpacity: 1,
           strokeColor: "#ffffff",
           strokeWeight: 2
@@ -994,7 +994,7 @@ export default function AddZone() {
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#FE5502] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[#6412C6] flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <div>

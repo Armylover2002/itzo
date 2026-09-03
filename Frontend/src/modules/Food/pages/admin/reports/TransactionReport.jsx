@@ -257,12 +257,12 @@ export default function TransactionReport() {
             <button 
               onClick={handleFilterApply}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all whitespace-nowrap relative ${
-                activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
               }`}
             >
               Filter
               {activeFiltersCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white rounded-full text-[8px] flex items-center justify-center font-bold">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#6412c6] text-white rounded-full text-[8px] flex items-center justify-center font-bold">
                   {activeFiltersCount}
                 </span>
               )}
@@ -337,7 +337,7 @@ export default function TransactionReport() {
             <div className="rounded-lg shadow-sm border border-slate-200 p-3" style={{ backgroundColor: '#f1f5f9' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
                     <img src={restaurantEarningIcon} alt="Restaurant Earning" className="w-6 h-6" />
                   </div>
                   <div className="flex items-center gap-2">
@@ -365,7 +365,7 @@ export default function TransactionReport() {
                     </div>
                   </div>
                 </div>
-                <p className="text-base font-bold text-orange-600">{formatCurrency(summary.deliverymanEarning)}</p>
+                <p className="text-base font-bold text-[#550fa8]">{formatCurrency(summary.deliverymanEarning)}</p>
               </div>
             </div>
           </div>
@@ -530,7 +530,7 @@ export default function TransactionReport() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

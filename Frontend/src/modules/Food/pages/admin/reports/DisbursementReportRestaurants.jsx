@@ -127,12 +127,12 @@ export default function DisbursementReportRestaurants() {
           {/* Completed Disbursements */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 relative">
             <div className="absolute top-4 right-4">
-              <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+              <div className="w-5 h-5 rounded-full bg-[#6412c6] flex items-center justify-center">
                 <Info className="w-3 h-3 text-white" />
               </div>
             </div>
             <div className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-full bg-orange-500 flex items-center justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-[#6412c6] flex items-center justify-center mb-4">
                 <img src={completedIcon} alt="Completed" className="w-10 h-10" />
               </div>
               <p className="text-2xl font-bold text-slate-900 mb-1">{emptyDisbursementStats.completed}</p>
@@ -259,13 +259,13 @@ export default function DisbursementReportRestaurants() {
                 <button 
                   onClick={handleFilterApply}
                   className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary transition-all flex items-center gap-2 relative ${
-                    activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                    activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
                   }`}
                 >
                   <Filter className="w-4 h-4" />
                   Filter
                   {activeFiltersCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -412,13 +412,13 @@ export default function DisbursementReportRestaurants() {
                         <span className="text-sm text-slate-700">{disbursement.paymentMethod}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#f0e7f9] text-[#460d8b]">
                           {disbursement.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <button
-                          className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                          className="p-1.5 rounded text-primary hover:bg-[#f7f3fc] transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -450,7 +450,7 @@ export default function DisbursementReportRestaurants() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

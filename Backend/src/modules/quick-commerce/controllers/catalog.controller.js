@@ -5,7 +5,6 @@ import { FoodUser } from '../../../core/users/user.model.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { QuickZone } from '../models/quick_zone.model.js';
 import { isPointInZone } from '../../../utils/geo.js';
-import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import {
   getQuickCategories,
   getQuickCoupons,
@@ -169,7 +168,6 @@ const mapProduct = (product, sellerMap = {}) => {
 
 export const getHomeData = async (req, res) => {
   setPublicCache(res, 60); // 1 minute cache
-  await ensureQuickCommerceSeedData();
 
   const { zoneId, headerId, categoryId, lat, lng } = req.query || {};
 
@@ -290,7 +288,6 @@ export const applyCoupon = async (req, res) => {
 
 export const getCategories = async (req, res) => {
   setPublicCache(res, 300); // 5 minutes cache
-  await ensureQuickCommerceSeedData();
 
   const { tree, parentId } = req.query;
   const categories = await getQuickCategories({ parentId });
@@ -320,7 +317,6 @@ export const getCategories = async (req, res) => {
 
 export const getProducts = async (req, res) => {
   setPublicCache(res, 60);
-  await ensureQuickCommerceSeedData();
 
   const { categoryId, search, limit, sortBy, lat, lng } = req.query;
   const query = { ...publicProductFilter };
@@ -388,7 +384,6 @@ export const getProducts = async (req, res) => {
 
 export const getProductById = async (req, res) => {
   setPublicCache(res, 600); // 10 minutes cache
-  await ensureQuickCommerceSeedData();
 
   const product = await QuickProduct.findOne(
     await withVisibleSellerFilter({ _id: req.params.productId, ...publicProductFilter }),

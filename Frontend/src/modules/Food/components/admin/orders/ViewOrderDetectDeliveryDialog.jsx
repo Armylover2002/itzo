@@ -2,14 +2,14 @@ import { X, Clock, CheckCircle, XCircle, User, Phone, Package, MapPin } from "lu
 
 const getStatusColor = (status) => {
   const colors = {
-    "Ordered": "bg-orange-100 text-orange-700 border-orange-200",
+    "Ordered": "bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]",
     "Restaurant Accepted": "bg-green-100 text-green-700 border-green-200",
     "Accepted": "bg-green-100 text-green-700 border-green-200", // Keep for backward compatibility
     "Rejected": "bg-red-100 text-red-700 border-red-200",
-    "Delivery Boy Assigned": "bg-orange-100 text-orange-700 border-orange-200",
-    "Delivery Boy Reached Pickup": "bg-orange-100 text-orange-700 border-orange-200",
-    "Reached Pickup": "bg-orange-100 text-orange-700 border-orange-200", // Keep for backward compatibility
-    "Order ID Accepted": "bg-orange-100 text-orange-700 border-orange-200",
+    "Delivery Boy Assigned": "bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]",
+    "Delivery Boy Reached Pickup": "bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]",
+    "Reached Pickup": "bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]", // Keep for backward compatibility
+    "Order ID Accepted": "bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]",
     "Reached Drop": "bg-amber-100 text-amber-700 border-amber-200",
     "Ordered Delivered": "bg-emerald-100 text-emerald-700 border-emerald-200",
   }

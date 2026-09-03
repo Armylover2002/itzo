@@ -351,7 +351,7 @@ const coordinatesLength = useMemo(() => zone?.coordinates?.length || 0, [zone?.c
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#FE5502] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[#6412C6] flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <div>

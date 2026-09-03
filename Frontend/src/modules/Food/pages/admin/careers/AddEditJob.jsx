@@ -123,23 +123,23 @@ export default function AddEditJob() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Job Title *</label>
-              <input type="text" name="title" required value={formData.title} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. Senior Frontend Engineer" />
+              <input type="text" name="title" required value={formData.title} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. Senior Frontend Engineer" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Role *</label>
-              <input type="text" name="role" required value={formData.role} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. Engineering" />
+              <input type="text" name="role" required value={formData.role} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. Engineering" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Department *</label>
-              <input type="text" name="department" required value={formData.department} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. Technology" />
+              <input type="text" name="department" required value={formData.department} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. Technology" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Location *</label>
-              <input type="text" name="location" required value={formData.location} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. Remote, India" />
+              <input type="text" name="location" required value={formData.location} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. Remote, India" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Employment Type *</label>
-              <select name="employmentType" value={formData.employmentType} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+              <select name="employmentType" value={formData.employmentType} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none">
                 <option value="Full Time">Full Time</option>
                 <option value="Part Time">Part Time</option>
                 <option value="Contract">Contract</option>
@@ -149,7 +149,7 @@ export default function AddEditJob() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-              <select name="status" value={formData.status} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none">
+              <select name="status" value={formData.status} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none">
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
                 <option value="Draft">Draft</option>
@@ -158,26 +158,26 @@ export default function AddEditJob() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Experience Required *</label>
-              <input type="text" name="experienceRequired" required value={formData.experienceRequired} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. 3-5 Years" />
+              <input type="text" name="experienceRequired" required value={formData.experienceRequired} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. 3-5 Years" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Salary Range *</label>
-              <input type="text" name="salaryRange" required value={formData.salaryRange} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. Competitive" />
+              <input type="text" name="salaryRange" required value={formData.salaryRange} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. Competitive" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">Application Form Link (URL)</label>
-              <input type="url" name="applicationFormLink" value={formData.applicationFormLink} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="e.g. https://forms.gle/..." />
+              <input type="url" name="applicationFormLink" value={formData.applicationFormLink} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="e.g. https://forms.gle/..." />
             </div>
           </div>
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-1">Short Description *</label>
-            <textarea name="shortDescription" required rows="2" value={formData.shortDescription} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="Brief summary of the role..."></textarea>
+            <textarea name="shortDescription" required rows="2" value={formData.shortDescription} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="Brief summary of the role..."></textarea>
           </div>
 
           <div className="mb-6">
             <label className="block text-sm font-medium text-slate-700 mb-1">Detailed Description *</label>
-            <textarea name="detailedDescription" required rows="5" value={formData.detailedDescription} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="Full job description..."></textarea>
+            <textarea name="detailedDescription" required rows="5" value={formData.detailedDescription} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="Full job description..."></textarea>
           </div>
 
           {['responsibilities', 'requirements', 'benefits'].map((field) => (
@@ -196,7 +196,7 @@ export default function AddEditJob() {
                       type="text"
                       value={item}
                       onChange={(e) => handleArrayChange(index, field, e.target.value)}
-                      className="flex-1 p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none text-sm"
+                      className="flex-1 p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none text-sm"
                       placeholder={`Enter ${field.slice(0, -1)}...`}
                     />
                     {formData[field].length > 1 && (
@@ -213,21 +213,21 @@ export default function AddEditJob() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 pt-4 border-t border-slate-100">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Contact Email</label>
-              <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="careers@itzofood.com" />
+              <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="careers@itzofood.com" />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Contact Phone</label>
-              <input type="text" name="contactPhone" value={formData.contactPhone} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="+91..." />
+              <input type="text" name="contactPhone" value={formData.contactPhone} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="+91..." />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-1">Poster Image URL (Optional)</label>
-              <input type="text" name="posterImage" value={formData.posterImage} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none" placeholder="https://..." />
+              <input type="text" name="posterImage" value={formData.posterImage} onChange={handleChange} className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#6412c6] focus:outline-none" placeholder="https://..." />
             </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
             <button type="button" onClick={() => navigate("/ecs/food/careers")} className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-colors disabled:opacity-50">Cancel</button>
-            <button type="submit" disabled={loading} className="px-6 py-2.5 rounded-lg bg-orange-500 text-white font-semibold hover:bg-orange-600 shadow-md flex items-center gap-2 transition-colors disabled:opacity-50">
+            <button type="submit" disabled={loading} className="px-6 py-2.5 rounded-lg bg-[#6412c6] text-white font-semibold hover:bg-[#550fa8] shadow-md flex items-center gap-2 transition-colors disabled:opacity-50">
               <Save className="w-4 h-4" />
               {loading ? "Saving..." : (isEdit ? "Update Job" : "Publish Job")}
             </button>

@@ -1,26 +1,25 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Edit, Loader2, Plus, Save, Settings, Trash2, Truck } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Check, Edit, Loader2, Plus, Save, Settings, Trash2, Truck, X } from 'lucide-react';
 import Card from '@shared/components/ui/Card';
 import { cn } from '@/lib/utils';
 import { useToast } from '@shared/components/ui/Toast';
 import { adminApi } from '../services/adminApi';
 
 const initialFeeSettings = {
-  deliveryFee: '',
-  deliveryFeeRanges: [],
-  freeDeliveryThreshold: '',
+  baseDistanceKm: '',
+  baseDeliveryFee: '',
+  perKmCharge: '',
+  sponsorRules: [],
   platformFee: '',
   gstRate: '',
-  returnDeliveryCommission: '',
 };
 
-const initialRuleForm = {
-  name: '',
-  minDistance: '0',
-  maxDistance: '',
-  maxDistanceUnlimited: false,
-  commissionPerKm: '',
-  basePayout: '',
+const EMPTY_SPONSOR_RULE = {
+  minOrderAmount: '',
+  maxOrderAmount: '',
+  maxDistanceKm: '',
+  sponsorType: 'USER_FULL',
+  sponsoredKm: '',
 };
 
 const toInputValue = (value) =>
@@ -36,25 +35,12 @@ export default function BillingCharges() {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(true);
   const [savingFeeSettings, setSavingFeeSettings] = useState(false);
-  const [savingRule, setSavingRule] = useState(false);
-  const [rulesLoading, setRulesLoading] = useState(true);
   const [feeSettings, setFeeSettings] = useState(initialFeeSettings);
-  const [newRange, setNewRange] = useState({ min: '', max: '', fee: '' });
-  const [editingRangeIndex, setEditingRangeIndex] = useState(null);
-  const [rules, setRules] = useState([]);
-  const [editingRuleId, setEditingRuleId] = useState('');
-  const [ruleForm, setRuleForm] = useState(initialRuleForm);
-
-  const sortedRules = useMemo(
-    () =>
-      [...rules].sort(
-        (a, b) => Number(a.minDistance || 0) - Number(b.minDistance || 0),
-      ),
-    [rules],
-  );
+  const [editingSponsorRuleIndex, setEditingSponsorRuleIndex] = useState(null);
+  const [sponsorRuleDraft, setSponsorRuleDraft] = useState(EMPTY_SPONSOR_RULE);
 
   useEffect(() => {
-    void Promise.all([loadFeeSettings(), loadRules()]);
+    void loadFeeSettings();
   }, []);
 
   const loadFeeSettings = async () => {
@@ -67,12 +53,12 @@ export default function BillingCharges() {
         return;
       }
       setFeeSettings({
-        deliveryFee: toInputValue(settings.deliveryFee),
-        deliveryFeeRanges: Array.isArray(settings.deliveryFeeRanges) ? settings.deliveryFeeRanges : [],
-        freeDeliveryThreshold: toInputValue(settings.freeDeliveryThreshold),
+        baseDistanceKm: toInputValue(settings.baseDistanceKm),
+        baseDeliveryFee: toInputValue(settings.baseDeliveryFee ?? settings.deliveryFee),
+        perKmCharge: toInputValue(settings.perKmCharge),
+        sponsorRules: Array.isArray(settings.sponsorRules) ? settings.sponsorRules : [],
         platformFee: toInputValue(settings.platformFee),
         gstRate: toInputValue(settings.gstRate),
-        returnDeliveryCommission: toInputValue(settings.returnDeliveryCommission),
       });
     } catch (error) {
       console.error('Failed to load quick fee settings', error);
@@ -82,45 +68,45 @@ export default function BillingCharges() {
     }
   };
 
-  const loadRules = async () => {
-    try {
-      setRulesLoading(true);
-      const response = await adminApi.getDeliveryCommissionRules();
-      const list =
-        response?.data?.data?.commissions ||
-        response?.data?.commissions ||
-        [];
-      setRules(Array.isArray(list) ? list : []);
-    } catch (error) {
-      console.error('Failed to load quick delivery commission rules', error);
-      showToast('Failed to load delivery commission rules', 'error');
-    } finally {
-      setRulesLoading(false);
-    }
-  };
-
   const handleSaveFeeSettings = async () => {
+    const baseDistanceKm = toNullableNumber(feeSettings.baseDistanceKm);
+    const baseDeliveryFee = toNullableNumber(feeSettings.baseDeliveryFee);
+    const perKmCharge = toNullableNumber(feeSettings.perKmCharge);
+
+    if (baseDistanceKm === undefined || baseDistanceKm < 0) {
+      showToast('Base distance is required', 'error');
+      return;
+    }
+    if (baseDeliveryFee === undefined || baseDeliveryFee < 0) {
+      showToast('Base delivery fee is required', 'error');
+      return;
+    }
+    if (perKmCharge === undefined || perKmCharge < 0) {
+      showToast('Per KM charge is required', 'error');
+      return;
+    }
+
     try {
       setSavingFeeSettings(true);
       const payload = {
-        deliveryFee: toNullableNumber(feeSettings.deliveryFee),
-        deliveryFeeRanges: feeSettings.deliveryFeeRanges,
-        freeDeliveryThreshold: toNullableNumber(feeSettings.freeDeliveryThreshold),
+        baseDistanceKm,
+        baseDeliveryFee,
+        perKmCharge,
+        sponsorRules: feeSettings.sponsorRules,
         platformFee: toNullableNumber(feeSettings.platformFee),
         gstRate: toNullableNumber(feeSettings.gstRate),
-        returnDeliveryCommission: toNullableNumber(feeSettings.returnDeliveryCommission) ?? 0,
         isActive: true,
       };
       const response = await adminApi.createOrUpdateFeeSettings(payload);
       const saved = response?.data?.data?.feeSettings;
       if (saved) {
         setFeeSettings({
-          deliveryFee: toInputValue(saved.deliveryFee),
-          deliveryFeeRanges: Array.isArray(saved.deliveryFeeRanges) ? saved.deliveryFeeRanges : [],
-          freeDeliveryThreshold: toInputValue(saved.freeDeliveryThreshold),
+          baseDistanceKm: toInputValue(saved.baseDistanceKm),
+          baseDeliveryFee: toInputValue(saved.baseDeliveryFee ?? saved.deliveryFee),
+          perKmCharge: toInputValue(saved.perKmCharge),
+          sponsorRules: Array.isArray(saved.sponsorRules) ? saved.sponsorRules : [],
           platformFee: toInputValue(saved.platformFee),
           gstRate: toInputValue(saved.gstRate),
-          returnDeliveryCommission: toInputValue(saved.returnDeliveryCommission),
         });
       }
       showToast('Quick fee settings saved successfully', 'success');
@@ -132,154 +118,87 @@ export default function BillingCharges() {
     }
   };
 
-  const resetRuleForm = () => {
-    setEditingRuleId('');
-    setRuleForm(initialRuleForm);
+  const validateSponsorRuleDraft = () => {
+    const minOrderAmount = Number(sponsorRuleDraft.minOrderAmount);
+    const maxOrderAmount =
+      sponsorRuleDraft.maxOrderAmount === '' ? null : Number(sponsorRuleDraft.maxOrderAmount);
+    const maxDistanceKm = Number(sponsorRuleDraft.maxDistanceKm);
+    const sponsoredKm =
+      sponsorRuleDraft.sponsoredKm === '' ? null : Number(sponsorRuleDraft.sponsoredKm);
+
+    if (!Number.isFinite(minOrderAmount) || minOrderAmount < 0) {
+      showToast('Minimum order amount must be 0 or more', 'error');
+      return null;
+    }
+    if (maxOrderAmount != null && (!Number.isFinite(maxOrderAmount) || maxOrderAmount < minOrderAmount)) {
+      showToast('Maximum order amount must be greater than or equal to minimum order amount', 'error');
+      return null;
+    }
+    if (!Number.isFinite(maxDistanceKm) || maxDistanceKm < 0) {
+      showToast('Maximum distance must be 0 or more', 'error');
+      return null;
+    }
+    if (sponsorRuleDraft.sponsorType === 'SPLIT' && (!Number.isFinite(sponsoredKm) || sponsoredKm < 0)) {
+      showToast('Sponsored KM is required for split rules', 'error');
+      return null;
+    }
+
+    return {
+      minOrderAmount,
+      maxOrderAmount,
+      maxDistanceKm,
+      sponsorType: sponsorRuleDraft.sponsorType,
+      sponsoredKm: sponsorRuleDraft.sponsorType === 'SPLIT' ? sponsoredKm : null,
+    };
   };
 
-  const handleAddOrUpdateRange = () => {
-    const min = Number(newRange.min);
-    const max = Number(newRange.max);
-    const fee = Number(newRange.fee);
-
-    if (![min, max, fee].every(Number.isFinite)) {
-      showToast('Please fill all range fields', 'error');
-      return;
-    }
-    if (min < 0 || max < 0 || fee < 0) {
-      showToast('Values must be 0 or greater', 'error');
-      return;
-    }
-    if (min >= max) {
-      showToast('Min value must be less than max value', 'error');
-      return;
-    }
-
-    const nextRanges = [...feeSettings.deliveryFeeRanges];
-    if (editingRangeIndex !== null) {
-      nextRanges.splice(editingRangeIndex, 1);
-    }
-
-    for (const range of nextRanges) {
-      if (
-        (min >= Number(range.min) && min < Number(range.max)) ||
-        (max > Number(range.min) && max <= Number(range.max)) ||
-        (min <= Number(range.min) && max >= Number(range.max))
-      ) {
-        showToast('This range overlaps with an existing range', 'error');
-        return;
-      }
-    }
-
-    nextRanges.push({ min, max, fee });
-    nextRanges.sort((a, b) => Number(a.min) - Number(b.min));
-    setFeeSettings((prev) => ({ ...prev, deliveryFeeRanges: nextRanges }));
-    setNewRange({ min: '', max: '', fee: '' });
-    setEditingRangeIndex(null);
+  const handleAddSponsorRule = () => {
+    const nextRule = validateSponsorRuleDraft();
+    if (!nextRule) return;
+    setFeeSettings((prev) => ({ ...prev, sponsorRules: [...prev.sponsorRules, nextRule] }));
+    setSponsorRuleDraft(EMPTY_SPONSOR_RULE);
+    showToast('Sponsor rule added', 'success');
   };
 
-  const handleEditRange = (index) => {
-    const range = feeSettings.deliveryFeeRanges[index];
-    setNewRange({
-      min: toInputValue(range?.min),
-      max: toInputValue(range?.max),
-      fee: toInputValue(range?.fee),
+  const handleEditSponsorRule = (index) => {
+    const rule = feeSettings.sponsorRules[index];
+    if (!rule) return;
+    setEditingSponsorRuleIndex(index);
+    setSponsorRuleDraft({
+      minOrderAmount: toInputValue(rule.minOrderAmount),
+      maxOrderAmount: toInputValue(rule.maxOrderAmount),
+      maxDistanceKm: toInputValue(rule.maxDistanceKm),
+      sponsorType: rule.sponsorType || 'USER_FULL',
+      sponsoredKm: toInputValue(rule.sponsoredKm),
     });
-    setEditingRangeIndex(index);
   };
 
-  const handleDeleteRange = (index) => {
+  const handleSaveSponsorRule = () => {
+    const nextRule = validateSponsorRuleDraft();
+    if (!nextRule) return;
     setFeeSettings((prev) => ({
       ...prev,
-      deliveryFeeRanges: prev.deliveryFeeRanges.filter((_, idx) => idx !== index),
+      sponsorRules: prev.sponsorRules.map((rule, index) => (index === editingSponsorRuleIndex ? nextRule : rule)),
     }));
-    if (editingRangeIndex === index) {
-      setNewRange({ min: '', max: '', fee: '' });
-      setEditingRangeIndex(null);
+    setEditingSponsorRuleIndex(null);
+    setSponsorRuleDraft(EMPTY_SPONSOR_RULE);
+    showToast('Sponsor rule updated', 'success');
+  };
+
+  const handleDeleteSponsorRule = (index) => {
+    setFeeSettings((prev) => ({
+      ...prev,
+      sponsorRules: prev.sponsorRules.filter((_, idx) => idx !== index),
+    }));
+    if (editingSponsorRuleIndex === index) {
+      setEditingSponsorRuleIndex(null);
+      setSponsorRuleDraft(EMPTY_SPONSOR_RULE);
     }
   };
 
-  const handleEditRule = (rule) => {
-    const isUnlimited = rule.maxDistance === null || rule.maxDistance === undefined;
-    setEditingRuleId(rule._id);
-    setRuleForm({
-      name: rule.name || '',
-      minDistance: toInputValue(rule.minDistance),
-      maxDistance: isUnlimited ? '' : toInputValue(rule.maxDistance),
-      maxDistanceUnlimited: isUnlimited,
-      commissionPerKm: toInputValue(rule.commissionPerKm),
-      basePayout: toInputValue(rule.basePayout),
-    });
-  };
-
-  const handleSaveRule = async () => {
-    const minDistance = Number(ruleForm.minDistance);
-    const maxDistance =
-      ruleForm.maxDistanceUnlimited || ruleForm.maxDistance === ''
-        ? null
-        : Number(ruleForm.maxDistance);
-    const commissionPerKm = Number(ruleForm.commissionPerKm);
-    const basePayout = Number(ruleForm.basePayout);
-
-    if (![minDistance, commissionPerKm, basePayout].every(Number.isFinite)) {
-      showToast('Please fill all required commission rule fields', 'error');
-      return;
-    }
-
-    try {
-      setSavingRule(true);
-      const payload = {
-        name: ruleForm.name.trim() || `Base (${minDistance}${maxDistance === null ? '+' : `-${maxDistance}`} km)`,
-        minDistance,
-        maxDistance,
-        commissionPerKm,
-        basePayout,
-        status: true,
-      };
-
-      if (editingRuleId) {
-        await adminApi.updateDeliveryCommissionRule(editingRuleId, payload);
-        showToast('Commission rule updated successfully', 'success');
-      } else {
-        await adminApi.createDeliveryCommissionRule(payload);
-        showToast('Commission rule created successfully', 'success');
-      }
-
-      resetRuleForm();
-      await loadRules();
-    } catch (error) {
-      console.error('Failed to save quick delivery commission rule', error);
-      showToast(error?.response?.data?.message || 'Failed to save commission rule', 'error');
-    } finally {
-      setSavingRule(false);
-    }
-  };
-
-  const handleDeleteRule = async (ruleId) => {
-    try {
-      await adminApi.deleteDeliveryCommissionRule(ruleId);
-      setRules((prev) => prev.filter((rule) => rule._id !== ruleId));
-      if (editingRuleId === ruleId) resetRuleForm();
-      showToast('Commission rule deleted successfully', 'success');
-    } catch (error) {
-      console.error('Failed to delete quick delivery commission rule', error);
-      showToast(error?.response?.data?.message || 'Failed to delete commission rule', 'error');
-    }
-  };
-
-  const handleToggleRuleStatus = async (rule) => {
-    try {
-      await adminApi.toggleDeliveryCommissionRuleStatus(rule._id, !rule.status);
-      setRules((prev) =>
-        prev.map((item) =>
-          item._id === rule._id ? { ...item, status: !rule.status } : item,
-        ),
-      );
-      showToast('Commission rule status updated', 'success');
-    } catch (error) {
-      console.error('Failed to toggle quick delivery commission rule', error);
-      showToast(error?.response?.data?.message || 'Failed to update status', 'error');
-    }
+  const handleCancelSponsorRuleEdit = () => {
+    setEditingSponsorRuleIndex(null);
+    setSponsorRuleDraft(EMPTY_SPONSOR_RULE);
   };
 
   return (
@@ -297,11 +216,11 @@ export default function BillingCharges() {
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-              <Settings className="h-5 w-5 text-emerald-600" />
+              <Settings className="h-5 w-5 text-[#6412c6]" />
               Fee Settings
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Set delivery fee, platform fee, GST, and return commission based on order value.
+              Distance-based delivery pricing, sponsor rules, platform fee, and GST — same model as Food's fee settings.
             </p>
           </div>
           <button
@@ -309,7 +228,7 @@ export default function BillingCharges() {
             disabled={loading || savingFeeSettings}
             className={cn(
               'inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold text-white',
-              savingFeeSettings ? 'bg-emerald-400' : 'bg-emerald-600 hover:bg-emerald-700',
+              savingFeeSettings ? 'bg-[#9359d7]' : 'bg-[#6412c6] hover:bg-[#550fa8]',
             )}
           >
             {savingFeeSettings ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -319,311 +238,243 @@ export default function BillingCharges() {
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#6412c6]" />
           </div>
         ) : (
           <div className="space-y-8 p-6">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-              {[
-                ['deliveryFee', 'Default Delivery Fee'],
-                ['freeDeliveryThreshold', 'Free Delivery Threshold'],
-                ['platformFee', 'Platform Fee'],
-                ['gstRate', 'GST Rate (%)'],
-              ].map(([field, label]) => (
-                <label key={field} className="space-y-2">
-                  <span className="text-sm font-semibold text-slate-700">{label}</span>
+            <div className="rounded-3xl border border-slate-200 p-5">
+              <div className="mb-4 flex items-center gap-2">
+                <Truck className="h-5 w-5 text-[#6412c6]" />
+                <h3 className="text-base font-bold text-slate-900">Base Delivery Config</h3>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Base Distance (KM)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={feeSettings.baseDistanceKm}
+                    onChange={(e) => setFeeSettings((prev) => ({ ...prev, baseDistanceKm: e.target.value }))}
+                    placeholder="3"
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#6412c6]"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Base Delivery Fee (Rs)</span>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
-                    value={feeSettings[field]}
-                    onChange={(e) =>
-                      setFeeSettings((prev) => ({ ...prev, [field]: e.target.value }))
-                    }
-                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
+                    value={feeSettings.baseDeliveryFee}
+                    onChange={(e) => setFeeSettings((prev) => ({ ...prev, baseDeliveryFee: e.target.value }))}
+                    placeholder="25"
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#6412c6]"
                   />
                 </label>
-              ))}
+                <label className="space-y-2">
+                  <span className="text-sm font-semibold text-slate-700">Per KM Charge (Rs)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={feeSettings.perKmCharge}
+                    onChange={(e) => setFeeSettings((prev) => ({ ...prev, perKmCharge: e.target.value }))}
+                    placeholder="10"
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#6412c6]"
+                  />
+                </label>
+              </div>
             </div>
 
-            <label className="block max-w-sm space-y-2">
-              <span className="text-sm font-semibold text-slate-700">Return Delivery Commission</span>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={feeSettings.returnDeliveryCommission}
-                onChange={(e) =>
-                  setFeeSettings((prev) => ({
-                    ...prev,
-                    returnDeliveryCommission: e.target.value,
-                  }))
-                }
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
-              />
-            </label>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-slate-700">Platform Fee (Rs)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={feeSettings.platformFee}
+                  onChange={(e) => setFeeSettings((prev) => ({ ...prev, platformFee: e.target.value }))}
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#6412c6]"
+                />
+              </label>
+              <label className="space-y-2">
+                <span className="text-sm font-semibold text-slate-700">GST Rate (%)</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={feeSettings.gstRate}
+                  onChange={(e) => setFeeSettings((prev) => ({ ...prev, gstRate: e.target.value }))}
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#6412c6]"
+                />
+              </label>
+            </div>
 
             <div className="rounded-3xl border border-slate-200 p-5">
-              <div className="mb-4">
-                <h3 className="text-base font-bold text-slate-900">Delivery Fee Ranges</h3>
+              <div className="mb-2">
+                <h3 className="text-base font-bold text-slate-900">Dynamic Delivery Sponsor Rules</h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Set delivery fee based on order value ranges, similar to food fee settings.
+                  Decide who pays the delivery fee — the customer, the seller, or a split — based on order value and distance.
+                  If no rule matches, the default is <strong className="text-slate-700">USER_FULL</strong>.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={newRange.min}
-                  onChange={(e) => setNewRange((prev) => ({ ...prev, min: e.target.value }))}
-                  placeholder="Min order"
-                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={newRange.max}
-                  onChange={(e) => setNewRange((prev) => ({ ...prev, max: e.target.value }))}
-                  placeholder="Max order"
-                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
-                />
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={newRange.fee}
-                  onChange={(e) => setNewRange((prev) => ({ ...prev, fee: e.target.value }))}
-                  placeholder="Delivery fee"
-                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-emerald-500"
-                />
-                <button
-                  onClick={handleAddOrUpdateRange}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-slate-800"
-                >
-                  <Plus className="h-4 w-4" />
-                  {editingRangeIndex !== null ? 'Update Range' : 'Add Range'}
-                </button>
-              </div>
-
-              <div className="mt-5 overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 text-left text-slate-500">
-                      <th className="px-3 py-3 font-semibold">Min</th>
-                      <th className="px-3 py-3 font-semibold">Max</th>
-                      <th className="px-3 py-3 font-semibold">Fee</th>
-                      <th className="px-3 py-3 font-semibold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {feeSettings.deliveryFeeRanges.length === 0 ? (
-                      <tr>
-                        <td colSpan="4" className="px-3 py-8 text-center text-slate-400">
-                          No delivery fee ranges configured.
-                        </td>
+              {feeSettings.sponsorRules.length > 0 && (
+                <div className="mb-5 mt-4 overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-100 text-left text-slate-500">
+                        <th className="px-3 py-3 font-semibold">Min Order</th>
+                        <th className="px-3 py-3 font-semibold">Max Order</th>
+                        <th className="px-3 py-3 font-semibold">Max Distance</th>
+                        <th className="px-3 py-3 font-semibold">Sponsor Type</th>
+                        <th className="px-3 py-3 font-semibold">Sponsored KM</th>
+                        <th className="px-3 py-3 text-center font-semibold">Actions</th>
                       </tr>
-                    ) : (
-                      feeSettings.deliveryFeeRanges.map((range, index) => (
-                        <tr key={`${range.min}-${range.max}-${index}`} className="border-b border-slate-50">
-                          <td className="px-3 py-3">Rs {range.min}</td>
-                          <td className="px-3 py-3">Rs {range.max}</td>
-                          <td className="px-3 py-3 font-semibold text-emerald-700">Rs {range.fee}</td>
+                    </thead>
+                    <tbody>
+                      {feeSettings.sponsorRules.map((rule, index) => (
+                        <tr key={`${rule.sponsorType}-${index}`} className="border-b border-slate-50">
+                          <td className="px-3 py-3">Rs {Number(rule.minOrderAmount || 0).toFixed(2)}</td>
                           <td className="px-3 py-3">
-                            <div className="flex items-center gap-2">
+                            {rule.maxOrderAmount == null ? 'No limit' : `Rs ${Number(rule.maxOrderAmount).toFixed(2)}`}
+                          </td>
+                          <td className="px-3 py-3">{Number(rule.maxDistanceKm || 0).toFixed(2)} KM</td>
+                          <td className="px-3 py-3">{rule.sponsorType}</td>
+                          <td className="px-3 py-3">
+                            {rule.sponsorType === 'SPLIT' ? `${Number(rule.sponsoredKm || 0).toFixed(2)} KM` : '--'}
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="flex items-center justify-center gap-2">
                               <button
-                                onClick={() => handleEditRange(index)}
-                                className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
+                                onClick={() => handleEditSponsorRule(index)}
+                                className="rounded-xl border border-slate-200 p-2 text-[#6412c6] hover:bg-[#f7f3fc]"
+                                title="Edit"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleDeleteRange(index)}
+                                onClick={() => handleDeleteSponsorRule(index)}
                                 className="rounded-xl border border-rose-200 p-2 text-rose-600 hover:bg-rose-50"
+                                title="Delete"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
                           </td>
                         </tr>
-                      ))
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Plus className="h-4 w-4 text-[#6412c6]" />
+                  <h4 className="text-sm font-semibold text-slate-700">
+                    {editingSponsorRuleIndex === null ? 'Add Sponsor Rule' : 'Edit Sponsor Rule'}
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+                  <label className="space-y-1">
+                    <span className="block text-xs font-medium text-slate-600">Min Order Amount (Rs)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={sponsorRuleDraft.minOrderAmount}
+                      onChange={(e) => setSponsorRuleDraft((prev) => ({ ...prev, minOrderAmount: e.target.value }))}
+                      placeholder="200"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#6412c6]"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="block text-xs font-medium text-slate-600">Max Order Amount (optional)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={sponsorRuleDraft.maxOrderAmount}
+                      onChange={(e) => setSponsorRuleDraft((prev) => ({ ...prev, maxOrderAmount: e.target.value }))}
+                      placeholder="Leave empty"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#6412c6]"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="block text-xs font-medium text-slate-600">Max Distance (KM)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={sponsorRuleDraft.maxDistanceKm}
+                      onChange={(e) => setSponsorRuleDraft((prev) => ({ ...prev, maxDistanceKm: e.target.value }))}
+                      placeholder="7"
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#6412c6]"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="block text-xs font-medium text-slate-600">Sponsor Type</span>
+                    <select
+                      value={sponsorRuleDraft.sponsorType}
+                      onChange={(e) => setSponsorRuleDraft((prev) => ({ ...prev, sponsorType: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#6412c6]"
+                    >
+                      <option value="USER_FULL">USER_FULL</option>
+                      <option value="SELLER_FULL">SELLER_FULL</option>
+                      <option value="SPLIT">SPLIT</option>
+                    </select>
+                  </label>
+                  <label className="space-y-1">
+                    <span className="block text-xs font-medium text-slate-600">Sponsored KM</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={sponsorRuleDraft.sponsoredKm}
+                      onChange={(e) => setSponsorRuleDraft((prev) => ({ ...prev, sponsoredKm: e.target.value }))}
+                      disabled={sponsorRuleDraft.sponsorType !== 'SPLIT'}
+                      placeholder={sponsorRuleDraft.sponsorType === 'SPLIT' ? '3' : 'Only for split'}
+                      className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#6412c6] disabled:bg-slate-100"
+                    />
+                  </label>
+                </div>
+                <div className="mt-4 flex justify-end gap-3">
+                  {editingSponsorRuleIndex !== null && (
+                    <button
+                      onClick={handleCancelSponsorRuleEdit}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      <X className="h-4 w-4" />
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    onClick={editingSponsorRuleIndex === null ? handleAddSponsorRule : handleSaveSponsorRule}
+                    className="inline-flex items-center gap-2 rounded-2xl bg-[#6412c6] px-4 py-2 text-sm font-bold text-white hover:bg-[#550fa8]"
+                  >
+                    {editingSponsorRuleIndex === null ? (
+                      <>
+                        <Plus className="h-4 w-4" />
+                        Add Rule
+                      </>
+                    ) : (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Save Rule
+                      </>
                     )}
-                  </tbody>
-                </table>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
       </Card>
 
-      <Card className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-6 py-5">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-            <Truck className="h-5 w-5 text-primary" />
-            Delivery Boy Commission Rules
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Slab setup similar to <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">/ecs/food/delivery-boy-commission</code>, but isolated for Quick Commerce.
-          </p>
-        </div>
-
-        <div className="space-y-6 p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
-            <input
-              type="text"
-              value={ruleForm.name}
-              onChange={(e) => setRuleForm((prev) => ({ ...prev, name: e.target.value }))}
-              placeholder="Rule name"
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary xl:col-span-2"
-            />
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={ruleForm.minDistance}
-              onChange={(e) => setRuleForm((prev) => ({ ...prev, minDistance: e.target.value }))}
-              placeholder="Min km"
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"
-            />
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={ruleForm.maxDistance}
-              disabled={ruleForm.maxDistanceUnlimited}
-              onChange={(e) => setRuleForm((prev) => ({ ...prev, maxDistance: e.target.value }))}
-              placeholder="Max km"
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary disabled:bg-slate-50"
-            />
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={ruleForm.commissionPerKm}
-              onChange={(e) => setRuleForm((prev) => ({ ...prev, commissionPerKm: e.target.value }))}
-              placeholder="Commission/km"
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"
-            />
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={ruleForm.basePayout}
-              onChange={(e) => setRuleForm((prev) => ({ ...prev, basePayout: e.target.value }))}
-              placeholder="Base payout"
-              className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary"
-            />
-          </div>
-
-          <label className="flex items-center gap-2 text-sm text-slate-600">
-            <input
-              type="checkbox"
-              checked={ruleForm.maxDistanceUnlimited}
-              onChange={(e) =>
-                setRuleForm((prev) => ({
-                  ...prev,
-                  maxDistanceUnlimited: e.target.checked,
-                  maxDistance: e.target.checked ? '' : prev.maxDistance,
-                }))
-              }
-            />
-            Max distance unlimited
-          </label>
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={handleSaveRule}
-              disabled={savingRule}
-              className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-white hover:bg-primary-hover"
-            >
-              {savingRule ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {editingRuleId ? 'Update Rule' : 'Add Rule'}
-            </button>
-            {editingRuleId ? (
-              <button
-                onClick={resetRuleForm}
-                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                Cancel Edit
-              </button>
-            ) : null}
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 text-left text-slate-500">
-                  <th className="px-3 py-3 font-semibold">Rule</th>
-                  <th className="px-3 py-3 font-semibold">Distance slab</th>
-                  <th className="px-3 py-3 font-semibold">Commission/km</th>
-                  <th className="px-3 py-3 font-semibold">Base payout</th>
-                  <th className="px-3 py-3 font-semibold">Status</th>
-                  <th className="px-3 py-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rulesLoading ? (
-                  <tr>
-                    <td colSpan="6" className="px-3 py-8 text-center">
-                      <Loader2 className="mx-auto h-5 w-5 animate-spin text-primary" />
-                    </td>
-                  </tr>
-                ) : sortedRules.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="px-3 py-8 text-center text-slate-400">
-                      No delivery commission rules configured.
-                    </td>
-                  </tr>
-                ) : (
-                  sortedRules.map((rule) => (
-                    <tr key={rule._id} className="border-b border-slate-50">
-                      <td className="px-3 py-3 font-medium text-slate-900">{rule.name || '-'}</td>
-                      <td className="px-3 py-3">
-                        {rule.maxDistance === null || rule.maxDistance === undefined
-                          ? `${rule.minDistance}+ km`
-                          : `${rule.minDistance}-${rule.maxDistance} km`}
-                      </td>
-                      <td className="px-3 py-3 font-semibold text-orange-700">Rs {rule.commissionPerKm}</td>
-                      <td className="px-3 py-3 font-semibold text-emerald-700">Rs {rule.basePayout}</td>
-                      <td className="px-3 py-3">
-                        <button
-                          onClick={() => handleToggleRuleStatus(rule)}
-                          className={cn(
-                            'inline-flex rounded-full px-3 py-1 text-xs font-bold',
-                            rule.status
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-slate-100 text-slate-500',
-                          )}
-                        >
-                          {rule.status ? 'Active' : 'Inactive'}
-                        </button>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleEditRule(rule)}
-                            className="rounded-xl border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRule(rule._id)}
-                            className="rounded-xl border border-rose-200 p-2 text-rose-600 hover:bg-rose-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </Card>
     </div>
   );
 }

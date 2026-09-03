@@ -211,7 +211,7 @@ export default function DeliveryEarnings() {
                 <p className="text-sm text-slate-600 mb-1">Total Delivery Boys</p>
                 <p className="text-2xl font-bold text-slate-900">{summary.totalDeliveryPartners || 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-primary" />
               </div>
             </div>
@@ -233,7 +233,7 @@ export default function DeliveryEarnings() {
                 <p className="text-sm text-slate-600 mb-1">Total Orders</p>
                 <p className="text-2xl font-bold text-slate-900">{summary.totalOrders || 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
                 <FileText className="w-6 h-6 text-primary" />
               </div>
             </div>

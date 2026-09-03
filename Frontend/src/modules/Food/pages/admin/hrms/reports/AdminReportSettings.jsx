@@ -77,9 +77,9 @@ export default function AdminReportSettings() {
         handleChange('categories', newCats);
     };
 
-    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
+    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
 
-    const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400";
+    const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]";
     const labelClass = "block text-xs font-semibold text-slate-500 mb-1.5";
 
     return (
@@ -92,7 +92,7 @@ export default function AdminReportSettings() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full sm:w-auto bg-[#6412c6] hover:bg-[#550fa8] text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Changes
@@ -107,21 +107,21 @@ export default function AdminReportSettings() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                            <input type="checkbox" checked={formData.requireMetrics} onChange={e => handleChange('requireMetrics', e.target.checked)} className="w-4 h-4 text-orange-500 rounded border-slate-300 focus:ring-orange-500" />
+                            <input type="checkbox" checked={formData.requireMetrics} onChange={e => handleChange('requireMetrics', e.target.checked)} className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-slate-800">Require Performance Metrics</span>
                                 <span className="text-xs text-slate-500">Show numeric input fields for visits, calls, etc.</span>
                             </div>
                         </label>
                         <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                            <input type="checkbox" checked={formData.requireTomorrowPlan} onChange={e => handleChange('requireTomorrowPlan', e.target.checked)} className="w-4 h-4 text-orange-500 rounded border-slate-300 focus:ring-orange-500" />
+                            <input type="checkbox" checked={formData.requireTomorrowPlan} onChange={e => handleChange('requireTomorrowPlan', e.target.checked)} className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-slate-800">Require Tomorrow's Plan</span>
                                 <span className="text-xs text-slate-500">Make the tomorrow plan field mandatory to submit.</span>
                             </div>
                         </label>
                         <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                            <input type="checkbox" checked={formData.requireAttachments} onChange={e => handleChange('requireAttachments', e.target.checked)} className="w-4 h-4 text-orange-500 rounded border-slate-300 focus:ring-orange-500" />
+                            <input type="checkbox" checked={formData.requireAttachments} onChange={e => handleChange('requireAttachments', e.target.checked)} className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-slate-800">Require Attachments</span>
                                 <span className="text-xs text-slate-500">Mandate at least one uploaded file/image.</span>
@@ -150,7 +150,7 @@ export default function AdminReportSettings() {
                     <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider mb-4 border-b pb-2">Task Categories</h3>
                     <div className="flex flex-wrap gap-2 mb-4">
                         {formData.categories.map((cat, i) => (
-                            <div key={i} className="flex items-center gap-1.5 bg-orange-50 border border-orange-100 text-orange-700 px-3 py-1.5 rounded-lg text-sm font-medium">
+                            <div key={i} className="flex items-center gap-1.5 bg-[#f7f3fc] border border-[#f0e7f9] text-[#460d8b] px-3 py-1.5 rounded-lg text-sm font-medium">
                                 <span>{cat}</span>
                                 <button type="button" onClick={() => removeCategory(i)} className="ml-1 hover:text-red-500"><X className="w-3 h-3" /></button>
                             </div>

@@ -125,13 +125,13 @@ export default function RestaurantVATReport() {
               <button 
                 onClick={handleFilterApply}
                 className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary transition-all flex items-center gap-2 relative ${
-                  activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                  activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
                 }`}
               >
                 <Filter className="w-4 h-4" />
                 Filter
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -151,7 +151,7 @@ export default function RestaurantVATReport() {
                 <p className="text-3xl font-bold text-primary">{emptyRestaurantVATStats.totalOrders}</p>
                 <p className="text-lg font-semibold text-primary mt-1">{emptyRestaurantVATStats.totalOrders}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-[#f0e7f9] flex items-center justify-center flex-shrink-0">
                 <ClipboardList className="w-7 h-7 text-primary" />
               </div>
             </div>
@@ -181,7 +181,7 @@ export default function RestaurantVATReport() {
                 <p className="text-3xl font-bold text-red-600">{emptyRestaurantVATStats.totalTaxAmount}</p>
                 <p className="text-lg font-semibold text-red-600 mt-1">{emptyRestaurantVATStats.totalTaxAmount}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-[#f0e7f9] flex items-center justify-center flex-shrink-0">
                 <FileText className="w-7 h-7 text-primary" />
               </div>
             </div>
@@ -302,7 +302,7 @@ export default function RestaurantVATReport() {
                         <span className="text-sm font-medium text-slate-900">{report.taxAmount}</span>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <button className="text-primary hover:text-orange-800 text-sm font-medium">
+                        <button className="text-primary hover:text-[#370a6d] text-sm font-medium">
                           View
                         </button>
                       </td>
@@ -332,7 +332,7 @@ export default function RestaurantVATReport() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

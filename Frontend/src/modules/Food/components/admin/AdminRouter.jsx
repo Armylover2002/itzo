@@ -60,7 +60,6 @@ const Bonus = lazy(() => import("@food/pages/admin/wallet/Bonus"));
 const LoyaltyPointReport = lazy(() => import("@food/pages/admin/loyalty-point/Report"));
 const SubscribedMailList = lazy(() => import("@food/pages/admin/SubscribedMailList"));
 // Deliveryman Management
-const DeliveryBoyCommission = lazy(() => import("@food/pages/admin/DeliveryBoyCommission"));
 const DeliveryCashLimit = lazy(() => import("@food/pages/admin/DeliveryCashLimit"));
 const CashLimitSettlement = lazy(() => import("@food/pages/admin/CashLimitSettlement"));
 const CashPayRequests = lazy(() => import("@food/pages/admin/CashPayRequests"));
@@ -344,8 +343,6 @@ export default function AdminRouter() {
             <Route path="wallet/bonus" element={<Bonus />} />
             <Route path="loyalty-point/report" element={<LoyaltyPointReport />} />
             <Route path="subscribed-mail-list" element={<SubscribedMailList />} />
-
-            <Route path="delivery-boy-commission" element={<DeliveryBoyCommission />} />
             <Route path="delivery-cash-limit" element={<DeliveryCashLimit />} />
             <Route path="cash-limit-settlement" element={<CashLimitSettlement />} />
             <Route path="cash-pay-requests" element={<CashPayRequests />} />

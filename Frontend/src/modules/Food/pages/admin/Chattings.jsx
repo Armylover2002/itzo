@@ -82,7 +82,7 @@ export default function Chattings() {
                         key={conversation.id}
                         onClick={() => setSelectedConversation(conversation)}
                         className={`w-full p-4 text-left hover:bg-slate-50 transition-colors ${
-                          selectedConversation?.id === conversation.id ? "bg-orange-50" : ""
+                          selectedConversation?.id === conversation.id ? "bg-[#f7f3fc]" : ""
                         }`}
                       >
                         <div className="flex items-center gap-3">

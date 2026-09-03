@@ -317,7 +317,7 @@ const ProductManagement = () => {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'All Items', val: stats.total, icon: HiOutlineCube, color: 'text-primary', bg: 'bg-orange-50' },
+                    { label: 'All Items', val: stats.total, icon: HiOutlineCube, color: 'text-primary', bg: 'bg-[#f7f3fc]' },
                     { label: 'Active Items', val: stats.active, icon: HiOutlineCheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                     { label: 'Low Stock', val: stats.lowStock, icon: HiOutlineExclamationCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
                     { label: 'Out of Stock', val: stats.outOfStock, icon: HiOutlineArchiveBox, color: 'text-rose-600', bg: 'bg-rose-50' }
@@ -446,7 +446,7 @@ const ProductManagement = () => {
 
                                     {/* Variant Column */}
                                     <td
-                                        className="px-6 py-4 cursor-pointer hover:bg-orange-50/50 transition-colors group/variant"
+                                        className="px-6 py-4 cursor-pointer hover:bg-[#f7f3fc]/50 transition-colors group/variant"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setViewingVariants(p);
@@ -456,7 +456,7 @@ const ProductManagement = () => {
                                         {p.variants && p.variants.length > 0 ? (
                                             <div className="flex items-center gap-1.5">
                                                 <HiOutlineSwatch className="h-3.5 w-3.5 text-primary group-hover/variant:scale-110 transition-transform" />
-                                                <span className="text-xs font-bold text-orange-700 underline underline-offset-4 decoration-orange-200 group-hover/variant:decoration-orange-500">{p.variants.length} Variant{p.variants.length > 1 ? 's' : ''}</span>
+                                                <span className="text-xs font-bold text-[#460d8b] underline underline-offset-4 decoration-[#d8c4f1] group-hover/variant:decoration-[#6412c6]">{p.variants.length} Variant{p.variants.length > 1 ? 's' : ''}</span>
                                             </div>
                                         ) : (
                                             <span className="text-xs font-semibold text-slate-400">No variants</span>
@@ -617,13 +617,13 @@ const ProductManagement = () => {
                                                 <option value="inactive">DRAFT</option>
                                             </select>
                                         </div>
-                                        <div className="mt-3 p-4 bg-orange-50 rounded-2xl border border-orange-100 flex items-center justify-between">
+                                        <div className="mt-3 p-4 bg-[#f7f3fc] rounded-2xl border border-[#f0e7f9] flex items-center justify-between">
                                             <p className="text-[9px] font-bold text-primary uppercase tracking-widest">Featured</p>
                                             <input
                                                 type="checkbox"
                                                 checked={formData.isFeatured}
                                                 onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
-                                                className="h-4 w-4 rounded border-orange-300 text-primary focus:ring-primary"
+                                                className="h-4 w-4 rounded border-[#c1a0e8] text-primary focus:ring-primary"
                                             />
                                         </div>
                                     </div>

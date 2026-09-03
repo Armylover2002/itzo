@@ -66,7 +66,7 @@ export default function SupportRequests() {
                         placeholder="Search ticket ID or subject..."
                         value={filters.search}
                         onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]"
                     />
                 </div>
                 
@@ -75,7 +75,7 @@ export default function SupportRequests() {
                     <select
                         value={filters.status}
                         onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
-                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
+                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
                     >
                         <option value="All">All Statuses</option>
                         <option value="Open">Open</option>
@@ -88,7 +88,7 @@ export default function SupportRequests() {
                     <select
                         value={filters.priority}
                         onChange={(e) => setFilters(f => ({ ...f, priority: e.target.value }))}
-                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
+                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
                     >
                         <option value="All">All Priorities</option>
                         <option value="Low">Low</option>
@@ -116,7 +116,7 @@ export default function SupportRequests() {
                             {loading ? (
                                 <tr>
                                     <td colSpan="5" className="px-5 py-10 text-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6] mx-auto" />
                                     </td>
                                 </tr>
                             ) : tickets.length === 0 ? (
@@ -128,7 +128,7 @@ export default function SupportRequests() {
                                 </tr>
                             ) : (
                                 tickets.map(ticket => (
-                                    <tr key={ticket._id} className="hover:bg-orange-50/30 transition-colors group">
+                                    <tr key={ticket._id} className="hover:bg-[#f7f3fc]/30 transition-colors group">
                                         <td className="px-5 py-4 align-top">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export default function SupportRequests() {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span className="font-semibold text-slate-800 line-clamp-1 group-hover:text-orange-600 transition-colors">{ticket.subject}</span>
+                                                <span className="font-semibold text-slate-800 line-clamp-1 group-hover:text-[#550fa8] transition-colors">{ticket.subject}</span>
                                                 <span className="text-xs text-slate-400">{new Date(ticket.createdAt).toLocaleDateString()}</span>
                                             </div>
                                         </td>
@@ -156,7 +156,7 @@ export default function SupportRequests() {
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded w-max uppercase ${
                                                     ticket.priority === 'Urgent' ? 'bg-red-100 text-red-600' :
                                                     ticket.priority === 'High' ? 'bg-amber-100 text-amber-600' :
-                                                    ticket.priority === 'Medium' ? 'bg-orange-100 text-orange-600' :
+                                                    ticket.priority === 'Medium' ? 'bg-[#f0e7f9] text-[#550fa8]' :
                                                     'bg-slate-100 text-slate-600'
                                                 }`}>
                                                     {ticket.priority}
@@ -165,7 +165,7 @@ export default function SupportRequests() {
                                         </td>
                                         <td className="px-5 py-4 align-top">
                                             <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase ${
-                                                ticket.status === 'Open' ? 'bg-orange-50 text-orange-600 border border-orange-200' :
+                                                ticket.status === 'Open' ? 'bg-[#f7f3fc] text-[#550fa8] border border-[#d8c4f1]' :
                                                 ticket.status === 'In Progress' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
                                                 ticket.status === 'Waiting for Employee' ? 'bg-amber-50 text-amber-600 border border-amber-200' :
                                                 ticket.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
@@ -177,7 +177,7 @@ export default function SupportRequests() {
                                         <td className="px-5 py-4 align-top text-right">
                                             <button
                                                 onClick={() => navigate(`/ecs/hrms/support/requests/${ticket._id}`)}
-                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-300 px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
+                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-[#550fa8] hover:border-[#c1a0e8] px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
                                             >
                                                 View <ChevronRight className="w-3.5 h-3.5" />
                                             </button>

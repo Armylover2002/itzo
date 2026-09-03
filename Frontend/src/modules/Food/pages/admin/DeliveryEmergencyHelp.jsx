@@ -162,7 +162,7 @@ export default function DeliveryEmergencyHelp() {
       label: "Accident Helpline",
       placeholder: "112 or 1073",
       icon: Ambulance,
-      iconColor: "text-orange-500",
+      iconColor: "text-[#6412c6]",
       description: "Road accident helpline — 3 or 4 digits"
     },
     {
@@ -213,10 +213,10 @@ export default function DeliveryEmergencyHelp() {
           </div>
 
           {/* Info Card */}
-          <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="mb-6 p-4 bg-[#f7f3fc] border border-[#d8c4f1] rounded-lg">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-              <div className="text-sm text-orange-800">
+              <div className="text-sm text-[#370a6d]">
                 <p className="font-semibold mb-1">Important Information</p>
                 <p>
                   These phone numbers will be displayed to delivery partners in the emergency help section. 

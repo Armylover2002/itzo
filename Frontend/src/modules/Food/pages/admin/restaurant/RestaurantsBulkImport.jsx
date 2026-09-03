@@ -94,7 +94,7 @@ export default function RestaurantsBulkImport() {
               </div>
             </div>
           </div>
-          <div className="p-6 bg-orange-50 rounded-lg">
+          <div className="p-6 bg-[#f7f3fc] rounded-lg">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-12 h-12 text-primary" />
               <ArrowRight className="w-8 h-8 text-primary" />
@@ -109,7 +109,7 @@ export default function RestaurantsBulkImport() {
         <div className="flex items-start gap-6">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-lg">
+              <div className="w-10 h-10 rounded-full bg-[#6412c6] text-white flex items-center justify-center font-bold text-lg">
                 3
               </div>
               <h2 className="text-xl font-bold text-slate-900">Validate Data And Complete Import</h2>
@@ -121,8 +121,8 @@ export default function RestaurantsBulkImport() {
               <p>• You can upload your restaurant images in restaurant folder from gallery and copy image's path.</p>
             </div>
           </div>
-          <div className="p-6 bg-orange-50 rounded-lg">
-            <Upload className="w-16 h-16 text-orange-600" />
+          <div className="p-6 bg-[#f7f3fc] rounded-lg">
+            <Upload className="w-16 h-16 text-[#550fa8]" />
           </div>
         </div>
       </div>

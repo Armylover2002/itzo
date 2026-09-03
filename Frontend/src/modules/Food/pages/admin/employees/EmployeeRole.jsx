@@ -466,7 +466,7 @@ export default function EmployeeRole() {
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <div className="flex items-center justify-center gap-2">
                             <button
-                              className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                              className="p-1.5 rounded text-primary hover:bg-[#f7f3fc] transition-colors"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />
@@ -534,7 +534,7 @@ export default function EmployeeRole() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

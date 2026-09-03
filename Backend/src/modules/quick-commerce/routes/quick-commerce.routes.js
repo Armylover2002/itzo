@@ -96,14 +96,9 @@ import {
 } from "../controllers/adminCommission.controller.js";
 import { sellerProfileUpload } from "../seller/routes/seller.routes.js";
 import {
-  createDeliveryCommissionRule,
   createOrUpdateFeeSettings,
-  deleteDeliveryCommissionRule,
-  getDeliveryCommissionRules,
   getFeeSettings,
   getPublicBillingSettings,
-  toggleDeliveryCommissionRuleStatus,
-  updateDeliveryCommissionRule,
 } from "../controllers/billing.controller.js";
 import {
   geocodeAddress,
@@ -335,31 +330,6 @@ router.patch(
 );
 router.get("/admin/fee-settings", ...adminOnly, getFeeSettings);
 router.put("/admin/fee-settings", ...adminOnly, createOrUpdateFeeSettings);
-router.get(
-  "/admin/delivery/commission-rules",
-  ...adminOnly,
-  getDeliveryCommissionRules,
-);
-router.post(
-  "/admin/delivery/commission-rules",
-  ...adminOnly,
-  createDeliveryCommissionRule,
-);
-router.patch(
-  "/admin/delivery/commission-rules/:id",
-  ...adminOnly,
-  updateDeliveryCommissionRule,
-);
-router.delete(
-  "/admin/delivery/commission-rules/:id",
-  ...adminOnly,
-  deleteDeliveryCommissionRule,
-);
-router.patch(
-  "/admin/delivery/commission-rules/:id/status",
-  ...adminOnly,
-  toggleDeliveryCommissionRuleStatus,
-);
 
 // Admin Coupon Management
 router.get("/admin/coupons", ...adminOnly, getAdminCoupons);

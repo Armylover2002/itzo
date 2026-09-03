@@ -139,7 +139,7 @@ export default function SafetyEmergencyReports() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      unread: { label: 'Unread', className: 'bg-orange-100 text-orange-700' },
+      unread: { label: 'Unread', className: 'bg-[#f0e7f9] text-[#460d8b]' },
       read: { label: 'Read', className: 'bg-slate-100 text-slate-700' },
       resolved: { label: 'Resolved', className: 'bg-green-100 text-green-700' },
       urgent: { label: 'Urgent', className: 'bg-red-100 text-red-700' }
@@ -157,7 +157,7 @@ export default function SafetyEmergencyReports() {
     const priorityConfig = {
       low: { label: 'Low', className: 'bg-gray-100 text-gray-700' },
       medium: { label: 'Medium', className: 'bg-yellow-100 text-yellow-700' },
-      high: { label: 'High', className: 'bg-orange-100 text-orange-700' },
+      high: { label: 'High', className: 'bg-[#f0e7f9] text-[#460d8b]' },
       critical: { label: 'Critical', className: 'bg-red-100 text-red-700 font-bold' }
     }
     
@@ -297,8 +297,8 @@ export default function SafetyEmergencyReports() {
                         <div className="w-32 h-32 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center shadow-inner">
                           <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-md relative overflow-visible">
                             <Folder className="w-12 h-12 text-slate-400" />
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-3 bg-orange-500 rounded-t-md z-10"></div>
-                            <div className="absolute top-3 right-2 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center z-10">
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-3 bg-[#6412c6] rounded-t-md z-10"></div>
+                            <div className="absolute top-3 right-2 w-5 h-5 bg-[#6412c6] rounded-full flex items-center justify-center z-10">
                               <span className="text-white text-xs font-bold">!</span>
                             </div>
                           </div>
@@ -458,7 +458,7 @@ export default function SafetyEmergencyReports() {
               {/* User Information Section */}
               <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                  <div className="w-1 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+                  <div className="w-1 h-6 bg-gradient-to-b from-[#6412c6] to-[#550fa8] rounded-full"></div>
                   User Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -480,9 +480,9 @@ export default function SafetyEmergencyReports() {
               </div>
 
               {/* Emergency Report Section */}
-              <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 rounded-xl p-5 border border-red-200 dark:border-red-800">
+              <div className="bg-gradient-to-br from-red-50 to-[#f7f3fc] dark:from-red-900/20 dark:to-[#28074f]/20 rounded-xl p-5 border border-red-200 dark:border-red-800">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                  <div className="w-1 h-6 bg-gradient-to-b from-red-500 to-orange-600 rounded-full"></div>
+                  <div className="w-1 h-6 bg-gradient-to-b from-red-500 to-[#550fa8] rounded-full"></div>
                   Safety Emergency Report
                 </h3>
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-5 border border-slate-200 dark:border-slate-700 shadow-sm">

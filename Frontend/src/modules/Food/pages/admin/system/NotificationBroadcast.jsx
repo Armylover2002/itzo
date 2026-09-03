@@ -197,7 +197,7 @@ export default function NotificationBroadcast() {
     <div className="space-y-6">
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-primary flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-[#f7f3fc] text-primary flex items-center justify-center">
             <BellRing className="w-6 h-6" />
           </div>
           <div>
@@ -216,7 +216,7 @@ export default function NotificationBroadcast() {
                 value={form.title}
                 onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
                 placeholder="Enter notification title"
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-orange-100"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-[#f0e7f9]"
               />
             </label>
 
@@ -225,7 +225,7 @@ export default function NotificationBroadcast() {
               <select
                 value={form.targetType}
                 onChange={(event) => setForm((prev) => ({ ...prev, targetType: event.target.value }))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-orange-100"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-[#f0e7f9]"
               >
                 {TARGET_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -243,7 +243,7 @@ export default function NotificationBroadcast() {
               onChange={(event) => setForm((prev) => ({ ...prev, message: event.target.value }))}
               placeholder="Enter notification message"
               rows={5}
-              className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-orange-100 resize-y"
+              className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-[#f0e7f9] resize-y"
             />
           </label>
 

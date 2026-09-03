@@ -208,12 +208,12 @@ export default function Report() {
               </button>
               <button 
                 onClick={() => {}} 
-                className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all flex items-center gap-2 relative ${activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""}`}
+                className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-all flex items-center gap-2 relative ${activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""}`}
               >
                 <Filter className="w-4 h-4" />
                 Filter
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -244,14 +244,14 @@ export default function Report() {
             <p className="text-2xl font-bold text-red-900">{totalCredit.toFixed(3)}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl shadow-sm border border-orange-200 p-6">
+          <div className="bg-gradient-to-br from-[#f7f3fc] to-[#f0e7f9] rounded-xl shadow-sm border border-[#d8c4f1] p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-orange-800">Balance</h3>
-              <div className="w-10 h-10 rounded-lg bg-orange-200 flex items-center justify-center">
-                <Utensils className="w-5 h-5 text-orange-700" />
+              <h3 className="text-sm font-semibold text-[#370a6d]">Balance</h3>
+              <div className="w-10 h-10 rounded-lg bg-[#d8c4f1] flex items-center justify-center">
+                <Utensils className="w-5 h-5 text-[#460d8b]" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-orange-900">{balance}</p>
+            <p className="text-2xl font-bold text-[#28074f]">{balance}</p>
           </div>
         </div>
 
@@ -455,7 +455,7 @@ export default function Report() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

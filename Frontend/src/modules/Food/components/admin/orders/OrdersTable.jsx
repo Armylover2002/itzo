@@ -4,17 +4,17 @@ import { Eye, Printer, ArrowUpDown, Loader2, Check, X, Trash2 } from "lucide-rea
 const getStatusColor = (orderStatus) => {
   const colors = {
     "Delivered": "bg-emerald-100 text-emerald-700",
-    "Pending": "bg-orange-100 text-orange-700",
-    "Scheduled": "bg-orange-100 text-orange-700",
+    "Pending": "bg-[#f0e7f9] text-[#460d8b]",
+    "Scheduled": "bg-[#f0e7f9] text-[#460d8b]",
     "Accepted": "bg-green-100 text-green-700",
-    "Processing": "bg-orange-100 text-orange-700",
+    "Processing": "bg-[#f0e7f9] text-[#460d8b]",
     "Food On The Way": "bg-yellow-100 text-yellow-700",
     "Canceled": "bg-rose-100 text-rose-700",
     "Cancelled by Restaurant": "bg-red-100 text-red-700",
-    "Cancelled by User": "bg-orange-100 text-orange-700",
+    "Cancelled by User": "bg-[#f0e7f9] text-[#460d8b]",
     "Payment Failed": "bg-red-100 text-red-700",
-    "Refunded": "bg-orange-100 text-orange-700",
-    "Dine In": "bg-orange-100 text-orange-700",
+    "Refunded": "bg-[#f0e7f9] text-[#460d8b]",
+    "Dine In": "bg-[#f0e7f9] text-[#460d8b]",
     "Offline Payments": "bg-slate-100 text-slate-700",
   }
   return colors[orderStatus] || "bg-slate-100 text-slate-700"
@@ -29,7 +29,7 @@ const getPaymentStatusColor = (paymentStatus) => {
 
 const getOrderTypeColor = (orderType) => {
   if (orderType === "Mixed") return "bg-amber-100 text-amber-700"
-  if (orderType === "Quick") return "bg-orange-100 text-orange-700"
+  if (orderType === "Quick") return "bg-[#f0e7f9] text-[#460d8b]"
   return "bg-emerald-100 text-emerald-700"
 }
 
@@ -71,7 +71,7 @@ export default function OrdersTable({
         <div className="flex flex-col items-center justify-center py-20">
           <div className="w-32 h-32 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
             <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-md">
-              <span className="text-5xl text-orange-500 font-bold">!</span>
+              <span className="text-5xl text-[#6412c6] font-bold">!</span>
             </div>
           </div>
           <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
@@ -395,14 +395,14 @@ export default function OrdersTable({
                       )}
                       <button 
                         onClick={() => onViewOrder(order)}
-                        className="p-1.5 rounded text-orange-600 hover:bg-orange-50 transition-colors"
+                        className="p-1.5 rounded text-[#550fa8] hover:bg-[#f7f3fc] transition-colors"
                         title="View Details"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <button 
                         onClick={() => onPrintOrder(order)}
-                        className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                        className="p-1.5 rounded text-primary hover:bg-[#f7f3fc] transition-colors"
                         title="Print Order"
                       >
                         <Printer className="w-4 h-4" />
@@ -449,7 +449,7 @@ export default function OrdersTable({
                           {order.refundStatus === 'processed' || order.refundStatus === 'initiated' ? (
                             <span className={`px-3 py-1.5 rounded-md text-xs font-medium ${
                               order.paymentType === "Wallet" || order.payment?.method === "wallet"
-                                ? "bg-orange-100 text-orange-700"
+                                ? "bg-[#f0e7f9] text-[#460d8b]"
                                 : "bg-emerald-100 text-emerald-700"
                             }`}>
                               {order.paymentType === "Wallet" || order.payment?.method === "wallet" 
@@ -517,7 +517,7 @@ export default function OrdersTable({
                     onClick={() => setCurrentPage(pageNum)}
                     className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
                       currentPage === pageNum
-                        ? "bg-emerald-500 text-white shadow-md"
+                        ? "bg-[#6412c6] text-white shadow-md"
                         : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
                     }`}
                   >

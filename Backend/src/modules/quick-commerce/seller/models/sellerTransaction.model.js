@@ -45,6 +45,7 @@ const sellerTransactionSchema = new mongoose.Schema(
     bankDetails: {
       bankName: { type: String, trim: true, default: "" },
       accountHolderName: { type: String, trim: true, default: "" },
+      accountNumber: { type: String, trim: true, default: "" },
       accountNumberLast4: { type: String, trim: true, default: "" },
       ifscCode: { type: String, trim: true, uppercase: true, default: "" },
       upiId: { type: String, trim: true, default: "" },

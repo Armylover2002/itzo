@@ -753,7 +753,7 @@ export default function Customers() {
                         <div className="flex items-center justify-center gap-1">
                           <button
                             onClick={() => handleViewDetails(customer._id || customer.id || customer.sl)}
-                            className="p-1.5 rounded text-primary hover:bg-orange-50 transition-colors"
+                            className="p-1.5 rounded text-primary hover:bg-[#f7f3fc] transition-colors"
                             title="View details"
                           >
                             <Eye className="w-4 h-4" />
@@ -837,7 +837,7 @@ export default function Customers() {
 
               {/* Statistics Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="bg-orange-50 rounded-lg p-3">
+                <div className="bg-[#f7f3fc] rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Package className="w-4 h-4 text-primary" />
                     <span className="text-xs font-semibold text-slate-700">Total Orders</span>
@@ -853,7 +853,7 @@ export default function Customers() {
                     {"\u20B9"}{(userDetails.totalOrderAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
-                <div className="bg-orange-50 rounded-lg p-3">
+                <div className="bg-[#f7f3fc] rounded-lg p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <CalendarIcon className="w-4 h-4 text-primary" />
                     <span className="text-xs font-semibold text-slate-700">Member Since</span>
@@ -875,7 +875,7 @@ export default function Customers() {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-semibold text-slate-700">{address.label || 'Address'}</span>
                           {address.isDefault && (
-                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#f0e7f9] text-[#460d8b]">
                               Default
                             </span>
                           )}
@@ -938,7 +938,7 @@ export default function Customers() {
                 {!isContactsAuthorized ? (
                   <div className="bg-slate-50 border border-slate-200 rounded-lg p-5">
                     <div className="text-center mb-4">
-                      <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2 text-primary">
+                      <div className="w-10 h-10 bg-[#f0e7f9] rounded-full flex items-center justify-center mx-auto mb-2 text-primary">
                         <User className="w-5 h-5" />
                       </div>
                       <h4 className="text-sm font-semibold text-slate-800">Secure Contacts Viewer</h4>

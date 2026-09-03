@@ -42,9 +42,9 @@ export default function AdminReturnsList() {
   const getStatusBadge = (status) => {
     const colors = {
       RETURN_REQUESTED: 'bg-yellow-100 text-yellow-800',
-      UNDER_ADMIN_REVIEW: 'bg-orange-100 text-orange-800',
-      APPROVED: 'bg-orange-100 text-orange-800',
-      PARTIALLY_APPROVED: 'bg-orange-100 text-orange-800',
+      UNDER_ADMIN_REVIEW: 'bg-[#f0e7f9] text-[#370a6d]',
+      APPROVED: 'bg-[#f0e7f9] text-[#370a6d]',
+      PARTIALLY_APPROVED: 'bg-[#f0e7f9] text-[#370a6d]',
       REJECTED: 'bg-red-100 text-red-800',
       IN_PROGRESS: 'bg-purple-100 text-purple-800',
       COMPLETED: 'bg-green-100 text-green-800',
@@ -130,7 +130,7 @@ export default function AdminReturnsList() {
                       <td className="px-6 py-4 text-right">
                         <button 
                           onClick={() => navigate(`/ecs/quick-commerce/returns/${ret._id}`)}
-                          className="p-1.5 text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors inline-flex items-center"
+                          className="p-1.5 text-[#550fa8] bg-[#f7f3fc] rounded-lg hover:bg-[#f0e7f9] transition-colors inline-flex items-center"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />

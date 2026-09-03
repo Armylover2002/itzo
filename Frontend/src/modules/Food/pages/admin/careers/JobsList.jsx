@@ -76,7 +76,7 @@ export default function JobsList() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <div className="w-10 h-10 rounded-lg bg-[#6412c6] flex items-center justify-center shadow-lg shadow-[#6412c6]/20">
                 <Briefcase className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -86,7 +86,7 @@ export default function JobsList() {
             </div>
             <button
               onClick={() => navigate("/ecs/food/careers/add")}
-              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md transition-all active:scale-95"
+              className="flex items-center gap-2 bg-[#6412c6] hover:bg-[#550fa8] text-white px-6 py-2.5 rounded-lg font-semibold shadow-md transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
               ADD NEW JOB
@@ -148,7 +148,7 @@ export default function JobsList() {
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <button
                           onClick={() => toggleFeatured(job._id)}
-                          className={`w-10 h-5 rounded-full relative transition-colors ${job.featuredJob ? 'bg-orange-500' : 'bg-slate-300'}`}
+                          className={`w-10 h-5 rounded-full relative transition-colors ${job.featuredJob ? 'bg-[#6412c6]' : 'bg-slate-300'}`}
                           title={job.featuredJob ? "Featured" : "Not Featured"}
                         >
                           <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${job.featuredJob ? 'translate-x-5' : ''}`} />
@@ -157,7 +157,7 @@ export default function JobsList() {
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <button
                           onClick={() => updateStatus(job._id, job.status)}
-                          className={`w-10 h-5 rounded-full relative transition-colors ${job.status === 'Active' ? 'bg-orange-500' : 'bg-slate-300'}`}
+                          className={`w-10 h-5 rounded-full relative transition-colors ${job.status === 'Active' ? 'bg-[#6412c6]' : 'bg-slate-300'}`}
                           title={job.status}
                         >
                           <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${job.status === 'Active' ? 'translate-x-5' : ''}`} />
@@ -165,8 +165,8 @@ export default function JobsList() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <button onClick={() => { setSelectedJob(job); setIsViewModalOpen(true); }} className="p-1.5 rounded text-orange-500 hover:bg-orange-50 transition-colors" title="View"><Eye className="w-4 h-4" /></button>
-                          <button onClick={() => navigate(`/ecs/food/careers/edit/${job._id}`)} className="p-1.5 rounded text-orange-500 hover:bg-orange-50 transition-colors" title="Edit"><Edit className="w-4 h-4" /></button>
+                          <button onClick={() => { setSelectedJob(job); setIsViewModalOpen(true); }} className="p-1.5 rounded text-[#6412c6] hover:bg-[#f7f3fc] transition-colors" title="View"><Eye className="w-4 h-4" /></button>
+                          <button onClick={() => navigate(`/ecs/food/careers/edit/${job._id}`)} className="p-1.5 rounded text-[#6412c6] hover:bg-[#f7f3fc] transition-colors" title="Edit"><Edit className="w-4 h-4" /></button>
                           <button onClick={() => handleDelete(job._id)} className="p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors" title="Delete"><Trash2 className="w-4 h-4" /></button>
                         </div>
                       </td>
@@ -182,7 +182,7 @@ export default function JobsList() {
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
         <DialogContent className="max-w-md bg-white p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
-            <DialogTitle className="flex items-center gap-2"><Eye className="w-5 h-5 text-orange-500" /> Job Details</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Eye className="w-5 h-5 text-[#6412c6]" /> Job Details</DialogTitle>
           </DialogHeader>
           <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
             {selectedJob && (
@@ -211,7 +211,7 @@ export default function JobsList() {
                   <div className="text-slate-500 font-medium">Experience:</div>
                   <div className="text-slate-900">{selectedJob.experienceRequired}</div>
                   <div className="text-slate-500 font-medium">Status:</div>
-                  <div className={`font-semibold ${selectedJob.status === 'Active' ? 'text-orange-500' : 'text-slate-500'}`}>{selectedJob.status}</div>
+                  <div className={`font-semibold ${selectedJob.status === 'Active' ? 'text-[#6412c6]' : 'text-slate-500'}`}>{selectedJob.status}</div>
                 </div>
                 <div className="mt-4">
                   <div className="text-slate-500 font-medium text-sm mb-1">Short Description:</div>

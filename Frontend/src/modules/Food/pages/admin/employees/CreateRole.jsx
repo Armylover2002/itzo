@@ -256,9 +256,9 @@ export default function CreateRole() {
     const permissions = roleData.permissions[node.permissionKey] || { view: false, create: false, edit: false, delete: false };
     
     const actionIcons = {
-      view: { icon: "👁", label: "View", color: "text-orange-400" },
-      create: { icon: "➕", label: "Create", color: "text-orange-500" },
-      edit: { icon: "✏️", label: "Edit", color: "text-orange-600" },
+      view: { icon: "👁", label: "View", color: "text-[#9359d7]" },
+      create: { icon: "➕", label: "Create", color: "text-[#6412c6]" },
+      edit: { icon: "✏️", label: "Edit", color: "text-[#550fa8]" },
       delete: { icon: "🗑", label: "Delete", color: "text-red-500" }
     };
 
@@ -338,8 +338,8 @@ export default function CreateRole() {
                       const applicableActions = ["view", "create", "edit", "delete"].filter(a => !node.allowedActions || node.allowedActions.includes(a));
                       return applicableActions.length > 0 && applicableActions.every(a => permissions[a]);
                     })()
-                      ? "bg-orange-100 text-orange-500" 
-                      : "text-neutral-400 hover:text-orange-500 hover:bg-orange-50"
+                      ? "bg-[#f0e7f9] text-[#6412c6]" 
+                      : "text-neutral-400 hover:text-[#6412c6] hover:bg-[#f7f3fc]"
                   )}
                  >
                    ALL
@@ -384,8 +384,8 @@ export default function CreateRole() {
           </Button>
           <div className="min-w-0">
             <h1 className="text-lg md:text-xl font-black text-neutral-900 tracking-tighter flex items-center gap-2 md:gap-2.5">
-              <div className="bg-orange-100 p-1.5 md:p-2 rounded-xl shrink-0">
-                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-orange-500" />
+              <div className="bg-[#f0e7f9] p-1.5 md:p-2 rounded-xl shrink-0">
+                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6 text-[#6412c6]" />
               </div>
               <span className="truncate">{isEdit ? "EDIT ACCESS ROLE" : "CREATE STAFF ROLE"}</span>
             </h1>
@@ -398,7 +398,7 @@ export default function CreateRole() {
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2 md:gap-4 w-full xl:w-auto">
           <div className="hidden sm:flex flex-col items-end mr-2">
-            <span className="text-[9px] md:text-[10px] font-black text-orange-500 uppercase tracking-widest">{selectedCount} Permissions</span>
+            <span className="text-[9px] md:text-[10px] font-black text-[#6412c6] uppercase tracking-widest">{selectedCount} Permissions</span>
             <span className="text-[8px] md:text-[9px] text-neutral-400 font-bold uppercase">Ready to Commit</span>
           </div>
           <Button 
@@ -412,7 +412,7 @@ export default function CreateRole() {
           <Button 
             onClick={handleSubmit}
             disabled={loading}
-            className="rounded-xl md:rounded-2xl bg-orange-500 hover:bg-orange-600 text-white h-10 md:h-12 px-4 md:px-8 text-xs md:text-sm font-black shadow-lg md:shadow-2xl shadow-orange-500/30 transition-all active:scale-95 disabled:opacity-50 flex-1 sm:flex-none"
+            className="rounded-xl md:rounded-2xl bg-[#6412c6] hover:bg-[#550fa8] text-white h-10 md:h-12 px-4 md:px-8 text-xs md:text-sm font-black shadow-lg md:shadow-2xl shadow-[#6412c6]/30 transition-all active:scale-95 disabled:opacity-50 flex-1 sm:flex-none"
           >
             {loading ? "PROVISIONING..." : <><Save className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" /> {isEdit ? "UPDATE ROLE" : "SAVE ROLE"}</>}
           </Button>
@@ -451,7 +451,7 @@ export default function CreateRole() {
             </div>
           </div>
 
-          <div className="bg-orange-500 p-8 rounded-[2rem] shadow-2xl shadow-orange-500/30 text-white space-y-6">
+          <div className="bg-[#6412c6] p-8 rounded-[2rem] shadow-2xl shadow-[#6412c6]/30 text-white space-y-6">
             <div className="flex items-center gap-3">
               <Layers className="w-5 h-5 opacity-80" />
               <h4 className="font-black text-[11px] uppercase tracking-widest">Permission Logic</h4>
@@ -485,14 +485,14 @@ export default function CreateRole() {
                   placeholder="Search permissions..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-neutral-800 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-orange-500/50 transition-all font-bold"
+                  className="w-full bg-neutral-800 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-[#6412c6]/50 transition-all font-bold"
                  />
                </div>
                <div className="flex items-center gap-2 shrink-0">
-                 <Button type="button" size="sm" onClick={expandAll} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[10px]">
+                 <Button type="button" size="sm" onClick={expandAll} className="bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-bold text-[10px]">
                    <Maximize2 className="w-3 h-3 mr-1.5" /> EXPAND ALL
                  </Button>
-                 <Button type="button" size="sm" onClick={collapseAll} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-[10px]">
+                 <Button type="button" size="sm" onClick={collapseAll} className="bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-bold text-[10px]">
                    <Minimize2 className="w-3 h-3 mr-1.5" /> COLLAPSE ALL
                  </Button>
                </div>
@@ -515,7 +515,7 @@ export default function CreateRole() {
             {/* Tree Footer Info */}
             <div className="p-4 bg-neutral-50 border-t border-neutral-100 flex items-center justify-between text-[10px] font-black text-neutral-400 uppercase tracking-widest">
                <div className="flex items-center gap-6">
-                 <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-orange-500" /> ACTIVE INHERITANCE</div>
+                 <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-[#6412c6]" /> ACTIVE INHERITANCE</div>
                  <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-neutral-300" /> SYSTEM DEFAULT</div>
                </div>
                <div>REVISION v1.0.4</div>

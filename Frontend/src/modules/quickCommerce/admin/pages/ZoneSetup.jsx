@@ -86,7 +86,7 @@ export default function ZoneSetup() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
           <div className="flex items-center gap-3 mb-4 md:mb-0">
-            <div className="w-10 h-10 rounded-lg bg-[#FE5502] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-[#6412C6] flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -157,7 +157,7 @@ export default function ZoneSetup() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => navigate(`/ecs/quick-commerce/zone-setup/view/${zone._id || zone.id}`)}
-                      className="p-2 text-slate-600 hover:text-primary hover:bg-orange-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-600 hover:text-primary hover:bg-[#f7f3fc] rounded-lg transition-colors"
                       title="View"
                     >
                       <Eye className="w-4 h-4" />

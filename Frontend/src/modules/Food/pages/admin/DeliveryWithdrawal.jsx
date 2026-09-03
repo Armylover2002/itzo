@@ -390,7 +390,7 @@ export default function DeliveryWithdrawal() {
                       {selectedRequest.upiQrCode && (
                         <button 
                           onClick={() => window.open(selectedRequest.upiQrCode, '_blank')}
-                          className="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                          className="text-[10px] bg-[#6412c6] text-white px-2 py-1 rounded hover:bg-[#550fa8] transition-colors flex items-center gap-1"
                         >
                           <Eye className="w-3 h-3" />
                           View QR
@@ -454,7 +454,7 @@ export default function DeliveryWithdrawal() {
             <DialogFooter className="px-6 pb-6">
               <button
                 onClick={() => setIsViewOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-all"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all"
               >
                 Close
               </button>

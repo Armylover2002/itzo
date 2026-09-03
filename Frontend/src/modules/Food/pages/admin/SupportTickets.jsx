@@ -117,7 +117,7 @@ export default function SupportTickets() {
               <span className="w-2 h-2 rounded-full bg-amber-500" />
               Open {stats.open}
             </span>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#f7f3fc] text-[#460d8b] border border-[#d8c4f1]">
               <span className="w-2 h-2 rounded-full bg-primary" />
               In progress {stats.inProgress}
             </span>

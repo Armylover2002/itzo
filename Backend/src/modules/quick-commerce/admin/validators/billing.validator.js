@@ -1,100 +1,61 @@
 import { z } from 'zod';
 import { ValidationError } from '../../../../core/auth/errors.js';
 
-const toggleBoolSchema = z.object({
-  status: z.boolean().optional(),
-});
-
-export const validateOptionalStatusDto = (body) => {
-  const result = toggleBoolSchema.safeParse(body || {});
-  if (!result.success) {
-    throw new ValidationError(result.error.errors[0].message);
-  }
-  return result.data;
-};
-
-const deliveryRuleSchema = z.object({
-  name: z.string().optional().or(z.literal('')),
-  minDistance: z.number().min(0, 'Minimum distance must be 0 or greater'),
-  maxDistance: z.number().nullable().optional(),
-  commissionPerKm: z.number().min(0, 'Commission per km must be 0 or greater'),
-  basePayout: z.number().min(0, 'Base payout must be 0 or greater'),
-  status: z.boolean().optional(),
-});
-
-export const validateDeliveryCommissionRuleDto = (body) => {
-  const normalized = {
-    name: body?.name != null ? String(body.name) : '',
-    minDistance: Number(body?.minDistance),
-    maxDistance:
-      body?.maxDistance === null ||
-      body?.maxDistance === undefined ||
-      body?.maxDistance === ''
-        ? null
-        : Number(body.maxDistance),
-    commissionPerKm: Number(body?.commissionPerKm),
-    basePayout: Number(body?.basePayout),
-    status: body?.status,
-  };
-
-  const result = deliveryRuleSchema.safeParse(normalized);
-  if (!result.success) {
-    throw new ValidationError(result.error.errors[0].message);
-  }
-
-  const min = result.data.minDistance;
-  const base = result.data.basePayout;
-  if (min !== 0 && base > 0) {
-    throw new ValidationError('Only base slab can have base payout');
-  }
-
-  return {
-    name: result.data.name ? result.data.name.trim() : '',
-    minDistance: result.data.minDistance,
-    maxDistance: result.data.maxDistance ?? null,
-    commissionPerKm: result.data.commissionPerKm,
-    basePayout: result.data.basePayout,
-    status: typeof result.data.status === 'boolean' ? result.data.status : undefined,
-  };
-};
-
-const rangeSchema = z.object({
-  min: z.number().min(0),
-  max: z.number().min(0),
-  fee: z.number().min(0),
+const sponsorRuleSchema = z.object({
+  minOrderAmount: z.number().min(0),
+  maxOrderAmount: z.number().min(0).nullable().optional(),
+  maxDistanceKm: z.number().min(0),
+  sponsorType: z.enum(['USER_FULL', 'SELLER_FULL', 'SPLIT']),
+  sponsoredKm: z.number().min(0).nullable().optional(),
 });
 
 const feeSettingsUpsertSchema = z.object({
-  deliveryFee: z.number().min(0).nullable().optional(),
-  deliveryFeeRanges: z.array(rangeSchema).optional(),
-  freeDeliveryThreshold: z.number().min(0).nullable().optional(),
+  baseDistanceKm: z.number().min(0).nullable().optional(),
+  baseDeliveryFee: z.number().min(0).nullable().optional(),
+  perKmCharge: z.number().min(0).nullable().optional(),
+  sponsorRules: z.array(sponsorRuleSchema).optional(),
   platformFee: z.number().min(0).nullable().optional(),
   gstRate: z.number().min(0).max(100).nullable().optional(),
-  returnDeliveryCommission: z.number().min(0).nullable().optional(),
+  minWithdrawal: z.number().min(0).nullable().optional(),
+  maxWithdrawal: z.number().min(0).nullable().optional(),
   isActive: z.boolean().optional(),
 });
 
 export const validateFeeSettingsUpsertDto = (body) => {
   const normalized = {
-    deliveryFee:
-      body?.deliveryFee === null
+    baseDistanceKm:
+      body?.baseDistanceKm === null
         ? null
-        : body?.deliveryFee !== undefined
-          ? Number(body.deliveryFee)
+        : body?.baseDistanceKm !== undefined
+          ? Number(body.baseDistanceKm)
           : undefined,
-    deliveryFeeRanges: Array.isArray(body?.deliveryFeeRanges)
-      ? body.deliveryFeeRanges.map((r) => ({
-          min: Number(r?.min),
-          max: Number(r?.max),
-          fee: Number(r?.fee),
+    baseDeliveryFee:
+      body?.baseDeliveryFee === null
+        ? null
+        : body?.baseDeliveryFee !== undefined
+          ? Number(body.baseDeliveryFee)
+          : undefined,
+    perKmCharge:
+      body?.perKmCharge === null
+        ? null
+        : body?.perKmCharge !== undefined
+          ? Number(body.perKmCharge)
+          : undefined,
+    sponsorRules: Array.isArray(body?.sponsorRules)
+      ? body.sponsorRules.map((rule) => ({
+          minOrderAmount: Number(rule?.minOrderAmount),
+          maxOrderAmount:
+            rule?.maxOrderAmount === null || rule?.maxOrderAmount === undefined || rule?.maxOrderAmount === ''
+              ? null
+              : Number(rule.maxOrderAmount),
+          maxDistanceKm: Number(rule?.maxDistanceKm),
+          sponsorType: String(rule?.sponsorType || '').trim().toUpperCase(),
+          sponsoredKm:
+            rule?.sponsoredKm === null || rule?.sponsoredKm === undefined || rule?.sponsoredKm === ''
+              ? null
+              : Number(rule.sponsoredKm),
         }))
       : undefined,
-    freeDeliveryThreshold:
-      body?.freeDeliveryThreshold === null
-        ? null
-        : body?.freeDeliveryThreshold !== undefined
-          ? Number(body.freeDeliveryThreshold)
-          : undefined,
     platformFee:
       body?.platformFee === null
         ? null
@@ -107,11 +68,17 @@ export const validateFeeSettingsUpsertDto = (body) => {
         : body?.gstRate !== undefined
           ? Number(body.gstRate)
           : undefined,
-    returnDeliveryCommission:
-      body?.returnDeliveryCommission === null
+    minWithdrawal:
+      body?.minWithdrawal === null
         ? null
-        : body?.returnDeliveryCommission !== undefined
-          ? Number(body.returnDeliveryCommission)
+        : body?.minWithdrawal !== undefined && body?.minWithdrawal !== ''
+          ? Number(body.minWithdrawal)
+          : undefined,
+    maxWithdrawal:
+      body?.maxWithdrawal === null
+        ? null
+        : body?.maxWithdrawal !== undefined && body?.maxWithdrawal !== ''
+          ? Number(body.maxWithdrawal)
           : undefined,
     isActive: body?.isActive !== undefined ? Boolean(body.isActive) : undefined,
   };
@@ -121,24 +88,34 @@ export const validateFeeSettingsUpsertDto = (body) => {
     throw new ValidationError(result.error.errors[0].message);
   }
 
-  const ranges = Array.isArray(result.data.deliveryFeeRanges)
-    ? result.data.deliveryFeeRanges
-    : undefined;
-  if (ranges) {
-    const sorted = [...ranges].sort((a, b) => a.min - b.min);
-    for (const r of sorted) {
-      if (r.min >= r.max) {
-        throw new ValidationError('Each range must have min less than max');
+  const sponsorRules = Array.isArray(result.data.sponsorRules) ? result.data.sponsorRules : undefined;
+  if (sponsorRules) {
+    for (const rule of sponsorRules) {
+      if (
+        rule.maxOrderAmount != null &&
+        Number.isFinite(rule.maxOrderAmount) &&
+        rule.maxOrderAmount < rule.minOrderAmount
+      ) {
+        throw new ValidationError('Maximum order amount must be greater than or equal to minimum order amount');
+      }
+      if (rule.sponsorType === 'SPLIT') {
+        const sponsoredKm = Number(rule.sponsoredKm);
+        if (!Number.isFinite(sponsoredKm) || sponsoredKm < 0) {
+          throw new ValidationError('Sponsored KM is required for split rules');
+        }
+      }
+      if (rule.sponsorType !== 'SPLIT') {
+        rule.sponsoredKm = null;
       }
     }
-    for (let i = 1; i < sorted.length; i += 1) {
-      const prev = sorted[i - 1];
-      const cur = sorted[i];
-      if (cur.min < prev.max) {
-        throw new ValidationError('Delivery fee ranges must not overlap');
-      }
-    }
-    result.data.deliveryFeeRanges = sorted;
+  }
+
+  if (
+    result.data.minWithdrawal != null &&
+    result.data.maxWithdrawal != null &&
+    result.data.minWithdrawal > result.data.maxWithdrawal
+  ) {
+    throw new ValidationError('Minimum withdrawal cannot be greater than maximum withdrawal');
   }
 
   return result.data;

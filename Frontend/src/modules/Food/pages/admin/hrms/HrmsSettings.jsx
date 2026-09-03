@@ -94,7 +94,7 @@ export default function HrmsSettings() {
         { key: 'holidayCalendar', label: 'Holiday Calendar', icon: CalendarDays },
     ];
 
-    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30";
+    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30";
     const labelClass = "text-xs font-medium text-slate-600 mb-1 block";
 
     return (
@@ -104,7 +104,7 @@ export default function HrmsSettings() {
             <div className="flex flex-wrap gap-2">
                 {sections.map(s => (
                     <button key={s.key} onClick={() => setActiveSection(s.key)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeSection === s.key ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${activeSection === s.key ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
                         <s.icon className="w-4 h-4" /> {s.label}
                     </button>
                 ))}
@@ -148,7 +148,7 @@ export default function HrmsSettings() {
                                             type="button"
                                             onClick={() => logoInputRef.current?.click()}
                                             disabled={logoUploading}
-                                            className="flex items-center gap-2 px-4 h-9 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-slate-900 text-sm font-medium rounded-xl transition-colors"
+                                            className="flex items-center gap-2 px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] disabled:opacity-50 text-slate-900 text-sm font-medium rounded-xl transition-colors"
                                         >
                                             {logoUploading
                                                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading…</>
@@ -180,7 +180,7 @@ export default function HrmsSettings() {
                                 <input type="text" className={inputClass} value={settings.companyInfo?.supportPhone || ''}
                                     onChange={e => updateNested('companyInfo.supportPhone', e.target.value)} placeholder="+91..." /></div>
                             <div className="sm:col-span-2"><label className={labelClass}>Company Address</label>
-                                <textarea className="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30" rows={3} value={settings.companyInfo?.companyAddress || ''}
+                                <textarea className="w-full p-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" rows={3} value={settings.companyInfo?.companyAddress || ''}
                                     onChange={e => updateNested('companyInfo.companyAddress', e.target.value)} placeholder="123 Tech Park..."></textarea></div>
                             <div><label className={labelClass}>Currency Code</label>
                                 <input type="text" className={inputClass} value={settings.companyInfo?.currency || 'INR'}
@@ -190,7 +190,7 @@ export default function HrmsSettings() {
                                     onChange={e => updateNested('companyInfo.currencySymbol', e.target.value)} placeholder="₹" /></div>
                         </div>
                         <button onClick={() => saveSection('companyInfo', settings.companyInfo)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50 mt-4">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50 mt-4">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
                         </button>
                     </div>
@@ -214,7 +214,7 @@ export default function HrmsSettings() {
                                     onChange={e => updateNested('workingHours.overtimeRate', Number(e.target.value))} /></div>
                         </div>
                         <button onClick={() => saveSection('workingHours', settings.workingHours)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
                         </button>
                     </div>
@@ -232,7 +232,7 @@ export default function HrmsSettings() {
                                     onChange={e => updateNested('leavePolicies.maxAccumulatedLeaves', Number(e.target.value))} /></div>
                         </div>
                         <button onClick={() => saveSection('leavePolicies', settings.leavePolicies)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
                         </button>
                     </div>
@@ -254,7 +254,7 @@ export default function HrmsSettings() {
                                 </select></div>
                         </div>
                         <button onClick={() => saveSection('payrollRules', settings.payrollRules)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save'}
                         </button>
                     </div>
@@ -292,7 +292,7 @@ export default function HrmsSettings() {
                                         }
                                         input.value = '';
                                     }
-                                }} className="px-4 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium"><Plus className="w-4 h-4" /></button>
+                                }} className="px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium"><Plus className="w-4 h-4" /></button>
                             </div>
                         </div>
                         <div>
@@ -324,7 +324,7 @@ export default function HrmsSettings() {
                                         }
                                         input.value = '';
                                     }
-                                }} className="px-4 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium"><Plus className="w-4 h-4" /></button>
+                                }} className="px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium"><Plus className="w-4 h-4" /></button>
                             </div>
                         </div>
 
@@ -405,7 +405,7 @@ export default function HrmsSettings() {
                                                             toast.error('Geolocation is not supported by your browser.');
                                                         }
                                                     }}
-                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg text-xs font-medium transition-colors"
+                                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f7f3fc] text-[#550fa8] hover:bg-[#f0e7f9] rounded-lg text-xs font-medium transition-colors"
                                                 >
                                                     <MapPin className="w-3.5 h-3.5" /> Fetch Live Location
                                                 </button>
@@ -422,7 +422,7 @@ export default function HrmsSettings() {
                                                     <input type="checkbox" checked={loc.isActive !== false} onChange={e => {
                                                         const locs = [...settings.organization.officeLocations];
                                                         locs[i].isActive = e.target.checked; updateNested('organization.officeLocations', locs);
-                                                    }} className="accent-orange-500 w-4 h-4 rounded border-slate-300" />
+                                                    }} className="accent-[#6412c6] w-4 h-4 rounded border-slate-300" />
                                                     Active
                                                 </label>
                                             </div>
@@ -433,11 +433,11 @@ export default function HrmsSettings() {
                             <button onClick={() => {
                                 const locs = settings.organization?.officeLocations || [];
                                 updateNested('organization.officeLocations', [...locs, { name: '', address: '', latitude: 0, longitude: 0, radiusMeters: 200, isActive: true }]);
-                            }} className="flex items-center gap-2 text-sm text-orange-600 font-medium"><Plus className="w-4 h-4" /> Add Office Location</button>
+                            }} className="flex items-center gap-2 text-sm text-[#550fa8] font-medium"><Plus className="w-4 h-4" /> Add Office Location</button>
                         </div>
                         
                         <button onClick={() => saveSection('organization', settings.organization)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Organization'}
                         </button>
                     </div>
@@ -476,7 +476,7 @@ export default function HrmsSettings() {
                             </div>
                         </div>
                         <button onClick={() => saveSection('trackingSettings', settings.trackingSettings)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50 mt-4">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50 mt-4">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Tracking Settings'}
                         </button>
                     </div>
@@ -500,9 +500,9 @@ export default function HrmsSettings() {
                             </div>
                         ))}
                         <button onClick={() => updateNested('shifts', [...(settings.shifts || []), { name: '', startTime: '09:00', endTime: '18:00' }])}
-                            className="flex items-center gap-2 text-sm text-orange-600 font-medium"><Plus className="w-4 h-4" /> Add Shift</button>
+                            className="flex items-center gap-2 text-sm text-[#550fa8] font-medium"><Plus className="w-4 h-4" /> Add Shift</button>
                         <button onClick={() => saveSection('shifts', settings.shifts)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Shifts'}
                         </button>
                     </div>
@@ -518,7 +518,7 @@ export default function HrmsSettings() {
                                 <input className="h-10 px-3 border border-slate-200 rounded-xl text-sm flex-1" value={h.name} placeholder="Holiday name"
                                     onChange={e => { const hc = [...settings.holidayCalendar]; hc[i].name = e.target.value; updateNested('holidayCalendar', hc); }} />
                                 <label className="flex items-center gap-1 text-xs text-slate-500">
-                                    <input type="checkbox" checked={h.isOptional} onChange={e => { const hc = [...settings.holidayCalendar]; hc[i].isOptional = e.target.checked; updateNested('holidayCalendar', hc); }} className="accent-orange-500" /> Optional
+                                    <input type="checkbox" checked={h.isOptional} onChange={e => { const hc = [...settings.holidayCalendar]; hc[i].isOptional = e.target.checked; updateNested('holidayCalendar', hc); }} className="accent-[#6412c6]" /> Optional
                                 </label>
                                 <button onClick={() => { const hc = [...settings.holidayCalendar]; hc.splice(i, 1); updateNested('holidayCalendar', hc); }}>
                                     <X className="w-4 h-4 text-slate-400 hover:text-red-500" />
@@ -526,9 +526,9 @@ export default function HrmsSettings() {
                             </div>
                         ))}
                         <button onClick={() => updateNested('holidayCalendar', [...(settings.holidayCalendar || []), { date: '', name: '', isOptional: false }])}
-                            className="flex items-center gap-2 text-sm text-orange-600 font-medium"><Plus className="w-4 h-4" /> Add Holiday</button>
+                            className="flex items-center gap-2 text-sm text-[#550fa8] font-medium"><Plus className="w-4 h-4" /> Add Holiday</button>
                         <button onClick={() => saveSection('holidayCalendar', settings.holidayCalendar)} disabled={saving}
-                            className="flex items-center gap-2 px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Holidays'}
                         </button>
                     </div>

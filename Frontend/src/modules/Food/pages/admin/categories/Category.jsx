@@ -587,7 +587,7 @@ export default function Category() {
                             {category?.isGlobal ? "Global category" : "Private to creator"}
                           </p>
                           {category?.isGlobal && isRestaurantCategory && (
-                            <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-2 py-1 text-[11px] font-semibold text-orange-700">
+                            <span className="inline-flex items-center rounded-full border border-[#d8c4f1] bg-[#f7f3fc] px-2 py-1 text-[11px] font-semibold text-[#460d8b]">
                               <Globe className="mr-1 h-3.5 w-3.5" />
                               Shared
                             </span>
@@ -659,7 +659,7 @@ export default function Category() {
                             {canEdit && (
                               <button
                                 onClick={() => handleEdit(category)}
-                                className="rounded-lg p-2 text-primary hover:bg-orange-50"
+                                className="rounded-lg p-2 text-primary hover:bg-[#f7f3fc]"
                                 title="Edit"
                               >
                                 <Pencil className="h-4 w-4" />

@@ -86,8 +86,8 @@ const AdminDashboard = () => {
             label: 'Total Users',
             value: overview.totalUsers?.toLocaleString() || '0',
             icon: Users,
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
+            color: 'text-[#550fa8]',
+            bg: 'bg-[#f7f3fc]',
             trend: usersGrowth,
             description: 'Active this month'
         },
@@ -95,8 +95,8 @@ const AdminDashboard = () => {
             label: 'Active Sellers',
             value: overview.activeSellers?.toLocaleString() || '0',
             icon: Store,
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
+            color: 'text-[#550fa8]',
+            bg: 'bg-[#f7f3fc]',
             trend: sellersGrowth,
             description: 'Verified stores'
         },
@@ -104,8 +104,8 @@ const AdminDashboard = () => {
             label: 'Total Orders',
             value: overview.totalOrders?.toLocaleString() || '0',
             icon: Truck,
-            color: 'text-orange-600',
-            bg: 'bg-orange-50',
+            color: 'text-[#550fa8]',
+            bg: 'bg-[#f7f3fc]',
             trend: ordersGrowth,
             description: 'Last 30 days'
         },
@@ -217,7 +217,7 @@ const AdminDashboard = () => {
                         <Badge variant="outline" className="ds-badge ds-badge-gray">
                             Last Update: Today, 12:45 PM
                         </Badge>
-                        <button onClick={handleDownloadReport} className="ds-btn ds-btn-md bg-orange-600 hover:bg-orange-700 text-white shadow-lg shadow-orange-500/20 hover:scale-105 active:scale-95">
+                        <button onClick={handleDownloadReport} className="ds-btn ds-btn-md bg-[#550fa8] hover:bg-[#460d8b] text-white shadow-lg shadow-[#6412c6]/20 hover:scale-105 active:scale-95">
                             Download Report
                         </button>
                     </>
@@ -254,8 +254,8 @@ const AdminDashboard = () => {
                                 <AreaChart data={chartData}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#FE5502" stopOpacity={0.15} />
-                                            <stop offset="95%" stopColor="#FE5502" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#6412C6" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="#6412C6" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -285,7 +285,7 @@ const AdminDashboard = () => {
                                     <Area
                                         type="monotone"
                                         dataKey="revenue"
-                                        stroke="#FE5502"
+                                        stroke="#6412C6"
                                         strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorRevenue)"
@@ -364,7 +364,7 @@ const AdminDashboard = () => {
                                 <tbody className="divide-y divide-gray-50">
                                     {recentOrders.map((order) => (
                                         <tr key={order.id} className="group hover:bg-gray-50/50 transition-all">
-                                            <td className="py-4 text-sm font-semibold text-orange-600">{order.id}</td>
+                                            <td className="py-4 text-sm font-semibold text-[#550fa8]">{order.id}</td>
                                             <td className="py-4">
                                                 <div className="flex items-center space-x-2">
                                                     <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-500 ring-2 ring-white shadow-sm uppercase">
@@ -387,7 +387,7 @@ const AdminDashboard = () => {
                         </div>
                         <button
                             onClick={() => navigate('/ecs/quick-commerce/orders/all')}
-                            className="w-full mt-6 py-3 rounded-xl bg-gray-50 text-xs font-bold text-gray-500 hover:bg-orange-600 hover:text-white transition-all">
+                            className="w-full mt-6 py-3 rounded-xl bg-gray-50 text-xs font-bold text-gray-500 hover:bg-[#550fa8] hover:text-white transition-all">
                             VIEW ALL ORDERS
                         </button>
                     </Card>
@@ -421,7 +421,7 @@ const AdminDashboard = () => {
                                 <div className="py-12 text-center text-slate-300 italic text-xs">No sales data yet</div>
                             )}
                         </div>
-                        <button onClick={() => navigate('/ecs/quick-commerce/products')} className="w-full mt-6 py-3 border-2 border-dashed border-gray-100 rounded-xl text-xs font-bold text-gray-400 hover:border-orange-600 hover:text-orange-600 transition-all">
+                        <button onClick={() => navigate('/ecs/quick-commerce/products')} className="w-full mt-6 py-3 border-2 border-dashed border-gray-100 rounded-xl text-xs font-bold text-gray-400 hover:border-[#550fa8] hover:text-[#550fa8] transition-all">
                             VIEW ALL PRODUCTS
                         </button>
                     </Card>

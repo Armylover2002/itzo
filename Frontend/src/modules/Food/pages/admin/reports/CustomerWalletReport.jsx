@@ -232,7 +232,7 @@ export default function CustomerWalletReport() {
               <div className="flex items-center justify-end gap-3">
                 <button
                   onClick={handleReset}
-                  className="px-6 py-2.5 text-sm font-medium rounded-lg border border-primary text-primary bg-white hover:bg-orange-50 transition-all flex items-center gap-2"
+                  className="px-6 py-2.5 text-sm font-medium rounded-lg border border-primary text-primary bg-white hover:bg-[#f7f3fc] transition-all flex items-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Reset
@@ -240,13 +240,13 @@ export default function CustomerWalletReport() {
                 <button 
                   onClick={handleFilterApply}
                   className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary transition-all flex items-center gap-2 relative ${
-                    activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                    activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
                   }`}
                 >
                   <Filter className="w-4 h-4" />
                   Filter
                   {activeFiltersCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -291,7 +291,7 @@ export default function CustomerWalletReport() {
                 <p className="text-sm font-medium text-slate-600 mb-1">Balance</p>
                 <p className="text-2xl font-bold text-slate-900">{walletStats.balance}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
                 <img src={balanceIcon} alt="Balance" className="w-8 h-8" />
               </div>
             </div>
@@ -396,7 +396,7 @@ export default function CustomerWalletReport() {
                       <td className="px-4 py-3 whitespace-nowrap">
                         <a
                           href={`#customer-${transaction.customer}`}
-                          className="text-xs text-primary hover:text-orange-800 hover:underline"
+                          className="text-xs text-primary hover:text-[#370a6d] hover:underline"
                         >
                           {transaction.customer}
                         </a>
@@ -447,7 +447,7 @@ export default function CustomerWalletReport() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

@@ -508,7 +508,7 @@ export default function JoiningRequest() {
                 onClick={() => setShowFilterDialog(true)}
                 className={`px-4 py-2.5 text-sm font-medium rounded-lg border transition-all flex items-center gap-2 ${
                   hasActiveFilters 
-                    ? "border-primary bg-orange-50 text-orange-700 hover:bg-orange-100" 
+                    ? "border-primary bg-[#f7f3fc] text-[#460d8b] hover:bg-[#f0e7f9]" 
                     : "border-slate-300 bg-white hover:bg-slate-50 text-slate-700"
                 }`}
               >
@@ -643,7 +643,7 @@ export default function JoiningRequest() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           request.status === "Pending" || request.status === "pending"
-                            ? (request?.reVerification?.isZoneUpdate || request?.reVerification?.reVerificationReason === 'FSSAI License Update' ? "bg-orange-100 text-orange-700" : "bg-orange-100 text-orange-700")
+                            ? (request?.reVerification?.isZoneUpdate || request?.reVerification?.reVerificationReason === 'FSSAI License Update' ? "bg-[#f0e7f9] text-[#460d8b]" : "bg-[#f0e7f9] text-[#460d8b]")
                             : "bg-red-100 text-red-700"
                         }`}>
                           {request?.reVerification?.isZoneUpdate || request?.reVerification?.reVerificationReason === 'FSSAI License Update' ? "Re-verification" : request.status}
@@ -653,7 +653,7 @@ export default function JoiningRequest() {
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleViewDetails(request)}
-                            className="p-1.5 rounded-full bg-orange-50 text-primary hover:bg-orange-100 transition-colors"
+                            className="p-1.5 rounded-full bg-[#f7f3fc] text-primary hover:bg-[#f0e7f9] transition-colors"
                             title="View Details"
                           >
                             <Eye className="w-4 h-4" />
@@ -696,7 +696,7 @@ export default function JoiningRequest() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
                     <Filter className="w-5 h-5 text-primary" />
                   </div>
                   <div>
@@ -856,7 +856,7 @@ export default function JoiningRequest() {
             {/* Panel Header */}
             <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
                   <UtensilsCrossed className="w-5 h-5 text-primary" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-900">Restaurant Details - {selectedRequest.restaurantName || "N/A"}</h2>
@@ -935,7 +935,7 @@ export default function JoiningRequest() {
                           <span className="text-sm">{formatRestaurantId(r)}</span>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          approvalStatus === "approved" ? "bg-green-100 text-green-700" : (approvalStatus === "rejected" || approvalStatus === "Rejected") ? "bg-red-100 text-red-700" : (r?.reVerification?.isZoneUpdate || r?.reVerification?.reVerificationReason === 'FSSAI License Update' ? "bg-orange-100 text-orange-700" : "bg-amber-100 text-amber-700")
+                          approvalStatus === "approved" ? "bg-green-100 text-green-700" : (approvalStatus === "rejected" || approvalStatus === "Rejected") ? "bg-red-100 text-red-700" : (r?.reVerification?.isZoneUpdate || r?.reVerification?.reVerificationReason === 'FSSAI License Update' ? "bg-[#f0e7f9] text-[#460d8b]" : "bg-amber-100 text-amber-700")
                         }`}>
                           {approvalStatus === "approved" ? "Approved" : (approvalStatus === "rejected" || approvalStatus === "Rejected") ? "Rejected" : (r?.reVerification?.isZoneUpdate || r?.reVerification?.reVerificationReason === 'FSSAI License Update' ? "Re-verification" : "Pending Approval")}
                         </span>
@@ -977,18 +977,18 @@ export default function JoiningRequest() {
                     {/* Zone Update Warning (if applicable) */}
                     {r?.reVerification?.isZoneUpdate && (
                       <div className="md:col-span-2">
-                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-2">
-                          <h4 className="text-sm font-bold text-orange-900 mb-1 flex items-center gap-2">
+                        <div className="bg-[#f7f3fc] border border-[#d8c4f1] rounded-lg p-4 mb-2">
+                          <h4 className="text-sm font-bold text-[#28074f] mb-1 flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
                             Region/Zone Edit Request
                           </h4>
-                          <p className="text-xs text-orange-800">
+                          <p className="text-xs text-[#370a6d]">
                             The restaurant has updated their business location. Please review the changes below before approval.
                           </p>
                           {r.reVerification.reVerificationReason && (
-                            <div className="mt-2 pt-2 border-t border-orange-200">
-                              <p className="text-xs font-bold text-orange-900">Reason for Re-verification:</p>
-                              <p className="text-xs text-orange-800">{r.reVerification.reVerificationReason}</p>
+                            <div className="mt-2 pt-2 border-t border-[#d8c4f1]">
+                              <p className="text-xs font-bold text-[#28074f]">Reason for Re-verification:</p>
+                              <p className="text-xs text-[#370a6d]">{r.reVerification.reVerificationReason}</p>
                             </div>
                           )}
                         </div>
@@ -1026,7 +1026,7 @@ export default function JoiningRequest() {
                                 <div className="space-y-4">
                                   <div>
                                     <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Updated Address</p>
-                                    <p className="text-sm font-medium text-slate-900 bg-orange-50 p-2 rounded border border-orange-100">
+                                    <p className="text-sm font-medium text-slate-900 bg-[#f7f3fc] p-2 rounded border border-[#f0e7f9]">
                                       {r.location?.formattedAddress || "N/A"}
                                     </p>
                                   </div>

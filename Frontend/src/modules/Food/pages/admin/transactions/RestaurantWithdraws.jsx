@@ -132,7 +132,7 @@ export default function RestaurantWithdraws() {
       return "bg-green-100 text-green-700"
     }
     if (status === "Pending") {
-      return "bg-orange-100 text-orange-700"
+      return "bg-[#f0e7f9] text-[#460d8b]"
     }
     if (status === "Rejected") {
       return "bg-red-100 text-red-700"
@@ -431,10 +431,10 @@ export default function RestaurantWithdraws() {
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => handleViewWithdraw(withdraw)}
-                              className="p-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
+                              className="p-2 rounded-lg bg-[#f7f3fc] hover:bg-[#f0e7f9] transition-colors"
                               title="View Details"
                             >
-                              <Eye className="w-4 h-4 text-orange-600" />
+                              <Eye className="w-4 h-4 text-[#550fa8]" />
                             </button>
                             {withdraw.status === 'Pending' && canEdit && (
                               <>
@@ -654,7 +654,7 @@ export default function RestaurantWithdraws() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

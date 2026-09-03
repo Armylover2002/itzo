@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { sellerApi } from '@/modules/seller/services/sellerApi';
 import { AnimatePresence } from 'framer-motion';
+import { Store } from 'lucide-react';
 import NotificationPopup from './NotificationPopup';
 import { toast } from 'sonner';
 
@@ -88,16 +89,66 @@ const Topbar = ({ onMenuClick }) => {
         }
     };
 
+    const [sellerProfile, setSellerProfile] = React.useState(null);
+
+    React.useEffect(() => {
+        if (!isSeller) return;
+        let isMounted = true;
+
+        const loadSellerProfile = async () => {
+            try {
+                const res = await sellerApi.getProfile();
+                const data = res?.data?.result || res?.data?.data;
+                if (isMounted && data) {
+                    setSellerProfile(data);
+                }
+            } catch (err) {
+                // Fallback gracefully to user from auth context
+            }
+        };
+
+        loadSellerProfile();
+
+        const handleProfileUpdate = () => {
+            loadSellerProfile();
+        };
+        window.addEventListener('sellerProfileUpdated', handleProfileUpdate);
+        window.addEventListener('userAuthChanged', handleProfileUpdate);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener('sellerProfileUpdated', handleProfileUpdate);
+            window.removeEventListener('userAuthChanged', handleProfileUpdate);
+        };
+    }, [isSeller]);
+
+    const shopName =
+        sellerProfile?.shopName ||
+        user?.shopName ||
+        user?.storeName ||
+        (user?.name ? `${user.name}'s Shop` : 'My Store');
+
+    const shopImage =
+        sellerProfile?.shopInfo?.shopImage ||
+        sellerProfile?.shopPhoto ||
+        sellerProfile?.shopImage ||
+        sellerProfile?.logo ||
+        user?.shopInfo?.shopImage ||
+        user?.shopPhoto ||
+        user?.shopImage ||
+        user?.avatar ||
+        '';
+
+    const ownerName = sellerProfile?.name || user?.name || '';
+    const businessType = sellerProfile?.shopInfo?.businessType || 'Quick Commerce';
+
     const handleLogout = () => {
         logout();
     };
 
     return (
         <header className={cn(
-            "bg-white/70 backdrop-blur-xl border-b border-gray-100/50 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)] transition-all duration-300",
-            (role === 'admin' || role === 'seller')
-                ? "fixed top-0 left-0 right-0 z-50 h-14 px-4 md:sticky md:top-0 md:z-50 md:h-16 md:px-6"
-                : "fixed top-0 left-56 right-0 h-16 px-6 z-50 md:sticky md:top-0 md:z-50"
+            "bg-white/85 backdrop-blur-xl border-b border-gray-200/70 flex items-center justify-between shadow-sm transition-all duration-300 sticky top-0 z-40 w-full h-16 px-4 md:px-6"
         )}>
             <div className="flex items-center flex-1 mr-4 overflow-hidden">
                 <button
@@ -120,7 +171,7 @@ const Topbar = ({ onMenuClick }) => {
                 </form>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
                 <div className="relative" ref={notificationRef}>
                     <button
                         onClick={() => setShowNotifications(!showNotifications)}
@@ -147,41 +198,76 @@ const Topbar = ({ onMenuClick }) => {
                     </AnimatePresence>
                 </div>
 
-                <div className="h-8 w-px bg-gray-100 mx-1"></div>
-                <button
-                    onClick={() => {
-                        if (location.pathname.startsWith('/ecs')) {
-                            navigate('/ecs/profile');
-                        } else if (location.pathname.startsWith('/seller')) {
-                            navigate('/seller/profile');
-                        } else if (location.pathname.startsWith('/delivery')) {
-                            navigate('/delivery/profile');
-                        } else {
-                            navigate('/profile');
-                        }
-                    }}
-                    className="flex items-center space-x-2.5 p-1 pr-3 hover:bg-gray-50 rounded-xl transition-all duration-300 group ring-1 ring-transparent hover:ring-gray-100 shadow-sm hover:shadow-md"
-                >
-                    <div className={cn(
-                        "h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-lg group-hover:scale-105 transition-transform",
-                        isSeller
-                            ? "bg-gradient-to-br from-[#E71D28] to-primary-dark shadow-[#e71d28]/20"
-                            : "bg-gradient-to-br from-primary to-[#c41922] shadow-primary/20"
-                    )}>
-                        {user?.name?.[0] || 'A'}
-                    </div>
-                    <div>
-                        <p className="text-xs font-bold text-gray-900 leading-tight">{user?.name || 'Demo User'}</p>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{user?.role || 'Member'}</p>
-                    </div>
-                </button>
-                <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-1.5 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all duration-300 font-bold text-xs shadow-sm hover:shadow-rose-100/50"
-                >
-                    <HiOutlineLogout className="h-4 w-4" />
-                    <span className="hidden lg:block">Sign Out</span>
-                </button>
+                <div className="h-8 w-px bg-gray-200/80 mx-1"></div>
+
+                {isSeller ? (
+                    <button
+                        onClick={() => navigate('/seller/profile')}
+                        className="flex items-center space-x-2.5 p-1.5 pr-3 hover:bg-slate-100/80 rounded-2xl transition-all duration-200 group border border-transparent hover:border-slate-200/80 shadow-sm"
+                        title="View Store Profile"
+                    >
+                        <div className="relative flex-shrink-0">
+                            {shopImage ? (
+                                <img
+                                    src={shopImage}
+                                    alt={shopName}
+                                    className="h-10 w-10 rounded-xl object-cover border border-slate-200 shadow-sm group-hover:scale-105 transition-transform"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                />
+                            ) : null}
+                            <div className={cn(
+                                "h-10 w-10 rounded-xl bg-gradient-to-br from-[#E71D28] to-[#a2141c] flex items-center justify-center text-white shadow-md shadow-[#E71D28]/20 group-hover:scale-105 transition-transform",
+                                shopImage ? "hidden" : "flex"
+                            )}>
+                                <Store className="h-5 w-5 text-white" />
+                            </div>
+                            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                        </div>
+                        <div className="text-left hidden sm:block">
+                            <p className="text-xs md:text-sm font-bold text-slate-900 leading-tight group-hover:text-[#E71D28] transition-colors truncate max-w-[130px] md:max-w-[180px]">
+                                {shopName}
+                            </p>
+                            <p className="text-[10px] text-slate-500 font-medium leading-tight truncate max-w-[130px] md:max-w-[180px] mt-0.5">
+                                {ownerName ? `${ownerName} • Store` : businessType}
+                            </p>
+                        </div>
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => {
+                            if (location.pathname.startsWith('/ecs')) {
+                                navigate('/ecs/profile');
+                            } else if (location.pathname.startsWith('/delivery')) {
+                                navigate('/delivery/profile');
+                            } else {
+                                navigate('/profile');
+                            }
+                        }}
+                        className="flex items-center space-x-2.5 p-1 pr-3 hover:bg-gray-50 rounded-xl transition-all duration-300 group ring-1 ring-transparent hover:ring-gray-100 shadow-sm hover:shadow-md"
+                    >
+                        <div className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-lg group-hover:scale-105 transition-transform bg-gradient-to-br from-primary to-[#c41922] shadow-primary/20">
+                            {user?.name?.[0] || 'A'}
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold text-gray-900 leading-tight">{user?.name || 'Demo User'}</p>
+                            <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">{user?.role || 'Member'}</p>
+                        </div>
+                    </button>
+                )}
+
+                {/* Sign out button shown only when not seller (seller has it in sidebar bottom) */}
+                {!isSeller && (
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-1.5 px-3 py-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-all duration-300 font-bold text-xs shadow-sm hover:shadow-rose-100/50"
+                    >
+                        <HiOutlineLogout className="h-4 w-4" />
+                        <span className="hidden lg:block">Sign Out</span>
+                    </button>
+                )}
             </div>
         </header>
     );

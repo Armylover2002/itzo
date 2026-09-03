@@ -460,9 +460,9 @@ export default function CollectCash() {
                         <td className="px-6 py-4 whitespace-nowrap text-center">
                           <button
                             onClick={() => handleViewTransaction(transaction)}
-                            className="p-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
+                            className="p-2 rounded-lg bg-[#f7f3fc] hover:bg-[#f0e7f9] transition-colors"
                           >
-                            <Eye className="w-4 h-4 text-orange-600" />
+                            <Eye className="w-4 h-4 text-[#550fa8]" />
                           </button>
                         </td>
                       )}
@@ -516,7 +516,7 @@ export default function CollectCash() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>
@@ -540,7 +540,7 @@ export default function CollectCash() {
           <DialogFooterComponent className="px-6 pb-6">
             <button
               onClick={() => setShowSuccessDialog(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               OK
             </button>

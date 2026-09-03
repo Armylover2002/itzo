@@ -261,3 +261,110 @@ export async function sendRestaurantApprovalEmail(to, restaurantName) {
 }
 
 
+
+/**
+ * Approval email for a partner, carrying the partnership certificate as a PDF.
+ *
+ * Used for both restaurants and quick-commerce sellers, and for every approval —
+ * a first onboarding as well as an approval after a rejection and re-application.
+ *
+ * @param {string} to - partner's email address
+ * @param {object} options
+ * @param {'restaurant'|'seller'} options.type
+ * @param {string} options.partnerName - shop / restaurant name
+ * @param {string} options.partnerId - readable partner id shown on the certificate
+ * @param {Date|string} [options.onboardingDate]
+ * @returns {Promise<boolean>} true when the mail was accepted for delivery
+ */
+export async function sendPartnerApprovalCertificateEmail(to, options = {}) {
+    if (!to) return false;
+
+    const trans = getTransporter();
+    if (!trans) {
+        logger.warn('Partner approval certificate email skipped: SMTP not configured');
+        return false;
+    }
+
+    const { type, partnerName, partnerId, onboardingDate } = options;
+    const { generatePartnerCertificate, getCertificateFileName, getPartnerPreset } =
+        await import('../services/partnerCertificate.service.js');
+
+    const preset = getPartnerPreset(type);
+    if (!preset) {
+        logger.warn(`Partner approval email skipped: unknown partner type "${type}"`);
+        return false;
+    }
+
+    const certificate = await generatePartnerCertificate(type, {
+        partnerName,
+        partnerId,
+        onboardingDate,
+    });
+
+    const from = config.emailFrom || config.emailUser;
+    const accent = `rgb(${preset.accent.join(',')})`;
+    const subject = `Welcome aboard! "${partnerName}" is approved – ${preset.brand}`;
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 560px; margin: 0 auto; padding: 24px;">
+  <h2 style="color: ${accent}; margin-bottom: 4px;">Congratulations! 🎉</h2>
+  <p style="margin-top: 0; color: #666; font-size: 13px;">${preset.company}</p>
+  <p>Dear Partner,</p>
+  <p><strong>${partnerName}</strong> has been successfully verified and onboarded as an
+     <strong>${preset.partnerLabel}</strong>.</p>
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background: #f7f7f9; border-radius: 8px; margin: 16px 0;">
+    <tr><td style="padding: 10px 14px; color: #666; font-size: 13px;">${preset.idLabel}</td>
+        <td style="padding: 10px 14px; font-weight: bold; text-align: right;">${partnerId}</td></tr>
+    <tr><td style="padding: 10px 14px; color: #666; font-size: 13px; border-top: 1px solid #e6e6e6;">Onboarding date</td>
+        <td style="padding: 10px 14px; font-weight: bold; text-align: right; border-top: 1px solid #e6e6e6;">${new Date(onboardingDate || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</td></tr>
+  </table>
+  ${certificate
+        ? '<p>Your official <strong>Certificate of Partnership</strong> is attached to this email as a PDF.</p>'
+        : ''}
+  <p>You can now log in to your dashboard and start operating.</p>
+  <p>We look forward to building a successful and long-term partnership.</p>
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+  <p style="color: #999; font-size: 12px;">${preset.tagline}<br>${preset.brand} Team</p>
+</body>
+</html>`;
+
+    const text = [
+        'Congratulations!',
+        '',
+        `${partnerName} has been successfully verified and onboarded as an ${preset.partnerLabel}.`,
+        '',
+        `${preset.idLabel}: ${partnerId}`,
+        `Onboarding date: ${new Date(onboardingDate || Date.now()).toLocaleDateString('en-IN')}`,
+        '',
+        certificate ? 'Your Certificate of Partnership is attached as a PDF.' : '',
+        'You can now log in to your dashboard and start operating.',
+        '',
+        `${preset.tagline}`,
+        `${preset.brand} Team`,
+    ].filter(Boolean).join('\n');
+
+    try {
+        await trans.sendMail({
+            from: typeof from === 'string' && from.includes('<') ? from : `${preset.brand} <${from}>`,
+            to,
+            subject,
+            text,
+            html,
+            attachments: certificate
+                ? [{
+                    filename: getCertificateFileName(type, partnerName),
+                    content: certificate,
+                    contentType: 'application/pdf',
+                }]
+                : [],
+        });
+        logger.info(`Partner approval certificate email sent to ${to} (${type})`);
+        return true;
+    } catch (err) {
+        logger.error(`Failed to send partner approval certificate email to ${to}: ${err.message}`);
+        return false;
+    }
+}

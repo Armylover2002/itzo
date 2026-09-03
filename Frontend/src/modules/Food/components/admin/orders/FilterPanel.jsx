@@ -67,7 +67,7 @@ export default function FilterPanel({
                     onClick={() => setFilters(prev => ({ ...prev, paymentStatus: status === "All" ? "" : status }))}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       filters.paymentStatus === status || (status === "All" && !filters.paymentStatus)
-                        ? "bg-emerald-500 text-white shadow-md"
+                        ? "bg-[#6412c6] text-white shadow-md"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
@@ -91,7 +91,7 @@ export default function FilterPanel({
                     onClick={() => setFilters(prev => ({ ...prev, deliveryType: type === "All" ? "" : type }))}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       filters.deliveryType === type || (type === "All" && !filters.deliveryType)
-                        ? "bg-emerald-500 text-white shadow-md"
+                        ? "bg-[#6412c6] text-white shadow-md"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
@@ -185,7 +185,7 @@ export default function FilterPanel({
           </button>
           <button
             onClick={onApply}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+            className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
           >
             Apply Filters
           </button>

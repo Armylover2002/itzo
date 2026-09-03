@@ -72,7 +72,7 @@ export default function MixedOrderEligibility() {
       {/* Header Section */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#6412c6] to-[#550fa8] flex items-center justify-center">
             <Settings2 className="w-6 h-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Mixed Order Eligibility</h1>

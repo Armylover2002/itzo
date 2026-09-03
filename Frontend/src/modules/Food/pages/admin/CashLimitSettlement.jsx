@@ -174,7 +174,7 @@ export default function CashLimitSettlement() {
                           {formatCurrency(tx.amount)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-orange-100 text-orange-700 capitalize">
+                          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#f0e7f9] text-[#460d8b] capitalize">
                             {tx.paymentMethod || "Razorpay"}
                           </span>
                         </td>

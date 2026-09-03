@@ -75,13 +75,13 @@ export default function ZonesTopbar({
           <button 
             onClick={onFilterClick}
             className={`px-2.5 py-1.5 text-[11px] font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-1 transition-all relative ${
-              activeFiltersCount > 0 ? "border-emerald-500 bg-emerald-50" : ""
+              activeFiltersCount > 0 ? "border-[#6412c6] bg-[#f0e7f9]" : ""
             }`}
           >
             <Filter className="w-3 h-3" />
             <span>Filters</span>
             {activeFiltersCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#6412c6] text-white rounded-full text-[9px] flex items-center justify-center font-bold">
                 {activeFiltersCount}
               </span>
             )}

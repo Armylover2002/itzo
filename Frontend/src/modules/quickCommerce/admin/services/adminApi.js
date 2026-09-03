@@ -18,7 +18,7 @@ const mapBusinessSettings = (raw = {}) => ({
   timezone: 'Asia/Kolkata',
   logoUrl: raw.logo?.url || '',
   faviconUrl: raw.favicon?.url || '',
-  primaryColor: '#FE5502',
+  primaryColor: '#6412C6',
   secondaryColor: '#f59e0b',
   dangerColor: '#ef4444',
   successColor: '#10b981',
@@ -95,7 +95,7 @@ async function getQuickStatsPayload() {
   const categoryData = categories.slice(0, 5).map((category, index) => ({
     name: category.name,
     value: index + 1,
-    color: category.headerColor || category.accentColor || ['#FE5502', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6'][index % 5],
+    color: category.headerColor || category.accentColor || ['#6412C6', '#f59e0b', '#3b82f6', '#ef4444', '#8b5cf6'][index % 5],
   }));
 
   const recentOrders = orders.slice(0, 5).map((order) => ({
@@ -310,19 +310,6 @@ export const adminApi = {
   getFeeSettings: () => axiosInstance.get('/quick-commerce/admin/fee-settings'),
   createOrUpdateFeeSettings: (body) =>
     axiosInstance.put('/quick-commerce/admin/fee-settings', body ?? {}),
-  getDeliveryCommissionRules: () =>
-    axiosInstance.get('/quick-commerce/admin/delivery/commission-rules'),
-  createDeliveryCommissionRule: (body) =>
-    axiosInstance.post('/quick-commerce/admin/delivery/commission-rules', body ?? {}),
-  updateDeliveryCommissionRule: (id, body) =>
-    axiosInstance.patch(`/quick-commerce/admin/delivery/commission-rules/${String(id)}`, body ?? {}),
-  deleteDeliveryCommissionRule: (id) =>
-    axiosInstance.delete(`/quick-commerce/admin/delivery/commission-rules/${String(id)}`),
-  toggleDeliveryCommissionRuleStatus: (id, status) =>
-    axiosInstance.patch(
-      `/quick-commerce/admin/delivery/commission-rules/${String(id)}/status`,
-      { status: Boolean(status) },
-    ),
   getPlatformSettings: () => axiosInstance.get('/quick-commerce/admin/fee-settings'),
   updatePlatformSettings: (body) =>
     axiosInstance.put('/quick-commerce/admin/fee-settings', body ?? {}),
@@ -374,6 +361,7 @@ export const adminApi = {
   createCoupon: (payload) => axiosInstance.post('/quick-commerce/admin/coupons', payload),
   updateCoupon: (id, payload) => axiosInstance.put(`/quick-commerce/admin/coupons/${id}`, payload),
   deleteCoupon: (id) => axiosInstance.delete(`/quick-commerce/admin/coupons/${id}`),
+  toggleCouponStatus: (id, isActive) => axiosInstance.put(`/quick-commerce/admin/coupons/${id}`, { isActive }),
 
   // Banner Management
   getBanners: (params) => axiosInstance.get('/quick-commerce/admin/banners', { params }),

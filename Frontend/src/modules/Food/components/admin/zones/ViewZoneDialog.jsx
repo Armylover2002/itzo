@@ -54,7 +54,7 @@ export default function ViewZoneDialog({ isOpen, onOpenChange, zone }) {
               <div className="space-y-1 col-span-2">
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Default Status</p>
                 {zone.isDefault ? (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-[#f0e7f9] text-[#460d8b]">
                     Default Zone
                   </span>
                 ) : (

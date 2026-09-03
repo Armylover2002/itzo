@@ -51,10 +51,10 @@ const getStatusStyles = (status) => {
     const normalizedStatus = String(status || 'pending').trim().toLowerCase();
     switch (normalizedStatus) {
         case 'pending': return 'bg-amber-100 text-amber-700 border-amber-200';
-        case 'confirmed': return 'bg-orange-100 text-orange-700 border-orange-200';
-        case 'packed': return 'bg-orange-100 text-orange-700 border-orange-200';
-        case 'ready_for_pickup': return 'bg-orange-100 text-orange-700 border-orange-200';
-        case 'out_for_delivery': return 'bg-orange-100 text-orange-700 border-orange-200';
+        case 'confirmed': return 'bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]';
+        case 'packed': return 'bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]';
+        case 'ready_for_pickup': return 'bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]';
+        case 'out_for_delivery': return 'bg-[#f0e7f9] text-[#460d8b] border-[#d8c4f1]';
         case 'delivered': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
         case 'cancelled': return 'bg-rose-100 text-rose-700 border-rose-200';
         default: return 'bg-slate-100 text-slate-700 border-slate-200';
@@ -229,7 +229,7 @@ export default function OrderDetail() {
     if (isLoading) {
         return (
             <div className="min-h-[400px] flex flex-col items-center justify-center gap-4">
-                <div className="h-12 w-12 border-4 border-fuchsia-600 border-t-transparent rounded-full animate-spin" />
+                <div className="h-12 w-12 border-4 border-[#6412c6] border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs font-black text-slate-400 uppercase tracking-[4px]">Accessing Intelligence...</p>
             </div>
         );
@@ -294,7 +294,7 @@ export default function OrderDetail() {
                                 <Box className="h-4 w-4 text-primary" />
                                 Items in Order
                             </h3>
-                            <Badge className="bg-orange-50 text-orange-700 border-none text-[9px] font-black">{orderItems.length} ITEMS</Badge>
+                            <Badge className="bg-[#f7f3fc] text-[#460d8b] border-none text-[9px] font-black">{orderItems.length} ITEMS</Badge>
                         </div>
                         <div className="p-0 overflow-x-auto">
                             <table className="w-full text-left border-collapse">
@@ -350,7 +350,7 @@ export default function OrderDetail() {
                             <div className="h-px w-full max-w-[240px] bg-slate-200 my-2" />
                             <div className="flex items-center justify-between w-full max-w-[240px]">
                                 <span className="text-xs font-black text-slate-900 uppercase tracking-tight">Total Payable</span>
-                                <span className="text-2xl font-black text-fuchsia-600">{formatCurrency(Number(order.pricing?.total || 0) + Number(order.pricing?.platformFee || 0))}</span>
+                                <span className="text-2xl font-black text-[#6412c6]">{formatCurrency(Number(order.pricing?.total || 0) + Number(order.pricing?.platformFee || 0))}</span>
                             </div>
                         </div>
                     </Card>
@@ -361,7 +361,7 @@ export default function OrderDetail() {
                             Shop Node Information
                         </h4>
                         <div className="flex items-center gap-4">
-                            <div className="h-16 w-16 bg-orange-50 rounded-2xl flex items-center justify-center font-black text-orange-600 uppercase">
+                            <div className="h-16 w-16 bg-[#f7f3fc] rounded-2xl flex items-center justify-center font-black text-[#550fa8] uppercase">
                                 {order.seller?.shopName?.[0] || 'S'}
                             </div>
                             <div className="text-left">
@@ -402,7 +402,7 @@ export default function OrderDetail() {
                             Customer Node Information
                         </h4>
                         <div className="flex items-center gap-4">
-                            <div className="h-16 w-16 bg-orange-50 rounded-2xl flex items-center justify-center font-black text-primary uppercase">
+                            <div className="h-16 w-16 bg-[#f7f3fc] rounded-2xl flex items-center justify-center font-black text-primary uppercase">
                                 {order.customer?.name?.split(' ').map((name) => name[0]).join('') || 'C'}
                             </div>
                             <div className="text-left">

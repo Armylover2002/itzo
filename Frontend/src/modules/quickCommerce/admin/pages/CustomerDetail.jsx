@@ -186,7 +186,7 @@ const CustomerDetail = () => {
                 </Card>
 
                 <Card className="p-5 border-none shadow-md ring-1 ring-slate-100 bg-white rounded-2xl flex items-center gap-4">
-                    <div className="p-3.5 bg-orange-50 rounded-2xl text-primary shrink-0">
+                    <div className="p-3.5 bg-[#f7f3fc] rounded-2xl text-primary shrink-0">
                         <ShoppingBag className="h-6 w-6" />
                     </div>
                     <div>
@@ -442,7 +442,7 @@ const CustomerDetail = () => {
                                         className={cn(
                                             "p-4 rounded-xl ring-1 transition-all",
                                             addr.isDefault
-                                                ? "bg-orange-50/40 ring-orange-200"
+                                                ? "bg-[#f7f3fc]/40 ring-[#d8c4f1]"
                                                 : "bg-slate-50/80 ring-slate-100 hover:ring-slate-200"
                                         )}
                                     >

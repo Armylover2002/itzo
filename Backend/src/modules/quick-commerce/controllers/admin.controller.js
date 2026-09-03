@@ -11,7 +11,6 @@ import { updateSellerProfileData } from '../seller/controllers/seller.controller
 import { QuickZone } from '../models/quick_zone.model.js';
 import { capPolygonPoints } from '../../../utils/geo.js';
 import { QuickCoupon } from '../models/coupon.model.js';
-import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 import { processRefund as processFoodRefund } from '../../food/admin/services/admin.service.js';
 import { getIO, rooms } from '../../../config/socket.js';
 import { uploadImageBuffer } from '../../../services/upload.service.js';
@@ -383,8 +382,6 @@ const buildCategoryTree = (categories) => {
 };
 
 export const getAdminStats = async (_req, res) => {
-  await ensureQuickCommerceSeedData();
-
   const [categories, products, orders, sellers, users, revenueAgg] = await Promise.all([
     QuickCategory.countDocuments({ isActive: true }),
     QuickProduct.countDocuments({ isActive: true }),
@@ -411,7 +408,6 @@ export const getAdminStats = async (_req, res) => {
 };
 
 export const getAdminCategories = async (_req, res) => {
-  await ensureQuickCommerceSeedData();
   const {
     type,
     search,
@@ -865,7 +861,6 @@ export const removeCategory = async (req, res) => {
 };
 
 export const getAdminProducts = async (req, res) => {
-  await ensureQuickCommerceSeedData();
   const {
     categoryId,
     category,
@@ -1829,6 +1824,24 @@ export const approveAdminSellerRequest = async (req, res) => {
     link: '/seller',
   });
 
+  // Approval mail with the partnership certificate attached. Fired on every
+  // approval, including one that follows a rejection and re-application, and
+  // deliberately not awaited so a slow mail server never blocks the response.
+  if (seller.email) {
+    import('../../../utils/email.js')
+      .then(({ sendPartnerApprovalCertificateEmail }) =>
+        sendPartnerApprovalCertificateEmail(seller.email, {
+          type: 'seller',
+          partnerName: seller.shopName || seller.name || 'Store',
+          partnerId: String(seller._id),
+          onboardingDate: seller.approvedAt,
+        }),
+      )
+      .catch((error) =>
+        console.error('Failed to send seller approval certificate email:', error.message),
+      );
+  }
+
   try {
     const io = getIO();
     if (io) {
@@ -2163,16 +2176,35 @@ export const getAdminCoupons = async (req, res) => {
   try {
     const { status, search } = req.query;
     const query = {};
+    const now = new Date();
+
     if (status && status !== 'all') {
-      query.isActive = status === 'active';
+      if (status === 'active') {
+        query.isActive = true;
+        query.$and = [
+          { $or: [{ validFrom: null }, { validFrom: { $exists: false } }, { validFrom: { $lte: now } }] },
+          { $or: [{ validTill: null }, { validTill: { $exists: false } }, { validTill: { $gte: now } }] },
+        ];
+      } else if (status === 'expired') {
+        query.validTill = { $lt: now };
+      } else if (status === 'scheduled') {
+        query.validFrom = { $gt: now };
+      } else if (status === 'inactive') {
+        query.isActive = false;
+      }
     }
+
     if (search) {
       query.$or = [
         { code: { $regex: search, $options: 'i' } },
         { title: { $regex: search, $options: 'i' } },
       ];
     }
-    const coupons = await QuickCoupon.find(query).sort({ createdAt: -1 }).lean();
+    const coupons = await QuickCoupon.find(query)
+      .populate('sellerId', 'name storeName shopName phone shopInfo logo avatar image')
+      .populate('sellerIds', 'name storeName shopName phone shopInfo logo avatar image')
+      .sort({ createdAt: -1 })
+      .lean();
     return res.json({ success: true, result: coupons });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message || 'Failed to fetch coupons' });
@@ -2182,20 +2214,72 @@ export const getAdminCoupons = async (req, res) => {
 export const createAdminCoupon = async (req, res) => {
   try {
     const body = { ...req.body };
-    // Sanitize: remove empty-string values for optional fields so Mongoose uses defaults
-    ['validFrom', 'validTill'].forEach(k => {
-      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
+    if (body.code) {
+      body.code = String(body.code).trim().toUpperCase();
+    }
+    // Dates formatting: ensure start of day and end of day so same-day coupons remain valid
+    if (body.validFrom) {
+      const fromDate = new Date(body.validFrom);
+      if (!isNaN(fromDate.getTime())) {
+        fromDate.setHours(0, 0, 0, 0);
+        body.validFrom = fromDate;
+      }
+    } else {
+      delete body.validFrom;
+    }
+
+    if (body.validTill) {
+      const tillDate = new Date(body.validTill);
+      if (!isNaN(tillDate.getTime())) {
+        tillDate.setHours(23, 59, 59, 999);
+        body.validTill = tillDate;
+      }
+    } else {
+      delete body.validTill;
+    }
+
+    // Sanitize optional numbers
+    ['maxDiscount', 'usageLimit', 'minOrderValue'].forEach(k => {
+      if (body[k] === '' || body[k] === null || body[k] === undefined) {
+        delete body[k];
+      } else {
+        body[k] = Number(body[k]);
+      }
     });
-    ['maxDiscount', 'usageLimit'].forEach(k => {
-      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
-    });
-    // Ensure title falls back to code if not provided
+
+    if (body.discountValue !== undefined) {
+      body.discountValue = Number(body.discountValue);
+    }
+
+    if (body.scope === 'seller') {
+      let ids = [];
+      if (Array.isArray(body.sellerIds)) {
+        ids = body.sellerIds.filter(Boolean);
+      } else if (body.sellerId) {
+        ids = [body.sellerId];
+      }
+      body.sellerIds = ids;
+      body.sellerId = ids[0] || null;
+      body.scope = 'seller';
+    } else {
+      body.scope = 'all';
+      body.sellerId = null;
+      body.sellerIds = [];
+    }
+
+    if (!body.couponType) {
+      body.couponType = 'generic';
+    }
+
     if (!body.title) body.title = body.code || '';
     const coupon = await QuickCoupon.create(body);
-    return res.status(201).json({ success: true, result: coupon });
+    const populated = await QuickCoupon.findById(coupon._id)
+      .populate('sellerId', 'name storeName shopName phone shopInfo logo avatar image')
+      .populate('sellerIds', 'name storeName shopName phone shopInfo logo avatar image')
+      .lean();
+    return res.status(201).json({ success: true, result: populated || coupon });
   } catch (error) {
     console.error('[createAdminCoupon] Error:', error.message);
-    // Return duplicate key error as a clear message
     if (error.code === 11000) {
       return res.status(409).json({ success: false, message: 'A coupon with this code already exists' });
     }
@@ -2206,13 +2290,63 @@ export const createAdminCoupon = async (req, res) => {
 export const updateAdminCoupon = async (req, res) => {
   try {
     const body = { ...req.body };
-    ['validFrom', 'validTill'].forEach(k => {
-      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
-    });
+    if (body.code) {
+      body.code = String(body.code).trim().toUpperCase();
+    }
+    if (body.validFrom) {
+      const fromDate = new Date(body.validFrom);
+      if (!isNaN(fromDate.getTime())) {
+        fromDate.setHours(0, 0, 0, 0);
+        body.validFrom = fromDate;
+      }
+    } else if (body.validFrom === '' || body.validFrom === null) {
+      delete body.validFrom;
+    }
+
+    if (body.validTill) {
+      const tillDate = new Date(body.validTill);
+      if (!isNaN(tillDate.getTime())) {
+        tillDate.setHours(23, 59, 59, 999);
+        body.validTill = tillDate;
+      }
+    } else if (body.validTill === '' || body.validTill === null) {
+      delete body.validTill;
+    }
+
     ['maxDiscount', 'usageLimit'].forEach(k => {
-      if (body[k] === '' || body[k] === null || body[k] === undefined) delete body[k];
+      if (body[k] === '' || body[k] === null || body[k] === undefined) {
+        delete body[k];
+      } else {
+        body[k] = Number(body[k]);
+      }
     });
-    const coupon = await QuickCoupon.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
+
+    if (body.discountValue !== undefined && body.discountValue !== '') {
+      body.discountValue = Number(body.discountValue);
+    }
+    if (body.minOrderValue !== undefined && body.minOrderValue !== '') {
+      body.minOrderValue = Number(body.minOrderValue);
+    }
+
+    if (body.scope === 'seller') {
+      let ids = [];
+      if (Array.isArray(body.sellerIds)) {
+        ids = body.sellerIds.filter(Boolean);
+      } else if (body.sellerId) {
+        ids = [body.sellerId];
+      }
+      body.sellerIds = ids;
+      body.sellerId = ids[0] || null;
+      body.scope = 'seller';
+    } else if (body.scope === 'all') {
+      body.scope = 'all';
+      body.sellerId = null;
+      body.sellerIds = [];
+    }
+
+    const coupon = await QuickCoupon.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true })
+      .populate('sellerId', 'name storeName shopName phone shopInfo logo avatar image')
+      .populate('sellerIds', 'name storeName shopName phone shopInfo logo avatar image');
     if (!coupon) return res.status(404).json({ success: false, message: 'Coupon not found' });
     return res.json({ success: true, result: coupon });
   } catch (error) {

@@ -171,7 +171,7 @@ const CustomerManagement = () => {
                 title="Customers"
                 description="Manage and track all customer accounts"
                 badge={
-                    <div className="ds-stat-card-icon bg-orange-50">
+                    <div className="ds-stat-card-icon bg-[#f7f3fc]">
                         <Users className="ds-icon-lg text-primary" />
                     </div>
                 }
@@ -196,7 +196,7 @@ const CustomerManagement = () => {
                     value={stats.total}
                     icon={Users}
                     color="text-primary"
-                    bg="bg-orange-50"
+                    bg="bg-[#f7f3fc]"
                 />
                 <StatCard
                     label="Active Users"
@@ -210,7 +210,7 @@ const CustomerManagement = () => {
                     value={stats.newToday}
                     icon={UserPlus}
                     color="text-primary"
-                    bg="bg-orange-50"
+                    bg="bg-[#f7f3fc]"
                 />
             </div>
 

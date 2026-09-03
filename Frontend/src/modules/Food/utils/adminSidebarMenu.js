@@ -180,7 +180,6 @@ export const adminSidebarMenu = [
       { type: "link", label: "Cash Pay Requests", permissionKey: "settlement", path: "/ecs/food/cash-pay-requests", icon: "FileImage" },
       { type: "link", label: "Delivery Withdrawal", permissionKey: "withdrawal", path: "/ecs/food/delivery-withdrawal", icon: "Wallet" },
       { type: "link", label: "Delivery boy Wallet", permissionKey: "wallet", path: "/ecs/food/delivery-boy-wallet", icon: "PiggyBank" },
-      // { type: "link", label: "Delivery Boy Commission", permissionKey: "commission", path: "/ecs/food/delivery-boy-commission", icon: "DollarSign" },
       { type: "link", label: "Delivery Emergency Help", permissionKey: "emergency_help", path: "/ecs/food/delivery-emergency-help", icon: "Phone" },
       { type: "link", label: "Delivery Support Tickets", permissionKey: "support_tickets", path: "/ecs/food/delivery-support-tickets", icon: "MessageSquare" },
       {

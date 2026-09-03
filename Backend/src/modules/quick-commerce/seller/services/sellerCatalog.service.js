@@ -2,60 +2,6 @@ import mongoose from "mongoose";
 import { QuickCategory } from "../../models/category.model.js";
 import { SellerNotification } from "../models/sellerNotification.model.js";
 
-const DEFAULT_CATEGORY_TREE = [
-  {
-    name: "Catalog",
-    slug: "catalog",
-    children: [
-      {
-        name: "Groceries",
-        slug: "groceries",
-        children: [
-          { name: "Staples", slug: "staples" },
-          { name: "Dairy & Breakfast", slug: "dairy-breakfast" },
-          { name: "Snacks", slug: "snacks" },
-        ],
-      },
-      {
-        name: "Fresh",
-        slug: "fresh",
-        children: [
-          { name: "Fruits", slug: "fruits" },
-          { name: "Vegetables", slug: "vegetables" },
-          { name: "Herbs", slug: "herbs" },
-        ],
-      },
-      {
-        name: "Beverages",
-        slug: "beverages",
-        children: [
-          { name: "Soft Drinks", slug: "soft-drinks" },
-          { name: "Tea & Coffee", slug: "tea-coffee" },
-          { name: "Juices", slug: "juices" },
-        ],
-      },
-      {
-        name: "Home Essentials",
-        slug: "home-essentials",
-        children: [
-          { name: "Cleaning", slug: "cleaning" },
-          { name: "Laundry", slug: "laundry" },
-          { name: "Kitchen Care", slug: "kitchen-care" },
-        ],
-      },
-      {
-        name: "Personal Care",
-        slug: "personal-care",
-        children: [
-          { name: "Skin Care", slug: "skin-care" },
-          { name: "Hair Care", slug: "hair-care" },
-          { name: "Daily Hygiene", slug: "daily-hygiene" },
-        ],
-      },
-    ],
-  },
-];
-
 const categoryNode = (doc) => ({
   _id: doc._id,
   id: doc._id,
@@ -71,43 +17,11 @@ const toObjectId = (value) => {
   return new mongoose.Types.ObjectId(value);
 };
 
-const walkSeed = async (nodes, parentId = null, depth = 0, parentKey = "") => {
-  for (let index = 0; index < nodes.length; index += 1) {
-    const node = nodes[index];
-    const type =
-      depth <= 0 ? "header" : depth === 1 ? "category" : "subcategory";
-    const doc = await QuickCategory.findOneAndUpdate(
-      { slug: node.slug, parentId },
-      {
-        $set: {
-          isActive: true,
-          status: "active",
-        },
-        $setOnInsert: {
-          name: node.name,
-          slug: node.slug,
-          parentId,
-          type,
-          sortOrder: index,
-        },
-      },
-      { upsert: true, new: true },
-    );
-
-    if (Array.isArray(node.children) && node.children.length) {
-      await walkSeed(node.children, doc._id, depth + 1, parentKey);
-    }
-  }
-};
-
 export const ensureSellerCategoriesSeeded = async () => {
-  const existingCount = await QuickCategory.countDocuments();
-  if (existingCount > 0) return;
-  await walkSeed(DEFAULT_CATEGORY_TREE);
+  // Automatic seeding disabled permanently
 };
 
 export const buildSellerCategoryTree = async () => {
-  await ensureSellerCategoriesSeeded();
   const docs = await QuickCategory.find({ isActive: { $ne: false } })
     .sort({ sortOrder: 1, name: 1 })
     .lean();
@@ -132,7 +46,6 @@ export const buildSellerCategoryTree = async () => {
 };
 
 export const getDefaultSellerCategoryPath = async () => {
-  await ensureSellerCategoriesSeeded();
   const header = await QuickCategory.findOne({ type: "header", isActive: { $ne: false } })
     .sort({ sortOrder: 1, createdAt: 1 })
     .lean();
@@ -168,7 +81,6 @@ export const resolveSellerCategoryIds = async ({
   categoryId,
   subcategoryId,
 }) => {
-  await ensureSellerCategoriesSeeded();
   const selectedIds = [headerId, categoryId, subcategoryId]
     .map((value) => toObjectId(value))
     .filter(Boolean);

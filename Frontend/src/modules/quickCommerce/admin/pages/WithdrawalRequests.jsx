@@ -117,9 +117,9 @@ const WithdrawalRequests = () => {
     const handleSaveWithdrawalSettings = async () => {
         try {
             setSettingsSaving(true);
-            const min = minWithdrawal === '' ? undefined : Number(minWithdrawal);
-            const max = maxWithdrawal === '' ? undefined : Number(maxWithdrawal);
-            if (min !== undefined && max !== undefined && min > max) {
+            const min = minWithdrawal === '' ? null : Number(minWithdrawal);
+            const max = maxWithdrawal === '' ? null : Number(maxWithdrawal);
+            if (min !== null && max !== null && min > max) {
                 toast.error('Minimum withdrawal cannot be greater than maximum');
                 return;
             }
@@ -130,9 +130,14 @@ const WithdrawalRequests = () => {
             if (res.data.success) {
                 toast.success('Withdrawal limits saved successfully');
                 setSettingsModal(false);
+                const updated = res.data?.data?.feeSettings;
+                if (updated) {
+                    setMinWithdrawal(updated.minWithdrawal != null ? updated.minWithdrawal : '');
+                    setMaxWithdrawal(updated.maxWithdrawal != null ? updated.maxWithdrawal : '');
+                }
             }
         } catch (error) {
-            toast.error("Failed to save settings");
+            toast.error(error.response?.data?.message || "Failed to save settings");
         } finally {
             setSettingsSaving(false);
         }
@@ -208,7 +213,7 @@ const WithdrawalRequests = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
                     { label: 'Total Pending', value: `₹${(stats.sellerPendingToDistribute || 0).toLocaleString()}`, icon: Clock, color: 'amber', bg: 'bg-amber-50', iconColor: 'text-amber-500' },
-                    { label: 'Pending Payout', value: `₹${(stats.unpaidWithdrawalPayout || 0).toLocaleString()}`, icon: Banknote, color: 'orange', bg: 'bg-orange-50', iconColor: 'text-primary' },
+                    { label: 'Pending Payout', value: `₹${(stats.unpaidWithdrawalPayout || 0).toLocaleString()}`, icon: Banknote, color: 'orange', bg: 'bg-[#f7f3fc]', iconColor: 'text-primary' },
                     { label: 'Settled Today', value: stats.sellers.processed, icon: CheckCircle2, color: 'emerald', bg: 'bg-emerald-50', iconColor: 'text-emerald-500' },
                 ].map((stat, i) => (
                     <Card key={i} className="p-6 border-none shadow-sm ring-1 ring-slate-100 bg-white">
@@ -282,7 +287,7 @@ const WithdrawalRequests = () => {
                                     <tr key={req._id} className="group hover:bg-slate-50/30 transition-all">
                                         <td className="px-6 py-5 pl-8">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-2xl overflow-hidden shadow-inner ring-1 ring-slate-100 bg-orange-50">
+                                                <div className="h-12 w-12 rounded-2xl overflow-hidden shadow-inner ring-1 ring-slate-100 bg-[#f7f3fc]">
                                                     {req.user?.shopImage ? (
                                                         <img src={req.user.shopImage} alt="Shop" className="h-full w-full object-cover" />
                                                     ) : (
@@ -416,25 +421,25 @@ const WithdrawalRequests = () => {
                             </Card>
 
                             {/* Seller Payment Details */}
-                            <Card className="p-5 border-none bg-orange-50/50 ring-1 ring-orange-100 rounded-xl">
-                                <p className="ds-label mb-3 text-orange-700">Seller's Payment Details</p>
+                            <Card className="p-5 border-none bg-[#f7f3fc]/50 ring-1 ring-[#f0e7f9] rounded-xl">
+                                <p className="ds-label mb-3 text-[#460d8b]">Seller's Payment Details</p>
                                 {selectedRequest.paymentMethod === 'qr' && selectedRequest.bankDetails?.qrCodeImage ? (
                                     <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">QR Code</p>
+                                        <p className="text-[10px] font-black text-[#550fa8] uppercase tracking-widest">QR Code</p>
                                         <img src={selectedRequest.bankDetails.qrCodeImage} alt="Seller QR Code" className="w-full max-w-[220px] mx-auto rounded-xl border border-slate-200 shadow-sm" />
                                     </div>
                                 ) : selectedRequest.paymentMethod === 'upi' && selectedRequest.bankDetails?.upiId ? (
                                     <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">UPI ID</p>
+                                        <p className="text-[10px] font-black text-[#550fa8] uppercase tracking-widest">UPI ID</p>
                                         <p className="text-sm font-black text-slate-900 bg-white px-4 py-2.5 rounded-xl ring-1 ring-slate-100">{selectedRequest.bankDetails.upiId}</p>
                                     </div>
                                 ) : selectedRequest.bankDetails?.bankName ? (
                                     <div className="space-y-2">
-                                        <p className="text-[10px] font-black text-orange-600 uppercase tracking-widest">Bank Transfer</p>
+                                        <p className="text-[10px] font-black text-[#550fa8] uppercase tracking-widest">Bank Transfer</p>
                                         <div className="bg-white p-4 rounded-xl ring-1 ring-slate-100 space-y-1.5">
                                             <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Bank</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.bankName}</span></div>
                                             <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Holder</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.accountHolderName}</span></div>
-                                            <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Acct</span><span className="text-xs font-black text-slate-900">****{selectedRequest.bankDetails.accountNumberLast4}</span></div>
+                                            <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">Acct</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.accountNumber || (selectedRequest.bankDetails.accountNumberLast4 ? `****${selectedRequest.bankDetails.accountNumberLast4}` : '—')}</span></div>
                                             <div className="flex justify-between"><span className="text-[10px] font-bold text-slate-400 uppercase">IFSC</span><span className="text-xs font-black text-slate-900">{selectedRequest.bankDetails.ifscCode}</span></div>
                                         </div>
                                     </div>

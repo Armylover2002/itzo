@@ -70,7 +70,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                     { key: 'leaves', label: 'Pending Leaves', count: pendingLeaves.length },
                 ].map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === t.key ? 'bg-orange-500 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === t.key ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
                         {t.label}
                     </button>
                 ))}
@@ -110,7 +110,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                     {records.map(r => (
                                         <tr key={r._id} className="border-b border-slate-50 hover:bg-slate-50/50">
                                             <td className="px-5 py-3.5 font-medium text-slate-900">{r.employeeId?.adminId?.name || '—'}</td>
-                                            <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.employeeType === 'Field' ? 'bg-orange-50 text-orange-700' : 'bg-emerald-50 text-emerald-700'}`}>{r.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
+                                            <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.employeeType === 'Field' ? 'bg-[#f7f3fc] text-[#460d8b]' : 'bg-emerald-50 text-emerald-700'}`}>{r.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                             <td className="px-5 py-3.5 text-slate-600">{new Date(r.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' })}</td>
                                             <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${r.status === 'Present' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{r.status}</span></td>
                                             <td className="px-5 py-3.5 text-slate-600">{r.checkInTime ? new Date(r.checkInTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '—'}</td>
@@ -121,7 +121,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                                         <span className="text-emerald-600 font-medium block">🏢 {r.locationValidation.officeName}</span>
                                                     )}
                                                     {r.employeeType === 'Field' && r.routeDistance > 0 && (
-                                                        <span className="text-orange-600 font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
+                                                        <span className="text-[#550fa8] font-medium block">📍 {(r.routeDistance / 1000).toFixed(1)} km travelled</span>
                                                     )}
                                                     {r.checkInLocation?.address && (
                                                         <div className="text-slate-500 flex items-start gap-1" title={r.checkInLocation.address}>
@@ -136,7 +136,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                                         </div>
                                                     )}
                                                     {r.employeeType === 'Field' && r.checkInTime && (
-                                                        <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}` : `/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-orange-500 hover:underline block mt-1 font-medium">View Route Map</a>
+                                                        <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}` : `/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-[#6412c6] hover:underline block mt-1 font-medium">View Route Map</a>
                                                     )}
                                                     {!r.checkInLocation?.address && !r.checkOutLocation?.address && !r.locationValidation?.officeName && (
                                                         <span className="text-slate-400">—</span>
@@ -163,8 +163,8 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                         <p className="text-xs text-slate-400">Requested: {r.regularization?.requestedCheckInTime ? new Date(r.regularization.requestedCheckInTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''} - {r.regularization?.requestedCheckOutTime ? new Date(r.regularization.requestedCheckOutTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleRegAction(r._id, 'Approved')} className="px-4 h-9 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium">Approve</button>
-                                        <button onClick={() => handleRegAction(r._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium">Reject</button>
+                                        <button onClick={() => handleRegAction(r._id, 'Approved')} className="px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
+                                        <button onClick={() => handleRegAction(r._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
                                     </div>
                                 </div>
                             ))}
@@ -183,8 +183,8 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                         <p className="text-xs text-slate-400">Reason: {l.reason}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleLeaveAction(l._id, 'Approved')} className="px-4 h-9 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium">Approve</button>
-                                        <button onClick={() => handleLeaveAction(l._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium">Reject</button>
+                                        <button onClick={() => handleLeaveAction(l._id, 'Approved')} className="px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
+                                        <button onClick={() => handleLeaveAction(l._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
                                     </div>
                                 </div>
                             ))}

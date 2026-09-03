@@ -162,7 +162,7 @@ export default function Gallery() {
           {/* Top Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-4">
-              <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium flex items-center gap-2">
+              <button className="px-4 py-2 bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8] transition-colors text-sm font-medium flex items-center gap-2">
                 <HardDrive className="w-4 h-4" />
                 Local storage
               </button>
@@ -199,7 +199,7 @@ export default function Gallery() {
               </button>
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium flex items-center gap-2"
+                className="px-4 py-2 bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8] transition-colors text-sm font-medium flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 Add New
@@ -246,7 +246,7 @@ export default function Gallery() {
                       key={index}
                       className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity group relative"
                     >
-                      <div className="w-16 h-16 bg-orange-100 rounded-lg flex items-center justify-center mb-2">
+                      <div className="w-16 h-16 bg-[#f0e7f9] rounded-lg flex items-center justify-center mb-2">
                         {file.type?.startsWith("image/") ? (
                           <Image className="w-8 h-8 text-primary" />
                         ) : (
@@ -335,7 +335,7 @@ export default function Gallery() {
               </button>
               <button
                 onClick={handleUpload}
-                className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                className="px-4 py-2 text-sm bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8]"
               >
                 Upload
               </button>
@@ -375,7 +375,7 @@ export default function Gallery() {
               </button>
               <button
                 onClick={handleCreateFolder}
-                className="px-4 py-2 text-sm bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                className="px-4 py-2 text-sm bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8]"
               >
                 Create
               </button>

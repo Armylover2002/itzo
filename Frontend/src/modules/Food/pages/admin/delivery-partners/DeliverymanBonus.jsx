@@ -474,7 +474,7 @@ export default function DeliverymanBonus() {
                 <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-md">
                   <div className="relative">
                     <Folder className="w-12 h-12 text-slate-400" />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center z-10">
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#6412c6] rounded-full flex items-center justify-center z-10">
                       <span className="text-white text-xs font-bold">!</span>
                     </div>
                   </div>
@@ -552,7 +552,7 @@ export default function DeliverymanBonus() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setShowSuccessDialog(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               OK
             </button>
@@ -604,7 +604,7 @@ export default function DeliverymanBonus() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

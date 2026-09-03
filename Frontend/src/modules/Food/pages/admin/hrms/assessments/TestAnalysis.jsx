@@ -82,14 +82,14 @@ export default function TestAnalysis() {
                             placeholder="Search by name, email, phone..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                         />
                     </div>
                     <div className="relative w-full sm:w-48">
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                         >
                             <option value="">All Statuses</option>
                             <option value="Completed">Completed</option>
@@ -147,8 +147,8 @@ export default function TestAnalysis() {
                                             <div className="flex flex-col gap-1.5">
                                                 <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold w-fit ${
                                                     attempt.status === 'Completed' ? 'bg-emerald-50 text-emerald-700' :
-                                                    attempt.status === 'In_Progress' ? 'bg-orange-50 text-orange-700' :
-                                                    attempt.status === 'Timeout' ? 'bg-orange-50 text-orange-700' :
+                                                    attempt.status === 'In_Progress' ? 'bg-[#f7f3fc] text-[#460d8b]' :
+                                                    attempt.status === 'Timeout' ? 'bg-[#f7f3fc] text-[#460d8b]' :
                                                     'bg-slate-100 text-slate-700'
                                                 }`}>
                                                     {attempt.status.replace('_', ' ')}
@@ -202,7 +202,7 @@ export default function TestAnalysis() {
                                                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-colors disabled:opacity-50 ${
                                                         attempt.retakeRequested
                                                             ? 'bg-amber-100 border border-amber-300 text-amber-800 hover:bg-amber-200'
-                                                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-orange-600'
+                                                            : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-[#550fa8]'
                                                     }`}
                                                     title={attempt.retakeRequested ? 'Approve retake request by resetting this attempt' : 'Reset attempt so applicant can take test again'}
                                                 >

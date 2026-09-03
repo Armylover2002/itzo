@@ -313,7 +313,7 @@ export default function HrmsEmployees() {
         }
     };
 
-    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30";
+    const inputClass = "w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30";
 
     return (
         <div className="space-y-6">
@@ -327,7 +327,7 @@ export default function HrmsEmployees() {
                         <FileText className="w-4 h-4" /> Employee Docs
                     </a>
                     <button onClick={() => setShowOnboard(!showOnboard)}
-                        className="flex items-center gap-2 px-4 h-10 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-xl shadow-sm transition-all text-sm">
+                        className="flex items-center gap-2 px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl shadow-sm transition-all text-sm">
                         {showOnboard ? <X className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
                         {showOnboard ? 'Cancel' : 'Direct Onboard'}
                     </button>
@@ -489,7 +489,7 @@ export default function HrmsEmployees() {
                                                 return selectableEmps.map(emp => {
                                                     const isChecked = (onboardForm.assignedTeamMembers || []).includes(emp._id);
                                                     return (
-                                                        <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50/90 border border-orange-200 text-orange-900 font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
+                                                        <label key={emp._id} className={`flex items-center gap-2.5 p-2 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-[#f7f3fc]/90 border border-[#d8c4f1] text-[#28074f] font-semibold' : 'hover:bg-slate-100/80 text-slate-700'}`}>
                                                             <input type="checkbox" checked={isChecked} onChange={e => {
                                                                 const checked = e.target.checked;
                                                                 setOnboardForm(p => ({
@@ -498,7 +498,7 @@ export default function HrmsEmployees() {
                                                                         ? [...(p.assignedTeamMembers || []), emp._id]
                                                                         : (p.assignedTeamMembers || []).filter(id => id !== emp._id)
                                                                 }));
-                                                            }} className="rounded text-orange-500 focus:ring-orange-500 w-4 h-4" />
+                                                            }} className="rounded text-[#6412c6] focus:ring-[#6412c6] w-4 h-4" />
                                                             <span className="font-mono text-slate-500 text-[11px]">{emp.employeeId}</span>
                                                             <span className="truncate">{emp.adminId?.name || 'Unknown'}</span>
                                                             <span className="text-slate-400 ml-auto shrink-0">({emp.department || 'General'})</span>
@@ -557,7 +557,7 @@ export default function HrmsEmployees() {
                                         ) : zones.map(z => {
                                             const isChecked = (onboardForm.assignedZoneIds || []).includes(z._id);
                                             return (
-                                                <label key={z._id} className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50 border border-orange-200 text-orange-900 font-medium' : 'hover:bg-slate-50 text-slate-700'}`}>
+                                                <label key={z._id} className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-[#f7f3fc] border border-[#d8c4f1] text-[#28074f] font-medium' : 'hover:bg-slate-50 text-slate-700'}`}>
                                                     <input type="checkbox" checked={isChecked} onChange={e => {
                                                         setOnboardForm(p => ({
                                                             ...p,
@@ -565,7 +565,7 @@ export default function HrmsEmployees() {
                                                                 ? [...(p.assignedZoneIds || []), z._id]
                                                                 : (p.assignedZoneIds || []).filter(id => id !== z._id)
                                                         }));
-                                                    }} className="rounded text-orange-500 focus:ring-orange-500 w-3.5 h-3.5" />
+                                                    }} className="rounded text-[#6412c6] focus:ring-[#6412c6] w-3.5 h-3.5" />
                                                     <Globe className="w-3 h-3 text-slate-400 shrink-0" />
                                                     <span className="truncate">{z.name}</span>
                                                     {z.serviceLocation && <span className="text-slate-400 ml-auto text-[10px] shrink-0">({z.serviceLocation})</span>}
@@ -574,7 +574,7 @@ export default function HrmsEmployees() {
                                         })}
                                     </div>
                                     {(onboardForm.assignedZoneIds || []).length > 0 && (
-                                        <p className="text-[10px] text-orange-600 mt-1">{(onboardForm.assignedZoneIds || []).length} zone(s) selected</p>
+                                        <p className="text-[10px] text-[#550fa8] mt-1">{(onboardForm.assignedZoneIds || []).length} zone(s) selected</p>
                                     )}
                                 </div>
                             </div>
@@ -599,7 +599,7 @@ export default function HrmsEmployees() {
                     
                     <div className="pt-6 mt-6 border-t border-slate-100 flex justify-end">
                         <button onClick={handleOnboard} disabled={onboardLoading}
-                            className="px-8 h-10 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50">
+                            className="px-8 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl transition-all text-sm disabled:opacity-50">
                             {onboardLoading ? 'Processing...' : 'Complete Onboarding'}
                         </button>
                     </div>
@@ -611,11 +611,11 @@ export default function HrmsEmployees() {
                 <div className="relative">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, email, ID, dept..."
-                        className="w-full h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white" />
+                        className="w-full h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white" />
                 </div>
                 <div className="relative">
                     <select value={filterAssignmentStatus} onChange={e => setFilterAssignmentStatus(e.target.value)} 
-                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white cursor-pointer">
                         <option value="all">Assignment: All Status</option>
                         <option value="Available">Available Employees (Unassigned)</option>
                         <option value="Assigned">Assigned Employees</option>
@@ -623,7 +623,7 @@ export default function HrmsEmployees() {
                 </div>
                 <div className="relative">
                     <select value={filterManagerId} onChange={e => setFilterManagerId(e.target.value)} 
-                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white cursor-pointer">
                         <option value="all">Filter by Manager: All</option>
                         <option value="unassigned">No Manager Assigned</option>
                         {managers.map(m => (
@@ -633,7 +633,7 @@ export default function HrmsEmployees() {
                 </div>
                 <div className="relative">
                     <select value={filterEmployeeType} onChange={e => setFilterEmployeeType(e.target.value)} 
-                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white cursor-pointer">
                         <option value="all">Type: All Types</option>
                         <option value="Office">Office Employees</option>
                         <option value="Field">Field Employees</option>
@@ -641,7 +641,7 @@ export default function HrmsEmployees() {
                 </div>
                 <div className="relative">
                     <select value={filterZoneId} onChange={e => setFilterZoneId(e.target.value)} 
-                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-white cursor-pointer">
+                        className="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white cursor-pointer">
                         <option value="all">Zone: All Zones</option>
                         {zones.map(z => (
                             <option key={z._id} value={z._id}>{z.name}{z.serviceLocation ? ` (${z.serviceLocation})` : ''}</option>
@@ -662,7 +662,7 @@ export default function HrmsEmployees() {
                             <div className="flex items-center gap-2">
                                 {!window.location.pathname.startsWith('/hrms') && (
                                     !editMode ? (
-                                        <button onClick={() => startEditEmployee(selectedEmployee)} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium rounded-lg text-xs transition-colors border border-orange-200">
+                                        <button onClick={() => startEditEmployee(selectedEmployee)} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#f7f3fc] hover:bg-[#f0e7f9] text-[#550fa8] font-medium rounded-lg text-xs transition-colors border border-[#d8c4f1]">
                                             <Edit2 className="w-3.5 h-3.5" /> Edit
                                         </button>
                                     ) : (
@@ -670,7 +670,7 @@ export default function HrmsEmployees() {
                                             <button onClick={() => setEditMode(false)} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-lg text-xs transition-colors border border-slate-200">
                                                 <X className="w-3.5 h-3.5" /> Cancel
                                             </button>
-                                            <button onClick={handleEditSave} disabled={editSaving} className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-medium rounded-lg text-xs transition-colors disabled:opacity-50">
+                                            <button onClick={handleEditSave} disabled={editSaving} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-lg text-xs transition-colors disabled:opacity-50">
                                                 <Save className="w-3.5 h-3.5" /> {editSaving ? 'Saving...' : 'Save'}
                                             </button>
                                         </>
@@ -753,7 +753,7 @@ export default function HrmsEmployees() {
                                                 ) : zones.map(z => {
                                                     const isChecked = (editForm.assignedZoneIds || []).includes(z._id);
                                                     return (
-                                                        <label key={z._id} className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-orange-50 border border-orange-200 text-orange-900 font-medium' : 'hover:bg-slate-50 text-slate-700'}`}>
+                                                        <label key={z._id} className={`flex items-center gap-2 p-1.5 rounded-lg cursor-pointer text-xs transition-colors ${isChecked ? 'bg-[#f7f3fc] border border-[#d8c4f1] text-[#28074f] font-medium' : 'hover:bg-slate-50 text-slate-700'}`}>
                                                             <input type="checkbox" checked={isChecked} onChange={e => {
                                                                 setEditForm(p => ({
                                                                     ...p,
@@ -761,7 +761,7 @@ export default function HrmsEmployees() {
                                                                         ? [...(p.assignedZoneIds || []), z._id]
                                                                         : (p.assignedZoneIds || []).filter(id => id !== z._id)
                                                                 }));
-                                                            }} className="rounded text-orange-500 focus:ring-orange-500 w-3.5 h-3.5" />
+                                                            }} className="rounded text-[#6412c6] focus:ring-[#6412c6] w-3.5 h-3.5" />
                                                             <Globe className="w-3 h-3 text-slate-400 shrink-0" />
                                                             <span className="truncate">{z.name}</span>
                                                             {z.serviceLocation && <span className="text-slate-400 ml-auto text-[10px] shrink-0">({z.serviceLocation})</span>}
@@ -770,7 +770,7 @@ export default function HrmsEmployees() {
                                                 })}
                                             </div>
                                             {(editForm.assignedZoneIds || []).length > 0 && (
-                                                <p className="text-[10px] text-orange-600 mt-1">{(editForm.assignedZoneIds || []).length} zone(s) selected</p>
+                                                <p className="text-[10px] text-[#550fa8] mt-1">{(editForm.assignedZoneIds || []).length} zone(s) selected</p>
                                             )}
                                         </div>
                                     </div>
@@ -806,7 +806,7 @@ export default function HrmsEmployees() {
                                     {(selectedEmployee.assignedZoneIds && selectedEmployee.assignedZoneIds.length > 0) ? (
                                         <div className="flex flex-wrap gap-1.5">
                                             {selectedEmployee.assignedZoneIds.map((z, i) => (
-                                                <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                                                <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-[#f7f3fc] text-[#460d8b] border border-[#d8c4f1]">
                                                     <MapPin className="w-3 h-3" />
                                                     {typeof z === 'object' ? `${z.name}${z.serviceLocation ? ` (${z.serviceLocation})` : ''}` : z}
                                                 </span>
@@ -820,7 +820,7 @@ export default function HrmsEmployees() {
                                 <div className="col-span-2 sm:col-span-3 mt-1">
                                     <button
                                         onClick={() => fetchEmployeeRestaurants(selectedEmployee._id)}
-                                        className="flex items-center gap-1.5 text-xs text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                                        className="flex items-center gap-1.5 text-xs text-[#550fa8] hover:text-[#460d8b] font-medium transition-colors"
                                     >
                                         <Store className="w-3.5 h-3.5" /> View Restaurants Onboarded / Assigned
                                     </button>
@@ -834,7 +834,7 @@ export default function HrmsEmployees() {
                                             {employeeRestaurants.zoneSummary?.length > 0 && (
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {employeeRestaurants.zoneSummary.map((zs, i) => (
-                                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-700 border border-orange-100">
+                                                        <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-[#f7f3fc] text-[#460d8b] border border-[#f0e7f9]">
                                                             {zs.zoneName}: {zs.count}
                                                         </span>
                                                     ))}
@@ -898,7 +898,7 @@ export default function HrmsEmployees() {
                                         {selectedEmployee.managerId ? 'Transfer To Manager:' : 'Assign Manager:'}
                                     </span>
                                     <select 
-                                        className="h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 w-full sm:w-64"
+                                        className="h-10 px-3 border border-slate-200 rounded-xl text-xs font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 w-full sm:w-64"
                                         onChange={(e) => {
                                             if (!e.target.value) return;
                                             const newManagerId = e.target.value;
@@ -924,18 +924,18 @@ export default function HrmsEmployees() {
                                 </div>
                             <div className="flex flex-wrap gap-3">
                                 {selectedEmployee.employeeType === 'Field' && (
-                                    <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${selectedEmployee._id}` : `/ecs/hrms/live-tracking?employeeId=${selectedEmployee._id}`} className="px-5 h-10 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 flex items-center gap-2 rounded-xl text-sm font-medium transition-all shadow-sm">
+                                    <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${selectedEmployee._id}` : `/ecs/hrms/live-tracking?employeeId=${selectedEmployee._id}`} className="px-5 h-10 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] flex items-center gap-2 rounded-xl text-sm font-medium transition-all shadow-sm">
                                         <MapPin className="w-4 h-4" /> View Live Track
                                     </a>
                                 )}
                                 {selectedEmployee.status === 'Active' && (
-                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Suspended')} className="px-5 h-10 bg-white border-2 border-orange-400 text-orange-500 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Suspend Employee</button>
+                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Suspended')} className="px-5 h-10 bg-white border-2 border-[#9359d7] text-[#6412c6] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium transition-all shadow-sm">Suspend Employee</button>
                                 )}
                                 {selectedEmployee.status === 'Suspended' && (
-                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Active')} className="px-5 h-10 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition-all shadow-sm">Reactivate Employee</button>
+                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Active')} className="px-5 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium transition-all shadow-sm">Reactivate Employee</button>
                                 )}
                                 {selectedEmployee.status !== 'Terminated' && (
-                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Terminated')} className="px-5 h-10 bg-white border-2 border-orange-500 text-orange-600 hover:bg-orange-50 rounded-xl text-sm font-medium transition-all shadow-sm">Terminate Employee</button>
+                                    <button onClick={() => handleStatusChange(selectedEmployee._id, 'Terminated')} className="px-5 h-10 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium transition-all shadow-sm">Terminate Employee</button>
                                 )}
                             </div>
                         </div>
@@ -974,7 +974,7 @@ export default function HrmsEmployees() {
                                         <td className="px-5 py-3.5 font-mono text-xs text-slate-600">{emp.employeeId}</td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden">
+                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#9359d7] to-amber-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden">
                                                     {emp.adminId?.profileImage ? (
                                                         <img src={emp.adminId.profileImage} alt="Profile" className="w-full h-full object-cover" />
                                                     ) : (
@@ -993,7 +993,7 @@ export default function HrmsEmployees() {
                                             {emp.assignedZoneIds && emp.assignedZoneIds.length > 0 ? (
                                                 <div className="flex flex-wrap gap-1">
                                                     {emp.assignedZoneIds.slice(0, 2).map((z, i) => (
-                                                        <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-50 text-orange-700 border border-orange-100 truncate max-w-[80px]" title={typeof z === 'object' ? z.name : z}>
+                                                        <span key={i} className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#f7f3fc] text-[#460d8b] border border-[#f0e7f9] truncate max-w-[80px]" title={typeof z === 'object' ? z.name : z}>
                                                             {typeof z === 'object' ? z.name : z}
                                                         </span>
                                                     ))}
@@ -1005,7 +1005,7 @@ export default function HrmsEmployees() {
                                                 <span className="text-xs text-slate-400">—</span>
                                             )}
                                         </td>
-                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-orange-50 text-orange-700' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
+                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.employeeType === 'Field' ? 'bg-[#f7f3fc] text-[#460d8b]' : 'bg-emerald-50 text-emerald-700'}`}>{emp.employeeType === 'Field' ? 'Field' : 'Office'}</span></td>
                                         <td className="px-5 py-3.5">
                                             {emp.status !== 'Active' ? (
                                                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
@@ -1022,11 +1022,11 @@ export default function HrmsEmployees() {
                                                 </span>
                                             )}
                                         </td>
-                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.hrmsRole === 'Manager' ? 'bg-orange-50 text-orange-700' : emp.hrmsRole === 'HR' ? 'bg-violet-50 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>{emp.hrmsRole}</span></td>
+                                        <td className="px-5 py-3.5"><span className={`px-2 py-0.5 rounded text-xs font-medium ${emp.hrmsRole === 'Manager' ? 'bg-[#f7f3fc] text-[#460d8b]' : emp.hrmsRole === 'HR' ? 'bg-violet-50 text-violet-700' : 'bg-slate-100 text-slate-600'}`}>{emp.hrmsRole}</span></td>
                                         <td className="px-5 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${emp.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>{emp.status}</span></td>
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center gap-2">
-                                                <button onClick={() => setSelectedEmployee(emp)} className="flex items-center gap-1.5 text-orange-600 hover:text-orange-700 font-medium text-xs">
+                                                <button onClick={() => setSelectedEmployee(emp)} className="flex items-center gap-1.5 text-[#550fa8] hover:text-[#460d8b] font-medium text-xs">
                                                     <Eye className="w-3.5 h-3.5" /> View
                                                 </button>
                                                 {!window.location.pathname.startsWith('/hrms') && (
@@ -1076,10 +1076,10 @@ export default function HrmsEmployees() {
                                     <p className="text-xs text-slate-500 mb-1">Current Manager</p>
                                     <p className="font-semibold text-slate-700 text-sm">{transferConfirm.currentManager}</p>
                                 </div>
-                                <ArrowRight className="w-5 h-5 text-orange-500 shrink-0" />
-                                <div className="flex-1 p-3 bg-orange-50 rounded-xl border border-orange-200">
-                                    <p className="text-xs text-orange-600 mb-1">New Manager</p>
-                                    <p className="font-semibold text-orange-800 text-sm">{transferConfirm.newManagerName || 'Unassigned'}</p>
+                                <ArrowRight className="w-5 h-5 text-[#6412c6] shrink-0" />
+                                <div className="flex-1 p-3 bg-[#f7f3fc] rounded-xl border border-[#d8c4f1]">
+                                    <p className="text-xs text-[#550fa8] mb-1">New Manager</p>
+                                    <p className="font-semibold text-[#370a6d] text-sm">{transferConfirm.newManagerName || 'Unassigned'}</p>
                                 </div>
                             </div>
                             {transferConfirm.newManagerId === 'unassigned' && (
@@ -1090,7 +1090,7 @@ export default function HrmsEmployees() {
                             <button onClick={() => setTransferConfirm(null)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors">
                                 Cancel
                             </button>
-                            <button onClick={handleTransferConfirm} className="px-5 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors shadow-sm">
+                            <button onClick={handleTransferConfirm} className="px-5 py-2 text-sm font-semibold text-white bg-[#6412c6] hover:bg-[#550fa8] rounded-xl transition-colors shadow-sm">
                                 Confirm Transfer
                             </button>
                         </div>

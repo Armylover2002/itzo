@@ -114,11 +114,11 @@ export default function JobApplicationsList() {
   const getStatusBadge = (status) => {
     switch (status) {
       case "Applied":
-        return "bg-orange-50 text-primary border border-orange-100";
+        return "bg-[#f7f3fc] text-primary border border-[#f0e7f9]";
       case "Shortlisted":
-        return "bg-orange-50 text-primary border border-orange-100";
+        return "bg-[#f7f3fc] text-primary border border-[#f0e7f9]";
       case "Interview Scheduled":
-        return "bg-orange-50 text-primary border border-orange-100";
+        return "bg-[#f7f3fc] text-primary border border-[#f0e7f9]";
       case "Rejected":
         return "bg-rose-50 text-rose-600 border border-rose-100";
       case "Hired":
@@ -135,7 +135,7 @@ export default function JobApplicationsList() {
         {/* Page Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <div className="w-10 h-10 rounded-xl bg-[#6412c6] flex items-center justify-center shadow-lg shadow-[#6412c6]/20">
               <FileText className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -149,9 +149,9 @@ export default function JobApplicationsList() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
             { label: "Total Applications", value: stats.total, color: "text-slate-900", bg: "bg-white" },
-            { label: "Today's Applications", value: stats.today, color: "text-primary", bg: "bg-orange-50/50" },
+            { label: "Today's Applications", value: stats.today, color: "text-primary", bg: "bg-[#f7f3fc]/50" },
             { label: "Pending Review", value: stats.pending, color: "text-amber-600", bg: "bg-amber-50/50" },
-            { label: "Shortlisted", value: stats.shortlisted, color: "text-primary", bg: "bg-orange-50/50" },
+            { label: "Shortlisted", value: stats.shortlisted, color: "text-primary", bg: "bg-[#f7f3fc]/50" },
             { label: "Rejected", value: stats.rejected, color: "text-rose-600", bg: "bg-rose-50/50" },
             { label: "Hired", value: stats.hired, color: "text-emerald-600", bg: "bg-emerald-50/50" },
           ].map((card, idx) => (
@@ -169,7 +169,7 @@ export default function JobApplicationsList() {
         {/* Filter Controls Accordion */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-4 text-slate-700 font-bold border-b border-slate-100 pb-3">
-            <Filter className="w-4 h-4 text-orange-500" />
+            <Filter className="w-4 h-4 text-[#6412c6]" />
             <span>Search & Filters</span>
           </div>
 
@@ -183,7 +183,7 @@ export default function JobApplicationsList() {
                   placeholder="Name, email, phone, job..."
                   value={searchQuery}
                   onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-                  className="pl-9 pr-4 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                  className="pl-9 pr-4 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               </div>
@@ -195,7 +195,7 @@ export default function JobApplicationsList() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
               >
                 <option value="">All Statuses</option>
                 {STATUS_OPTIONS.map(opt => (
@@ -212,7 +212,7 @@ export default function JobApplicationsList() {
                 placeholder="e.g. Engineering, Sales"
                 value={deptFilter}
                 onChange={(e) => { setDeptFilter(e.target.value); setPage(1); }}
-                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
               />
             </div>
 
@@ -224,7 +224,7 @@ export default function JobApplicationsList() {
                 placeholder="e.g. 2 years, Freshers"
                 value={expFilter}
                 onChange={(e) => { setExpFilter(e.target.value); setPage(1); }}
-                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
               />
             </div>
 
@@ -236,7 +236,7 @@ export default function JobApplicationsList() {
                   type="date"
                   value={startDate}
                   onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-                  className="pl-9 pr-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                  className="pl-9 pr-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
                 />
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               </div>
@@ -249,7 +249,7 @@ export default function JobApplicationsList() {
                   type="date"
                   value={endDate}
                   onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-                  className="pl-9 pr-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                  className="pl-9 pr-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
                 />
                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               </div>
@@ -261,7 +261,7 @@ export default function JobApplicationsList() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-orange-500 focus:bg-white transition-colors"
+                className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -273,7 +273,7 @@ export default function JobApplicationsList() {
             <div className="flex items-end gap-2">
               <button
                 onClick={handleResetFilters}
-                className="flex-grow py-2 text-xs font-bold text-orange-600 hover:text-white border border-orange-200 hover:bg-orange-500 rounded-xl transition-all flex items-center justify-center gap-1.5"
+                className="flex-grow py-2 text-xs font-bold text-[#550fa8] hover:text-white border border-[#d8c4f1] hover:bg-[#6412c6] rounded-xl transition-all flex items-center justify-center gap-1.5"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Reset Filters
@@ -291,7 +291,7 @@ export default function JobApplicationsList() {
           <div className="overflow-x-auto">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
                 <span className="text-xs text-slate-500">Loading applications...</span>
               </div>
             ) : applications.length === 0 ? (
@@ -356,7 +356,7 @@ export default function JobApplicationsList() {
                         <div className="flex justify-center items-center gap-1.5">
                           <button
                             onClick={() => navigate(`/ecs/food/careers/applications/${app._id}`)}
-                            className="p-2 hover:bg-slate-100 text-slate-600 hover:text-orange-500 rounded-lg transition-all"
+                            className="p-2 hover:bg-slate-100 text-slate-600 hover:text-[#6412c6] rounded-lg transition-all"
                             title="View Application"
                           >
                             <Eye className="w-4 h-4" />
@@ -412,6 +412,6 @@ export default function JobApplicationsList() {
 // Simple loader helper inline to prevent dependency warnings
 function Loader2({ className }) {
   return (
-    <div className={`animate-spin rounded-full border-4 border-slate-200 border-t-orange-500 ${className}`} />
+    <div className={`animate-spin rounded-full border-4 border-slate-200 border-t-[#6412c6] ${className}`} />
   );
 }

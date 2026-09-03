@@ -164,7 +164,7 @@ export default function ZonesTable({
                           <button
                             type="button"
                             onClick={() => onEditZone(zone)}
-                            className="p-1.5 text-primary hover:bg-orange-50 rounded transition-colors"
+                            className="p-1.5 text-primary hover:bg-[#f7f3fc] rounded transition-colors"
                             title="Edit Zone"
                           >
                             <Pencil className="w-3.5 h-3.5" />

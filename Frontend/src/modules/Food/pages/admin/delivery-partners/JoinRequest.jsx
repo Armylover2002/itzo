@@ -342,13 +342,13 @@ export default function JoinRequest() {
               <button 
                 onClick={() => setIsFilterOpen(true)}
                 className={`px-4 py-2.5 text-sm font-medium rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 flex items-center gap-2 transition-all relative ${
-                  activeFiltersCount > 0 ? "border-emerald-500 bg-emerald-50" : ""
+                  activeFiltersCount > 0 ? "border-[#6412c6] bg-[#f0e7f9]" : ""
                 }`}
               >
                 <Filter className="w-4 h-4" />
                 <span className="text-black font-bold">Filter</span>
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -521,7 +521,7 @@ export default function JoinRequest() {
                           <div className="flex flex-col gap-1">
                             <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block w-fit ${
                               request.status === "Pending" || request.status === "pending"
-                                ? "bg-orange-100 text-orange-700"
+                                ? "bg-[#f0e7f9] text-[#460d8b]"
                                 : request.status === "Denied" || request.status === "denied" || request.status === "blocked"
                                 ? "bg-red-100 text-red-700"
                                 : "bg-green-100 text-green-700"
@@ -539,7 +539,7 @@ export default function JoinRequest() {
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => handleView(request)}
-                              className="p-1.5 rounded bg-orange-50 text-primary hover:bg-orange-100 transition-colors"
+                              className="p-1.5 rounded bg-[#f7f3fc] text-primary hover:bg-[#f0e7f9] transition-colors"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -722,7 +722,7 @@ export default function JoinRequest() {
                     <div>
                       <label className="text-xs font-semibold text-slate-500 uppercase">Status</label>
                       <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium mt-1 ${
-                        viewDetails.status === 'pending' ? 'bg-orange-100 text-orange-700' :
+                        viewDetails.status === 'pending' ? 'bg-[#f0e7f9] text-[#460d8b]' :
                         viewDetails.status === 'approved' || viewDetails.status === 'active' ? 'bg-green-100 text-green-700' :
                         viewDetails.status === 'blocked' ? 'bg-red-100 text-red-700' :
                         'bg-slate-100 text-slate-700'

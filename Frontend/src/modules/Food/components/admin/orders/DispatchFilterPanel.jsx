@@ -80,7 +80,7 @@ export default function DispatchFilterPanel({ isOpen, onClose, filters, setFilte
           </button>
           <button
             onClick={onApply}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+            className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
           >
             Save
           </button>

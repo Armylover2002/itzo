@@ -150,9 +150,9 @@ export default function FeedbackExperienceReport() {
 
   const getRatingColor = (rating) => {
     if (rating <= 2) return 'bg-red-100 text-red-700'
-    if (rating <= 4) return 'bg-orange-100 text-orange-700'
+    if (rating <= 4) return 'bg-[#f0e7f9] text-[#460d8b]'
     if (rating <= 6) return 'bg-yellow-100 text-yellow-700'
-    if (rating <= 8) return 'bg-orange-100 text-orange-700'
+    if (rating <= 8) return 'bg-[#f0e7f9] text-[#460d8b]'
     return 'bg-green-100 text-green-700'
   }
 
@@ -291,7 +291,7 @@ export default function FeedbackExperienceReport() {
               <div className="flex items-center justify-end gap-3">
                 <button
                   onClick={handleReset}
-                  className="px-6 py-2.5 text-sm font-medium rounded-lg border border-primary text-primary bg-white hover:bg-orange-50 transition-all flex items-center gap-2"
+                  className="px-6 py-2.5 text-sm font-medium rounded-lg border border-primary text-primary bg-white hover:bg-[#f7f3fc] transition-all flex items-center gap-2"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Reset
@@ -299,13 +299,13 @@ export default function FeedbackExperienceReport() {
                 <button 
                   onClick={fetchFeedbackExperiences}
                   className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary transition-all flex items-center gap-2 relative ${
-                    activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                    activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
                   }`}
                 >
                   <Filter className="w-4 h-4" />
                   Filter
                   {activeFiltersCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                       {activeFiltersCount}
                     </span>
                   )}
@@ -324,7 +324,7 @@ export default function FeedbackExperienceReport() {
                   <p className="text-sm font-medium text-slate-600 mb-1">Total Feedback</p>
                   <p className="text-2xl font-bold text-slate-900">{statistics.totalFeedback || 0}</p>
                 </div>
-                <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
                   <MessageSquare className="w-6 h-6 text-primary" />
                 </div>
               </div>
@@ -463,7 +463,7 @@ export default function FeedbackExperienceReport() {
                           <span className="text-sm text-slate-700">{getExperienceLabel(feedback.experience)}</span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 capitalize">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-[#f0e7f9] text-[#460d8b] capitalize">
                             {feedback.module || 'N/A'}
                           </span>
                         </td>
@@ -476,7 +476,7 @@ export default function FeedbackExperienceReport() {
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleViewDetails(feedback)}
-                              className="p-1.5 rounded-lg hover:bg-orange-50 text-primary transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-[#f7f3fc] text-primary transition-colors"
                               title="View Details"
                             >
                               <Eye className="w-4 h-4" />
@@ -548,7 +548,7 @@ export default function FeedbackExperienceReport() {
                   <div>
                     <label className="text-sm font-semibold text-slate-700 mb-1 block">Module</label>
                     <p className="text-sm text-slate-900 mt-1">
-                      <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-orange-100 text-orange-700 capitalize">
+                      <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-[#f0e7f9] text-[#460d8b] capitalize">
                         {selectedFeedback.module || 'N/A'}
                       </span>
                     </p>

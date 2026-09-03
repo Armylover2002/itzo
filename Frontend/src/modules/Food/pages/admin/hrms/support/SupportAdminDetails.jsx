@@ -146,7 +146,7 @@ export default function SupportAdminDetails() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -192,7 +192,7 @@ export default function SupportAdminDetails() {
                         return (
                             <div key={msg._id || index} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] ${isAdmin ? 'flex-row-reverse' : 'flex-row'}`}>
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isAdmin ? 'bg-gradient-to-br from-orange-500 to-amber-500 text-white' : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isAdmin ? 'bg-gradient-to-br from-[#6412c6] to-amber-500 text-white' : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'}`}>
                                         {isAdmin ? <Building2 className="w-4 h-4" /> : <User className="w-4 h-4" />}
                                     </div>
                                     
@@ -203,7 +203,7 @@ export default function SupportAdminDetails() {
                                         
                                         <div className={`p-4 ${
                                             isAdmin 
-                                                ? 'bg-orange-50 text-slate-800 rounded-br-none border border-orange-100' 
+                                                ? 'bg-[#f7f3fc] text-slate-800 rounded-br-none border border-[#f0e7f9]' 
                                                 : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-sm'
                                         }`}>
                                             {msg.message && (
@@ -211,7 +211,7 @@ export default function SupportAdminDetails() {
                                             )}
                                             
                                             {msg.attachments && msg.attachments.length > 0 && (
-                                                <div className={`flex flex-wrap gap-2 ${msg.message ? 'mt-3 pt-3 border-t' : ''} ${isAdmin ? 'border-orange-400/50' : 'border-slate-100'}`}>
+                                                <div className={`flex flex-wrap gap-2 ${msg.message ? 'mt-3 pt-3 border-t' : ''} ${isAdmin ? 'border-[#9359d7]/50' : 'border-slate-100'}`}>
                                                     {msg.attachments.map((att, i) => (
                                                         <a 
                                                             key={i} 
@@ -220,7 +220,7 @@ export default function SupportAdminDetails() {
                                                             rel="noreferrer"
                                                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                                                                 isAdmin 
-                                                                    ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                                                                    ? 'bg-[#550fa8] hover:bg-[#460d8b] text-white' 
                                                                     : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200'
                                                             }`}
                                                         >
@@ -245,7 +245,7 @@ export default function SupportAdminDetails() {
                         {attachments.length > 0 && (
                             <div className="flex flex-wrap gap-2 px-1">
                                 {attachments.map((att, i) => (
-                                    <div key={i} className="flex items-center gap-1.5 bg-orange-50 border border-orange-100 text-orange-700 px-3 py-1.5 rounded-lg text-xs font-medium">
+                                    <div key={i} className="flex items-center gap-1.5 bg-[#f7f3fc] border border-[#f0e7f9] text-[#460d8b] px-3 py-1.5 rounded-lg text-xs font-medium">
                                         <Paperclip className="w-3.5 h-3.5" />
                                         <span className="truncate max-w-[120px]">{att.name}</span>
                                         <button type="button" onClick={() => setAttachments(prev => prev.filter((_, idx) => idx !== i))} className="ml-1 hover:text-red-500"><X className="w-3 h-3" /></button>
@@ -258,7 +258,7 @@ export default function SupportAdminDetails() {
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading || sending || isClosed}
-                                className="p-3.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all disabled:opacity-50 shrink-0"
+                                className="p-3.5 text-slate-400 hover:text-[#6412c6] hover:bg-[#f7f3fc] rounded-xl transition-all disabled:opacity-50 shrink-0"
                             >
                                 {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                             </button>
@@ -269,7 +269,7 @@ export default function SupportAdminDetails() {
                                 onChange={e => setReplyText(e.target.value)}
                                 disabled={isClosed}
                                 placeholder={isClosed ? "Ticket is closed" : "Type reply to employee..."}
-                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 resize-none max-h-32 min-h-[50px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-orange-200 [&::-webkit-scrollbar-thumb]:rounded-full disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7] resize-none max-h-32 min-h-[50px] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[#d8c4f1] [&::-webkit-scrollbar-thumb]:rounded-full disabled:bg-slate-100 disabled:cursor-not-allowed"
                                 rows={1}
                                 onKeyDown={e => {
                                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(e); }
@@ -279,7 +279,7 @@ export default function SupportAdminDetails() {
                             <button
                                 type="submit"
                                 disabled={sending || isClosed || (!replyText.trim() && attachments.length === 0)}
-                                className="p-3.5 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-all shadow-sm shadow-orange-500/20 disabled:opacity-50 disabled:shadow-none shrink-0"
+                                className="p-3.5 bg-[#6412c6] text-white rounded-xl hover:bg-[#550fa8] transition-all shadow-sm shadow-[#6412c6]/20 disabled:opacity-50 disabled:shadow-none shrink-0"
                             >
                                 {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                             </button>
@@ -301,7 +301,7 @@ export default function SupportAdminDetails() {
                             onChange={(e) => changeStatus(e.target.value)}
                             disabled={statusUpdating}
                             className={`w-full px-3 py-2 border rounded-xl text-sm font-medium focus:outline-none transition-colors ${
-                                ticket.status === 'Open' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                ticket.status === 'Open' ? 'bg-[#f7f3fc] text-[#460d8b] border-[#d8c4f1]' :
                                 ticket.status === 'In Progress' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                 ticket.status === 'Waiting for Employee' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                                 ticket.status === 'Resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
@@ -349,7 +349,7 @@ export default function SupportAdminDetails() {
                         </div>
                         <div className="min-w-0">
                             <p className="text-sm font-bold text-slate-900 truncate">{adminDetails.name}</p>
-                            <p className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded inline-block mt-1 uppercase tracking-wider">{employee.employeeId || 'No ID'}</p>
+                            <p className="text-xs font-medium text-[#550fa8] bg-[#f7f3fc] px-2 py-0.5 rounded inline-block mt-1 uppercase tracking-wider">{employee.employeeId || 'No ID'}</p>
                         </div>
                     </div>
 
@@ -374,7 +374,7 @@ export default function SupportAdminDetails() {
                     
                     <button
                         onClick={() => navigate(`/ecs/hrms/employees?search=${encodeURIComponent(adminDetails.name)}`)}
-                        className="w-full mt-5 bg-white border border-slate-200 text-slate-600 hover:text-orange-600 hover:border-orange-300 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                        className="w-full mt-5 bg-white border border-slate-200 text-slate-600 hover:text-[#550fa8] hover:border-[#c1a0e8] px-4 py-2 rounded-xl text-sm font-medium transition-colors"
                     >
                         View Full Profile
                     </button>

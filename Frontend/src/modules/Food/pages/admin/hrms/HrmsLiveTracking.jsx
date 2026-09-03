@@ -110,8 +110,8 @@ function LiveFleetOverview() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                        <MapPin className="w-5 h-5 text-orange-500" />
+                    <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                        <MapPin className="w-5 h-5 text-[#6412c6]" />
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">Live Tracking</h1>
@@ -128,7 +128,7 @@ function LiveFleetOverview() {
                 <button
                     onClick={() => fetchLiveLocations()}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] hover:bg-[#550fa8] disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
@@ -162,8 +162,8 @@ function LiveFleetOverview() {
                     </div>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                        <Users className="w-5 h-5 text-orange-600" />
+                    <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
+                        <Users className="w-5 h-5 text-[#550fa8]" />
                     </div>
                     <div>
                         <p className="text-2xl font-bold text-slate-900">{liveData.length}</p>
@@ -175,7 +175,7 @@ function LiveFleetOverview() {
             {/* Employee List */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
                 </div>
             ) : liveData.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm">
@@ -198,7 +198,7 @@ function LiveFleetOverview() {
                             <button
                                 key={item.employee._id}
                                 onClick={() => handleViewEmployee(item)}
-                                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-orange-200 transition-all text-left group w-full"
+                                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-[#d8c4f1] transition-all text-left group w-full"
                             >
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
@@ -237,8 +237,8 @@ function LiveFleetOverview() {
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2 text-slate-600">
-                                        <Navigation className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                                        <span className="text-xs font-semibold text-orange-600">{distKm} km</span>
+                                        <Navigation className="w-3.5 h-3.5 text-[#9359d7] shrink-0" />
+                                        <span className="text-xs font-semibold text-[#550fa8]">{distKm} km</span>
                                     </div>
                                     <div className="flex items-center gap-2 col-span-2">
                                         {hasNoLocation ? (
@@ -261,7 +261,7 @@ function LiveFleetOverview() {
                                             ? `Updated ${new Date(item.tracking.currentLocation.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                                             : 'No recent update'}
                                     </span>
-                                    <span className="text-xs font-semibold text-orange-600 flex items-center gap-1 group-hover:gap-2 transition-all">
+                                    <span className="text-xs font-semibold text-[#550fa8] flex items-center gap-1 group-hover:gap-2 transition-all">
                                         View Route <ChevronRight className="w-3.5 h-3.5" />
                                     </span>
                                 </div>
@@ -388,7 +388,7 @@ function EmployeeTrackMap({ employeeId }) {
                             type="date"
                             value={date}
                             onChange={e => setDate(e.target.value)}
-                            className="h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 bg-slate-50"
+                            className="h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-slate-50"
                         />
                         <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     </div>
@@ -405,7 +405,7 @@ function EmployeeTrackMap({ employeeId }) {
                 {loading && !polling && (
                     <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/50 backdrop-blur-sm">
                         <div className="bg-white p-4 rounded-xl shadow-lg flex items-center gap-3">
-                            <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                            <Loader2 className="w-5 h-5 animate-spin text-[#6412c6]" />
                             <span className="font-medium text-slate-700">Loading tracking data...</span>
                         </div>
                     </div>
@@ -413,7 +413,7 @@ function EmployeeTrackMap({ employeeId }) {
 
                 {!isLoaded ? (
                     <div className="w-full h-full flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
                     </div>
                 ) : points.length === 0 && !loading ? (
                     <div className="w-full h-full flex items-center justify-center bg-slate-50">
@@ -427,7 +427,7 @@ function EmployeeTrackMap({ employeeId }) {
                             </p>
                             <a
                                 href={backPath}
-                                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600 transition-colors"
+                                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-[#6412c6] text-white rounded-xl text-sm font-semibold hover:bg-[#550fa8] transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4" /> Back to Fleet Overview
                             </a>
@@ -492,7 +492,7 @@ function EmployeeTrackMap({ employeeId }) {
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-slate-500">Est. Distance</span>
-                                <span className="font-medium text-orange-600">{trackingData?.track?.totalDistance ? (trackingData.track.totalDistance / 1000).toFixed(2) : '0'} km</span>
+                                <span className="font-medium text-[#550fa8]">{trackingData?.track?.totalDistance ? (trackingData.track.totalDistance / 1000).toFixed(2) : '0'} km</span>
                             </div>
                         </div>
                     </div>

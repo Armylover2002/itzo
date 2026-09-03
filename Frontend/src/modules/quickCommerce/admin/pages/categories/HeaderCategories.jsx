@@ -67,7 +67,7 @@ const HeaderCategories = () => {
     status: "active",
     type: "header",
     parentId: null,
-    iconId: "",    headerColor: "#FE5502",
+    iconId: "",    headerColor: "#6412C6",
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -212,7 +212,7 @@ const HeaderCategories = () => {
       status: "active",
       type: "header",
       parentId: null,
-      iconId: "",      headerColor: "#FE5502",
+      iconId: "",      headerColor: "#6412C6",
     });
     setImageFile(null);
     setPreviewUrl(null);
@@ -228,7 +228,7 @@ const HeaderCategories = () => {
       status: item.status,
       type: "header",
       parentId: null,
-      iconId: item.iconId || "",      headerColor: item.headerColor || "#FE5502",
+      iconId: item.iconId || "",      headerColor: item.headerColor || "#6412C6",
     });
     setPreviewUrl(item.image?.url || null);
     setIsAddModalOpen(true);
@@ -433,7 +433,7 @@ const HeaderCategories = () => {
                   <div className="flex gap-4">
                     {/* SVG Icon Display */}
                     <div className="flex flex-col items-center gap-2">
-                      <div className="w-24 h-24 rounded-full bg-linear-to-br from-orange-50 to-orange-50 border-2 border-orange-200 flex items-center justify-center">
+                      <div className="w-24 h-24 rounded-full bg-linear-to-br from-[#f7f3fc] to-[#f7f3fc] border-2 border-[#d8c4f1] flex items-center justify-center">
                         {formData.iconId && iconComponents[formData.iconId] ? (
                           <div className="w-12 h-12 text-primary flex items-center justify-center">
                             {(() => {
@@ -449,7 +449,7 @@ const HeaderCategories = () => {
                             }}
                           />
                         ) : (
-                          <Sparkles className="w-10 h-10 text-orange-300" />
+                          <Sparkles className="w-10 h-10 text-[#c1a0e8]" />
                         )}
                       </div>
                       <button
@@ -515,12 +515,12 @@ const HeaderCategories = () => {
                       className="flex-1 h-10 rounded-lg border border-gray-200 shadow-inner"
                       style={{
                         background:
-                          formData.headerColor || "#FE5502",
+                          formData.headerColor || "#6412C6",
                       }}
                     />
                     <input
                       type="color"
-                      value={formData.headerColor || "#FE5502"}
+                      value={formData.headerColor || "#6412C6"}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -531,7 +531,7 @@ const HeaderCategories = () => {
                     />
                     <input
                       type="text"
-                      value={formData.headerColor || "#FE5502"}
+                      value={formData.headerColor || "#6412C6"}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
@@ -539,7 +539,7 @@ const HeaderCategories = () => {
                         })
                       }
                       className="w-28 px-2 py-2 rounded-lg border border-gray-300 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      placeholder="#FE5502"
+                      placeholder="#6412C6"
                     />
                   </div>
                 </div>

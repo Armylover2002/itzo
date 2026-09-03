@@ -27,7 +27,7 @@ export default function SupportDashboard() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full min-h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -35,9 +35,9 @@ export default function SupportDashboard() {
     const { counts, recentTickets } = stats || { counts: {}, recentTickets: [] };
 
     const cards = [
-        { title: 'Total Tickets', value: counts.total || 0, icon: Ticket, color: 'text-orange-600 bg-orange-50' },
+        { title: 'Total Tickets', value: counts.total || 0, icon: Ticket, color: 'text-[#550fa8] bg-[#f7f3fc]' },
         { title: 'Open', value: counts.open || 0, icon: AlertCircle, color: 'text-amber-600 bg-amber-50' },
-        { title: 'In Progress', value: counts.inProgress || 0, icon: Clock, color: 'text-orange-600 bg-orange-50' },
+        { title: 'In Progress', value: counts.inProgress || 0, icon: Clock, color: 'text-[#550fa8] bg-[#f7f3fc]' },
         { title: 'Resolved', value: (counts.resolved || 0) + (counts.closed || 0), icon: CheckCircle, color: 'text-emerald-600 bg-emerald-50' },
         { title: 'High Priority', value: counts.highPriority || 0, icon: TrendingUp, color: 'text-red-600 bg-red-50' },
     ];
@@ -68,7 +68,7 @@ export default function SupportDashboard() {
                     <h2 className="text-lg font-bold text-slate-800">Recent Tickets</h2>
                     <button
                         onClick={() => navigate('/ecs/hrms/support/requests')}
-                        className="text-sm font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                        className="text-sm font-semibold text-[#550fa8] hover:text-[#460d8b] transition-colors"
                     >
                         View All
                     </button>
@@ -86,7 +86,7 @@ export default function SupportDashboard() {
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${
                                         ticket.priority === 'Urgent' ? 'bg-red-500' :
                                         ticket.priority === 'High' ? 'bg-amber-500' :
-                                        ticket.priority === 'Medium' ? 'bg-orange-500' :
+                                        ticket.priority === 'Medium' ? 'bg-[#6412c6]' :
                                         'bg-slate-300'
                                     }`} />
                                     <div className="min-w-0">
@@ -100,7 +100,7 @@ export default function SupportDashboard() {
                                 </div>
                                 <div className="flex items-center gap-4 shrink-0 pl-4">
                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
-                                        ticket.status === 'Open' ? 'bg-orange-100 text-orange-700' :
+                                        ticket.status === 'Open' ? 'bg-[#f0e7f9] text-[#460d8b]' :
                                         ticket.status === 'Resolved' || ticket.status === 'Closed' ? 'bg-emerald-100 text-emerald-700' :
                                         'bg-slate-100 text-slate-700'
                                     }`}>

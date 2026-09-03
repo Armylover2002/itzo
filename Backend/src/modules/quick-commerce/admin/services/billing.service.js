@@ -1,28 +1,134 @@
 import mongoose from 'mongoose';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { QuickFeeSettings } from '../models/feeSettings.model.js';
-import { QuickDeliveryCommissionRule } from '../models/deliveryCommissionRule.model.js';
 
 const DEFAULT_QUICK_FEE_SETTINGS = {
   deliveryFee: 25,
-  deliveryFeeRanges: [],
-  freeDeliveryThreshold: 0,
+  baseDistanceKm: 3,
+  baseDeliveryFee: 25,
+  perKmCharge: 10,
+  sponsorRules: [],
   platformFee: 0,
   gstRate: 0,
-  returnDeliveryCommission: 0,
   minWithdrawal: undefined,
   maxWithdrawal: undefined,
   isActive: true,
 };
 
-let deliveryCommissionRulesPromise = null;
-let deliveryCommissionRulesLoadedAt = 0;
-const DELIVERY_COMMISSION_CACHE_MS = 60 * 1000;
+function roundCurrency(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0;
+  return Number(num.toFixed(2));
+}
 
-const clearDeliveryCommissionRulesCache = () => {
-  deliveryCommissionRulesPromise = null;
-  deliveryCommissionRulesLoadedAt = 0;
-};
+function stripLegacyQuickFeeSettingsFields(doc) {
+  if (!doc || typeof doc !== 'object') return doc || null;
+  const next = { ...doc };
+  delete next.deliveryFeeRanges;
+  delete next.freeDeliveryThreshold;
+  delete next.returnDeliveryCommission;
+  return next;
+}
+
+/**
+ * Distance-based delivery fee: base fee up to `baseDistanceKm`, then
+ * `perKmCharge` for every km beyond it. Mirrors the Food admin fee model.
+ */
+export function calculateBaseDeliveryFeeForDistance(distanceKm, feeSettings) {
+  const distance = Number(distanceKm);
+  const baseDistance = Number(feeSettings?.baseDistanceKm || 0);
+  const baseFee = Number(feeSettings?.baseDeliveryFee ?? feeSettings?.deliveryFee ?? 0);
+  const perKmCharge = Number(feeSettings?.perKmCharge || 0);
+
+  if (!Number.isFinite(distance) || distance <= baseDistance) {
+    return roundCurrency(Math.max(0, baseFee));
+  }
+
+  return roundCurrency(Math.max(0, baseFee + (distance - baseDistance) * perKmCharge));
+}
+
+/**
+ * Picks the best-matching sponsor rule for an order subtotal + delivery
+ * distance. Same matching semantics as the Food admin sponsor rules.
+ */
+export function resolveDeliverySponsorRule(subtotal, distanceKm, sponsorRules = []) {
+  const safeSubtotal = Number(subtotal);
+  const safeDistance = Number(distanceKm);
+  if (!Number.isFinite(safeSubtotal) || !Number.isFinite(safeDistance)) return null;
+
+  const normalizedRules = (Array.isArray(sponsorRules) ? sponsorRules : [])
+    .map((rule, index) => ({
+      index,
+      minOrderAmount: Number(rule?.minOrderAmount),
+      maxOrderAmount:
+        rule?.maxOrderAmount == null || rule?.maxOrderAmount === ''
+          ? null
+          : Number(rule.maxOrderAmount),
+      maxDistanceKm: Number(rule?.maxDistanceKm),
+      sponsorType: String(rule?.sponsorType || '').trim().toUpperCase(),
+      sponsoredKm:
+        rule?.sponsoredKm == null || rule?.sponsoredKm === ''
+          ? null
+          : Number(rule.sponsoredKm),
+    }))
+    .filter((rule) =>
+      Number.isFinite(rule.minOrderAmount) &&
+      Number.isFinite(rule.maxDistanceKm) &&
+      ['USER_FULL', 'SELLER_FULL', 'SPLIT'].includes(rule.sponsorType),
+    )
+    .sort((a, b) => {
+      if (b.minOrderAmount !== a.minOrderAmount) return b.minOrderAmount - a.minOrderAmount;
+      if (a.maxDistanceKm !== b.maxDistanceKm) return a.maxDistanceKm - b.maxDistanceKm;
+      return a.index - b.index;
+    });
+
+  return normalizedRules.find((rule) => {
+    const orderOk =
+      safeSubtotal >= rule.minOrderAmount &&
+      (rule.maxOrderAmount == null || safeSubtotal <= rule.maxOrderAmount);
+    return orderOk && safeDistance <= rule.maxDistanceKm;
+  }) || null;
+}
+
+/**
+ * Splits a distance-based delivery fee between the customer and the seller
+ * per the matched sponsor rule. Shared by the single-seller pricing preview
+ * and the multi-seller order placement flow.
+ */
+export function calculateDeliverySplit(subtotal, distanceKm, feeSettings) {
+  const totalDeliveryFee = calculateBaseDeliveryFeeForDistance(distanceKm, feeSettings);
+  const matchedRule = resolveDeliverySponsorRule(subtotal, distanceKm, feeSettings?.sponsorRules);
+
+  let sellerDeliveryFee = 0;
+  let userDeliveryFee = totalDeliveryFee;
+  let sponsoredKm = 0;
+  let deliverySponsorType = 'USER_FULL';
+
+  if (matchedRule?.sponsorType === 'SELLER_FULL') {
+    sellerDeliveryFee = totalDeliveryFee;
+    userDeliveryFee = 0;
+    sponsoredKm = roundCurrency(distanceKm);
+    deliverySponsorType = 'SELLER_FULL';
+  } else if (matchedRule?.sponsorType === 'SPLIT') {
+    const safeSponsoredKm = Math.max(0, Math.min(Number(distanceKm || 0), Number(matchedRule.sponsoredKm || 0)));
+    sellerDeliveryFee = Math.min(
+      totalDeliveryFee,
+      calculateBaseDeliveryFeeForDistance(safeSponsoredKm, feeSettings),
+    );
+    userDeliveryFee = Math.max(0, roundCurrency(totalDeliveryFee - sellerDeliveryFee));
+    sponsoredKm = roundCurrency(safeSponsoredKm);
+    deliverySponsorType = 'SPLIT';
+  }
+
+  return {
+    totalDeliveryFee: roundCurrency(totalDeliveryFee),
+    userDeliveryFee: roundCurrency(userDeliveryFee),
+    sellerDeliveryFee: roundCurrency(sellerDeliveryFee),
+    sponsoredKm,
+    deliveryDistanceKm: roundCurrency(distanceKm),
+    deliverySponsorType,
+  };
+}
 
 let feeSettingsPromise = null;
 let feeSettingsLoadedAt = 0;
@@ -33,136 +139,14 @@ const clearFeeSettingsCache = () => {
   feeSettingsLoadedAt = 0;
 };
 
-export async function getDeliveryCommissionRules() {
-  const list = await QuickDeliveryCommissionRule.find({}).sort({ createdAt: -1 }).lean();
-  const commissions = list.map((r, index) => ({
-    _id: r._id,
-    sl: index + 1,
-    name: r.name || '',
-    minDistance: r.minDistance,
-    maxDistance: r.maxDistance ?? null,
-    commissionPerKm: r.commissionPerKm,
-    basePayout: r.basePayout,
-    status: r.status !== false,
-  }));
-  return { commissions };
-}
-
-function validateCommissionRuleSet(rules) {
-  const active = (rules || []).filter((r) => r && r.status !== false);
-  if (!active.length) {
-    throw new ValidationError('A base slab with minDistance = 0 is required');
-  }
-
-  const baseRules = active.filter((r) => Number(r.minDistance || 0) === 0);
-  if (baseRules.length !== 1) {
-    throw new ValidationError('A base slab with minDistance = 0 is required');
-  }
-
-  const sorted = [...active].sort((a, b) => Number(a.minDistance || 0) - Number(b.minDistance || 0));
-  for (let i = 0; i < sorted.length; i += 1) {
-    const current = sorted[i];
-    const min = Number(current.minDistance || 0);
-    const max = current.maxDistance == null ? null : Number(current.maxDistance);
-    if (max != null && max <= min) {
-      throw new ValidationError('maxDistance must be greater than minDistance');
-    }
-    if (i > 0) {
-      const prev = sorted[i - 1];
-      const prevMin = Number(prev.minDistance || 0);
-      const prevMax = prev.maxDistance == null ? null : Number(prev.maxDistance);
-      const effectivePrevMax = prevMax == null ? Infinity : prevMax;
-      if (min < effectivePrevMax) {
-        throw new ValidationError('Distance slabs must not overlap');
-      }
-      if (min === prevMin) {
-        throw new ValidationError('Distance slabs must not share the same minDistance');
-      }
-    }
-  }
-}
-
-export async function createDeliveryCommissionRule(body) {
-  const existing = await QuickDeliveryCommissionRule.find({}).lean();
-  const candidate = [
-    ...existing,
-    {
-      minDistance: body.minDistance,
-      maxDistance: body.maxDistance ?? null,
-      commissionPerKm: body.commissionPerKm,
-      basePayout: body.basePayout,
-      status: body.status ?? true,
-    },
-  ];
-
-  validateCommissionRuleSet(candidate);
-  const created = await QuickDeliveryCommissionRule.create({
-    name: body.name || '',
-    minDistance: body.minDistance,
-    maxDistance: body.maxDistance ?? null,
-    commissionPerKm: body.commissionPerKm,
-    basePayout: body.basePayout,
-    status: body.status ?? true,
-  });
-  clearDeliveryCommissionRulesCache();
-  return created.toObject();
-}
-
-export async function updateDeliveryCommissionRule(id, body) {
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-  const existing = await QuickDeliveryCommissionRule.find({}).lean();
-  const candidate = existing.map((r) =>
-    String(r._id) === String(id)
-      ? {
-          ...r,
-          minDistance: body.minDistance,
-          maxDistance: body.maxDistance ?? null,
-          commissionPerKm: body.commissionPerKm,
-          basePayout: body.basePayout,
-          status: r.status !== false,
-        }
-      : r,
-  );
-
-  validateCommissionRuleSet(candidate);
-  const updated = await QuickDeliveryCommissionRule.findByIdAndUpdate(
-    id,
-    {
-      $set: {
-        name: body.name || '',
-        minDistance: body.minDistance,
-        maxDistance: body.maxDistance ?? null,
-        commissionPerKm: body.commissionPerKm,
-        basePayout: body.basePayout,
-      },
-    },
-    { new: true },
-  ).lean();
-  clearDeliveryCommissionRulesCache();
-  return updated;
-}
-
-export async function deleteDeliveryCommissionRule(id) {
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-  const deleted = await QuickDeliveryCommissionRule.findByIdAndDelete(id).lean();
-  clearDeliveryCommissionRulesCache();
-  return deleted ? { id } : null;
-}
-
-export async function toggleDeliveryCommissionRuleStatus(id, status) {
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-  const updated = await QuickDeliveryCommissionRule.findByIdAndUpdate(
-    id,
-    { $set: { status: Boolean(status) } },
-    { new: true },
-  ).lean();
-  clearDeliveryCommissionRulesCache();
-  return updated;
-}
-
 export async function getFeeSettings() {
   const doc = await QuickFeeSettings.findOne({ isActive: true }).sort({ createdAt: -1 }).lean();
-  return { feeSettings: doc || null };
+  if (doc?._id && ('deliveryFeeRanges' in doc || 'freeDeliveryThreshold' in doc || 'returnDeliveryCommission' in doc)) {
+    await QuickFeeSettings.findByIdAndUpdate(doc._id, {
+      $unset: { deliveryFeeRanges: 1, freeDeliveryThreshold: 1, returnDeliveryCommission: 1 },
+    });
+  }
+  return { feeSettings: stripLegacyQuickFeeSettingsFields(doc) || null };
 }
 
 export async function upsertFeeSettings(body) {
@@ -171,24 +155,27 @@ export async function upsertFeeSettings(body) {
     const $set = {};
     const $unset = {};
 
-    if (body.deliveryFee === null) $unset.deliveryFee = 1;
-    else if (body.deliveryFee !== undefined) $set.deliveryFee = body.deliveryFee;
+    if (body.baseDistanceKm === null) $unset.baseDistanceKm = 1;
+    else if (body.baseDistanceKm !== undefined) $set.baseDistanceKm = body.baseDistanceKm;
 
-    if (body.deliveryFeeRanges !== undefined) $set.deliveryFeeRanges = body.deliveryFeeRanges;
+    if (body.baseDeliveryFee === null) {
+      $unset.baseDeliveryFee = 1;
+      $unset.deliveryFee = 1;
+    } else if (body.baseDeliveryFee !== undefined) {
+      $set.baseDeliveryFee = body.baseDeliveryFee;
+      $set.deliveryFee = body.baseDeliveryFee;
+    }
 
-    if (body.freeDeliveryThreshold === null) $unset.freeDeliveryThreshold = 1;
-    else if (body.freeDeliveryThreshold !== undefined) $set.freeDeliveryThreshold = body.freeDeliveryThreshold;
+    if (body.perKmCharge === null) $unset.perKmCharge = 1;
+    else if (body.perKmCharge !== undefined) $set.perKmCharge = body.perKmCharge;
+
+    if (body.sponsorRules !== undefined) $set.sponsorRules = body.sponsorRules;
 
     if (body.platformFee === null) $unset.platformFee = 1;
     else if (body.platformFee !== undefined) $set.platformFee = body.platformFee;
 
     if (body.gstRate === null) $unset.gstRate = 1;
     else if (body.gstRate !== undefined) $set.gstRate = body.gstRate;
-
-    if (body.returnDeliveryCommission === null) $unset.returnDeliveryCommission = 1;
-    else if (body.returnDeliveryCommission !== undefined) {
-      $set.returnDeliveryCommission = body.returnDeliveryCommission;
-    }
 
     if (body.minWithdrawal === null) $unset.minWithdrawal = 1;
     else if (body.minWithdrawal !== undefined) $set.minWithdrawal = body.minWithdrawal;
@@ -198,25 +185,38 @@ export async function upsertFeeSettings(body) {
 
     if (body.isActive !== undefined) $set.isActive = body.isActive;
 
+    // Remove the legacy order-value-range model whenever the new distance model is saved.
+    if (
+      body.baseDistanceKm !== undefined ||
+      body.baseDeliveryFee !== undefined ||
+      body.perKmCharge !== undefined ||
+      body.sponsorRules !== undefined
+    ) {
+      $unset.deliveryFeeRanges = 1;
+      $unset.freeDeliveryThreshold = 1;
+    }
+    $unset.returnDeliveryCommission = 1;
+
     const update = {};
     if (Object.keys($set).length) update.$set = $set;
     if (Object.keys($unset).length) update.$unset = $unset;
-    if (!Object.keys(update).length) return existing.toObject();
+    if (!Object.keys(update).length) return stripLegacyQuickFeeSettingsFields(existing.toObject());
 
     const updated = await QuickFeeSettings.findByIdAndUpdate(existing._id, update, { new: true }).lean();
     clearFeeSettingsCache();
-    return updated;
+    return stripLegacyQuickFeeSettingsFields(updated);
   }
 
   const payload = {
-    deliveryFeeRanges: body.deliveryFeeRanges ?? [],
     isActive: body.isActive ?? true,
-    returnDeliveryCommission: body.returnDeliveryCommission ?? 0,
   };
-  if (body.deliveryFee !== undefined && body.deliveryFee !== null) payload.deliveryFee = body.deliveryFee;
-  if (body.freeDeliveryThreshold !== undefined && body.freeDeliveryThreshold !== null) {
-    payload.freeDeliveryThreshold = body.freeDeliveryThreshold;
+  if (body.baseDistanceKm !== undefined && body.baseDistanceKm !== null) payload.baseDistanceKm = body.baseDistanceKm;
+  if (body.baseDeliveryFee !== undefined && body.baseDeliveryFee !== null) {
+    payload.baseDeliveryFee = body.baseDeliveryFee;
+    payload.deliveryFee = body.baseDeliveryFee;
   }
+  if (body.perKmCharge !== undefined && body.perKmCharge !== null) payload.perKmCharge = body.perKmCharge;
+  if (body.sponsorRules !== undefined) payload.sponsorRules = body.sponsorRules ?? [];
   if (body.platformFee !== undefined && body.platformFee !== null) payload.platformFee = body.platformFee;
   if (body.gstRate !== undefined && body.gstRate !== null) payload.gstRate = body.gstRate;
   if (body.minWithdrawal !== undefined && body.minWithdrawal !== null) payload.minWithdrawal = body.minWithdrawal;
@@ -224,7 +224,7 @@ export async function upsertFeeSettings(body) {
 
   const created = await QuickFeeSettings.create(payload);
   clearFeeSettingsCache();
-  return created.toObject();
+  return stripLegacyQuickFeeSettingsFields(created.toObject());
 }
 
 export function getActiveFeeSettings() {
@@ -250,49 +250,30 @@ export async function calculateHandlingFeeFromProducts() {
   return 0;
 }
 
+/**
+ * Legacy signature (subtotal only, no distance) kept for the Food "mixed
+ * order" combiner, which only needs a base delivery-fee estimate for the
+ * quick-commerce leg of a combined order.
+ */
 export function calculateDeliveryFeeFromSettings(subtotal, feeSettings = DEFAULT_QUICK_FEE_SETTINGS) {
-  const safeSubtotal = Number(subtotal || 0);
-  const freeThreshold = Number(feeSettings.freeDeliveryThreshold || 0);
-
-  if (Number.isFinite(freeThreshold) && freeThreshold > 0 && safeSubtotal >= freeThreshold) {
-    return 0;
-  }
-
-  const ranges = Array.isArray(feeSettings.deliveryFeeRanges)
-    ? [...feeSettings.deliveryFeeRanges].sort((a, b) => Number(a.min) - Number(b.min))
-    : [];
-
-  if (ranges.length) {
-    let matched = null;
-    for (let i = 0; i < ranges.length; i += 1) {
-      const range = ranges[i] || {};
-      const min = Number(range.min);
-      const max = Number(range.max);
-      const fee = Number(range.fee);
-      if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(fee)) continue;
-      const isLast = i === ranges.length - 1;
-      const inRange = isLast
-        ? safeSubtotal >= min && safeSubtotal <= max
-        : safeSubtotal >= min && safeSubtotal < max;
-      if (inRange) {
-        matched = fee;
-        break;
-      }
-    }
-    if (Number.isFinite(matched)) return matched;
-  }
-
-  return Number(feeSettings.deliveryFee || 0);
+  return calculateBaseDeliveryFeeForDistance(0, feeSettings || DEFAULT_QUICK_FEE_SETTINGS);
 }
 
-export async function calculateQuickPricing({ subtotal = 0, discount = 0, tip = 0, products = [] } = {}) {
+export async function calculateQuickPricing({
+  subtotal = 0,
+  discount = 0,
+  tip = 0,
+  products = [],
+  distanceKm = 0,
+} = {}) {
   const feeSettings = await getActiveFeeSettings();
   const safeSubtotal = Number(subtotal || 0);
   const safeDiscount = Math.max(0, Number(discount || 0));
   const safeTip = Math.max(0, Number(tip || 0));
   const platformFee = Number(feeSettings.platformFee || 0);
   const handlingFee = await calculateHandlingFeeFromProducts(products);
-  const deliveryFee = calculateDeliveryFeeFromSettings(safeSubtotal, feeSettings);
+  const split = calculateDeliverySplit(safeSubtotal, distanceKm, feeSettings);
+  const deliveryFee = split.userDeliveryFee;
   const gstRate = Number(feeSettings.gstRate || 0);
   const calculatedGst =
     Number.isFinite(gstRate) && gstRate > 0
@@ -309,6 +290,13 @@ export async function calculateQuickPricing({ subtotal = 0, discount = 0, tip = 
       gst,
       packagingFee: 0,
       deliveryFee,
+      totalDeliveryFee: split.totalDeliveryFee,
+      userDeliveryFee: split.userDeliveryFee,
+      restaurantDeliveryFee: split.sellerDeliveryFee,
+      sponsoredDelivery: split.sellerDeliveryFee > 0,
+      sponsoredKm: split.sponsoredKm,
+      deliveryDistanceKm: split.deliveryDistanceKm,
+      deliverySponsorType: split.deliverySponsorType,
       platformFee,
       handlingFee,
       tip: safeTip,
@@ -323,48 +311,6 @@ export async function calculateQuickPricing({ subtotal = 0, discount = 0, tip = 
   };
 }
 
-export function getActiveDeliveryCommissionRules() {
-  const now = Date.now();
-  if (
-    deliveryCommissionRulesPromise &&
-    (now - deliveryCommissionRulesLoadedAt < DELIVERY_COMMISSION_CACHE_MS)
-  ) {
-    return deliveryCommissionRulesPromise;
-  }
-
-  deliveryCommissionRulesPromise = QuickDeliveryCommissionRule.find({ status: { $ne: false } }).lean().then(list => list || []).catch(err => {
-    deliveryCommissionRulesPromise = null;
-    throw err;
-  });
-  deliveryCommissionRulesLoadedAt = now;
-  return deliveryCommissionRulesPromise;
-}
-
-export async function getRiderEarning(distanceKm) {
-  const d = Number(distanceKm);
-  if (!Number.isFinite(d) || d < 0) return 0;
-
-  const rules = await getActiveDeliveryCommissionRules();
-  if (!rules.length) return 0;
-
-  const sorted = [...rules].sort((a, b) => (a.minDistance || 0) - (b.minDistance || 0));
-  const baseRule = sorted.find((r) => Number(r.minDistance || 0) === 0) || null;
-  if (!baseRule) return 0;
-
-  let earning = Number(baseRule.basePayout || 0);
-  for (const rule of sorted) {
-    const perKm = Number(rule.commissionPerKm || 0);
-    if (!Number.isFinite(perKm) || perKm <= 0) continue;
-    const min = Number(rule.minDistance || 0);
-    const max = rule.maxDistance == null ? null : Number(rule.maxDistance);
-    if (d <= min) continue;
-    const upper = max == null ? d : Math.min(d, max);
-    const kmInSlab = Math.max(0, upper - min);
-    if (kmInSlab > 0) {
-      earning += kmInSlab * perKm;
-    }
-  }
-
-  if (!Number.isFinite(earning) || earning <= 0) return 0;
-  return Math.round(earning);
-}
+// Rider earning is no longer a separate commission-slab system — it is the
+// full distance-based delivery fee (see calculateDeliverySplit.totalDeliveryFee),
+// computed per seller in order.controller.js's placeOrder flow.

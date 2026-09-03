@@ -187,7 +187,7 @@ export default function EmployeeList() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+              <div className="w-10 h-10 rounded-lg bg-[#6412c6] flex items-center justify-center shadow-lg shadow-[#6412c6]/20">
                 <Users className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -198,7 +198,7 @@ export default function EmployeeList() {
             {canCreateEmployee && (
               <button
                 onClick={() => navigate("/ecs/food/employees/add")}
-                className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md transition-all active:scale-95"
+                className="flex items-center gap-2 bg-[#6412c6] hover:bg-[#550fa8] text-white px-6 py-2.5 rounded-lg font-semibold shadow-md transition-all active:scale-95"
               >
                 <Plus className="w-4 h-4" />
                 ADD NEW EMPLOYEE
@@ -364,7 +364,7 @@ export default function EmployeeList() {
                         <button
                           onClick={() => toggleStatus(employee._id)}
                           disabled={!canEditEmployee}
-                          className={`w-10 h-5 rounded-full relative transition-colors ${employee.isActive ? 'bg-orange-500' : 'bg-slate-300'}`}
+                          className={`w-10 h-5 rounded-full relative transition-colors ${employee.isActive ? 'bg-[#6412c6]' : 'bg-slate-300'}`}
                           title={employee.isActive ? "Active" : "Inactive"}
                         >
                           <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${employee.isActive ? 'translate-x-5' : ''}`} />
@@ -378,7 +378,7 @@ export default function EmployeeList() {
                                 setSelectedEmployee(employee)
                                 setIsViewModalOpen(true)
                               }}
-                              className="p-1.5 rounded text-orange-500 hover:bg-orange-50 transition-colors"
+                              className="p-1.5 rounded text-[#6412c6] hover:bg-[#f7f3fc] transition-colors"
                               title="View"
                             >
                               <Eye className="w-4 h-4" />
@@ -386,7 +386,7 @@ export default function EmployeeList() {
                             {canEditEmployee && (
                               <button
                                 onClick={() => navigate(`/ecs/food/employees/edit/${employee._id}`, { state: { employee } })}
-                                className="p-1.5 rounded text-orange-500 hover:bg-orange-50 transition-colors"
+                                className="p-1.5 rounded text-[#6412c6] hover:bg-[#f7f3fc] transition-colors"
                                 title="Edit"
                               >
                                 <Edit className="w-4 h-4" />
@@ -418,7 +418,7 @@ export default function EmployeeList() {
         <DialogContent className="max-w-md bg-white p-0">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
             <DialogTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5 text-orange-500" />
+              <Eye className="w-5 h-5 text-[#6412c6]" />
               Employee Details
             </DialogTitle>
           </DialogHeader>
@@ -429,8 +429,8 @@ export default function EmployeeList() {
                   {selectedEmployee.profileImage ? (
                     <img src={selectedEmployee.profileImage} alt={selectedEmployee.name} className="w-24 h-24 rounded-full object-cover border-4 border-slate-50" />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-orange-100 flex items-center justify-center border-4 border-white shadow-sm">
-                      <span className="text-3xl font-bold text-orange-500">
+                    <div className="w-24 h-24 rounded-full bg-[#f0e7f9] flex items-center justify-center border-4 border-white shadow-sm">
+                      <span className="text-3xl font-bold text-[#6412c6]">
                         {selectedEmployee.name?.charAt(0).toUpperCase()}
                       </span>
                     </div>
@@ -447,7 +447,7 @@ export default function EmployeeList() {
                   <div className="text-slate-900">{selectedEmployee.phone}</div>
                   
                   <div className="text-slate-500 font-medium">Role:</div>
-                  <div className="text-slate-900 capitalize bg-orange-50 text-orange-600 px-2 py-0.5 rounded inline-block w-max">
+                  <div className="text-slate-900 capitalize bg-[#f7f3fc] text-[#550fa8] px-2 py-0.5 rounded inline-block w-max">
                     {selectedEmployee.adminRoleId?.roleName || selectedEmployee.role}
                   </div>
                   
@@ -455,7 +455,7 @@ export default function EmployeeList() {
                   <div className="text-slate-900">{selectedEmployee.zoneId?.name || "Global / All Zones"}</div>
                   
                   <div className="text-slate-500 font-medium">Status:</div>
-                  <div className={`font-semibold ${selectedEmployee.isActive ? 'text-orange-500' : 'text-red-500'}`}>
+                  <div className={`font-semibold ${selectedEmployee.isActive ? 'text-[#6412c6]' : 'text-red-500'}`}>
                     {selectedEmployee.isActive ? 'Active' : 'Inactive'}
                   </div>
                 </div>
@@ -498,11 +498,11 @@ export default function EmployeeList() {
                       type="checkbox"
                       checked={visibleColumns[key]}
                       onChange={() => toggleColumn(key)}
-                      className="w-4 h-4 text-orange-500 border-slate-300 rounded focus:ring-orange-500"
+                      className="w-4 h-4 text-[#6412c6] border-slate-300 rounded focus:ring-[#6412c6]"
                     />
                     <span className="text-sm text-slate-700">{label}</span>
                     {visibleColumns[key] && (
-                      <Check className="w-4 h-4 text-orange-500 ml-auto" />
+                      <Check className="w-4 h-4 text-[#6412c6] ml-auto" />
                     )}
                   </label>
                 ))}
@@ -517,7 +517,7 @@ export default function EmployeeList() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

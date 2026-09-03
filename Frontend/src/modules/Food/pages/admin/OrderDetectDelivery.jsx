@@ -389,7 +389,7 @@ export default function OrderDetectDelivery() {
     return (
       <div className="p-4 lg:p-6 bg-slate-50 min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#6412c6] animate-spin" />
           <p className="text-slate-600 font-medium">Loading orders...</p>
         </div>
       </div>
@@ -408,7 +408,7 @@ export default function OrderDetectDelivery() {
           <p className="text-sm text-slate-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            className="px-4 py-2 bg-[#6412c6] text-white rounded-lg hover:bg-[#550fa8] transition-colors"
           >
             Retry
           </button>
@@ -438,7 +438,7 @@ export default function OrderDetectDelivery() {
               <p className="text-sm text-slate-500 mb-1">Total Orders</p>
               <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
+            <div className="p-3 bg-[#f7f3fc] rounded-lg">
               <Package className="w-6 h-6 text-primary" />
             </div>
           </div>
@@ -449,7 +449,7 @@ export default function OrderDetectDelivery() {
               <p className="text-sm text-slate-500 mb-1">Ordered</p>
               <p className="text-2xl font-bold text-primary">{stats.ordered}</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
+            <div className="p-3 bg-[#f7f3fc] rounded-lg">
               <Clock className="w-6 h-6 text-primary" />
             </div>
           </div>
@@ -482,7 +482,7 @@ export default function OrderDetectDelivery() {
               <p className="text-sm text-slate-500 mb-1">Delivery Boy Assigned</p>
               <p className="text-2xl font-bold text-primary">{stats.deliveryBoyAssigned}</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
+            <div className="p-3 bg-[#f7f3fc] rounded-lg">
               <Truck className="w-6 h-6 text-primary" />
             </div>
           </div>
@@ -491,10 +491,10 @@ export default function OrderDetectDelivery() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500 mb-1">Delivery Boy Reached Pickup</p>
-              <p className="text-2xl font-bold text-orange-600">{stats.reachedPickup}</p>
+              <p className="text-2xl font-bold text-[#550fa8]">{stats.reachedPickup}</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
-              <Package className="w-6 h-6 text-orange-600" />
+            <div className="p-3 bg-[#f7f3fc] rounded-lg">
+              <Package className="w-6 h-6 text-[#550fa8]" />
             </div>
           </div>
         </div>
@@ -504,7 +504,7 @@ export default function OrderDetectDelivery() {
               <p className="text-sm text-slate-500 mb-1">Order ID Accepted</p>
               <p className="text-2xl font-bold text-primary">{stats.orderIdAccepted}</p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
+            <div className="p-3 bg-[#f7f3fc] rounded-lg">
               <CheckCircle className="w-6 h-6 text-primary" />
             </div>
           </div>

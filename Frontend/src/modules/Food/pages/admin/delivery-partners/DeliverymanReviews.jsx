@@ -172,7 +172,7 @@ export default function DeliverymanReviews() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center gap-3">
-              <Star className="w-5 h-5 text-orange-500" />
+              <Star className="w-5 h-5 text-[#6412c6]" />
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold text-slate-900">Deliveryman Reviews</h1>
                 <span className="px-3 py-1 rounded-full text-sm font-semibold bg-slate-100 text-slate-700">
@@ -432,7 +432,7 @@ export default function DeliverymanReviews() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>
@@ -469,11 +469,11 @@ export default function DeliverymanReviews() {
 
               {/* Deliveryman & Customer */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-orange-50 rounded-lg p-4">
+                <div className="bg-[#f7f3fc] rounded-lg p-4">
                   <p className="text-xs text-primary mb-1">Deliveryman</p>
                   <a 
                     href={`/ecs/delivery-partners/${selectedReview.deliverymanId}`}
-                    className="text-sm font-semibold text-orange-700 hover:text-orange-800"
+                    className="text-sm font-semibold text-[#460d8b] hover:text-[#370a6d]"
                   >
                     {selectedReview.deliveryman}
                   </a>
@@ -481,11 +481,11 @@ export default function DeliverymanReviews() {
                     <p className="text-xs text-primary mt-1">{selectedReview.deliverymanPhone}</p>
                   )}
                 </div>
-                <div className="bg-orange-50 rounded-lg p-4">
+                <div className="bg-[#f7f3fc] rounded-lg p-4">
                   <p className="text-xs text-primary mb-1">Customer</p>
                   <a 
                     href={`/ecs/users/${selectedReview.customerId}`}
-                    className="text-sm font-semibold text-orange-700 hover:text-orange-800"
+                    className="text-sm font-semibold text-[#460d8b] hover:text-[#370a6d]"
                   >
                     {selectedReview.customer}
                   </a>
@@ -495,13 +495,13 @@ export default function DeliverymanReviews() {
                 </div>
               </div>
 
-              <div className="bg-orange-50 rounded-lg p-4">
-                <p className="text-xs text-orange-600 mb-2 font-semibold">Rating</p>
+              <div className="bg-[#f7f3fc] rounded-lg p-4">
+                <p className="text-xs text-[#550fa8] mb-2 font-semibold">Rating</p>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1">
                     {renderStars(selectedReview.rating)}
                   </div>
-                  <span className="text-lg font-bold text-orange-700">
+                  <span className="text-lg font-bold text-[#460d8b]">
                     {selectedReview.rating} / 5
                   </span>
                 </div>

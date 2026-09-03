@@ -443,8 +443,8 @@ export default function HrmsDashboard() {
 
     const resultIcon = (type) => {
         switch (type) {
-            case 'Employee': return <Users className="w-4 h-4 text-orange-600" />;
-            case 'Joining Request': return <UserPlus className="w-4 h-4 text-orange-600" />;
+            case 'Employee': return <Users className="w-4 h-4 text-[#550fa8]" />;
+            case 'Joining Request': return <UserPlus className="w-4 h-4 text-[#550fa8]" />;
             default: return <Search className="w-4 h-4 text-slate-400" />;
         }
     };
@@ -452,10 +452,10 @@ export default function HrmsDashboard() {
     if (loading) return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-slate-400" /></div>;
 
     const cards = [
-        { label: 'Active Employees', value: stats?.totalActive || 0, icon: Users, color: 'text-orange-600 bg-orange-50', path: '/ecs/hrms/employees' },
-        { label: 'Pending Requests', value: pendingRequests, icon: UserPlus, color: 'text-orange-600 bg-orange-50', path: '/ecs/hrms/joining-requests', highlight: pendingRequests > 0 },
-        { label: 'Suspended', value: stats?.totalSuspended || 0, icon: AlertCircle, color: 'text-orange-600 bg-orange-50', path: '/ecs/hrms/employees' },
-        { label: 'Total Employees', value: stats?.totalEmployees || 0, icon: TrendingUp, color: 'text-orange-600 bg-orange-50', path: '/ecs/hrms/employees' },
+        { label: 'Active Employees', value: stats?.totalActive || 0, icon: Users, color: 'text-[#550fa8] bg-[#f7f3fc]', path: '/ecs/hrms/employees' },
+        { label: 'Pending Requests', value: pendingRequests, icon: UserPlus, color: 'text-[#550fa8] bg-[#f7f3fc]', path: '/ecs/hrms/joining-requests', highlight: pendingRequests > 0 },
+        { label: 'Suspended', value: stats?.totalSuspended || 0, icon: AlertCircle, color: 'text-[#550fa8] bg-[#f7f3fc]', path: '/ecs/hrms/employees' },
+        { label: 'Total Employees', value: stats?.totalEmployees || 0, icon: TrendingUp, color: 'text-[#550fa8] bg-[#f7f3fc]', path: '/ecs/hrms/employees' },
     ];
 
     const totalPresent = chartData.reduce((s, d) => s + d.present, 0);
@@ -474,11 +474,11 @@ export default function HrmsDashboard() {
                 <div className="relative" ref={bellRef}>
                     <button
                         onClick={() => setShowNotifPanel(prev => !prev)}
-                        className="relative w-10 h-10 flex items-center justify-center rounded-full bg-white border border-slate-200 hover:bg-orange-50 hover:border-orange-200 transition-all shadow-sm"
+                        className="relative w-10 h-10 flex items-center justify-center rounded-full bg-white border border-slate-200 hover:bg-[#f7f3fc] hover:border-[#d8c4f1] transition-all shadow-sm"
                     >
                         <Bell className="w-5 h-5 text-slate-600" />
                         {notifications.length > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 bg-orange-500 text-white text-[11px] font-bold rounded-full shadow-md">
+                            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 bg-[#6412c6] text-white text-[11px] font-bold rounded-full shadow-md">
                                 {notifications.length > 99 ? '99+' : notifications.length}
                             </span>
                         )}
@@ -489,7 +489,7 @@ export default function HrmsDashboard() {
                         <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-2xl z-50 overflow-hidden">
                             <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                                 <h3 className="text-sm font-bold text-slate-800">Notifications</h3>
-                                <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                                <span className="text-[11px] font-semibold text-[#550fa8] bg-[#f7f3fc] px-2 py-0.5 rounded-full">
                                     {notifications.length} pending
                                 </span>
                             </div>
@@ -497,7 +497,7 @@ export default function HrmsDashboard() {
                             <div className="max-h-80 overflow-y-auto">
                                 {notifLoading ? (
                                     <div className="flex items-center justify-center py-10 gap-2">
-                                        <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                                        <Loader2 className="w-5 h-5 animate-spin text-[#6412c6]" />
                                         <span className="text-sm text-slate-500">Loading…</span>
                                     </div>
                                 ) : notifications.length === 0 ? (
@@ -510,7 +510,7 @@ export default function HrmsDashboard() {
                                     <div className="divide-y divide-slate-100">
                                         {notifications.map((n, i) => {
                                             const IconComp = n.icon === 'UserPlus' ? UserPlus : n.icon === 'CalendarDays' ? CalendarDays : n.icon === 'FileEdit' ? FileEdit : n.icon === 'LifeBuoy' ? LifeBuoy : Clock;
-                                            const typeColor = n.icon === 'UserPlus' ? 'bg-orange-50 text-orange-600' : n.icon === 'CalendarDays' ? 'bg-amber-50 text-amber-600' : n.icon === 'FileEdit' ? 'bg-violet-50 text-violet-600' : n.icon === 'LifeBuoy' ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600';
+                                            const typeColor = n.icon === 'UserPlus' ? 'bg-[#f7f3fc] text-[#550fa8]' : n.icon === 'CalendarDays' ? 'bg-amber-50 text-amber-600' : n.icon === 'FileEdit' ? 'bg-violet-50 text-violet-600' : n.icon === 'LifeBuoy' ? 'bg-[#f7f3fc] text-[#550fa8]' : 'bg-emerald-50 text-emerald-600';
                                             const timeAgo = (() => {
                                                 if (!n.time) return '';
                                                 const diff = Date.now() - new Date(n.time).getTime();
@@ -526,7 +526,7 @@ export default function HrmsDashboard() {
                                                 <button
                                                     key={`${n.type}-${n.id}-${i}`}
                                                     onClick={() => { setShowNotifPanel(false); navigate(n.path); }}
-                                                    className="w-full flex items-start gap-3 px-5 py-3.5 hover:bg-orange-50/50 transition-colors text-left group"
+                                                    className="w-full flex items-start gap-3 px-5 py-3.5 hover:bg-[#f7f3fc]/50 transition-colors text-left group"
                                                 >
                                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${typeColor}`}>
                                                         <IconComp className="w-4 h-4" />
@@ -537,7 +537,7 @@ export default function HrmsDashboard() {
                                                             <span className="text-[10px] text-slate-400 shrink-0">{timeAgo}</span>
                                                         </div>
                                                         <p className="text-xs text-slate-400 truncate mt-0.5">{n.subtitle}</p>
-                                                        <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider text-orange-500">{n.type}</span>
+                                                        <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider text-[#6412c6]">{n.type}</span>
                                                     </div>
                                                 </button>
                                             );
@@ -550,7 +550,7 @@ export default function HrmsDashboard() {
                                 <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
                                     <button
                                         onClick={() => { setShowNotifPanel(false); navigate('/ecs/hrms/joining-requests'); }}
-                                        className="text-xs font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                                        className="text-xs font-semibold text-[#550fa8] hover:text-[#460d8b] transition-colors"
                                     >
                                         View all approvals →
                                     </button>
@@ -565,7 +565,7 @@ export default function HrmsDashboard() {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm px-5 py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
                 {/* Search */}
                 <div className="relative flex-1 w-full sm:max-w-md" ref={searchRef}>
-                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+                    <div className="flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 focus-within:border-[#9359d7] focus-within:ring-2 focus-within:ring-[#f0e7f9] transition-all">
                         <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2" />
                         <input
                             type="text"
@@ -575,7 +575,7 @@ export default function HrmsDashboard() {
                             onFocus={() => setShowResults(true)}
                             className="bg-transparent w-full text-sm text-slate-700 placeholder:text-slate-400 placeholder:uppercase placeholder:tracking-wider placeholder:text-xs focus:outline-none"
                         />
-                        {isSearching && <Loader2 className="w-4 h-4 animate-spin text-orange-500 ml-2 shrink-0" />}
+                        {isSearching && <Loader2 className="w-4 h-4 animate-spin text-[#6412c6] ml-2 shrink-0" />}
                     </div>
 
                     {/* Search Results Dropdown */}
@@ -583,7 +583,7 @@ export default function HrmsDashboard() {
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
                             {isSearching ? (
                                 <div className="flex items-center justify-center py-8 gap-2">
-                                    <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                                    <Loader2 className="w-5 h-5 animate-spin text-[#6412c6]" />
                                     <span className="text-sm text-slate-500">Searching…</span>
                                 </div>
                             ) : searchResults.length === 0 ? (
@@ -598,21 +598,21 @@ export default function HrmsDashboard() {
                                     </p>
                                     {Object.entries(groupedResults).map(([type, results]) => (
                                         <div key={type}>
-                                            <p className="px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-500">{type}s</p>
+                                            <p className="px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#6412c6]">{type}s</p>
                                             {results.map((result, idx) => (
                                                 <button
                                                     key={`${type}-${idx}`}
                                                     onClick={() => handleResultClick(result)}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-orange-50 transition-colors text-left group"
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-[#f7f3fc] transition-colors text-left group"
                                                 >
-                                                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-orange-100 group-hover:text-orange-600 transition-colors shrink-0">
+                                                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-[#f0e7f9] group-hover:text-[#550fa8] transition-colors shrink-0">
                                                         {resultIcon(result.type)}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <p className="text-sm font-medium text-slate-800 truncate">{result.title}</p>
                                                         <p className="text-xs text-slate-400 truncate">{result.description}</p>
                                                     </div>
-                                                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-orange-500 shrink-0 transition-colors" />
+                                                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6412c6] shrink-0 transition-colors" />
                                                 </button>
                                             ))}
                                         </div>
@@ -633,7 +633,7 @@ export default function HrmsDashboard() {
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">System Active</span>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full">
-                        <CalendarDays className="w-3.5 h-3.5 text-orange-500" />
+                        <CalendarDays className="w-3.5 h-3.5 text-[#6412c6]" />
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">{dateStr}</span>
                     </div>
                 </div>
@@ -643,12 +643,12 @@ export default function HrmsDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 {cards.map((card, i) => (
                     <button key={i} onClick={() => navigate(card.path)}
-                        className={`bg-white rounded-2xl border shadow-sm p-5 text-left hover:shadow-md transition-all group ${card.highlight ? 'border-orange-300 ring-2 ring-orange-100' : 'border-slate-200'}`}>
+                        className={`bg-white rounded-2xl border shadow-sm p-5 text-left hover:shadow-md transition-all group ${card.highlight ? 'border-[#c1a0e8] ring-2 ring-[#f0e7f9]' : 'border-slate-200'}`}>
                         <div className="flex items-center justify-between mb-3">
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.color.split(' ')[1]}`}>
                                 <card.icon className={`w-5 h-5 ${card.color.split(' ')[0]}`} />
                             </div>
-                            {card.highlight && <span className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-pulse" />}
+                            {card.highlight && <span className="w-2.5 h-2.5 rounded-full bg-[#6412c6] animate-pulse" />}
                         </div>
                         <p className="text-3xl font-bold text-slate-900">{card.value}</p>
                         <p className="text-sm text-slate-500 mt-0.5">{card.label}</p>
@@ -665,14 +665,14 @@ export default function HrmsDashboard() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block"></span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#6412c6] inline-block"></span>
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Present</span>
                         </div>
                         {chartLoading ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-orange-400" />
+                            <Loader2 className="w-4 h-4 animate-spin text-[#9359d7]" />
                         ) : (
                             <div className="flex gap-3 text-xs text-slate-500">
-                                <span className="font-semibold text-orange-600">{totalPresent}</span> present this week ·
+                                <span className="font-semibold text-[#550fa8]">{totalPresent}</span> present this week ·
                                 <span className="font-semibold text-slate-500">{totalAbsent}</span> absent
                             </div>
                         )}
@@ -681,7 +681,7 @@ export default function HrmsDashboard() {
 
                 {chartLoading ? (
                     <div className="flex items-center justify-center h-48">
-                        <Loader2 className="w-8 h-8 animate-spin text-orange-400" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[#9359d7]" />
                     </div>
                 ) : chartData.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-48 text-slate-400">

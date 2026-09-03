@@ -52,7 +52,9 @@ const sellerOrderSchema = new mongoose.Schema(
       subtotal: { type: Number, min: 0, default: 0 },
       commission: { type: Number, min: 0, default: 0 },
       total: { type: Number, min: 0, default: 0 },
-      /** Net amount payable to seller for this order leg (subtotal - commission). */
+      /** Portion of the delivery fee this seller absorbed under a SELLER_FULL/SPLIT sponsor rule. */
+      deliveryFeeBorne: { type: Number, min: 0, default: 0 },
+      /** Net amount payable to seller for this order leg (subtotal - commission - deliveryFeeBorne). */
       receivable: { type: Number, min: 0, default: 0 },
     },
     status: {

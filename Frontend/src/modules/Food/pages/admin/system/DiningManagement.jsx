@@ -289,7 +289,7 @@ export default function DiningManagement() {
                                                     <p className="font-medium text-slate-900">{cat.name}</p>
                                                 </div>
                                                 <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => handleEditCategory(cat)} className="p-1.5 bg-orange-100 text-primary rounded-full">
+                                                    <button onClick={() => handleEditCategory(cat)} className="p-1.5 bg-[#f0e7f9] text-primary rounded-full">
                                                         <Edit className="w-4 h-4" />
                                                     </button>
                                                     <button onClick={() => handleDeleteCategory(cat._id)} className="p-1.5 bg-red-100 text-red-600 rounded-full">

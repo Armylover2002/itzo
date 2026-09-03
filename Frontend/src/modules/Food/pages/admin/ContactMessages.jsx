@@ -214,8 +214,8 @@ export default function ContactMessages() {
                         <div className="w-32 h-32 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center shadow-inner">
                           <div className="w-20 h-20 bg-white rounded-xl flex items-center justify-center shadow-md relative overflow-visible">
                             <Folder className="w-12 h-12 text-slate-400" />
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-3 bg-orange-500 rounded-t-md z-10"></div>
-                            <div className="absolute top-3 right-2 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center z-10">
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-3 bg-[#6412c6] rounded-t-md z-10"></div>
+                            <div className="absolute top-3 right-2 w-5 h-5 bg-[#6412c6] rounded-full flex items-center justify-center z-10">
                               <span className="text-white text-xs font-bold">!</span>
                             </div>
                           </div>
@@ -314,7 +314,7 @@ export default function ContactMessages() {
               {/* User Information Section */}
               <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-xl p-5 border border-slate-200 dark:border-slate-700">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                  <div className="w-1 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+                  <div className="w-1 h-6 bg-gradient-to-b from-[#6412c6] to-[#550fa8] rounded-full"></div>
                   Customer Information
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -336,9 +336,9 @@ export default function ContactMessages() {
               </div>
 
                {/* Rating Section */}
-               <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-xl p-5 border border-yellow-200 dark:border-yellow-800">
+               <div className="bg-gradient-to-br from-yellow-50 to-[#f7f3fc] dark:from-yellow-900/20 dark:to-[#28074f]/20 rounded-xl p-5 border border-yellow-200 dark:border-yellow-800">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                  <div className="w-1 h-6 bg-gradient-to-b from-yellow-500 to-orange-600 rounded-full"></div>
+                  <div className="w-1 h-6 bg-gradient-to-b from-yellow-500 to-[#550fa8] rounded-full"></div>
                   Rating
                 </h3>
                 <div className="bg-white dark:bg-slate-800 rounded-lg p-5 border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -355,9 +355,9 @@ export default function ContactMessages() {
 
               {/* Feedback Message Section */}
               {selectedFeedback.comment && (
-                <div className="bg-gradient-to-br from-orange-50 to-orange-50 dark:from-orange-900/20 dark:to-orange-900/20 rounded-xl p-5 border border-orange-200 dark:border-orange-800">
+                <div className="bg-gradient-to-br from-[#f7f3fc] to-[#f7f3fc] dark:from-[#28074f]/20 dark:to-[#28074f]/20 rounded-xl p-5 border border-[#d8c4f1] dark:border-[#370a6d]">
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-5 flex items-center gap-3">
-                    <div className="w-1 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+                    <div className="w-1 h-6 bg-gradient-to-b from-[#6412c6] to-[#550fa8] rounded-full"></div>
                     Feedback Comment
                   </h3>
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-5 border border-slate-200 dark:border-slate-700 shadow-sm">

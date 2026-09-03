@@ -215,7 +215,7 @@ export default function DeliveryCashLimit() {
                   <button
                     onClick={saveLimit}
                     disabled={loading || saving}
-                    className="px-4 py-2.5 text-sm font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="px-4 py-2.5 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                     Save

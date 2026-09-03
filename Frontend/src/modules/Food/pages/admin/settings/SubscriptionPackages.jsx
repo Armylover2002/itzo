@@ -125,7 +125,7 @@ export default function SubscriptionPackages() {
             title="Basic"
             amount="$ 399.00"
             previous="$ 399.00"
-            bgColor="bg-orange-50"
+            bgColor="bg-[#f7f3fc]"
           />
           <OverviewCard
             title="Standard"
@@ -137,7 +137,7 @@ export default function SubscriptionPackages() {
             title="Pro"
             amount="$ 3,597.00"
             previous="$ 3,597.00"
-            bgColor="bg-orange-50"
+            bgColor="bg-[#f7f3fc]"
           />
         </div>
       </div>
@@ -366,7 +366,7 @@ export default function SubscriptionPackages() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>
@@ -387,7 +387,7 @@ function OverviewCard({ title, amount, previous, bgColor }) {
         </span>
       </div>
       <p className="text-sm font-semibold text-slate-700 mb-1">{title}</p>
-      <p className="text-2xl font-bold text-orange-700 mb-1">{amount}</p>
+      <p className="text-2xl font-bold text-[#460d8b] mb-1">{amount}</p>
       <p className="text-sm font-semibold line-through text-slate-400">
         {previous}
       </p>

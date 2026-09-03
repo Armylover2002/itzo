@@ -442,7 +442,7 @@ export default function PointOfSale() {
               {/* Total Orders */}
               <div className="bg-white rounded-lg shadow-sm border border-[#e3e6ef] p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-orange-100 rounded-lg">
+                  <div className="p-3 bg-[#f0e7f9] rounded-lg">
                     <ShoppingCart className="w-6 h-6 text-primary" />
                   </div>
                   <TrendingUp className="w-5 h-5 text-green-500" />
@@ -514,7 +514,7 @@ export default function PointOfSale() {
               <div className="bg-white rounded-lg shadow-sm border border-[#e3e6ef] p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 bg-orange-100 rounded-lg">
+                    <div className="p-3 bg-[#f0e7f9] rounded-lg">
                       <BarChart3 className="w-6 h-6 text-primary" />
                     </div>
                     <div>
@@ -631,7 +631,7 @@ export default function PointOfSale() {
               {/* Customer Statistics */}
               <div className="bg-white rounded-lg shadow-sm border border-[#e3e6ef] p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-orange-100 rounded-lg">
+                  <div className="p-2 bg-[#f0e7f9] rounded-lg">
                     <Users className="w-5 h-5 text-primary" />
                   </div>
                   <h3 className="text-base font-semibold text-[#334257]">Customer Statistics</h3>
@@ -659,8 +659,8 @@ export default function PointOfSale() {
               {/* Restaurant Details */}
               <div className="bg-white rounded-lg shadow-sm border border-[#e3e6ef] p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Package className="w-5 h-5 text-orange-600" />
+                  <div className="p-2 bg-[#f0e7f9] rounded-lg">
+                    <Package className="w-5 h-5 text-[#550fa8]" />
                   </div>
                   <h3 className="text-base font-semibold text-[#334257]">Restaurant Details</h3>
                 </div>
@@ -697,7 +697,7 @@ export default function PointOfSale() {
             <div className="bg-white rounded-lg shadow-sm border border-[#e3e6ef] p-6">
               <h3 className="text-lg font-semibold text-[#334257] mb-4">Order Statistics Summary</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-orange-50 rounded-lg">
+                <div className="text-center p-4 bg-[#f7f3fc] rounded-lg">
                   <p className="text-2xl font-bold text-primary">{formatNumber(analyticsData.totalOrders)}</p>
                   <p className="text-xs text-[#8a94aa] mt-1">Total Orders</p>
                 </div>

@@ -130,7 +130,7 @@ export default function QuestionBank() {
                 </div>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-[#6412c6] hover:bg-[#550fa8] text-white px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm"
                 >
                     <Plus className="w-5 h-5" /> Add Question
                 </button>
@@ -146,7 +146,7 @@ export default function QuestionBank() {
                             placeholder="Search questions..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                         />
                     </div>
                     <div className="relative w-full sm:w-64">
@@ -154,7 +154,7 @@ export default function QuestionBank() {
                         <select
                             value={filterCategory}
                             onChange={(e) => setFilterCategory(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 appearance-none"
+                            className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] appearance-none"
                         >
                             <option value="">All Categories</option>
                             {categories.map((c, i) => <option key={i} value={c}>{c}</option>)}
@@ -190,7 +190,7 @@ export default function QuestionBank() {
                                             <p className="text-sm font-medium text-slate-900 line-clamp-2">{q.questionText}</p>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">
+                                            <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-[#f7f3fc] text-[#460d8b]">
                                                 {q.category}
                                             </span>
                                         </td>
@@ -215,7 +215,7 @@ export default function QuestionBank() {
                                             </button>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right space-x-3">
-                                            <button onClick={() => openEditModal(q)} className="text-slate-400 hover:text-orange-500 transition-colors">
+                                            <button onClick={() => openEditModal(q)} className="text-slate-400 hover:text-[#6412c6] transition-colors">
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
                                             <button onClick={() => handleDelete(q._id)} className="text-slate-400 hover:text-red-500 transition-colors">
@@ -250,7 +250,7 @@ export default function QuestionBank() {
                                         rows={3}
                                         value={formData.questionText}
                                         onChange={e => setFormData({...formData, questionText: e.target.value})}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 resize-none"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] resize-none"
                                         placeholder="Enter the question here..."
                                     />
                                 </div>
@@ -264,7 +264,7 @@ export default function QuestionBank() {
                                             list="categoryList"
                                             value={formData.category}
                                             onChange={e => setFormData({...formData, category: e.target.value})}
-                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                                             placeholder="e.g. Sales, ReactJS"
                                         />
                                         <datalist id="categoryList">
@@ -276,7 +276,7 @@ export default function QuestionBank() {
                                         <select 
                                             value={formData.difficulty}
                                             onChange={e => setFormData({...formData, difficulty: e.target.value})}
-                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                                            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                                         >
                                             <option value="Easy">Easy</option>
                                             <option value="Medium">Medium</option>
@@ -289,13 +289,13 @@ export default function QuestionBank() {
                                     <label className="block text-sm font-semibold text-slate-700 mb-3">Options (Select the correct one)</label>
                                     <div className="space-y-3">
                                         {[0, 1, 2, 3].map(index => (
-                                            <div key={index} className={`flex items-center gap-3 p-2 rounded-xl border ${formData.correctOptionIndex === index ? 'border-orange-400 bg-orange-50' : 'border-slate-200 bg-white'}`}>
+                                            <div key={index} className={`flex items-center gap-3 p-2 rounded-xl border ${formData.correctOptionIndex === index ? 'border-[#9359d7] bg-[#f7f3fc]' : 'border-slate-200 bg-white'}`}>
                                                 <input 
                                                     type="radio" 
                                                     name="correctOption" 
                                                     checked={formData.correctOptionIndex === index}
                                                     onChange={() => setFormData({...formData, correctOptionIndex: index})}
-                                                    className="w-4 h-4 accent-orange-500 ml-2 cursor-pointer"
+                                                    className="w-4 h-4 accent-[#6412c6] ml-2 cursor-pointer"
                                                 />
                                                 <input 
                                                     required
@@ -316,7 +316,7 @@ export default function QuestionBank() {
                             <button onClick={() => setShowModal(false)} className="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">
                                 Cancel
                             </button>
-                            <button type="submit" form="questionForm" className="px-5 py-2.5 text-sm font-medium bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors shadow-sm">
+                            <button type="submit" form="questionForm" className="px-5 py-2.5 text-sm font-medium bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl transition-colors shadow-sm">
                                 Save Question
                             </button>
                         </div>

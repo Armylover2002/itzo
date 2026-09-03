@@ -371,7 +371,7 @@ export default function BannerManagement() {
           </div>
         </Card>
 
-        <Card className="p-4 bg-gradient-to-br from-purple-50 to-fuchsia-50/40 dark:from-purple-950/20 dark:to-transparent border-purple-100 dark:border-purple-900/30">
+        <Card className="p-4 bg-gradient-to-br from-purple-50 to-[#f7f3fc]/40 dark:from-purple-950/20 dark:to-transparent border-purple-100 dark:border-purple-900/30">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Always Active</p>

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { QuickProduct } from '../models/product.model.js';
 import { QuickWishlist } from '../models/wishlist.model.js';
-import { ensureQuickCommerceSeedData } from '../services/seed.service.js';
 
 const approvedProductFilter = {
   $or: [
@@ -63,7 +62,6 @@ const buildWishlistResponse = async (wishlistDoc, { idsOnly = false } = {}) => {
 };
 
 export const getWishlist = async (req, res) => {
-  await ensureQuickCommerceSeedData();
   const idQuery = resolveId(req);
   if (!idQuery) {
     return res.status(400).json({ success: false, message: 'sessionId or userId is required' });
@@ -75,7 +73,6 @@ export const getWishlist = async (req, res) => {
 };
 
 export const addToWishlist = async (req, res) => {
-  await ensureQuickCommerceSeedData();
   const idQuery = resolveId(req);
   const { productId } = req.body;
 
@@ -99,7 +96,6 @@ export const addToWishlist = async (req, res) => {
 };
 
 export const removeFromWishlist = async (req, res) => {
-  await ensureQuickCommerceSeedData();
   const idQuery = resolveId(req);
   const { productId } = req.params;
 
@@ -116,7 +112,6 @@ export const removeFromWishlist = async (req, res) => {
 };
 
 export const toggleWishlist = async (req, res) => {
-  await ensureQuickCommerceSeedData();
   const idQuery = resolveId(req);
   const { productId } = req.body;
 

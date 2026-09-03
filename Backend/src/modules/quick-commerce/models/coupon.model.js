@@ -67,6 +67,22 @@ const quickCouponSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Seller',
+      default: null,
+    },
+    sellerIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Seller',
+      },
+    ],
+    scope: {
+      type: String,
+      enum: ['all', 'seller'],
+      default: 'all',
+    },
   },
   { timestamps: true }
 );

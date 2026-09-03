@@ -250,7 +250,7 @@ const CategoryHierarchy = () => {
 
   const ListItem = ({ item, isSelected, onClick, hasChildren, type, onDelete, onToggle }) => {
     const activeClass = isSelected
-      ? "bg-orange-50 border-orange-200 text-orange-700 shadow-sm z-10"
+      ? "bg-[#f7f3fc] border-[#d8c4f1] text-[#460d8b] shadow-sm z-10"
       : "hover:bg-gray-50 border-transparent text-gray-600";
 
     const iconColor = isSelected ? "text-primary" : "text-gray-400";
@@ -337,7 +337,7 @@ const CategoryHierarchy = () => {
           </button>
           {hasChildren && (
             <ChevronRight
-              className={`w-4 h-4 ${isSelected ? "text-orange-400" : "text-gray-300"}`}
+              className={`w-4 h-4 ${isSelected ? "text-[#9359d7]" : "text-gray-300"}`}
             />
           )}
         </div>
@@ -451,7 +451,7 @@ const CategoryHierarchy = () => {
                 placeholder="Filter headers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-orange-100 transition-all"
+                className="w-full pl-9 pr-4 py-2 bg-gray-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-[#f0e7f9] transition-all"
               />
             </div>
           </div>

@@ -42,7 +42,7 @@ function AccordionSection({ title, icon: Icon, isOpen, onToggle, children }) {
                 className="w-full flex items-center justify-between px-5 py-3.5 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
             >
                 <span className="flex items-center gap-2.5 text-sm font-semibold text-slate-700">
-                    <Icon className="w-4 h-4 text-orange-500" />
+                    <Icon className="w-4 h-4 text-[#6412c6]" />
                     {title}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
@@ -171,7 +171,7 @@ export default function HrmsKpiRuleBuilder({
                                 value={formulaExpression}
                                 onChange={(e) => onFormulaChange && onFormulaChange(e.target.value)}
                                 placeholder="e.g. (RESTAURANTS_ONBOARDED / TARGET) * 100"
-                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-mono text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] transition-colors"
                             />
                             {formulaExpression && (
                                 <button
@@ -199,7 +199,7 @@ export default function HrmsKpiRuleBuilder({
                                             type="button"
                                             onClick={() => handleInsert(v.name)}
                                             title={v.desc}
-                                            className="px-2.5 py-1.5 bg-slate-50 hover:bg-orange-50 hover:text-orange-700 border border-slate-200 hover:border-orange-200 rounded-lg text-xs font-mono text-slate-600 transition-all active:scale-95"
+                                            className="px-2.5 py-1.5 bg-slate-50 hover:bg-[#f7f3fc] hover:text-[#460d8b] border border-slate-200 hover:border-[#d8c4f1] rounded-lg text-xs font-mono text-slate-600 transition-all active:scale-95"
                                         >
                                             {v.name}
                                         </button>
@@ -228,7 +228,7 @@ export default function HrmsKpiRuleBuilder({
                         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col justify-between">
                             <div>
                                 <h4 className="text-xs font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                                    <Play className="w-3.5 h-3.5 text-orange-500" /> Test Formula
+                                    <Play className="w-3.5 h-3.5 text-[#6412c6]" /> Test Formula
                                 </h4>
                                 <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                                     {['RESTAURANTS_ONBOARDED', 'ACTIVE_RESTAURANTS', 'GROSS_REVENUE', 'NET_PROFIT', 'TARGET', 'ACHIEVED'].map((key) => (
@@ -250,7 +250,7 @@ export default function HrmsKpiRuleBuilder({
                                     type="button"
                                     onClick={handleTestFormula}
                                     disabled={testing || !formulaExpression}
-                                    className="flex-1 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                                    className="flex-1 py-2.5 bg-[#6412c6] hover:bg-[#550fa8] disabled:opacity-50 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
                                 >
                                     <Play className="w-3.5 h-3.5" /> {testing ? 'Testing...' : 'Run Test'}
                                 </button>
@@ -293,7 +293,7 @@ export default function HrmsKpiRuleBuilder({
                                     type="checkbox"
                                     checked={ruleConfig?.activeRestaurantRules?.[rule.id] !== false}
                                     onChange={(e) => updateActiveRule(rule.id, e.target.checked)}
-                                    className="w-4 h-4 mt-0.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                                    className="w-4 h-4 mt-0.5 rounded border-slate-300 text-[#6412c6] focus:ring-[#6412c6]"
                                 />
                                 <div>
                                     <span className="text-sm font-medium text-slate-800 block">{rule.label}</span>
@@ -313,7 +313,7 @@ export default function HrmsKpiRuleBuilder({
                             min="0"
                             value={ruleConfig?.activeRestaurantRules?.minOrders ?? ruleConfig?.minOrdersThreshold ?? 1}
                             onChange={(e) => updateActiveRule('minOrders', Number(e.target.value))}
-                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                         />
                     </div>
                 </div>
@@ -341,7 +341,7 @@ export default function HrmsKpiRuleBuilder({
                                     type="text"
                                     value={level.levelName}
                                     onChange={(e) => updateLevel(idx, 'levelName', e.target.value)}
-                                    className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-800 w-full focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                                    className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-800 w-full focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                                 />
                             </div>
                             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -351,7 +351,7 @@ export default function HrmsKpiRuleBuilder({
                                         type="number"
                                         value={level.minScore}
                                         onChange={(e) => updateLevel(idx, 'minScore', Number(e.target.value))}
-                                        className="w-20 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                                        className="w-20 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                                     />
                                 </div>
                                 <div className="flex items-center gap-1.5">
@@ -360,7 +360,7 @@ export default function HrmsKpiRuleBuilder({
                                         type="number"
                                         value={level.maxScore}
                                         onChange={(e) => updateLevel(idx, 'maxScore', Number(e.target.value))}
-                                        className="w-24 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                                        className="w-24 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                                     />
                                 </div>
                             </div>
@@ -376,7 +376,7 @@ export default function HrmsKpiRuleBuilder({
                                     type="text"
                                     value={level.color}
                                     onChange={(e) => updateLevel(idx, 'color', e.target.value)}
-                                    className="w-24 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                                    className="w-24 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
                                 />
                             </div>
                         </div>

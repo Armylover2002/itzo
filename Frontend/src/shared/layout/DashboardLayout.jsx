@@ -355,7 +355,7 @@ const DashboardLayout = ({ children, navItems, title }) => {
     };
 
     return (
-        <div className="min-h-screen mesh-gradient-light relative overflow-x-hidden">
+        <div className="min-h-screen mesh-gradient-light relative" style={{ overflowX: 'clip' }}>
             {/* Background Blobs for depth */}
             <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none"></div>
             <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
@@ -366,9 +366,9 @@ const DashboardLayout = ({ children, navItems, title }) => {
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
             />
-            <div className={cn("transition-all duration-300", (role === "admin" || role === "seller") ? "pl-0 md:pl-80" : "pl-80")}>
+            <div className={cn("transition-all duration-300", (role === "admin" || role === "seller") ? "pl-0 md:pl-64" : "pl-64")}>
                 <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
-                <main className={cn("min-h-screen", (role === "admin" || role === "seller") ? "pt-20 md:pt-6 pb-24 md:pb-8" : "pt-20")}>
+                <main className={cn("min-h-[calc(100vh-4rem)]", (role === "admin" || role === "seller") ? "pb-24 md:pb-8" : "pb-20")}>
                     <div className="w-full px-3 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
                         <SellerOrdersContext.Provider
                             value={{

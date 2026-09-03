@@ -73,7 +73,7 @@ export default function SupportSettings() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
             </div>
         );
     }
@@ -88,7 +88,7 @@ export default function SupportSettings() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 bg-orange-500 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-orange-600 transition-colors shadow-sm disabled:opacity-50"
+                    className="flex items-center gap-2 bg-[#6412c6] text-white px-6 py-2.5 rounded-xl font-medium hover:bg-[#550fa8] transition-colors shadow-sm disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Changes
@@ -99,44 +99,44 @@ export default function SupportSettings() {
                 {/* HR Contact Info */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                     <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <Phone className="w-5 h-5 text-orange-500" />
+                        <Phone className="w-5 h-5 text-[#6412c6]" />
                         HR Contact Information
                     </h2>
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">HR Name</label>
-                                <input type="text" value={settings.hrContact.name} onChange={e => handleChange('hrContact', 'name', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                                <input type="text" value={settings.hrContact.name} onChange={e => handleChange('hrContact', 'name', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                             </div>
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">HR Email</label>
-                                <input type="email" value={settings.hrContact.email} onChange={e => handleChange('hrContact', 'email', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                                <input type="email" value={settings.hrContact.email} onChange={e => handleChange('hrContact', 'email', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                             </div>
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">HR Mobile</label>
-                                <input type="text" value={settings.hrContact.mobile} onChange={e => handleChange('hrContact', 'mobile', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                                <input type="text" value={settings.hrContact.mobile} onChange={e => handleChange('hrContact', 'mobile', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                             </div>
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">Company Support Email</label>
-                                <input type="email" value={settings.hrContact.companySupportEmail} onChange={e => handleChange('hrContact', 'companySupportEmail', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                                <input type="email" value={settings.hrContact.companySupportEmail} onChange={e => handleChange('hrContact', 'companySupportEmail', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                             </div>
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-slate-600 block mb-1.5">Company Support Number</label>
-                            <input type="text" value={settings.hrContact.companySupportNumber} onChange={e => handleChange('hrContact', 'companySupportNumber', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                            <input type="text" value={settings.hrContact.companySupportNumber} onChange={e => handleChange('hrContact', 'companySupportNumber', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-slate-600 block mb-1.5">Office Address</label>
-                            <input type="text" value={settings.hrContact.officeAddress} onChange={e => handleChange('hrContact', 'officeAddress', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                            <input type="text" value={settings.hrContact.officeAddress} onChange={e => handleChange('hrContact', 'officeAddress', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">Working Days</label>
-                                <input type="text" value={settings.hrContact.workingDays} onChange={e => handleChange('hrContact', 'workingDays', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" placeholder="e.g. Monday to Friday" />
+                                <input type="text" value={settings.hrContact.workingDays} onChange={e => handleChange('hrContact', 'workingDays', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" placeholder="e.g. Monday to Friday" />
                             </div>
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">Working Hours</label>
-                                <input type="text" value={settings.hrContact.workingHours} onChange={e => handleChange('hrContact', 'workingHours', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" placeholder="e.g. 10:00 AM - 06:00 PM" />
+                                <input type="text" value={settings.hrContact.workingHours} onChange={e => handleChange('hrContact', 'workingHours', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" placeholder="e.g. 10:00 AM - 06:00 PM" />
                             </div>
                         </div>
                     </div>
@@ -146,22 +146,22 @@ export default function SupportSettings() {
                 <div className="space-y-6">
                     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                         <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <AlertCircle className="w-5 h-5 text-orange-500" />
+                            <AlertCircle className="w-5 h-5 text-[#6412c6]" />
                             Ticket Configuration
                         </h2>
                         <div className="space-y-4">
                             <div>
                                 <label className="text-xs font-semibold text-slate-600 block mb-1.5">Auto Reply Message</label>
-                                <textarea value={settings.ticketConfig.autoReplyMessage} onChange={e => handleChange('ticketConfig', 'autoReplyMessage', e.target.value)} rows={3} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none resize-none" placeholder="Message sent automatically when ticket is created..." />
+                                <textarea value={settings.ticketConfig.autoReplyMessage} onChange={e => handleChange('ticketConfig', 'autoReplyMessage', e.target.value)} rows={3} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none resize-none" placeholder="Message sent automatically when ticket is created..." />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-xs font-semibold text-slate-600 block mb-1.5">Default Status</label>
-                                    <input type="text" value={settings.ticketConfig.defaultStatus} onChange={e => handleChange('ticketConfig', 'defaultStatus', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                                    <input type="text" value={settings.ticketConfig.defaultStatus} onChange={e => handleChange('ticketConfig', 'defaultStatus', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                                 </div>
                                 <div>
                                     <label className="text-xs font-semibold text-slate-600 block mb-1.5">Max Attachment Size (MB)</label>
-                                    <input type="number" value={settings.ticketConfig.maxAttachmentSizeMB} onChange={e => handleChange('ticketConfig', 'maxAttachmentSizeMB', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-orange-500 outline-none" />
+                                    <input type="number" value={settings.ticketConfig.maxAttachmentSizeMB} onChange={e => handleChange('ticketConfig', 'maxAttachmentSizeMB', e.target.value)} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-[#6412c6] outline-none" />
                                 </div>
                             </div>
                         </div>
@@ -170,7 +170,7 @@ export default function SupportSettings() {
                     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-lg font-bold text-slate-800">Categories</h2>
-                            <button onClick={() => addArrayItem('categories')} className="text-xs font-bold text-orange-500 flex items-center gap-1 hover:text-orange-600"><Plus className="w-3 h-3" /> Add Category</button>
+                            <button onClick={() => addArrayItem('categories')} className="text-xs font-bold text-[#6412c6] flex items-center gap-1 hover:text-[#550fa8]"><Plus className="w-3 h-3" /> Add Category</button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {settings.ticketConfig.categories.map((cat, i) => (
@@ -183,7 +183,7 @@ export default function SupportSettings() {
 
                         <div className="flex items-center justify-between mb-4 mt-6">
                             <h2 className="text-lg font-bold text-slate-800">Priorities</h2>
-                            <button onClick={() => addArrayItem('priorities')} className="text-xs font-bold text-orange-500 flex items-center gap-1 hover:text-orange-600"><Plus className="w-3 h-3" /> Add Priority</button>
+                            <button onClick={() => addArrayItem('priorities')} className="text-xs font-bold text-[#6412c6] flex items-center gap-1 hover:text-[#550fa8]"><Plus className="w-3 h-3" /> Add Priority</button>
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {settings.ticketConfig.priorities.map((pri, i) => (

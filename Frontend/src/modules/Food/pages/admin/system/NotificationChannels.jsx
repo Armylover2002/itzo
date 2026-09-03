@@ -565,7 +565,7 @@ export default function NotificationChannels() {
                         <td className="px-3 py-3">
                           <button
                             type="button"
-                            className="px-2 py-1 text-[10px] font-medium bg-orange-50 text-primary rounded hover:bg-orange-100 transition-colors"
+                            className="px-2 py-1 text-[10px] font-medium bg-[#f7f3fc] text-primary rounded hover:bg-[#f0e7f9] transition-colors"
                           >
                             {notification.pushNotification}
                           </button>
@@ -589,7 +589,7 @@ export default function NotificationChannels() {
                           ) : (
                             <button
                               type="button"
-                              className="px-2 py-1 text-[10px] font-medium bg-orange-50 text-primary rounded hover:bg-orange-100 transition-colors"
+                              className="px-2 py-1 text-[10px] font-medium bg-[#f7f3fc] text-primary rounded hover:bg-[#f0e7f9] transition-colors"
                             >
                               N/A
                             </button>
@@ -649,7 +649,7 @@ export default function NotificationChannels() {
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-xs font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-xs font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

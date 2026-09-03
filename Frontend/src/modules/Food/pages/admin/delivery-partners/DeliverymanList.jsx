@@ -789,7 +789,7 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                               )}
                               <button 
                                 onClick={() => handleView(dm)}
-                                className="p-1.5 rounded bg-orange-50 text-primary hover:bg-orange-100 transition-colors" 
+                                className="p-1.5 rounded bg-[#f7f3fc] text-primary hover:bg-[#f0e7f9] transition-colors" 
                                 title="View Details"
                               >
                                 <Eye className="w-4 h-4" />
@@ -880,7 +880,7 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                     <div>
                       <label className="text-xs font-semibold text-slate-500 uppercase">Status</label>
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-1 ${
-                        viewDetails.status === 'pending' ? 'bg-orange-100 text-orange-700' :
+                        viewDetails.status === 'pending' ? 'bg-[#f0e7f9] text-[#460d8b]' :
                         viewDetails.status === 'approved' || viewDetails.status === 'active' ? 'bg-green-100 text-green-700' :
                         viewDetails.status === 'blocked' ? 'bg-red-100 text-red-700' :
                         'bg-slate-100 text-slate-700'
@@ -1275,7 +1275,7 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
               </button>
               <button
                 onClick={() => setIsSettingsOpen(false)}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
               >
                 Apply
               </button>

@@ -4,7 +4,6 @@ import { validateCategoryListQuery, validateCategoryRejectDto, validateCategoryU
 import { validateCreateOfferDto, validateUpdateOfferCartVisibilityDto } from '../validators/offer.validator.js';
 import { validateAddDeliveryBonusDto } from '../validators/deliveryBonus.validator.js';
 import { validateCheckCompletionsDto, validateEarningAddonHistoryActionDto, validateEarningAddonUpsertDto, validateToggleEarningAddonStatusDto } from '../validators/earningAddon.validator.js';
-import { validateDeliveryCommissionRuleDto, validateOptionalStatusDto } from '../validators/commission.validator.js';
 import { validateFeeSettingsUpsertDto } from '../validators/feeSettings.validator.js';
 import { validateDeliveryEmergencyHelpUpsertDto } from '../validators/deliveryEmergencyHelp.validator.js';
 import { validateReferralSettingsUpsertDto } from '../validators/referralSettings.validator.js';
@@ -937,78 +936,8 @@ export async function checkEarningAddonCompletions(req, res, next) {
     }
 }
 
-// ----- Delivery commission rules (admin) -----
-export async function getDeliveryCommissionRules(req, res, next) {
-    try {
-        const data = await adminService.getDeliveryCommissionRules();
-        res.status(200).json({ success: true, message: 'Commission rules fetched successfully', data });
-    } catch (error) {
-        next(error);
-    }
-}
-
-export async function createDeliveryCommissionRule(req, res, next) {
-    try {
-        const body = validateDeliveryCommissionRuleDto(req.body || {});
-        const created = await adminService.createDeliveryCommissionRule(body);
-        res.status(201).json({ success: true, message: 'Commission rule created successfully', data: { commission: created } });
-    } catch (error) {
-        next(error);
-    }
-}
-
-export async function updateDeliveryCommissionRule(req, res, next) {
-    try {
-        const { id } = req.params;
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid commission id' });
-        }
-        const body = validateDeliveryCommissionRuleDto(req.body || {});
-        const updated = await adminService.updateDeliveryCommissionRule(id, body);
-        if (!updated) {
-            return res.status(404).json({ success: false, message: 'Commission rule not found' });
-        }
-        res.status(200).json({ success: true, message: 'Commission rule updated successfully', data: { commission: updated } });
-    } catch (error) {
-        next(error);
-    }
-}
-
-export async function deleteDeliveryCommissionRule(req, res, next) {
-    try {
-        const { id } = req.params;
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid commission id' });
-        }
-        const result = await adminService.deleteDeliveryCommissionRule(id);
-        if (!result) {
-            return res.status(404).json({ success: false, message: 'Commission rule not found' });
-        }
-        res.status(200).json({ success: true, message: 'Commission rule deleted successfully', data: result });
-    } catch (error) {
-        next(error);
-    }
-}
-
-export async function toggleDeliveryCommissionRuleStatus(req, res, next) {
-    try {
-        const { id } = req.params;
-        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ success: false, message: 'Invalid commission id' });
-        }
-        const { status } = validateOptionalStatusDto(req.body || {});
-        if (typeof status !== 'boolean') {
-            return res.status(400).json({ success: false, message: 'status is required' });
-        }
-        const updated = await adminService.toggleDeliveryCommissionRuleStatus(id, status);
-        if (!updated) {
-            return res.status(404).json({ success: false, message: 'Commission rule not found' });
-        }
-        res.status(200).json({ success: true, message: 'Status updated successfully', data: { commission: updated } });
-    } catch (error) {
-        next(error);
-    }
-}
+// ----- Delivery commission rules (admin) removed: rider earning now comes
+// directly from the fee-settings delivery fee (see foodTransaction flow). -----
 
 // ----- Fee Settings (admin) -----
 export async function getFeeSettings(req, res, next) {

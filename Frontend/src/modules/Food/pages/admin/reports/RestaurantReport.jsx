@@ -237,13 +237,13 @@ export default function RestaurantReport() {
               <button 
                 onClick={handleFilterApply}
                 className={`px-6 py-2.5 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary transition-all flex items-center gap-2 relative ${
-                  activeFiltersCount > 0 ? "ring-2 ring-orange-300" : ""
+                  activeFiltersCount > 0 ? "ring-2 ring-[#c1a0e8]" : ""
                 }`}
               >
                 <Filter className="w-4 h-4" />
                 Filter
                 {activeFiltersCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#6412c6] text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -458,7 +458,7 @@ export default function RestaurantReport() {
           <div className="px-6 pb-6 flex items-center justify-end">
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-md"
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-[#6412c6] text-white hover:bg-[#550fa8] transition-all shadow-md"
             >
               Close
             </button>

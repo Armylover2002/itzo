@@ -319,8 +319,8 @@ export default function EmailTemplate() {
           {/* Left Column - Email Preview */}
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
-                <Folder className="w-6 h-6 text-orange-600" />
+              <div className="w-10 h-10 rounded-lg bg-[#f0e7f9] flex items-center justify-center">
+                <Folder className="w-6 h-6 text-[#550fa8]" />
               </div>
               <h2 className="text-lg font-bold text-slate-900">{formData.mainTitle}</h2>
             </div>
@@ -380,7 +380,7 @@ export default function EmailTemplate() {
                     </div>
                   )}
                   {formData.socialMediaLinks.twitter && (
-                    <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-[#9359d7] flex items-center justify-center">
                       <Twitter className="w-4 h-4 text-white" />
                     </div>
                   )}

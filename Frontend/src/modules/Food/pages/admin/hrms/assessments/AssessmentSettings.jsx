@@ -74,7 +74,7 @@ export default function AssessmentSettings() {
     };
 
     if (loading) {
-        return <div className="p-10 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>;
+        return <div className="p-10 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
     }
 
     const totalDistributed = settings.categoryDistribution.reduce((acc, curr) => acc + curr.count, 0);
@@ -89,7 +89,7 @@ export default function AssessmentSettings() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl font-medium transition-colors shadow-sm disabled:opacity-50"
+                    className="flex items-center gap-2 bg-[#6412c6] hover:bg-[#550fa8] text-white px-6 py-2.5 rounded-xl font-medium transition-colors shadow-sm disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
                     Save Settings
@@ -101,7 +101,7 @@ export default function AssessmentSettings() {
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><Settings className="w-5 h-5" /></div>
+                            <div className="p-2 bg-[#f0e7f9] rounded-lg text-[#550fa8]"><Settings className="w-5 h-5" /></div>
                             <h3 className="text-lg font-bold text-slate-900">General Configuration</h3>
                         </div>
                         
@@ -111,29 +111,29 @@ export default function AssessmentSettings() {
                                     <p className="font-semibold text-slate-900 text-sm">Enable Assessment</p>
                                     <p className="text-xs text-slate-500">Require tests for onboarding</p>
                                 </div>
-                                <input type="checkbox" checked={settings.isAssessmentEnabled} onChange={e => handleChange('isAssessmentEnabled', e.target.checked)} className="w-5 h-5 accent-orange-500 cursor-pointer" />
+                                <input type="checkbox" checked={settings.isAssessmentEnabled} onChange={e => handleChange('isAssessmentEnabled', e.target.checked)} className="w-5 h-5 accent-[#6412c6] cursor-pointer" />
                             </label>
 
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-slate-700">Total Questions per Test</label>
-                                <input type="number" value={settings.questionsPerTest} onChange={e => handleChange('questionsPerTest', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                                <input type="number" value={settings.questionsPerTest} onChange={e => handleChange('questionsPerTest', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]" />
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-slate-700">Passing Percentage (%)</label>
-                                <input type="number" value={settings.passingPercentage} onChange={e => handleChange('passingPercentage', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                                <input type="number" value={settings.passingPercentage} onChange={e => handleChange('passingPercentage', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]" />
                             </div>
 
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-slate-700">Test Duration (Minutes)</label>
-                                <input type="number" value={settings.durationMinutes} onChange={e => handleChange('durationMinutes', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                                <input type="number" value={settings.durationMinutes} onChange={e => handleChange('durationMinutes', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]" />
                             </div>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-orange-100 rounded-lg text-orange-600"><Shuffle className="w-5 h-5" /></div>
+                            <div className="p-2 bg-[#f0e7f9] rounded-lg text-[#550fa8]"><Shuffle className="w-5 h-5" /></div>
                             <h3 className="text-lg font-bold text-slate-900">Anti-Cheating & Security</h3>
                         </div>
                         
@@ -149,7 +149,7 @@ export default function AssessmentSettings() {
                                         <p className="font-semibold text-slate-900 text-sm">{opt.label}</p>
                                         <p className="text-xs text-slate-500">{opt.desc}</p>
                                     </div>
-                                    <input type="checkbox" checked={settings[opt.key]} onChange={e => handleChange(opt.key, e.target.checked)} className="w-5 h-5 accent-orange-500 cursor-pointer" />
+                                    <input type="checkbox" checked={settings[opt.key]} onChange={e => handleChange(opt.key, e.target.checked)} className="w-5 h-5 accent-[#6412c6] cursor-pointer" />
                                 </label>
                             ))}
                         </div>
@@ -179,7 +179,7 @@ export default function AssessmentSettings() {
                                         min="0"
                                         value={cat.count}
                                         onChange={e => handleCategoryDistChange(idx, e.target.value)}
-                                        className="w-20 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-orange-500/20"
+                                        className="w-20 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-[#6412c6]/20"
                                     />
                                 </div>
                             ))}
@@ -194,13 +194,13 @@ export default function AssessmentSettings() {
                         
                         <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer mb-4">
                             <span className="font-semibold text-slate-900 text-sm">Allow Retest</span>
-                            <input type="checkbox" checked={settings.allowRetest} onChange={e => handleChange('allowRetest', e.target.checked)} className="w-5 h-5 accent-orange-500 cursor-pointer" />
+                            <input type="checkbox" checked={settings.allowRetest} onChange={e => handleChange('allowRetest', e.target.checked)} className="w-5 h-5 accent-[#6412c6] cursor-pointer" />
                         </label>
 
                         {settings.allowRetest && (
                             <div className="space-y-1.5">
                                 <label className="text-sm font-semibold text-slate-700">Maximum Attempts</label>
-                                <input type="number" min="1" value={settings.maxAttempts} onChange={e => handleChange('maxAttempts', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500" />
+                                <input type="number" min="1" value={settings.maxAttempts} onChange={e => handleChange('maxAttempts', Number(e.target.value))} className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]" />
                             </div>
                         )}
                     </div>

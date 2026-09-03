@@ -63,6 +63,10 @@ import {
   getQuickOrdersPath,
 } from "../utils/routes";
 import { resolveQuickImageUrl } from '../utils/image';
+import {
+  DEFAULT_QUICK_BILLING_SETTINGS,
+  calculateDeliverySplit,
+} from "../utils/deliveryPricing";
 
 const MAX_QUICK_DELIVERY_RADIUS_KM = 15;
 
@@ -128,14 +132,6 @@ const DEFAULT_RECIPIENT_DATA = {
   phone: "",
 };
 
-const DEFAULT_QUICK_BILLING_SETTINGS = {
-  deliveryFee: 25,
-  deliveryFeeRanges: [],
-  freeDeliveryThreshold: 0,
-  platformFee: 0,
-  gstRate: 0,
-};
-
 const calculateQuickCheckoutPricing = ({
   subtotal = 0,
   discountAmount = 0,
@@ -143,41 +139,13 @@ const calculateQuickCheckoutPricing = ({
   feeSettings = DEFAULT_QUICK_BILLING_SETTINGS,
   cartItems = [],
   categoryFeeMap = {},
+  distanceKm = 0,
 }) => {
   const safeSubtotal = Number(subtotal || 0);
   const safeDiscount = Math.max(0, Number(discountAmount || 0));
   const safeTip = Math.max(0, Number(selectedTip || 0));
-  const freeThreshold = Number(feeSettings?.freeDeliveryThreshold || 0);
-  const ranges = Array.isArray(feeSettings?.deliveryFeeRanges)
-    ? [...feeSettings.deliveryFeeRanges].sort((a, b) => Number(a.min) - Number(b.min))
-    : [];
-
-  let deliveryFeeCharged = 0;
-  if (Number.isFinite(freeThreshold) && freeThreshold > 0 && safeSubtotal >= freeThreshold) {
-    deliveryFeeCharged = 0;
-  } else if (ranges.length) {
-    let matchedFee = null;
-    for (let i = 0; i < ranges.length; i += 1) {
-      const range = ranges[i] || {};
-      const min = Number(range.min);
-      const max = Number(range.max);
-      const fee = Number(range.fee);
-      if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(fee)) continue;
-      const isLast = i === ranges.length - 1;
-      const inRange = isLast
-        ? safeSubtotal >= min && safeSubtotal <= max
-        : safeSubtotal >= min && safeSubtotal < max;
-      if (inRange) {
-        matchedFee = fee;
-        break;
-      }
-    }
-    deliveryFeeCharged = Number.isFinite(matchedFee)
-      ? matchedFee
-      : Number(feeSettings?.deliveryFee || 0);
-  } else {
-    deliveryFeeCharged = Number(feeSettings?.deliveryFee || 0);
-  }
+  const deliverySplit = calculateDeliverySplit(safeSubtotal, distanceKm, feeSettings);
+  const deliveryFeeCharged = deliverySplit.userDeliveryFee;
 
   const handlingFeeCharged = cartItems.reduce((maxFee, item) => {
     const candidateIds = [item?.headerId, item?.categoryId, item?.subcategoryId];
@@ -202,6 +170,9 @@ const calculateQuickCheckoutPricing = ({
     handlingFeeCharged,
     platformFeeCharged,
     gstAmount,
+    distanceKmActual: deliverySplit.deliveryDistanceKm,
+    distanceKmRounded: Math.round(deliverySplit.deliveryDistanceKm * 100) / 100,
+    deliverySponsorType: deliverySplit.deliverySponsorType,
     grandTotal: Math.max(
       0,
       safeSubtotal +
@@ -215,7 +186,7 @@ const calculateQuickCheckoutPricing = ({
     snapshots: {
       feeSettings,
       deliverySettings: {
-        pricingMode: "order_value_range",
+        pricingMode: "distance_based",
       },
     },
   };
@@ -388,6 +359,7 @@ const CheckoutPage = () => {
   const [showOutOfZoneDialog, setShowOutOfZoneDialog] = useState(false);
   const [outOfZoneDistance, setOutOfZoneDistance] = useState(null);
   const [isCurrentAddressOutOfZone, setIsCurrentAddressOutOfZone] = useState(false);
+  const [deliveryDistanceKm, setDeliveryDistanceKm] = useState(0);
   const [pricingPreview, setPricingPreview] = useState(null);
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [quickBillingSettings, setQuickBillingSettings] = useState(
@@ -464,9 +436,7 @@ const CheckoutPage = () => {
         setQuickBillingSettings((prev) => ({
           ...prev,
           ...settings,
-          deliveryFeeRanges: Array.isArray(settings.deliveryFeeRanges)
-            ? settings.deliveryFeeRanges
-            : prev.deliveryFeeRanges,
+          sponsorRules: Array.isArray(settings.sponsorRules) ? settings.sponsorRules : prev.sponsorRules,
         }));
 
         const results =
@@ -669,6 +639,7 @@ const CheckoutPage = () => {
     let isMounted = true;
     void validateAddressZone(currentAddress).then((res) => {
       if (!isMounted) return;
+      setDeliveryDistanceKm(Number(res.distanceKm) || 0);
       if (!res.inZone) {
         setIsCurrentAddressOutOfZone(true);
         setOutOfZoneDistance(res.distanceKm || 500);
@@ -1387,6 +1358,9 @@ const CheckoutPage = () => {
       platformFeeCharged,
       taxTotal,
       gstAmount,
+      distanceKmActual,
+      distanceKmRounded,
+      deliverySponsorType,
       grandTotal,
       snapshots,
     } = calculateQuickCheckoutPricing({
@@ -1396,6 +1370,7 @@ const CheckoutPage = () => {
       feeSettings: quickBillingSettings,
       cartItems: cart,
       categoryFeeMap,
+      distanceKm: deliveryDistanceKm,
     });
 
     setPricingPreview({
@@ -1405,11 +1380,14 @@ const CheckoutPage = () => {
       platformFeeCharged,
       taxTotal,
       gstAmount,
+      distanceKmActual,
+      distanceKmRounded,
+      deliverySponsorType,
       grandTotal,
       snapshots,
     });
     setIsPreviewLoading(false);
-  }, [cart, categoryFeeMap, discountAmount, quickBillingSettings, selectedTip]);
+  }, [cart, categoryFeeMap, discountAmount, quickBillingSettings, selectedTip, deliveryDistanceKm]);
 
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);

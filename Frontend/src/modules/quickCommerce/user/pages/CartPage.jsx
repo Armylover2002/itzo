@@ -24,14 +24,10 @@ import {
   getQuickCheckoutPath,
 } from "../utils/routes";
 import { resolveQuickImageUrl } from "../utils/image";
-
-const DEFAULT_QUICK_BILLING_SETTINGS = {
-  deliveryFee: 25,
-  deliveryFeeRanges: [],
-  freeDeliveryThreshold: 0,
-  platformFee: 0,
-  gstRate: 0,
-};
+import {
+  DEFAULT_QUICK_BILLING_SETTINGS,
+  calculateDeliverySplit,
+} from "../utils/deliveryPricing";
 
 const calculateQuickCartPricing = ({
   subtotal = 0,
@@ -41,39 +37,9 @@ const calculateQuickCartPricing = ({
   couponDiscount = 0,
 }) => {
   const safeSubtotal = Number(subtotal || 0);
-  const freeThreshold = Number(feeSettings?.freeDeliveryThreshold || 0);
-  const ranges = Array.isArray(feeSettings?.deliveryFeeRanges)
-    ? [...feeSettings.deliveryFeeRanges].sort((a, b) => Number(a.min) - Number(b.min))
-    : [];
-
-  let deliveryFee = 0;
-  if (safeSubtotal <= 0) {
-    deliveryFee = 0;
-  } else if (Number.isFinite(freeThreshold) && freeThreshold > 0 && safeSubtotal >= freeThreshold) {
-    deliveryFee = 0;
-  } else if (ranges.length) {
-    let matchedFee = null;
-    for (let i = 0; i < ranges.length; i += 1) {
-      const range = ranges[i] || {};
-      const min = Number(range.min);
-      const max = Number(range.max);
-      const fee = Number(range.fee);
-      if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(fee)) continue;
-      const isLast = i === ranges.length - 1;
-      const inRange = isLast
-        ? safeSubtotal >= min && safeSubtotal <= max
-        : safeSubtotal >= min && safeSubtotal < max;
-      if (inRange) {
-        matchedFee = fee;
-        break;
-      }
-    }
-    deliveryFee = Number.isFinite(matchedFee)
-      ? matchedFee
-      : Number(feeSettings?.deliveryFee || 0);
-  } else {
-    deliveryFee = Number(feeSettings?.deliveryFee || 0);
-  }
+  // No delivery address is known yet at the cart stage, so the preview uses the
+  // base (0 km) delivery fee — the checkout page refines this with real distance.
+  const deliveryFee = safeSubtotal <= 0 ? 0 : calculateDeliverySplit(safeSubtotal, 0, feeSettings).userDeliveryFee;
 
   const handlingFee = cartItems.reduce((maxFee, item) => {
     const candidateIds = [item?.headerId, item?.categoryId, item?.subcategoryId];
@@ -134,9 +100,7 @@ const CartPage = () => {
         setQuickBillingSettings((prev) => ({
           ...prev,
           ...feeSettings,
-          deliveryFeeRanges: Array.isArray(feeSettings.deliveryFeeRanges)
-            ? feeSettings.deliveryFeeRanges
-            : prev.deliveryFeeRanges,
+          sponsorRules: Array.isArray(feeSettings.sponsorRules) ? feeSettings.sponsorRules : prev.sponsorRules,
         }));
 
         const results =
