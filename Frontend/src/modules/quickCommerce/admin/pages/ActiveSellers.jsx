@@ -88,6 +88,7 @@ const ActiveSellers = () => {
         seller.phone,
         seller.category,
         seller.location,
+        seller.sellerCode,
       ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(query)),
@@ -274,6 +275,9 @@ const ActiveSellers = () => {
                             )}
                           </p>
                           <p className="text-[10px] font-bold text-slate-400">{seller.ownerName || 'Seller'}</p>
+                          <p className="text-[10px] font-bold text-slate-400">
+                            ID {seller.sellerCode ? `#${seller.sellerCode}` : '—'}
+                          </p>
                           <p className="mt-1 text-[11px] font-medium text-slate-500">
                             {seller.location || 'Location not added yet'}
                           </p>
@@ -391,6 +395,9 @@ const ActiveSellers = () => {
                     <div className="mt-8 space-y-6">
                       <div>
                         <h3 className="text-2xl font-black text-slate-900 leading-tight">{viewingSeller.shopName}</h3>
+                        <p className="mt-1 text-xs font-bold text-slate-400">
+                          ID {viewingSeller.sellerCode ? `#${viewingSeller.sellerCode}` : '—'}
+                        </p>
                         <p className="mt-2 text-[11px] font-black uppercase tracking-[0.28em] text-[#6412C6]">
                           {viewingSeller.category || 'General'} seller · Approved
                         </p>

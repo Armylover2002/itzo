@@ -1,6 +1,5 @@
 import { FoodExploreIcon } from '../models/exploreIcon.model.js';
-import { v2 as cloudinary } from 'cloudinary';
-import { uploadImageBufferDetailed } from '../../../../services/upload.service.js';
+import { uploadImageBufferDetailed, destroyAsset } from '../../../../services/upload.service.js';
 
 const CLOUDINARY_FOLDER = 'food/explore-icons';
 
@@ -75,7 +74,7 @@ export const updateExploreIcon = async (id, payload) => {
     if (payload?.file?.buffer) {
         try {
             if (doc.publicId) {
-                await cloudinary.uploader.destroy(doc.publicId).catch(() => {});
+                await destroyAsset(doc.publicId).catch(() => {});
             }
             const { secure_url, public_id } = await uploadImageToCloudinary(payload.file.buffer);
             updates.iconUrl = secure_url;
@@ -110,7 +109,7 @@ export const deleteExploreIcon = async (id) => {
     }
     if (doc.publicId) {
         try {
-            await cloudinary.uploader.destroy(doc.publicId);
+            await destroyAsset(doc.publicId);
         } catch {
             // ignore
         }

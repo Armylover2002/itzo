@@ -1,5 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary';
-import { uploadBufferDetailed } from '../../../../services/upload.service.js';
+import { uploadBufferDetailed, destroyAsset } from '../../../../services/upload.service.js';
 import { FoodLandingSettings } from '../models/landingSettings.model.js';
 
 export const getLandingSettings = async () => {
@@ -30,9 +29,7 @@ export const uploadLandingHeaderVideo = async (file) => {
     });
 
     if (existing?.headerVideoPublicId) {
-        await cloudinary.uploader
-            .destroy(existing.headerVideoPublicId, { resource_type: 'video' })
-            .catch(() => {});
+        await destroyAsset(existing.headerVideoPublicId, { resourceType: 'video' }).catch(() => {});
     }
 
     return updateLandingSettings({
@@ -45,9 +42,7 @@ export const deleteLandingHeaderVideo = async () => {
     const existing = await getLandingSettings();
 
     if (existing?.headerVideoPublicId) {
-        await cloudinary.uploader
-            .destroy(existing.headerVideoPublicId, { resource_type: 'video' })
-            .catch(() => {});
+        await destroyAsset(existing.headerVideoPublicId, { resourceType: 'video' }).catch(() => {});
     }
 
     return updateLandingSettings({

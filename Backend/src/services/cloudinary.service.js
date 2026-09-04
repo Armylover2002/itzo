@@ -157,6 +157,20 @@ export const uploadFileDetailed = async (
 };
 
 /**
+ * Deletes an asset from Cloudinary. Mirrors the local driver's destroyAsset()
+ * so callers can delete without knowing which storage driver is active.
+ */
+export const destroyAsset = async (publicId, { resourceType = 'image' } = {}) => {
+    if (!publicId || typeof publicId !== 'string') return { result: 'not found' };
+
+    try {
+        return await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+    } catch (error) {
+        return { result: 'error', error: error.message };
+    }
+};
+
+/**
  * Generates a secure, signed private download URL for restricted Cloudinary PDF assets.
  * Handles legacy URLs that were uploaded under the 'image' resource type.
  */

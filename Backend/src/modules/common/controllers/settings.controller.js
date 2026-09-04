@@ -1,8 +1,7 @@
 import { GlobalSettings } from '../models/settings.model.js';
 import { sendResponse } from '../../../utils/response.js';
 import fs from 'fs';
-import { v2 as cloudinary } from 'cloudinary';
-import { uploadImageBufferDetailed, uploadBufferDetailed, uploadFileDetailed } from '../../../services/upload.service.js';
+import { uploadImageBufferDetailed, uploadBufferDetailed, uploadFileDetailed, destroyAsset } from '../../../services/upload.service.js';
 import { updateSettingsCache } from '../utils/settingsCache.js';
 
 async function loadCleanedGlobalSettings() {
@@ -174,9 +173,9 @@ export async function updateGlobalSettings(req, res, next) {
                 const newUrl = String(data[urlKey] || '').trim();
                 if (newUrl === '' && settings[field]?.publicId) {
                     const isVideo = field === 'landingVideo' || field === 'userLoginVideo';
-                    cloudinary.uploader.destroy(
-                        settings[field].publicId, 
-                        { resource_type: isVideo ? 'video' : 'image' }
+                    destroyAsset(
+                        settings[field].publicId,
+                        { resourceType: isVideo ? 'video' : 'image' }
                     ).catch(() => {});
                     settings[field] = {
                         url: '',
@@ -303,9 +302,9 @@ export async function updateGlobalSettings(req, res, next) {
                     // Cleanup old asset if it exists
                     if (settings[field.name]?.publicId) {
                         const isVideo = field.name === 'landingVideo' || field.name === 'userLoginVideo';
-                        cloudinary.uploader.destroy(
+                        destroyAsset(
                             settings[field.name].publicId,
-                            { resource_type: isVideo ? 'video' : 'image' }
+                            { resourceType: isVideo ? 'video' : 'image' }
                         ).catch(() => {});
                     }
 

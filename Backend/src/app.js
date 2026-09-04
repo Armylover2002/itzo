@@ -120,25 +120,24 @@ app.use('/api', responseTimeLogger);
 // API Routes
 app.use('/api', routes);
 
-// Serve static uploads
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads'), {
+// Serve static uploads from whichever folder the local driver writes into
+// (UPLOAD_LOCAL_DIR), so the live server can keep files in e.g. /var/www/uploades
+// while dev keeps them inside Backend/uploads.
+const uploadsDir = path.resolve(process.cwd(), config.uploadLocalDir);
+
+const staticUploadOptions = {
     maxAge: '1y',
-    setHeaders: (res, path) => {
-        if (path.endsWith('.webp') || path.endsWith('.png') || path.endsWith('.jpg')) {
+    setHeaders: (res, filePath) => {
+        if (/\.(webp|png|jpe?g|gif|svg)$/i.test(filePath)) {
             res.setHeader('Cache-Control', 'public, max-age=31536000');
         }
     }
-}));
+};
+
+app.use('/uploads', express.static(uploadsDir, staticUploadOptions));
 
 // Route for API so Nginx auto-proxies
-app.use('/api/v1/uploads', express.static(path.join(process.cwd(), 'uploads'), {
-    maxAge: '1y',
-    setHeaders: (res, path) => {
-        if (path.endsWith('.webp') || path.endsWith('.png') || path.endsWith('.jpg')) {
-            res.setHeader('Cache-Control', 'public, max-age=31536000');
-        }
-    }
-}));
+app.use('/api/v1/uploads', express.static(uploadsDir, staticUploadOptions));
 
 // Error Handling
 app.use(errorHandler);

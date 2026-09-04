@@ -96,6 +96,7 @@ const toSellerRequest = (seller, extras = {}) => {
   return {
     id: seller._id,
     _id: seller._id,
+    sellerCode: seller.sellerCode || '',
     shopName: seller.shopName || seller.name || 'Store',
     ownerName: seller.name || 'Seller',
     email: seller.email || '',
@@ -1598,6 +1599,7 @@ export const getAdminSellerRequests = async (req, res) => {
       { shopName: { $regex: searchText, $options: 'i' } },
       { email: { $regex: searchText, $options: 'i' } },
       { phone: { $regex: searchText, $options: 'i' } },
+      { sellerCode: { $regex: searchText, $options: 'i' } },
     ];
   }
 
@@ -1830,7 +1832,7 @@ export const approveAdminSellerRequest = async (req, res) => {
         sendPartnerApprovalCertificateEmail(seller.email, {
           type: 'seller',
           partnerName: seller.shopName || seller.name || 'Store',
-          partnerId: String(seller._id),
+          partnerId: seller.sellerCode || String(seller._id),
           onboardingDate: seller.approvedAt,
         }),
       )

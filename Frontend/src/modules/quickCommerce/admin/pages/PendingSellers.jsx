@@ -312,6 +312,9 @@ const PendingSellers = () => {
                         <div>
                           <p className="text-sm font-bold text-slate-900">{seller.shopName}</p>
                           <p className="text-[10px] font-bold text-slate-400">{seller.ownerName}</p>
+                          <p className="text-[10px] font-bold text-slate-400">
+                            ID {seller.sellerCode ? `#${seller.sellerCode}` : '—'}
+                          </p>
                         </div>
                       </div>
                     </td>
@@ -428,6 +431,9 @@ const PendingSellers = () => {
                     <div className="mt-8 space-y-6">
                       <div>
                         <h3 className="text-2xl font-black text-slate-900 leading-tight">{viewingSeller.shopName}</h3>
+                        <p className="mt-1 text-xs font-bold text-slate-400">
+                          ID {viewingSeller.sellerCode ? `#${viewingSeller.sellerCode}` : '—'}
+                        </p>
                         <p className="mt-2 text-[11px] font-black uppercase tracking-[0.28em] text-[#6412C6]">
                           {viewingSeller.hasPendingProfileUpdate
                             ? "Existing approved seller • Profile update"

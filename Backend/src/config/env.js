@@ -43,7 +43,22 @@ export const config = {
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 10),
 
     // Uploads
-    uploadStorage: process.env.UPLOAD_STORAGE || 'local',
+    // UPLOAD_STORAGE decides where every image/file in the app is stored:
+    //   'cloudinary' -> Cloudinary CDN (used on local/dev machines)
+    //   'local'      -> a folder on the server disk (used on the live VPS)
+    // Legacy true/false values are accepted too: UPLOAD_USE_CLOUDINARY=true|false.
+    uploadStorage: (() => {
+        const useCloudinary = String(process.env.UPLOAD_USE_CLOUDINARY || '').trim().toLowerCase();
+        if (useCloudinary === 'true') return 'cloudinary';
+        if (useCloudinary === 'false') return 'local';
+        return String(process.env.UPLOAD_STORAGE || 'local').trim().toLowerCase();
+    })(),
+    // Absolute (or project-relative) directory the 'local' driver writes into.
+    // On the VPS point this at the shared folder, e.g. /var/www/uploades
+    uploadLocalDir: process.env.UPLOAD_LOCAL_DIR || 'uploads',
+    // Optional absolute prefix for locally stored files, e.g. https://itzo.in
+    // Leave empty to keep returning relative "/uploads/..." URLs.
+    uploadPublicBaseUrl: (process.env.UPLOAD_PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
     uploadPath: process.env.UPLOAD_PATH || 'uploads/',
     requestBodyLimit: process.env.REQUEST_BODY_LIMIT || '50mb',
 

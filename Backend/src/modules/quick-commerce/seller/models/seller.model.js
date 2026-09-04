@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { Counter } from "../../../../core/models/counter.model.js";
 
 const sellerLocationSchema = new mongoose.Schema(
   {
@@ -74,6 +75,15 @@ const sellerShopInfoSchema = new mongoose.Schema(
 
 const sellerSchema = new mongoose.Schema(
   {
+    // Human-readable partner ID (e.g. SELR000033) shown to admins and sellers
+    // everywhere instead of the raw Mongo _id — mirrors the restaurant module's
+    // REST###### scheme so both partner types read consistently.
+    sellerCode: {
+      type: String,
+      unique: true,
+      trim: true,
+      sparse: true,
+    },
     name: {
       type: String,
       trim: true,
@@ -88,7 +98,7 @@ const sellerSchema = new mongoose.Schema(
       type: String,
       trim: true,
       lowercase: true,
-      default: "",
+      default: undefined,
     },
     phone: {
       type: String,
@@ -234,6 +244,22 @@ const sellerSchema = new mongoose.Schema(
   },
 );
 
+sellerSchema.pre("save", async function assignSellerCode(next) {
+  if (this.isNew && !this.sellerCode) {
+    try {
+      const counter = await Counter.findOneAndUpdate(
+        { model: "seller" },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true },
+      );
+      this.sellerCode = `SELR${String(counter.seq).padStart(6, "0")}`;
+    } catch (error) {
+      return next(error);
+    }
+  }
+  next();
+});
+
 sellerSchema.pre("validate", function normalizeSeller(next) {
   const phoneRaw =
     typeof this.phone === "string" || typeof this.phone === "number"
@@ -243,9 +269,22 @@ sellerSchema.pre("validate", function normalizeSeller(next) {
   this.phoneDigits = digits || undefined;
   this.phoneLast10 = digits ? digits.slice(-10) : undefined;
 
-  if (this.email) {
+  if (this.email && String(this.email).trim()) {
     this.email = String(this.email).trim().toLowerCase();
+  } else {
+    this.email = undefined;
   }
+
+  const altPhoneRaw =
+    typeof this.shopInfo?.alternatePhone === "string" ||
+    typeof this.shopInfo?.alternatePhone === "number"
+      ? String(this.shopInfo.alternatePhone)
+      : typeof this.alternatePhoneDigits === "string"
+        ? this.alternatePhoneDigits
+        : "";
+  const altDigits = altPhoneRaw.replace(/\D/g, "").slice(-15);
+  this.alternatePhoneDigits = altDigits || undefined;
+  this.alternatePhoneLast10 = altDigits ? altDigits.slice(-10) : undefined;
 
   if (this.bankInfo) {
     if (this.bankInfo.accountNumber) {
@@ -326,7 +365,20 @@ sellerSchema.pre("validate", function normalizeSeller(next) {
 
 sellerSchema.index({ phoneDigits: 1 }, { unique: true, sparse: true });
 sellerSchema.index({ phoneLast10: 1 });
-sellerSchema.index({ email: 1 }, { unique: true, sparse: true });
+sellerSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { email: { $type: "string", $gt: "" } },
+  },
+);
+sellerSchema.index(
+  { alternatePhoneLast10: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { alternatePhoneLast10: { $type: "string", $gt: "" } },
+  },
+);
 sellerSchema.index({ location: "2dsphere" });
 
 export const Seller = mongoose.model('Seller', sellerSchema, 'quick_sellers');

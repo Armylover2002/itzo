@@ -530,6 +530,11 @@ const SellerProfile = () => {
             <p className="text-xs text-slate-500 font-normal truncate mt-0.5">
               {profile?.name || "Seller"}
             </p>
+            {profile?.sellerCode ? (
+              <p className="text-[11px] text-slate-400 font-semibold truncate mt-0.5">
+                ID #{profile.sellerCode}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="shrink-0">

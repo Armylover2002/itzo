@@ -1,9 +1,41 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { config } from '../config/env.js';
 
-// Base directory for all uploads, relative to the project root (Backend/)
-const UPLOADS_BASE_DIR = path.resolve(process.cwd(), 'uploads');
+// Base directory for all uploads. Relative values resolve against the project
+// root (Backend/); an absolute value such as /var/www/uploades is used as-is,
+// so the live server can store files outside the deployed code folder.
+const UPLOADS_BASE_DIR = path.resolve(process.cwd(), config.uploadLocalDir);
+
+/**
+ * Detects the real image/file type from the buffer's magic bytes so the file is
+ * stored with a truthful extension. Saving a JPEG as ".png" makes browsers and
+ * downstream readers (PDF generators, <img> tags) mis-handle it.
+ */
+const detectExtension = (buffer, fallback = 'bin') => {
+    if (!Buffer.isBuffer(buffer) || buffer.length < 12) return fallback;
+
+    if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'jpg';
+    if (buffer[0] === 0x89 && buffer.toString('ascii', 1, 4) === 'PNG') return 'png';
+    if (buffer.toString('ascii', 0, 3) === 'GIF') return 'gif';
+    if (
+        buffer.toString('ascii', 0, 4) === 'RIFF' &&
+        buffer.toString('ascii', 8, 12) === 'WEBP'
+    ) {
+        return 'webp';
+    }
+    if (buffer.toString('ascii', 0, 4) === '%PDF') return 'pdf';
+    if (buffer.toString('ascii', 4, 8) === 'ftyp') return 'mp4';
+    if (buffer[0] === 0x42 && buffer[1] === 0x4d) return 'bmp';
+
+    const head = buffer.toString('utf8', 0, 300).trim().toLowerCase();
+    if (head.startsWith('<svg') || (head.startsWith('<?xml') && head.includes('<svg'))) {
+        return 'svg';
+    }
+
+    return fallback;
+};
 
 /**
  * Ensures a directory exists, creating it if necessary.
@@ -28,14 +60,37 @@ const generateFilename = (extension) => {
  */
 const getFilePaths = (folder, filename) => {
     // Sanitize folder path to prevent directory traversal
-    const safeFolder = folder.replace(/\.\./g, '').replace(/^\/+/, '');
+    const safeFolder = String(folder || 'uploads').replace(/\.\./g, '').replace(/^\/+/, '');
     const relativePath = path.join(safeFolder, filename).replace(/\\/g, '/');
     const absolutePath = path.join(UPLOADS_BASE_DIR, relativePath);
-    
-    // The public URL will start with /uploads/ followed by the relative path
-    const publicUrl = `/uploads/${relativePath}`;
-    
+
+    // The public URL always starts with /uploads/ (that is the path Express and
+    // Nginx serve from); UPLOAD_PUBLIC_BASE_URL can turn it into an absolute URL.
+    const publicUrl = `${config.uploadPublicBaseUrl}/uploads/${relativePath}`;
+
     return { absolutePath, publicUrl };
+};
+
+/**
+ * Maps a stored public URL/publicId back to its absolute path on disk, staying
+ * inside the uploads directory. Returns null for anything that is not a local file.
+ */
+const resolveLocalPath = (publicId) => {
+    if (!publicId || typeof publicId !== 'string') return null;
+
+    let relativePath = publicId.trim();
+    if (config.uploadPublicBaseUrl && relativePath.startsWith(config.uploadPublicBaseUrl)) {
+        relativePath = relativePath.slice(config.uploadPublicBaseUrl.length);
+    }
+    if (/^https?:\/\//i.test(relativePath)) return null;
+
+    relativePath = relativePath.replace(/^\/+/, '').replace(/^uploads\//, '');
+    if (!relativePath || relativePath.includes('..')) return null;
+
+    const absolutePath = path.resolve(UPLOADS_BASE_DIR, relativePath);
+    if (!absolutePath.startsWith(UPLOADS_BASE_DIR)) return null;
+
+    return absolutePath;
 };
 
 export const getOptimizedCloudinaryImageUrl = (url, _options = {}) => {
@@ -48,9 +103,9 @@ export const uploadImageBuffer = async (buffer, folder = 'uploads') => {
     }
 
     try {
-        const filename = generateFilename('png'); // Fallback to png for raw buffers if sharp is unavailable
+        const filename = generateFilename(detectExtension(buffer, 'png'));
         const { absolutePath, publicUrl } = getFilePaths(folder, filename);
-        
+
         ensureDirectoryExists(path.dirname(absolutePath));
 
         fs.writeFileSync(absolutePath, buffer);
@@ -67,9 +122,10 @@ export const uploadImageBufferDetailed = async (buffer, folder = 'uploads') => {
     }
 
     try {
-        const filename = generateFilename('png');
+        const extension = detectExtension(buffer, 'png');
+        const filename = generateFilename(extension);
         const { absolutePath, publicUrl } = getFilePaths(folder, filename);
-        
+
         ensureDirectoryExists(path.dirname(absolutePath));
 
         fs.writeFileSync(absolutePath, buffer);
@@ -77,7 +133,7 @@ export const uploadImageBufferDetailed = async (buffer, folder = 'uploads') => {
         return {
             secure_url: publicUrl,
             public_id: publicUrl,
-            format: 'png',
+            format: extension,
             bytes: buffer.length,
             width: null, // Cannot determine easily without sharp, but not strictly required
             height: null,
@@ -101,20 +157,21 @@ export const uploadBufferDetailed = async (
             return await uploadImageBufferDetailed(buffer, folder);
         }
 
-        let extension = 'bin';
-        if (resourceType === 'video') extension = 'mp4'; 
-        else if (resourceType === 'auto') extension = 'auto';
+        // The real type always wins; resourceType only supplies the fallback so a
+        // video that cannot be sniffed still lands as .mp4 instead of ".auto".
+        const extension = detectExtension(buffer, resourceType === 'video' ? 'mp4' : 'bin');
 
         const filename = generateFilename(extension);
         const { absolutePath, publicUrl } = getFilePaths(folder, filename);
-        
+
         ensureDirectoryExists(path.dirname(absolutePath));
-        
+
         fs.writeFileSync(absolutePath, buffer);
 
         return {
             secure_url: publicUrl,
             public_id: publicUrl,
+            format: extension,
             bytes: buffer.length,
             resource_type: resourceType
         };
@@ -154,6 +211,25 @@ export const uploadFileDetailed = async (
         return await uploadBufferDetailed(buffer, { folder, resourceType });
     } catch (error) {
         throw new Error(`Local file detailed upload failed: ${error.message}`);
+    }
+};
+
+/**
+ * Deletes a locally stored file. Mirrors cloudinary.uploader.destroy() so callers
+ * can delete an asset without knowing which storage driver is active.
+ */
+export const destroyAsset = async (publicId, _options = {}) => {
+    const absolutePath = resolveLocalPath(publicId);
+    if (!absolutePath) return { result: 'not found' };
+
+    try {
+        if (fs.existsSync(absolutePath)) {
+            fs.unlinkSync(absolutePath);
+            return { result: 'ok' };
+        }
+        return { result: 'not found' };
+    } catch (error) {
+        return { result: 'error', error: error.message };
     }
 };
 

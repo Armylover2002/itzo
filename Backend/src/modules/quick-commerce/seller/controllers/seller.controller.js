@@ -372,6 +372,7 @@ const createSellerSku = () =>
 
 const serializeSellerProfile = (seller) => ({
   _id: seller._id,
+  sellerCode: seller.sellerCode || "",
   name: seller.name,
   shopName: seller.shopName,
   phone: seller.phoneLast10 || seller.phone || "",
@@ -935,6 +936,13 @@ export const verifySellerOtpController = async (req, res) => {
       isNewSeller,
     });
   } catch (error) {
+    if (error?.code === 11000) {
+      return sendError(
+        res,
+        400,
+        "An account with this phone number or email already exists",
+      );
+    }
     return sendError(res, 400, error.message || "OTP verification failed");
   }
 };
@@ -1219,8 +1227,10 @@ export const updateSellerProfileData = async (seller, req) => {
       seller.phoneDigits = normalizePhone(newPhone);
       seller.phoneLast10 = last10(newPhone);
     }
-    if (req.body?.email !== undefined)
-      seller.email = str(req.body.email).toLowerCase();
+    if (req.body?.email !== undefined) {
+      const emailTrimmed = str(req.body.email).trim().toLowerCase();
+      seller.email = emailTrimmed || undefined;
+    }
 
     const lat = optionalNumber(req.body?.lat);
     const lng = optionalNumber(req.body?.lng);
@@ -1467,10 +1477,11 @@ export const updateSellerProfileData = async (seller, req) => {
       const alt = str(
         shopInfoBody.alternatePhone ?? req.body.alternatePhone,
         "",
-      );
+      ).trim();
       seller.shopInfo.alternatePhone = alt;
-      seller.alternatePhoneDigits = normalizePhone(alt);
-      seller.alternatePhoneLast10 = last10(alt);
+      const altDigits = normalizePhone(alt);
+      seller.alternatePhoneDigits = altDigits || undefined;
+      seller.alternatePhoneLast10 = altDigits ? last10(alt) : undefined;
     }
     if (
       req.body?.supportEmail !== undefined ||

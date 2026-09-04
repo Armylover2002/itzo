@@ -34,6 +34,18 @@ export const uploadFileDetailed = (filePath, options) => {
     return getStorageService().uploadFileDetailed(filePath, options);
 };
 
+/**
+ * Deletes a previously uploaded asset using whichever driver is active:
+ * removes the Cloudinary asset, or the file inside the local uploads folder.
+ */
+export const destroyAsset = (publicId, options) => {
+    return getStorageService().destroyAsset(publicId, options);
+};
+
+/** Which storage driver is currently active ('cloudinary' | 'local'). */
+export const getActiveStorageDriver = () =>
+    config.uploadStorage === 'cloudinary' ? 'cloudinary' : 'local';
+
 export const getSecurePdfUrl = (url) => {
     return getStorageService().getSecurePdfUrl(url);
 };

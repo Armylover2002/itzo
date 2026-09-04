@@ -15,9 +15,14 @@
 
 import cloudinary from 'cloudinary';
 import { Readable } from 'stream';
+import { getActiveStorageDriver, uploadPdfBuffer } from '../../../../services/upload.service.js';
 
 /**
- * Upload a PDF buffer to Cloudinary.
+ * Upload a payslip PDF buffer to whichever storage driver is active.
+ *
+ * On the live server (UPLOAD_STORAGE=local) the PDF is written into the server's
+ * uploads folder as a real .pdf — the Cloudinary ".png masquerade" workaround
+ * below is only needed for Cloudinary's free-tier delivery block.
  *
  * @param {Buffer} buffer   - PDF document buffer
  * @param {string} filename - Desired public_id (without extension)
@@ -30,6 +35,17 @@ export const uploadPayslipToCloudinary = (buffer, filename) => {
         }
         if (!filename || typeof filename !== 'string') {
             return reject(new Error('Filename is required for Cloudinary upload'));
+        }
+
+        if (getActiveStorageDriver() === 'local') {
+            return uploadPdfBuffer(buffer, 'hrms/payslips/generated')
+                .then((url) => {
+                    console.log(`[Payslip Upload] ✅ Stored on server: ${url}`);
+                    resolve(url);
+                })
+                .catch((error) =>
+                    reject(new Error(`Failed to store payslip on server: ${error.message || error}`)),
+                );
         }
 
         const cleanName = filename.replace(/\.(png|pdf)$/i, '');
