@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 
 const getOrdersTabs = (basePath = "/restaurant") => [
-  { id: "orders", label: "Orders", icon: FileText, route: `${basePath}` },
+  { id: "orders", label: "Orders", icon: FileText, route: `${basePath}/orders/all` },
   { id: "inventory", label: "Inventory", icon: Package, route: `${basePath}/inventory` },
   { id: "feedback", label: "Feedback", icon: MessageSquare, route: `${basePath}/feedback` },
   { id: "explore", label: "Explore", icon: Compass, route: `${basePath}/explore` },
@@ -50,7 +50,7 @@ export default function BottomNavOrders() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[60] px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
       <div className="mx-auto flex w-full max-w-md items-end gap-2">
         <div className="flex-1 min-w-0">
           <div className="relative overflow-visible rounded-[30px] bg-[#0D315B] py-2 pl-3 pr-2 shadow-[0_16px_40px_rgba(254,85,2,0.3)]">

@@ -303,7 +303,7 @@ export default function RestaurantNavbar({
   }
 
   const handleMenuClick = () => {
-    navigate("/restaurant/explore")
+    window.dispatchEvent(new Event("openRestaurantSidebar"))
   }
 
   const handleNotificationsClick = () => {
@@ -342,6 +342,15 @@ export default function RestaurantNavbar({
     <div className="w-full bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
       {/* Left Side - Restaurant Info */}
       <div className="flex-1 min-w-0 pr-4 flex items-center gap-3">
+        {/* Hamburger Menu Icon (Left) */}
+        <button
+          onClick={handleMenuClick}
+          className="p-2 lg:hidden bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors shrink-0"
+          aria-label="Open Menu"
+        >
+          <Menu className="w-5 h-5 text-gray-700" />
+        </button>
+
         {logoUrl && (
           <img src={logoUrl} alt="Logo" className="h-10 w-auto md:h-16 lg:h-20 object-contain rounded-lg" />
         )}
@@ -390,16 +399,7 @@ export default function RestaurantNavbar({
           </button>
         )}
 
-        {/* Search Icon */}
-        {showSearch && (
-          <button
-            onClick={handleSearchClick}
-            className="p-2 ml-1 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Search"
-          >
-            <Search className="w-5 h-5 text-gray-700" />
-          </button>
-        )}
+
 
         {/* Notifications Icon */}
         {showNotifications && (
@@ -415,14 +415,7 @@ export default function RestaurantNavbar({
             </button>
           )}
 
-        {/* Hamburger Menu Icon */}
-        <button
-          onClick={handleMenuClick}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          aria-label="Menu"
-        >
-          <Menu className="w-5 h-5 text-gray-700" />
-        </button>
+
       </div>
     </div>
   )

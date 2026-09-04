@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import { ChevronLeft, Loader2, Send } from "lucide-react"
 import { restaurantAPI } from "@food/api"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 import { toast } from "sonner"
 
 const CATEGORY_OPTIONS = [
@@ -275,8 +275,6 @@ export default function RestaurantSupport() {
           )}
         </div>
       </div>
-
-      <BottomNavOrders />
     </div>
   )
 }

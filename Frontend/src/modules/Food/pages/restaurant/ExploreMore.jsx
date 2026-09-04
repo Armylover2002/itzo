@@ -38,7 +38,7 @@ import { DateRangeCalendar } from "@food/components/ui/date-range-calendar"
 import { clearModuleAuth, clearAuthData, getCurrentUser } from "@food/utils/auth"
 import { restaurantAPI } from "@food/api"
 import { firebaseAuth, ensureFirebaseInitialized } from "@food/firebase"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 import RestaurantProfile from "@food/pages/restaurant/RestaurantProfile"
 import { useLiveLocation } from "@food/contexts/LiveLocationContext"
 import { useSubscriptionRequired } from "@common/hooks/useSubscriptionRequired"
@@ -1583,7 +1583,6 @@ export default function ExploreMore() {
           </>
         )}
       </AnimatePresence>
-      <BottomNavOrders />
     </motion.div>
   )
 }

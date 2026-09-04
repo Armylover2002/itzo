@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Bell, HelpCircle, Menu, Search, SlidersHorizontal, Calendar, ChevronLeft, X, Loader2, ChevronRight, Star } from "lucide-react"
 import { DateRangeCalendar } from "@food/components/ui/date-range-calendar"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 import { restaurantAPI } from "@food/api"
 
 const debugLog = (...args) => {}
@@ -533,7 +533,6 @@ export default function Feedback() {
           </div>
         )}
       </div>
-      <BottomNavOrders />
     </div>
   )
 }

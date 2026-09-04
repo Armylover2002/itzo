@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Bell, Menu, ChevronDown, Calendar, Download, ArrowRight, FileText, Wallet, X, Gift } from "lucide-react"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 import { restaurantAPI } from "@food/api"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -1383,8 +1383,6 @@ export default function HubFinance() {
           </>
         )}
       </AnimatePresence>
-
-      <BottomNavOrders />
     </div>
   )
 }

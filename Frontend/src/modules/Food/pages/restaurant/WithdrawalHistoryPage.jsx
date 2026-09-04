@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Wallet } from "lucide-react"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 import { restaurantAPI } from "@food/api"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -179,8 +179,6 @@ export default function WithdrawalHistoryPage() {
           </>
         )}
       </div>
-
-      <BottomNavOrders />
     </div>
   )
 }
