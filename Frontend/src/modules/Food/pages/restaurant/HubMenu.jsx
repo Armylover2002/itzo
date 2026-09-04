@@ -19,7 +19,7 @@ import {
   RefreshCw,
   Loader2
 } from "lucide-react"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 // Removed foodManagement - now using backend API directly
 import { useNavigate } from "react-router-dom"
 import { restaurantAPI, uploadAPI } from "@food/api"
@@ -2374,8 +2374,6 @@ export default function HubMenu() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <BottomNavOrders />
     </div>
   )
 }

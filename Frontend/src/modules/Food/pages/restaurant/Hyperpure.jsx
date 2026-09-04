@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import { Leaf } from "lucide-react"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 
 export default function Hyperpure() {
   return (
@@ -17,7 +17,6 @@ export default function Hyperpure() {
           <p className="text-gray-600">This page is under development</p>
         </div>
       </motion.div>
-      <BottomNavOrders />
     </div>
   )
 }

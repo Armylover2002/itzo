@@ -13,7 +13,7 @@ import {
   LifeBuoy,
   ChevronRight,
 } from "lucide-react"
-import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
+"@food/components/restaurant/BottomNavOrders"
 
 const helpTopics = [
   {
@@ -153,7 +153,6 @@ export default function HelpCentre() {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNavOrders />
     </div>
   )
 }
