@@ -389,7 +389,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
           </div>
         </div>
 
-        {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, DINING, PROFILE) */}
+        {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, PROFILE) */}
         <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
           <div className="flex items-center space-x-12 lg:space-x-20">
             {/* Delivery (Food Section) */}
@@ -420,15 +420,6 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
               className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
             >
               <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
-              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-            </Link>
-
-            {/* Dining */}
-            <Link
-              to="/food/user/dining"
-              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-            >
-              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Dining</span>
               <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
             </Link>
 

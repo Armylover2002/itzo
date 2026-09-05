@@ -9,7 +9,6 @@ import {
     getCurrentRestaurantController,
     updateRestaurantProfileController,
     updateRestaurantAcceptingOrdersController,
-    updateCurrentRestaurantDiningSettingsController,
     uploadRestaurantProfileImageController,
     uploadRestaurantMenuImageController,
     uploadRestaurantCoverImagesController,
@@ -120,7 +119,6 @@ router.put('/live-tracking-status', authMiddleware, requireRestaurant, async (re
     next();
 }, toggleLiveTrackingController);
 
-router.patch('/dining-settings', authMiddleware, requireRestaurant, updateCurrentRestaurantDiningSettingsController);
 router.get('/outlet-timings', authMiddleware, requireRestaurant, getCurrentRestaurantOutletTimingsController);
 router.put('/outlet-timings', authMiddleware, requireRestaurant, upsertCurrentRestaurantOutletTimingsController);
 router.get('/finance', authMiddleware, requireRestaurant, getRestaurantFinanceController);

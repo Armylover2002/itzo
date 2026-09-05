@@ -10,7 +10,6 @@ export default function BottomNavigation() {
   const redirectTo = `${location.pathname || "/food/user"}${location.search || ""}${location.hash || ""}`
 
   // Check active routes - support both /user/* and /* paths
-  const isDining = pathname === "/food/dining" || pathname.startsWith("/food/user/dining")
   const isUnder250 = pathname === "/food/under-250" || pathname.startsWith("/food/user/under-250")
   const isOrders =
     pathname === "/food/orders" ||
@@ -25,7 +24,6 @@ export default function BottomNavigation() {
     pathname.startsWith("/food/user/profile") ||
     isSharedFoodProfile
   const isHome =
-    !isDining &&
     !isUnder250 &&
     !isOrders &&
     !isProfile &&
@@ -33,7 +31,6 @@ export default function BottomNavigation() {
       pathname === "/food/" ||
       pathname === "/food/user" ||
       (pathname.startsWith("/food/user") &&
-        !pathname.includes("/dining") &&
         !pathname.includes("/under-250") &&
         !pathname.includes("/orders") &&
         !pathname.includes("/profile")))

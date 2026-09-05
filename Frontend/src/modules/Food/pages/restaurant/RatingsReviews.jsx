@@ -23,7 +23,7 @@ const accordionItems = [
   {
     id: 1,
     question: "How is my restaurant's rating calculated",
-    answer: "Your restaurant's rating is calculated based on customer reviews and ratings from delivery and dining orders. The system takes an average of all ratings received, with more recent reviews having slightly more weight."
+    answer: "Your restaurant's rating is calculated based on customer reviews and ratings from your orders. The system takes an average of all ratings received, with more recent reviews having slightly more weight."
   },
   {
     id: 2,

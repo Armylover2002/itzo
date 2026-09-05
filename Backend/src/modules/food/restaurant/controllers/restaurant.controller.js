@@ -6,7 +6,6 @@ import {
     getCurrentRestaurantProfile,
     updateRestaurantProfile,
     updateRestaurantAcceptingOrders,
-    updateCurrentRestaurantDiningSettings,
     uploadRestaurantProfileImage,
     uploadRestaurantMenuImage,
     uploadRestaurantCoverImages,
@@ -99,16 +98,6 @@ export const checkSubscriptionEligibilityController = async (req, res, next) => 
         const { ensureDailyPassEligibility } = await import('../../subscriptions/services/wallet.service.js');
         const eligibility = await ensureDailyPassEligibility(restaurantId, 'RESTAURANT');
         return sendResponse(res, 200, 'Eligibility checked', eligibility);
-    } catch (error) {
-        next(error);
-    }
-};
-
-export const updateCurrentRestaurantDiningSettingsController = async (req, res, next) => {
-    try {
-        const restaurantId = req.user?.userId;
-        const restaurant = await updateCurrentRestaurantDiningSettings(restaurantId, req.body || {});
-        return sendResponse(res, 200, 'Dining settings updated successfully', { restaurant });
     } catch (error) {
         next(error);
     }

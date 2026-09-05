@@ -84,7 +84,7 @@ const generateReviews = (productName, totalReviews = 20) => {
       date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
       helpful: Math.floor(Math.random() * 50),
       verified: Math.random() > 0.3,
-      orderType: ["Delivery", "Dine-in", "Takeout"][Math.floor(Math.random() * 3)]
+      orderType: ["Delivery", "Takeout"][Math.floor(Math.random() * 2)]
     })
   }
 

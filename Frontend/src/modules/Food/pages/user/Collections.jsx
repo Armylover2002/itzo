@@ -23,22 +23,12 @@ const gradientColors = [
 export default function Collections() {
   const navigate = useNavigate()
   const goBack = useAppBackNavigation()
-  const [activeTab, setActiveTab] = useState("delivery")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [newCollectionName, setNewCollectionName] = useState("")
 
-  // Delivery collections
-  const [deliveryCollections, setDeliveryCollections] = useState([
+  const [currentCollections, setCurrentCollections] = useState([
     { id: "bookmarks", name: "Bookmarks", dishes: 0, restaurants: 0, isDefault: true }
   ])
-
-  // Dining collections
-  const [diningCollections, setDiningCollections] = useState([
-    { id: "bookmarks", name: "Bookmarks", dishes: 0, restaurants: 0, isDefault: true }
-  ])
-
-  const currentCollections = activeTab === "delivery" ? deliveryCollections : diningCollections
-  const setCurrentCollections = activeTab === "delivery" ? setDeliveryCollections : setDiningCollections
 
   const handleCreateCollection = () => {
     if (newCollectionName.trim()) {
@@ -77,32 +67,6 @@ export default function Collections() {
             alt="Your Collections"
             className="w-full h-full object-cover"
           />
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="sticky top-0 bg-white dark:bg-[#1a1a1a] z-10 border-b dark:border-gray-800">
-        <div className="flex">
-          <button
-            onClick={() => setActiveTab("delivery")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors relative ${activeTab === "delivery" ? "text-gray-900 dark:text-gray-100" : "text-gray-400 dark:text-gray-500"
-              }`}
-          >
-            Delivery
-            {activeTab === "delivery" && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-[#FE5502] rounded-full" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("dining")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors relative ${activeTab === "dining" ? "text-gray-900 dark:text-gray-100" : "text-gray-400 dark:text-gray-500"
-              }`}
-          >
-            Dining
-            {activeTab === "dining" && (
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-20 h-1 bg-[#FE5502] rounded-full" />
-            )}
-          </button>
         </div>
       </div>
 
