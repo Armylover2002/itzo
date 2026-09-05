@@ -115,7 +115,11 @@ export const AuthProvider = ({ children }) => {
                     );
                     setUser(extractProfilePayload(response));
                 } catch (error) {
-                    console.error('Failed to fetch profile:', error);
+                    if (error.response?.status === 404) {
+                        console.warn(`Profile not found (404) for role: ${currentRole}`);
+                    } else {
+                        console.error('Failed to fetch profile:', error);
+                    }
                     // If 401, axios interceptor will handle it
                 } finally {
                     setIsLoading(false);
@@ -240,7 +244,11 @@ export const AuthProvider = ({ children }) => {
                 setUser(payload);
                 return payload;
             } catch (error) {
-                console.error('Failed to refresh profile:', error);
+                if (error.response?.status === 404) {
+                    console.warn(`Profile not found (404) for role: ${currentRole}`);
+                } else {
+                    console.error('Failed to refresh profile:', error);
+                }
             }
         }
     }, [token, currentRole]);

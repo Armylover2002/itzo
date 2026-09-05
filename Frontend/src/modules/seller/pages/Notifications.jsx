@@ -127,7 +127,7 @@ const Notifications = () => {
         <div className="space-y-6 max-w-5xl mx-auto pb-16">
             <BlurFade delay={0.05}>
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-md p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-[#E71D28] to-[#a2141c] flex items-center justify-center text-white shadow-md shadow-[#E71D28]/20">

@@ -6,7 +6,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  font-family: 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Roboto', 'Poppins', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-roboto: 'Roboto', sans-serif;
   --font-poppins: 'Poppins', sans-serif;
   --font-outfit: 'Outfit', sans-serif;
   line-height: 1.5;

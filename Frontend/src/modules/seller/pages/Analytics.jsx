@@ -107,32 +107,40 @@ const Analytics = () => {
       value: statsData?.overview?.totalSales || "₹0",
       trend: statsData?.overview?.salesTrend || "0%",
       icon: HiOutlineArrowTrendingUp,
-      color: "text-primary",
-      bg: "bg-[#fef4f4]",
+      color: "text-white",
+      bg: "bg-indigo-600 shadow-md shadow-indigo-500/30",
+      cardBg: "bg-indigo-50/90 border border-indigo-200/90 shadow-xs shadow-indigo-500/10",
+      gradientColor: "#c7d2fe",
     },
     {
       label: "Total Orders",
       value: statsData?.overview?.totalOrders || "0",
       trend: statsData?.overview?.ordersTrend || "0%",
       icon: HiOutlineShoppingBag,
-      color: "text-primary",
-      bg: "bg-[#fef4f4]",
+      color: "text-white",
+      bg: "bg-emerald-600 shadow-md shadow-emerald-500/30",
+      cardBg: "bg-emerald-50/90 border border-emerald-200/90 shadow-xs shadow-emerald-500/10",
+      gradientColor: "#a7f3d0",
     },
     {
       label: "Avg Order Value",
       value: statsData?.overview?.avgOrderValue || "₹0",
-      trend: "0%", // Trend for AOV can be added later
+      trend: "0%",
       icon: HiOutlineUsers,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
+      color: "text-white",
+      bg: "bg-amber-600 shadow-md shadow-amber-500/30",
+      cardBg: "bg-amber-50/90 border border-amber-200/90 shadow-xs shadow-amber-500/10",
+      gradientColor: "#fde68a",
     },
     {
       label: "Conversion Rate",
       value: statsData?.overview?.conversionRate || "0%",
       trend: "0%",
       icon: HiOutlineChartBar,
-      color: "text-rose-600",
-      bg: "bg-rose-50",
+      color: "text-white",
+      bg: "bg-rose-600 shadow-md shadow-rose-500/30",
+      cardBg: "bg-rose-50/90 border border-rose-200/90 shadow-xs shadow-rose-500/10",
+      gradientColor: "#fecdd3",
     },
   ];
 
@@ -218,16 +226,16 @@ const Analytics = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING ANALYTICS...</div>;
+    return <div className="flex items-center justify-center h-screen font-black text-slate-600 font-['Roboto',sans-serif]">LOADING ANALYTICS...</div>;
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 pb-20 sm:pb-16">
+    <div className="space-y-6 sm:space-y-8 pb-20 sm:pb-16 font-['Roboto',sans-serif]">
       <BlurFade delay={0.1}>
         {/* Header */}
-        <div className="flex flex-col gap-4">
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
               Advanced Analytics
               <Badge
                 variant="success"
@@ -235,22 +243,22 @@ const Analytics = () => {
                 Real-time Insights
               </Badge>
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base mt-0.5 font-medium">
+            <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
               Detailed breakdown of your business performance and customer
               behavior.
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 w-full sm:w-auto overflow-x-auto scrollbar-hide min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 border-t border-slate-100">
+            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 w-full sm:w-auto overflow-x-auto scrollbar-none min-w-0">
               {["Overview", "Sales", "Customers"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm sm:text-xs font-bold transition-all whitespace-nowrap shrink-0",
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0 flex-1 sm:flex-none text-center",
                     activeTab === tab
-                      ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                      : "text-slate-600 hover:text-slate-700",
+                      ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+                      : "text-slate-600 hover:text-slate-900",
                   )}>
                   {tab}
                 </button>
@@ -259,7 +267,7 @@ const Analytics = () => {
             <ShimmerButton
               onClick={handleDownloadReport}
               background="#E71D28"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-lg text-xs sm:text-sm sm:text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 sm:px-5 rounded-xl text-xs font-bold text-white shadow-lg disabled:opacity-50 shrink-0 bg-[#E71D28] hover:bg-[#c41922] transition-colors"
               disabled={isExporting}>
               <HiOutlineArrowDownTray className="h-4 w-4 shrink-0" />
               <span>{isExporting ? "DOWNLOADING..." : "DOWNLOAD REPORT"}</span>
@@ -269,7 +277,7 @@ const Analytics = () => {
       </BlurFade>
 
       {/* Quick Stats Grid - show for all tabs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-6">
         {stats
           .filter((_, i) => {
             if (activeTab === "Customers") return i === 0 || i === 1; // Total Sales, Total Orders only
@@ -278,49 +286,38 @@ const Analytics = () => {
           .map((stat, i) => (
           <BlurFade key={stat.label} delay={0.1 + i * 0.05}>
             <MagicCard
-              className="border-none shadow-md overflow-hidden group bg-white p-0"
-              gradientColor={
-                stat.bg.includes("emerald")
-                  ? "#ecfdf5"
-                  : stat.bg.includes("indigo")
-                    ? "#eef2ff"
-                    : stat.bg.includes("amber")
-                      ? "#fffbeb"
-                      : "#fff1f2"
-              }>
-              <div className="p-6 relative z-10 flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
+              className={cn("border-none shadow-xs p-0 overflow-hidden group rounded-xl md:rounded-2xl", stat.cardBg)}
+              gradientColor={stat.gradientColor}>
+              <div className="p-2.5 sm:p-4 md:p-6 relative z-10 flex items-start justify-between gap-1.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-wider truncate">
                     {stat.label}
                   </p>
-                  <h4 className="text-2xl font-black text-slate-900 mt-1 tracking-tight">
+                  <h4 className="text-sm sm:text-xl md:text-2xl font-black text-slate-900 mt-0.5 md:mt-1 tracking-tight truncate">
                     {stat.value}
                   </h4>
                   <div
                     className={cn(
-                      "flex items-center mt-3 text-xs sm:text-sm font-black px-2 py-0.5 rounded-full w-fit",
+                      "flex items-center mt-1.5 md:mt-3 text-[9px] sm:text-xs font-black px-1.5 py-0.5 rounded-full w-fit",
                       stat.trend.startsWith("+")
                         ? "text-emerald-600 bg-emerald-50"
                         : "text-rose-600 bg-rose-50",
                     )}>
                     {stat.trend.startsWith("+") ? (
-                      <HiOutlineArrowUpRight className="mr-0.5" />
+                      <HiOutlineArrowUpRight className="mr-0.5 h-3 w-3" />
                     ) : (
-                      <HiOutlineArrowDownRight className="mr-0.5" />
+                      <HiOutlineArrowDownRight className="mr-0.5 h-3 w-3" />
                     )}
                     {stat.trend}
-                    <span className="text-slate-600 ml-1 font-medium">
-                      vs prev 7d
-                    </span>
                   </div>
                 </div>
                 <div
                   className={cn(
-                    "h-12 w-12 rounded-lg flex items-center justify-center shadow-inner",
+                    "h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-lg flex items-center justify-center shrink-0 shadow-inner",
                     stat.bg,
                     stat.color,
                   )}>
-                  <stat.icon className="h-6 w-6 transition-transform group-hover:scale-125 duration-300" />
+                  <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 transition-transform group-hover:scale-125 duration-300" />
                 </div>
               </div>
             </MagicCard>
@@ -329,45 +326,45 @@ const Analytics = () => {
       </div>
 
       {hasNoData && (activeTab === "Overview" || activeTab === "Sales") && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 flex items-center gap-3">
-          <HiOutlineChartBar className="h-6 w-6 text-slate-600 shrink-0" />
-          <p className="text-sm font-semibold text-slate-600">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center gap-3">
+          <HiOutlineChartBar className="h-5 w-5 text-slate-600 shrink-0" />
+          <p className="text-xs font-semibold text-slate-600">
             Sales report is connected. Data will appear here once you have orders.
           </p>
         </div>
       )}
 
       {(activeTab === "Overview" || activeTab === "Sales") && (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Sales Performance Chart */}
         <BlurFade delay={0.4} className="lg:col-span-2">
-          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-3xl p-6 bg-white overflow-hidden group h-full">
-            <div className="flex items-center justify-between mb-8">
+          <Card className="border-none shadow-xl shadow-slate-200/50 rounded-2xl md:rounded-3xl p-3.5 sm:p-6 bg-white overflow-hidden group h-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 sm:mb-8">
               <div>
-                <h3 className="text-lg font-black text-slate-900">
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
                   Revenue & Trends
                 </h3>
-                <p className="text-xs text-slate-600 font-bold uppercase tracking-widest">
+                <p className="text-[10px] sm:text-xs text-slate-600 font-bold uppercase tracking-wider">
                   Performance Insights
                 </p>
               </div>
-              <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100">
+              <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-100 self-start sm:self-auto">
                 {["Daily", "Weekly", "Monthly"].map((range) => (
                   <button
                     key={range}
                     onClick={() => setChartRange(range)}
                     className={cn(
-                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                      "px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-bold transition-all",
                       chartRange === range
-                        ? "bg-white text-primary shadow-sm"
-                        : "text-slate-600 hover:text-slate-600",
+                        ? "bg-white text-primary shadow-xs"
+                        : "text-slate-600 hover:text-slate-900",
                     )}>
                     {range}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="h-[400px] w-full mt-4">
+            <div className="h-[180px] sm:h-[260px] w-full mt-1 sm:mt-2">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <AreaChart
                   data={statsData?.salesTrend || []}
@@ -455,7 +452,7 @@ const Analytics = () => {
                 Inventory Distribution
               </p>
             </div>
-            <div className="h-[350px] w-full flex items-center justify-center">
+            <div className="h-[240px] w-full flex items-center justify-center">
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <RadarChart
                   cx="50%"

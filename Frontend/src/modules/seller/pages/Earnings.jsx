@@ -71,16 +71,27 @@ const Earnings = () => {
   };
 
   if (loading && (!data?.balances || Object.keys(data.balances).length === 0)) {
-    return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING EARNINGS...</div>;
+    return <div className="flex items-center justify-center h-screen font-black text-slate-600 font-['Roboto',sans-serif]">LOADING EARNINGS...</div>;
   }
+
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-6 pb-16 font-['Roboto',sans-serif]">
       <BlurFade delay={0.1}>
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-800 hidden md:block">
-            Earnings Overview
-          </h2>
-          <div className="flex space-x-3">
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
+              Earnings Overview
+              <Badge
+                variant="success"
+                className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase bg-emerald-100 text-emerald-700">
+                Revenue & Payouts
+              </Badge>
+            </h1>
+            <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
+              Track your revenue breakdown, net profits, and withdrawal history.
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
             <Button
               onClick={() => {
                 const ledger = Array.isArray(data?.ledger) ? data.ledger : [];
@@ -109,61 +120,61 @@ const Earnings = () => {
                 toast.success("Earnings report downloaded successfully!");
               }}
               variant="outline"
-              className="border-gray-200">
-              <Download className="mr-2 h-5 w-5" />
-              Download Report
+              className="flex-1 sm:flex-none justify-center border-gray-200 text-xs font-bold py-2">
+              <Download className="mr-1.5 h-4 w-4 shrink-0" />
+              Report
             </Button>
             <ShimmerButton
               onClick={() => navigate("/seller/withdrawals")}
-              className="px-6 py-2 rounded-xl text-sm font-bold text-white shadow-lg bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark transition-colors"
+              className="flex-1 sm:flex-none justify-center px-4 sm:px-5 py-2 rounded-xl text-xs font-bold text-white shadow-lg bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark transition-colors"
               background="#E71D28">
-              <span className="text-white">Withdraw Funds</span>
+              <span className="text-white whitespace-nowrap">Withdraw Funds</span>
             </ShimmerButton>
           </div>
         </div>
-      </BlurFade>
+            </BlurFade>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <BlurFade delay={0.2}>
-          <Card className="bg-gradient-to-br from-[#c41922] to-[#a2141c] text-white border-none shadow-lg h-full">
+          <Card className="bg-gradient-to-br from-[#c41922] to-[#a2141c] text-white border-none shadow-sm h-full p-3 sm:p-3.5 rounded-xl flex flex-col justify-between">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-[#fde8ea] font-medium">Total Net Earnings</p>
-                <h3 className="text-4xl font-bold mt-2">₹{Number(data?.balances?.totalNetEarnings ?? 0).toLocaleString()}</h3>
-                <p className="text-xs text-[#f9c7c9] mt-2">After all deductions</p>
+                <p className="text-[#fde8ea] font-medium text-[11px]">Total Net Earnings</p>
+                <h3 className="text-xl sm:text-2xl font-black mt-0.5 tracking-tight">₹{Number(data?.balances?.totalNetEarnings ?? 0).toLocaleString()}</h3>
+                <p className="text-[10px] text-[#f9c7c9] mt-0.5">After all deductions</p>
               </div>
-              <div className="p-3 bg-white/20 rounded-xl">
-                <DollarSign className="h-8 w-8 text-white" />
+              <div className="p-1.5 bg-white/20 rounded-lg">
+                <DollarSign className="h-4 w-4 text-white" />
               </div>
             </div>
-            <div className="mt-8 flex items-center text-[#fde8ea] bg-white/10 w-fit px-3 py-1 rounded-full text-sm">
-              <TrendingUp className="mr-2" />
+            <div className="mt-3 flex items-center text-[#fde8ea] bg-white/10 w-fit px-2 py-0.5 rounded-full text-[10px] font-medium">
+              <TrendingUp className="mr-1 h-3 w-3" />
               <span>Real-time earnings data</span>
             </div>
           </Card>
         </BlurFade>
 
         <BlurFade delay={0.3}>
-          <Card className="h-full border-none shadow-md bg-white p-6 flex flex-col justify-between group hover:shadow-xl transition-all duration-300">
+          <Card className="h-full border border-slate-100 shadow-xs bg-white p-3 sm:p-3.5 rounded-xl flex flex-col justify-between group hover:shadow-sm transition-all duration-300">
             <div className="flex justify-between items-start">
               <div className="w-full">
-                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-4">
+                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1.5">
                   Earnings Breakdown
                 </p>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-sm">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-medium">Gross Sales (Incl. Delivery)</span>
                     <span className="text-slate-900 font-bold">₹{Number(data?.balances?.grossSales ?? 0).toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-medium">ECS Commission</span>
                     <span className="text-rose-500 font-bold">- ₹{Number(data?.balances?.totalCommission ?? 0).toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center text-sm">
+                  <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-medium">Delivery Charges</span>
                     <span className="text-rose-500 font-bold">- ₹{Number(data?.balances?.deliveryFees ?? 0).toLocaleString()}</span>
                   </div>
-                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
+                  <div className="pt-1 border-t border-slate-100 flex justify-between items-center text-xs">
                     <span className="text-slate-900 font-black">Net Payout</span>
                     <span className="text-[#E71D28] font-black">₹{Number(data?.balances?.totalNetEarnings ?? 0).toLocaleString()}</span>
                   </div>
@@ -174,56 +185,56 @@ const Earnings = () => {
         </BlurFade>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3">
         <BlurFade delay={0.35}>
-          <Card className="border-none shadow-md bg-white p-6 group hover:shadow-xl transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
+          <Card className="border border-emerald-200/90 shadow-xs bg-emerald-50/90 p-3 rounded-xl group hover:shadow-sm transition-all duration-300">
+            <div className="flex justify-between items-center">
               <div>
-                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-0.5">
                   Available to Withdraw
                 </p>
-                <h2 className="text-2xl font-black text-[#E71D28] tracking-tight">
+                <h2 className="text-lg font-black text-emerald-700 tracking-tight">
                   ₹{Number(data?.balances?.settledBalance ?? 0).toLocaleString()}
                 </h2>
               </div>
-              <div className="p-2 bg-[#fef4f4] rounded-lg">
-                <ArrowDownToLine className="h-5 w-5 text-[#E71D28]" />
+              <div className="p-1.5 bg-emerald-600 rounded-lg text-white shadow-xs shadow-emerald-500/30">
+                <ArrowDownToLine className="h-3.5 w-3.5 text-white" />
               </div>
             </div>
           </Card>
         </BlurFade>
 
         <BlurFade delay={0.4}>
-          <Card className="border-none shadow-md bg-white p-6 group hover:shadow-xl transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
+          <Card className="border border-indigo-200/90 shadow-xs bg-indigo-50/90 p-3 rounded-xl group hover:shadow-sm transition-all duration-300">
+            <div className="flex justify-between items-center">
               <div>
-                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-0.5">
                   Total Withdrawn
                 </p>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-lg font-black text-indigo-700 tracking-tight">
                   ₹{Number(data?.balances?.totalWithdrawn ?? 0).toLocaleString()}
                 </h2>
               </div>
-              <div className="p-2 bg-[#fef4f4] rounded-lg">
-                <Banknote className="h-5 w-5 text-[#E71D28]" />
+              <div className="p-1.5 bg-indigo-600 rounded-lg text-white shadow-xs shadow-indigo-500/30">
+                <Banknote className="h-3.5 w-3.5 text-white" />
               </div>
             </div>
           </Card>
         </BlurFade>
 
         <BlurFade delay={0.45}>
-          <Card className="border-none shadow-md bg-white p-6 group hover:shadow-xl transition-all duration-300">
-            <div className="flex justify-between items-start mb-4">
+          <Card className="border border-amber-200/90 shadow-xs bg-amber-50/90 p-3 rounded-xl group hover:shadow-sm transition-all duration-300">
+            <div className="flex justify-between items-center">
               <div>
-                <p className="text-xs font-black text-slate-600 uppercase tracking-widest mb-1">
+                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-0.5">
                   Pending Payouts
                 </p>
-                <h2 className="text-2xl font-black text-amber-600 tracking-tight">
+                <h2 className="text-lg font-black text-amber-700 tracking-tight">
                   ₹{Number(data?.balances?.pendingPayouts ?? 0).toLocaleString()}
                 </h2>
               </div>
-              <div className="p-2 bg-amber-50 rounded-lg">
-                <BarChart3 className="h-5 w-5 text-amber-500" />
+              <div className="p-1.5 bg-amber-600 rounded-lg text-white shadow-xs shadow-amber-500/30">
+                <BarChart3 className="h-3.5 w-3.5 text-white" />
               </div>
             </div>
           </Card>
@@ -231,19 +242,19 @@ const Earnings = () => {
       </div>
 
       <BlurFade delay={0.4}>
-        <Card className="p-6 border-none shadow-md bg-white">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-[#E71D28]" />
+        <Card className="p-3 sm:p-4 border-none shadow-sm bg-white rounded-xl">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-xs sm:text-sm font-black text-slate-900 flex items-center gap-1.5">
+              <BarChart3 className="h-3.5 w-3.5 text-[#E71D28]" />
               Monthly Revenue Performance
             </h3>
           </div>
-          <div className="h-[300px] w-full min-h-[200px] flex items-center justify-center">
+          <div className="h-[130px] w-full flex items-center justify-center">
             {(Array.isArray(data?.monthlyChart) ? data.monthlyChart : []).length === 0 ? (
-              <p className="text-slate-600 text-sm font-medium">No monthly revenue data yet.</p>
+              <p className="text-slate-600 text-xs font-medium">No monthly revenue data yet.</p>
             ) : (
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <BarChart data={data.monthlyChart}>
+              <BarChart data={data.monthlyChart} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -253,31 +264,32 @@ const Earnings = () => {
                   dataKey="name"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
-                  dy={10}
+                  tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 700 }}
+                  dy={4}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 10, fontWeight: 700 }}
+                  tick={{ fill: "#94a3b8", fontSize: 9, fontWeight: 700 }}
                   tickFormatter={(value) => `₹${value}`}
                 />
                 <Tooltip
                   cursor={{ fill: "#f8fafc" }}
                   contentStyle={{
-                    borderRadius: "12px",
+                    borderRadius: "10px",
                     border: "none",
                     boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)",
-                    fontSize: "12px",
+                    fontSize: "11px",
                     fontWeight: "700",
+                    padding: "6px 10px",
                   }}
                   formatter={(value) => [`₹${value.toLocaleString()}`, "Revenue"]}
                 />
                 <Bar
                   dataKey="revenue"
                   fill="url(#colorRevenue)"
-                  radius={[6, 6, 0, 0]}
-                  barSize={40}
+                  radius={[4, 4, 0, 0]}
+                  barSize={18}
                 />
                 <defs>
                   <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">

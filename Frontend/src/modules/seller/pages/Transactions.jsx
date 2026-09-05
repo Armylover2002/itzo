@@ -42,22 +42,28 @@ const Transactions = () => {
       label: "Settled Balance",
       value: `₹${(data?.balances?.settledBalance || 0).toLocaleString()}`,
       icon: HiOutlineBanknotes,
-      color: "text-primary",
-      bg: "bg-[#fef4f4]",
+      color: "text-white",
+      bg: "bg-emerald-600 shadow-md shadow-emerald-500/30",
+      cardBg: "bg-emerald-50/90 border border-emerald-200/90 shadow-xs shadow-emerald-500/10",
+      gradientColor: "#a7f3d0",
     },
     {
       label: "Pending Payouts",
       value: `₹${(data?.balances?.pendingPayouts || 0).toLocaleString()}`,
       icon: HiOutlineClock,
-      color: "text-amber-600",
-      bg: "bg-amber-50",
+      color: "text-white",
+      bg: "bg-amber-600 shadow-md shadow-amber-500/30",
+      cardBg: "bg-amber-50/90 border border-amber-200/90 shadow-xs shadow-amber-500/10",
+      gradientColor: "#fde68a",
     },
     {
       label: "Total Revenue",
       value: `₹${(data?.balances?.totalRevenue || 0).toLocaleString()}`,
       icon: HiOutlineCreditCard,
-      color: "text-primary",
-      bg: "bg-[#fef4f4]",
+      color: "text-white",
+      bg: "bg-indigo-600 shadow-md shadow-indigo-500/30",
+      cardBg: "bg-indigo-50/90 border border-indigo-200/90 shadow-xs shadow-indigo-500/10",
+      gradientColor: "#c7d2fe",
     },
   ];
 
@@ -138,16 +144,16 @@ const Transactions = () => {
   };
 
   if (loading && (!data?.ledger || data.ledger.length === 0)) {
-    return <div className="flex items-center justify-center h-screen font-black text-slate-600">LOADING TRANSACTIONS...</div>;
+    return <div className="flex items-center justify-center h-screen font-black text-slate-600 font-['Roboto',sans-serif]">LOADING TRANSACTIONS...</div>;
   }
 
   return (
-    <div className="space-y-8 pb-16">
+    <div className="space-y-8 pb-16 font-['Roboto',sans-serif]">
       <BlurFade delay={0.1}>
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
               Transaction Ledger
               <Badge
                 variant="primary"
@@ -155,11 +161,11 @@ const Transactions = () => {
                 Audit Trail
               </Badge>
             </h1>
-            <p className="text-slate-600 text-sm mt-0.5 font-medium">
+            <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
               Keep track of all financial movements, payouts, and settlements.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full lg:w-auto">
             <Button
               onClick={() => {
                 setIsDownloading(true);
@@ -193,7 +199,7 @@ const Transactions = () => {
                   setIsDownloading(false);
                 }
               }}
-              className="rounded-lg px-4 py-2 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center rounded-lg px-4 py-2 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors disabled:opacity-50"
               disabled={isDownloading || filteredTransactions.length === 0}>
               <HiOutlineDocumentText className="h-4 w-4 mr-2" />
               {isDownloading ? "DOWNLOADING..." : "DOWNLOAD STATEMENTS"}
@@ -203,26 +209,26 @@ const Transactions = () => {
       </BlurFade>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-6">
         {stats.map((stat, i) => (
           <BlurFade key={i} delay={0.1 + i * 0.05}>
             <MagicCard
-              className="border-none shadow-md overflow-hidden bg-white p-0"
-              gradientColor="#f8fafc">
-              <div className="p-6 relative z-10 flex items-center gap-4">
+              className={cn("border-none shadow-xs p-0 overflow-hidden group rounded-xl md:rounded-2xl", stat.cardBg)}
+              gradientColor={stat.gradientColor}>
+              <div className="p-2.5 sm:p-4 md:p-6 relative z-10 flex items-center gap-2 md:gap-4">
                 <div
                   className={cn(
-                    "h-14 w-14 rounded-lg flex items-center justify-center shadow-lg shadow-black/5",
+                    "h-8 w-8 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-lg flex items-center justify-center shrink-0 shadow-lg shadow-black/5",
                     stat.bg,
                     stat.color,
                   )}>
-                  <stat.icon className="h-7 w-7" />
+                  <stat.icon className="h-4 w-4 sm:h-6 sm:w-6 md:h-7 md:w-7" />
                 </div>
-                <div>
-                  <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
+                <div className="min-w-0">
+                  <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-wider truncate">
                     {stat.label}
                   </p>
-                  <h4 className="text-3xl font-black text-slate-900 tracking-tight">
+                  <h4 className="text-sm sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
                     {stat.value}
                   </h4>
                 </div>
@@ -235,16 +241,16 @@ const Transactions = () => {
       <BlurFade delay={0.4}>
         <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden rounded-lg p-0 bg-white">
           {/* Toolbar */}
-          <div className="p-6 border-b border-slate-50 flex flex-col md:flex-row gap-4 items-center justify-between bg-white">
-            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 shrink-0">
+          <div className="p-3 sm:p-6 border-b border-slate-50 flex flex-col md:flex-row gap-3 items-center justify-between bg-white">
+            <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 shrink-0 overflow-x-auto scrollbar-none w-full md:w-auto">
               {["All", "Order Payment", "Withdrawal", "Refund"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap",
+                    "px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex-1 sm:flex-none text-center",
                     activeTab === tab
-                      ? "bg-white text-slate-900 shadow-sm"
+                      ? "bg-white text-slate-900 shadow-xs"
                       : "text-slate-600 hover:text-slate-700",
                   )}>
                   {tab === "Order Payment" ? "Payments" : tab}
@@ -262,8 +268,92 @@ const Transactions = () => {
             </div>
           </div>
 
-          {/* Table */}
-          <div className="overflow-x-auto">
+          {/* Mobile View - Card List (visible only on mobile) */}
+          <div className="block md:hidden divide-y divide-slate-100">
+            <AnimatePresence>
+              {filteredTransactions.length === 0 ? (
+                <div className="p-6 text-center text-slate-600 text-xs font-bold">
+                  {ledger.length === 0 ? "No transactions yet." : "No matches for your search or filter."}
+                </div>
+              ) : (
+                paginatedTransactions.map((txn, idx) => (
+                  <motion.div
+                    key={txn.id || txn.ref || txn.reference || `m-txn-${idx}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => {
+                      setSelectedTxn(txn);
+                      setIsDetailModalOpen(true);
+                    }}
+                    className="p-3 hover:bg-slate-50/50 active:bg-slate-100 transition-colors cursor-pointer">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className={cn(
+                            "h-9 w-9 rounded-lg flex items-center justify-center font-black shrink-0",
+                            txn.amount > 0 ? "bg-[#fef4f4] text-[#E71D28]" : "bg-rose-50 text-rose-600"
+                          )}>
+                          {txn.amount > 0 ? (
+                            <HiOutlineArrowDownLeft className="h-4 w-4" />
+                          ) : (
+                            <HiOutlineArrowUpRight className="h-4 w-4" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-black text-slate-900 truncate">
+                            {txn.id ?? txn.ref ?? "—"}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider truncate">
+                            {txn.type ?? "—"} • {txn.customer ?? "Guest"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p
+                          className={cn(
+                            "text-xs font-black tracking-tight",
+                            Number(txn.amount ?? 0) > 0 ? "text-[#E71D28]" : "text-rose-600"
+                          )}>
+                          {Number(txn.amount ?? 0) > 0 ? "+" : ""}₹
+                          {Math.abs(Number(txn.amount ?? 0)).toLocaleString()}
+                        </p>
+                        <Badge
+                          variant={
+                            txn.status === "Settled"
+                              ? "success"
+                              : txn.status === "Pending" || txn.status === "Processing"
+                              ? "warning"
+                              : "default"
+                          }
+                          className="text-[9px] font-black uppercase px-1.5 py-0 mt-0.5">
+                          {txn.status}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-50 text-[10px] font-semibold text-slate-500">
+                      <span>
+                        {txn.date ?? (txn.createdAt ? new Date(txn.createdAt).toLocaleDateString() : "—")}
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadReceipt(txn);
+                        }}
+                        className="flex items-center gap-1 text-slate-700 hover:text-primary font-bold">
+                        <HiOutlineArrowDownTray className="h-3.5 w-3.5" />
+                        Receipt
+                      </button>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Desktop Table View (hidden on mobile) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left min-w-[720px]">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
