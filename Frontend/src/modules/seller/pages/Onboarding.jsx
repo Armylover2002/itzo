@@ -27,6 +27,7 @@ import { useCompanyName } from "@food/hooks/useCompanyName";
 import { getAppLogo, subscribeBusinessSettings } from "@common/utils/businessSettings";
 import { sellerApi } from "../services/sellerApi";
 import { formatTimeAMPM } from "../../../shared/utils/timeFormat";
+import { compressImage } from "@shared/utils/imageCompression";
 import {
   clearSellerOnboardingDraft,
   consumeSellerOnboardingDiscarded,
@@ -684,8 +685,13 @@ export default function SellerOnboarding() {
     clearLocalFile(file);
     setUploadingImageKey(fieldKey);
     try {
+      // Phone-camera photos routinely come in at 3-8MB; a raw file like that has
+      // to travel client -> our server -> Cloudinary, so uncompressed uploads
+      // feel very slow. Compressing here keeps the upload fast in both storage
+      // modes without touching anything on the backend.
+      const uploadFile = await compressImage(file);
       const payload = new FormData();
-      payload.append(fieldKey, file);
+      payload.append(fieldKey, uploadFile);
       const response = await sellerApi.updateProfile(payload);
       const imageUrls = imageUrlsFromProfile(response?.data?.result || {});
       const uploadedUrl = imageUrls[fieldKey];

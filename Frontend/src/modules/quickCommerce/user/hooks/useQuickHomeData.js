@@ -19,7 +19,10 @@ let globalQuickHomeCache = {
   hasValidLocation: false,
 };
 
-const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+// Was 5 minutes — far too long for data that includes live stock/price. A
+// seller's inventory change should show up on the home feed within seconds,
+// not after a 5-minute-old cache happens to expire.
+const CACHE_EXPIRY_MS = 5 * 1000; // 5 seconds
 
 export const useQuickHomeData = ({ currentLocation }) => {
   const hasValidCache = globalQuickHomeCache.data && (Date.now() - globalQuickHomeCache.lastFetched < CACHE_EXPIRY_MS);
@@ -203,14 +206,26 @@ export const useQuickHomeData = ({ currentLocation }) => {
     }
 
     const headerId = activeCategory._id;
+    // Cache key includes the location so switching to a saved address in a
+    // different zone doesn't keep serving another zone's cached products.
+    const hasValidLocation = Number.isFinite(lat) && Number.isFinite(lng);
+    const cacheKey = hasValidLocation ? `${headerId}:${lat},${lng}` : headerId;
 
     const fetchCategoryProducts = async () => {
-      if (globalQuickHomeCache.categoryProducts.has(headerId)) {
-        setCategoryProducts(globalQuickHomeCache.categoryProducts.get(headerId));
+      const cached = globalQuickHomeCache.categoryProducts.get(cacheKey);
+      // Same short expiry as the home cache — this list carries live stock,
+      // so an entry cached a minute ago is no longer trustworthy.
+      if (cached && Date.now() - cached.ts < CACHE_EXPIRY_MS) {
+        setCategoryProducts(cached.data);
         return;
       }
       try {
-        const res = await customerApi.getProducts({ categoryId: headerId, limit: 100 });
+        const params = { categoryId: headerId, limit: 100 };
+        if (hasValidLocation) {
+          params.lat = lat;
+          params.lng = lng;
+        }
+        const res = await customerApi.getProducts(params);
         if (res?.data?.success) {
           const rawResult = res.data.result;
           const dbProds = Array.isArray(res.data.results)
@@ -228,7 +243,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
             originalPrice: Number(p.originalPrice || p.mrp || p.price || p.salePrice || 0),
             deliveryTime: "8-15 mins",
           }));
-          globalQuickHomeCache.categoryProducts.set(headerId, formatted);
+          globalQuickHomeCache.categoryProducts.set(cacheKey, { data: formatted, ts: Date.now() });
           setCategoryProducts(formatted);
         }
       } catch (e) {
@@ -237,7 +252,7 @@ export const useQuickHomeData = ({ currentLocation }) => {
     };
 
     fetchCategoryProducts();
-  }, [activeCategory]);
+  }, [activeCategory, lat, lng]);
 
   return {
     categories,

@@ -26,25 +26,35 @@ const resolveId = (req) => {
 
 const parseIdsOnly = (value) => String(value).trim().toLowerCase() === 'true';
 
+const normalizeVariantId = (value) => String(value ?? '').trim();
+
+const sameItem = (item, productId, variantId) =>
+  String(item.productId) === String(productId) && normalizeVariantId(item.variantId) === variantId;
+
 const getWishlistDocument = async (idQuery) =>
   QuickWishlist.findOneAndUpdate(
     idQuery,
-    { $setOnInsert: { ...idQuery, products: [] } },
+    { $setOnInsert: { ...idQuery, items: [] } },
     { upsert: true, new: true }
   );
 
 const buildWishlistResponse = async (wishlistDoc, { idsOnly = false } = {}) => {
-  const productIds = Array.isArray(wishlistDoc?.products)
-    ? wishlistDoc.products.map((id) => String(id)).filter((id) => mongoose.isValidObjectId(id))
+  const items = Array.isArray(wishlistDoc?.items)
+    ? wishlistDoc.items.filter((item) => mongoose.isValidObjectId(item.productId))
     : [];
 
-  if (idsOnly || productIds.length === 0) {
+  if (idsOnly || items.length === 0) {
     return {
       id: wishlistDoc?._id || null,
-      products: productIds,
+      products: items.map((item) => ({
+        id: String(item.productId),
+        _id: String(item.productId),
+        variantId: normalizeVariantId(item.variantId),
+      })),
     };
   }
 
+  const productIds = [...new Set(items.map((item) => String(item.productId)))];
   const products = await QuickProduct.find({
     _id: { $in: productIds },
     ...approvedProductFilter,
@@ -55,9 +65,28 @@ const buildWishlistResponse = async (wishlistDoc, { idsOnly = false } = {}) => {
     return acc;
   }, {});
 
+  // One entry per (product, variant) pair — a product liked under two
+  // different variants shows up as two distinct wishlist rows, each carrying
+  // its own variantId/variantName so the UI can tell them apart.
+  const result = items
+    .map((item) => {
+      const product = productMap[String(item.productId)];
+      if (!product) return null;
+      const variantId = normalizeVariantId(item.variantId);
+      const variant = variantId
+        ? (product.variants || []).find((v) => String(v._id) === variantId || v.name === variantId)
+        : null;
+      return {
+        ...product,
+        variantId,
+        variantName: variant?.name || '',
+      };
+    })
+    .filter(Boolean);
+
   return {
     id: wishlistDoc?._id || null,
-    products: productIds.map((productId) => productMap[productId]).filter(Boolean),
+    products: result,
   };
 };
 
@@ -74,7 +103,7 @@ export const getWishlist = async (req, res) => {
 
 export const addToWishlist = async (req, res) => {
   const idQuery = resolveId(req);
-  const { productId } = req.body;
+  const { productId, variantId } = req.body;
 
   if (!idQuery || !productId) {
     return res.status(400).json({ success: false, message: 'sessionId/userId and productId are required' });
@@ -86,10 +115,12 @@ export const addToWishlist = async (req, res) => {
   }
 
   const wishlist = await getWishlistDocument(idQuery);
-  const nextIds = new Set(wishlist.products.map((id) => String(id)));
-  nextIds.add(String(productId));
-  wishlist.products = [...nextIds];
-  await wishlist.save();
+  const vId = normalizeVariantId(variantId);
+  const alreadySaved = wishlist.items.some((item) => sameItem(item, productId, vId));
+  if (!alreadySaved) {
+    wishlist.items.push({ productId, variantId: vId });
+    await wishlist.save();
+  }
 
   const result = await buildWishlistResponse(wishlist, { idsOnly: false });
   return res.json({ success: true, result });
@@ -98,13 +129,14 @@ export const addToWishlist = async (req, res) => {
 export const removeFromWishlist = async (req, res) => {
   const idQuery = resolveId(req);
   const { productId } = req.params;
+  const variantId = normalizeVariantId(req.query.variantId ?? req.body?.variantId);
 
   if (!idQuery || !productId) {
     return res.status(400).json({ success: false, message: 'sessionId/userId and productId are required' });
   }
 
   const wishlist = await getWishlistDocument(idQuery);
-  wishlist.products = wishlist.products.filter((id) => String(id) !== String(productId));
+  wishlist.items = wishlist.items.filter((item) => !sameItem(item, productId, variantId));
   await wishlist.save();
 
   const result = await buildWishlistResponse(wishlist, { idsOnly: false });
@@ -113,7 +145,7 @@ export const removeFromWishlist = async (req, res) => {
 
 export const toggleWishlist = async (req, res) => {
   const idQuery = resolveId(req);
-  const { productId } = req.body;
+  const { productId, variantId } = req.body;
 
   if (!idQuery || !productId) {
     return res.status(400).json({ success: false, message: 'sessionId/userId and productId are required' });
@@ -125,12 +157,13 @@ export const toggleWishlist = async (req, res) => {
   }
 
   const wishlist = await getWishlistDocument(idQuery);
-  const currentIds = wishlist.products.map((id) => String(id));
+  const vId = normalizeVariantId(variantId);
+  const existingIndex = wishlist.items.findIndex((item) => sameItem(item, productId, vId));
 
-  if (currentIds.includes(String(productId))) {
-    wishlist.products = wishlist.products.filter((id) => String(id) !== String(productId));
+  if (existingIndex >= 0) {
+    wishlist.items.splice(existingIndex, 1);
   } else {
-    wishlist.products = [...wishlist.products, productId];
+    wishlist.items.push({ productId, variantId: vId });
   }
 
   await wishlist.save();

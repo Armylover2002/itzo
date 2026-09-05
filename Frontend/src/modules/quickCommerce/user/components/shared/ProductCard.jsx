@@ -60,12 +60,20 @@ const ProductCard = React.memo(
     const hasMultipleVariants = Array.isArray(product.variants) && product.variants.length > 1;
     const cardCartKey = getCartItemKey(product, defaultVariant);
 
+    // A wishlist entry already carries the specific variant it was liked
+    // under (see WishlistContext) — that must win over "first variant" so a
+    // card on the Wishlist page reflects the variant that's actually saved,
+    // not just whichever variant happens to be first on the product.
+    const wishlistVariant = product.variantId
+      ? { _id: product.variantId, name: product.variantName }
+      : defaultVariant;
+
     const cartItem = React.useMemo(
       () => cart.find((item) => getItemCartKey(item) === cardCartKey),
       [cart, getItemCartKey, cardCartKey],
     );
     const quantity = cartItem ? cartItem.quantity : 0;
-    const isWishlisted = isInWishlist(product.id || product._id);
+    const isWishlisted = isInWishlist(product.id || product._id, wishlistVariant);
 
     const handleProductClick = React.useCallback(
       () => {
@@ -86,15 +94,16 @@ const ProductCard = React.memo(
           setTimeout(() => setShowHeartPopup(false), 1000);
         }
 
-        toggleWishlistGlobal(product);
+        toggleWishlistGlobal(product, wishlistVariant);
+        const variantLabel = wishlistVariant?.name ? ` (${wishlistVariant.name})` : "";
         showToast(
           isWishlisted
-            ? `${product.name} removed from wishlist`
-            : `${product.name} added to wishlist`,
+            ? `${product.name}${variantLabel} removed from wishlist`
+            : `${product.name}${variantLabel} added to wishlist`,
           isWishlisted ? "info" : "success",
         );
       },
-      [isWishlisted, toggleWishlistGlobal, product, showToast],
+      [isWishlisted, toggleWishlistGlobal, product, wishlistVariant, showToast],
     );
 
     const handleAddToCart = React.useCallback(
@@ -251,9 +260,9 @@ const ProductCard = React.memo(
               <h3 className="text-[11px] md:text-[12.5px] font-bold text-slate-900 line-clamp-1 leading-tight">
                 {product.name}
               </h3>
-              {defaultVariant?.name && (
+              {wishlistVariant?.name && (
                 <p className="text-[8px] md:text-[10px] text-slate-400 font-semibold italic">
-                  {defaultVariant.name}
+                  {wishlistVariant.name}
                 </p>
               )}
             </div>

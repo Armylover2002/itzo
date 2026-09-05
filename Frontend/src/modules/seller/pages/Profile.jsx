@@ -18,6 +18,7 @@ import MapPicker from "@shared/components/MapPicker";
 import { clearModuleAuth } from "@food/utils/auth";
 import { useAuth } from "@core/context/AuthContext";
 import { formatOpeningHoursAMPM } from "@shared/utils/timeFormat";
+import { compressImage } from "@shared/utils/imageCompression";
 import { isPointInZone } from "@shared/utils/pointInZone";
 import {
   parseOpeningHours,
@@ -301,8 +302,9 @@ const SellerProfile = () => {
     if (!file) return;
     setUploadingImageKey(fieldKey);
     try {
+      const uploadFile = await compressImage(file);
       const payload = new FormData();
-      payload.append(fieldKey, file);
+      payload.append(fieldKey, uploadFile);
       const response = await sellerApi.updateProfile(payload);
       const result = response?.data?.result || {};
       await fetchProfile();

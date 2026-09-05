@@ -32,6 +32,7 @@ import MainLocationHeader from "../components/shared/MainLocationHeader";
 import MiniCart from "../components/shared/MiniCart";
 import ProductDetailSheet from "../components/shared/ProductDetailSheet";
 import Footer from "../components/layout/Footer";
+import ServiceSwitchCards from "@food/components/user/home/ServiceSwitchCards";
 import BottomNav from "../components/layout/BottomNav";
 import MobileFooterMessage from "../components/layout/MobileFooterMessage";
 import { useProductDetail } from "../context/ProductDetailContext";
@@ -255,12 +256,14 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
     if (isAllActive) return quickCategories;
 
     const activeCatId = String(activeCategory?._id || activeCategory?.id || "");
-    const filtered = quickCategories.filter((cat) => {
+    // A header with no linked sub-categories yet must show none here — falling
+    // back to the full unfiltered list (as this used to do) made it look like
+    // filtering was broken for that header, since every other header's
+    // categories would appear instead.
+    return quickCategories.filter((cat) => {
       const parentId = String(cat.parentId?._id || cat.parentId || cat.headerId?._id || cat.headerId || "");
       return parentId === activeCatId || String(cat.id || cat._id) === activeCatId;
     });
-
-    return filtered.length > 0 ? filtered : quickCategories;
   }, [quickCategories, activeCategory, isAllActive]);
 
   // Filter products by active header category
@@ -379,6 +382,15 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
         <QuickHomeLoadingState embedded={embedded} />
       ) : (
         <div className={cn("pt-0", embedded && "pt-0")}>
+          {/* Food / Quick switch cards - desktop only. Mobile already has its own
+              Food / Quick toggle buttons in the header, so this would be a duplicate there. */}
+          <div className="hidden md:block">
+            <ServiceSwitchCards
+              activeTab="quick"
+              onTabChange={(tab) => navigate(tab === "food" ? "/food/user" : "/quick")}
+            />
+          </div>
+
           {/* Dynamic Promotional Banner Carousel */}
           {activeBanners.length > 0 && (
             <div className={cn("block px-3 md:px-8 lg:px-[50px] mb-3 md:mb-5", embedded ? "-mt-[1px]" : "mt-2 md:mt-4")}>

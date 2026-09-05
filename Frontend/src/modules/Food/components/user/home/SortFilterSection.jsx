@@ -12,7 +12,7 @@ const PRIMARY_FILTERS = [
 
 const SortFilterSection = memo(({ activeFilters, toggleFilter, setIsFilterOpen }) => {
   return (
-    <section className="py-1 lg:py-2 px-4">
+    <section className="py-1 lg:py-2 px-4 md:px-0">
       <div
         className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide sm:gap-2 lg:gap-3 lg:pb-2"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}

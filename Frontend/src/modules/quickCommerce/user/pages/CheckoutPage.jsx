@@ -12,6 +12,7 @@ import {
   Clock,
   CreditCard,
   Banknote,
+  Wallet,
   ChevronRight,
   ChevronLeft,
   Share2,
@@ -30,8 +31,8 @@ import {
   Clipboard,
   AlertCircle,
   Check,
-  Contact2,
 } from "lucide-react";
+import { userAPI } from "@food/api";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@shared/components/ui/Toast";
@@ -59,6 +60,7 @@ import { Label } from "@/components/ui/label";
 import emptyBoxAnimation from "../assets/lottie/Empty box.json";
 import {
   getQuickCategoriesPath,
+  getQuickCheckoutPath,
   getQuickOrderDetailPath,
   getQuickOrdersPath,
 } from "../utils/routes";
@@ -113,7 +115,6 @@ const parseLocationCoords = (obj) => {
 };
 
 const CHECKOUT_STORAGE_KEY = "quick_commerce_checkout_state_v1";
-const RECIPIENT_STORAGE_KEY = "appzeto_checkout_recipient_v1";
 
 const DEFAULT_CURRENT_ADDRESS = {
   type: "Home",
@@ -121,14 +122,6 @@ const DEFAULT_CURRENT_ADDRESS = {
   address: "",
   landmark: "",
   city: "",
-  phone: "",
-};
-
-const DEFAULT_RECIPIENT_DATA = {
-  completeAddress: "",
-  landmark: "",
-  pincode: "",
-  name: "",
   phone: "",
 };
 
@@ -311,6 +304,37 @@ const CheckoutPage = () => {
     }
   }, [isAuthenticated, isFullDataFetched, fetchFullWishlist]);
 
+  // Refresh the saved-address list on every visit — e.g. after adding a new
+  // address via the map-based selector and being routed back here, this page
+  // remounts fresh and must not show a stale cached address list.
+  useEffect(() => {
+    if (isAuthenticated) {
+      refreshAddresses();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
+
+  const [walletBalance, setWalletBalance] = useState(0);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setWalletBalance(0);
+      return;
+    }
+    let mounted = true;
+    userAPI
+      .getWallet()
+      .then((response) => {
+        if (!mounted) return;
+        setWalletBalance(Number(response?.data?.data?.wallet?.balance) || 0);
+      })
+      .catch(() => {
+        if (mounted) setWalletBalance(0);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated]);
+
   const appName = settings?.appName || "App";
   const {
     savedAddresses: locationSavedAddresses,
@@ -318,6 +342,7 @@ const CheckoutPage = () => {
     refreshLocation,
     isFetchingLocation,
     updateLocation,
+    refreshAddresses,
   } = useAppLocation();
   const navigate = useNavigate();
   const categoriesPath = getQuickCategoriesPath();
@@ -349,10 +374,6 @@ const CheckoutPage = () => {
   }, [appliedCoupon]);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isResolvingAddressCoords, setIsResolvingAddressCoords] = useState(false);
-  const [showAddNewAddressForm, setShowAddNewAddressForm] = useState(false);
-  const [newAddressForm, setNewAddressForm] = useState({ label: "Home", name: "", phone: "", address: "", landmark: "", city: "", zipCode: "" });
-  const [newAddressErrors, setNewAddressErrors] = useState({});
-  const [isSavingNewAddress, setIsSavingNewAddress] = useState(false);
   const [isCouponModalOpen, setIsCouponModalOpen] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
@@ -370,16 +391,6 @@ const CheckoutPage = () => {
   const [currentAddress, setCurrentAddress] = useState(
     storedCheckoutState.currentAddress || DEFAULT_CURRENT_ADDRESS,
   );
-  const [isEditAddressOpen, setIsEditAddressOpen] = useState(false);
-  const [editAddressForm, setEditAddressForm] = useState({
-    ...(storedCheckoutState.currentAddress || DEFAULT_CURRENT_ADDRESS),
-  });
-  const [showRecipientForm, setShowRecipientForm] = useState(
-    Boolean(storedCheckoutState.showRecipientForm),
-  );
-  const [recipientData, setRecipientData] = useState(DEFAULT_RECIPIENT_DATA);
-  const [savedRecipient, setSavedRecipient] = useState(null);
-  const [recipientErrors, setRecipientErrors] = useState({});
   const sharedProfileName = String(
     userProfile?.name || user?.name || "",
   ).trim();
@@ -488,6 +499,17 @@ const CheckoutPage = () => {
             sublabel: "UPI / Cards / NetBanking",
           },
         ]),
+    ...(!isAuthenticated
+      ? []
+      : [
+          {
+            id: "wallet",
+            label: "Pay via Wallet",
+            icon: Wallet,
+            sublabel: `Balance: ₹${walletBalance}`,
+            disabled: walletBalance < (pricingPreview?.grandTotal || 0),
+          },
+        ]),
     ...(settings?.codEnabled === false || userProfile?.isCodAllowed === false
       ? []
       : [
@@ -577,18 +599,11 @@ const CheckoutPage = () => {
     ).trim();
 
   // Derived display values for primary delivery card
-  const displayName =
-    savedRecipient?.name ||
-    sharedProfileName ||
-    currentAddress.name ||
-    "Customer";
-  const displayPhone =
-    savedRecipient?.phone || currentAddress.phone || sharedProfilePhone || "";
-  const displayAddress = savedRecipient
-    ? `${savedRecipient.completeAddress}${savedRecipient.landmark ? `, ${savedRecipient.landmark}` : ""}${savedRecipient.pincode ? ` - ${savedRecipient.pincode}` : ""}`
-    : [currentAddress.address, currentAddress.landmark, currentAddress.city]
-        .filter(Boolean)
-        .join(", ");
+  const displayName = sharedProfileName || currentAddress.name || "Customer";
+  const displayPhone = currentAddress.phone || sharedProfilePhone || "";
+  const displayAddress = [currentAddress.address, currentAddress.landmark, currentAddress.city]
+    .filter(Boolean)
+    .join(", ");
 
   const validateAddressZone = async (addressObj) => {
     if (!addressObj) return { inZone: true, distanceKm: 0, coords: null };
@@ -656,9 +671,10 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (!paymentMethods.length) return;
-    const exists = paymentMethods.some((method) => method.id === selectedPayment);
-    if (!exists) {
-      setSelectedPayment(paymentMethods[0].id);
+    const current = paymentMethods.find((method) => method.id === selectedPayment);
+    if (!current || current.disabled) {
+      const firstEnabled = paymentMethods.find((method) => !method.disabled) || paymentMethods[0];
+      setSelectedPayment(firstEnabled.id);
     }
   }, [paymentMethods, selectedPayment]);
 
@@ -675,19 +691,6 @@ const CheckoutPage = () => {
         phone: nextPhone,
       };
     });
-
-    setEditAddressForm((prev) => {
-      const nextName = prev.name || sharedProfileName;
-      const nextPhone = prev.phone || sharedProfilePhone;
-      if (nextName === prev.name && nextPhone === prev.phone) return prev;
-      return {
-        ...prev,
-        name: nextName,
-        phone: nextPhone,
-      };
-    });
-    // Note: recipientData is intentionally NOT pre-filled from profile —
-    // the receiver is a different person, so the user must enter their details manually.
   }, [sharedProfileName, sharedProfilePhone]);
 
   useEffect(() => {
@@ -727,27 +730,6 @@ const CheckoutPage = () => {
   ]);
 
   const buildAddressForOrder = () => {
-    if (savedRecipient) {
-      const recipientAddressParts = parseAddressLineParts(
-        savedRecipient.completeAddress,
-      );
-      return buildNormalizedQuickOrderAddress({
-        label: "Other",
-        name: savedRecipient.name,
-        phone: savedRecipient.phone,
-        street: recipientAddressParts[0] || savedRecipient.completeAddress,
-        additionalDetails:
-          savedRecipient.landmark || recipientAddressParts.slice(1, -1).join(", "),
-        city: currentAddress.city || recipientAddressParts.at(-1) || "NA",
-        state: currentAddress.state || currentLocation?.state || "NA",
-        zipCode: savedRecipient.pincode || currentAddress.pincode || "",
-        completeAddress: savedRecipient.completeAddress,
-        location:
-          currentLocation?.latitude && currentLocation?.longitude
-            ? { lat: currentLocation.latitude, lng: currentLocation.longitude }
-            : undefined,
-      });
-    }
 
     const addrLoc = currentAddress?.location;
     const hasAddrLoc =
@@ -785,57 +767,6 @@ const CheckoutPage = () => {
     });
   };
 
-  const handleSaveRecipient = () => {
-    const errors = {};
-
-    if (!recipientData.completeAddress?.trim()) {
-      errors.completeAddress = "Complete address is required";
-    } else if (recipientData.completeAddress.trim().length < 5) {
-      errors.completeAddress = "Address is too short, please enter a valid address";
-    }
-
-    if (!recipientData.name?.trim()) {
-      errors.name = "Receiver's name is required";
-    } else if (recipientData.name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
-    }
-
-    if (!recipientData.phone) {
-      errors.phone = "Phone number is required";
-    } else if (recipientData.phone.length !== 10) {
-      errors.phone = `Phone number must be exactly 10 digits (entered ${recipientData.phone.length})`;
-    } else if (!/^[6-9]\d{9}$/.test(recipientData.phone)) {
-      errors.phone = "Enter a valid Indian mobile number starting with 6, 7, 8 or 9";
-    }
-
-    if (recipientData.pincode && recipientData.pincode.length !== 6) {
-      errors.pincode = "Pin code must be exactly 6 digits";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      // Show the first error as a toast
-      const firstError = Object.values(errors)[0];
-      showToast(firstError, "error");
-      setRecipientErrors(errors);
-      return;
-    }
-
-    setRecipientErrors({});
-    setSavedRecipient(recipientData);
-    setShowRecipientForm(false);
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem(
-          RECIPIENT_STORAGE_KEY,
-          JSON.stringify(recipientData),
-        );
-      }
-    } catch {
-      // ignore storage errors
-    }
-    showToast("Recipient details saved!", "success");
-  };
-
   const handleMoveToWishlist = (item) => {
     // Normalize the cart item into a proper product object for the wishlist
     const productId = String(item?.productId || item?.itemId || item?.id || item?._id || "").split("::")[0];
@@ -851,18 +782,10 @@ const CheckoutPage = () => {
       mainImage: item.mainImage || item.image || "",
       image: item.image || item.mainImage || "",
     };
-    addToWishlist(productForWishlist);
+    const itemVariant = item.variantId ? { _id: item.variantId, name: item.variantName } : null;
+    addToWishlist(productForWishlist, itemVariant);
     removeFromCart(productId);
     showToast(`${item.name} moved to wishlist`, "success");
-  };
-
-  const handleOpenEditAddress = () => {
-    setEditAddressForm({
-      ...currentAddress,
-      name: currentAddress.name || sharedProfileName || "",
-      phone: currentAddress.phone || sharedProfilePhone || "",
-    });
-    setIsEditAddressOpen(true);
   };
 
   const isValidLatLng = (loc) =>
@@ -997,169 +920,6 @@ const CheckoutPage = () => {
     } finally {
       setIsResolvingAddressCoords(false);
     }
-  };
-
-  const handleSaveNewAddress = async () => {
-    const errors = {};
-    if (!newAddressForm.name.trim()) errors.name = "Name is required";
-    if (!newAddressForm.phone || newAddressForm.phone.length !== 10) errors.phone = "Valid 10-digit phone number is required";
-    if (!newAddressForm.address.trim()) errors.address = "Address is required";
-    if (!newAddressForm.city.trim()) errors.city = "City is required";
-    if (newAddressForm.zipCode && newAddressForm.zipCode.length > 0 && newAddressForm.zipCode.length !== 6) errors.zipCode = "Pincode must be exactly 6 digits";
-
-    if (Object.keys(errors).length > 0) {
-      setNewAddressErrors(errors);
-      showToast(Object.values(errors)[0], "error");
-      return;
-    }
-
-    setNewAddressErrors({});
-    setIsSavingNewAddress(true);
-    try {
-      // Geocode the address for coordinates
-      const query = [newAddressForm.address, newAddressForm.landmark, newAddressForm.city, newAddressForm.zipCode].filter(Boolean).join(", ");
-      let resolvedLoc = null;
-      try {
-        const resp = await customerApi.geocodeAddress(query);
-        const loc = resp.data?.result?.location;
-        if (loc && Number.isFinite(loc.lat) && Number.isFinite(loc.lng)) {
-          resolvedLoc = { lat: loc.lat, lng: loc.lng };
-        }
-      } catch { /* geocoding optional */ }
-
-      // Zone check: block out-of-zone addresses
-      const zoneCheck = await validateAddressZone({
-        address: newAddressForm.address.trim(),
-        landmark: newAddressForm.landmark.trim(),
-        city: newAddressForm.city.trim(),
-        zipCode: newAddressForm.zipCode,
-        location: resolvedLoc,
-      });
-
-      if (!zoneCheck.inZone) {
-        setOutOfZoneDistance(zoneCheck.distanceKm);
-        setShowOutOfZoneDialog(true);
-        setIsSavingNewAddress(false);
-        return;
-      }
-
-      // Save via location context
-      const newAddr = {
-        label: newAddressForm.label,
-        name: newAddressForm.name.trim(),
-        phone: newAddressForm.phone,
-        address: newAddressForm.address.trim(),
-        landmark: newAddressForm.landmark.trim(),
-        city: newAddressForm.city.trim(),
-        zipCode: newAddressForm.zipCode,
-        ...(resolvedLoc ? { location: resolvedLoc } : {}),
-      };
-
-      // Set as current address
-      setCurrentAddress({
-        type: newAddr.label,
-        name: newAddr.name,
-        phone: newAddr.phone,
-        address: newAddr.address,
-        landmark: newAddr.landmark,
-        city: newAddr.city,
-        zipCode: newAddr.zipCode,
-        ...(resolvedLoc ? { location: resolvedLoc } : {}),
-      });
-
-      if (resolvedLoc) {
-        updateLocation(
-          { name: query, time: currentLocation?.time || "12-15 mins", latitude: resolvedLoc.lat, longitude: resolvedLoc.lng },
-          { persist: true, updateSavedHome: false },
-        );
-      }
-
-      showToast("Address saved!", "success");
-      setShowAddNewAddressForm(false);
-      setNewAddressForm({ label: "Home", name: "", phone: "", address: "", landmark: "", city: "", zipCode: "" });
-      setIsAddressModalOpen(false);
-    } catch (e) {
-      showToast(e?.message || "Failed to save address", "error");
-    } finally {
-      setIsSavingNewAddress(false);
-    }
-  };
-
-  const handleSaveEditedAddress = async () => {
-    if (!editAddressForm.address.trim()) {
-      showToast("Please enter your address", "error");
-      return;
-    }
-    if (!editAddressForm.city.trim()) {
-      showToast("Please enter your city", "error");
-      return;
-    }
-    if (editAddressForm.zipCode && editAddressForm.zipCode.length > 0 && editAddressForm.zipCode.length !== 6) {
-      showToast("Pincode must be exactly 6 digits", "error");
-      return;
-    }
-
-    // Best-effort forward geocode so delivery pricing uses the edited address (not stale device coords).
-    let location = null;
-    let placeId = null;
-    let formattedAddress = null;
-    try {
-      const query = [
-        editAddressForm.address,
-        editAddressForm.landmark,
-        editAddressForm.city,
-      ]
-        .filter(Boolean)
-        .join(", ");
-      const resp = await customerApi.geocodeAddress(query);
-      const coords = parseLocationCoords(resp);
-      if (coords) {
-        location = coords;
-        placeId = resp.data?.result?.placeId || resp.data?.data?.placeId || null;
-        formattedAddress = resp.data?.result?.formattedAddress || resp.data?.data?.formattedAddress || null;
-        updateLocation(
-          {
-            name: formattedAddress || query,
-            time: currentLocation?.time || "12-15 mins",
-            city: currentLocation?.city,
-            state: currentLocation?.state,
-            pincode: currentLocation?.pincode,
-            latitude: coords.lat,
-            longitude: coords.lng,
-          },
-          { persist: true, updateSavedHome: false },
-        );
-      }
-    } catch (e) {
-      // If geocoding fails, keep the edited address but warn: distance-based pricing may be inaccurate.
-      showToast(
-        e.response?.data?.message ||
-          "Could not fetch coordinates for this address. Delivery charges may be inaccurate.",
-        "error",
-      );
-    }
-
-    // Zone check: block out-of-zone addresses
-    const zoneCheck = await validateAddressZone({
-      ...editAddressForm,
-      location,
-    });
-
-    if (!zoneCheck.inZone) {
-      setOutOfZoneDistance(zoneCheck.distanceKm);
-      setShowOutOfZoneDialog(true);
-      return;
-    }
-
-    setCurrentAddress({
-      ...editAddressForm,
-      name: editAddressForm.name || currentAddress.name || user?.name || "",
-      ...(location ? { location } : {}),
-      ...(placeId ? { placeId } : {}),
-      ...(formattedAddress ? { formattedAddress } : {}),
-    });
-    setIsEditAddressOpen(false);
-    showToast("Delivery address updated", "success");
   };
 
   const handleUseCurrentLiveLocation = async () => {
@@ -1308,9 +1068,6 @@ const CheckoutPage = () => {
           selectedCoupon,
           manualCode,
           currentAddress,
-          recipientData,
-          savedRecipient,
-          showRecipientForm,
         }),
       );
     } catch {
@@ -1319,13 +1076,10 @@ const CheckoutPage = () => {
   }, [
     currentAddress,
     manualCode,
-    recipientData,
-    savedRecipient,
     selectedCoupon,
     selectedPayment,
     selectedTimeSlot,
     selectedTip,
-    showRecipientForm,
   ]);
 
   useEffect(() => {
@@ -1415,7 +1169,7 @@ const CheckoutPage = () => {
       const orderData = {
         items: getCheckoutCartItemsForSync(),
         address: buildAddressForOrder(),
-        paymentMode: selectedPayment === "online" ? "ONLINE" : "COD",
+        paymentMode: selectedPayment === "online" ? "ONLINE" : selectedPayment === "wallet" ? "WALLET" : "COD",
         discountTotal: discountAmount,
         taxTotal: gstAmount,
         platformFee: platformFee,
@@ -1451,7 +1205,6 @@ const CheckoutPage = () => {
           try {
             if (typeof window !== "undefined") {
               window.localStorage.removeItem(CHECKOUT_STORAGE_KEY);
-              window.localStorage.removeItem(RECIPIENT_STORAGE_KEY);
             }
           } catch {
             // ignore storage errors
@@ -1753,194 +1506,6 @@ const CheckoutPage = () => {
 
             {/* Delivery Address Section - New UI */}
             <motion.div className="bg-white dark:bg-card rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 transition-colors">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-xs text-slate-500 font-medium">
-                  Ordering for someone else?
-                </span>
-                <button
-                  onClick={() => setShowRecipientForm(!showRecipientForm)}
-                  className="text-[#FE5502] text-xs font-bold hover:underline">
-                  {showRecipientForm
-                    ? "Close"
-                    : savedRecipient
-                      ? "Change details"
-                      : "Add details"}
-                </button>
-              </div>
-
-              {savedRecipient && !showRecipientForm && (
-                <div className="mb-4 p-4 bg-orange-50 border border-orange-100 rounded-2xl flex items-start justify-between">
-                  <div className="flex gap-3">
-                    <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-[#FE5502] flex-shrink-0">
-                      <Contact2 size={18} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-slate-800">
-                        {savedRecipient.name}
-                      </p>
-                      <p className="text-xs text-[#FE5502] font-bold mb-1">
-                        {savedRecipient.phone}
-                      </p>
-                      <p className="text-xs text-slate-500 leading-tight">
-                        {savedRecipient.completeAddress}
-                        {savedRecipient.landmark &&
-                          `, ${savedRecipient.landmark}`}
-                        {savedRecipient.pincode &&
-                          ` - ${savedRecipient.pincode}`}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSavedRecipient(null);
-                      try {
-                        if (typeof window !== "undefined") {
-                          window.localStorage.removeItem(RECIPIENT_STORAGE_KEY);
-                        }
-                      } catch {
-                        // ignore storage errors
-                      }
-                    }}
-                    className="text-red-500 text-xs font-bold hover:underline">
-                    Remove
-                  </button>
-                </div>
-              )}
-
-              <AnimatePresence>
-                {showRecipientForm && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="overflow-hidden mb-4">
-                    <div className="bg-[#f8f9fb] dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-white/5 space-y-4">
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-800 mb-3">
-                          Enter delivery address details
-                        </h4>
-                        <div className="space-y-3">
-                          <div>
-                            <Input
-                              placeholder="Enter complete address*"
-                              value={recipientData.completeAddress}
-                              onChange={(e) => {
-                                setRecipientData({ ...recipientData, completeAddress: e.target.value });
-                                if (recipientErrors.completeAddress) setRecipientErrors((prev) => ({ ...prev, completeAddress: "" }));
-                              }}
-                              className={`h-12 rounded-xl text-sm ${recipientErrors.completeAddress ? "border-rose-400 focus:ring-rose-400 focus:border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                            />
-                            {recipientErrors.completeAddress && (
-                              <p className="text-xs text-rose-500 mt-1 ml-1">{recipientErrors.completeAddress}</p>
-                            )}
-                          </div>
-                          <Input
-                            placeholder="Find landmark (optional)"
-                            value={recipientData.landmark}
-                            onChange={(e) => setRecipientData({ ...recipientData, landmark: e.target.value })}
-                            className="h-12 rounded-xl border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502] text-sm"
-                          />
-                          <div>
-                            <Input
-                              placeholder="Enter pin code (optional)"
-                              value={recipientData.pincode}
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={6}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-                                setRecipientData({ ...recipientData, pincode: val });
-                                if (recipientErrors.pincode) setRecipientErrors((prev) => ({ ...prev, pincode: "" }));
-                              }}
-                              className={`h-12 rounded-xl text-sm ${recipientErrors.pincode ? "border-rose-400 focus:ring-rose-400 focus:border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                            />
-                            {recipientErrors.pincode && (
-                              <p className="text-xs text-rose-500 mt-1 ml-1">{recipientErrors.pincode}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-bold text-slate-800 mb-1">
-                          Enter receiver details
-                        </h4>
-                        <p className="text-[10px] text-slate-400 mb-3 font-medium">
-                          We'll contact receiver to get the exact delivery
-                          address
-                        </p>
-                        <div className="space-y-3">
-                          <div>
-                            <Input
-                              placeholder="Receiver's name*"
-                              value={recipientData.name}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/[^a-zA-Z\u00C0-\u024F\s]/g, "");
-                                setRecipientData({ ...recipientData, name: val });
-                                if (recipientErrors.name) setRecipientErrors((prev) => ({ ...prev, name: "" }));
-                              }}
-                              className={`h-12 rounded-xl text-sm ${recipientErrors.name ? "border-rose-400 focus:ring-rose-400 focus:border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                            />
-                            {recipientErrors.name && (
-                              <p className="text-xs text-rose-500 mt-1 ml-1">{recipientErrors.name}</p>
-                            )}
-                          </div>
-                          <div>
-                            <div className="relative">
-                              <Input
-                                placeholder="Receiver's phone number*"
-                                value={recipientData.phone}
-                                type="tel"
-                                inputMode="numeric"
-                                maxLength={10}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                                  setRecipientData({ ...recipientData, phone: val });
-                                  if (recipientErrors.phone) setRecipientErrors((prev) => ({ ...prev, phone: "" }));
-                                }}
-                                className={`h-12 rounded-xl text-sm pr-10 ${recipientErrors.phone ? "border-rose-400 focus:ring-rose-400 focus:border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                              />
-                              <button
-                                type="button"
-                                title="Pick from contacts"
-                                onClick={async () => {
-                                  if ("contacts" in navigator && "ContactsManager" in window) {
-                                    try {
-                                      const contacts = await navigator.contacts.select(["tel"], { multiple: false });
-                                      if (contacts?.length && contacts[0]?.tel?.length) {
-                                        const raw = contacts[0].tel[0].replace(/\D/g, "").slice(-10);
-                                        setRecipientData((prev) => ({ ...prev, phone: raw }));
-                                        if (recipientErrors.phone) setRecipientErrors((prev) => ({ ...prev, phone: "" }));
-                                      }
-                                    } catch {
-                                      // user cancelled or permission denied
-                                    }
-                                  } else {
-                                    document.querySelector("input[placeholder=\"Receiver's phone number*\"]")?.focus();
-                                  }
-                                }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#FE5502] transition-colors cursor-pointer p-1 rounded-lg hover:bg-slate-100"
-                              >
-                                <Contact2 size={18} />
-                              </button>
-                            </div>
-                            {recipientErrors.phone && (
-                              <p className="text-xs text-rose-500 mt-1 ml-1">{recipientErrors.phone}</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={handleSaveRecipient}
-                        className="w-full h-12 bg-[#2d8618] hover:bg-[#236b11] text-white font-bold rounded-xl">
-                        Save address
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
               <div className="mb-3">
                 <h3 className="font-black text-slate-800 text-base">
                   Delivery Address
@@ -1966,14 +1531,6 @@ const CheckoutPage = () => {
                         {displayName}
                       </h4>
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditAddress();
-                          }}
-                          className="text-slate-500 text-xs font-bold hover:underline">
-                          Edit
-                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -2242,9 +1799,12 @@ const CheckoutPage = () => {
                   return (
                     <button
                       key={method.id}
+                      disabled={method.disabled}
                       onClick={() => setSelectedPayment(method.id)}
                       className={`w-full p-3 rounded-xl border-2 transition-all flex items-center gap-3 ${
-                        selectedPayment === method.id
+                        method.disabled
+                          ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60"
+                          : selectedPayment === method.id
                           ? "border-[#FE5502] bg-orange-50"
                           : "border-slate-200 bg-white hover:border-slate-300"
                       }`}>
@@ -2270,6 +1830,7 @@ const CheckoutPage = () => {
                         </p>
                         <p className="text-xs text-slate-500">
                           {method.sublabel}
+                          {method.disabled ? " · Insufficient balance" : ""}
                         </p>
                       </div>
                       <div
@@ -2407,7 +1968,7 @@ const CheckoutPage = () => {
 
                   {/* Desktop Integrated Slide to Pay / Place Order */}
                   <div className="hidden lg:block">
-                    {selectedPayment === "cash" || isCurrentAddressOutOfZone ? (
+                    {selectedPayment === "cash" || selectedPayment === "wallet" || isCurrentAddressOutOfZone ? (
                       <button
                         onClick={handlePlaceOrder}
                         disabled={isPlacingOrder || isPreviewLoading || !pricingPreview}
@@ -2434,9 +1995,9 @@ const CheckoutPage = () => {
       </div>
 
       {/* Sticky Footer - Mobile Only */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-slate-200 dark:border-white/10 px-4 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-50 rounded-t-3xl transition-colors">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-slate-200 dark:border-white/10 px-4 py-4 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-[510] rounded-t-3xl transition-colors">
         <div className="max-w-4xl mx-auto">
-          {selectedPayment === "cash" || isCurrentAddressOutOfZone ? (
+          {selectedPayment === "cash" || selectedPayment === "wallet" || isCurrentAddressOutOfZone ? (
             <button
               onClick={handlePlaceOrder}
               disabled={isPlacingOrder || isPreviewLoading || !pricingPreview}
@@ -2467,7 +2028,7 @@ const CheckoutPage = () => {
             {/* Backdrop */}
             <div
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => { setIsAddressModalOpen(false); setShowAddNewAddressForm(false); setNewAddressErrors({}); }}
+              onClick={() => setIsAddressModalOpen(false)}
             />
             {/* Modal */}
             <motion.div
@@ -2484,7 +2045,7 @@ const CheckoutPage = () => {
                   <p className="text-xs text-slate-500 mt-0.5">Choose where you want your order delivered</p>
                 </div>
                 <button
-                  onClick={() => { setIsAddressModalOpen(false); setShowAddNewAddressForm(false); setNewAddressErrors({}); }}
+                  onClick={() => setIsAddressModalOpen(false)}
                   className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors flex-shrink-0"
                 >
                   <X size={16} />
@@ -2528,245 +2089,20 @@ const CheckoutPage = () => {
 
               {/* Footer */}
               <div className="px-4 pb-5 pt-3 border-t border-slate-100 flex-shrink-0">
-                {!showAddNewAddressForm ? (
-                  <Button
-                    variant="outline"
-                    className="w-full h-12 border-2 border-[#FE5502] text-[#FE5502] hover:bg-orange-50 rounded-2xl font-bold"
-                    onClick={() => setShowAddNewAddressForm(true)}
-                  >
-                    <Plus size={16} className="mr-2" /> Add New Address
-                  </Button>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-bold text-slate-800">New Address</h3>
-                      <button
-                        onClick={() => { setShowAddNewAddressForm(false); setNewAddressErrors({}); }}
-                        className="text-xs text-slate-400 hover:text-slate-600"
-                      >Cancel</button>
-                    </div>
-
-                    {/* Label selector */}
-                    <div className="flex gap-2">
-                      {["Home", "Office", "Other"].map((lbl) => (
-                        <button
-                          key={lbl}
-                          type="button"
-                          onClick={() => setNewAddressForm((p) => ({ ...p, label: lbl }))}
-                          className={`flex-1 py-1.5 rounded-xl text-xs font-bold border-2 transition-all ${newAddressForm.label === lbl ? "border-[#FE5502] bg-orange-50 text-[#FE5502]" : "border-slate-200 text-slate-500"}`}
-                        >{lbl}</button>
-                      ))}
-                    </div>
-
-                    {/* Name */}
-                    <div>
-                      <Input
-                        placeholder="Full name*"
-                        value={newAddressForm.name}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^a-zA-Z\u00C0-\u024F\s]/g, "");
-                          setNewAddressForm((p) => ({ ...p, name: val }));
-                          if (newAddressErrors.name) setNewAddressErrors((p) => ({ ...p, name: "" }));
-                        }}
-                        className={`h-10 rounded-xl text-sm ${newAddressErrors.name ? "border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                      />
-                      {newAddressErrors.name && <p className="text-xs text-rose-500 mt-0.5 ml-1">{newAddressErrors.name}</p>}
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                      <Input
-                        placeholder="Phone number*"
-                        value={newAddressForm.phone}
-                        type="tel"
-                        inputMode="numeric"
-                        maxLength={10}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                          setNewAddressForm((p) => ({ ...p, phone: val }));
-                          if (newAddressErrors.phone) setNewAddressErrors((p) => ({ ...p, phone: "" }));
-                        }}
-                        className={`h-10 rounded-xl text-sm ${newAddressErrors.phone ? "border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                      />
-                      {newAddressErrors.phone && <p className="text-xs text-rose-500 mt-0.5 ml-1">{newAddressErrors.phone}</p>}
-                    </div>
-
-                    {/* Address */}
-                    <div>
-                      <Input
-                        placeholder="House, street, area*"
-                        value={newAddressForm.address}
-                        onChange={(e) => {
-                          setNewAddressForm((p) => ({ ...p, address: e.target.value }));
-                          if (newAddressErrors.address) setNewAddressErrors((p) => ({ ...p, address: "" }));
-                        }}
-                        className={`h-10 rounded-xl text-sm ${newAddressErrors.address ? "border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                      />
-                      {newAddressErrors.address && <p className="text-xs text-rose-500 mt-0.5 ml-1">{newAddressErrors.address}</p>}
-                    </div>
-
-                    {/* Landmark */}
-                    <Input
-                      placeholder="Landmark (optional)"
-                      value={newAddressForm.landmark}
-                      onChange={(e) => setNewAddressForm((p) => ({ ...p, landmark: e.target.value }))}
-                      className="h-10 rounded-xl border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502] text-sm"
-                    />
-
-                    {/* City + Pincode */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Input
-                          placeholder="City*"
-                          value={newAddressForm.city}
-                          onChange={(e) => {
-                            setNewAddressForm((p) => ({ ...p, city: e.target.value }));
-                            if (newAddressErrors.city) setNewAddressErrors((p) => ({ ...p, city: "" }));
-                          }}
-                          className={`h-10 rounded-xl text-sm ${newAddressErrors.city ? "border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                        />
-                        {newAddressErrors.city && <p className="text-xs text-rose-500 mt-0.5 ml-1">{newAddressErrors.city}</p>}
-                      </div>
-                      <div>
-                        <Input
-                          placeholder="Pincode"
-                          value={newAddressForm.zipCode}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={6}
-                          onChange={(e) => {
-                            const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-                            setNewAddressForm((p) => ({ ...p, zipCode: val }));
-                            if (newAddressErrors.zipCode) setNewAddressErrors((p) => ({ ...p, zipCode: "" }));
-                          }}
-                          className={`h-10 rounded-xl text-sm ${newAddressErrors.zipCode ? "border-rose-400" : "border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"}`}
-                        />
-                        {newAddressErrors.zipCode && <p className="text-xs text-rose-500 mt-0.5 ml-1">{newAddressErrors.zipCode}</p>}
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={handleSaveNewAddress}
-                      disabled={isSavingNewAddress}
-                      className="w-full h-11 rounded-2xl bg-[#FE5502] hover:bg-[#ea580c] text-white font-bold"
-                    >
-                      {isSavingNewAddress ? "Saving..." : "Save Address"}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Edit Current Address Modal */}
-      <AnimatePresence>
-        {isEditAddressOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[600] flex items-end sm:items-center justify-center"
-          >
-            <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              onClick={() => setIsEditAddressOpen(false)}
-            />
-            <motion.div
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="relative z-10 w-full max-w-md bg-white rounded-t-[28px] sm:rounded-[28px] shadow-2xl"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-slate-100">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">Edit Delivery Address</h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Update your current delivery address</p>
-                </div>
-                <button
-                  onClick={() => setIsEditAddressOpen(false)}
-                  className="h-8 w-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Form */}
-              <div className="px-5 py-4 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="edit-address" className="text-xs font-semibold text-slate-700">Address</Label>
-                  <Input
-                    id="edit-address"
-                    value={editAddressForm.address}
-                    onChange={(e) => setEditAddressForm((prev) => ({ ...prev, address: e.target.value }))}
-                    className="h-11 rounded-xl border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"
-                    placeholder="House, street, area"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="edit-landmark" className="text-xs font-semibold text-slate-700">Nearest Landmark (optional)</Label>
-                  <Input
-                    id="edit-landmark"
-                    value={editAddressForm.landmark || ""}
-                    onChange={(e) => setEditAddressForm((prev) => ({ ...prev, landmark: e.target.value }))}
-                    className="h-11 rounded-xl border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"
-                    placeholder="e.g. Near City Mall, Opp. Temple"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="edit-city" className="text-xs font-semibold text-slate-700">City</Label>
-                    <Input
-                      id="edit-city"
-                      value={editAddressForm.city || ""}
-                      onChange={(e) => setEditAddressForm((prev) => ({ ...prev, city: e.target.value }))}
-                      className="h-11 rounded-xl border-slate-200 focus:ring-[#FE5502] focus:border-[#FE5502]"
-                      placeholder="City"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="edit-pincode" className="text-xs font-semibold text-slate-700">Pincode</Label>
-                    <Input
-                      id="edit-pincode"
-                      value={editAddressForm.zipCode || ""}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={6}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-                        setEditAddressForm((prev) => ({ ...prev, zipCode: val }));
-                      }}
-                      className={`h-11 rounded-xl focus:ring-[#FE5502] focus:border-[#FE5502] ${
-                        editAddressForm.zipCode && editAddressForm.zipCode.length > 0 && editAddressForm.zipCode.length !== 6
-                          ? "border-rose-400"
-                          : "border-slate-200"
-                      }`}
-                      placeholder="6-digit code"
-                    />
-                    {editAddressForm.zipCode && editAddressForm.zipCode.length > 0 && editAddressForm.zipCode.length !== 6 && (
-                      <p className="text-xs text-rose-500 mt-1">Must be 6 digits</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="px-5 pb-6 pt-2 flex gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => setIsEditAddressOpen(false)}
-                  className="flex-1 h-11 rounded-2xl border-slate-200 text-slate-600 hover:bg-slate-50"
+                  className="w-full h-12 border-2 border-[#FE5502] text-[#FE5502] hover:bg-orange-50 rounded-2xl font-bold"
+                  onClick={() => {
+                    setIsAddressModalOpen(false);
+                    // Same map-based add/select flow used across the whole app
+                    // (Food cart included) — it saves to the real profile
+                    // address book and returns straight to this checkout page.
+                    navigate("/cart/address-selector", {
+                      state: { from: getQuickCheckoutPath() },
+                    });
+                  }}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveEditedAddress}
-                  className="flex-1 h-11 rounded-2xl bg-[#FE5502] hover:bg-[#ea580c] text-white font-bold"
-                >
-                  Save changes
+                  <Plus size={16} className="mr-2" /> Add New Address
                 </Button>
               </div>
             </motion.div>

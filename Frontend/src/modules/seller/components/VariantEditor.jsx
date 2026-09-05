@@ -17,6 +17,7 @@ import {
 export const newVariant = () => ({
   id: `v-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   name: "",
+  costPrice: "",
   price: "",
   salePrice: "",
   stock: "",
@@ -76,7 +77,7 @@ const VariantEditor = ({ variants, onChange }) => {
           <h4 className="text-sm font-bold text-slate-900">Product Variants</h4>
           <p className="text-xs text-slate-600 font-medium">
             Add up to {MAX_PRODUCT_VARIANTS} sizes, colors or weights. Each variant needs its own
-            price, stock and {MIN_VARIANT_IMAGES}-{MAX_VARIANT_IMAGES} photos.
+            cost price (for stock valuation), selling price, stock and {MIN_VARIANT_IMAGES}-{MAX_VARIANT_IMAGES} photos.
           </p>
         </div>
         <button
@@ -97,21 +98,96 @@ const VariantEditor = ({ variants, onChange }) => {
           const imageCount = countVariantMedia(variant);
           const belowMin = imageCount < MIN_VARIANT_IMAGES;
 
+          const priceNum = Number(variant.price);
+          const hasPrice = variant.price !== "" && variant.price != null;
+          const hasPriceError = hasPrice && (isNaN(priceNum) || priceNum <= 0);
+
+          const hasCost = variant.costPrice !== "" && variant.costPrice != null;
+          const costNum = Number(variant.costPrice);
+          const hasCostNegativeError = hasCost && (isNaN(costNum) || costNum < 0);
+          const hasCostExceedsPriceError = hasCost && costNum > 0 && hasPrice && priceNum > 0 && costNum > priceNum;
+
+          const hasSale = variant.salePrice !== "" && variant.salePrice != null;
+          const saleNum = Number(variant.salePrice);
+          const hasSaleNegativeError = hasSale && (isNaN(saleNum) || saleNum <= 0);
+          const hasSaleExceedsPriceError = hasSale && priceNum > 0 && saleNum > priceNum;
+          const hasSaleLessThanCostError = hasSale && saleNum > 0 && hasCost && costNum > 0 && saleNum < costNum;
+          const hasCostExceedsSaleError = hasCost && costNum > 0 && hasSale && saleNum > 0 && costNum > saleNum;
+
+          const hasPriceLessThanCostError = hasPrice && priceNum > 0 && hasCost && costNum > 0 && priceNum < costNum;
+          const hasPriceLessThanSaleError = hasPrice && priceNum > 0 && hasSale && saleNum > 0 && priceNum < saleNum;
+
+          const hasAnyCostError = hasCostNegativeError || hasCostExceedsPriceError || hasCostExceedsSaleError;
+          const hasAnyPriceError = hasPriceError || hasPriceLessThanCostError || hasPriceLessThanSaleError;
+          const hasAnySaleError = hasSaleNegativeError || hasSaleExceedsPriceError || hasSaleLessThanCostError;
+
+          const isPricingValid =
+            hasPrice &&
+            priceNum > 0 &&
+            !hasAnyPriceError &&
+            !hasAnyCostError &&
+            !hasAnySaleError;
+
+          const hasDiscount = hasSale && priceNum > 0 && saleNum > 0 && saleNum < priceNum && !hasSaleExceedsPriceError;
+          const discountPct = hasDiscount ? Math.round(((priceNum - saleNum) / priceNum) * 100) : 0;
+          const discountAmount = hasDiscount ? priceNum - saleNum : 0;
+
+          const effSellingPrice = hasSale && saleNum > 0 ? saleNum : priceNum;
+          const hasProfit = isPricingValid && hasCost && costNum > 0 && effSellingPrice >= costNum;
+          const profitPerUnit = hasProfit ? effSellingPrice - costNum : 0;
+          const marginPct = hasProfit && effSellingPrice > 0 ? Math.round((profitPerUnit / effSellingPrice) * 100) : 0;
+
           return (
             <div
               key={variant.id}
               className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                 <div className="col-span-12 md:col-span-3 space-y-1">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
-                    Variant Name <span className="text-rose-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
+                      Variant Name <span className="text-rose-500">*</span>
+                    </label>
+                    {variant.sku && (
+                      <span className="text-[9px] font-mono text-slate-500 bg-slate-200/70 px-1.5 py-0.5 rounded">
+                        {variant.sku}
+                      </span>
+                    )}
+                  </div>
                   <input
                     value={variant.name}
                     onChange={(e) => updateVariant(index, { name: e.target.value })}
                     placeholder="e.g. 1kg Bag"
                     className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-xl text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/10"
                   />
+                </div>
+                <div className="col-span-6 md:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-amber-800 uppercase tracking-widest ml-1">
+                    Cost Price (₹)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={variant.costPrice ?? ""}
+                    onChange={(e) => updateVariant(index, { costPrice: e.target.value })}
+                    placeholder="350"
+                    className={`w-full px-3 py-2 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 ${hasAnyCostError ? "bg-red-50 ring-2 ring-red-400 text-red-600 focus:ring-red-400" : "bg-amber-50/60 ring-1 ring-amber-200/80 text-amber-950 focus:ring-amber-300"}`}
+                  />
+                  {hasCostNegativeError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">Must be ≥ 0</p>
+                  )}
+                  {!hasCostNegativeError && hasCostExceedsSaleError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                      Cannot exceed Sale Price (₹{variant.salePrice})
+                    </p>
+                  )}
+                  {!hasCostNegativeError && !hasCostExceedsSaleError && hasCostExceedsPriceError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                      Cannot exceed Regular Price (₹{variant.price})
+                    </p>
+                  )}
+                  {!hasAnyCostError && (
+                    <p className="text-[10px] font-medium text-amber-700/80 leading-tight">Stock valuation</p>
+                  )}
                 </div>
                 <div className="col-span-6 md:col-span-2 space-y-1">
                   <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
@@ -123,21 +199,62 @@ const VariantEditor = ({ variants, onChange }) => {
                     value={variant.price}
                     onChange={(e) => updateVariant(index, { price: e.target.value })}
                     placeholder="500"
-                    className={`w-full px-3 py-2 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 ${variant.price && Number(variant.price) < 1 ? "bg-red-50 ring-1 ring-red-300 text-red-600 focus:ring-red-300" : "bg-white ring-1 ring-slate-200 focus:ring-primary/10"}`}
+                    className={`w-full px-3 py-2 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 ${hasAnyPriceError ? "bg-red-50 ring-2 ring-red-400 text-red-600 focus:ring-red-400" : "bg-white ring-1 ring-slate-200 focus:ring-primary/10"}`}
                   />
+                  {hasPriceError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">Must be &gt; 0</p>
+                  )}
+                  {!hasPriceError && hasPriceLessThanCostError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                      Must be ≥ Cost Price (₹{variant.costPrice})
+                    </p>
+                  )}
+                  {!hasPriceError && !hasPriceLessThanCostError && hasPriceLessThanSaleError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                      Must be ≥ Sale Price (₹{variant.salePrice})
+                    </p>
+                  )}
+                  {!hasAnyPriceError && (
+                    <p className="text-[10px] font-medium text-slate-400 leading-tight">MRP / Regular price</p>
+                  )}
                 </div>
                 <div className="col-span-6 md:col-span-2 space-y-1">
-                  <label className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest ml-1">
-                    Sale Price
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-[8px] font-bold text-emerald-600 uppercase tracking-widest ml-1">
+                      Sale Price (₹)
+                    </label>
+                    {hasDiscount && (
+                      <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.2 rounded">
+                        {discountPct}% off
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="number"
                     min="1"
                     value={variant.salePrice}
                     onChange={(e) => updateVariant(index, { salePrice: e.target.value })}
                     placeholder="450"
-                    className={`w-full px-3 py-2 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 ${variant.salePrice && Number(variant.salePrice) < 1 ? "bg-red-50 ring-1 ring-red-300 text-red-600 focus:ring-red-300" : "bg-emerald-50 ring-1 ring-emerald-100 text-emerald-700 focus:ring-emerald-200"}`}
+                    className={`w-full px-3 py-2 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 ${hasAnySaleError ? "bg-red-50 ring-2 ring-red-400 text-red-600 focus:ring-red-400" : "bg-emerald-50 ring-1 ring-emerald-100 text-emerald-700 focus:ring-emerald-200"}`}
                   />
+                  {hasSaleExceedsPriceError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                      Cannot exceed Regular Price (₹{variant.price})
+                    </p>
+                  )}
+                  {!hasSaleExceedsPriceError && hasSaleLessThanCostError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">
+                      Cannot be less than Cost Price (₹{variant.costPrice})
+                    </p>
+                  )}
+                  {!hasSaleExceedsPriceError && !hasSaleLessThanCostError && hasSaleNegativeError && (
+                    <p className="text-[10px] font-semibold text-rose-500 leading-tight">Must be &gt; 0</p>
+                  )}
+                  {!hasAnySaleError && (
+                    <p className="text-[10px] font-medium text-emerald-600/80 leading-tight">
+                      {hasDiscount ? `Save ₹${discountAmount}` : "Offer / Discounted price"}
+                    </p>
+                  )}
                 </div>
                 <div className="col-span-6 md:col-span-2 space-y-1">
                   <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
@@ -152,18 +269,7 @@ const VariantEditor = ({ variants, onChange }) => {
                     className="w-full px-3 py-2 bg-white ring-1 ring-slate-200 border-none rounded-xl text-xs font-bold outline-none focus:ring-2 focus:ring-primary/10"
                   />
                 </div>
-                <div className="col-span-5 md:col-span-2 space-y-1">
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-widest ml-1">
-                    Product Code
-                  </label>
-                  <input
-                    value={variant.sku}
-                    readOnly
-                    placeholder="AUTO-GENERATED"
-                    className="w-full px-3 py-2 bg-slate-100 ring-1 ring-slate-200 border-none rounded-xl text-xs font-mono font-bold text-slate-400 cursor-not-allowed outline-none"
-                  />
-                </div>
-                <div className="col-span-1 flex justify-end pb-1">
+                <div className="col-span-12 md:col-span-1 flex justify-end pt-5">
                   <button
                     type="button"
                     onClick={() => removeVariant(index)}
@@ -172,6 +278,17 @@ const VariantEditor = ({ variants, onChange }) => {
                     <HiOutlineTrash className="h-4 w-4" />
                   </button>
                 </div>
+
+                {hasProfit && (
+                  <div className="col-span-12 flex flex-wrap items-center gap-2 px-3 py-1.5 bg-emerald-50/70 border border-emerald-200/60 rounded-xl text-emerald-800 text-[11px] font-bold">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    <span>Margin Preview:</span>
+                    <span className="font-extrabold text-emerald-900">₹{profitPerUnit} profit/unit ({marginPct}% margin)</span>
+                    <span className="text-slate-500 font-normal ml-auto text-[10px]">
+                      Cost ₹{costNum} → Sell ₹{effSellingPrice} {hasDiscount ? `(MRP ₹${priceNum})` : ""}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">

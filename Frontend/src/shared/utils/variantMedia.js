@@ -99,8 +99,34 @@ export const validateVariantsForSubmit = (variants = []) => {
   for (const variant of list) {
     const name = String(variant?.name || "").trim();
     if (!name) return "Every variant needs a name";
-    if (!(Number(variant?.price) > 0)) {
-      return `"${name}" needs a price greater than 0`;
+    const priceNum = Number(variant?.price);
+    if (!(priceNum > 0)) {
+      return `"${name}" needs a regular price greater than 0`;
+    }
+
+    const hasCost = variant?.costPrice !== "" && variant?.costPrice != null;
+    const costNum = hasCost ? Number(variant.costPrice) : 0;
+    if (hasCost) {
+      if (isNaN(costNum) || costNum < 0) {
+        return `"${name}": Cost price cannot be negative`;
+      }
+      if (costNum > priceNum) {
+        return `"${name}": Cost price (₹${costNum}) cannot be greater than regular price (₹${priceNum})`;
+      }
+    }
+
+    const hasSale = variant?.salePrice !== "" && variant?.salePrice != null;
+    if (hasSale) {
+      const saleNum = Number(variant.salePrice);
+      if (isNaN(saleNum) || saleNum <= 0) {
+        return `"${name}": Sale price must be greater than 0`;
+      }
+      if (saleNum > priceNum) {
+        return `"${name}": Sale price (₹${saleNum}) cannot be greater than regular price (₹${priceNum})`;
+      }
+      if (hasCost && costNum > 0 && saleNum < costNum) {
+        return `"${name}": Sale price (₹${saleNum}) cannot be less than cost price (₹${costNum})`;
+      }
     }
     if (variant?.stock === "" || variant?.stock == null || Number(variant.stock) < 0) {
       return `"${name}" needs a stock quantity`;

@@ -444,7 +444,7 @@ export default function Profile() {
 
   return (
     <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] pt-0 mt-0">
-      <div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-5xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 pt-0 mt-0 sm:pt-6 md:pt-8 lg:pt-10 pb-20 sm:pb-24">
+      <div className="max-w-md md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 sm:px-6 md:px-8 lg:px-8 pt-0 mt-0 sm:pt-6 md:pt-6 pb-20 sm:pb-24">
         {/* Header: Back Arrow */}
         <div className="flex items-center mb-0 mt-0 sm:mb-4">
           <Link to={backPath}>
@@ -455,59 +455,64 @@ export default function Profile() {
         </div>
 
         {/* Profile Info Card */}
-        <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl py-0 pt-1 shadow-sm mb-0 border-0 dark:border-gray-800 overflow-hidden">
-          <CardContent className="p-4 py-0 pt-2">
-            <div className="flex items-start gap-4 mb-4">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                transition={{ duration: 0.3, type: "spring", stiffness: 300 }}>
-                <Avatar className="h-16 w-16 bg-primary-orange/10 border-0">
-                  {userProfile?.profileImage && (
-                    <AvatarImage
-                      src={
-                        typeof userProfile.profileImage === "string"
-                          ? userProfile.profileImage.trim() || undefined
-                          : userProfile.profileImage?.url || undefined
-                      }
-                      alt={displayName}
-                    />
+        <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl py-0 pt-1 md:py-4 shadow-xs md:shadow-sm mb-0 md:mb-4 border-0 dark:border-gray-800 overflow-hidden">
+          <CardContent className="p-4 py-0 pt-2 md:p-6 md:py-2">
+            <div className="flex items-start md:items-center justify-between gap-4 mb-4 md:mb-0">
+              <div className="flex items-start md:items-center gap-4">
+                <motion.div
+                  whileHover={{ scale: 1.05, rotate: 3 }}
+                  transition={{ duration: 0.3, type: "spring", stiffness: 300 }}>
+                  <Avatar className="h-16 w-16 md:h-20 md:w-20 bg-primary-orange/10 border-0">
+                    {userProfile?.profileImage && (
+                      <AvatarImage
+                        src={
+                          typeof userProfile.profileImage === "string"
+                            ? userProfile.profileImage.trim() || undefined
+                            : userProfile.profileImage?.url || undefined
+                        }
+                        alt={displayName}
+                      />
+                    )}
+                    <AvatarFallback className="bg-primary-orange/10 text-primary-orange text-2xl md:text-3xl font-semibold">
+                      {avatarInitial}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+                <div className="flex-1 pt-1 md:pt-0">
+                  <h2 className="text-xl md:text-2xl font-bold text-black dark:text-white mb-0.5">
+                    {displayName}
+                  </h2>
+                  {hasValidEmail && (
+                    <p className="text-sm text-black dark:text-gray-300 mb-0.5">
+                      {userProfile.email}
+                    </p>
                   )}
-                  <AvatarFallback className="bg-primary-orange/10 text-primary-orange text-2xl font-semibold">
-                    {avatarInitial}
-                  </AvatarFallback>
-                </Avatar>
-              </motion.div>
-              <div className="flex-1 pt-1">
-                <h2 className="text-xl font-bold text-black dark:text-white mb-1">
-                  {displayName}
-                </h2>
-                {hasValidEmail && (
-                  <p className="text-sm text-black dark:text-gray-300 mb-1">
-                    {userProfile.email}
-                  </p>
-                )}
-                {userProfile?.phone && (
-                  <p
-                    className={`text-sm ${hasValidEmail ? "text-gray-600 dark:text-gray-400" : "text-black dark:text-white"} mb-3`}>
-                    {userProfile.phone}
-                  </p>
-                )}
-                {!hasValidEmail && !userProfile?.phone && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                    Not available
-                  </p>
-                )}
-                {/* <Link to="/user/profile/activity" className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                  View activity
-                  <ChevronRight className="h-4 w-4" />
-                </Link> */}
+                  {userProfile?.phone && (
+                    <p
+                      className={`text-sm ${hasValidEmail ? "text-gray-600 dark:text-gray-400" : "text-black dark:text-white"} mb-1 md:mb-0`}>
+                      {userProfile.phone}
+                    </p>
+                  )}
+                  {!hasValidEmail && !userProfile?.phone && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 md:mb-0">
+                      Not available
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="hidden md:flex items-center gap-3">
+                <Link to={profileEditPath}>
+                  <Button variant="outline" size="sm" className="rounded-xl border-[#FE5502] text-[#FE5502] hover:bg-[#FE5502] hover:text-white transition-colors">
+                    Edit Profile
+                  </Button>
+                </Link>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Account Options */}
-        <div className="space-y-2 mb-3 mt-3">
+        <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3 mb-4 mt-3">
           <Link to={profileEditPath} className="block">
             <motion.div
               whileHover={{ x: 4, scale: 1.01 }}
@@ -788,20 +793,20 @@ export default function Profile() {
         </div>
 
         {/* Food Section */}
-        <div className="mb-3">
+        <div className="mb-4">
           <div className="flex items-center gap-2 mb-2 px-1">
             <div className="w-1 h-4 bg-[#FE5502] rounded"></div>
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Food
             </h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
             <Link to="/food/user/profile/wishlist" className="block">
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
                 transition={{ duration: 0.2, type: "spring", stiffness: 300 }}>
                 <Card className="bg-white dark:bg-[#1a1a1a] py-0 rounded-xl shadow-sm border-0 dark:border-gray-800 cursor-pointer">
-                  <CardContent className="p-4  flex items-center justify-between">
+                  <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <motion.div
                         className="bg-gray-100 dark:bg-gray-800 rounded-full p-2"
@@ -853,14 +858,14 @@ export default function Profile() {
         </div>
 
         {/* Dining Section */}
-        <div className="mb-3">
+        <div className="mb-4">
           <div className="flex items-center gap-2 mb-2 px-1">
             <div className="w-1 h-4 bg-[#FE5502] rounded"></div>
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Dining
             </h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
             <Link to="/food/user/bookings" className="block">
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
@@ -900,7 +905,7 @@ export default function Profile() {
               Quick Commerce
             </h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
             <Link to="/quick/orders" className="block">
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}
@@ -986,7 +991,7 @@ export default function Profile() {
               More
             </h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-3">
             <Link to={supportPath} className="block">
               <motion.div
                 whileHover={{ x: 4, scale: 1.01 }}

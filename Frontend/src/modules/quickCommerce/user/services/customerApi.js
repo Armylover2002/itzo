@@ -95,7 +95,10 @@ export const customerApi = {
     quickGetWithDedupe(`/quick-commerce/categories/${categoryId}`, {}, options),
   getCategoryProducts: (categoryId, params, options = {}) =>
     quickGetWithDedupe("/quick-commerce/products", { categoryId, ...params }, options),
-  getProductDetails: (productId) => quickGetWithDedupe(`/quick-commerce/products/${productId}`, {}),
+  // Short ttl on purpose: stock/price can change the moment a seller adjusts
+  // inventory, and a customer viewing this exact product should see it.
+  getProductDetails: (productId) =>
+    quickGetWithDedupe(`/quick-commerce/products/${productId}`, {}, { ttl: 5000 }),
 
   getAddresses: () => axiosInstance.get("/quick-commerce/addresses", withQuickSession()),
   addAddress: (data) => axiosInstance.post("/quick-commerce/addresses", data, withQuickSession()),
@@ -147,9 +150,11 @@ export const customerApi = {
     invalidateCache("/quick-commerce/wishlist");
     return axiosInstance.post("/quick-commerce/wishlist/add", data, withQuickSession());
   },
-  removeFromWishlist: (productId) => {
+  removeFromWishlist: (productId, variantId) => {
     invalidateCache("/quick-commerce/wishlist");
-    return axiosInstance.delete(`/quick-commerce/wishlist/remove/${productId}`, withQuickSession());
+    const config = withQuickSession();
+    if (variantId) config.params = { ...config.params, variantId };
+    return axiosInstance.delete(`/quick-commerce/wishlist/remove/${productId}`, config);
   },
   toggleWishlist: (data) => {
     invalidateCache("/quick-commerce/wishlist");

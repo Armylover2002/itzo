@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const sellerVariantSchema = new mongoose.Schema(
   {
     name: { type: String, trim: true, required: true },
+    costPrice: { type: Number, min: 0, default: 0 },
     price: { type: Number, min: 0, default: 0 },
     salePrice: { type: Number, min: 0, default: 0 },
     stock: { type: Number, min: 0, default: 0 },
@@ -40,6 +41,11 @@ const sellerProductSchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: "",
+    },
+    costPrice: {
+      type: Number,
+      min: 0,
+      default: 0,
     },
     price: {
       type: Number,

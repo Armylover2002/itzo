@@ -103,6 +103,7 @@ const toSellerRequest = (seller, extras = {}) => {
     phone: seller.phoneLast10 || seller.phone || '',
     location: seller.location?.formattedAddress || seller.location?.address || '',
     category: seller.shopInfo?.businessType || 'General',
+    openingHours: seller.shopInfo?.openingHours || '',
     applicationDate: seller.reappliedAt || seller.createdAt,
     approvedAt: seller.approvedAt || null,
     rejectedAt: seller.rejectedAt || null,
@@ -1076,11 +1077,12 @@ export const updateProduct = async (req, res) => {
     }
   }
 
+  // Populate the doc already in memory instead of re-fetching the product by
+  // id — same result, one fewer round trip (this endpoint is on the hot path
+  // for the admin's frequent show/hide toggle, so every trip counts).
   await product.save();
-  const populated = await QuickProduct.findById(product._id)
-    .populate('headerId categoryId subcategoryId', 'name slug')
-    .lean();
-  return res.json({ success: true, result: toProduct(populated) });
+  await product.populate('headerId categoryId subcategoryId', 'name slug');
+  return res.json({ success: true, result: toProduct(product.toObject()) });
 };
 
 export const processRefund = async (req, res, next) => {
@@ -1806,6 +1808,7 @@ export const approveAdminSellerRequest = async (req, res) => {
 
   seller.approved = true;
   seller.approvalStatus = 'approved';
+  seller.isActive = true;
   seller.onboardingSubmitted = true;
   seller.wasEverApproved = true;
   seller.approvedAt = new Date();

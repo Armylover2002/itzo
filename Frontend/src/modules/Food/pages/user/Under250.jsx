@@ -847,7 +847,7 @@ export default function Under250() {
       <div
         ref={bannerShellRef}
         data-banner-shell="true"
-        className="relative w-full overflow-hidden h-[clamp(240px,42vw,520px)] md:-mt-40"
+        className="relative w-full overflow-hidden h-[clamp(240px,42vw,520px)] md:h-64 lg:h-72"
       >
         {/* Banner Image */}
         {bannerImages.length > 0 && (
@@ -904,33 +904,32 @@ export default function Under250() {
 
         <section className="space-y-1 sm:space-y-1.5">
           <div
-            className="flex gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto md:overflow-x-visible overflow-y-visible scrollbar-hide scroll-smooth px-2 sm:px-3 py-2 sm:py-3 md:py-4"
+            className="flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-hide scroll-smooth px-2 sm:px-3 py-2 sm:py-3"
             style={{
               scrollbarWidth: "none",
               msOverflowStyle: "none",
               touchAction: "pan-x pan-y pinch-zoom",
-              overflowY: "hidden",
             }}
           >
             {/* All Button */}
             <div className="flex-shrink-0 cursor-pointer" onClick={() => setActiveCategory(null)}>
               <motion.div
-                className="flex flex-col items-center gap-2 w-[62px] sm:w-24 md:w-28"
-                whileHover={{ scale: 1.1, y: -4 }}
+                className="flex flex-col items-center gap-1.5 sm:gap-2 w-[62px] sm:w-20 md:w-20"
+                whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <div className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-md transition-all ${!activeCategory ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full overflow-hidden shadow-md transition-all ${!activeCategory ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
                   <OptimizedImage
                     src={offerImage}
                     alt="All"
                     className="w-full h-full bg-white rounded-full"
                     objectFit="cover"
-                    sizes="(max-width: 640px) 62px, (max-width: 768px) 96px, 112px"
+                    sizes="(max-width: 640px) 62px, (max-width: 768px) 80px, 80px"
                     placeholder="blur"
                   />
                 </div>
-                <span className={`text-xs sm:text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${!activeCategory ? 'text-[#FE5502]' : ''}`}>
+                <span className={`text-xs sm:text-xs md:text-sm font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${!activeCategory ? 'text-[#FE5502]' : ''}`}>
                   All
                 </span>
               </motion.div>
@@ -940,22 +939,22 @@ export default function Under250() {
               return (
                 <div key={category.id} className="flex-shrink-0 cursor-pointer" onClick={() => setActiveCategory(isActive ? null : category.id)}>
                     <motion.div
-                      className="flex flex-col items-center gap-2 w-[62px] sm:w-24 md:w-28"
-                      whileHover={{ scale: 1.1, y: -4 }}
+                      className="flex flex-col items-center gap-1.5 sm:gap-2 w-[62px] sm:w-20 md:w-20"
+                      whileHover={{ scale: 1.08, y: -2 }}
                       whileTap={{ scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      <div className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-md transition-all ${isActive ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full overflow-hidden shadow-md transition-all ${isActive ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
                         <OptimizedImage
                           src={category.image}
                           alt={category.name}
                           className="w-full h-full bg-white rounded-full"
                           objectFit="cover"
-                          sizes="(max-width: 640px) 62px, (max-width: 768px) 96px, 112px"
+                          sizes="(max-width: 640px) 62px, (max-width: 768px) 80px, 80px"
                           placeholder="blur"
                         />
                       </div>
-                      <span className={`text-xs sm:text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${isActive ? 'text-[#FE5502]' : ''}`}>
+                      <span className={`text-xs sm:text-xs md:text-sm font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${isActive ? 'text-[#FE5502]' : ''}`}>
                         {category.name.length > 7 ? `${category.name.slice(0, 7)}...` : category.name}
                       </span>
                     </motion.div>
@@ -1012,24 +1011,24 @@ export default function Under250() {
             return (
               <section key={restaurant.id} className="pt-4 sm:pt-6 md:pt-8 lg:pt-10">
                 {/* Restaurant Header */}
-                <div className="flex items-start justify-between mb-3 md:mb-4 lg:mb-6">
+                <div className="flex items-start justify-between mb-3 md:mb-3.5">
                   <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
+                    <h3 className="text-lg sm:text-xl md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-1">
                       {restaurant.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-sm md:text-base lg:text-lg text-gray-500 dark:text-gray-400">
-                      <Clock className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" strokeWidth={1.5} />
+                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                      <Clock className="h-4 w-4 md:h-4 md:w-4" strokeWidth={1.5} />
                       <span className="font-medium">{restaurant.deliveryTime}</span>
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <div className="flex items-center gap-1 bg-green-800 text-white px-1 py-1 md:px-2 md:py-1.5 lg:px-3 lg:py-2 rounded-full">
-                      <div className="bg-white text-green-700 px-1 py-1 md:px-1.5 md:py-1.5 lg:px-2 lg:py-2 rounded-full">
-                        <Star className="h-3.5 w-3.5 md:h-4 md:w-4 lg:h-5 lg:w-5 fill-green-800 text-green-800" />
+                    <div className="flex items-center gap-1 bg-green-800 text-white px-1.5 py-0.5 md:px-2 md:py-1 rounded-full">
+                      <div className="bg-white text-green-700 px-1 py-1 rounded-full">
+                        <Star className="h-3.5 w-3.5 md:h-3 md:w-3 fill-green-800 text-green-800" />
                       </div>
-                      <span className="text-xs md:text-sm lg:text-base font-bold">{restaurant.rating}</span>
+                      <span className="text-xs md:text-xs font-bold">{restaurant.rating}</span>
                     </div>
-                    <span className="text-xs md:text-sm lg:text-base text-gray-400 dark:text-gray-500 mt-0.5">
+                    <span className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                       {restaurant.totalRatings > 0 ? `By ${restaurant.totalRatings >= 1000 ? `${(restaurant.totalRatings / 1000).toFixed(1)}K+` : `${restaurant.totalRatings}+`}` : ''}
                     </span>
                   </div>
@@ -1037,9 +1036,9 @@ export default function Under250() {
 
                 {/* Menu Items Horizontal Scroll */}
                 {restaurant.menuItems && restaurant.menuItems.length > 0 && (
-                  <div className="space-y-2 md:space-y-3 lg:space-y-4">
+                  <div className="space-y-2 md:space-y-3">
                     <div
-                      className="flex md:grid gap-3 sm:gap-4 md:gap-5 lg:gap-6 overflow-x-auto md:overflow-x-visible overflow-y-visible scrollbar-hide scroll-smooth pb-2 md:pb-0 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      className="flex md:grid gap-3 sm:gap-4 md:gap-4 lg:gap-5 overflow-x-auto md:overflow-x-visible overflow-y-visible scrollbar-hide scroll-smooth pb-2 md:pb-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4"
                       style={{
                         scrollbarWidth: "none",
                         msOverflowStyle: "none",
@@ -1052,28 +1051,27 @@ export default function Under250() {
                         return (
                           <motion.div
                             key={item.id}
-                            className="flex-shrink-0 w-[200px] sm:w-[220px] md:w-full bg-white dark:bg-[#1a1a1a] rounded-lg md:rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden cursor-pointer"
+                            className="flex-shrink-0 w-[200px] sm:w-[220px] md:w-full bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow"
                             onClick={() => handleItemClick(item, restaurant)}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.4, delay: itemIndex * 0.05 }}
-                            whileHover={{ y: -8, scale: 1.02 }}
-                            style={{ boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)" }}
+                            whileHover={{ y: -4, scale: 1.01 }}
                           >
                             {/* Item Image */}
-                            <div className="relative w-full h-32 sm:h-36 md:h-40 lg:h-48 xl:h-52 overflow-hidden">
+                            <div className="relative w-full h-32 sm:h-36 md:h-36 lg:h-40 xl:h-40 overflow-hidden">
                               <motion.div
                                 className="absolute inset-0"
-                                whileHover={{ scale: 1.1 }}
-                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                whileHover={{ scale: 1.08 }}
+                                transition={{ duration: 0.4, ease: "easeOut" }}
                               >
                                 <OptimizedImage
                                   src={item.image}
                                   alt={item.name}
                                   className="w-full h-full"
                                   objectFit="cover"
-                                  sizes="(max-width: 640px) 200px, (max-width: 768px) 220px, 100vw"
+                                  sizes="(max-width: 640px) 200px, (max-width: 768px) 220px, 280px"
                                   placeholder="blur"
                                   priority={itemIndex < 4}
                                 />
@@ -1088,34 +1086,34 @@ export default function Under250() {
                               {/* Veg Indicator */}
                               {item.isVeg && (
                                 <motion.div
-                                  className="absolute top-2 left-2 md:top-3 md:left-3 h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 rounded border-2 border-green-600 bg-white flex items-center justify-center z-10"
-                                  whileHover={{ scale: 1.2, rotate: 5 }}
+                                  className="absolute top-2 left-2 md:top-2.5 md:left-2.5 h-4 w-4 rounded border-2 border-green-600 bg-white flex items-center justify-center z-10"
+                                  whileHover={{ scale: 1.15 }}
                                   transition={{ duration: 0.2 }}
                                 >
-                                  <div className="h-2 w-2 md:h-2.5 md:w-2.5 lg:h-3 lg:w-3 rounded-full bg-green-600" />
+                                  <div className="h-2 w-2 rounded-full bg-green-600" />
                                 </motion.div>
                               )}
                             </div>
 
                             {/* Item Details */}
-                            <div className="p-3 md:p-4 lg:p-5">
-                              <div className="flex items-center gap-1 md:gap-2 mb-1 md:mb-2 lg:mb-3">
+                            <div className="p-3 md:p-3.5">
+                              <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-1.5">
                                 {item.isVeg && (
-                                  <div className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 rounded border border-green-600 bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
-                                    <div className="h-1.5 w-1.5 md:h-2 md:w-2 lg:h-2.5 lg:w-2.5 rounded-full bg-green-600" />
+                                  <div className="h-3 w-3 rounded border border-green-600 bg-green-50 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-green-600" />
                                   </div>
                                 )}
-                                <span className="text-sm md:text-base lg:text-lg font-semibold text-gray-900 dark:text-white">
+                                <span className="text-sm md:text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">
                                   1 x {item.name}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-gray-900 dark:text-white">
+                                  <p className="text-base md:text-base lg:text-lg font-bold text-gray-900 dark:text-white">
                                     {RUPEE_SYMBOL}{Math.round(item.price)}
                                   </p>
                                   {item.bestPrice && (
-                                    <p className="text-xs md:text-sm lg:text-base text-gray-500 dark:text-gray-400">Best price</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Best price</p>
                                   )}
                                 </div>
                                 {quantity > 0 ? (
@@ -1123,7 +1121,7 @@ export default function Under250() {
                                     <Button
                                       variant={"outline"}
                                       size="sm"
-                                      className="bg-[#FFF5F5] text-[#FE5502] border-[#FE5502] hover:bg-[#FE5502] hover:text-white h-7 md:h-8 lg:h-9 px-3 md:px-4 lg:px-5 text-xs md:text-sm lg:text-base"
+                                      className="bg-[#FFF5F5] text-[#FE5502] border-[#FE5502] hover:bg-[#FE5502] hover:text-white h-7 md:h-7 px-3 text-xs md:text-xs font-semibold"
                                     >
                                       View cart
                                     </Button>
@@ -1133,7 +1131,7 @@ export default function Under250() {
                                     variant={"outline"}
                                     size="sm"
                                     disabled={shouldShowGrayscale}
-                                    className={`h-7 md:h-8 lg:h-9 px-3 md:px-4 lg:px-5 text-xs md:text-sm lg:text-base ${shouldShowGrayscale
+                                    className={`h-7 md:h-7 px-3 text-xs md:text-xs font-semibold ${shouldShowGrayscale
                                       ? 'bg-gray-100 dark:bg-gray-800 text-gray-400 border-gray-300 dark:border-gray-700 cursor-not-allowed opacity-50'
                                       : 'bg-[#FFF5F5] text-[#FE5502] border-[#FE5502] hover:bg-[#FE5502] hover:text-white'
                                       }`}

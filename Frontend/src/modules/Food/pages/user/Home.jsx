@@ -95,6 +95,7 @@ import { API_BASE_URL } from "@food/api/config";
 import OptimizedImage from "@food/components/OptimizedImage";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
 import HomeHeader from "@food/components/user/home/HomeHeader";
+import ServiceSwitchCards from "@food/components/user/home/ServiceSwitchCards";
 import { LocationProvider as QuickLocationProvider } from "../../../quickCommerce/user/context/LocationContext";
 import { ProductDetailProvider as QuickProductDetailProvider } from "../../../quickCommerce/user/context/ProductDetailContext";
 import { WishlistProvider as QuickWishlistProvider } from "../../../quickCommerce/user/context/WishlistContext";
@@ -377,39 +378,49 @@ export default function Home() {
                 ) : (
                   <>
                     <div className={activeTab === "food" ? "block" : "hidden"}>
-                      <div className="bg-white dark:bg-[#0a0a0a]">
-                        <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
-                          <CategoryRail
-                            displayCategories={categories.display}
-                            showCategorySkeleton={categories.loading}
-                            navigate={navigate}
-                            setShowAllCategoriesModal={setShowAllCategoriesModal}
-                            backendOrigin={BACKEND_ORIGIN}
-                          />
-                        </Suspense>
+                      <div className="bg-white dark:bg-[#0a0a0a] w-full">
+                        <div className="w-full max-w-7xl mx-auto md:px-6 lg:px-8">
+                          {/* Desktop only - mobile already has its own Food / Quick toggle
+                              buttons in the header, so these cards would be a duplicate there. */}
+                          <div className="hidden md:block">
+                            <ServiceSwitchCards
+                              activeTab={activeTab}
+                              onTabChange={handleTabChange}
+                            />
+                          </div>
 
-                        <Suspense fallback={null}>
-                          <RecommendedSection recommendedForYouRestaurants={meta.recommended} />
-                        </Suspense>
+                          <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
+                            <CategoryRail
+                              displayCategories={categories.display}
+                              showCategorySkeleton={categories.loading}
+                              navigate={navigate}
+                              setShowAllCategoriesModal={setShowAllCategoriesModal}
+                              backendOrigin={BACKEND_ORIGIN}
+                            />
+                          </Suspense>
+
+                          <Suspense fallback={null}>
+                            <RecommendedSection recommendedForYouRestaurants={meta.recommended} />
+                          </Suspense>
 
 
-                        <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
-                          <section className="content-auto px-4 py-4 sm:py-6 lg:py-8">
-                            <div className="overflow-hidden rounded-2xl h-48 sm:h-64 md:h-72 lg:h-[350px] shadow-lg border border-gray-100">
-                              <BannerSection
-                                showBannerSkeleton={banners.loading}
-                                heroBannerImages={banners.images}
-                                heroBannersData={banners.data}
-                                currentBannerIndex={currentBannerIndex}
-                                setCurrentBannerIndex={setCurrentBannerIndex}
-                                heroShellRef={heroShellRef}
-                                navigate={navigate}
-                                backendOrigin={BACKEND_ORIGIN}
-                                hideOverlay={true}
-                              />
-                            </div>
-                          </section>
-                        </Suspense>
+                          <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
+                            <section className="content-auto px-4 md:px-0 py-4 sm:py-6 lg:py-6">
+                              <div className="overflow-hidden rounded-2xl h-48 sm:h-64 md:h-64 lg:h-72 shadow-lg border border-gray-100">
+                                <BannerSection
+                                  showBannerSkeleton={banners.loading}
+                                  heroBannerImages={banners.images}
+                                  heroBannersData={banners.data}
+                                  currentBannerIndex={currentBannerIndex}
+                                  setCurrentBannerIndex={setCurrentBannerIndex}
+                                  heroShellRef={heroShellRef}
+                                  navigate={navigate}
+                                  backendOrigin={BACKEND_ORIGIN}
+                                  hideOverlay={true}
+                                />
+                              </div>
+                            </section>
+                          </Suspense>
 
                         <Suspense fallback={null}>
                           <SortFilterSection
@@ -453,6 +464,7 @@ export default function Home() {
                         </Suspense>
                       </div>
                     </div>
+                  </div>
 
                     <div className={activeTab === "quick" ? "block" : "hidden"}>
                       <div className="bg-white dark:bg-[#0a0a0a]">

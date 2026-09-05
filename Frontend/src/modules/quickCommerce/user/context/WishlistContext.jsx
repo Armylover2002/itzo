@@ -6,21 +6,37 @@ const WishlistContext = createContext();
 
 export const useWishlist = () => useContext(WishlistContext);
 
-const normalizeWishlistId = (value) => String(value ?? "").split("::")[0];
+const normalizeProductId = (value) => String(value ?? "").split("::")[0];
+const normalizeVariantId = (variant) => {
+  if (variant && typeof variant === "object") {
+    return String(variant._id || variant.name || "");
+  }
+  return String(variant ?? "");
+};
+
+// One wishlist entry is identified by (productId, variantId) together, not
+// productId alone — liking two variants of the same product must keep both,
+// and toggling one must never touch the other.
+const getWishlistKey = (productId, variantId) =>
+  variantId ? `${productId}::${variantId}` : productId;
 
 const normalizeWishlistProduct = (item, fallback = {}) => {
   const source =
     typeof item === "string"
       ? { ...fallback, id: item, _id: item }
       : { ...fallback, ...(item || {}) };
-  const normalizedId = normalizeWishlistId(source.id || source._id);
+  const productId = normalizeProductId(source.id || source._id);
+  if (!productId) return null;
 
-  if (!normalizedId) return null;
+  const variantId = normalizeVariantId(source.variantId || "");
 
   return {
     ...source,
-    id: normalizedId,
-    _id: normalizedId,
+    id: productId,
+    _id: productId,
+    variantId,
+    variantName: source.variantName || "",
+    wishlistKey: getWishlistKey(productId, variantId),
     name: source.name,
     price: Number(source.price || source.salePrice || 0),
     salePrice: Number(source.salePrice || source.price || 0),
@@ -39,17 +55,21 @@ const buildWishlistFromProducts = (products = [], fallbackItems = []) => {
     fallbackItems
       .map((item) => {
         const normalized = normalizeWishlistProduct(item);
-        return normalized ? [normalized.id, normalized] : null;
+        return normalized ? [normalized.wishlistKey, normalized] : null;
       })
       .filter(Boolean),
   );
 
   return products
     .map((product) => {
-      const productId = normalizeWishlistId(
+      const productId = normalizeProductId(
         typeof product === "string" ? product : product?._id || product?.id,
       );
-      return normalizeWishlistProduct(product, fallbackMap.get(productId) || {});
+      const variantId = normalizeVariantId(
+        (typeof product === "object" && product?.variantId) || "",
+      );
+      const key = getWishlistKey(productId, variantId);
+      return normalizeWishlistProduct(product, fallbackMap.get(key) || {});
     })
     .filter(Boolean);
 };
@@ -144,28 +164,28 @@ export const WishlistProvider = ({ children }) => {
     }
   }, [wishlist, isAuthenticated]);
 
-  const addToWishlist = async (product) => {
+  const addToWishlist = async (product, variant) => {
+    const variantId = normalizeVariantId(variant);
+    const variantName = variant?.name || "";
+    const productWithVariant = { ...product, variantId, variantName };
+
     if (isAuthenticated) {
       try {
         const response = await customerApi.addToWishlist({
           productId: product.id || product._id,
+          variantId,
         });
         const products = response?.data?.result?.products || [];
-        setWishlist((prev) => buildWishlistFromProducts(products, [...prev, product]));
+        setWishlist((prev) => buildWishlistFromProducts(products, [...prev, productWithVariant]));
         setIsFullDataFetched(true);
       } catch (error) {
         console.error("Error adding to wishlist on backend", error);
       }
     } else {
       setWishlist((prev) => {
-        const normalizedProduct = normalizeWishlistProduct(product);
+        const normalizedProduct = normalizeWishlistProduct(productWithVariant);
         if (!normalizedProduct) return prev;
-        if (
-          prev.some(
-            (item) =>
-              normalizeWishlistId(item.id || item._id) === normalizedProduct.id,
-          )
-        ) {
+        if (prev.some((item) => item.wishlistKey === normalizedProduct.wishlistKey)) {
           return prev;
         }
         return [...prev, normalizedProduct];
@@ -173,18 +193,19 @@ export const WishlistProvider = ({ children }) => {
     }
   };
 
-  const removeFromWishlist = async (productId) => {
+  const removeFromWishlist = async (productId, variant) => {
+    const baseId = normalizeProductId(productId);
+    const variantId = normalizeVariantId(variant);
+    const key = getWishlistKey(baseId, variantId);
+
     if (isAuthenticated) {
       try {
-        const response = await customerApi.removeFromWishlist(productId);
-        const normalizedId = normalizeWishlistId(productId);
+        const response = await customerApi.removeFromWishlist(baseId, variantId);
         const products = response?.data?.result?.products || [];
         setWishlist((prev) =>
           buildWishlistFromProducts(
             products,
-            prev.filter(
-              (item) => normalizeWishlistId(item.id || item._id) !== normalizedId,
-            ),
+            prev.filter((item) => item.wishlistKey !== key),
           ),
         );
         setIsFullDataFetched(true);
@@ -192,49 +213,45 @@ export const WishlistProvider = ({ children }) => {
         console.error("Error removing from wishlist on backend", error);
       }
     } else {
-      const normalizedId = normalizeWishlistId(productId);
-      setWishlist((prev) =>
-        prev.filter(
-          (item) => normalizeWishlistId(item.id || item._id) !== normalizedId,
-        ),
-      );
+      setWishlist((prev) => prev.filter((item) => item.wishlistKey !== key));
     }
   };
 
-  const toggleWishlist = async (product) => {
-    const id = normalizeWishlistId(product.id || product._id);
+  const toggleWishlist = async (product, variant) => {
+    const productId = product.id || product._id;
+    const variantId = normalizeVariantId(variant);
+
     if (isAuthenticated) {
       try {
-        const response = await customerApi.toggleWishlist({ productId: id });
+        const response = await customerApi.toggleWishlist({ productId, variantId });
+        const productWithVariant = { ...product, variantId, variantName: variant?.name || "" };
         const products = response?.data?.result?.products || [];
-        setWishlist((prev) => buildWishlistFromProducts(products, [...prev, product]));
+        setWishlist((prev) => buildWishlistFromProducts(products, [...prev, productWithVariant]));
         setIsFullDataFetched(true);
       } catch (error) {
         console.error("Error toggling wishlist on backend", error);
       }
     } else {
-      if (isInWishlist(id)) {
-        removeFromWishlist(id);
+      if (isInWishlist(productId, variant)) {
+        removeFromWishlist(productId, variant);
       } else {
-        addToWishlist(product);
+        addToWishlist(product, variant);
       }
     }
   };
 
-  const isInWishlist = (productId) => {
-    const normalizedId = normalizeWishlistId(productId);
-    return wishlist.some(
-      (item) => normalizeWishlistId(item.id || item._id) === normalizedId,
-    );
+  const isInWishlist = (productId, variant) => {
+    const key = getWishlistKey(normalizeProductId(productId), normalizeVariantId(variant));
+    return wishlist.some((item) => item.wishlistKey === key);
   };
 
   const clearWishlist = async () => {
     if (isAuthenticated) {
       try {
-        const ids = wishlist
-          .map((item) => normalizeWishlistId(item.id || item._id))
-          .filter(Boolean);
-        await Promise.all(ids.map((id) => customerApi.removeFromWishlist(id)));
+        const keys = wishlist
+          .map((item) => ({ productId: normalizeProductId(item.id || item._id), variantId: item.variantId }))
+          .filter((entry) => entry.productId);
+        await Promise.all(keys.map(({ productId, variantId }) => customerApi.removeFromWishlist(productId, variantId)));
       } catch (error) {
         console.error("Error clearing wishlist on backend", error);
       }
