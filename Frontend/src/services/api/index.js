@@ -1026,6 +1026,12 @@ export const restaurantAPI = {
   getMe: () => authService.getMe("restaurant"),
   /** Restaurant dashboard: fetch current restaurant profile (deduped + short-cached). */
   getCurrentRestaurant: () => getRestaurantCurrentOnce(),
+  /** Restaurant dashboard: fetch real-time overview stats, KPIs, charts and recent orders. */
+  getDashboardStats: (params = {}) =>
+    apiClient.get("/food/restaurant/dashboard-stats", {
+      params,
+      contextModule: "restaurant",
+    }),
   /** DELETE /food/restaurant/delete-account (Bearer RESTAURANT) */
   deleteAccount: () =>
     apiClient.delete("/food/restaurant/delete-account", {

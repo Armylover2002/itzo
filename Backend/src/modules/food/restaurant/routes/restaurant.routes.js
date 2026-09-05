@@ -58,6 +58,7 @@ import { sendError } from '../../../../utils/response.js';
 import { getRestaurantFinanceController, getRestaurantSubscriptionWalletController } from '../controllers/restaurantFinance.controller.js';
 import { createTopupOrderController, verifyTopupController } from '../../subscriptions/controllers/subscription.controller.js';
 import { updateLiveLocationController, toggleLiveTrackingController } from '../controllers/vendorLocation.controller.js';
+import { getRestaurantDashboardStatsController } from '../controllers/restaurantDashboard.controller.js';
 
 import { cacheResponse, invalidateCache } from '../../../../middleware/cache.js';
 import { vendorLocationRateLimiter } from '../../../../middleware/rateLimit.js';
@@ -95,6 +96,7 @@ router.get('/dishes/public', cacheResponse(300, 'dishes'), listPublicDishesContr
 
 // Restaurant dashboard/profile (Bearer token + RESTAURANT role)
 router.get('/current', authMiddleware, requireRestaurant, getCurrentRestaurantController);
+router.get('/dashboard-stats', authMiddleware, requireRestaurant, getRestaurantDashboardStatsController);
 router.patch('/profile', authMiddleware, requireRestaurant, async (req, res, next) => {
     // Invalidate caches when profile is updated
     await invalidateCache('restaurants:*');
