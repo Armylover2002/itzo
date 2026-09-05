@@ -4,8 +4,6 @@ import { QuickProduct } from '../models/product.model.js';
 import { QuickReview } from '../models/review.model.js';
 import { FoodUser } from '../../../core/users/user.model.js';
 import { Seller } from '../seller/models/seller.model.js';
-import { QuickZone } from '../models/quick_zone.model.js';
-import { isPointInZone } from '../../../utils/geo.js';
 import {
   getQuickCategories,
   getQuickCoupons,
@@ -13,6 +11,7 @@ import {
 } from '../services/content.service.js';
 import { getPublicQuickBanners } from '../services/banner.service.js';
 import { isShopCurrentlyOpen } from '../utils/shopTiming.js';
+import { resolveZoneId, resolveZoneSellerIds, applyZoneSellerScope } from '../utils/zoneScope.js';
 
 const setNoCache = (res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -35,16 +34,23 @@ const approvedOrLegacyFilter = {
   ],
 };
 
+// A doc counts as "live" unless one of the two active-flags explicitly says
+// otherwise. Using AND-of-"not explicitly off" (instead of OR-of-"is on") is
+// deliberate: status and isActive are meant to be kept in sync, but if either
+// one is ever missing on a document, an OR of "is on" checks lets an admin's
+// status:'inactive' leak back through via the other field's $exists branch —
+// toggling a product off would then show it again on some queries and not
+// others depending on which field happened to be present.
+const isLiveFilter = {
+  $and: [
+    { status: { $ne: 'inactive' } },
+    { isActive: { $ne: false } },
+  ],
+};
+
 const publicCategoryFilter = {
   $and: [
-    {
-      $or: [
-        { status: 'active' },
-        { status: { $exists: false } },
-        { isActive: true },
-        { isActive: { $exists: false } },
-      ],
-    },
+    isLiveFilter,
     {
       $or: [
         { type: { $ne: 'subcategory' } },
@@ -57,14 +63,7 @@ const publicCategoryFilter = {
 const publicProductFilter = {
   $and: [
     approvedOrLegacyFilter,
-    {
-      $or: [
-        { status: 'active' },
-        { status: { $exists: false } },
-        { isActive: true },
-        { isActive: { $exists: false } },
-      ],
-    },
+    isLiveFilter,
   ],
 };
 
@@ -165,7 +164,7 @@ const mapProduct = (product, sellerMap = {}) => {
         name: seller.name || '',
         shopName: seller.shopName || seller.name || 'Store',
         shopImage: seller.shopInfo?.shopImage || seller.logo || seller.image || seller.avatar || '',
-        openingHours: seller.shopInfo?.openingHours || '',
+        openingHours: timing.hoursLabel || seller.shopInfo?.openingHours || '',
         isShopOpen: timing.isOpen,
         shopStatus: timing.statusText,
         timingText: timing.timingText,
@@ -178,13 +177,20 @@ const mapProduct = (product, sellerMap = {}) => {
 };
 
 export const getHomeData = async (req, res) => {
-  setPublicCache(res, 60); // 1 minute cache
+  // Includes bestseller stock/price — same short-cache reasoning as getProducts.
+  setPublicCache(res, 5);
 
   const { zoneId, headerId, categoryId, lat, lng } = req.query || {};
 
+  const zoneSellerIds = await resolveZoneSellerIds({ zoneId, lat, lng });
+  const bestSellersFilter = applyZoneSellerScope(
+    await withVisibleSellerFilter(publicProductFilter),
+    zoneSellerIds,
+  );
+
   const [categories, products, settings, banners] = await Promise.all([
     getQuickCategories(),
-    QuickProduct.find(await withVisibleSellerFilter(publicProductFilter)).sort({ createdAt: -1 }).limit(18).lean(),
+    QuickProduct.find(bestSellersFilter).sort({ createdAt: -1 }).limit(18).lean(),
     getQuickSettings(),
     getPublicQuickBanners({
       zoneId,
@@ -372,44 +378,23 @@ export const getCategoryById = async (req, res) => {
 };
 
 export const getProducts = async (req, res) => {
-  setPublicCache(res, 60);
+  // Stock/price change the moment a seller adjusts inventory — a long cache
+  // here means customers keep seeing sold-out or outdated items. Kept short
+  // (not zero) only to dedupe genuinely simultaneous requests.
+  setPublicCache(res, 5);
 
-  const { categoryId, search, limit, sortBy, lat, lng, sellerId } = req.query;
+  const { categoryId, search, limit, sortBy, lat, lng, zoneId, sellerId } = req.query;
   const query = { ...publicProductFilter };
 
   if (sellerId) {
     query.sellerId = sellerId;
   }
 
-  if (lat && lng) {
-    const latNum = Number(lat);
-    const lngNum = Number(lng);
-    if (!isNaN(latNum) && !isNaN(lngNum)) {
-      const zones = await QuickZone.find({ isActive: true }).lean();
-      const userZone = zones.find((z) => isPointInZone(latNum, lngNum, z));
-
-      if (userZone) {
-        const localSellers = await Seller.find({
-          'shopInfo.zoneId': userZone._id,
-          isActive: true,
-          approved: true,
-        }).select('_id').lean();
-        
-        const sellerIds = localSellers.map((s) => s._id);
-        
-        // Include products from local sellers, or admin products (sellerId: null/missing)
-        const sellerOr = [
-          { sellerId: { $in: sellerIds } },
-          { sellerId: { $exists: false } },
-          { sellerId: null }
-        ];
-        if (query.$and) {
-          query.$and.push({ $or: sellerOr });
-        } else {
-          query.$or = sellerOr;
-        }
-      }
-    }
+  // Scope to the customer's zone (unless they asked for one specific seller
+  // above) so products from another zone's sellers never show up here.
+  if (!sellerId) {
+    const zoneSellerIds = await resolveZoneSellerIds({ zoneId, lat, lng });
+    applyZoneSellerScope(query, zoneSellerIds);
   }
 
   // Handle category filtering
@@ -488,7 +473,10 @@ export const getProducts = async (req, res) => {
 };
 
 export const getProductById = async (req, res) => {
-  setPublicCache(res, 600); // 10 minutes cache
+  // Was 600s (10 min) — far too long for stock/price, which a seller can
+  // change at any moment. Kept short (not zero) only to dedupe simultaneous
+  // requests for the same product.
+  setPublicCache(res, 5);
 
   const product = await QuickProduct.findOne(
     await withVisibleSellerFilter({ _id: req.params.productId, ...publicProductFilter }),
@@ -582,7 +570,7 @@ export const submitProductReview = async (req, res) => {
 
 export const getPublicShops = async (req, res) => {
   setPublicCache(res, 30);
-  const { search, openOnly } = req.query;
+  const { search, openOnly, zoneId, lat, lng } = req.query;
 
   try {
     const filter = {
@@ -590,6 +578,14 @@ export const getPublicShops = async (req, res) => {
       approved: true,
       isDeleted: { $ne: true },
     };
+
+    // Scope to the customer's own delivery zone so a shop from a different
+    // zone never shows up in their storefront. When the zone can't be
+    // resolved (no location yet), fail open rather than show nothing.
+    const resolvedZoneId = await resolveZoneId({ zoneId, lat, lng });
+    if (resolvedZoneId) {
+      filter['shopInfo.zoneId'] = resolvedZoneId;
+    }
 
     if (search) {
       filter.$or = [
@@ -600,7 +596,7 @@ export const getPublicShops = async (req, res) => {
     }
 
     const sellers = await Seller.find(filter)
-      .select('_id shopName name phone email address shopInfo logo avatar image createdAt')
+      .select('_id shopName name phone email address location shopInfo logo avatar image createdAt')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -624,9 +620,12 @@ export const getPublicShops = async (req, res) => {
         seller.image ||
         seller.avatar ||
         '';
-      const address = seller.address?.street
-        ? `${seller.address.street}, ${seller.address.city || ''}`
-        : seller.shopInfo?.zoneName || 'Local Store';
+      const address =
+        seller.location?.formattedAddress ||
+        seller.location?.address ||
+        (seller.address?.street ? `${seller.address.street}, ${seller.address.city || ''}` : '') ||
+        seller.shopInfo?.zoneName ||
+        'Local Store';
 
       return {
         id: String(seller._id),
@@ -636,7 +635,7 @@ export const getPublicShops = async (req, res) => {
         phone: seller.phone || '',
         email: seller.email || '',
         businessType: seller.shopInfo?.businessType || 'Retail Store',
-        openingHours: seller.shopInfo?.openingHours || '',
+        openingHours: timing.hoursLabel || seller.shopInfo?.openingHours || '',
         hoursLabel: timing.hoursLabel,
         isOpen: timing.isOpen,
         statusText: timing.statusText,
@@ -678,7 +677,7 @@ export const getPublicShopById = async (req, res) => {
       approved: true,
       isDeleted: { $ne: true },
     })
-      .select('_id shopName name phone email address shopInfo logo avatar image')
+      .select('_id shopName name phone email address location shopInfo logo avatar image')
       .lean();
 
     if (!seller) {
@@ -692,9 +691,12 @@ export const getPublicShopById = async (req, res) => {
       seller.image ||
       seller.avatar ||
       '';
-    const address = seller.address?.street
-      ? `${seller.address.street}, ${seller.address.city || ''}`
-      : seller.shopInfo?.zoneName || 'Local Store';
+    const address =
+      seller.location?.formattedAddress ||
+      seller.location?.address ||
+      (seller.address?.street ? `${seller.address.street}, ${seller.address.city || ''}` : '') ||
+      seller.shopInfo?.zoneName ||
+      'Local Store';
 
     // Fetch products for this shop
     const products = await QuickProduct.find({
@@ -718,7 +720,7 @@ export const getPublicShopById = async (req, res) => {
           phone: seller.phone || '',
           email: seller.email || '',
           businessType: seller.shopInfo?.businessType || 'Retail Store',
-          openingHours: seller.shopInfo?.openingHours || '',
+          openingHours: timing.hoursLabel || seller.shopInfo?.openingHours || '',
           hoursLabel: timing.hoursLabel,
           isOpen: timing.isOpen,
           statusText: timing.statusText,

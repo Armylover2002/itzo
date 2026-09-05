@@ -11,6 +11,8 @@ import {
 import { getQuickCartPath, getQuickHomePath, getQuickSearchPath, getQuickWalletPath, getQuickWishlistPath } from '../utils/routes';
 import { resolveQuickImageUrl } from '../utils/image';
 import logo from '../assets/Logo.png';
+import { useSettings } from '@core/context/SettingsContext';
+import { getAppLogo, getCachedSettings } from '@common/utils/businessSettings';
 import { useCart } from '../context/CartContext';
 import { useLocation as useAppLocation } from '../context/LocationContext';
 import LocationDrawer from './shared/LocationDrawer';
@@ -125,6 +127,11 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
   const { cartCount } = useCart();
   const { scrollY } = useScroll();
   const pathname = typeof window !== "undefined" ? window.location.pathname : "";
+  const { settings } = useSettings();
+  const cachedSettings = getCachedSettings();
+  const dynamicLogo = settings?.userLogo?.url || settings?.logoUrl || cachedSettings?.userLogo?.url || getAppLogo('user');
+  const logoSrc = dynamicLogo || logo;
+  const isCustomLogo = Boolean(dynamicLogo && dynamicLogo !== '/itzo-logo-transparent.png');
 
   if (isEmbedded) {
     return (
@@ -283,9 +290,13 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
               className="flex items-center gap-3 cursor-pointer group shrink-0">
               <div className="group-hover:scale-110 transition-all duration-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
                 <img
-                  src={logo}
-                  alt="Logo"
-                  className="h-10 md:h-16 w-auto object-contain brightness-0 invert"
+                  src={logoSrc}
+                  alt={`${settings?.companyName || settings?.appName || "App"} Logo`}
+                  className={cn("h-10 md:h-16 w-auto object-contain", !isCustomLogo && "brightness-0 invert")}
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = logo;
+                  }}
                 />
               </div>
             </div>

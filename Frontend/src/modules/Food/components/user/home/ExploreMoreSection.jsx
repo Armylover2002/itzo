@@ -12,7 +12,7 @@ const ExploreMoreSection = memo(({
   backendOrigin = ""
 }) => {
   return (
-    <section className="px-4 py-4">
+    <section className="px-4 md:px-0 py-4">
       <div className="relative rounded-[20px] overflow-hidden bg-gradient-to-br from-[#0c0524] via-[#1a144b] to-[#0c0524] shadow-lg border border-[#3b328a]/40 p-4 pt-4 pb-5">
         
         {/* Background Effects matching the second image */}

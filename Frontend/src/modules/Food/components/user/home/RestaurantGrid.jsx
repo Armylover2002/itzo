@@ -117,22 +117,22 @@ const FoodRestaurantCard = memo(({
             </div>
 
             <div className="transform transition-transform duration-300 group-hover:-translate-y-1">
-              <CardContent className="flex flex-grow flex-col p-3 pt-3 sm:p-4 sm:pt-4 lg:p-5 lg:pt-5">
-                <div className="mb-2 flex items-start justify-between gap-2 lg:mb-3">
+              <CardContent className="flex flex-grow flex-col p-3 pt-3 sm:p-4 sm:pt-4 lg:p-4 lg:pt-4">
+                <div className="mb-2 flex items-start justify-between gap-2 lg:mb-2.5">
                   <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-1 text-lg font-medium leading-tight tracking-tight text-gray-950 transition-colors duration-300 group-hover:text-[#FE5502] dark:text-white lg:text-2xl">
+                    <h3 className="line-clamp-1 text-lg font-medium leading-tight tracking-tight text-gray-950 transition-colors duration-300 group-hover:text-[#FE5502] dark:text-white md:text-base lg:text-lg lg:font-bold">
                       {restaurant.name}
                     </h3>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
-                        className={`inline-flex rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-widest shadow-sm ${
+                        className={`inline-flex rounded-full px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] font-medium uppercase tracking-widest shadow-sm ${
                           availability.isOpen ? "bg-emerald-500 text-white" : "bg-gray-400 text-white"
                         }`}
                       >
                         {availability.isOpen ? "Open now" : "Offline"}
                       </span>
                       {availability.isOpen && availability.closingCountdownLabel && (
-                        <div className="flex items-center gap-1.5 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+                        <div className="flex items-center gap-1.5 rounded-full border border-amber-100 bg-amber-50 px-2.5 py-0.5 sm:py-1 text-[10px] font-medium uppercase tracking-wide text-amber-700">
                           <Timer className="h-3 w-3 flex-shrink-0" strokeWidth={2.5} />
                           <span>{availability.closingCountdownLabel}</span>
                         </div>
@@ -140,29 +140,29 @@ const FoodRestaurantCard = memo(({
                     </div>
                   </div>
                   <div
-                    className={`flex-shrink-0 rounded-2xl px-3 py-1.5 text-white shadow-md transition-transform duration-300 group-hover:scale-110 ${
+                    className={`flex-shrink-0 rounded-xl sm:rounded-2xl px-2.5 py-1 sm:px-3 sm:py-1.5 text-white shadow-md transition-transform duration-300 group-hover:scale-105 ${
                       Number(restaurant.rating) > 0 ? "bg-[#259539]" : "bg-gray-400"
-                    } flex items-center gap-1.5`}
+                    } flex items-center gap-1 sm:gap-1.5`}
                   >
-                    <span className="text-sm font-medium tracking-tight lg:text-lg">
+                    <span className="text-sm font-medium tracking-tight md:text-xs lg:text-sm">
                       {Number(restaurant.rating) > 0 ? Number(restaurant.rating).toFixed(1) : "NEW"}
                     </span>
                     {Number(restaurant.rating) > 0 && (
-                      <Star className="h-3.5 w-3.5 fill-white text-white lg:h-4.5 lg:w-4.5" strokeWidth={0} />
+                      <Star className="h-3.5 w-3.5 fill-white text-white md:h-3 md:w-3 lg:h-3.5 lg:w-3.5" strokeWidth={0} />
                     )}
                   </div>
                 </div>
 
-                <div className="mb-2 flex items-center gap-1 text-sm text-gray-500 opacity-70 transition-opacity duration-300 group-hover:opacity-100 lg:mb-3 lg:text-base">
-                  <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400 lg:h-5 lg:w-5" strokeWidth={1.5} />
+                <div className="mb-2 flex items-center gap-1 text-sm text-gray-500 opacity-70 transition-opacity duration-300 group-hover:opacity-100 lg:mb-2 lg:text-xs">
+                  <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400 lg:h-3.5 lg:w-3.5" strokeWidth={1.5} />
                   <span className="font-medium text-gray-700 dark:text-gray-300">{restaurant.deliveryTime}</span>
                   <span className="mx-1">|</span>
                   <span className="font-medium text-gray-700 dark:text-gray-300">{restaurant.distance}</span>
                 </div>
 
                 {typeof restaurant.offer === 'string' && restaurant.offer.trim() !== '' && restaurant.offer.trim() !== 'null' && restaurant.offer.trim() !== 'undefined' && (
-                  <div className="mt-auto flex items-center gap-2 text-sm transition-transform duration-300 group-hover:translate-x-1 lg:text-base">
-                    <BadgePercent className="h-4 w-4 text-black lg:h-5 lg:w-5" strokeWidth={2} />
+                  <div className="mt-auto flex items-center gap-1.5 text-sm transition-transform duration-300 group-hover:translate-x-1 lg:text-xs">
+                    <BadgePercent className="h-4 w-4 text-black lg:h-3.5 lg:w-3.5" strokeWidth={2} />
                     <span className="font-medium text-gray-700 dark:text-gray-300">{restaurant.offer}</span>
                   </div>
                 )}
@@ -194,7 +194,7 @@ const RestaurantGrid = memo(({
 }) => {
   return (
     <section className="content-auto space-y-0 pb-8 pt-3 sm:pt-4 md:pb-10 lg:pt-6">
-      <div className="mb-4 px-4">
+      <div className="mb-4 px-4 md:px-0">
         <div className="flex flex-col gap-1">
           <h2 className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
             {filteredRestaurants.length} Restaurants Delivering to You
@@ -214,14 +214,14 @@ const RestaurantGrid = memo(({
               transition={{ duration: 0.25 }}
             >
               <LoadingSkeletonRegion label="Loading restaurants" className="h-full p-1 sm:p-2">
-                <RestaurantGridSkeleton count={3} className="grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3" compact />
+                <RestaurantGridSkeleton count={3} className="grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" compact />
               </LoadingSkeletonRegion>
             </motion.div>
           )}
         </AnimatePresence>
 
         <div
-          className={`grid grid-cols-1 items-stretch gap-5 px-4 pt-1 transition-opacity duration-300 sm:gap-4 sm:pt-1.5 md:grid-cols-2 lg:gap-5 lg:pt-2 lg:grid-cols-3 xl:gap-6 ${
+          className={`grid grid-cols-1 items-stretch gap-5 px-4 md:px-0 pt-1 transition-opacity duration-300 sm:gap-4 sm:pt-1.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 lg:gap-5 xl:gap-6 ${
             isLoadingFilterResults || loadingRestaurants ? "opacity-50" : "opacity-100"
           }`}
         >

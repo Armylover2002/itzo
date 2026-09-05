@@ -82,9 +82,7 @@ export default function DesktopNavbar({ showLogo = true }) {
         normalizedPath === "/orders" ||
         normalizedPath.startsWith("/orders/")
     const isDelivery = !isDining && !isUnder250 && !isOrders && !isProfile && !isQuick && (location.pathname === "/food/user" || location.pathname === "/food" || (location.pathname.startsWith("/food/user") && !location.pathname.includes("/dining") && !location.pathname.includes("/under-250") && !location.pathname.includes("/orders") && !location.pathname.includes("/profile")))
-    const isBannerRoute =
-        location.pathname === "/food/user/under-250" ||
-        location.pathname === "/food/under-250"
+    const isBannerRoute = false
     const searchPlaceholder = isQuick
         ? 'Search for milk, bread, eggs...'
         : "Search for restaurants, food..."
@@ -342,26 +340,6 @@ export default function DesktopNavbar({ showLogo = true }) {
                             >
                                 <span className="text-sm font-bold tracking-wide uppercase">Home</span>
                                 {isDelivery && (
-                                    <motion.div
-                                        layoutId="navIndicator"
-                                        className="absolute -bottom-3 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ duration: 0.3 }}
-                                    />
-                                )}
-                            </Link>
-
-                            {/* Quick Tab */}
-                            <Link
-                                to="/quick"
-                                className={`flex flex-col items-center gap-1 px-2 py-1 transition-colors relative group ${isQuick
-                                    ? "text-[#FE5502] dark:text-[#FE5502]"
-                                    : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
-                                    }`}
-                            >
-                                <span className="text-sm font-bold tracking-wide uppercase">Quick</span>
-                                {isQuick && (
                                     <motion.div
                                         layoutId="navIndicator"
                                         className="absolute -bottom-3 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"

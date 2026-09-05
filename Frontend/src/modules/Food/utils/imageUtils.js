@@ -16,8 +16,15 @@ export const normalizeImageUrl = (imageUrl, BACKEND_ORIGIN) => {
     .replace(/^(https?):\/(?!\/)/i, "$1://")
     .replace(/^(https?:\/\/)(https?:\/\/)/i, "$1");
 
-  // Intercept Cloudinary URLs and map them to the local uploads folder
-  if (normalizedInput.includes("/image/upload/")) {
+  // A real Cloudinary (or any other CDN) URL is already directly loadable —
+  // this must be checked BEFORE the "/image/upload/" fragment rewrite below,
+  // since a genuine Cloudinary URL also contains that substring and would
+  // otherwise get mangled into a broken local /uploads/ path.
+  const isAlreadyFullUrl = /^(https?:)?\/\//i.test(normalizedInput);
+
+  // Intercept bare "/image/upload/..." fragments (no host) and map them to the
+  // local uploads folder — a legacy shorthand, not a genuine remote URL.
+  if (!isAlreadyFullUrl && normalizedInput.includes("/image/upload/")) {
     const uploadsIndex = normalizedInput.indexOf("/uploads/");
     if (uploadsIndex !== -1) {
       normalizedInput = `${BACKEND_ORIGIN}${normalizedInput.slice(uploadsIndex)}`;

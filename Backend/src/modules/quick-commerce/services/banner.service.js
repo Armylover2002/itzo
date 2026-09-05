@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import { QuickBanner } from '../models/banner.model.js';
-import { QuickZone } from '../models/quick_zone.model.js';
-import { isPointInZone } from '../../../utils/geo.js';
+import { resolveZoneId } from '../utils/zoneScope.js';
 
 // --- In-memory Public Banner Cache ---
 const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
@@ -322,18 +321,7 @@ export const getPublicQuickBanners = async ({
   lng = null,
 } = {}) => {
   // 1. Resolve zone if coords are given but no zoneId
-  let resolvedZoneId = zoneId;
-  if (!resolvedZoneId && lat && lng) {
-    const latNum = Number(lat);
-    const lngNum = Number(lng);
-    if (!isNaN(latNum) && !isNaN(lngNum)) {
-      const zones = await QuickZone.find({ isActive: true }).lean();
-      const userZone = zones.find((z) => isPointInZone(latNum, lngNum, z));
-      if (userZone) {
-        resolvedZoneId = String(userZone._id);
-      }
-    }
-  }
+  const resolvedZoneId = await resolveZoneId({ zoneId, lat, lng });
 
   // 2. Cache key check
   const cacheKey = `${resolvedZoneId || 'all'}:${headerCategoryId || 'all'}`;

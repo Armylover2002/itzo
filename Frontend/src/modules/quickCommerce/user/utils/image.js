@@ -13,7 +13,22 @@ export const resolveQuickImageUrl = (value) => {
   const normalized = raw.replace(/\\/g, "/");
   let resolvedUrl = normalized;
 
-  if (normalized.includes("/image/upload/")) {
+  // A fully-qualified URL (Cloudinary, any other CDN, data/blob URI) is already
+  // directly loadable as-is — this must be checked BEFORE the "/image/upload/"
+  // fragment rewrite below, since a real Cloudinary URL also contains that
+  // substring and would otherwise get mangled into a broken localhost path.
+  if (
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("data:") ||
+    normalized.startsWith("blob:")
+  ) {
+    resolvedUrl = normalized;
+  } else if (normalized.startsWith("//")) {
+    resolvedUrl = `https:${normalized}`;
+  } else if (normalized.includes("/image/upload/")) {
+    // Legacy shorthand: a bare "/image/upload/..." fragment with no host,
+    // reconstructed as a path inside our own /uploads/ folder.
     const uploadsIndex = normalized.indexOf("/uploads/");
     if (uploadsIndex !== -1) {
       resolvedUrl = `${API_BASE_URL}${normalized.slice(uploadsIndex)}`;
@@ -24,15 +39,6 @@ export const resolveQuickImageUrl = (value) => {
         resolvedUrl = extracted.startsWith("/uploads/") ? `${API_BASE_URL}${extracted}` : `${API_BASE_URL}/uploads${extracted}`;
       }
     }
-  } else if (
-    normalized.startsWith("http://") ||
-    normalized.startsWith("https://") ||
-    normalized.startsWith("data:") ||
-    normalized.startsWith("blob:")
-  ) {
-    resolvedUrl = normalized;
-  } else if (normalized.startsWith("//")) {
-    resolvedUrl = `https:${normalized}`;
   } else if (normalized.startsWith("/uploads/")) {
     resolvedUrl = `${API_BASE_URL}${normalized}`;
   } else {

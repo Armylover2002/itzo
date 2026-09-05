@@ -142,7 +142,7 @@ const RestaurantImageCarousel = React.memo(
 
     return (
       <div
-        className="relative h-48 sm:h-56 md:h-60 lg:h-64 xl:h-72 w-full overflow-hidden rounded-t-md flex-shrink-0 group"
+        className="relative h-48 sm:h-52 md:h-44 lg:h-44 xl:h-48 w-full overflow-hidden rounded-t-[24px] sm:rounded-t-[28px] flex-shrink-0 group"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}>

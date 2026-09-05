@@ -12,12 +12,12 @@ const CategoryRail = memo(({
   backendOrigin = ""
 }) => {
   return (
-    <section className="px-4 py-4 space-y-4">
-      <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+    <section className="px-4 md:px-0 py-4 space-y-4">
+      <h2 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
         What's on your mind?
       </h2>
       
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      <div className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-2 pt-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         {/* Offers Card - Rounded Square */}
         <div 
           className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"

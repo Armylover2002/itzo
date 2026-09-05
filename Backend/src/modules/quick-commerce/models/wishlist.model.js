@@ -1,5 +1,24 @@
 import mongoose from 'mongoose';
 
+const wishlistItemSchema = new mongoose.Schema(
+  {
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'quick_product',
+      required: true,
+    },
+    // '' means "the whole product" (no variant picked, or a variant-less
+    // product). A non-empty value lets the same product be wishlisted once
+    // per variant — liking one variant never touches another variant's entry.
+    variantId: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+  },
+  { _id: false },
+);
+
 const quickWishlistSchema = new mongoose.Schema(
   {
     userId: {
@@ -12,13 +31,8 @@ const quickWishlistSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
-    products: {
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'quick_product',
-        },
-      ],
+    items: {
+      type: [wishlistItemSchema],
       default: [],
     },
   },

@@ -3,21 +3,30 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Store, Search, Clock, MapPin, Package, ArrowLeft, ShoppingBag, CheckCircle2, AlertCircle } from 'lucide-react';
 import { customerApi } from '../services/customerApi';
 import { useCart } from '../context/CartContext';
+import { useLocation as useQuickLocation } from '../context/LocationContext';
 import { resolveQuickImageUrl } from '../utils/image';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ShopsPage() {
   const navigate = useNavigate();
   const { cartCount } = useCart();
+  const { currentLocation } = useQuickLocation();
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState('all'); // 'all' | 'open'
 
+  const lat = currentLocation?.latitude;
+  const lng = currentLocation?.longitude;
+
   const fetchShops = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await customerApi.getShops();
+      // Scope the list to the customer's own delivery zone — without lat/lng
+      // the backend can't tell which zone this request belongs to and shops
+      // from every zone would show up.
+      const hasValidLocation = Number.isFinite(lat) && Number.isFinite(lng);
+      const res = await customerApi.getShops(hasValidLocation ? { lat, lng } : {});
       if (res?.data?.success) {
         setShops(res.data.results || []);
       }
@@ -26,7 +35,7 @@ export default function ShopsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lat, lng]);
 
   useEffect(() => {
     fetchShops();
