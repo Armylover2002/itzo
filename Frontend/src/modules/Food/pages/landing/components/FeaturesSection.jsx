@@ -10,13 +10,6 @@ const features = [
     link: '/food/user'
   },
   {
-    id: 'dining',
-    title: 'Dining',
-    subtitle: 'View the city\'s favourite dining venues',
-    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=600&auto=format&fit=crop',
-    link: '/food/user/dining'
-  },
-  {
     id: 'pro',
     title: 'ItzoPro',
     subtitle: 'Unlimited free deliveries and more',

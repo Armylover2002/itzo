@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, Component, useMemo } from "react"
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"
-import { restaurantAPI, diningAPI, orderAPI } from "@food/api"
+import { restaurantAPI, orderAPI } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { toast } from "sonner"
 import { useLocation } from "@food/hooks/useLocation"
@@ -204,26 +204,7 @@ function RestaurantDetailsContent() {
         let response = null
         let apiRestaurant = null
 
-        // Try dining API first (if available). If it doesn't return a valid restaurant,
-        // always fall back to restaurant API (important when diningAPI is stubbed).
-        try {
-          response = await diningAPI.getRestaurantBySlug(slug)
-          if (response?.data?.success && response?.data?.data) {
-            apiRestaurant = response.data.data
-            debugLog('? Found restaurant in dining API:', apiRestaurant)
-          } else {
-            debugLog('? Dining API returned no restaurant, falling back to restaurant API...')
-          }
-        } catch (diningError) {
-          // If dining API errors, we still fall back unless it's a hard network failure handled below.
-          if (diningError?.response?.status === 404) {
-            debugLog('? Restaurant not found in dining API, trying restaurant API...')
-          } else {
-            debugWarn('? Dining API failed, trying restaurant API...', diningError?.message)
-          }
-        }
-
-        // Restaurant API fallback (works for both ObjectId and slug)
+        // Restaurant API lookup (works for both ObjectId and slug)
         if (!apiRestaurant) {
           try {
             // First, try to get restaurant directly by slug/ID (no zoneId needed)
@@ -282,7 +263,7 @@ function RestaurantDetailsContent() {
           debugLog('? Restaurant _id:', apiRestaurant?._id)
           debugLog('? Restaurant.restaurant:', apiRestaurant?.restaurant)
 
-          // Check if this is a dining restaurant with nested restaurant data
+          // Some endpoints nest the restaurant one level deep — unwrap defensively
           const actualRestaurant = apiRestaurant?.restaurant || apiRestaurant
 
           // Helper function to format address with zone and pin code
@@ -482,7 +463,7 @@ function RestaurantDetailsContent() {
           const normalizedRestaurantOffers = actualRestaurant?.restaurantOffers || apiRestaurant?.restaurantOffers || {}
 
           // Transform API data to match expected format with comprehensive fallbacks
-          // Handle both dining restaurant and regular restaurant data structures
+          // Handle both nested and flat restaurant data structures
           const transformedRestaurant = {
             id: actualRestaurant?.restaurantId || actualRestaurant?._id || actualRestaurant?.id || apiRestaurant?.restaurantId || apiRestaurant?._id || null,
             mongoId: actualRestaurant?._id || apiRestaurant?._id || null,
@@ -875,7 +856,7 @@ function RestaurantDetailsContent() {
               }
             } catch (menuError) {
               if (menuError.response && menuError.response.status === 404) {
-                debugLog('? Menu not found for this restaurant (might be a dining-only listing).')
+                debugLog('? Menu not found for this restaurant.')
               } else {
                 debugError('? Error fetching menu:', menuError)
               }
@@ -937,7 +918,7 @@ function RestaurantDetailsContent() {
               }
             } catch (inventoryError) {
               if (inventoryError.response && inventoryError.response.status === 404) {
-                debugLog('? Inventory not found for this restaurant (might be a dining-only listing).')
+                debugLog('? Inventory not found for this restaurant.')
               } else {
                 debugError('? Error fetching inventory:', inventoryError)
               }

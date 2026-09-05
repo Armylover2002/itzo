@@ -56,7 +56,6 @@ export default function MenuOverlay({ showMenu, setShowMenu }) {
       { id: 5, name: "Explore", icon: Compass, route: "/restaurant/explore" },
       { id: 6, name: "Outlet Info", icon: Info, route: "/restaurant/outlet-info" },
       { id: 7, name: "Outlet Timings", icon: Clock, route: "/restaurant/outlet-timings" },
-      { id: 8, name: "Reservations", icon: Calendar, route: "/restaurant/reservations" },
       { id: 9, name: "Menu Categories", icon: Settings, route: "/restaurant/menu-categories" },
       { id: 10, name: "Delivery Settings", icon: Truck, route: "/restaurant/delivery-settings" },
       { id: 11, name: "Finance", icon: IndianRupee, route: "/restaurant/hub-finance" },

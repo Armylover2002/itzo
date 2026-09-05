@@ -27,10 +27,6 @@ const foodLandingSettingsSchema = new mongoose.Schema(
             type: Boolean,
             default: true
         },
-        showDining: {
-            type: Boolean,
-            default: true
-        },
         showExploreIcons: {
             type: Boolean,
             default: true

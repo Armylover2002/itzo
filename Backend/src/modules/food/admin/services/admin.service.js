@@ -3416,13 +3416,6 @@ export async function createRestaurantByAdmin(body) {
         featuredDish: toStr(body.featuredDish),
         featuredPrice: typeof body.featuredPrice === 'number' ? body.featuredPrice : (parseFloat(body.featuredPrice) || undefined),
         offer: toStr(body.offer),
-        diningSettings: body.diningSettings && typeof body.diningSettings === 'object'
-            ? {
-                isEnabled: Boolean(body.diningSettings.isEnabled),
-                maxGuests: Math.max(1, parseInt(body.diningSettings.maxGuests, 10) || 6),
-                diningType: toStr(body.diningSettings.diningType) || 'family-dining'
-            }
-            : undefined,
         status: 'approved',
         approvedAt: new Date()
     };

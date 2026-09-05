@@ -251,15 +251,6 @@ export const adminSidebarMenu = [
   },
   {
     type: "section",
-    label: "DINING MANAGEMENT",
-    permissionKey: "dining_management",
-    items: [
-      { type: "link", label: "Dining Banners", permissionKey: "banners", path: "/ecs/food/dining-management", icon: "UtensilsCrossed" },
-      { type: "link", label: "Dining List", permissionKey: "list", path: "/ecs/food/dining-list", icon: "FileText" },
-    ],
-  },
-  {
-    type: "section",
     label: "HRMS (ENTERPRISE)",
     permissionKey: "hrms",
     items: [
