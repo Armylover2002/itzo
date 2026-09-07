@@ -28,6 +28,9 @@ export const useFoodHomeData = ({
   // the Home page also renders the Quick Commerce tab, and there is no reason
   // to pull restaurant data while the customer hasn't opened Food.
   activeTab = "food",
+  // "Fixed Restaurant" (default) or "Street Food Vendor" — drives the Food /
+  // Street Food selector on the home page.
+  businessType = "Fixed Restaurant",
 }) => {
   // Use cache as initial state if valid
   const hasValidCache = globalHomeCache.bootstrap && (Date.now() - globalHomeCache.lastFetched < CACHE_EXPIRY_MS);
@@ -213,6 +216,7 @@ export const useFoodHomeData = ({
       if (filters.sortBy) params.sortBy = filters.sortBy;
       if (filters.selectedCuisine) params.cuisine = filters.selectedCuisine;
       if (zoneId) params.zoneId = zoneId;
+      if (businessType) params.businessType = businessType;
 
       // Map local active filters to API params
       if (filters.activeFilters?.has("rating-45-plus")) params.minRating = 4.5;
@@ -253,6 +257,7 @@ export const useFoodHomeData = ({
             openDays: restaurant.openDays,
             isActive: restaurant.isActive,
             isAcceptingOrders: restaurant.isAcceptingOrders,
+            businessType: restaurant.businessType || "Fixed Restaurant",
           };
         });
 
@@ -276,7 +281,7 @@ export const useFoodHomeData = ({
         setIsLoadingMoreRestaurants(false);
       }
     }
-  }, [location, zoneId, buildRestaurantImageCandidates, extractImages]);
+  }, [location, zoneId, businessType, buildRestaurantImageCandidates, extractImages]);
 
   useEffect(() => {
     if (activeTab !== "food") {
@@ -286,7 +291,7 @@ export const useFoodHomeData = ({
       return;
     }
     fetchRestaurants(appliedFilters, 1, false);
-  }, [appliedFilters, fetchRestaurants, activeTab]);
+  }, [appliedFilters, fetchRestaurants, activeTab, businessType]);
 
   // --- Menu Context Fetching (Veg Mode) ---
   const menuUnionRestaurantIdsKey = restaurantsData.map(r => r.mongoId || r.id).join(",");

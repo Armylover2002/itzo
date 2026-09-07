@@ -23,6 +23,53 @@ import { ValidationError, NotFoundError } from '../../../core/auth/errors.js';
 import { emitQuickCommerceStatusUpdate } from './quickStatusRealtime.service.js';
 
 /**
+ * Credit the platform wallet for one delivered seller order, exactly once.
+ *
+ * Delivery can be recorded through two independent paths (the seller marking it, and
+ * the rider sync), and both used to `$inc` the same wallet with no dedupe — permanently
+ * inflating platform revenue with no ledger row to reconcile against. The credit is
+ * claimed with a conditional single-document update, which is atomic in Mongo, so only
+ * the first caller through wins.
+ *
+ * @param {object} sellerOrder  the delivered seller order
+ * @param {string} source       label used for logging which path credited
+ */
+const creditPlatformEarningOnce = async (sellerOrder, source) => {
+  const adminProfitRaw =
+    Number(sellerOrder?.pricing?.commission || 0) +
+    Number(sellerOrder?.pricing?.platformFee || 0);
+  const adminProfit = Number.isFinite(adminProfitRaw) ? Math.max(0, adminProfitRaw) : 0;
+  if (adminProfit <= 0) return;
+
+  try {
+    const claimed = await SellerOrder.findOneAndUpdate(
+      {
+        _id: sellerOrder._id,
+        $or: [
+          { platformEarningCreditedAt: null },
+          { platformEarningCreditedAt: { $exists: false } },
+        ],
+      },
+      { $set: { platformEarningCreditedAt: new Date() } },
+      { new: true },
+    );
+
+    // Another path already credited this order.
+    if (!claimed) return;
+
+    await QuickAdminWallet.findOneAndUpdate(
+      { key: 'quick_platform' },
+      { $inc: { balance: adminProfit, totalRevenue: adminProfit } },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  } catch (err) {
+    logger.error(
+      `[${source}] Failed to update quick admin wallet for ${sellerOrder.orderId}: ${err?.message || err}`,
+    );
+  }
+};
+
+/**
  * Status mapping from SellerOrder to Parent QuickOrder (FoodOrder)
  */
 const SELLER_TO_PARENT_STATUS_MAP = {
@@ -109,25 +156,7 @@ export const updateSellerOrderStatus = async (sellerOrderId, sellerId, nextStatu
       }
     }
 
-    const adminProfitRaw =
-      Number(sellerOrder?.pricing?.commission || 0) +
-      Number(sellerOrder?.pricing?.platformFee || 0);
-    const adminProfit = Number.isFinite(adminProfitRaw) ? Math.max(0, adminProfitRaw) : 0;
-    if (adminProfit > 0) {
-      try {
-        await QuickAdminWallet.findOneAndUpdate(
-          { key: 'quick_platform' },
-          {
-            $inc: { balance: adminProfit, totalRevenue: adminProfit },
-          },
-          { upsert: true, new: true, setDefaultsOnInsert: true },
-        );
-      } catch (err) {
-        logger.error(
-          `[QuickAdminEarnings] Failed to update quick admin wallet for ${sellerOrder.orderId}: ${err?.message || err}`,
-        );
-      }
-    }
+    await creditPlatformEarningOnce(sellerOrder, 'QuickAdminEarnings');
   }
 
   // 2. Sync Parent Order
@@ -341,25 +370,7 @@ export const syncSellerOrderFromDelivery = async (parentOrderId, deliveryStatus)
         }
       }
 
-      const adminProfitRaw =
-        Number(so?.pricing?.commission || 0) +
-        Number(so?.pricing?.platformFee || 0);
-      const adminProfit = Number.isFinite(adminProfitRaw) ? Math.max(0, adminProfitRaw) : 0;
-      if (adminProfit > 0) {
-        try {
-          await QuickAdminWallet.findOneAndUpdate(
-            { key: 'quick_platform' },
-            {
-              $inc: { balance: adminProfit, totalRevenue: adminProfit },
-            },
-            { upsert: true, new: true, setDefaultsOnInsert: true },
-          );
-        } catch (err) {
-          logger.error(
-            `[QuickAdminEarningsSync] Failed to update quick admin wallet for ${so.orderId}: ${err?.message || err}`,
-          );
-        }
-      }
+      await creditPlatformEarningOnce(so, 'QuickAdminEarningsSync');
     }
   }
 };

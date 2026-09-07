@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { NavLink, useNavigate, useLocation } from "react-router-dom"
 import {
   LayoutDashboard,
@@ -8,27 +8,32 @@ import {
   Store,
   Clock,
   UtensilsCrossed,
-  Tag,
   MapPin,
   Activity,
   History,
-  Star,
-  Wallet,
+  IndianRupee,
   CreditCard,
   Receipt,
+  Wallet,
   Bell,
   HelpCircle,
-  Send,
+  Compass,
+  Crown,
+  Star,
+  Truck,
+  Gift,
   LogOut
 } from "lucide-react"
 import { cn } from "@food/utils/utils"
+import { clearModuleAuth } from "@food/utils/auth"
+import { useSubscriptionRequired } from "@common/hooks/useSubscriptionRequired"
 import {
   loadBusinessSettings,
   getCachedSettings,
   getAppLogo
 } from "@common/utils/businessSettings"
 
-const NAV_SECTIONS = [
+const getNavSections = (subscriptionRequired) => [
   {
     title: "MAIN",
     items: [
@@ -39,29 +44,40 @@ const NAV_SECTIONS = [
     ],
   },
   {
-    title: "OUTLET",
+    // Mirrors the "Manage outlet" section on the Explore More page.
+    title: "MANAGE OUTLET",
     items: [
       { label: "Outlet info", path: "/food/restaurant/outlet-info", icon: Store },
       { label: "Outlet timings", path: "/food/restaurant/outlet-timings", icon: Clock },
       { label: "Menu categories", path: "/food/restaurant/menu-categories", icon: UtensilsCrossed },
-      { label: "Promo codes", path: "/food/restaurant/promo-codes", icon: Tag },
-      { label: "Zone setup", path: "/food/restaurant/zone-setup", icon: MapPin },
+      // Hidden when the admin has switched off the subscription requirement —
+      // matches the same condition used on the Explore More page.
+      ...(subscriptionRequired
+        ? [{ label: "Business Plan", path: "/food/restaurant/business-plan", icon: Crown }]
+        : []),
       { label: "Outlet status", path: "/food/restaurant/status", icon: Activity },
     ],
   },
   {
-    title: "ORDERS & REVIEWS",
+    // Mirrors the "Orders" section on the Explore More page.
+    title: "ORDERS",
     items: [
       { label: "Order history", path: "/food/restaurant/orders/history", icon: History },
-      { label: "Ratings & reviews", path: "/food/restaurant/ratings-reviews", icon: Star },
+      { label: "Complaints", path: "/food/restaurant/feedback?tab=complaints", icon: Star },
+      { label: "Reviews", path: "/food/restaurant/feedback", icon: MessageSquare },
     ],
   },
   {
     title: "FINANCE",
     items: [
-      { label: "Payout", path: "/food/restaurant/finance-details", icon: Wallet },
+      { label: "Payout", path: "/food/restaurant/hub-finance", icon: IndianRupee },
+      { label: "Invoices", path: "/food/restaurant/hub-finance?tab=invoices", icon: Receipt },
       { label: "Bank details", path: "/food/restaurant/update-bank-details", icon: CreditCard },
-      { label: "Withdrawal history", path: "/food/restaurant/withdrawal-history", icon: Receipt },
+      // Hidden when the admin has switched off the subscription requirement —
+      // matches the same condition used on the Explore More page.
+      ...(subscriptionRequired
+        ? [{ label: "Subscription Center", path: "/food/restaurant/wallet", icon: Wallet }]
+        : []),
     ],
   },
   {
@@ -69,15 +85,30 @@ const NAV_SECTIONS = [
     items: [
       { label: "Notifications", path: "/food/restaurant/notifications", icon: Bell },
       { label: "Help centre", path: "/food/restaurant/help-centre/support", icon: HelpCircle },
-      { label: "Share feedback", path: "/food/restaurant/share-feedback", icon: Send },
+    ],
+  },
+  {
+    // Mirrors the "Settings" section on the Explore More page.
+    title: "SETTINGS",
+    items: [
+      { label: "Delivery settings", path: "/food/restaurant/delivery-settings", icon: Truck },
+      { label: "Zone setup", path: "/food/restaurant/zone-setup", icon: MapPin },
+      { label: "Refer & Earn", path: "/food/restaurant/refer-earn", icon: Gift },
+      { label: "Live Location Control", path: "/food/restaurant/live-location", icon: MapPin },
     ],
   },
 ]
+
+// Standalone link pinned to the bottom of the sidebar — opens the Explore More
+// hub page, which itself lists Payout/Invoices/Withdrawal history/Support etc.
+const EXPLORE_LINK = { label: "Explore", path: "/food/restaurant/explore", icon: Compass }
 
 export default function RestaurantSidebar({ className }) {
   const navigate = useNavigate()
   const location = useLocation()
   const [logoUrl, setLogoUrl] = useState(() => getAppLogo("restaurant"))
+  const subscriptionRequired = useSubscriptionRequired("RESTAURANT")
+  const NAV_SECTIONS = useMemo(() => getNavSections(subscriptionRequired), [subscriptionRequired])
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -111,7 +142,8 @@ export default function RestaurantSidebar({ className }) {
   }, [])
 
   const handleLogout = () => {
-    navigate("/food/restaurant/login")
+    clearModuleAuth("restaurant")
+    navigate("/food/restaurant/login", { replace: true })
   }
 
   return (
@@ -203,8 +235,29 @@ export default function RestaurantSidebar({ className }) {
         ))}
       </div>
 
-      {/* Footer / Logout Section */}
-      <div className="border-t border-gray-100 p-3 shrink-0">
+      {/* Footer / Explore + Logout Section */}
+      <div className="border-t border-gray-100 p-3 shrink-0 space-y-1">
+        <NavLink
+          to={EXPLORE_LINK.path}
+          className={cn(
+            "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200",
+            location.pathname === EXPLORE_LINK.path
+              ? "bg-[#0f2d5a]/10 text-[#0f2d5a] shadow-xs"
+              : "text-slate-600 hover:bg-slate-100/70 hover:text-[#0f2d5a]"
+          )}
+        >
+          <div
+            className={cn(
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-200",
+              location.pathname === EXPLORE_LINK.path
+                ? "bg-[#0f2d5a] text-white shadow-sm shadow-[#0f2d5a]/30"
+                : "bg-slate-100 text-[#0f2d5a] group-hover:bg-[#0f2d5a] group-hover:text-white group-hover:shadow-sm"
+            )}
+          >
+            <EXPLORE_LINK.icon className="h-4 w-4 shrink-0 transition-colors" />
+          </div>
+          <span className="truncate">{EXPLORE_LINK.label}</span>
+        </NavLink>
         <button
           type="button"
           onClick={handleLogout}

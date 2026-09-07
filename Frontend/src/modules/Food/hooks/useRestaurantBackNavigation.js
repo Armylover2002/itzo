@@ -95,23 +95,16 @@ const resolveRestaurantBackPath = ({ pathname, state }) => {
   if (
     normalizedPath === "/reviews" ||
     /^\/reviews\/[^/]+\/reply$/.test(normalizedPath) ||
-    normalizedPath === "/ratings-reviews" ||
     normalizedPath === "/dish-ratings"
   ) {
     return explicitBackPath || "/food/restaurant/feedback"
   }
 
-  if (
-    normalizedPath === "/help-centre/support" ||
-    normalizedPath === "/share-feedback"
-  ) {
+  if (normalizedPath === "/help-centre/support") {
     return explicitBackPath || "/food/restaurant/feedback"
   }
 
-  if (
-    normalizedPath === "/finance-details" ||
-    normalizedPath === "/download-report"
-  ) {
+  if (normalizedPath === "/download-report") {
     return explicitBackPath || "/food/restaurant/hub-finance"
   }
 

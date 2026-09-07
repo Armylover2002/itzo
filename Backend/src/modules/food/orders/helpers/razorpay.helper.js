@@ -53,6 +53,79 @@ export function verifyPaymentSignature(orderId, paymentId, signature) {
     return expected === signature;
 }
 
+/**
+ * Full checkout verification for an order.
+ *
+ * `verifyPaymentSignature` alone only proves the caller holds a genuine Razorpay
+ * (orderId, paymentId) pair — it says nothing about WHICH order was paid or for how
+ * much. Callers that skipped these extra checks could be handed a valid ₹1 triple and
+ * would happily mark a ₹5,000 order paid, so every order-payment verification must go
+ * through here.
+ *
+ * @param {object}  args
+ * @param {string}  args.razorpayOrderId    order id supplied by the client
+ * @param {string}  args.razorpayPaymentId  payment id supplied by the client
+ * @param {string}  args.razorpaySignature  signature supplied by the client
+ * @param {string}  args.expectedOrderId    razorpay order id stored on our order at checkout
+ * @param {number} [args.expectedAmount]    amount in rupees we expect to have been paid
+ * @returns {Promise<{ok: true, amount: number, payment: object}>}
+ * @throws  {Error} with a caller-safe message when verification fails
+ */
+export async function verifyOrderPayment({
+    razorpayOrderId,
+    razorpayPaymentId,
+    razorpaySignature,
+    expectedOrderId,
+    expectedAmount
+}) {
+    const submittedOrderId = String(razorpayOrderId || '').trim();
+    const paymentId = String(razorpayPaymentId || '').trim();
+    const signature = String(razorpaySignature || '').trim();
+    const boundOrderId = String(expectedOrderId || '').trim();
+
+    if (!submittedOrderId || !paymentId || !signature) {
+        throw new Error('Missing payment details');
+    }
+
+    // 1. The payment must be for the order WE created, not one the caller chose.
+    if (!boundOrderId) {
+        throw new Error('This order has no payment session to verify');
+    }
+    if (submittedOrderId !== boundOrderId) {
+        throw new Error('Payment does not belong to this order');
+    }
+
+    // 2. The signature must be authentic.
+    if (!verifyPaymentSignature(submittedOrderId, paymentId, signature)) {
+        throw new Error('Payment verification failed');
+    }
+
+    // 3. The gateway must agree the money was actually collected, for this order.
+    let payment;
+    try {
+        payment = await fetchRazorpayPayment(paymentId);
+    } catch (error) {
+        throw new Error('Could not confirm this payment with Razorpay');
+    }
+
+    if (String(payment?.order_id || '') !== submittedOrderId) {
+        throw new Error('Payment does not belong to this order');
+    }
+    if (!['captured', 'authorized'].includes(String(payment?.status || ''))) {
+        throw new Error('Payment has not been completed');
+    }
+
+    // 4. The amount must cover what the order asked for (1 paisa tolerance for rounding).
+    const paidAmount = Number(payment.amount) / 100;
+    if (Number.isFinite(expectedAmount) && expectedAmount > 0) {
+        if (paidAmount + 0.01 < Number(expectedAmount)) {
+            throw new Error('Paid amount is less than the order total');
+        }
+    }
+
+    return { ok: true, amount: paidAmount, payment };
+}
+
 export function verifySubscriptionSignature(subscriptionId, paymentId, signature) {
     if (!KEY_SECRET) return false;
     const body = `${paymentId}|${subscriptionId}`;

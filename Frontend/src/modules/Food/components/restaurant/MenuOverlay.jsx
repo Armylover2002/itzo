@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
+import { clearModuleAuth } from "@food/utils/auth"
 import { 
   Home,
   ShoppingBag,
@@ -149,14 +150,15 @@ export default function MenuOverlay({ showMenu, setShowMenu }) {
                         if (option.isLogout) {
                           // Handle logout
                           if (window.confirm("Are you sure you want to logout?")) {
-                            // Clear authentication state
-                            localStorage.removeItem("restaurant_authenticated")
-                            localStorage.removeItem("restaurant_user")
+                            // Clear authentication state (access/refresh tokens included -
+                            // clearing only the "authenticated" flag left the token behind,
+                            // so ProtectedRoute kept treating the session as logged in)
+                            clearModuleAuth("restaurant")
                             setIsAuthenticated(false)
                             // Dispatch custom event for same-tab updates
                             window.dispatchEvent(new Event('restaurantAuthChanged'))
                             // Redirect to login
-                            navigate("/restaurant/login")
+                            navigate("/food/restaurant/login", { replace: true })
                           }
                         } else {
                           navigate(option.route)

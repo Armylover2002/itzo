@@ -577,24 +577,40 @@ export async function updateQuickCommerceWithdrawalStatus(
     throw new Error("Status must be Settled or Rejected");
   }
 
-  const sellerWithdrawal = await SellerTransaction.findOne({
+  const existingSellerWithdrawal = await SellerTransaction.findOne({
     _id: withdrawalId,
     type: "Withdrawal",
-  });
+  }).lean();
 
-  if (sellerWithdrawal) {
-    if (!["Pending", "Processing"].includes(String(sellerWithdrawal.status || ""))) {
-      throw new Error(`Withdrawal is already ${sellerWithdrawal.status}`);
+  if (existingSellerWithdrawal) {
+    // The status guard lives in the FILTER, not in an if-check before save(). Reading
+    // the status and then saving left a window where two admins acting at once both saw
+    // "Pending" and both approved the same payout.
+    const sellerWithdrawal = await SellerTransaction.findOneAndUpdate(
+      {
+        _id: withdrawalId,
+        type: "Withdrawal",
+        status: { $in: ["Pending", "Processing"] },
+      },
+      {
+        $set: {
+          status: isApprove ? "Settled" : "Rejected",
+          adminNote: String(adminNote || "").trim(),
+          reason: isReject
+            ? String(rejectionReason || adminNote || "Rejected by admin").trim()
+            : "",
+          processedAt: new Date(),
+          ...(transactionId ? { orderId: String(transactionId).trim() } : {}),
+        },
+      },
+      { new: true },
+    );
+
+    if (!sellerWithdrawal) {
+      // Someone else processed it between our read and our write.
+      const current = await SellerTransaction.findById(withdrawalId).select({ status: 1 }).lean();
+      throw new Error(`Withdrawal is already ${current?.status || existingSellerWithdrawal.status}`);
     }
-
-    sellerWithdrawal.status = isApprove ? "Settled" : "Rejected";
-    sellerWithdrawal.adminNote = String(adminNote || "").trim();
-    sellerWithdrawal.reason = isReject
-      ? String(rejectionReason || adminNote || "Rejected by admin").trim()
-      : "";
-    sellerWithdrawal.processedAt = new Date();
-    if (transactionId) sellerWithdrawal.orderId = String(transactionId).trim();
-    await sellerWithdrawal.save();
 
     return {
       ownerType: "SELLER",
@@ -602,20 +618,29 @@ export async function updateQuickCommerceWithdrawalStatus(
     };
   }
 
-  const deliveryWithdrawal = await FoodDeliveryWithdrawal.findById(withdrawalId);
-  if (deliveryWithdrawal) {
-    if (deliveryWithdrawal.status !== "pending") {
-      throw new Error(`Withdrawal is already ${deliveryWithdrawal.status}`);
-    }
+  const existingDeliveryWithdrawal = await FoodDeliveryWithdrawal.findById(withdrawalId).lean();
+  if (existingDeliveryWithdrawal) {
+    // Same atomic claim as the seller branch above — guard in the filter.
+    const deliveryWithdrawal = await FoodDeliveryWithdrawal.findOneAndUpdate(
+      { _id: withdrawalId, status: "pending" },
+      {
+        $set: {
+          status: isApprove ? "approved" : "rejected",
+          adminNote: String(adminNote || "").trim(),
+          rejectionReason: isReject
+            ? String(rejectionReason || adminNote || "Rejected by admin").trim()
+            : "",
+          transactionId: String(transactionId || "").trim(),
+          processedAt: new Date(),
+        },
+      },
+      { new: true },
+    );
 
-    deliveryWithdrawal.status = isApprove ? "approved" : "rejected";
-    deliveryWithdrawal.adminNote = String(adminNote || "").trim();
-    deliveryWithdrawal.rejectionReason = isReject
-      ? String(rejectionReason || adminNote || "Rejected by admin").trim()
-      : "";
-    deliveryWithdrawal.transactionId = String(transactionId || "").trim();
-    deliveryWithdrawal.processedAt = new Date();
-    await deliveryWithdrawal.save();
+    if (!deliveryWithdrawal) {
+      const current = await FoodDeliveryWithdrawal.findById(withdrawalId).select({ status: 1 }).lean();
+      throw new Error(`Withdrawal is already ${current?.status || existingDeliveryWithdrawal.status}`);
+    }
 
     return {
       ownerType: "DELIVERY_PARTNER",

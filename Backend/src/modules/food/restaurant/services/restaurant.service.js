@@ -1569,6 +1569,14 @@ export const listApprovedRestaurants = async (query = {}) => {
     if (query.hasOffers === 'true') {
         filter.offer = { $exists: true, $ne: null, $ne: '' };
     }
+    if (query.businessType && ['Fixed Restaurant', 'Street Food Vendor'].includes(String(query.businessType).trim())) {
+        const businessType = String(query.businessType).trim();
+        // Restaurants onboarded before the businessType field existed have it
+        // unset — they're the historic default, "Fixed Restaurant".
+        filter.businessType = businessType === 'Fixed Restaurant'
+            ? { $in: [businessType, null] }
+            : businessType;
+    }
     const minRating = toFiniteNumber(query.minRating);
     if (minRating !== null) {
         filter.rating = { $gte: Math.max(0, Math.min(5, minRating)) };
@@ -1637,6 +1645,7 @@ export const listApprovedRestaurants = async (query = {}) => {
         isAcceptingOrders: 1,
         status: 1,
         pureVegRestaurant: 1,
+        businessType: 1,
         createdAt: 1,
         location: 1,
         openingTime: 1,

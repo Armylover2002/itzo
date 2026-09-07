@@ -12,6 +12,49 @@ import dayjs from 'dayjs';
 import * as walletService from '../../../modules/food/subscriptions/services/wallet.service.js';
 
 /**
+ * Build the idempotency key for a delivery, preferring Razorpay's own event id and
+ * falling back to a hash of the exact body we verified.
+ */
+const buildDedupeKey = (req, event) => {
+    const eventId = String(req.headers['x-razorpay-event-id'] || req.body?.id || '').trim();
+    if (eventId) return `razorpay:${eventId}`;
+    const bodyHash = crypto.createHash('sha256').update(req.rawBody).digest('hex');
+    return `razorpay:${event}:${bodyHash}`;
+};
+
+/**
+ * Claim a webhook delivery exactly once.
+ *
+ * Razorpay retries deliveries, and the order-payment handlers below move money and
+ * overwrite refund records — state-based guards alone cannot tell a retry apart from a
+ * genuine second payment or a second partial refund. Insert-first with a unique index
+ * makes the claim atomic: a duplicate key means somebody already handled this delivery.
+ *
+ * @returns {Promise<boolean>} true if this call owns the event, false if already handled
+ */
+const claimWebhookEvent = async (req, event, { entityType = null, entityId = null } = {}) => {
+    const dedupeKey = buildDedupeKey(req, event);
+    try {
+        await ProcessedWebhookEvent.create({
+            source: 'razorpay',
+            dedupeKey,
+            eventId: String(req.headers['x-razorpay-event-id'] || req.body?.id || '').trim() || null,
+            eventType: event,
+            entityType,
+            entityId: entityId ? String(entityId) : null,
+            bodyHash: crypto.createHash('sha256').update(req.rawBody).digest('hex')
+        });
+        return true;
+    } catch (err) {
+        if (err?.code === 11000) {
+            logger.info(`Webhook [${event}]: Duplicate delivery skipped`, { dedupeKey });
+            return false;
+        }
+        throw err;
+    }
+};
+
+/**
  * ✅ NEW: Centralized Razorpay Webhook Handler (Core Layer)
  * Manages atomic updates for order payments and refunds across all modules.
  */
@@ -115,34 +158,51 @@ export const handleRazorpayWebhook = async (req, res) => {
                 return res.status(200).json({ status: 'ok' });
             }
 
-            // 📂 CASE B: Regular Food Order
+            // 📂 CASE B: Customer order (food or quick — they share one collection)
+            if (!(await claimWebhookEvent(req, event, { entityType: 'order', entityId: rzOrderId }))) {
+                return res.status(200).json({ status: 'ok' });
+            }
+
             // Atomic update to mark as paid if not already
             const order = await FoodOrder.findOneAndUpdate(
-                { 
-                    "payment.razorpay.orderId": rzOrderId, 
-                    "payment.status": { $ne: 'paid' } 
+                {
+                    "payment.razorpay.orderId": rzOrderId,
+                    "payment.status": { $ne: 'paid' }
                 },
-                { 
-                    $set: { 
-                        "payment.status": 'paid', 
-                        "payment.razorpay.paymentId": rzPaymentId 
-                    } 
+                {
+                    $set: {
+                        "payment.status": 'paid',
+                        "payment.razorpay.paymentId": rzPaymentId
+                    }
                 },
                 { new: true }
             );
 
             if (order) {
-                // ✅ UPDATED: Wrapped in try-catch to prevent secondary failures from breaking the webhook response
-                try {
-                    await foodTransactionService.updateTransactionStatus(order._id, 'captured', {
-                        status: 'captured',
-                        razorpayPaymentId: rzPaymentId,
-                        note: 'Payment status synced via Webhook (payment.captured)'
-                    });
-                } catch (ledgerErr) {
-                    logger.error(`Webhook Ledger Error (Order ${order.orderId}): ${ledgerErr.message}`);
+                // Food and quick orders live in the same collection but have different
+                // finance models: only food maintains a FoodTransaction ledger. Calling
+                // the food sync for a quick order silently no-ops, which hid the fact
+                // that quick has no per-order finance record at all — so route by
+                // orderType and say so in the log instead.
+                const orderType = String(order.orderType || 'food');
+
+                if (orderType === 'food' || orderType === 'mixed') {
+                    try {
+                        await foodTransactionService.updateTransactionStatus(order._id, 'captured', {
+                            status: 'captured',
+                            razorpayPaymentId: rzPaymentId,
+                            note: 'Payment status synced via Webhook (payment.captured)'
+                        });
+                    } catch (ledgerErr) {
+                        logger.error(`Webhook Ledger Error (Order ${order.orderId}): ${ledgerErr.message}`);
+                    }
+                } else {
+                    logger.info(
+                        `Webhook [payment.captured]: Order ${order.orderId} is orderType=${orderType}; no finance ledger to sync`
+                    );
                 }
-                logger.info(`Webhook [payment.captured]: Synced Order ${order.orderId} (Status=paid)`);
+
+                logger.info(`Webhook [payment.captured]: Synced Order ${order.orderId} (type=${orderType}, Status=paid)`);
             } else {
                 // ✅ ADDED: Log warn if order not found but payment was captured
                 logger.warn(`Webhook [payment.captured]: Order not found or already paid for RZ-Order: ${rzOrderId}`);
@@ -156,31 +216,59 @@ export const handleRazorpayWebhook = async (req, res) => {
             const rzRefundId = refundObj.id;
             const refundAmount = refundObj.amount / 100; // to major unit
 
-            // Sync refund fields in the order
-            const order = await FoodOrder.findOneAndUpdate(
-                { 
-                    "payment.razorpay.paymentId": rzPaymentId,
-                    "payment.refund.status": { $ne: 'processed' }
-                },
-                { 
-                    $set: { 
-                        "payment.status": 'refunded',
-                        "payment.refund": {
-                            status: 'processed',
-                            amount: refundAmount,
-                            refundId: rzRefundId,
-                            processedAt: new Date()
-                        }
-                    } 
-                },
-                { new: true }
-            );
+            if (!(await claimWebhookEvent(req, event, { entityType: 'refund', entityId: rzRefundId }))) {
+                return res.status(200).json({ status: 'ok' });
+            }
 
-            if (order) {
-                logger.info(`Webhook [refund.processed]: Synced Order ${order.orderId} (Refunded)`);
+            // Sync refund fields in the order.
+            //
+            // Only individual fields are set here. Replacing the whole `payment.refund`
+            // object used to wipe bookkeeping written by the quick-commerce returns flow
+            // (which records per-leg partial refunds), and a second partial refund would
+            // silently overwrite the first with no trace of either.
+            const existing = await FoodOrder.findOne({
+                "payment.razorpay.paymentId": rzPaymentId
+            }).select({ orderId: 1, orderType: 1, payment: 1, pricing: 1 }).lean();
+
+            if (!existing) {
+                logger.warn(`Webhook [refund.processed]: Order not found for RZ-Payment: ${rzPaymentId}`);
             } else {
-                // ✅ ADDED: Log warn if order not found for refund
-                logger.warn(`Webhook [refund.processed]: Order not found or already refunded for RZ-Payment: ${rzPaymentId}`);
+                // Accumulate refunded value rather than overwriting it, so partial
+                // refunds add up to the true total.
+                const alreadyRefunded = Number(existing?.payment?.refund?.amount || 0);
+                const totalRefunded = Number((alreadyRefunded + refundAmount).toFixed(2));
+                const orderTotal = Number(existing?.pricing?.total ?? existing?.payment?.amountDue ?? 0);
+
+                // A refund that covers the whole order marks the payment refunded;
+                // anything less leaves it paid but partially refunded.
+                const isFullRefund = orderTotal > 0 ? totalRefunded + 0.01 >= orderTotal : true;
+
+                const order = await FoodOrder.findOneAndUpdate(
+                    {
+                        "payment.razorpay.paymentId": rzPaymentId,
+                        // Guard against applying the same gateway refund id twice even
+                        // if the dedupe row were ever lost.
+                        "payment.refund.refundId": { $ne: rzRefundId }
+                    },
+                    {
+                        $set: {
+                            ...(isFullRefund ? { "payment.status": 'refunded' } : {}),
+                            "payment.refund.status": 'processed',
+                            "payment.refund.amount": totalRefunded,
+                            "payment.refund.refundId": rzRefundId,
+                            "payment.refund.processedAt": new Date()
+                        }
+                    },
+                    { new: true }
+                );
+
+                if (order) {
+                    logger.info(
+                        `Webhook [refund.processed]: Synced Order ${order.orderId} (type=${order.orderType || 'food'}, refunded=₹${totalRefunded}${isFullRefund ? ', full' : ', partial'})`
+                    );
+                } else {
+                    logger.warn(`Webhook [refund.processed]: Refund ${rzRefundId} already applied to RZ-Payment: ${rzPaymentId}`);
+                }
             }
         }
 

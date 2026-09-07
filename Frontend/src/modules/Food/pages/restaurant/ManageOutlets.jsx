@@ -20,7 +20,6 @@ export default function ManageOutlets() {
     "Bank account details",
     "Profile picture",
     "Name, address, location",
-    "Ratings, reviews",
     "Delivery area changes",
   ]
 
@@ -41,9 +40,6 @@ export default function ManageOutlets() {
         break
       case "Name, address, location":
         navigate("/restaurant/outlet-info")
-        break
-      case "Ratings, reviews":
-        navigate("/restaurant/ratings-reviews")
         break
       case "Delivery area changes":
         setShowToast(true)

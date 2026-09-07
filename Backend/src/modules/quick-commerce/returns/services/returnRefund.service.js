@@ -173,7 +173,16 @@ export async function processLegRefund(sellerReturnId, actorId, requestedMethod 
     // Automatically intercept any cash, cod, or wallet order and refund to wallet
     // ALSO route online orders to wallet if the admin explicitly requested it
     if (['cash', 'cod', 'cash_on_delivery', 'wallet'].includes(paymentMethod) || (isOnline && requestedMethod === 'wallet')) {
-      await refundWalletBalance(order.userId, refundAmount, `Refund for Returned Order ${order.orderId}`, { sellerReturnId: leg._id });
+      // Runs inside the surrounding transaction so an abort below cannot leave the
+      // customer credited on a leg that reverts to REFUND_PENDING (which a retry would
+      // then refund a second time).
+      await refundWalletBalance(
+        order.userId,
+        refundAmount,
+        `Refund for Returned Order ${order.orderId}`,
+        { sellerReturnId: leg._id },
+        { session },
+      );
 
       await updateLegStatus({
         sellerReturnId: leg._id,

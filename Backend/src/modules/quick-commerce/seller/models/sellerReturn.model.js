@@ -148,6 +148,12 @@ const sellerReturnSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
+    // Claimed atomically before the rider is credited for the return trip, so a
+    // repeated handover call cannot pay the same leg twice.
+    returnDeliveryPaidAt: {
+      type: Date,
+      default: null,
+    },
 
     // ═══ NEW FIELDS (all optional with safe defaults) ══════════════════════
 

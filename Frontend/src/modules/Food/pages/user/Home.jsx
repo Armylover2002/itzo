@@ -181,6 +181,10 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState(() =>
     routerLocation.pathname.endsWith("/quick") ? "quick" : "food",
   );
+  // Which restaurants the Food tab shows: normal ("Fixed Restaurant") or the
+  // Street Food tile ("Street Food Vendor"). Kept separate from `activeTab`
+  // so the food/quick fetch-gating logic in useFoodHomeData is untouched.
+  const [foodBusinessType, setFoodBusinessType] = useState("Fixed Restaurant");
   const [quickThemeColor, setQuickThemeColor] = useState("#FE5502");
   const [showToast, setShowToast] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -227,6 +231,7 @@ export default function Home() {
     zoneId: effectiveZoneId,
     location: effectiveLocation,
     vegMode,
+    businessType: foodBusinessType,
     backendOrigin: BACKEND_ORIGIN,
     availabilityTick,
     activeTab
@@ -291,6 +296,22 @@ export default function Home() {
     else navigate("/food/user");
   };
 
+  // Drives the 3-way Food / Street Food / Quick selector. "food" and
+  // "streetfood" both stay on the Food tab and just switch which
+  // businessType the restaurant list is filtered to.
+  const handleServiceSelect = (serviceId) => {
+    if (serviceId === "quick") {
+      handleTabChange("quick");
+      return;
+    }
+    const nextBusinessType = serviceId === "streetfood" ? "Street Food Vendor" : "Fixed Restaurant";
+    startTransition(() => setFoodBusinessType(nextBusinessType));
+    if (activeTab !== "food") handleTabChange("food");
+  };
+  const activeServiceId = activeTab === "quick"
+    ? "quick"
+    : (foodBusinessType === "Street Food Vendor" ? "streetfood" : "food");
+
   const handleVegModeChange = (newValue) => {
     if (isHandlingSwitchOff.current) return;
     if (newValue && !vegMode) setShowVegModePopup(true);
@@ -323,6 +344,8 @@ export default function Home() {
           <HomeHeader
             activeTab={activeTab}
             setActiveTab={handleTabChange}
+            foodBusinessType={foodBusinessType}
+            onServiceSelect={handleServiceSelect}
             location={location}
             savedAddressText={imgUtils.formatSavedAddress(effectiveLocation)}
             handleLocationClick={() => openLocationSelector()}
@@ -384,8 +407,8 @@ export default function Home() {
                               buttons in the header, so these cards would be a duplicate there. */}
                           <div className="hidden md:block">
                             <ServiceSwitchCards
-                              activeTab={activeTab}
-                              onTabChange={handleTabChange}
+                              activeTab={activeServiceId}
+                              onTabChange={handleServiceSelect}
                             />
                           </div>
 

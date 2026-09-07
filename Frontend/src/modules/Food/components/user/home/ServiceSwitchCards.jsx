@@ -1,5 +1,5 @@
 import React from "react";
-import { UtensilsCrossed, ShoppingBasket, ArrowRight } from "lucide-react";
+import { UtensilsCrossed, ShoppingBasket, Store, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const SERVICES = [
@@ -10,6 +10,14 @@ const SERVICES = [
     icon: UtensilsCrossed,
     image: "/super-app/food.png",
     alt: "Food Delivery",
+  },
+  {
+    id: "streetfood",
+    title: "STREET FOOD",
+    subtitle: "LOCAL VENDORS",
+    icon: Store,
+    image: "/super-app/streetfood.png",
+    alt: "Street Food",
   },
   {
     id: "quick",
@@ -31,7 +39,7 @@ export default function ServiceSwitchCards({
       aria-label="Service Selector"
       className={cn("w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4", className)}
     >
-      <div className="grid grid-cols-2 gap-3 sm:gap-5 max-w-3xl mx-auto">
+      <div className="grid grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
         {SERVICES.map((service) => {
           const isActive = activeTab === service.id;
           const Icon = service.icon;
@@ -66,7 +74,7 @@ export default function ServiceSwitchCards({
                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#FE5502] flex items-center justify-center text-white shrink-0 shadow-xs">
                       <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" strokeWidth={2.5} />
                     </div>
-                    <h3 className="text-sm sm:text-base md:text-lg font-black text-gray-900 dark:text-white tracking-tight leading-none uppercase">
+                    <h3 className="text-[11px] sm:text-sm md:text-base font-black text-gray-900 dark:text-white tracking-tight leading-tight uppercase truncate">
                       {service.title}
                     </h3>
                   </div>
@@ -83,14 +91,20 @@ export default function ServiceSwitchCards({
                 </div>
               </div>
 
-              {/* Right 3D Illustration */}
+              {/* Right 3D Illustration (falls back to a large icon tile if no art exists yet) */}
               <div className="shrink-0 flex items-center justify-center z-10 self-center sm:self-end">
-                <img
-                  src={service.image}
-                  alt={service.alt}
-                  className="h-16 sm:h-20 md:h-24 w-auto object-contain drop-shadow-sm pointer-events-none group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
+                {service.image ? (
+                  <img
+                    src={service.image}
+                    alt={service.alt}
+                    className="h-12 sm:h-16 md:h-20 w-auto object-contain drop-shadow-sm pointer-events-none group-hover:scale-105 transition-transform duration-300 mix-blend-multiply dark:mix-blend-normal"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 rounded-2xl bg-[#FE5502]/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <Icon className="h-6 w-6 sm:h-8 sm:w-8 md:h-9 md:w-9 text-[#FE5502]" strokeWidth={1.75} />
+                  </div>
+                )}
               </div>
 
               {/* Subtle active background glow */}

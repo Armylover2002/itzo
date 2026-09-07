@@ -19,7 +19,6 @@ import {
   MessageSquare,
   LifeBuoy,
   Lightbulb,
-  Edit,
   IndianRupee,
   Receipt,
   FileCheck,
@@ -770,7 +769,6 @@ export default function ExploreMore() {
 
   const helpItems = [
     { id: 1, label: "Support", icon: LifeBuoy, route: "/restaurant/help-centre/support" },
-    { id: 2, label: "Share your feedback", icon: Edit, route: "/restaurant/Share-Feedback" },
   ]
 
   const accountingItems = [

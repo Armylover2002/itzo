@@ -43,6 +43,7 @@ const StockManagement = () => {
     const [adjustValue, setAdjustValue] = useState('');
     const [adjustNote, setAdjustNote] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [previewImage, setPreviewImage] = useState(null);
     const [expandedProducts, setExpandedProducts] = useState(new Set());
 
     const [page, setPage] = useState(1);
@@ -585,22 +586,43 @@ const StockManagement = () => {
                                                                         : (Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0);
                                                                     const vValuation = vStock * vCost;
                                                                     const vStatus = vStock === 0 ? 'Out of Stock' : (vStock <= item.threshold ? 'Low Stock' : 'In Stock');
-                                                                    const vImage = (Array.isArray(v.images) && v.images[0]) || item.mainImage;
+                                                                    const vImages = Array.isArray(v.images) && v.images.length > 0
+                                                                        ? v.images
+                                                                        : (v.image ? [v.image] : (item.mainImage ? [item.mainImage] : []));
 
                                                                     return (
                                                                         <tr key={v._id || v.name} className="bg-slate-50/70 border-b border-slate-100">
                                                                             <td className="px-6 py-3.5 pl-14">
                                                                                 <div className="flex items-center gap-3">
-                                                                                    <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
-                                                                                        {vImage ? (
-                                                                                            <img src={vImage} alt="" className="h-full w-full object-cover" />
+                                                                                    {/* All images uploaded for this variant */}
+                                                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                                                        {vImages.length > 0 ? (
+                                                                                            vImages.map((imgUrl, imgIdx) => (
+                                                                                                <div
+                                                                                                    key={imgIdx}
+                                                                                                    onClick={() => setPreviewImage(imgUrl)}
+                                                                                                    className="h-9 w-9 rounded-lg bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-2xs hover:scale-110 hover:border-primary/50 hover:shadow-xs transition-all cursor-pointer relative group/vimg"
+                                                                                                    title={`View ${v.name} image ${imgIdx + 1} (click to enlarge)`}
+                                                                                                >
+                                                                                                    <img src={imgUrl} alt={`${v.name} - ${imgIdx + 1}`} className="h-full w-full object-cover" />
+                                                                                                </div>
+                                                                                            ))
                                                                                         ) : (
-                                                                                            <HiOutlineCube className="h-4 w-4 text-slate-400" />
+                                                                                            <div className="h-9 w-9 rounded-lg bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                                                                                <HiOutlineCube className="h-4 w-4 text-slate-400" />
+                                                                                            </div>
                                                                                         )}
                                                                                     </div>
-                                                                                    <div>
-                                                                                        <span className="text-xs font-black text-slate-800">{v.name}</span>
-                                                                                        <span className="text-[10px] text-slate-500 font-mono ml-2">SKU: {v.sku || 'N/A'}</span>
+                                                                                    <div className="flex flex-col min-w-0">
+                                                                                        <div className="flex items-center gap-2">
+                                                                                            <span className="text-xs font-black text-slate-800">{v.name}</span>
+                                                                                            <span className="text-[10px] text-slate-500 font-mono">SKU: {v.sku || 'N/A'}</span>
+                                                                                        </div>
+                                                                                        {vImages.length > 1 && (
+                                                                                            <span className="text-[9px] font-semibold text-slate-400 mt-0.5">
+                                                                                                {vImages.length} images
+                                                                                            </span>
+                                                                                        )}
                                                                                     </div>
                                                                                 </div>
                                                                             </td>
@@ -747,7 +769,9 @@ const StockManagement = () => {
                     const currentCostPrice = Number(currentVariant?.costPrice) > 0
                         ? Number(currentVariant.costPrice)
                         : (Number(currentVariant?.salePrice) > 0 ? Number(currentVariant.salePrice) : Number(currentVariant?.price) || 0);
-                    const variantImage = (Array.isArray(currentVariant?.images) && currentVariant.images[0]) || selectedItem.mainImage;
+                    const currentVariantImages = (Array.isArray(currentVariant?.images) && currentVariant.images.length > 0)
+                        ? currentVariant.images
+                        : (currentVariant?.image ? [currentVariant.image] : (selectedItem.mainImage ? [selectedItem.mainImage] : []));
                     const numVal = parseInt(adjustValue) || 0;
                     const resultingStock = adjustType === 'Restock' ? currentStock + numVal : currentStock - numVal;
                     const exceedsRemoval = adjustType === 'Remove' && numVal > currentStock;
@@ -790,11 +814,22 @@ const StockManagement = () => {
                                 <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                                     {/* Selected Product Banner */}
                                     <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
-                                        <div className="h-14 w-14 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 overflow-hidden shrink-0">
-                                            {variantImage ? (
-                                                <img src={variantImage} alt="" className="h-full w-full object-cover" />
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            {currentVariantImages.length > 0 ? (
+                                                currentVariantImages.map((imgUrl, imgIdx) => (
+                                                    <div
+                                                        key={imgIdx}
+                                                        onClick={() => setPreviewImage(imgUrl)}
+                                                        className="h-14 w-14 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-xs hover:scale-105 transition-transform cursor-pointer"
+                                                        title={`Variant image ${imgIdx + 1} (click to enlarge)`}
+                                                    >
+                                                        <img src={imgUrl} alt="" className="h-full w-full object-cover" />
+                                                    </div>
+                                                ))
                                             ) : (
-                                                <HiOutlineCube className="h-6 w-6 text-slate-400" />
+                                                <div className="h-14 w-14 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                                                    <HiOutlineCube className="h-6 w-6" />
+                                                </div>
                                             )}
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -1002,6 +1037,34 @@ const StockManagement = () => {
                         </div>
                     );
                 })()}
+            </AnimatePresence>
+
+            {/* Image Preview Lightbox */}
+            <AnimatePresence>
+                {previewImage && (
+                    <div
+                        className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+                        onClick={() => setPreviewImage(null)}
+                    >
+                        <div
+                            className="relative max-w-2xl max-h-[85vh] bg-white rounded-2xl overflow-hidden shadow-2xl p-2 border border-white/20"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setPreviewImage(null)}
+                                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors cursor-pointer shadow-lg"
+                                title="Close preview"
+                            >
+                                <HiOutlineXMark className="h-5 w-5" />
+                            </button>
+                            <img
+                                src={previewImage}
+                                alt="Enlarged variant"
+                                className="w-full h-auto max-h-[80vh] object-contain rounded-xl"
+                            />
+                        </div>
+                    </div>
+                )}
             </AnimatePresence>
         </div>
     );

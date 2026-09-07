@@ -552,7 +552,7 @@ export default function JoiningRequest() {
                       <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === "ownerName" ? "text-primary" : "text-slate-400"}`} />
                     </div>
                   </th>
-                  <th 
+                  <th
                     className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
                     onClick={() => handleSort("zone")}
                   >
@@ -561,7 +561,10 @@ export default function JoiningRequest() {
                       <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === "zone" ? "text-primary" : "text-slate-400"}`} />
                     </div>
                   </th>
-                  <th 
+                  <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                    Business Type
+                  </th>
+                  <th
                     className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
                     onClick={() => handleSort("status")}
                   >
@@ -576,21 +579,21 @@ export default function JoiningRequest() {
               <tbody className="bg-white divide-y divide-slate-100">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-20 text-center">
+                    <td colSpan={7} className="px-6 py-20 text-center">
                       <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-3" />
                       <p className="text-lg font-semibold text-slate-700">Loading restaurant requests...</p>
                     </td>
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-20 text-center">
+                    <td colSpan={7} className="px-6 py-20 text-center">
                       <p className="text-lg font-semibold text-red-600 mb-1">Error: {error}</p>
                       <p className="text-sm text-slate-500">Failed to load restaurant requests. Please try again.</p>
                     </td>
                   </tr>
                 ) : filteredRequests.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-20 text-center">
+                    <td colSpan={7} className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
                         <p className="text-sm text-slate-500">No restaurant requests match your search</p>
@@ -640,6 +643,11 @@ export default function JoiningRequest() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-slate-700">{request.zone || "—"}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                          {request.businessType || "Fixed Restaurant"}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
@@ -1085,6 +1093,13 @@ export default function JoiningRequest() {
                     <div>
                       <h4 className="text-lg font-semibold text-slate-900 mb-4">Cuisine & Details</h4>
                       <div className="space-y-3">
+
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Business Type</p>
+                          <p className="text-sm font-medium text-slate-900">
+                            {r?.businessType || "Fixed Restaurant"}
+                          </p>
+                        </div>
 
                         {typeof r?.pureVegRestaurant === "boolean" && (
                           <div>
