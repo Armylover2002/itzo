@@ -322,32 +322,40 @@ const Orders = () => {
         label: "Total Orders",
         value: safeOrders.length,
         icon: HiOutlineArchiveBoxXMark,
-        color: "text-primary",
-        bg: "bg-[#fef4f4]",
+        color: "text-white",
+        bg: "bg-indigo-600 shadow-md shadow-indigo-500/30",
+        cardBg: "bg-indigo-50/90 border border-indigo-200/90 shadow-xs shadow-indigo-500/10",
+        gradientColor: "#c7d2fe",
       },
       {
         label: "Pending",
         value: safeOrders.filter((o) => o.status.toLowerCase() === "pending")
           .length,
         icon: HiOutlineClock,
-        color: "text-amber-600",
-        bg: "bg-amber-50",
+        color: "text-white",
+        bg: "bg-amber-600 shadow-md shadow-amber-500/30",
+        cardBg: "bg-amber-50/90 border border-amber-200/90 shadow-xs shadow-amber-500/10",
+        gradientColor: "#fde68a",
       },
       {
         label: "Confirmed",
         value: safeOrders.filter((o) => o.status.toLowerCase() === "confirmed")
           .length,
         icon: HiOutlineCheck,
-        color: "text-primary",
-        bg: "bg-[#fef4f4]",
+        color: "text-white",
+        bg: "bg-sky-600 shadow-md shadow-sky-500/30",
+        cardBg: "bg-sky-50/90 border border-sky-200/90 shadow-xs shadow-sky-500/10",
+        gradientColor: "#bae6fd",
       },
       {
         label: "Delivered",
         value: safeOrders.filter((o) => o.status.toLowerCase() === "delivered")
           .length,
         icon: HiOutlineCheck,
-        color: "text-primary",
-        bg: "bg-[#fef4f4]",
+        color: "text-white",
+        bg: "bg-emerald-600 shadow-md shadow-emerald-500/30",
+        cardBg: "bg-emerald-50/90 border border-emerald-200/90 shadow-xs shadow-emerald-500/10",
+        gradientColor: "#a7f3d0",
       },
     ],
     [safeOrders],
@@ -511,12 +519,12 @@ const Orders = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-16">
+    <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-16 font-['Roboto',sans-serif]">
       <BlurFade delay={0.1}>
         {/* Page Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
           <div className="min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
               Order Management
               <Badge
                 variant="primary"
@@ -524,7 +532,7 @@ const Orders = () => {
                 Real-time
               </Badge>
             </h1>
-            <p className="text-slate-600 text-sm sm:text-base mt-0.5 font-medium">
+            <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
               Process and track your customer orders with ease.
             </p>
           </div>
@@ -549,7 +557,7 @@ const Orders = () => {
 
       {/* Quick Stats */}
       {loading ? (
-        <div className="min-h-[400px] flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-100 shadow-sm">
+        <div className="min-h-[400px] flex flex-col items-center justify-center bg-white rounded-3xl border border-slate-100 shadow-sm font-['Roboto',sans-serif]">
           <Loader2 className="h-10 w-10 text-primary animate-spin" />
           <p className="text-slate-600 font-bold mt-4 uppercase tracking-widest text-xs">
             Fetching Active Orders...
@@ -557,34 +565,26 @@ const Orders = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
             {stats.map((stat, i) => (
               <BlurFade key={i} delay={0.1 + i * 0.05}>
                 <MagicCard
-                  className="border-none shadow-sm ring-1 ring-slate-100 p-0 overflow-hidden group bg-white"
-                  gradientColor={
-                    stat.bg.includes("indigo")
-                      ? "#eef2ff"
-                      : stat.bg.includes("amber")
-                        ? "#fffbeb"
-                        : stat.bg.includes("emerald")
-                          ? "#ecfdf5"
-                          : "#fff1f2"
-                  }>
-                  <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 relative z-10">
+                  className={cn("border-none shadow-xs p-0 overflow-hidden group rounded-xl md:rounded-2xl", stat.cardBg)}
+                  gradientColor={stat.gradientColor}>
+                  <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-4 relative z-10">
                     <div
                       className={cn(
-                        "h-10 w-10 sm:h-12 sm:w-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-sm shrink-0",
+                        "h-8 w-8 sm:h-12 sm:w-12 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 duration-300 shadow-sm shrink-0",
                         stat.bg,
                         stat.color,
                       )}>
-                      <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                      <stat.icon className="h-4 w-4 sm:h-6 sm:w-6" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest truncate">
+                      <p className="text-[9px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider truncate">
                         {stat.label}
                       </p>
-                      <h4 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+                      <h4 className="text-sm sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
                         {stat.value}
                       </h4>
                     </div>

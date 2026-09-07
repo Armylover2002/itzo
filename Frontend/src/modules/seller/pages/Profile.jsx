@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Badge from "@shared/components/ui/Badge";
 import {
   Shield,
   Edit2,
@@ -495,12 +496,17 @@ const SellerProfile = () => {
 
   return (
     <div className="space-y-4 px-3.5 md:px-4 max-w-5xl md:max-w-none mx-auto w-full pb-20">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60 mb-1">
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-lg sm:text-xl font-semibold text-[#1c1c1e] tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
             Seller Profile
+            <Badge
+              variant="secondary"
+              className="text-[9px] px-1.5 py-0 font-bold tracking-wider uppercase">
+              Store Account
+            </Badge>
           </h1>
-          <p className="text-xs font-normal text-slate-500 mt-0.5">
+          <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
             Manage your store details, documents, banking, and location.
           </p>
         </div>

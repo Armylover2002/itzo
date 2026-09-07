@@ -288,9 +288,9 @@ const Returns = () => {
     return (
         <div className="space-y-4 sm:space-y-6 pb-20 sm:pb-16">
             <BlurFade delay={0.1}>
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
+                <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4">
                     <div className="min-w-0">
-                        <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
                             Return Requests
                             <Badge
                                 variant="secondary"
@@ -299,7 +299,7 @@ const Returns = () => {
                                 New
                             </Badge>
                         </h1>
-                        <p className="text-slate-600 text-sm sm:text-base mt-0.5 font-medium">
+                        <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
                             Review and manage customer return requests.
                         </p>
                     </div>
@@ -326,36 +326,68 @@ const Returns = () => {
             ) : (
                 <>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                        {["Requested", "Approved", "Pickup", "Completed"].map(
-                            (label, i) => {
-                                const count = returns.filter(
-                                    (r) => mapReturnStatusLabel(r.returnStatus) === label || 
-                                           (label === "Pickup" && mapReturnStatusLabel(r.returnStatus) === "OTP Pending")
-                                ).length;
-                                return (
-                                    <BlurFade key={label} delay={0.1 + i * 0.05}>
-                                        <MagicCard
-                                            className="border-none shadow-sm ring-1 ring-slate-100 p-0 overflow-hidden group bg-white"
-                                            gradientColor="#eef2ff"
-                                        >
-                                            <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 relative z-10">
-                                                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg flex items-center justify-center bg-slate-900 text-white shadow-sm shrink-0">
-                                                    <HiOutlineInboxStack className="h-5 w-5 sm:h-6 sm:w-6" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest truncate">
-                                                        {label}
-                                                    </p>
-                                                    <h4 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
-                                                        {count}
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                        </MagicCard>
-                                    </BlurFade>
-                                );
+                        {[
+                            {
+                                label: "Requested",
+                                cardBg: "bg-amber-50/80 border-amber-200/90 hover:bg-amber-100/70 hover:border-amber-300",
+                                iconBg: "bg-amber-500 text-white shadow-md shadow-amber-500/25",
+                                labelColor: "text-amber-800 font-bold",
+                                countColor: "text-amber-950 font-black",
+                                icon: HiOutlineDocumentText
+                            },
+                            {
+                                label: "Approved",
+                                cardBg: "bg-blue-50/80 border-blue-200/90 hover:bg-blue-100/70 hover:border-blue-300",
+                                iconBg: "bg-blue-500 text-white shadow-md shadow-blue-500/25",
+                                labelColor: "text-blue-800 font-bold",
+                                countColor: "text-blue-950 font-black",
+                                icon: HiOutlineCheckCircle
+                            },
+                            {
+                                label: "Pickup",
+                                cardBg: "bg-purple-50/80 border-purple-200/90 hover:bg-purple-100/70 hover:border-purple-300",
+                                iconBg: "bg-purple-500 text-white shadow-md shadow-purple-500/25",
+                                labelColor: "text-purple-800 font-bold",
+                                countColor: "text-purple-950 font-black",
+                                icon: HiOutlineTruck
+                            },
+                            {
+                                label: "Completed",
+                                cardBg: "bg-emerald-50/80 border-emerald-200/90 hover:bg-emerald-100/70 hover:border-emerald-300",
+                                iconBg: "bg-emerald-500 text-white shadow-md shadow-emerald-500/25",
+                                labelColor: "text-emerald-800 font-bold",
+                                countColor: "text-emerald-950 font-black",
+                                icon: HiOutlineInboxStack
                             }
-                        )}
+                        ].map((stat, i) => {
+                            const count = returns.filter(
+                                (r) => mapReturnStatusLabel(r.returnStatus) === stat.label || 
+                                       (stat.label === "Pickup" && mapReturnStatusLabel(r.returnStatus) === "OTP Pending")
+                            ).length;
+                            const StatIcon = stat.icon;
+                            return (
+                                <BlurFade key={stat.label} delay={0.1 + i * 0.05}>
+                                    <div
+                                        className={cn(
+                                            "border rounded-2xl p-3 sm:p-4 transition-all duration-200 shadow-xs hover:shadow-md flex items-center gap-3 sm:gap-4 relative overflow-hidden",
+                                            stat.cardBg
+                                        )}
+                                    >
+                                        <div className={cn("h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center shadow-sm shrink-0", stat.iconBg)}>
+                                            <StatIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className={cn("text-[10px] sm:text-xs font-bold uppercase tracking-widest truncate", stat.labelColor)}>
+                                                {stat.label}
+                                            </p>
+                                            <h4 className={cn("text-lg sm:text-2xl font-black tracking-tight mt-0.5", stat.countColor)}>
+                                                {count}
+                                            </h4>
+                                        </div>
+                                    </div>
+                                </BlurFade>
+                            );
+                        })}
                     </div>
 
                     <BlurFade delay={0.2}>
@@ -400,69 +432,88 @@ const Returns = () => {
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
-                                        {filteredReturns.map((ret) => (
-                                            <div
-                                                key={ret._id}
-                                                className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:bg-slate-50/40 transition-colors flex items-start justify-between gap-3"
-                                            >
+                                        {filteredReturns.map((ret) => {
+                                            const statusLabel = mapReturnStatusLabel(ret.returnStatus);
+                                            const itemCardBg = 
+                                                statusLabel === "Requested"
+                                                    ? "bg-amber-50/40 border-amber-200/80 hover:bg-amber-100/50"
+                                                    : statusLabel === "Approved"
+                                                    ? "bg-blue-50/40 border-blue-200/80 hover:bg-blue-100/50"
+                                                    : statusLabel === "Pickup" || statusLabel === "OTP Pending"
+                                                    ? "bg-purple-50/40 border-purple-200/80 hover:bg-purple-100/50"
+                                                    : statusLabel === "Completed"
+                                                    ? "bg-emerald-50/40 border-emerald-200/80 hover:bg-emerald-100/50"
+                                                    : statusLabel === "Rejected" || statusLabel === "Cancelled"
+                                                    ? "bg-rose-50/40 border-rose-200/80 hover:bg-rose-100/50"
+                                                    : "bg-slate-50/40 border-slate-200/80 hover:bg-slate-100/50";
+
+                                            return (
                                                 <div
-                                                    className="min-w-0 flex-1 cursor-pointer"
-                                                    onClick={() => openDetails(ret)}
+                                                    key={ret._id}
+                                                    className={cn(
+                                                        "border rounded-xl p-4 shadow-xs transition-all flex items-start justify-between gap-3",
+                                                        itemCardBg
+                                                    )}
                                                 >
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <p className="text-xs font-black text-slate-900 truncate">
-                                                            #{ret.orderId}
-                                                        </p>
-                                                        {ret.returnStatus === 'seller_otp_pending' && (
-                                                            <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-widest">
-                                                                <span className="relative flex h-2 w-2">
-                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                                                                </span>
-                                                                Rider Waiting
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
-                                                        <HiOutlineCalendarDays className="h-3 w-3 shrink-0" />
-                                                        {ret.returnRequestedAt
-                                                            ? new Date(
-                                                                  ret.returnRequestedAt
-                                                              ).toLocaleString("en-IN", {
-                                                                  day: "2-digit",
-                                                                  month: "short",
-                                                                  hour: "2-digit",
-                                                                  minute: "2-digit",
-                                                              })
-                                                            : "N/A"}
-                                                    </p>
-                                                    <p className="text-xs font-bold text-slate-800 mt-1">
-                                                        {ret.customer?.name || "Customer"}
-                                                    </p>
-                                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                                                        {ret.returnReason ||
-                                                            "No reason provided"}
-                                                    </p>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-2 shrink-0">
-                                                    <Badge
-                                                        variant={getStatusVariant(ret.returnStatus)}
-                                                        className="text-[10px] font-black uppercase px-2 py-0"
-                                                    >
-                                                        {mapReturnStatusLabel(ret.returnStatus)}
-                                                    </Badge>
-                                                    <p className="text-xs font-black text-slate-900">
-                                                        ₹{ret.returnRefundAmount || ret.pricing?.subtotal || 0}
-                                                    </p>
-                                                    <button
+                                                    <div
+                                                        className="min-w-0 flex-1 cursor-pointer"
                                                         onClick={() => openDetails(ret)}
-                                                        className="p-2 hover:bg-slate-100 rounded-lg text-slate-600"
                                                     >
-                                                        <HiOutlineEye className="h-4 w-4" />
-                                                    </button>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <p className="text-xs font-black text-slate-900 truncate">
+                                                                #{ret.orderId}
+                                                            </p>
+                                                            {ret.returnStatus === 'seller_otp_pending' && (
+                                                                <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded uppercase tracking-widest">
+                                                                    <span className="relative flex h-2 w-2">
+                                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                                                    </span>
+                                                                    Rider Waiting
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-xs font-semibold text-slate-600 mt-0.5 flex items-center gap-1">
+                                                            <HiOutlineCalendarDays className="h-3 w-3 shrink-0" />
+                                                            {ret.returnRequestedAt
+                                                                ? new Date(
+                                                                      ret.returnRequestedAt
+                                                                  ).toLocaleString("en-IN", {
+                                                                      day: "2-digit",
+                                                                      month: "short",
+                                                                      hour: "2-digit",
+                                                                      minute: "2-digit",
+                                                                  })
+                                                                : "N/A"}
+                                                        </p>
+                                                        <p className="text-xs font-bold text-slate-800 mt-1">
+                                                            {ret.customer?.name || "Customer"}
+                                                        </p>
+                                                        <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                                                            {ret.returnReason ||
+                                                                "No reason provided"}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex flex-col items-end gap-2 shrink-0">
+                                                        <Badge
+                                                            variant={getStatusVariant(ret.returnStatus)}
+                                                            className="text-[10px] font-black uppercase px-2 py-0"
+                                                        >
+                                                            {mapReturnStatusLabel(ret.returnStatus)}
+                                                        </Badge>
+                                                        <p className="text-xs font-black text-slate-900">
+                                                            ₹{ret.returnRefundAmount || ret.pricing?.subtotal || 0}
+                                                        </p>
+                                                        <button
+                                                            onClick={() => openDetails(ret)}
+                                                            className="p-2 hover:bg-slate-100/80 rounded-lg text-slate-600"
+                                                        >
+                                                            <HiOutlineEye className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>

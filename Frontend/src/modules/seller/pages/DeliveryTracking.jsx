@@ -129,22 +129,28 @@ const DeliveryTracking = () => {
         label: "On the Way",
         value: deliveries.filter((d) => d.status === "On the Way").length,
         icon: HiOutlineTruck,
-        color: "text-primary",
-        bg: "bg-[#fef4f4]",
+        color: "text-white",
+        bg: "bg-sky-600 shadow-md shadow-sky-500/30",
+        cardBg: "bg-sky-50/90 border border-sky-200/90 shadow-xs shadow-sky-500/10",
+        gradientColor: "#bae6fd",
       },
       {
         label: "At Store",
         value: deliveries.filter((d) => d.status === "Picked Up").length,
         icon: HiOutlineMapPin,
-        color: "text-amber-600",
-        bg: "bg-amber-50",
+        color: "text-white",
+        bg: "bg-amber-600 shadow-md shadow-amber-500/30",
+        cardBg: "bg-amber-50/90 border border-amber-200/90 shadow-xs shadow-amber-500/10",
+        gradientColor: "#fde68a",
       },
       {
         label: "Completed Today",
         value: deliveries.filter((d) => d.status === "Delivered").length,
         icon: HiOutlineCheckCircle,
-        color: "text-primary",
-        bg: "bg-[#fef4f4]",
+        color: "text-white",
+        bg: "bg-emerald-600 shadow-md shadow-emerald-500/30",
+        cardBg: "bg-emerald-50/90 border border-emerald-200/90 shadow-xs shadow-emerald-500/10",
+        gradientColor: "#a7f3d0",
       },
     ],
     [deliveries],
@@ -164,11 +170,11 @@ const DeliveryTracking = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16">
+    <div className="space-y-6 pb-16 font-['Roboto',sans-serif]">
       <BlurFade delay={0.1}>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
               Delivery Tracking
               <Badge
                 variant="primary"
@@ -176,7 +182,7 @@ const DeliveryTracking = () => {
                 Live Fleet
               </Badge>
             </h1>
-            <p className="text-slate-600 text-base mt-0.5 font-medium">
+            <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">
               Monitor active deliveries and assigned delivery partners.
             </p>
           </div>
@@ -191,32 +197,26 @@ const DeliveryTracking = () => {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-4">
             {stats.map((stat, i) => (
               <BlurFade key={i} delay={0.1 + i * 0.05}>
                 <MagicCard
-                  className="border-none shadow-sm ring-1 ring-slate-100 p-0 overflow-hidden group bg-white"
-                  gradientColor={
-                    stat.color === "text-primary"
-                      ? "#e0f2fe"
-                      : stat.color === "text-amber-600"
-                        ? "#fef3c7"
-                        : "#dcfce7"
-                  }>
-                  <div className="flex items-center gap-4 p-5 relative z-10">
+                  className={cn("border-none shadow-xs p-0 overflow-hidden group rounded-xl md:rounded-2xl", stat.cardBg)}
+                  gradientColor={stat.gradientColor}>
+                  <div className="flex items-center gap-2 md:gap-4 p-2.5 sm:p-4 md:p-5 relative z-10">
                     <div
                       className={cn(
-                        "h-14 w-14 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 duration-500 shadow-sm",
+                        "h-8 w-8 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-500 shadow-xs",
                         stat.bg,
                         stat.color,
                       )}>
-                      <stat.icon className="h-7 w-7" />
+                      <stat.icon className="h-4 w-4 sm:h-6 sm:w-6 md:h-7 md:w-7" />
                     </div>
-                    <div className="flex flex-col">
-                      <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
+                    <div className="flex flex-col min-w-0">
+                      <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-wider font-['Roboto',sans-serif] truncate">
                         {stat.label}
                       </p>
-                      <h4 className="text-3xl font-black text-slate-900 tracking-tight leading-none mt-1">
+                      <h4 className="text-sm sm:text-xl md:text-3xl font-black text-slate-900 tracking-tight leading-none mt-0.5 md:mt-1 font-['Roboto',sans-serif]">
                         {stat.value}
                       </h4>
                     </div>
@@ -230,14 +230,14 @@ const DeliveryTracking = () => {
             <Card className="border-none shadow-xl ring-1 ring-slate-100 overflow-hidden rounded-lg bg-white">
               {/* Tabs & Search */}
               <div className="border-b border-slate-100 bg-slate-50/30">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between px-6">
-                  <div className="flex items-center">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between px-3 sm:px-6 gap-2">
+                  <div className="flex items-center overflow-x-auto scrollbar-none py-1 sm:py-0">
                     {tabs.map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={cn(
-                          "relative py-5 px-6 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+                          "relative py-3 sm:py-5 px-3 sm:px-6 text-[10px] sm:text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-300",
                           activeTab === tab
                             ? "text-[#E71D28] bg-white/50"
                             : "text-slate-600 hover:text-slate-700",
@@ -246,19 +246,19 @@ const DeliveryTracking = () => {
                         {activeTab === tab && (
                           <motion.div
                             layoutId="tab-underline-tracking"
-                            className="absolute bottom-0 left-0 right-0 h-1 bg-[#E71D28] rounded-t-full mx-4"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 sm:h-1 bg-[#E71D28] rounded-t-full mx-2 sm:mx-4"
                           />
                         )}
                       </button>
                     ))}
                   </div>
-                  <div className="py-3 lg:py-0 w-full lg:w-72">
+                  <div className="pb-3 lg:py-0 w-full lg:w-72">
                     <div className="relative group">
                       <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-primary transition-all" />
                       <input
                         type="text"
                         placeholder="Search Order ID or Partner..."
-                        className="w-full pl-10 pr-4 py-2 bg-slate-100/50 border-none rounded-lg text-sm font-bold text-slate-700 placeholder:text-slate-500 focus:ring-2 focus:ring-primary/10 transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2 bg-slate-100/50 border-none rounded-lg text-xs sm:text-sm font-bold text-slate-700 placeholder:text-slate-500 focus:ring-2 focus:ring-primary/10 transition-all outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
@@ -268,7 +268,7 @@ const DeliveryTracking = () => {
               </div>
 
               {/* Delivery List */}
-              <div className="p-4 sm:p-6 space-y-4">
+              <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
                 <AnimatePresence mode="popLayout">
                   {paginatedDeliveries.map((dlv, idx) => (
                     <motion.div
@@ -277,13 +277,13 @@ const DeliveryTracking = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ delay: idx * 0.05 }}
-                      className="group relative bg-white rounded-lg border border-slate-100 p-2 sm:p-1 hover:shadow-2xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500 min-w-0">
+                      className="group relative bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 p-3 sm:p-2 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500 min-w-0 shadow-xs">
                       <div className="flex flex-col lg:flex-row items-stretch gap-3 sm:gap-1">
                         {/* Partner Info Section */}
-                        <div className="lg:w-1/3 p-3 sm:p-5 bg-slate-50/50 rounded-lg border border-transparent group-hover:bg-primary/[0.02] group-hover:border-primary/5 transition-all min-w-0">
+                        <div className="lg:w-1/3 p-3 sm:p-5 bg-slate-50/70 rounded-xl border border-slate-100 group-hover:bg-primary/[0.02] group-hover:border-primary/5 transition-all min-w-0">
                           <div className="flex items-center gap-3 sm:gap-4">
                             <div className="relative shrink-0">
-                              <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-lg overflow-hidden ring-2 sm:ring-4 ring-white shadow-md">
+                              <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl overflow-hidden ring-2 sm:ring-4 ring-white shadow-md">
                                 <img
                                   src={dlv.deliveryBoy.image}
                                   alt={dlv.deliveryBoy.name}
@@ -298,12 +298,12 @@ const DeliveryTracking = () => {
                               <p className="text-[9px] sm:text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-0.5">
                                 Delivery Partner
                               </p>
-                              <h3 className="text-sm sm:text-base font-black text-slate-900 leading-none truncate">
+                              <h3 className="text-xs sm:text-base font-black text-slate-900 leading-none truncate">
                                 {dlv.deliveryBoy.name}
                               </h3>
                               <a
                                 href={`tel:${dlv.deliveryBoy.phone}`}
-                                className="inline-flex items-center gap-1.5 mt-1.5 sm:mt-2 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white rounded-lg text-[10px] sm:text-[11px] font-black text-slate-800 shadow-sm border border-slate-100 hover:bg-primary hover:text-white hover:border-primary transition-all"
+                                className="inline-flex items-center gap-1.5 mt-1.5 sm:mt-2 px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white rounded-lg text-[10px] sm:text-[11px] font-black text-slate-800 shadow-xs border border-slate-200/60 hover:bg-primary hover:text-white hover:border-primary transition-all"
                               >
                                 <HiOutlinePhone className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
                                 <span className="truncate">{dlv.deliveryBoy.phone}</span>
@@ -313,8 +313,8 @@ const DeliveryTracking = () => {
                         </div>
 
                         {/* Order Info Section */}
-                        <div className="flex-1 p-3 sm:p-5 flex flex-col justify-between min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
+                        <div className="flex-1 p-2 sm:p-5 flex flex-col justify-between min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4 mb-2.5 sm:mb-4">
                             <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2 mb-1 sm:mb-1.5">
                                 <span className="text-[11px] sm:text-xs font-black text-slate-900 tracking-tight break-all">
@@ -337,15 +337,15 @@ const DeliveryTracking = () => {
                               <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest">
                                 Order Date & Time
                               </p>
-                              <p className="text-xs sm:text-sm font-black text-primary tracking-tight">
+                              <p className="text-[11px] sm:text-sm font-black text-primary tracking-tight">
                                 {dlv.orderDate && dlv.startTime ? `${dlv.orderDate} • ${dlv.startTime}` : dlv.startTime || dlv.orderDate || "—"}
                               </p>
                             </div>
                           </div>
 
-                          <div className="bg-slate-50/50 p-3 sm:p-4 rounded-lg border border-slate-100/50 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2">
-                              <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                          <div className="bg-slate-50/70 p-2.5 sm:p-4 rounded-xl border border-slate-100 min-w-0">
+                            <div className="flex items-center justify-between gap-2 mb-1">
+                              <p className="text-[9px] sm:text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-1.5">
                                 <HiOutlineMapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-primary shrink-0" />
                                 Customer Address
                               </p>
@@ -374,9 +374,10 @@ const DeliveryTracking = () => {
                         </div>
 
                         {/* Action Button Section */}
-                        <div className="lg:w-16 flex items-center justify-center p-2 sm:p-3 shrink-0">
-                          <button className="h-10 w-10 lg:h-full lg:w-full bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark rounded-lg lg:rounded-r-lg lg:rounded-l-none flex items-center justify-center text-white transition-all duration-500 shadow-xl">
-                            <HiOutlineTruck className="h-5 w-5 group-hover:scale-125 transition-transform" />
+                        <div className="lg:w-16 flex items-center justify-center p-1 sm:p-3 shrink-0">
+                          <button className="w-full py-2.5 lg:w-full lg:h-full bg-[#E71D28] hover:bg-[#c41922] active:scale-95 rounded-xl lg:rounded-r-xl lg:rounded-l-none flex items-center justify-center text-white font-extrabold text-xs lg:text-base gap-2 transition-all duration-300 shadow-md">
+                            <HiOutlineTruck className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-125 transition-transform" />
+                            <span className="lg:hidden">TRACK ORDER</span>
                           </button>
                         </div>
                       </div>

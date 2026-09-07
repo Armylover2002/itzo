@@ -298,24 +298,24 @@ const Withdrawals = () => {
     const isAmountValid = amtNum > 0 && !hasAmountError;
 
     return (
-        <div className="space-y-8 pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-4 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <BlurFade delay={0.1}>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="bg-white rounded-2xl md:rounded-3xl p-4 sm:p-6 border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 flex flex-wrap items-center gap-2">
                             Money Requests
-                            <div className="p-1.5 bg-[#fde8ea] rounded-lg">
-                                <Wallet className="h-5 w-5 text-primary" />
+                            <div className="p-1 bg-[#fde8ea] rounded-md">
+                                <Wallet className="h-4 w-4 text-primary" />
                             </div>
                         </h1>
-                        <p className="text-slate-600 text-base mt-1 font-medium">Request payouts and track your withdrawal history.</p>
+                        <p className="text-slate-600 text-xs sm:text-sm mt-1 font-medium">Request payouts and track your withdrawal history.</p>
                     </div>
                     <button
                         onClick={() => {
                             if (sellerProfile) applyProfilePaymentInfo(sellerProfile);
                             setIsModalOpen(true);
                         }}
-                        className="px-6 py-3 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
+                        className="px-4 py-2.5 bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5 group self-start md:self-auto"
                     >
                         <ArrowUpRight className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         New Request
@@ -326,13 +326,13 @@ const Withdrawals = () => {
             {/* Withdrawal Limits Info Banner */}
             {(minWithdrawal != null || maxWithdrawal != null) && (
                 <BlurFade delay={0.18}>
-                    <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#fde8ea] bg-[#fef4f4]/70 px-5 py-4 shadow-sm">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary shadow-sm ring-1 ring-slate-100">
-                            <Info className="h-4.5 w-4.5" />
+                    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-[#fde8ea] bg-[#fef4f4]/80 px-3 py-1.5 shadow-xs">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-md bg-white text-primary shadow-xs ring-1 ring-slate-100 shrink-0">
+                            <Info className="h-3 w-3" />
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5">
                             {minWithdrawal != null && (
-                                <p className="text-xs font-black text-slate-700 uppercase tracking-widest">
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-wider">
                                     Minimum&nbsp;Withdrawal&nbsp;
                                     <span className="text-primary font-black">₹{minWithdrawal.toLocaleString()}</span>
                                 </p>
@@ -341,7 +341,7 @@ const Withdrawals = () => {
                                 <span className="text-slate-300 font-bold">•</span>
                             )}
                             {maxWithdrawal != null && (
-                                <p className="text-xs font-black text-slate-700 uppercase tracking-widest">
+                                <p className="text-[9px] font-black text-slate-700 uppercase tracking-wider">
                                     Maximum&nbsp;Withdrawal&nbsp;
                                     <span className="text-primary font-black">₹{maxWithdrawal.toLocaleString()}</span>
                                 </p>
@@ -351,79 +351,79 @@ const Withdrawals = () => {
                 </BlurFade>
             )}
 
-            {/* Top Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Top Stat Cards (Extra 20% compact) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3">
                 <BlurFade delay={0.2}>
-                    <Card className="p-6 relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_25px_rgba(0,0,0,0.06)] transition-all">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="h-12 w-12 rounded-2xl bg-[#fef4f4] border border-[#fde8ea] flex items-center justify-center text-primary">
-                                <Wallet className="h-6 w-6" />
+                    <Card className="p-3 relative overflow-hidden bg-emerald-50/80 hover:bg-emerald-100/70 border border-emerald-200/90 shadow-xs hover:shadow-md transition-all rounded-xl">
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="h-7 w-7 rounded-lg bg-emerald-500 text-white shadow-sm shadow-emerald-500/25 flex items-center justify-center">
+                                <Wallet className="h-3.5 w-3.5" />
                             </div>
                         </div>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Available Balance</p>
-                        <h3 className="text-3xl font-black text-slate-900 mt-1">₹{balances.available.toLocaleString()}</h3>
-                        <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-400">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <p className="text-[9px] font-bold text-emerald-800 uppercase tracking-wider">Available Balance</p>
+                        <h3 className="text-xl font-black text-emerald-950 mt-0.5">₹{balances.available.toLocaleString()}</h3>
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             Ready to withdraw
                         </div>
                     </Card>
                 </BlurFade>
 
                 <BlurFade delay={0.25}>
-                    <Card className="p-6 relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_25px_rgba(0,0,0,0.06)] transition-all">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="h-12 w-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-                                <Clock className="h-6 w-6" />
+                    <Card className="p-3 relative overflow-hidden bg-amber-50/80 hover:bg-amber-100/70 border border-amber-200/90 shadow-xs hover:shadow-md transition-all rounded-xl">
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="h-7 w-7 rounded-lg bg-amber-500 text-white shadow-sm shadow-amber-500/25 flex items-center justify-center">
+                                <Clock className="h-3.5 w-3.5" />
                             </div>
                         </div>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Pending Payouts</p>
-                        <h3 className="text-3xl font-black text-slate-900 mt-1">₹{balances.pending.toLocaleString()}</h3>
-                        <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-400">
-                            <span className="h-2 w-2 rounded-full bg-amber-400" />
+                        <p className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">Pending Payouts</p>
+                        <h3 className="text-xl font-black text-amber-950 mt-0.5">₹{balances.pending.toLocaleString()}</h3>
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
                             Processing requests
                         </div>
                     </Card>
                 </BlurFade>
 
                 <BlurFade delay={0.3}>
-                    <Card className="p-6 relative overflow-hidden bg-white/70 backdrop-blur-md border border-slate-100/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_25px_rgba(0,0,0,0.06)] transition-all">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="h-12 w-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-                                <CheckCircle2 className="h-6 w-6" />
+                    <Card className="p-3 relative overflow-hidden bg-blue-50/80 hover:bg-blue-100/70 border border-blue-200/90 shadow-xs hover:shadow-md transition-all rounded-xl">
+                        <div className="flex items-center justify-between mb-1">
+                            <div className="h-7 w-7 rounded-lg bg-blue-500 text-white shadow-sm shadow-blue-500/25 flex items-center justify-center">
+                                <CheckCircle2 className="h-3.5 w-3.5" />
                             </div>
                         </div>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Last Withdrawal</p>
-                        <h3 className="text-3xl font-black text-slate-900 mt-1">₹{balances.lastWithdrawal.toLocaleString()}</h3>
-                        <div className="mt-4 flex items-center gap-2 text-xs font-bold text-slate-400">
-                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                        <p className="text-[9px] font-bold text-blue-800 uppercase tracking-wider">Last Withdrawal</p>
+                        <h3 className="text-xl font-black text-blue-950 mt-0.5">₹{balances.lastWithdrawal.toLocaleString()}</h3>
+                        <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-blue-700">
+                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
                             Sent to bank
                         </div>
                     </Card>
                 </BlurFade>
             </div>
 
-            {/* History Table */}
+            {/* History Table Card (Extra 20% compact) */}
             <BlurFade delay={0.35}>
-                <Card className="p-6 bg-white/70 backdrop-blur-md border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] rounded-3xl">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                                <History className="h-5 w-5" />
+                <Card className="p-3.5 sm:p-4 bg-white/90 backdrop-blur-md border border-slate-200/80 shadow-xs hover:shadow-md rounded-xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+                                <History className="h-3.5 w-3.5" />
                             </div>
                             <div>
-                                <h3 className="text-base font-black text-slate-900">Withdrawal History</h3>
-                                <p className="text-xs text-slate-400 font-medium">All payout requests and their current status</p>
+                                <h3 className="text-xs font-black text-slate-900">Withdrawal History</h3>
+                                <p className="text-[10px] text-slate-500 font-medium">All payout requests and their current status</p>
                             </div>
                         </div>
 
                         <div className="relative">
-                            <Search className="h-4 w-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                            <Search className="h-3 w-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                             <input
                                 type="text"
                                 placeholder="Search ID or Status..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs font-medium focus:bg-white focus:border-primary/20 outline-none transition-all w-full sm:w-56"
+                                className="pl-8 pr-2.5 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] font-medium focus:bg-white focus:border-primary/30 outline-none transition-all w-full sm:w-48"
                             />
                         </div>
                     </div>
@@ -431,29 +431,29 @@ const Withdrawals = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                    <th className="pb-4">Request Details</th>
-                                    <th className="pb-4">Amount</th>
-                                    <th className="pb-4">Status</th>
-                                    <th className="pb-4">Method</th>
-                                    <th className="pb-4 text-right">Date</th>
+                                <tr className="border-b border-slate-100 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                    <th className="pb-1.5">Request Details</th>
+                                    <th className="pb-1.5">Amount</th>
+                                    <th className="pb-1.5">Status</th>
+                                    <th className="pb-1.5">Method</th>
+                                    <th className="pb-1.5 text-right">Date</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50 text-xs font-medium">
+                            <tbody className="divide-y divide-slate-50 text-[11px] font-medium">
                                 {paginatedHistory.length > 0 ? (
                                     paginatedHistory.map((item) => (
                                         <tr key={item.id || item._id} className="hover:bg-slate-50/50 transition-colors">
-                                            <td className="py-4">
+                                            <td className="py-1.5">
                                                 <p className="font-bold text-slate-900">{item.id || item.ref || item.reference || '—'}</p>
-                                                <p className="text-[10px] text-slate-400">Ref: {item.reference || item.ref || item.orderId || '—'}</p>
+                                                <p className="text-[9px] text-slate-400">Ref: {item.reference || item.ref || item.orderId || '—'}</p>
                                             </td>
-                                            <td className="py-4 font-black text-slate-900">
+                                            <td className="py-1.5 font-black text-slate-900">
                                                 ₹{Math.abs(Number(item.amount ?? 0)).toLocaleString()}
                                             </td>
-                                            <td className="py-4">
+                                            <td className="py-1.5">
                                                 <span
                                                     className={cn(
-                                                        "text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider inline-flex items-center gap-1.5",
+                                                        "text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1",
                                                         (item.status || '').toLowerCase() === 'settled'
                                                             ? "bg-emerald-50 text-emerald-700"
                                                             : (item.status || '').toLowerCase() === 'pending'
@@ -461,21 +461,21 @@ const Withdrawals = () => {
                                                             : "bg-rose-50 text-rose-700"
                                                     )}
                                                 >
-                                                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                                                    <span className="h-1 w-1 rounded-full bg-current" />
                                                     {item.status || 'Pending'}
                                                 </span>
                                             </td>
-                                            <td className="py-4 text-slate-500 font-bold">
+                                            <td className="py-1.5 text-slate-500 font-bold">
                                                 {item.method || item.customer || 'Bank Transfer'}
                                             </td>
-                                            <td className="py-4 text-right text-slate-400">
+                                            <td className="py-1.5 text-right text-slate-400">
                                                 {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
                                             </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="text-center py-12 text-slate-400 font-medium">
+                                        <td colSpan="5" className="text-center py-6 text-slate-400 font-medium text-xs">
                                             No withdrawal records found.
                                         </td>
                                     </tr>
@@ -485,7 +485,7 @@ const Withdrawals = () => {
                     </div>
 
                     {filteredHistory.length > pageSize && (
-                        <div className="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+                        <div className="mt-2 pt-2 border-t border-slate-100 flex justify-end">
                             <Pagination
                                 currentPage={page}
                                 totalPages={Math.max(1, Math.ceil(filteredHistory.length / pageSize))}
@@ -502,22 +502,22 @@ const Withdrawals = () => {
                 onClose={() => !isSubmitting && setIsModalOpen(false)}
                 title="Request Withdrawal"
             >
-                <form onSubmit={handleSubmitRequest} className="space-y-6 py-4">
+                <form onSubmit={handleSubmitRequest} className="space-y-4 py-2">
                     {/* Available & Remaining Balance Card */}
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex items-center justify-between">
+                    <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 flex items-center justify-between">
                         <div>
-                            <p className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-0.5">Available to Withdraw</p>
-                            <h4 className="text-2xl font-black text-[#E71D28]">₹{balances.available.toLocaleString()}</h4>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-0.5">Available to Withdraw</p>
+                            <h4 className="text-xl font-black text-[#E71D28]">₹{balances.available.toLocaleString()}</h4>
                         </div>
                         {amtNum > 0 && (
                             <div className={cn(
-                                "text-right px-3.5 py-2 rounded-xl border transition-all",
+                                "text-right px-3 py-1.5 rounded-lg border transition-all",
                                 isAmountOverAvailable
                                     ? "bg-rose-50 border-rose-200 text-rose-700"
                                     : "bg-emerald-50 border-emerald-200 text-emerald-800"
                             )}>
-                                <p className="text-[10px] font-black uppercase tracking-wider">Remaining Balance</p>
-                                <p className="text-base font-black">
+                                <p className="text-[9px] font-black uppercase tracking-wider">Remaining Balance</p>
+                                <p className="text-sm font-black">
                                     {isAmountOverAvailable ? '₹0' : `₹${remainingBalance.toLocaleString()}`}
                                 </p>
                             </div>
@@ -525,12 +525,12 @@ const Withdrawals = () => {
                     </div>
 
                     {/* Withdrawal Limits Notice */}
-                    <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3.5 text-xs shadow-sm">
-                        <div className="flex items-center gap-2.5 text-amber-900 font-bold">
-                            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                    <div className="flex items-center justify-between gap-2.5 rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2.5 text-xs shadow-xs">
+                        <div className="flex items-center gap-2 text-amber-900 font-bold">
+                            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
                             <div>
-                                <p className="text-[10px] font-black uppercase tracking-wider text-amber-700">Withdrawal Limit Range</p>
-                                <p className="text-xs sm:text-sm font-black text-amber-950">
+                                <p className="text-[9px] font-black uppercase tracking-wider text-amber-700">Withdrawal Limit Range</p>
+                                <p className="text-xs font-black text-amber-950">
                                     {minWithdrawal != null && maxWithdrawal != null
                                         ? `Min ₹${minWithdrawal.toLocaleString()} — Max ₹${maxWithdrawal.toLocaleString()}`
                                         : minWithdrawal != null
@@ -541,7 +541,7 @@ const Withdrawals = () => {
                                 </p>
                             </div>
                         </div>
-                        <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-amber-200/80 text-amber-900 uppercase tracking-wider shrink-0 border border-amber-300/50">
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase tracking-wider shrink-0 border border-amber-300/50">
                             Admin Policy
                         </span>
                     </div>

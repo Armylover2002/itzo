@@ -11,11 +11,11 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { sellerApi } from '@/modules/seller/services/sellerApi';
 import { AnimatePresence } from 'framer-motion';
-import { Store } from 'lucide-react';
+import { Store, PanelLeftOpen, PanelLeftClose, ChevronLeft, ChevronRight } from 'lucide-react';
 import NotificationPopup from './NotificationPopup';
 import { toast } from 'sonner';
 
-const Topbar = ({ onMenuClick }) => {
+const Topbar = ({ onMenuClick, isSidebarCollapsed }) => {
     const { user, logout, role } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -158,9 +158,14 @@ const Topbar = ({ onMenuClick }) => {
             <div className="flex items-center flex-1 mr-4 overflow-hidden">
                 <button
                     onClick={onMenuClick}
-                    className="p-2.5 mr-2 bg-gray-100/80 hover:bg-white rounded-xl text-gray-600 hover:text-primary transition-all duration-300 md:hidden border border-transparent hover:border-primary/20 shadow-sm"
+                    className="p-1.5 mr-2 text-slate-700 hover:text-[#E71D28] hover:bg-slate-100/80 rounded-lg transition-all duration-200 border-0 bg-transparent flex items-center justify-center cursor-pointer"
+                    title={isSidebarCollapsed ? "Expand Sidebar" : "Close Sidebar"}
                 >
-                    <HiOutlineMenu className="h-5 w-5" />
+                    {isSidebarCollapsed ? (
+                        <ChevronRight className="h-5 w-5 stroke-[2.5] text-[#E71D28]" />
+                    ) : (
+                        <ChevronLeft className="h-5 w-5 stroke-[2.5]" />
+                    )}
                 </button>
 
                 <form onSubmit={handleSearchSubmit} className="relative w-full md:w-[400px] group">

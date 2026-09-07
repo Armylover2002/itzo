@@ -57,8 +57,17 @@ const DashboardLayout = ({ children, navItems, title }) => {
     /** Total seconds in this acceptance window (for progress bar), set when modal opens */
     const acceptWindowTotalRef = useRef(60);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const { user, logout, role } = useAuth();
     const location = useLocation();
+
+    const handleToggleSidebar = useCallback(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            setIsSidebarOpen((prev) => !prev);
+        } else {
+            setIsSidebarCollapsed((prev) => !prev);
+        }
+    }, []);
 
     // Shared data for seller – single source, avoids duplicate API calls
     const [sellerOrders, setSellerOrders] = useState([]);
@@ -373,12 +382,22 @@ const DashboardLayout = ({ children, navItems, title }) => {
                 items={navItems}
                 title={title}
                 isOpen={isSidebarOpen}
+                isCollapsed={isSidebarCollapsed}
                 onClose={() => setIsSidebarOpen(false)}
+                onToggleCollapse={handleToggleSidebar}
             />
-            <div className={cn("transition-all duration-300", (role === "admin" || role === "seller") ? "pl-0 md:pl-64" : "pl-64")}>
-                <Topbar onMenuClick={() => setIsSidebarOpen(true)} />
-                <main className={cn("min-h-[calc(100vh-4rem)]", (role === "admin" || role === "seller") ? "pb-24 md:pb-8" : "pb-20")}>
-                    <div className="w-full px-3 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
+            <div className={cn(
+                "transition-all duration-300", 
+                (role === "admin" || role === "seller") 
+                    ? (isSidebarCollapsed ? "pl-0 md:pl-20" : "pl-0 md:pl-64") 
+                    : (isSidebarCollapsed ? "pl-20" : "pl-64")
+            )}>
+                <Topbar 
+                    onMenuClick={handleToggleSidebar} 
+                    isSidebarCollapsed={isSidebarCollapsed} 
+                />
+                <main className={cn("min-h-[calc(100vh-4rem)]", (role === "admin" || role === "seller") ? "pb-20 md:pb-8" : "pb-20")}>
+                    <div className="w-full px-2 sm:px-6 md:px-8 py-2.5 sm:py-6 md:py-8">
                         <SellerOrdersContext.Provider value={sellerOrdersValue}>
                             <SellerEarningsContext.Provider value={sellerEarningsValue}>
                                 {children}

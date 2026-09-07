@@ -38,7 +38,7 @@ const MagicCard = ({ children, className, gradientSize = 200, gradientColor = "#
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             className={cn(
-                "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm",
+                "relative flex h-full w-full flex-col overflow-hidden rounded-xl border border-border text-card-foreground shadow-sm",
                 className
             )}
             {...props}

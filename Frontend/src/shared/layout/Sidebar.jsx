@@ -13,7 +13,7 @@ import {
   updateBrowserFavicon
 } from "@/modules/common/utils/businessSettings";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, LogOut } from "lucide-react";
+import { X, LogOut, PanelLeftClose, PanelLeftOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import AdminModuleSwitcher from "@/shared/components/AdminModuleSwitcher";
 import { sellerApi } from "@/modules/seller/services/sellerApi";
 
@@ -52,6 +52,7 @@ const SidebarItem = ({
   onMouseLeave,
 }) => {
   const location = useLocation();
+  const isSellerPanel = location.pathname.startsWith("/seller");
 
   const hasChildren = item.children && item.children.length > 0;
   const isChildActive =
@@ -66,16 +67,23 @@ const SidebarItem = ({
           onMouseEnter={onMouseEnter}
           onMouseLeave={onMouseLeave}
           className={cn(
-            "w-full flex items-center justify-between rounded-lg px-3 py-2.5 transition-all duration-300 group relative overflow-hidden",
+            "w-full flex items-center justify-between rounded-xl px-3 py-2.5 transition-all duration-300 group relative overflow-hidden",
             isChildActive || isOpen
-              ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)] ring-1 ring-white/10"
-              : "text-gray-400 hover:text-white",
+              ? isSellerPanel
+                ? "bg-[#F3ECE0] text-slate-900 shadow-xs ring-1 ring-[#E8DEC8] font-bold"
+                : "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)] ring-1 ring-white/10"
+              : isSellerPanel
+                ? "text-slate-700 hover:text-slate-950"
+                : "text-gray-400 hover:text-white",
           )}>
           <AnimatePresence>
             {isHovered && (
               <motion.div
                 layoutId="hover-highlight"
-                className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                className={cn(
+                  "absolute inset-0 rounded-xl -z-10",
+                  isSellerPanel ? "bg-[#F5EFE4]" : "bg-white/5"
+                )}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -91,10 +99,12 @@ const SidebarItem = ({
           <div className="flex items-center space-x-2.5 z-10">
             <div
               className={cn(
-                "p-1.5 rounded-lg transition-all duration-500 shadow-lg",
+                "p-1.5 rounded-lg transition-all duration-500 shadow-sm",
                 isChildActive || isOpen
-                  ? "bg-[#E71D28] text-white shadow-[#E71D28]/40 ring-2 ring-[#E71D28]/20"
-                  : "bg-white/5 text-gray-500 group-hover:bg-white/10 group-hover:text-gray-300",
+                  ? "bg-[#E71D28] text-white shadow-[#E71D28]/30 ring-2 ring-[#E71D28]/20"
+                  : isSellerPanel
+                    ? "bg-[#EFE7D8] text-slate-700 group-hover:bg-[#E6DCC8] group-hover:text-slate-900"
+                    : "bg-white/5 text-gray-500 group-hover:bg-white/10 group-hover:text-gray-300",
               )}>
               {item.icon && <item.icon className="h-4 w-4" />}
             </div>
@@ -111,13 +121,18 @@ const SidebarItem = ({
               "transition-all duration-300 z-10",
               isOpen
                 ? "rotate-180 text-[#E71D28]"
-                : "rotate-0 text-gray-600 group-hover:text-gray-400",
+                : isSellerPanel
+                  ? "rotate-0 text-slate-500 group-hover:text-slate-800"
+                  : "rotate-0 text-gray-600 group-hover:text-gray-400",
             )}>
             <HiChevronDown className="h-4 w-4" />
           </div>
         </button>
         {isOpen && (
-          <div className="pl-9 pr-3 py-1 space-y-1 animate-in slide-in-from-top-2 fade-in duration-500">
+          <div className={cn(
+            "pl-9 pr-3 py-1 space-y-1 animate-in slide-in-from-top-2 fade-in duration-500 rounded-xl",
+            isSellerPanel && "bg-[#FAF5EC]/90 border border-[#EAE2D0]"
+          )}>
             {item.children.map((child) => (
               <NavLink
                 key={child.path}
@@ -127,14 +142,18 @@ const SidebarItem = ({
                   cn(
                     "block text-xs py-1.5 px-2.5 rounded-lg transition-all duration-300 relative",
                     isActive
-                      ? "text-white font-bold bg-white/10 shadow-sm ring-1 ring-white/5"
-                      : "text-gray-500 hover:text-gray-300 hover:bg-white/5",
+                      ? isSellerPanel
+                        ? "text-[#E71D28] font-bold bg-[#F3E8DC] shadow-xs"
+                        : "text-white font-bold bg-white/10 shadow-sm ring-1 ring-white/5"
+                      : isSellerPanel
+                        ? "text-slate-600 hover:text-slate-900 hover:bg-[#F3ECE0]"
+                        : "text-gray-500 hover:text-gray-300 hover:bg-white/5",
                   )
                 }>
                 {({ isActive }) => (
                   <>
                     {isActive && (
-                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 rounded-full bg-[#E71D28] shadow-[0_0_10px_rgba(231, 29, 40,0.5)]" />
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 rounded-full bg-[#E71D28] shadow-[0_0_10px_rgba(231,29,40,0.5)]" />
                     )}
                     {child.label}
                   </>
@@ -155,10 +174,12 @@ const SidebarItem = ({
       onMouseLeave={onMouseLeave}
       className={({ isActive }) =>
         cn(
-          "flex items-center space-x-2.5 rounded-lg px-3 py-2.5 transition-all duration-300 group relative overflow-hidden",
+          "flex items-center space-x-2.5 rounded-xl px-3 py-2.5 transition-all duration-300 group relative overflow-hidden",
           isActive
-            ? "bg-[#E71D28] text-white shadow-[0_10px_30px_rgba(231, 29, 40,0.3)]"
-            : "text-gray-400 hover:text-white",
+            ? "bg-[#E71D28] text-white shadow-[0_6px_20px_rgba(231,29,40,0.25)] font-bold"
+            : isSellerPanel
+              ? "text-slate-700 hover:text-slate-950 font-semibold"
+              : "text-gray-400 hover:text-white font-semibold",
         )
       }>
       {({ isActive }) => (
@@ -167,7 +188,10 @@ const SidebarItem = ({
             {isHovered && !isActive && (
               <motion.div
                 layoutId="hover-highlight"
-                className="absolute inset-0 bg-white/5 rounded-lg -z-10"
+                className={cn(
+                  "absolute inset-0 rounded-xl -z-10",
+                  isSellerPanel ? "bg-[#F5EFE4]" : "bg-white/5"
+                )}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -182,10 +206,12 @@ const SidebarItem = ({
 
           <div
             className={cn(
-              "p-1.5 rounded-lg transition-all duration-500 shadow-md z-10",
+              "p-1.5 rounded-lg transition-all duration-500 z-10",
               isActive
-                ? "bg-white/20 text-white"
-                : "bg-white/5 text-gray-500 group-hover:bg-white/10 group-hover:text-gray-300",
+                ? "bg-white/20 text-white shadow-xs"
+                : isSellerPanel
+                  ? "bg-[#EFE7D8] text-slate-700 group-hover:bg-[#E6DCC8] group-hover:text-slate-900"
+                  : "bg-white/5 text-gray-500 group-hover:bg-white/10 group-hover:text-gray-300",
             )}>
             {item.icon && <item.icon className="h-4 w-4" />}
           </div>
@@ -206,7 +232,7 @@ const SidebarItem = ({
             </span>
           )}
           {isActive && (
-            <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/30 rounded-l-full animate-in slide-in-from-right-1" />
+            <div className="absolute right-0 top-0 bottom-0 w-1 bg-white/40 rounded-l-full animate-in slide-in-from-right-1" />
           )}
         </>
       )}
@@ -214,7 +240,7 @@ const SidebarItem = ({
   );
 };
 
-const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hoveredIdx, setHoveredIdx }) => {
+const SidebarContent = ({ items, title, onClose, onToggleCollapse, isCollapsed, openMenu, handleToggle, hoveredIdx, setHoveredIdx }) => {
   const { logout } = useAuth();
   const { settings } = useSettings();
   const location = useLocation();
@@ -298,43 +324,63 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      <div className="flex-shrink-0 flex h-16 items-center justify-between px-5 border-b border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent z-10">
-        <div className="flex items-center space-x-2.5">
+      <div className={cn(
+        "flex-shrink-0 flex h-16 items-center justify-between px-4 sm:px-5 border-b z-10",
+        isSellerPanel
+          ? "border-[#EAE3D2] bg-gradient-to-b from-[#F7F3EB]/90 to-transparent"
+          : "border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent"
+      )}>
+        <div className="flex items-center space-x-2.5 min-w-0">
           {displayLogoUrl ? (
             <img 
               src={displayLogoUrl} 
               alt={companyName} 
-              className="h-9 md:h-12 w-auto object-contain" 
+              className="h-9 md:h-11 w-auto object-contain shrink-0" 
               onError={(e) => { e.target.src = '/itzo-logo-transparent.png'; }}
             />
           ) : (
-            <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transform -rotate-6 hover:rotate-0 transition-all duration-500 ease-out">
+            <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30 transform -rotate-6 hover:rotate-0 transition-all duration-500 ease-out shrink-0">
               <span className="text-lg font-black italic">{companyName?.charAt(0) || 'Z'}</span>
             </div>
           )}
-          <div>
-            <h1 className="text-base font-black tracking-tight text-white leading-none">
-              {companyName || 'App'}
-            </h1>
-            <span className="text-[9px] font-black text-[#E71D28] uppercase tracking-[0.2em] mt-1 block">
-              {title}
-            </span>
-          </div>
+          {!isCollapsed && (
+            <div className="truncate">
+              <h1 className={cn(
+                "text-base font-black tracking-tight leading-none truncate",
+                isSellerPanel ? "text-slate-900" : "text-white"
+              )}>
+                {companyName || 'App'}
+              </h1>
+              <span className="text-[9px] font-black text-[#E71D28] uppercase tracking-[0.2em] mt-1 block truncate">
+                {title}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Mobile Close Button */}
+        {/* Sidebar Open/Close Toggle Button */}
         <button
-          onClick={onClose}
-          className="p-2 md:hidden text-gray-500 hover:text-white transition-colors"
+          onClick={onToggleCollapse || onClose}
+          className={cn(
+            "p-1.5 rounded-lg transition-all duration-200 border-0 bg-transparent hover:bg-slate-200/60 text-slate-700 hover:text-slate-950 flex items-center justify-center cursor-pointer shrink-0 ml-1"
+          )}
+          title={isCollapsed ? "Open Sidebar" : "Close Sidebar"}
         >
-          <X className="h-5 w-5" />
+          {isCollapsed ? (
+            <ChevronRight className="h-5 w-5 stroke-[2.5] text-[#E71D28] hover:scale-110 transition-transform" />
+          ) : (
+            <ChevronLeft className="h-5 w-5 stroke-[2.5] hover:scale-110 transition-transform" />
+          )}
         </button>
       </div>
 
       <nav
         data-lenis-prevent
         onMouseLeave={() => setHoveredIdx(null)}
-        className="mt-4 px-3 space-y-1.5 flex-1 overflow-y-auto overscroll-contain custom-scrollbar-dark min-h-0 pb-6 relative z-20"
+        className={cn(
+          "mt-4 px-3 space-y-1.5 flex-1 overflow-y-auto overscroll-contain min-h-0 pb-6 relative z-20",
+          isSellerPanel ? "custom-scrollbar" : "custom-scrollbar-dark"
+        )}
         style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {isAdminPanel && (
@@ -345,7 +391,10 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
             <AdminModuleSwitcher className="grid grid-cols-2 gap-1 rounded-xl border border-white/10 bg-white/5 p-1 shadow-none [&>button]:justify-center [&>button]:px-2 [&>button]:py-2 [&>button]:text-[10px] [&>button]:tracking-[0.18em]" />
           </div>
         )}
-        <p className="px-3 text-[9px] font-black text-gray-600 uppercase tracking-[0.3em] mb-3">
+        <p className={cn(
+          "px-3 text-[9px] font-black uppercase tracking-[0.3em] mb-3",
+          isSellerPanel ? "text-slate-500/80" : "text-gray-600"
+        )}>
           Core Management
         </p>
         <AnimatePresence>
@@ -367,15 +416,30 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
       </nav>
 
       {/* Sidebar Footer with Sign Out */}
-      <div className="flex-shrink-0 p-3 border-t border-white/5 bg-[#0a0c10]/95 backdrop-blur-md z-20">
+      <div className={cn(
+        "flex-shrink-0 p-3 border-t backdrop-blur-md z-20",
+        isSellerPanel
+          ? "border-[#EAE3D2] bg-[#F8F4EC]/90"
+          : "border-white/5 bg-[#0a0c10]/95"
+      )}>
         <button
           onClick={() => {
             onClose?.();
             logout();
           }}
-          className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-rose-400 hover:text-white hover:bg-rose-500/15 active:bg-rose-500/25 border border-rose-500/20 hover:border-rose-500/40 transition-all duration-200 group text-xs font-bold shadow-sm"
+          className={cn(
+            "w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 group text-xs font-bold shadow-xs",
+            isSellerPanel
+              ? "text-rose-700 hover:text-rose-800 bg-rose-100/60 hover:bg-rose-100/90 active:bg-rose-200/90 border border-rose-200/80"
+              : "text-rose-400 hover:text-white hover:bg-rose-500/15 active:bg-rose-500/25 border border-rose-500/20 hover:border-rose-500/40"
+          )}
         >
-          <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 group-hover:bg-rose-600 group-hover:text-white transition-all duration-200">
+          <div className={cn(
+            "p-1.5 rounded-lg transition-all duration-200",
+            isSellerPanel
+              ? "bg-rose-200/60 text-rose-700 group-hover:bg-rose-600 group-hover:text-white"
+              : "bg-rose-500/10 text-rose-400 group-hover:bg-rose-600 group-hover:text-white"
+          )}>
             <LogOut className="h-4 w-4" />
           </div>
           <span className="flex-1 text-left font-semibold">Sign Out</span>
@@ -385,8 +449,10 @@ const SidebarContent = ({ items, title, onClose, openMenu, handleToggle, hovered
   );
 };
 
-const Sidebar = ({ items, title, isOpen, onClose }) => {
+const Sidebar = ({ items, title, isOpen, isCollapsed, onClose, onToggleCollapse }) => {
   const { role } = useAuth();
+  const location = useLocation();
+  const isSellerPanel = location.pathname.startsWith("/seller");
   const [openMenu, setOpenMenu] = useState(null);
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
@@ -398,6 +464,8 @@ const Sidebar = ({ items, title, isOpen, onClose }) => {
     items,
     title,
     onClose,
+    onToggleCollapse,
+    isCollapsed,
     openMenu,
     handleToggle,
     hoveredIdx,
@@ -408,8 +476,12 @@ const Sidebar = ({ items, title, isOpen, onClose }) => {
     <>
       {/* Desktop Sidebar */}
       <aside className={cn(
-        "fixed left-0 inset-y-0 w-64 bg-[#0a0c10] text-gray-400 border-r border-white/5 shadow-[20px_0_60px_rgba(0,0,0,0.4)] md:flex flex-col z-50 transition-all duration-300",
-        (role === "admin" || role === "seller") ? "hidden md:flex" : "flex",
+        "fixed left-0 inset-y-0 z-50 transition-all duration-300 md:flex flex-col",
+        isCollapsed ? "w-20 overflow-hidden" : "w-64",
+        isSellerPanel
+          ? "bg-[#FAF8F5] text-slate-700 border-r border-[#EAE3D2] shadow-[10px_0_40px_rgba(0,0,0,0.04)]"
+          : "bg-[#0a0c10] text-gray-400 border-r border-white/5 shadow-[20px_0_60px_rgba(0,0,0,0.4)]",
+        (role === "admin" || role === "seller") ? (isCollapsed ? "flex" : "hidden md:flex") : "flex",
       )}>
         <SidebarContent {...commonProps} />
       </aside>
@@ -435,7 +507,10 @@ const Sidebar = ({ items, title, isOpen, onClose }) => {
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", damping: 30, stiffness: 300, mass: 0.8 }}
-                className="flex-1 bg-[#0a0c10] shadow-2xl flex flex-col pointer-events-auto min-h-0"
+                className={cn(
+                  "flex-1 shadow-2xl flex flex-col pointer-events-auto min-h-0",
+                  isSellerPanel ? "bg-[#FAF8F5] border-r border-[#EAE3D2]" : "bg-[#0a0c10]"
+                )}
               >
                 <SidebarContent {...commonProps} />
               </motion.div>

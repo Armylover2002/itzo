@@ -103,8 +103,10 @@ const Dashboard = () => {
       change: "+12.5%",
       changeType: "increase",
       icon: IndianRupee,
-      iconBg: "bg-[#fef4f4]",
-      iconColor: "text-primary",
+      cardBg: "bg-emerald-50/80 hover:bg-emerald-100/70 border-emerald-200/90 hover:border-emerald-300",
+      iconBg: "bg-emerald-500 text-white shadow-md shadow-emerald-500/25",
+      labelColor: "text-emerald-800 font-semibold",
+      valueColor: "text-emerald-950 font-extrabold",
       description: "vs last month",
     },
     {
@@ -113,8 +115,10 @@ const Dashboard = () => {
       change: "+8.2%",
       changeType: "increase",
       icon: ShoppingBag,
-      iconBg: "bg-[#fef4f4]",
-      iconColor: "text-primary",
+      cardBg: "bg-blue-50/80 hover:bg-blue-100/70 border-blue-200/90 hover:border-blue-300",
+      iconBg: "bg-blue-500 text-white shadow-md shadow-blue-500/25",
+      labelColor: "text-blue-800 font-semibold",
+      valueColor: "text-blue-950 font-extrabold",
       description: "vs last month",
     },
     {
@@ -123,8 +127,10 @@ const Dashboard = () => {
       change: "+2",
       changeType: "increase",
       icon: Package,
-      iconBg: "bg-[#fef4f4]",
-      iconColor: "text-primary",
+      cardBg: "bg-purple-50/80 hover:bg-purple-100/70 border-purple-200/90 hover:border-purple-300",
+      iconBg: "bg-purple-500 text-white shadow-md shadow-purple-500/25",
+      labelColor: "text-purple-800 font-semibold",
+      valueColor: "text-purple-950 font-extrabold",
       description: "per order",
     },
     {
@@ -133,8 +139,10 @@ const Dashboard = () => {
       change: "-3",
       changeType: "decrease",
       icon: Clock,
-      iconBg: "bg-red-50",
-      iconColor: "text-red-600",
+      cardBg: "bg-amber-50/80 hover:bg-amber-100/70 border-amber-200/90 hover:border-amber-300",
+      iconBg: "bg-amber-500 text-white shadow-md shadow-amber-500/25",
+      labelColor: "text-amber-800 font-semibold",
+      valueColor: "text-amber-950 font-extrabold",
       description: "need attention",
     },
   ];
@@ -145,21 +153,33 @@ const Dashboard = () => {
       description: "List a new item in your store",
       icon: Plus,
       path: "/seller/products/add",
-      variant: "primary", // dark bg, white text
+      bgClass: "bg-gradient-to-br from-indigo-50/90 to-indigo-100/60 border-indigo-200/90 hover:border-indigo-400 hover:shadow-md",
+      iconBg: "bg-indigo-600 text-white shadow-sm shadow-indigo-500/30",
+      titleColor: "text-indigo-950 font-bold",
+      descColor: "text-indigo-700/80",
+      arrowColor: "text-indigo-500",
     },
     {
       title: "Process Orders",
       description: "View and manage pending orders",
       icon: Truck,
       path: "/seller/orders",
-      variant: "outline", // white bg, border, primary accent
+      bgClass: "bg-gradient-to-br from-rose-50/90 to-rose-100/60 border-rose-200/90 hover:border-rose-400 hover:shadow-md",
+      iconBg: "bg-rose-600 text-white shadow-sm shadow-rose-500/30",
+      titleColor: "text-rose-950 font-bold",
+      descColor: "text-rose-700/80",
+      arrowColor: "text-rose-500",
     },
     {
       title: "View Earnings",
       description: "Check your revenue and payouts",
       icon: IndianRupee,
       path: "/seller/earnings",
-      variant: "outline-emerald", // white bg, border, emerald accent
+      bgClass: "bg-gradient-to-br from-teal-50/90 to-teal-100/60 border-teal-200/90 hover:border-teal-400 hover:shadow-md",
+      iconBg: "bg-teal-600 text-white shadow-sm shadow-teal-500/30",
+      titleColor: "text-teal-950 font-bold",
+      descColor: "text-teal-700/80",
+      arrowColor: "text-teal-500",
     },
   ];
 
@@ -256,40 +276,25 @@ const Dashboard = () => {
       />
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2.5 md:gap-6">
         {stats.map((stat) => (
-          <Card key={stat.label} className="hover:shadow-lg transition-shadow">
+          <Card
+            key={stat.label}
+            className={cn(
+              "transition-all duration-200 border rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 shadow-xs hover:shadow-md",
+              stat.cardBg
+            )}>
             <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-base font-medium text-slate-600">
+              <div className="flex-1 min-w-0">
+                <p className={cn("text-[9px] sm:text-xs md:text-xs font-bold uppercase tracking-wider truncate", stat.labelColor)}>
                   {stat.label}
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-2">
+                <p className={cn("text-lg sm:text-xl md:text-2xl font-extrabold mt-1 md:mt-2 tracking-tight truncate", stat.valueColor)}>
                   {stat.value}
                 </p>
-                {/* <div className="flex items-center gap-2 mt-2">
-                  <span
-                    className={cn(
-                      "text-xs font-semibold flex items-center gap-1",
-                      stat.changeType === "increase"
-                        ? "text-emerald-600"
-                        : "text-red-600",
-                    )}>
-                    <TrendingUp
-                      className={cn(
-                        "h-3 w-3",
-                        stat.changeType === "decrease" && "rotate-180",
-                      )}
-                    />
-                    {stat.change}
-                  </span>
-                  <span className="text-sm text-slate-600">
-                    {stat.description}
-                  </span>
-                </div> */}
               </div>
-              <div className={cn("p-3 rounded-lg", stat.iconBg)}>
-                <stat.icon className={cn("h-6 w-6", stat.iconColor)} />
+              <div className={cn("p-1.5 sm:p-2 md:p-3 rounded-lg md:rounded-xl flex items-center justify-center shrink-0 ml-1.5", stat.iconBg)}>
+                <stat.icon className="h-3.5 sm:h-4 md:h-5 w-3.5 sm:w-4 md:w-5" />
               </div>
             </div>
           </Card>
@@ -297,79 +302,40 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {quickActions.map((action) => {
-          const isPrimary = action.variant === "primary";
-          const isEmerald = action.variant === "outline-emerald";
-          return (
-            <button
-              key={action.title}
-              onClick={() => navigate(action.path)}
-              className={cn(
-                "p-6 rounded-xl text-left transition-all duration-200 shadow-sm hover:shadow-md border-2",
-                isPrimary &&
-                  "bg-[#E71D28] border-[#E71D28] text-white hover:bg-primary-hover active:bg-primary-dark hover:border-primary-hover",
-                action.variant === "outline" &&
-                  "bg-white border-slate-200 text-slate-900 hover:border-[#E71D28] hover:bg-[#E71D28]/5",
-                isEmerald &&
-                  "bg-white border-slate-200 text-slate-900 hover:border-[#E71D28] hover:bg-[#E71D28]/5",
-              )}>
-              <div className="flex items-start gap-4">
-                <div
-                  className={cn(
-                    "p-2 rounded-lg",
-                    isPrimary
-                      ? "bg-white/20"
-                      : isEmerald
-                        ? "bg-emerald-50"
-                        : "bg-slate-100",
-                  )}>
-                  <action.icon
-                    className={cn(
-                      "h-5 w-5",
-                      isPrimary
-                        ? "text-white"
-                        : isEmerald
-                          ? "text-emerald-600"
-                          : "text-slate-700",
-                    )}
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3
-                    className={cn(
-                      "font-semibold text-sm",
-                      isPrimary ? "text-white" : "text-slate-900",
-                    )}>
-                    {action.title}
-                  </h3>
-                  <p
-                    className={cn(
-                      "text-xs mt-1",
-                      isPrimary ? "text-white/90" : "text-slate-600",
-                    )}>
-                    {action.description}
-                  </p>
-                </div>
-                <ArrowUpRight
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    isPrimary ? "text-white/70" : "text-slate-600",
-                  )}
-                />
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-6">
+        {quickActions.map((action) => (
+          <button
+            key={action.title}
+            onClick={() => navigate(action.path)}
+            className={cn(
+              "p-2.5 sm:p-4 md:p-5 rounded-xl md:rounded-2xl text-left transition-all duration-200 border shadow-xs hover:shadow-md",
+              action.bgClass
+            )}>
+            <div className="flex items-start gap-2 md:gap-4">
+              <div className={cn("p-1.5 sm:p-2.5 rounded-lg md:rounded-xl flex items-center justify-center shrink-0", action.iconBg)}>
+                <action.icon className="h-3.5 sm:h-4 md:h-5 w-3.5 sm:w-4 md:w-5" />
               </div>
-            </button>
-          );
-        })}
+              <div className="flex-1 min-w-0">
+                <h3 className={cn("font-bold text-xs md:text-sm tracking-tight truncate", action.titleColor)}>
+                  {action.title}
+                </h3>
+                <p className={cn("text-[10px] md:text-xs mt-0.5 md:mt-1 font-medium truncate hidden sm:block", action.descColor)}>
+                  {action.description}
+                </p>
+              </div>
+              <ArrowUpRight className={cn("h-3.5 w-3.5 md:h-4 md:w-4 shrink-0 mt-0.5 hidden sm:block", action.arrowColor)} />
+            </div>
+          </button>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Revenue Chart */}
         <Card
           title="Revenue Overview"
           subtitle="Last 7 days performance"
-          className="lg:col-span-2">
-          <div className="h-[300px] min-h-[280px] w-full mt-4">
+          className="lg:col-span-2 p-3 md:p-6">
+          <div className="h-[180px] md:h-[300px] min-h-[160px] w-full mt-2 md:mt-4">
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart
                 data={revenueChartData}
