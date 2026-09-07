@@ -170,7 +170,7 @@ const StockManagement = () => {
     const stats = useMemo(() => [
         {
             label: 'Total Inventory',
-            value: inventory.reduce((acc, item) => acc + item.stock, 0),
+            value: inventory.reduce((acc, item) => acc + item.totalStock, 0),
             icon: HiOutlineCube,
             color: 'text-white',
             bg: 'bg-indigo-600 shadow-md shadow-indigo-500/30',
@@ -180,7 +180,7 @@ const StockManagement = () => {
         },
         {
             label: 'Low Stock Items',
-            value: inventory.filter(i => i.stock > 0 && i.stock <= i.threshold).length,
+            value: inventory.filter(i => i.totalStock > 0 && i.totalStock <= i.threshold).length,
             icon: HiOutlineExclamationTriangle,
             color: 'text-white',
             bg: 'bg-amber-600 shadow-md shadow-amber-500/30',
@@ -190,7 +190,7 @@ const StockManagement = () => {
         },
         {
             label: 'Out of Stock',
-            value: inventory.filter(i => i.stock === 0).length,
+            value: inventory.filter(i => i.totalStock === 0).length,
             icon: HiOutlineArchiveBoxXMark,
             color: 'text-white',
             bg: 'bg-rose-600 shadow-md shadow-rose-500/30',
@@ -200,22 +200,13 @@ const StockManagement = () => {
         },
         {
             label: 'Stock Valuation',
-            value: `₹${inventory.reduce((acc, item) => acc + (item.stock * item.price), 0).toLocaleString()}`,
+            subLabel: 'Σ (Stock × Cost Price)',
+            value: `₹${inventory.reduce((acc, item) => acc + item.valuation, 0).toLocaleString('en-IN')}`,
             icon: HiOutlineArrowsUpDown,
             color: 'text-white',
             bg: 'bg-emerald-600 shadow-md shadow-emerald-500/30',
             cardBg: 'bg-emerald-50/90 border border-emerald-200/90 shadow-xs shadow-emerald-500/10',
             gradientColor: '#a7f3d0',
-        { label: 'Total Inventory', value: inventory.reduce((acc, item) => acc + item.totalStock, 0), icon: HiOutlineCube, color: 'text-primary', bg: 'bg-[#fef4f4]', status: 'All' },
-        { label: 'Low Stock Items', value: inventory.filter(i => i.totalStock > 0 && i.totalStock <= i.threshold).length, icon: HiOutlineExclamationTriangle, color: 'text-amber-600', bg: 'bg-amber-50', status: 'Low Stock' },
-        { label: 'Out of Stock', value: inventory.filter(i => i.totalStock === 0).length, icon: HiOutlineArchiveBoxXMark, color: 'text-rose-600', bg: 'bg-rose-50', status: 'Out of Stock' },
-        {
-            label: 'Stock Valuation',
-            subLabel: 'Σ (Stock × Cost Price)',
-            value: `₹${inventory.reduce((acc, item) => acc + item.valuation, 0).toLocaleString('en-IN')}`,
-            icon: HiOutlineArrowsUpDown,
-            color: 'text-primary',
-            bg: 'bg-[#fef4f4]',
             status: 'In Stock'
         }
     ], [inventory]);
@@ -334,9 +325,6 @@ const StockManagement = () => {
                                             <div className="min-w-0">
                                                 <p className="text-[9px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest truncate">{stat.label}</p>
                                                 <h4 className="text-sm sm:text-xl font-black text-slate-900 tracking-tight mt-0.5">{stat.value}</h4>
-                                            <div>
-                                                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">{stat.label}</p>
-                                                <h4 className="text-xl font-black text-slate-900 tracking-tight">{stat.value}</h4>
                                                 {stat.subLabel && (
                                                     <p className="text-[9px] text-slate-400 font-semibold">{stat.subLabel}</p>
                                                 )}
@@ -434,13 +422,17 @@ const StockManagement = () => {
                                                 <div className="flex items-center justify-between pt-1.5 text-xs border-t border-slate-100">
                                                     <div>
                                                         <span className="text-[9px] text-slate-400 font-bold block uppercase">Stock Units</span>
-                                                        <span className={cn("font-black text-xs", item.stock <= item.threshold ? "text-rose-600" : "text-slate-900")}>
-                                                            {item.stock} units
+                                                        <span className={cn("font-black text-xs", item.totalStock <= item.threshold ? "text-rose-600" : "text-slate-900")}>
+                                                            {item.totalStock} units
                                                         </span>
                                                     </div>
                                                     <div>
                                                         <span className="text-[9px] text-slate-400 font-bold block uppercase">Price</span>
-                                                        <span className="font-black text-xs text-slate-900">₹{item.price}</span>
+                                                        <span className="font-black text-xs text-slate-900">
+                                                            {item.minPrice === item.maxPrice
+                                                                ? `₹${item.minPrice}`
+                                                                : `₹${item.minPrice} - ₹${item.maxPrice}`}
+                                                        </span>
                                                     </div>
                                                     <button
                                                         onClick={() => openAdjustModal(item)}
