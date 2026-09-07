@@ -42,17 +42,30 @@ export default function DesktopNavbar({ showLogo = true }) {
     const cartCount = getCartCount()
 
 
-    // Show area if available, otherwise show city
-    // Priority: area > city > "Select"
     const areaName = userLocation?.area && userLocation?.area.trim() ? userLocation.area.trim() : null
     const cityName = userLocation?.city || null
     const stateName = userLocation?.state || null
-    // Main location name: Show area if available, otherwise show city, otherwise "Select"
-    const mainLocationName = areaName || cityName || "Select"
-    // Secondary location: Show only city when area is available (as per design image)
-    const secondaryLocation = areaName
-        ? (cityName || "")  // Show only city when area is available
-        : (cityName && stateName ? `${cityName}, ${stateName}` : cityName || stateName || "")
+    // Saved addresses carry their label (Home / Office / Other) through the address
+    // selector; a live "use current location" pick has none.
+    const addressLabel = String(userLocation?.label || "").trim() || null
+
+    // Headline is the label the customer recognises, with the actual street below it.
+    // Showing only the area (the previous behaviour) meant a specific pick like
+    // "Corporate House, 103, Film Colony Rd" collapsed to just "Chhoti Gwaltoli".
+    const mainLocationName = addressLabel || areaName || cityName || "Select"
+
+    const shortAddress = [userLocation?.street, areaName, cityName]
+        .map((part) => String(part || "").trim())
+        .filter(Boolean)
+        // Street and area are sometimes the same value — don't repeat it.
+        .filter((part, idx, all) => all.indexOf(part) === idx)
+        .join(", ")
+
+    const secondaryLocation = addressLabel
+        ? (shortAddress || userLocation?.formattedAddress || cityName || "")
+        : areaName
+            ? (cityName || "")
+            : (cityName && stateName ? `${cityName}, ${stateName}` : cityName || stateName || "")
 
     const handleLocationClick = () => {
         // Open location selector overlay
@@ -222,7 +235,10 @@ export default function DesktopNavbar({ showLogo = true }) {
                                             <ChevronDown className="h-4 w-4 lg:h-5 lg:w-5 text-black dark:text-white flex-shrink-0" strokeWidth={2.5} />
                                         </div>
                                         {secondaryLocation && (
-                                            <span className="text-xs lg:text-sm font-bold text-gray-600 dark:text-gray-400 mt-0.5 whitespace-nowrap">
+                                            <span
+                                                title={secondaryLocation}
+                                                className="text-xs lg:text-sm font-bold text-gray-600 dark:text-gray-400 mt-0.5 whitespace-nowrap truncate max-w-[220px] lg:max-w-[300px]"
+                                            >
                                                 {secondaryLocation}
                                             </span>
                                         )}

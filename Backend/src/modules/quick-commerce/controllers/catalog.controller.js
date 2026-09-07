@@ -48,24 +48,21 @@ const isLiveFilter = {
   ],
 };
 
-const publicCategoryFilter = {
-  $and: [
-    isLiveFilter,
-    {
-      $or: [
-        { type: { $ne: 'subcategory' } },
-        approvedOrLegacyFilter,
-      ],
-    },
-  ],
-};
-
-const publicProductFilter = {
+/**
+ * Built fresh per call, never shared.
+ *
+ * These used to be module-level constants that request handlers shallow-copied
+ * (`{ ...publicProductFilter }`) before pushing zone and category constraints into
+ * `$and` — but a shallow copy shares the array, so every request permanently appended
+ * to the one constant. After a few visitors from different zones/categories the filter
+ * became unsatisfiable and the storefront returned nothing until the server restarted.
+ */
+const buildPublicProductFilter = () => ({
   $and: [
     approvedOrLegacyFilter,
     isLiveFilter,
   ],
-};
+});
 
 /**
  * Sellers that must not appear on the storefront (switched off, not approved, or
@@ -184,7 +181,7 @@ export const getHomeData = async (req, res) => {
 
   const zoneSellerIds = await resolveZoneSellerIds({ zoneId, lat, lng });
   const bestSellersFilter = applyZoneSellerScope(
-    await withVisibleSellerFilter(publicProductFilter),
+    await withVisibleSellerFilter(buildPublicProductFilter()),
     zoneSellerIds,
   );
 
@@ -384,7 +381,7 @@ export const getProducts = async (req, res) => {
   setPublicCache(res, 5);
 
   const { categoryId, search, limit, sortBy, lat, lng, zoneId, sellerId } = req.query;
-  const query = { ...publicProductFilter };
+  let query = buildPublicProductFilter();
 
   if (sellerId) {
     query.sellerId = sellerId;
@@ -392,9 +389,10 @@ export const getProducts = async (req, res) => {
 
   // Scope to the customer's zone (unless they asked for one specific seller
   // above) so products from another zone's sellers never show up here.
+  // applyZoneSellerScope returns a new filter — its result must be assigned.
   if (!sellerId) {
     const zoneSellerIds = await resolveZoneSellerIds({ zoneId, lat, lng });
-    applyZoneSellerScope(query, zoneSellerIds);
+    query = applyZoneSellerScope(query, zoneSellerIds);
   }
 
   // Handle category filtering
@@ -479,7 +477,7 @@ export const getProductById = async (req, res) => {
   setPublicCache(res, 5);
 
   const product = await QuickProduct.findOne(
-    await withVisibleSellerFilter({ _id: req.params.productId, ...publicProductFilter }),
+    await withVisibleSellerFilter({ _id: req.params.productId, ...buildPublicProductFilter() }),
   ).lean();
 
   if (!product) {
@@ -603,7 +601,7 @@ export const getPublicShops = async (req, res) => {
     // Count active products for each seller
     const sellerIds = sellers.map((s) => s._id);
     const productCounts = await QuickProduct.aggregate([
-      { $match: { sellerId: { $in: sellerIds }, ...publicProductFilter } },
+      { $match: { sellerId: { $in: sellerIds }, ...buildPublicProductFilter() } },
       { $group: { _id: '$sellerId', count: { $sum: 1 } } },
     ]);
 
@@ -701,7 +699,7 @@ export const getPublicShopById = async (req, res) => {
     // Fetch products for this shop
     const products = await QuickProduct.find({
       sellerId: seller._id,
-      ...publicProductFilter,
+      ...buildPublicProductFilter(),
     })
       .sort({ createdAt: -1 })
       .lean();
