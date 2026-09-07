@@ -18,7 +18,8 @@ import {
     HiOutlineClipboardDocumentList,
     HiOutlineXMark,
     HiOutlineCheck,
-    HiOutlineCalendarDays
+    HiOutlineCalendarDays,
+    HiOutlineChevronDown
 } from 'react-icons/hi2';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -37,12 +38,24 @@ const StockManagement = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [selectedVariantId, setSelectedVariantId] = useState(null);
     const [adjustType, setAdjustType] = useState('Restock');
     const [adjustValue, setAdjustValue] = useState('');
     const [adjustNote, setAdjustNote] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [expandedProducts, setExpandedProducts] = useState(new Set());
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
+
+    const toggleExpand = (productId) => {
+        setExpandedProducts((prev) => {
+            const next = new Set(prev);
+            if (next.has(productId)) next.delete(productId);
+            else next.add(productId);
+            return next;
+        });
+    };
 
     const fetchInventory = async (silent = false, stockStatus) => {
         if (!silent) setIsLoading(true);
@@ -61,36 +74,65 @@ const StockManagement = () => {
 
                 const safeProducts = Array.isArray(rawProducts) ? rawProducts : [];
 
-                // One row per variant — stock and price are always variant-specific now.
-                const rows = safeProducts.flatMap((p) => {
+                // Group by product: one consolidated row per product with variant details.
+                const items = safeProducts.map((p) => {
                     const variants = Array.isArray(p.variants) && p.variants.length > 0
                         ? p.variants
-                        : [{ _id: null, name: 'Default', price: p.price, salePrice: p.salePrice, stock: p.stock, sku: p.sku, images: [] }];
-                    const threshold = p.lowStockAlert || 5;
+                        : [{
+                            _id: null,
+                            name: 'Default',
+                            costPrice: p.costPrice || 0,
+                            price: p.price,
+                            salePrice: p.salePrice,
+                            stock: p.stock,
+                            sku: p.sku,
+                            images: p.mainImage ? [p.mainImage] : []
+                        }];
 
-                    return variants.map((v) => {
-                        const stock = Number(v.stock) || 0;
-                        const price = Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0;
-                        return {
-                            id: `${p._id}::${v._id || 'default'}`,
-                            productId: p._id,
-                            variantId: v._id || null,
-                            variantName: v.name || 'Default',
-                            hasMultipleVariants: variants.length > 1,
-                            name: p.name,
-                            sku: v.sku || p.sku,
-                            mainImage: (Array.isArray(v.images) && v.images[0]) || p.mainImage,
-                            stock,
-                            price,
-                            threshold,
-                            status: stock === 0
-                                ? 'Out of Stock'
-                                : (stock <= threshold ? 'Low Stock' : 'In Stock'),
-                        };
-                    });
+                    const threshold = p.lowStockAlert || 5;
+                    const totalStock = variants.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+
+                    const prices = variants.map((v) => {
+                        const sale = Number(v.salePrice);
+                        const regular = Number(v.price) || 0;
+                        return sale > 0 ? sale : regular;
+                    }).filter((pr) => pr > 0);
+
+                    const minPrice = prices.length ? Math.min(...prices) : (Number(p.salePrice) > 0 ? Number(p.salePrice) : Number(p.price) || 0);
+                    const maxPrice = prices.length ? Math.max(...prices) : minPrice;
+
+                    // Formula: Stock Valuation = Available Stock × Cost Price
+                    // Fallback to salePrice || price if costPrice is not yet set
+                    const valuation = variants.reduce((acc, v) => {
+                        const cost = Number(v.costPrice) > 0
+                            ? Number(v.costPrice)
+                            : (Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0);
+                        return acc + ((Number(v.stock) || 0) * cost);
+                    }, 0);
+
+                    const status = totalStock === 0
+                        ? 'Out of Stock'
+                        : (totalStock <= threshold ? 'Low Stock' : 'In Stock');
+
+                    return {
+                        id: p._id,
+                        productId: p._id,
+                        name: p.name,
+                        brand: p.brand,
+                        sku: p.sku || variants[0]?.sku || 'N/A',
+                        mainImage: p.mainImage || p.image || variants[0]?.images?.[0] || '',
+                        variants,
+                        totalStock,
+                        threshold,
+                        minPrice,
+                        maxPrice,
+                        valuation,
+                        status,
+                        hasMultipleVariants: variants.length > 1,
+                    };
                 });
 
-                setInventory(rows);
+                setInventory(items);
             }
         } catch (error) {
             toast.error("Failed to load inventory");
@@ -164,6 +206,16 @@ const StockManagement = () => {
             bg: 'bg-emerald-600 shadow-md shadow-emerald-500/30',
             cardBg: 'bg-emerald-50/90 border border-emerald-200/90 shadow-xs shadow-emerald-500/10',
             gradientColor: '#a7f3d0',
+        { label: 'Total Inventory', value: inventory.reduce((acc, item) => acc + item.totalStock, 0), icon: HiOutlineCube, color: 'text-primary', bg: 'bg-[#fef4f4]', status: 'All' },
+        { label: 'Low Stock Items', value: inventory.filter(i => i.totalStock > 0 && i.totalStock <= i.threshold).length, icon: HiOutlineExclamationTriangle, color: 'text-amber-600', bg: 'bg-amber-50', status: 'Low Stock' },
+        { label: 'Out of Stock', value: inventory.filter(i => i.totalStock === 0).length, icon: HiOutlineArchiveBoxXMark, color: 'text-rose-600', bg: 'bg-rose-50', status: 'Out of Stock' },
+        {
+            label: 'Stock Valuation',
+            subLabel: 'Σ (Stock × Cost Price)',
+            value: `₹${inventory.reduce((acc, item) => acc + item.valuation, 0).toLocaleString('en-IN')}`,
+            icon: HiOutlineArrowsUpDown,
+            color: 'text-primary',
+            bg: 'bg-[#fef4f4]',
             status: 'In Stock'
         }
     ], [inventory]);
@@ -173,7 +225,8 @@ const StockManagement = () => {
         return inventory.filter(item => {
             const matchesSearch =
                 item.name.toLowerCase().includes(term) ||
-                (item.sku || '').toString().toLowerCase().includes(term);
+                (item.sku || '').toString().toLowerCase().includes(term) ||
+                item.variants.some(v => (v.name || '').toLowerCase().includes(term) || (v.sku || '').toLowerCase().includes(term));
             const matchesStatus = filterStatus === 'All' || item.status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -182,15 +235,31 @@ const StockManagement = () => {
     const handleFullAdjustment = async () => {
         const value = parseInt(adjustValue);
         if (isNaN(value) || value <= 0) {
-            toast.error("Please enter a valid quantity");
+            toast.error("Please enter a valid quantity greater than 0");
             return;
         }
 
+        const currentVariant = selectedItem?.variants?.find(
+            (v) => (v._id || 'default') === selectedVariantId
+        ) || selectedItem?.variants?.[0];
+
+        if (!currentVariant) {
+            toast.error("Please select a variant to adjust");
+            return;
+        }
+
+        const currentStock = Number(currentVariant.stock) || 0;
+        if (adjustType === 'Remove' && value > currentStock) {
+            toast.error(`Cannot remove more than available stock (${currentStock} units in "${currentVariant.name}")`);
+            return;
+        }
+
+        setIsSubmitting(true);
         try {
             const res = await sellerApi.adjustStock({
                 productId: selectedItem.productId,
-                variantId: selectedItem.variantId || undefined,
-                type: adjustType === 'Restock' ? 'Restock' : 'Correction',
+                variantId: currentVariant._id || undefined,
+                type: adjustType === 'Restock' ? 'Restock' : 'Remove',
                 quantity: adjustType === 'Restock' ? value : -value,
                 note: adjustNote
             });
@@ -198,15 +267,20 @@ const StockManagement = () => {
             if (res.data.success) {
                 toast.success("Stock adjusted successfully");
                 setIsAdjustModalOpen(false);
-                fetchInventory(true);
+                await fetchInventory(true);
             }
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to adjust stock");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const openAdjustModal = (item) => {
-        setSelectedItem(item);
+    const openAdjustModal = (product, variant = null) => {
+        setSelectedItem(product);
+        const targetVariant = variant || product.variants?.[0] || null;
+        setSelectedVariantId(targetVariant ? (targetVariant._id || 'default') : 'default');
+        setAdjustType('Restock');
         setAdjustValue('');
         setAdjustNote('');
         setIsAdjustModalOpen(true);
@@ -260,6 +334,12 @@ const StockManagement = () => {
                                             <div className="min-w-0">
                                                 <p className="text-[9px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest truncate">{stat.label}</p>
                                                 <h4 className="text-sm sm:text-xl font-black text-slate-900 tracking-tight mt-0.5">{stat.value}</h4>
+                                            <div>
+                                                <p className="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-widest">{stat.label}</p>
+                                                <h4 className="text-xl font-black text-slate-900 tracking-tight">{stat.value}</h4>
+                                                {stat.subLabel && (
+                                                    <p className="text-[9px] text-slate-400 font-semibold">{stat.subLabel}</p>
+                                                )}
                                             </div>
                                         </div>
                                     </MagicCard>
@@ -383,6 +463,7 @@ const StockManagement = () => {
                                             <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">Inventory Capacity</th>
                                             <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">Stock Health</th>
                                             <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">Price</th>
+                                            <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest">Stock Valuation</th>
                                             <th className="px-6 py-4 text-xs font-black text-slate-600 uppercase tracking-widest text-right whitespace-nowrap">Actions</th>
                                         </tr>
                                     </thead>
@@ -390,7 +471,7 @@ const StockManagement = () => {
                                         {filteredInventory.length === 0 ? (
                                             <tr>
                                                 <td
-                                                    colSpan={5}
+                                                    colSpan={6}
                                                     className="px-6 py-10 text-center text-slate-600 text-xs font-black tracking-widest uppercase"
                                                 >
                                                     No products found for this filter.
@@ -400,76 +481,185 @@ const StockManagement = () => {
                                             <AnimatePresence>
                                                 {filteredInventory
                                                     .slice((page - 1) * pageSize, page * pageSize)
-                                                    .map((item) => (
-                                                        <motion.tr
-                                                            key={item.id}
-                                                            initial={{ opacity: 0 }}
-                                                            animate={{ opacity: 1 }}
-                                                            exit={{ opacity: 0 }}
-                                                            className="group hover:bg-slate-50/80 transition-all cursor-default"
-                                                        >
-                                                            <td className="px-6 py-5">
-                                                                <div className="flex items-center gap-4 group">
-                                                                    <div className="h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-105 transition-transform overflow-hidden">
-                                                                        {item.mainImage ? (
-                                                                            <img src={item.mainImage} alt={item.name} className="h-full w-full object-cover" />
-                                                                        ) : (
-                                                                            <HiOutlineCube className="h-6 w-6" />
-                                                                        )}
-                                                                    </div>
-                                                                    <div>
-                                                                        <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">
-                                                                            {item.name}
+                                                    .map((item) => {
+                                                        const isExpanded = expandedProducts.has(item.productId);
+                                                        return (
+                                                            <React.Fragment key={item.id}>
+                                                                <motion.tr
+                                                                    initial={{ opacity: 0 }}
+                                                                    animate={{ opacity: 1 }}
+                                                                    exit={{ opacity: 0 }}
+                                                                    className="group hover:bg-slate-50/80 transition-all cursor-default"
+                                                                >
+                                                                    <td className="px-6 py-5">
+                                                                        <div className="flex items-center gap-3">
                                                                             {item.hasMultipleVariants && (
-                                                                                <span className="ml-1.5 text-primary font-bold">— {item.variantName}</span>
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => toggleExpand(item.productId)}
+                                                                                    className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all shrink-0"
+                                                                                    title={isExpanded ? "Collapse variants" : "Expand variants"}
+                                                                                >
+                                                                                    <HiOutlineChevronDown
+                                                                                        className={cn(
+                                                                                            "h-4 w-4 transition-transform duration-200",
+                                                                                            isExpanded && "rotate-180 text-primary"
+                                                                                        )}
+                                                                                    />
+                                                                                </button>
                                                                             )}
-                                                                        </h4>
-                                                                        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-                                                                            Product Code: {item.sku || 'N/A'}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-5">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className="flex flex-col">
-                                                                        <span
-                                                                            className={cn(
-                                                                                "text-sm font-black",
-                                                                                item.stock <= item.threshold ? "text-rose-600" : "text-slate-900"
-                                                                            )}
+                                                                            <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 group-hover:scale-105 transition-transform overflow-hidden shrink-0 border border-slate-200/60">
+                                                                                {item.mainImage ? (
+                                                                                    <img src={item.mainImage} alt={item.name} className="h-full w-full object-cover" />
+                                                                                ) : (
+                                                                                    <HiOutlineCube className="h-6 w-6 text-slate-400" />
+                                                                                )}
+                                                                            </div>
+                                                                            <div>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <h4 className="text-sm font-black text-slate-900 group-hover:text-primary transition-colors">
+                                                                                        {item.name}
+                                                                                    </h4>
+                                                                                    {item.hasMultipleVariants && (
+                                                                                        <span className="px-2 py-0.5 rounded-md bg-rose-50 text-primary text-[10px] font-bold border border-rose-100">
+                                                                                            {item.variants.length} Variants
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
+                                                                                    Product Code: {item.sku || 'N/A'}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-6 py-5">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <div className="flex flex-col">
+                                                                                <span
+                                                                                    className={cn(
+                                                                                        "text-sm font-black",
+                                                                                        item.totalStock <= item.threshold ? "text-rose-600" : "text-slate-900"
+                                                                                    )}
+                                                                                >
+                                                                                    {item.totalStock} units
+                                                                                </span>
+                                                                                {item.totalStock <= item.threshold && (
+                                                                                    <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                                                                                        Low Stock
+                                                                                    </span>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-6 py-5">
+                                                                        <Badge
+                                                                            variant={item.status === 'In Stock' ? 'success' : 'destructive'}
+                                                                            className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg"
                                                                         >
-                                                                            {item.stock} units
-                                                                        </span>
-                                                                        {item.stock <= item.threshold && (
-                                                                            <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
-                                                                                Low Stock
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-6 py-5">
-                                                                <Badge
-                                                                    variant={item.status === 'In Stock' ? 'success' : 'destructive'}
-                                                                    className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg"
-                                                                >
-                                                                    {item.status}
-                                                                </Badge>
-                                                            </td>
-                                                            <td className="px-6 py-5">
-                                                                <p className="text-sm font-black text-slate-900">₹{item.price}</p>
-                                                            </td>
-                                                            <td className="px-6 py-5 text-right">
-                                                                <button
-                                                                    onClick={() => openAdjustModal(item)}
-                                                                    className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors"
-                                                                >
-                                                                    Adjust Stock
-                                                                </button>
-                                                            </td>
-                                                        </motion.tr>
-                                                    ))}
+                                                                            {item.status}
+                                                                        </Badge>
+                                                                    </td>
+                                                                    <td className="px-6 py-5">
+                                                                        <p className="text-sm font-black text-slate-900">
+                                                                            {item.minPrice === item.maxPrice
+                                                                                ? `₹${item.minPrice}`
+                                                                                : `₹${item.minPrice} - ₹${item.maxPrice}`}
+                                                                        </p>
+                                                                    </td>
+                                                                    <td className="px-6 py-5">
+                                                                        <div>
+                                                                            <p className="text-sm font-black text-slate-900">
+                                                                                ₹{item.valuation.toLocaleString('en-IN')}
+                                                                            </p>
+                                                                            <span className="text-[10px] text-slate-400 font-semibold">Σ (Stock × CP)</span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="px-6 py-5 text-right">
+                                                                        <button
+                                                                            onClick={() => openAdjustModal(item)}
+                                                                            className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors shadow-sm"
+                                                                        >
+                                                                            Adjust Stock
+                                                                        </button>
+                                                                    </td>
+                                                                </motion.tr>
+
+                                                                {/* Expandable Variants Breakdown */}
+                                                                {isExpanded && item.hasMultipleVariants && item.variants.map((v) => {
+                                                                    const vStock = Number(v.stock) || 0;
+                                                                    const vPrice = Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0;
+                                                                    const vCost = Number(v.costPrice) > 0
+                                                                        ? Number(v.costPrice)
+                                                                        : (Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0);
+                                                                    const vValuation = vStock * vCost;
+                                                                    const vStatus = vStock === 0 ? 'Out of Stock' : (vStock <= item.threshold ? 'Low Stock' : 'In Stock');
+                                                                    const vImage = (Array.isArray(v.images) && v.images[0]) || item.mainImage;
+
+                                                                    return (
+                                                                        <tr key={v._id || v.name} className="bg-slate-50/70 border-b border-slate-100">
+                                                                            <td className="px-6 py-3.5 pl-14">
+                                                                                <div className="flex items-center gap-3">
+                                                                                    <div className="h-8 w-8 rounded-lg bg-white border border-slate-200 overflow-hidden flex items-center justify-center shrink-0">
+                                                                                        {vImage ? (
+                                                                                            <img src={vImage} alt="" className="h-full w-full object-cover" />
+                                                                                        ) : (
+                                                                                            <HiOutlineCube className="h-4 w-4 text-slate-400" />
+                                                                                        )}
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <span className="text-xs font-black text-slate-800">{v.name}</span>
+                                                                                        <span className="text-[10px] text-slate-500 font-mono ml-2">SKU: {v.sku || 'N/A'}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-6 py-3.5">
+                                                                                <span className={cn(
+                                                                                    "text-xs font-bold",
+                                                                                    vStock <= item.threshold ? "text-rose-600" : "text-slate-800"
+                                                                                )}>
+                                                                                    {vStock} units
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="px-6 py-3.5">
+                                                                                <Badge
+                                                                                    variant={vStatus === 'In Stock' ? 'success' : 'destructive'}
+                                                                                    className="text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+                                                                                >
+                                                                                    {vStatus}
+                                                                                </Badge>
+                                                                            </td>
+                                                                            <td className="px-6 py-3.5">
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-xs font-black text-slate-800">₹{vPrice.toLocaleString('en-IN')}</span>
+                                                                                    {vCost > 0 && (
+                                                                                        <span className="text-[10px] text-amber-700 font-semibold">CP: ₹{vCost.toLocaleString('en-IN')}</span>
+                                                                                    )}
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-6 py-3.5">
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-xs font-black text-slate-900">
+                                                                                        ₹{vValuation.toLocaleString('en-IN')}
+                                                                                    </span>
+                                                                                    <span className="text-[9px] text-slate-400 font-medium">
+                                                                                        {vStock} × ₹{vCost}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td className="px-6 py-3.5 text-right">
+                                                                                <button
+                                                                                    onClick={() => openAdjustModal(item, v)}
+                                                                                    className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-[11px] font-bold hover:bg-slate-100 hover:border-slate-300 transition-all shadow-sm"
+                                                                                >
+                                                                                    Adjust
+                                                                                </button>
+                                                                            </td>
+                                                                        </tr>
+                                                                    );
+                                                                })}
+                                                            </React.Fragment>
+                                                        );
+                                                    })}
                                             </AnimatePresence>
                                         )}
                                     </tbody>
@@ -519,7 +709,12 @@ const StockManagement = () => {
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2">
-                                                <h4 className="text-sm font-black text-slate-900">{log.product?.name || 'Unknown Product'}</h4>
+                                                <h4 className="text-sm font-black text-slate-900">
+                                                    {log.product?.name || 'Unknown Product'}
+                                                    {log.variantName && log.variantName !== 'Default' && (
+                                                        <span className="ml-1 text-primary font-bold">— {log.variantName}</span>
+                                                    )}
+                                                </h4>
                                                 <Badge className={cn(
                                                     "text-[9px] font-bold px-1.5 py-0",
                                                     log.type === 'Restock' ? "bg-[#fde8ea] text-[#a2141c]" :
@@ -552,116 +747,269 @@ const StockManagement = () => {
 
             {/* Advanced Adjustment Modal */}
             <AnimatePresence>
-                {isAdjustModalOpen && selectedItem && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
-                            onClick={() => setIsAdjustModalOpen(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                            className="w-full max-w-md relative z-10 bg-white rounded-3xl shadow-2xl overflow-hidden"
-                        >
-                            <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 bg-slate-900 text-white rounded-xl flex items-center justify-center shadow-lg shadow-slate-900/20">
-                                        <HiOutlineArrowsUpDown className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-base font-black text-slate-900">Adjust Inventory</h3>
-                                        <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest leading-none mt-1">Update product stock</p>
-                                    </div>
-                                </div>
-                                <button onClick={() => setIsAdjustModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-600">
-                                    <HiOutlineXMark className="h-5 w-5" />
-                                </button>
-                            </div>
+                {isAdjustModalOpen && selectedItem && (() => {
+                    const currentVariant = selectedItem.variants.find(
+                        (v) => (v._id || 'default') === selectedVariantId
+                    ) || selectedItem.variants[0];
+                    const currentStock = Number(currentVariant?.stock) || 0;
+                    const currentCostPrice = Number(currentVariant?.costPrice) > 0
+                        ? Number(currentVariant.costPrice)
+                        : (Number(currentVariant?.salePrice) > 0 ? Number(currentVariant.salePrice) : Number(currentVariant?.price) || 0);
+                    const variantImage = (Array.isArray(currentVariant?.images) && currentVariant.images[0]) || selectedItem.mainImage;
+                    const numVal = parseInt(adjustValue) || 0;
+                    const resultingStock = adjustType === 'Restock' ? currentStock + numVal : currentStock - numVal;
+                    const exceedsRemoval = adjustType === 'Remove' && numVal > currentStock;
 
-                            <div className="p-8 space-y-6">
-                                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 overflow-hidden">
-                                        {selectedItem.mainImage ? (
-                                            <img src={selectedItem.mainImage} alt="" className="h-full w-full object-cover" />
-                                        ) : <HiOutlineCube className="h-6 w-6" />}
+                    return (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm"
+                                onClick={() => !isSubmitting && setIsAdjustModalOpen(false)}
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                className="w-full max-w-lg relative z-10 bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                            >
+                                {/* Header */}
+                                <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 bg-[#E71D28] text-white rounded-xl flex items-center justify-center shadow-md shadow-rose-200">
+                                            <HiOutlineArrowsUpDown className="h-5 w-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-black text-slate-900">Adjust Inventory</h3>
+                                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">
+                                                Add or remove variant stock
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h4 className="text-sm font-black text-slate-900">
-                                            {selectedItem.name}
-                                            {selectedItem.hasMultipleVariants && (
-                                                <span className="ml-1.5 text-primary font-bold">— {selectedItem.variantName}</span>
+                                    <button
+                                        onClick={() => !isSubmitting && setIsAdjustModalOpen(false)}
+                                        className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-600">
+                                        <HiOutlineXMark className="h-5 w-5" />
+                                    </button>
+                                </div>
+
+                                <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                                    {/* Selected Product Banner */}
+                                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+                                        <div className="h-14 w-14 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 overflow-hidden shrink-0">
+                                            {variantImage ? (
+                                                <img src={variantImage} alt="" className="h-full w-full object-cover" />
+                                            ) : (
+                                                <HiOutlineCube className="h-6 w-6 text-slate-400" />
                                             )}
-                                        </h4>
-                                        <p className="text-[10px] font-bold text-slate-600">CURRENT STOCK: <span className="text-slate-900 font-black">{selectedItem.stock} UNITS</span></p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
-                                        {['Restock', 'Remove'].map((type) => (
-                                            <button
-                                                key={type}
-                                                onClick={() => setAdjustType(type)}
-                                                className={cn(
-                                                    "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
-                                                    adjustType === type
-                                                        ? "bg-white text-slate-900 shadow-md"
-                                                        : "text-slate-600 hover:text-slate-600"
-                                                )}
-                                            >
-                                                {type}
-                                            </button>
-                                        ))}
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-black text-slate-600 uppercase tracking-widest ml-1">Quantity Change</label>
-                                        <div className="relative group">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-black text-slate-600">#</div>
-                                            <input
-                                                type="number"
-                                                value={adjustValue}
-                                                onChange={(e) => setAdjustValue(e.target.value)}
-                                                className="w-full pl-10 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-2xl font-black text-slate-900 focus:ring-2 focus:ring-primary/20 transition-all outline-none"
-                                                placeholder="0"
-                                            />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="text-sm font-black text-slate-900 truncate">
+                                                {selectedItem.name}
+                                            </h4>
+                                            <p className="text-[11px] text-slate-500 font-semibold">
+                                                SKU: {currentVariant?.sku || selectedItem.sku || 'N/A'} • Total Units: <span className="font-bold text-slate-900">{selectedItem.totalStock}</span>
+                                            </p>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1.5">
-                                        <label className="text-xs font-black text-slate-600 uppercase tracking-widest ml-1">Internal Note (Optional)</label>
-                                        <textarea
-                                            value={adjustNote}
-                                            onChange={(e) => setAdjustNote(e.target.value)}
-                                            className="w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none h-20"
-                                            placeholder="Reason for adjustment..."
-                                        />
+                                    {/* Variant Selector (if multiple variants) */}
+                                    {selectedItem.hasMultipleVariants && (
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black text-slate-700 uppercase tracking-widest ml-1">
+                                                Select Variant To Adjust <span className="text-rose-500">*</span>
+                                            </label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                {selectedItem.variants.map((v) => {
+                                                    const isSelected = selectedVariantId === (v._id || 'default');
+                                                    const vStock = Number(v.stock) || 0;
+                                                    const vPrice = Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0;
+                                                    const vCost = Number(v.costPrice) > 0 ? Number(v.costPrice) : (Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0);
+
+                                                    return (
+                                                        <button
+                                                            key={v._id || v.name}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedVariantId(v._id || 'default');
+                                                                setAdjustValue('');
+                                                            }}
+                                                            className={cn(
+                                                                "p-3 rounded-2xl text-left transition-all border flex flex-col justify-between gap-1",
+                                                                isSelected
+                                                                    ? "bg-[#E71D28] text-white border-[#E71D28] shadow-md shadow-rose-200"
+                                                                    : "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+                                                            )}>
+                                                            <div className="flex items-center justify-between w-full">
+                                                                <span className="font-bold text-xs truncate">{v.name}</span>
+                                                                {isSelected && <HiOutlineCheck className="h-3.5 w-3.5 shrink-0" />}
+                                                            </div>
+                                                            <div className={cn(
+                                                                "text-[10px] font-semibold flex justify-between",
+                                                                isSelected ? "text-rose-100" : "text-slate-500"
+                                                            )}>
+                                                                <span>Stock: {vStock} units</span>
+                                                                <span>{vCost > 0 ? `CP: ₹${vCost}` : `₹${vPrice}`}</span>
+                                                            </div>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Selected Variant Current Stock Card */}
+                                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-100/70 border border-slate-200">
+                                        <div>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                                Target Variant
+                                            </span>
+                                            <p className="text-xs font-black text-slate-900">
+                                                {currentVariant?.name || 'Default Variant'}
+                                            </p>
+                                            <span className="text-[10px] text-amber-800 font-semibold">
+                                                Cost Price: ₹{currentCostPrice.toLocaleString('en-IN')}
+                                            </span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                                Stock Valuation
+                                            </span>
+                                            <p className="text-sm font-black text-[#E71D28]">
+                                                ₹{(currentStock * currentCostPrice).toLocaleString('en-IN')}
+                                            </p>
+                                            <span className="text-[10px] font-bold text-slate-500">
+                                                {currentStock} UNITS
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Mode Selector: Add (Restock) vs Remove */}
+                                    <div className="space-y-4">
+                                        <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+                                            {[
+                                                { id: 'Restock', label: '+ Add Stock (Restock)' },
+                                                { id: 'Remove', label: '- Remove Stock' },
+                                            ].map((tab) => (
+                                                <button
+                                                    key={tab.id}
+                                                    type="button"
+                                                    onClick={() => setAdjustType(tab.id)}
+                                                    className={cn(
+                                                        "flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
+                                                        adjustType === tab.id
+                                                            ? "bg-white text-slate-900 shadow-sm"
+                                                            : "text-slate-600 hover:text-slate-900"
+                                                    )}>
+                                                    {tab.label}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {/* Quantity Input */}
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-xs font-black text-slate-700 uppercase tracking-widest ml-1">
+                                                    Quantity {adjustType === 'Restock' ? 'to Add' : 'to Remove'} <span className="text-rose-500">*</span>
+                                                </label>
+                                                <div className="flex gap-1.5">
+                                                    {[5, 10, 25].map((preset) => (
+                                                        <button
+                                                            key={preset}
+                                                            type="button"
+                                                            onClick={() => setAdjustValue(String(preset))}
+                                                            className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[10px] font-bold transition-colors">
+                                                            +{preset}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={adjustValue}
+                                                    onChange={(e) => setAdjustValue(e.target.value)}
+                                                    className={cn(
+                                                        "w-full px-4 py-3 bg-slate-50 border-none rounded-2xl text-xl font-black outline-none focus:ring-2 transition-all",
+                                                        exceedsRemoval
+                                                            ? "ring-2 ring-rose-500 text-rose-600"
+                                                            : "text-slate-900 focus:ring-primary/20"
+                                                    )}
+                                                    placeholder="Enter quantity (e.g. 5)"
+                                                />
+                                            </div>
+                                            {exceedsRemoval && (
+                                                <p className="text-[11px] font-bold text-rose-600 ml-1">
+                                                    Cannot remove more than currently available stock ({currentStock} units).
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Resulting Stock Preview */}
+                                        {numVal > 0 && !exceedsRemoval && (
+                                            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1 text-emerald-800">
+                                                <div className="flex items-center justify-between text-xs font-bold">
+                                                    <span>Resulting Stock:</span>
+                                                    <span className="font-black text-sm">
+                                                        {currentStock} → {resultingStock} units ({adjustType === 'Restock' ? `+${numVal}` : `-${numVal}`})
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-700">
+                                                    <span>Resulting Valuation:</span>
+                                                    <span className="font-black">
+                                                        ₹{(resultingStock * currentCostPrice).toLocaleString('en-IN')} ({adjustType === 'Restock' ? `+₹${(numVal * currentCostPrice).toLocaleString('en-IN')}` : `-₹${(numVal * currentCostPrice).toLocaleString('en-IN')}`})
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Internal Note */}
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-black text-slate-700 uppercase tracking-widest ml-1">
+                                                Reason / Note (Optional)
+                                            </label>
+                                            <textarea
+                                                value={adjustNote}
+                                                onChange={(e) => setAdjustNote(e.target.value)}
+                                                className="w-full px-4 py-2.5 bg-slate-50 border-none rounded-2xl text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/20 transition-all outline-none resize-none h-16"
+                                                placeholder="e.g. Weekly restock from warehouse, damaged batch, etc."
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
-                                <Button
-                                    onClick={() => setIsAdjustModalOpen(false)}
-                                    variant="outline"
-                                    className="flex-1 py-4 text-xs font-bold rounded-2xl bg-white"
-                                >
-                                    CANCEL
-                                </Button>
-                                <Button
-                                    onClick={handleFullAdjustment}
-                                    className="flex-1 py-4 text-xs font-bold rounded-2xl shadow-xl shadow-primary/20"
-                                >
-                                    SAVE CHANGES
-                                </Button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
+                                {/* Modal Footer */}
+                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                    <Button
+                                        type="button"
+                                        onClick={() => !isSubmitting && setIsAdjustModalOpen(false)}
+                                        variant="outline"
+                                        disabled={isSubmitting}
+                                        className="flex-1 py-3 text-xs font-bold rounded-2xl bg-white">
+                                        CANCEL
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={handleFullAdjustment}
+                                        disabled={isSubmitting || numVal <= 0 || exceedsRemoval}
+                                        className="flex-1 py-3 text-xs font-bold rounded-2xl shadow-xl shadow-rose-200 bg-[#E71D28] hover:bg-primary-hover text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                                        {isSubmitting ? (
+                                            <>
+                                                <HiOutlineArrowPath className="mr-2 h-4 w-4 animate-spin" />
+                                                SAVING...
+                                            </>
+                                        ) : (
+                                            "CONFIRM & UPDATE"
+                                        )}
+                                    </Button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    );
+                })()}
             </AnimatePresence>
         </div>
     );

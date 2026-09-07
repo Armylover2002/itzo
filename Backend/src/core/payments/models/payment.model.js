@@ -42,7 +42,7 @@ const paymentSchema = new mongoose.Schema(
             index: true
         },
 
-        /** Module that triggered the payment (future: dining, grocery, etc.) */
+        /** Module that triggered the payment (future: grocery, etc.) */
         module: { type: String, default: 'food', trim: true, index: true },
 
         /** Full gateway response snapshot — stored for audit/support. Never expose to clients. */

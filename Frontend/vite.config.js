@@ -35,4 +35,4 @@ export default defineConfig({
       '@modules': path.resolve(__dirname, './src/modules'),
     },
   },
-});																																																																																																																																																																																																																																																																																
+});

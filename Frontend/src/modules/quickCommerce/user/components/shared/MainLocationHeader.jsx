@@ -3,6 +3,7 @@ import { useLocation as useRouterLocation, useNavigate, Link } from "react-route
 import { motion, useScroll, useTransform } from "framer-motion";
 import Lottie from "lottie-react";
 import LocationDrawer from "./LocationDrawer";
+import { useLocationSelector } from "@food/components/user/UserLayout";
 import { useLocation } from "../../context/LocationContext";
 import { useProductDetail } from "../../context/ProductDetailContext";
 import { useCart } from "../../context/CartContext";
@@ -27,10 +28,14 @@ const getLuminance = (hex) => {
 import {
   getQuickCartPath,
   getQuickHomePath,
+  getQuickOrdersPath,
+  getQuickProfilePath,
   getQuickSearchPath,
+  getQuickWalletPath,
   getQuickWishlistPath,
 } from "../../utils/routes";
 import LogoImage from "../../assets/Logo.png";
+import { getAppLogo, getCachedSettings } from "@common/utils/businessSettings";
 import shoppingCartAnimation from "@/assets/lottie/shopping-cart.json";
 import { Sparkles } from "lucide-react";
 import { customerApi } from "../../services/customerApi";
@@ -63,6 +68,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SearchIcon from "@mui/icons-material/Search";
 import MicIcon from "@mui/icons-material/Mic";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import ChevronDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
@@ -190,13 +196,17 @@ const MainLocationHeader = ({
 }) => {
   const { scrollY } = useScroll();
   const [isLocationOpen, setIsLocationOpen] = useState(false);
+  // Only resolves to Food's real address-selector flow when this header is embedded
+  // inside the shared Food/Quick page - falls back to a no-op outside that layout.
+  const { openLocationSelector } = useLocationSelector();
   const { currentLocation, refreshLocation, isFetchingLocation } =
     useLocation();
   const { isOpen: isProductDetailOpen } = useProductDetail();
   const { cartCount } = useCart();
   const { settings } = useSettings();
-  const appName = settings?.appName || "App";
-  const logoUrl = settings?.logoUrl || LogoImage;
+  const appName = settings?.companyName || settings?.appName || "ItzoFood";
+  const cachedBusinessSettings = getCachedSettings();
+  const logoUrl = settings?.userLogo?.url || settings?.logoUrl || cachedBusinessSettings?.userLogo?.url || getAppLogo('user') || LogoImage;
   const navigate = useNavigate();
   const routerLocation = useRouterLocation();
   const cartPath = getQuickCartPath(routerLocation.pathname);
@@ -536,62 +546,136 @@ const MainLocationHeader = ({
                   </div>
                 </div>
               </div>
-
-              {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, DINING, PROFILE) */}
-              <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
-                <div className="flex items-center space-x-12 lg:space-x-20">
-                  {/* Delivery (Food Section) */}
-                  <Link
-                    to="/food/user"
-                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                  >
-                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Delivery</span>
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                  </Link>
-
-                  {/* Quick (Active Tab) */}
-                  <Link
-                    to="/quick"
-                    className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
-                  >
-                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
-                    <motion.div
-                      layoutId="quickNavIndicatorMain"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                      transition={{ duration: 0.3 }}
-                    />
-                  </Link>
-
-                  {/* Under 250 */}
-                  <Link
-                    to="/food/user/under-250"
-                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                  >
-                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                  </Link>
-
-                  {/* Dining */}
-                  <Link
-                    to="/food/user/dining"
-                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                  >
-                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Dining</span>
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                  </Link>
-
-                  {/* Profile */}
-                  <Link
-                    to="/food/user/profile"
-                    className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-                  >
-                    <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
-                    <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-                  </Link>
-                </div>
-              </div>
             </>
           )}
+
+          {/* Embedded Desktop Top Row (Logo + Location + Search + Wallet + Cart) -
+              mirrors Food's own desktop header layout, but with Quick's own search/cart/wallet. */}
+          {embedded && (
+            <div className="hidden md:flex items-center gap-4 lg:gap-6 relative z-20 px-2 lg:px-6 mb-3 mt-1">
+              {/* Left: Logo + Location */}
+              <div className="flex items-center gap-4 lg:gap-6 shrink-0">
+                {!hideLogo && (
+                  <div
+                    onClick={() => navigate(homePath)}
+                    className="flex items-center gap-3 cursor-pointer group shrink-0">
+                    <img
+                      src={logoUrl}
+                      alt={`${appName} Logo`}
+                      className="h-10 md:h-14 w-auto object-contain group-hover:scale-110 transition-all duration-300"
+                    />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  data-lenis-prevent
+                  data-lenis-prevent-touch
+                  onClick={() => openLocationSelector()}
+                  className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideLogo ? "" : "border-l border-black/10 pl-4 lg:pl-6"}`}>
+                  <LocationOnIcon sx={{ fontSize: 18, color: "inherit" }} />
+                  <div className="leading-tight max-w-[220px] lg:max-w-[280px] truncate text-[14px] font-black ml-1">
+                    {isFetchingLocation ? "Detecting location..." : currentLocation.name}
+                  </div>
+                  <ChevronDownIcon sx={{ fontSize: 16, opacity: 0.5, color: iconColor }} />
+                </button>
+              </div>
+
+              {/* Center: Search bar */}
+              <div className="flex-1 max-w-2xl mx-auto">
+                <motion.div
+                  onClick={handleSearchClick}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="rounded-full h-[46px] px-4 shadow-md flex items-center bg-white border border-gray-100 cursor-pointer">
+                  <SearchIcon sx={{ color: "#FE5502", fontSize: 22 }} />
+                  <input
+                    type="text"
+                    placeholder={searchPlaceholder || "Search Products..."}
+                    readOnly
+                    className="flex-1 bg-transparent border-none outline-none pl-3 text-slate-800 font-bold placeholder:text-slate-300 text-[15px] cursor-pointer"
+                  />
+                  <div className="flex items-center gap-2 border-l border-red-100 pl-3">
+                    <MicIcon sx={{ color: "#FE5502", fontSize: 20 }} />
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Right: Wallet + Cart */}
+              <div className="flex items-center gap-3 shrink-0">
+                <Link
+                  to={getQuickWalletPath()}
+                  className="h-11 w-11 rounded-full bg-white/20 border border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors"
+                  aria-label="Open wallet"
+                >
+                  <AccountBalanceWalletIcon sx={{ color: "#ffffff", fontSize: 22 }} />
+                </Link>
+
+                <button
+                  type="button"
+                  aria-label="Open cart"
+                  onClick={() => navigate(cartPath)}
+                  className="relative h-11 w-11 rounded-full bg-white/20 border border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors">
+                  <ShoppingCartOutlinedIcon sx={{ color: "#ffffff", fontSize: 22 }} />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-white text-[#FE5502] text-[9px] font-black rounded-full flex items-center justify-center shadow-sm">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Desktop Module Navigation Bar Row (QUICK, SHOP, ORDERS, PROFILE)
+              Shown on md+ always (standalone AND embedded inside the shared Food/Quick page).
+              Only Quick's own pages are linked here - the Food/Quick switch cards above
+              already handle going back to Food, so no separate "Food" link is needed here. */}
+          <div className={cn(
+            "hidden md:flex items-center justify-center w-full relative z-20 pb-1",
+            embedded ? "pt-1" : "border-t border-white/15 pt-2 mt-2",
+          )}>
+            <div className="flex items-center space-x-10 lg:space-x-16">
+              {/* Quick (Active Tab) */}
+              <Link
+                to={getQuickHomePath()}
+                className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
+                <motion.div
+                  layoutId="quickNavIndicatorMain"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
+
+              {/* Shop (Quick's own shops) */}
+              <Link
+                to="/quick/shops"
+                className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Shop</span>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+              </Link>
+
+              {/* Orders (Quick's own orders) */}
+              <Link
+                to={getQuickOrdersPath()}
+                className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Orders</span>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+              </Link>
+
+              {/* Profile (Quick's own profile) */}
+              <Link
+                to={getQuickProfilePath()}
+                className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+              </Link>
+            </div>
+          </div>
 
           {/* Collapsible Delivery Info & Location (MOBILE ONLY) */}
           {!embedded && showTopContent && <div className="md:hidden">
@@ -651,8 +735,9 @@ const MainLocationHeader = ({
 
           {showCategories && categories.length > 0 && (
             <div className="relative z-10 space-y-1 pt-0">
-              {/* Compact Search Bar integrated into Categories Section */}
-              <div className="px-4 md:px-0 md:max-w-2xl md:mx-auto py-2">
+              {/* Compact Search Bar integrated into Categories Section (mobile only when
+                  embedded - the desktop top row above already has its own search bar) */}
+              <div className={cn("px-4 md:px-0 md:max-w-2xl md:mx-auto py-2", embedded && "md:hidden")}>
                 <motion.div
                   onClick={handleSearchClick}
                   whileHover={{ scale: 1.01 }}

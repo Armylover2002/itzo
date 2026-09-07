@@ -511,11 +511,26 @@ export const placeOrder = async (req, res) => {
     const deliveryFee = Number(pricing.deliveryFee || 0);
     const total = Number(pricing.total || 0);
     const orderNumber = `QC${Date.now().toString().slice(-8)}`;
-    const isOnlinePayment = String(req.body?.paymentMode || 'COD').toUpperCase() === 'ONLINE';
-    const paymentMode = isOnlinePayment ? 'razorpay' : 'cash';
-    const sellerPaymentMode = isOnlinePayment ? 'online' : 'cash';
+    const paymentModeRaw = String(req.body?.paymentMode || 'COD').toUpperCase();
+    const isOnlinePayment = paymentModeRaw === 'ONLINE';
+    const isWalletPayment = paymentModeRaw === 'WALLET';
+    const paymentMode = isOnlinePayment ? 'razorpay' : isWalletPayment ? 'wallet' : 'cash';
+    const sellerPaymentMode = isOnlinePayment ? 'online' : isWalletPayment ? 'wallet' : 'cash';
     const shouldFanOutSellerOrders = true;
     const amountDue = Math.max(0, total);
+
+    if (isWalletPayment) {
+      if (!idQuery.userId) {
+        return res.status(400).json({ success: false, message: 'Please log in to pay with your wallet' });
+      }
+      try {
+        await deductWalletBalance(idQuery.userId, amountDue, `Payment for Order #${orderNumber}`, {
+          orderNumber,
+        });
+      } catch (err) {
+        return res.status(400).json({ success: false, message: err.message || 'Failed to deduct wallet balance' });
+      }
+    }
 
     let razorpayPayload = null;
     let rpOrderId = null;
@@ -589,7 +604,7 @@ export const placeOrder = async (req, res) => {
       timeSlot: req.body?.timeSlot || 'now',
       payment: {
         method: paymentMode,
-        status: paymentMode === 'razorpay' ? 'created' : 'cod_pending',
+        status: paymentMode === 'razorpay' ? 'created' : paymentMode === 'wallet' ? 'paid' : 'cod_pending',
         amountDue,
         ...(rpOrderId ? { razorpay: { orderId: rpOrderId, paymentId: '', signature: '' } } : {})
       },

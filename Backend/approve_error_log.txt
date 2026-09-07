@@ -1,5 +1,0 @@
-ValidationError: SellerTransaction validation failed: type: `Charge` is not a valid enum value for path `type`.
-    at Document.invalidate (E:\itzo folder\itzo\backend\node_modules\mongoose\lib\document.js:3381:32)
-    at E:\itzo folder\itzo\backend\node_modules\mongoose\lib\document.js:3142:17
-    at E:\itzo folder\itzo\backend\node_modules\mongoose\lib\schemaType.js:1446:9
-    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)

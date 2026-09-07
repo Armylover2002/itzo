@@ -42,8 +42,6 @@ export default function RestaurantConfigPage() {
   // Order Setup
   const [homeDelivery, setHomeDelivery] = useState(true)
   const [takeAway, setTakeAway] = useState(true)
-  const [dineIn, setDineIn] = useState(true)
-  const [dineInMinTime, setDineInMinTime] = useState("0")
   const [instanceOrder, setInstanceOrder] = useState(true)
   const [scheduleOrder, setScheduleOrder] = useState(true)
   const [subscriptionOrder, setSubscriptionOrder] = useState(false)
@@ -195,23 +193,6 @@ export default function RestaurantConfigPage() {
                 <span className="text-sm md:text-base text-gray-700">Take Away</span>
                 <ToggleSwitch enabled={takeAway} onChange={setTakeAway} />
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm md:text-base text-gray-700">Dine In</span>
-                <ToggleSwitch enabled={dineIn} onChange={setDineIn} />
-              </div>
-              {dineIn && (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    value={dineInMinTime}
-                    onChange={(e) => setDineInMinTime(e.target.value)}
-                    className="w-20"
-                  />
-                  <select className="px-3 py-2 border border-gray-300 rounded-lg text-sm">
-                    <option>Min</option>
-                  </select>
-                </div>
-              )}
               <div className="flex items-center justify-between">
                 <span className="text-sm md:text-base text-gray-700">Instance Order</span>
                 <ToggleSwitch enabled={instanceOrder} onChange={setInstanceOrder} />

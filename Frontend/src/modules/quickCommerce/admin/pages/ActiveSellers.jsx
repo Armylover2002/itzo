@@ -18,7 +18,7 @@ import { Power } from 'lucide-react';
 import Card from '@shared/components/ui/Card';
 import Badge from '@shared/components/ui/Badge';
 import { adminApi } from '../services/adminApi';
-import { formatOpeningHoursAMPM } from '@shared/utils/timeFormat';
+import { formatOpeningHoursAMPM, isStoreCurrentlyOpen } from '@shared/utils/timeFormat';
 
 const formatDateTime = (value) => {
   if (!value) return 'N/A';
@@ -268,9 +268,26 @@ const ActiveSellers = () => {
                         <div>
                           <p className="text-sm font-bold text-slate-900 flex items-center gap-2">
                             {seller.shopName || 'Store'}
-                            {seller.isActive === false && (
-                              <span className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-600">
-                                Off
+                            {seller.isActive === false ? (
+                              <span
+                                className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-slate-200 text-slate-600"
+                                title="Store disabled by admin"
+                              >
+                                Inactive
+                              </span>
+                            ) : isStoreCurrentlyOpen(seller.shopInfo?.openingHours || seller.openingHours) ? (
+                              <span
+                                className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-700"
+                                title="Store is active and open now"
+                              >
+                                Open
+                              </span>
+                            ) : (
+                              <span
+                                className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800"
+                                title="Store is active but currently closed"
+                              >
+                                Closed
                               </span>
                             )}
                           </p>
@@ -297,17 +314,21 @@ const ActiveSellers = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge variant="secondary" className="text-[10px] font-bold uppercase">
-                        {seller.category || 'General'}
-                      </Badge>
+                      <div className="flex flex-col gap-1 items-start">
+                        <Badge variant="secondary" className="text-[10px] font-bold uppercase">
+                          {seller.category || 'General'}
+                        </Badge>
+                        {(seller.shopInfo?.openingHours || seller.openingHours) && (
+                          <span className="text-[10px] font-medium text-slate-500">
+                            {formatOpeningHoursAMPM(seller.shopInfo?.openingHours || seller.openingHours)}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-slate-700">
                           {formatDate(seller.approvedAt || seller.applicationDate)}
-                        </span>
-                        <span className="text-[9px] font-medium text-slate-400">
-                          {seller.serviceRadius ? `${seller.serviceRadius} km radius` : 'Radius not set'}
                         </span>
                       </div>
                     </td>

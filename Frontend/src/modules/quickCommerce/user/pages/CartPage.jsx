@@ -12,10 +12,13 @@ import {
   ShoppingBag,
   Timer,
   Trash2,
+  Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSettings } from "@core/context/SettingsContext";
 import { useToast } from "@shared/components/ui/Toast";
+import { useAuth } from "@core/context/AuthContext";
+import { userAPI } from "@food/api";
 import { useCart } from "../context/CartContext";
 import { customerApi } from "../services/customerApi";
 import emptyBoxAnimation from "../assets/lottie/Empty box.json";
@@ -76,12 +79,34 @@ const CartPage = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal, clearCart, loading, appliedCoupon, setAppliedCoupon } = useCart();
   const { showToast } = useToast();
   const { settings } = useSettings();
+  const { isAuthenticated } = useAuth();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [quickBillingSettings, setQuickBillingSettings] = useState(
     DEFAULT_QUICK_BILLING_SETTINGS,
   );
   const [categoryFeeMap, setCategoryFeeMap] = useState({});
   const [isUserCodAllowed, setIsUserCodAllowed] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setWalletBalance(0);
+      return;
+    }
+    let mounted = true;
+    userAPI
+      .getWallet()
+      .then((response) => {
+        if (!mounted) return;
+        setWalletBalance(Number(response?.data?.data?.wallet?.balance) || 0);
+      })
+      .catch(() => {
+        if (mounted) setWalletBalance(0);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     let mounted = true;
@@ -187,6 +212,17 @@ const CartPage = () => {
             sublabel: "UPI / Cards / NetBanking",
           },
         ]),
+    ...(!isAuthenticated
+      ? []
+      : [
+          {
+            id: "wallet",
+            label: "Pay via Wallet",
+            icon: Wallet,
+            sublabel: `Balance: ₹${walletBalance}`,
+            disabled: walletBalance < grandTotal,
+          },
+        ]),
     ...(settings?.codEnabled === false || !isUserCodAllowed
       ? []
       : [
@@ -215,9 +251,10 @@ const CartPage = () => {
 
   useEffect(() => {
     if (!paymentMethods.length) return;
-    const exists = paymentMethods.some((method) => method.id === selectedPayment);
-    if (!exists) {
-      setSelectedPayment(paymentMethods[0].id);
+    const current = paymentMethods.find((method) => method.id === selectedPayment);
+    if (!current || current.disabled) {
+      const firstEnabled = paymentMethods.find((method) => !method.disabled) || paymentMethods[0];
+      setSelectedPayment(firstEnabled.id);
     }
   }, [paymentMethods, selectedPayment]);
 
@@ -515,9 +552,12 @@ const CartPage = () => {
                   <button
                     key={method.id}
                     type="button"
+                    disabled={method.disabled}
                     onClick={() => setSelectedPayment(method.id)}
                     className={`flex w-full items-center gap-3 rounded-2xl border-2 p-3 text-left transition-all ${
-                      isSelected
+                      method.disabled
+                        ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60"
+                        : isSelected
                         ? "border-[#FE5502] bg-green-50"
                         : "border-slate-200 bg-white hover:border-slate-300"
                     }`}
@@ -536,7 +576,10 @@ const CartPage = () => {
                       <p className={`text-sm font-bold ${isSelected ? "text-[#FE5502]" : "text-slate-800"}`}>
                         {method.label}
                       </p>
-                      <p className="text-xs text-slate-500">{method.sublabel}</p>
+                      <p className="text-xs text-slate-500">
+                        {method.sublabel}
+                        {method.disabled ? " · Insufficient balance" : ""}
+                      </p>
                     </div>
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
@@ -583,17 +626,17 @@ const CartPage = () => {
         */}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-[520] border-t border-slate-200 bg-white px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
-        <div className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+      <div className="fixed bottom-0 left-0 right-0 z-[520] border-t border-slate-200 bg-white px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.08)] md:px-4 md:py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-3">
+          <div className="min-w-0 shrink-0">
+            <p className="text-[9px] font-medium uppercase tracking-wide text-slate-400 md:text-xs">
               To pay
             </p>
-            <p className="truncate text-2xl font-bold text-slate-900">
+            <p className="truncate text-lg font-bold text-slate-900 md:text-2xl">
               {"\u20B9"}
               {grandTotal}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="hidden text-xs text-slate-500 md:block">
               {selectedPaymentMethod ? selectedPaymentMethod.label : "Includes delivery charges"}
             </p>
           </div>
@@ -601,11 +644,14 @@ const CartPage = () => {
           <Link
             to={checkoutPath}
             state={{ selectedPayment }}
-            className="block w-full flex-1 sm:min-w-[220px]"
+            className="max-w-[200px] flex-1 md:max-w-[240px]"
           >
-            <Button className="h-12 w-full rounded-2xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-4 text-sm text-white whitespace-normal sm:whitespace-nowrap transition-colors">
-              <ShoppingBag size={18} className="mr-2" />
-              Proceed to Checkout
+            <Button className="h-11 w-full rounded-xl bg-primary-orange hover:bg-primary-hover active:bg-primary-dark px-3 text-xs text-white transition-colors md:h-12 md:rounded-2xl md:px-4 md:text-sm">
+              <ShoppingBag size={16} className="mr-1.5 shrink-0 md:mr-2 md:h-[18px] md:w-[18px]" />
+              <span className="truncate">
+                <span className="md:hidden">Checkout</span>
+                <span className="hidden md:inline">Proceed to Checkout</span>
+              </span>
             </Button>
           </Link>
         </div>

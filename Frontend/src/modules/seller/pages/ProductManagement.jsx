@@ -304,6 +304,7 @@ const ProductManagement = () => {
         item.variants && item.variants.length > 0
           ? item.variants.map((v) => ({
               ...v,
+              costPrice: v.costPrice ?? "",
               id: v._id || newVariant().id,
               media: buildVariantMediaFromImages(
                 Array.isArray(v.images) && v.images.length > 0 ? v.images : legacyImages,
@@ -313,6 +314,7 @@ const ProductManagement = () => {
               {
                 ...newVariant(),
                 name: "Default",
+                costPrice: item.costPrice ?? "",
                 price: item.price || "",
                 salePrice: item.salePrice || "",
                 stock: item.stock || "",
@@ -1113,11 +1115,11 @@ const ProductManagement = () => {
         isOpen={isVariantsViewModalOpen}
         onClose={() => setIsVariantsViewModalOpen(false)}
         title="Product Variants Details"
-        size="lg"
+        size="xl"
       >
         <div className="py-2">
           <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-            <div className="h-16 w-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center border border-slate-100">
+            <div className="h-16 w-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center border border-slate-100 flex-shrink-0">
               {viewingVariants?.mainImage || viewingVariants?.galleryImages?.[0] || viewingVariants?.image ? (
                 <img src={viewingVariants.mainImage || viewingVariants.galleryImages?.[0] || viewingVariants.image} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -1126,50 +1128,69 @@ const ProductManagement = () => {
             </div>
             <div>
               <h3 className="text-lg font-black text-slate-900 leading-tight">{viewingVariants?.name}</h3>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge variant="primary" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5">{viewingVariants?.categoryId?.name || 'Category'}</Badge>
                 <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Master SKU: {viewingVariants?.sku || viewingVariants?._id?.slice(-6).toUpperCase() || 'N/A'}</span>
               </div>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-white">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm bg-white">
+            <table className="w-full min-w-[720px] text-left">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest">Variant Specification</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center">Unit Price</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center">Available Stock</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right">Variant SKU</th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest whitespace-nowrap">Variant Specification</th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center whitespace-nowrap">Cost Price</th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center whitespace-nowrap">Selling Price</th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center whitespace-nowrap">Available Stock</th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-center whitespace-nowrap">Stock Valuation</th>
+                  <th className="px-5 py-4 text-[10px] font-black text-slate-600 uppercase tracking-widest text-right whitespace-nowrap">Variant SKU</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {viewingVariants?.variants?.map((v, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/30 transition-all cursor-default">
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-black text-slate-700 group-hover:text-primary transition-colors">{v.name}</span>
-                        <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Variation {idx + 1}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex flex-col items-center">
-                        <span className={cn("text-xs font-bold", v.salePrice > 0 ? "text-slate-600 line-through scale-90" : "text-slate-900")}>₹{v.price}</span>
-                        {v.salePrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{v.salePrice}</span>}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <Badge variant={v.stock === 0 ? "rose" : v.stock <= 10 ? "amber" : "emerald"} className="text-[10px] font-black uppercase tracking-widest px-2 shadow-sm">
-                        {v.stock === 0 ? 'OUT OF STOCK' : `${v.stock} UNITS`}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-[10px] font-bold text-slate-600 font-mono tracking-tighter uppercase bg-slate-100 px-2 py-1 rounded-lg">
-                        {v.sku || 'N/A'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {viewingVariants?.variants?.map((v, idx) => {
+                  const vCost = Number(v.costPrice) > 0 ? Number(v.costPrice) : (Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0);
+                  const vStock = Number(v.stock) || 0;
+                  const vValuation = vStock * vCost;
+
+                  return (
+                    <tr key={idx} className="hover:bg-slate-50/30 transition-all cursor-default">
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-black text-slate-700 group-hover:text-primary transition-colors">{v.name}</span>
+                          <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Variation {idx + 1}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                        <span className="text-xs font-bold text-amber-900 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60">
+                          ₹{v.costPrice != null && v.costPrice !== "" ? v.costPrice : 0}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                        <div className="flex flex-col items-center">
+                          <span className={cn("text-xs font-bold", v.salePrice > 0 ? "text-slate-600 line-through scale-90" : "text-slate-900")}>₹{v.price}</span>
+                          {v.salePrice > 0 && <span className="text-xs font-bold text-emerald-600">₹{v.salePrice}</span>}
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                        <Badge variant={v.stock === 0 ? "rose" : v.stock <= 10 ? "amber" : "emerald"} className="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 shadow-sm">
+                          {v.stock === 0 ? 'OUT OF STOCK' : `${v.stock} UNITS`}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                        <div className="flex flex-col items-center">
+                          <span className="text-xs font-black text-slate-900">₹{vValuation.toLocaleString('en-IN')}</span>
+                          <span className="text-[9px] text-slate-400 font-semibold">{vStock} × ₹{vCost}</span>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 text-right whitespace-nowrap">
+                        <span className="text-[10px] font-bold text-slate-600 font-mono tracking-tighter uppercase bg-slate-100 px-2.5 py-1 rounded-lg">
+                          {v.sku || 'N/A'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

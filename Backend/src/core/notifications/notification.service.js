@@ -66,7 +66,7 @@ export const createInboxNotifications = async ({ notifications = [] } = {}) => {
         } else {
             // The existing collection has a unique compound index on
             // { broadcastId, ownerType, ownerId }. For inbox-only notifications
-            // (like dining approval requests) we still need a unique ObjectId here,
+            // (ones with no originating broadcast) we still need a unique ObjectId here,
             // otherwise MongoDB treats the missing value as null inside that index
             // and throws duplicate key errors on repeated inserts for the same owner.
             payload.broadcastId = new mongoose.Types.ObjectId();

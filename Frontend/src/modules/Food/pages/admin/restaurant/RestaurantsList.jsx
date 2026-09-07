@@ -1967,7 +1967,6 @@ export default function RestaurantsList() {
                 const estimatedDeliveryTimeVal = r?.estimatedDeliveryTime || r?.onboarding?.step4?.estimatedDeliveryTime || ""
                 const featuredDishVal = r?.featuredDish || r?.onboarding?.step4?.featuredDish || ""
                 const featuredPriceVal = r?.featuredPrice ?? r?.onboarding?.step4?.featuredPrice
-                const diningSettingsVal = r?.diningSettings || r?.onboarding?.step4?.diningSettings || null
                 const panDocumentUrl = typeof r?.panImage === "string" ? r.panImage : (r?.panImage?.url || r?.onboarding?.step3?.pan?.image?.url || "")
                 const gstDocumentUrl = typeof r?.gstImage === "string" ? r.gstImage : (r?.gstImage?.url || r?.onboarding?.step3?.gst?.image?.url || "")
                 const fssaiDocumentUrl = typeof r?.fssaiImage === "string" ? r.fssaiImage : (r?.fssaiImage?.url || r?.onboarding?.step3?.fssai?.image?.url || "")

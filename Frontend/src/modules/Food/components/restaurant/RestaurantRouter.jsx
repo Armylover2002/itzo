@@ -51,7 +51,6 @@ const VendorMoveLocation = lazy(() => import("@food/pages/restaurant/VendorMoveL
 const ManageOutlets = lazy(() => import("@food/pages/restaurant/ManageOutlets"))
 const UpdateBankDetails = lazy(() => import("@food/pages/restaurant/UpdateBankDetails"))
 const ZoneSetup = lazy(() => import("@food/pages/restaurant/ZoneSetup"))
-const DiningReservations = lazy(() => import("@food/pages/restaurant/DiningReservations"))
 const CouponListPage = lazy(() => import("@food/pages/restaurant/CouponListPage"))
 const Welcome = lazy(() => import("@food/pages/restaurant/auth/Welcome"))
 const Login = lazy(() => import("@food/pages/restaurant/auth/Login"))
@@ -119,7 +118,6 @@ export default function RestaurantRouter() {
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DownloadReport /></ProtectedRoute>} path="download-report" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ManageOutlets /></ProtectedRoute>} path="manage-outlets" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><UpdateBankDetails /></RestaurantPageShell></ProtectedRoute>} path="update-bank-details" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningReservations /></ProtectedRoute>} path="reservations" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><ZoneSetup /></RestaurantPageShell></ProtectedRoute>} path="zone-setup" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantProfilePage /></ProtectedRoute>} path="profile" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><SubscriptionGate userType="RESTAURANT" redirectTo="/food/restaurant"><BusinessPlanPage /></SubscriptionGate></ProtectedRoute>} path="business-plan" />

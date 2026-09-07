@@ -12,6 +12,7 @@ const debugError = (...args) => {}
 import SearchOverlay from "./SearchOverlay"
 import BottomNavigation from "./BottomNavigation"
 import DesktopNavbar from "./DesktopNavbar"
+import Footer from "./Footer"
 import QuickBottomNav from "@/modules/quickCommerce/user/components/layout/BottomNav"
 import { useUserNotifications } from "../../hooks/useUserNotifications"
 
@@ -140,7 +141,7 @@ export default function UserLayout({ children }) {
   // Note: Authentication checks and redirects are handled by ProtectedRoute components
   // UserLayout should not interfere with authentication redirects
 
-  // Show bottom navigation only on home page, dining page, under-250 page, orders page, and profile page
+  // Show bottom navigation only on home page, under-250 page, orders page, and profile page
   const path = location.pathname.startsWith("/food")
     ? location.pathname.substring(5) || "/"
     : location.pathname
@@ -165,8 +166,6 @@ export default function UserLayout({ children }) {
 
   const showBottomNav = normalizedPath === "/" ||
     normalizedPath === "/user" ||
-    normalizedPath === "/dining" ||
-    normalizedPath === "/user/dining" ||
     normalizedPath === "/under-250" ||
     normalizedPath === "/user/under-250" ||
     isOrdersRoot ||
@@ -186,12 +185,13 @@ export default function UserLayout({ children }) {
                   {/* <Navbar /> */}
                   {/* Desktop Navbar - Hidden on mobile, visible on medium+ screens */}
                   <div className="hidden md:block">
-                    {showFoodBottomNav && <DesktopNavbar showLogo={!isUnder250} />}
+                    {showFoodBottomNav && <DesktopNavbar showLogo={true} />}
                   </div>
                   <LocationPrompt />
                   <main className={showFoodBottomNav ? "md:pt-40" : ""}>
                     {children || <Outlet />}
                   </main>
+                  {!location.pathname.startsWith('/quick') && <Footer />}
                   {showFoodBottomNav && <BottomNavigation />}
                   {isSharedQuickProfile && <QuickBottomNav />}
                 </LocationSelectorProvider>

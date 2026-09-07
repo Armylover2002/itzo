@@ -697,16 +697,16 @@ Order again from this restaurant in the ${companyName} app.`
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-24 font-sans">
-      {/* Header */}
-      <div className="bg-white dark:bg-[#111111] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b border-transparent dark:border-gray-800">
+      {/* Mobile Sticky Header */}
+      <div className="md:hidden bg-white dark:bg-[#111111] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b border-transparent dark:border-gray-800">
         <Link to="/food/user">
           <ArrowLeft className="w-6 h-6 text-gray-700 dark:text-white cursor-pointer" />
         </Link>
         <h1 className="ml-4 text-xl font-semibold text-gray-800 dark:text-white">Your Orders</h1>
       </div>
 
-      {/* Search Bar */}
-      <div className="p-4 bg-white dark:bg-[#111111] mt-1">
+      {/* Mobile Search Bar */}
+      <div className="md:hidden p-4 bg-white dark:bg-[#111111] mt-1">
         <div className="flex items-center bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 shadow-sm">
           <Search className="w-5 h-5 text-[#FE5502]" />
           <input
@@ -719,8 +719,41 @@ Order again from this restaurant in the ${companyName} app.`
         </div>
       </div>
 
-      {/* Orders List */}
-      <div className="px-4 py-2 space-y-4">
+      {/* Desktop Centered Container */}
+      <div className="w-full max-w-4xl mx-auto md:px-6 lg:px-8 md:py-6">
+        {/* Desktop Header */}
+        <div className="hidden md:flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Your Orders</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              View past orders, track deliveries, and reorder your favorites
+            </p>
+          </div>
+          <div className="w-72 lg:w-80">
+            <div className="flex items-center bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 shadow-xs focus-within:ring-2 focus-within:ring-[#FE5502]/30 focus-within:border-[#FE5502]">
+              <Search className="w-4 h-4 text-[#FE5502] shrink-0" />
+              <input
+                type="text"
+                placeholder="Search restaurant or dish..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 ml-2.5 outline-none bg-transparent text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Orders List */}
+        <div className="px-4 md:px-0 py-2 space-y-4">
         {filteredOrders.length === 0 ? (
           <div className="bg-white dark:bg-[#111111] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 text-center">
             <p className="text-gray-600 dark:text-gray-300">No orders found matching your search</p>
@@ -753,12 +786,12 @@ Order again from this restaurant in the ${companyName} app.`
             const location = order.restaurantLocation || `${order.address?.city || ''}, ${order.address?.state || ''}`.trim() || 'Location not available'
 
             return (
-              <div key={order.id} className="relative bg-white dark:bg-[#111111] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+              <div key={order.id} className="relative bg-white dark:bg-[#111111] rounded-xl md:rounded-2xl shadow-xs md:shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden hover:shadow-md transition-shadow">
                 {/* Card Header: Restaurant Info */}
-                <div className="flex items-start justify-between p-4 pb-2">
-                  <div className="flex gap-3">
+                <div className="flex items-start justify-between p-4 md:p-5 pb-2 md:pb-3">
+                  <div className="flex gap-3 md:gap-4">
                     {/* Restaurant Image */}
-                    <div className="w-14 h-14 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0">
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gray-200 overflow-hidden flex-shrink-0">
                       <img
                         src={restaurantImage}
                         alt={order.restaurant}
@@ -821,10 +854,10 @@ Order again from this restaurant in the ${companyName} app.`
                 )}
 
                 {/* Separator */}
-                <div className="border-t border-dashed border-gray-200 dark:border-gray-700 mx-4 my-1"></div>
+                <div className="border-t border-dashed border-gray-200 dark:border-gray-700 mx-4 md:mx-5 my-1"></div>
 
                 {/* Items List */}
-                <div className="px-4 py-2 space-y-2">
+                <div className="px-4 md:px-5 py-2 md:py-3 space-y-2">
                   {order.items && order.items.length > 0 ? (
                     order.items.map((item, idx) => {
                       const isVeg = item.isVeg !== undefined ? item.isVeg : (item.category === 'veg' || item.type === 'veg')
@@ -884,7 +917,7 @@ Order again from this restaurant in the ${companyName} app.`
                 </div>
 
                 {/* Order Summary Section */}
-                <div className="px-4 py-3 bg-gray-50 dark:bg-[#1a1a1a] rounded-lg mx-4 mb-2">
+                <div className="px-4 md:px-5 py-3 bg-gray-50 dark:bg-[#1a1a1a] rounded-xl mx-4 md:mx-5 mb-2">
                   <div className="space-y-1.5">
                     {order.subtotal > 0 && (
                       <div className="flex justify-between text-xs">
@@ -992,10 +1025,10 @@ Order again from this restaurant in the ${companyName} app.`
                 </div>
 
                 {/* Separator */}
-                <div className="border-t border-gray-100 dark:border-gray-800 mx-4"></div>
+                <div className="border-t border-gray-100 dark:border-gray-800 mx-4 md:mx-5"></div>
 
                 {/* Card Footer: Actions */}
-                <div className="px-4 py-3 flex items-center justify-between">
+                <div className="px-4 md:px-5 py-3 md:py-3.5 flex items-center justify-between">
                   {/* Left Side: Rating or Error */}
                   {isRestaurantCancelled ? (
                     <div className="flex flex-col gap-1">
@@ -1067,6 +1100,7 @@ Order again from this restaurant in the ${companyName} app.`
             )
           })
         )}
+        </div>
       </div>
 
       {/* Footer Branding */}

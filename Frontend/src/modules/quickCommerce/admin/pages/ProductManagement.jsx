@@ -89,13 +89,26 @@ const ProductManagement = () => {
         try {
             const payload = new FormData();
             payload.append('status', nextStatus);
-            await adminApi.updateProduct(product._id, payload);
+            const response = await adminApi.updateProduct(product._id, payload);
+            const updated = response?.data?.result || { ...product, status: nextStatus, isActive: nextStatus === 'active' };
+
+            // Apply the response in place instead of re-fetching the whole
+            // list — this is what made the toggle feel slow (a second full
+            // network round trip right after the update itself).
+            if (filterStatus !== 'all' && filterStatus !== updated.status) {
+                // No longer matches the active status filter — drop it locally,
+                // same as a fresh fetch would.
+                setProducts((prev) => prev.filter((p) => p._id !== product._id));
+                setTotal((prev) => Math.max(0, prev - 1));
+            } else {
+                setProducts((prev) => prev.map((p) => (p._id === product._id ? { ...p, ...updated } : p)));
+            }
+
             toast.success(
                 nextStatus === 'active'
                     ? `"${product.name}" is now visible to customers`
                     : `"${product.name}" is hidden from customers`,
             );
-            fetchProducts(page);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Could not change the status');
         } finally {
@@ -368,11 +381,11 @@ const ProductManagement = () => {
                 isOpen={isVariantsViewModalOpen}
                 onClose={() => setIsVariantsViewModalOpen(false)}
                 title="Product Details"
-                size="lg"
+                size="xl"
             >
                 <div className="py-2">
                     <div className="flex items-center gap-4 mb-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <div className="h-16 w-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center border border-slate-100">
+                        <div className="h-16 w-16 bg-white rounded-xl shadow-sm overflow-hidden flex items-center justify-center border border-slate-100 flex-shrink-0">
                             {viewingVariants?.mainImage || viewingVariants?.variants?.[0]?.images?.[0] ? (
                                 <img src={viewingVariants.mainImage || viewingVariants.variants[0].images[0]} alt="" className="h-full w-full object-cover" />
                             ) : (
@@ -383,12 +396,7 @@ const ProductManagement = () => {
                             <h3 className="text-lg font-black text-slate-900 leading-tight">{viewingVariants?.name}</h3>
                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                                 <Badge variant="primary" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5">{viewingVariants?.categoryId?.name || 'Category'}</Badge>
-                                {viewingVariants?.subcategoryId?.name && (
-                                    <Badge variant="gray" className="text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5">{viewingVariants.subcategoryId.name}</Badge>
-                                )}
-                                {viewingVariants?.brand && (
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Brand: {viewingVariants.brand}</span>
-                                )}
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Brand: {viewingVariants?.brand}</span>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Seller: {viewingVariants?.seller?.shopName || 'ECS'}</span>
                             </div>
                             {viewingVariants?.description && (
@@ -397,15 +405,15 @@ const ProductManagement = () => {
                         </div>
                     </div>
 
-                    <div className="overflow-hidden rounded-2xl border border-slate-100 shadow-sm bg-white">
-                        <table className="w-full text-left">
+                    <div className="overflow-x-auto rounded-2xl border border-slate-100 shadow-sm bg-white">
+                        <table className="w-full min-w-[650px] text-left">
                             <thead>
                                 <tr className="bg-slate-50/50 border-b border-slate-100">
-                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Photos</th>
-                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Variant Specification</th>
-                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Unit Price</th>
-                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Available Stock</th>
-                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Variant SKU</th>
+                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Photos</th>
+                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Variant Specification</th>
+                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">Unit Price</th>
+                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center whitespace-nowrap">Available Stock</th>
+                                    <th className="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Variant SKU</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">

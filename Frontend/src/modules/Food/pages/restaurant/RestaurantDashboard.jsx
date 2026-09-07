@@ -37,6 +37,7 @@ import {
   XCircle,
   UtensilsCrossed,
   AlertTriangle,
+  RotateCw,
 } from "lucide-react"
 import { restaurantAPI } from "@food/api"
 import { cn } from "@food/utils/utils"
@@ -100,29 +101,34 @@ const chartTooltipStyle = {
 
 export default function RestaurantDashboard() {
   const navigate = useNavigate()
-  const [period, setPeriod] = useState("month")
+  const [period, setPeriod] = useState("overall")
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState(null)
+
+  const fetchStats = async (isManual = false) => {
+    try {
+      if (isManual) setRefreshing(true)
+      else setLoading(true)
+      setError(null)
+      const res = await restaurantAPI.getDashboardStats({ period })
+      if (res.data?.success) {
+        setData(res.data.data)
+      } else {
+        setError(res.data?.message || "Failed to load dashboard data")
+      }
+    } catch (err) {
+      console.error("Error fetching restaurant dashboard stats:", err)
+      setError(err.response?.data?.message || err.message || "Failed to load dashboard data")
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      try {
-        setLoading(true)
-        const res = await restaurantAPI.getDashboardStats({ period })
-        if (!cancelled && res.data?.success) {
-          setData(res.data.data)
-        }
-      } catch {
-        if (!cancelled) setData(null)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-    load()
-    return () => {
-      cancelled = true
-    }
+    fetchStats()
   }, [period])
 
   const kpis = data?.kpis || {}
@@ -174,19 +180,46 @@ export default function RestaurantDashboard() {
               </span>
             </p>
           </div>
-          <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-full sm:w-[180px] rounded-xl border-gray-200 bg-white">
-              <SelectValue placeholder="Period" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This week</SelectItem>
-              <SelectItem value="month">This month</SelectItem>
-              <SelectItem value="year">This year</SelectItem>
-              <SelectItem value="overall">Overall</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => fetchStats(true)}
+              disabled={loading || refreshing}
+              className="inline-flex items-center justify-center p-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors disabled:opacity-50"
+              title="Refresh dashboard stats"
+            >
+              <RotateCw className={cn("h-4 w-4", refreshing && "animate-spin text-[#B80B3D]")} />
+            </button>
+            <Select value={period} onValueChange={setPeriod}>
+              <SelectTrigger className="w-full sm:w-[180px] rounded-xl border-gray-200 bg-white">
+                <SelectValue placeholder="Period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This week</SelectItem>
+                <SelectItem value="month">This month</SelectItem>
+                <SelectItem value="year">This year</SelectItem>
+                <SelectItem value="overall">Overall</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+
+        {error && !loading && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between gap-3 text-amber-900">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+              <p className="text-sm font-medium truncate">{error}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => fetchStats()}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 transition-colors shrink-0"
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {loading ? (
           <div className="min-h-[40vh] flex items-center justify-center">
@@ -269,7 +302,13 @@ export default function RestaurantDashboard() {
                   <CardTitle className="text-lg font-bold text-gray-900">
                     Revenue Trend
                   </CardTitle>
-                  <p className="text-xs text-gray-500">Daily revenue & orders (last 14 days)</p>
+                  <p className="text-xs text-gray-500">
+                    {period === "overall" || period === "year"
+                      ? "Monthly revenue & orders"
+                      : period === "today"
+                      ? "Today's revenue & orders"
+                      : "Daily revenue & orders"}
+                  </p>
                 </CardHeader>
                 <CardContent className="pt-6">
                   <div className="h-72 sm:h-80 w-full min-w-0">

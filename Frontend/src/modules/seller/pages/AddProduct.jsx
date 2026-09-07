@@ -2,10 +2,12 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import Button from "@shared/components/ui/Button";
 import {
   HiOutlineArrowLeft,
+  HiOutlineArrowRight,
   HiOutlineTag,
   HiOutlineSwatch,
   HiOutlineFolderOpen,
   HiOutlineArrowPath,
+  HiOutlineCheck,
 } from "react-icons/hi2";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -87,14 +89,27 @@ const AddProduct = () => {
 
   const categories = dbCategories;
 
-  const handleSave = async () => {
-    if (!formData.name) {
+  const handleNextFromGeneral = () => {
+    if (!formData.name?.trim()) {
       toast.error("Please fill in the Product Title");
       return;
     }
+    setModalTab("variants");
+  };
 
-    if (!formData.header || !formData.category || !formData.subcategory) {
-      toast.error("Please select all three category levels: Main Group, Specific Category, and Sub-Category");
+  const handleNextFromVariants = () => {
+    const variantError = validateVariantsForSubmit(formData.variants);
+    if (variantError) {
+      toast.error(variantError);
+      return;
+    }
+    setModalTab("category");
+  };
+
+  const handleSave = async () => {
+    if (!formData.name) {
+      toast.error("Please fill in the Product Title");
+      setModalTab("general");
       return;
     }
 
@@ -102,6 +117,12 @@ const AddProduct = () => {
     if (variantError) {
       toast.error(variantError);
       setModalTab("variants");
+      return;
+    }
+
+    if (!formData.header || !formData.category || !formData.subcategory) {
+      toast.error("Please select all three category levels: Main Group, Specific Category, and Sub-Category");
+      setModalTab("category");
       return;
     }
 
@@ -155,19 +176,6 @@ const AddProduct = () => {
           <Button variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="min-w-[140px] bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white transition-colors">
-            {isSaving ? (
-              <>
-                <HiOutlineArrowPath className="mr-2 h-5 w-5 animate-spin" />
-                Publishing...
-              </>
-            ) : (
-              "Save & Publish"
-            )}
-          </Button>
         </div>
       </div>
 
@@ -175,21 +183,32 @@ const AddProduct = () => {
         {/* Sidebar Tabs */}
         <div className="md:w-64 bg-slate-50/50 border-r border-slate-100 p-4 space-y-1 overflow-y-auto">
           {[
-            { id: "general", label: "General Info", icon: HiOutlineTag },
-            { id: "variants", label: "Item Variants", icon: HiOutlineSwatch },
-            { id: "category", label: "Groups", icon: HiOutlineFolderOpen },
+            { id: "general", step: 1, label: "General Info", icon: HiOutlineTag },
+            { id: "variants", step: 2, label: "Item Variants", icon: HiOutlineSwatch },
+            { id: "category", step: 3, label: "Groups", icon: HiOutlineFolderOpen },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setModalTab(tab.id)}
               className={cn(
-                "w-full flex items-center space-x-3 px-4 py-3 rounded-md text-xs font-bold transition-all text-left",
+                "w-full flex items-center justify-between px-3 py-3 rounded-xl text-xs font-bold transition-all text-left",
                 modalTab === tab.id
                   ? "bg-white text-[#E71D28] shadow-sm ring-1 ring-slate-100"
                   : "text-slate-600 hover:bg-slate-100",
               )}>
-              <tab.icon className="h-4 w-4" />
-              <span>{tab.label}</span>
+              <div className="flex items-center space-x-3">
+                <tab.icon className="h-4 w-4 shrink-0" />
+                <span>{tab.label}</span>
+              </div>
+              <span
+                className={cn(
+                  "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0",
+                  modalTab === tab.id
+                    ? "bg-[#E71D28] text-white"
+                    : "bg-slate-200 text-slate-600"
+                )}>
+                {tab.step}
+              </span>
             </button>
           ))}
 
@@ -256,14 +275,43 @@ const AddProduct = () => {
                   placeholder="e.g. Amul"
                 />
               </div>
+
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-end">
+                <Button
+                  type="button"
+                  onClick={handleNextFromGeneral}
+                  className="min-w-[150px] bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-rose-200">
+                  <span>Next: Item Variants</span>
+                  <HiOutlineArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
 
           {modalTab === "variants" && (
-            <VariantEditor
-              variants={formData.variants}
-              onChange={(variants) => setFormData({ ...formData, variants })}
-            />
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+              <VariantEditor
+                variants={formData.variants}
+                onChange={(variants) => setFormData({ ...formData, variants })}
+              />
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setModalTab("general")}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 text-slate-700 hover:bg-slate-100">
+                  <HiOutlineArrowLeft className="h-4 w-4" />
+                  <span>Back: General Info</span>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleNextFromVariants}
+                  className="min-w-[150px] bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white px-6 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-rose-200">
+                  <span>Next: Groups</span>
+                  <HiOutlineArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           )}
 
           {modalTab === "category" && (
@@ -332,6 +380,34 @@ const AddProduct = () => {
                       ))}
                   </select>
                 </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-between gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setModalTab("variants")}
+                  className="px-6 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 text-slate-700 hover:bg-slate-100">
+                  <HiOutlineArrowLeft className="h-4 w-4" />
+                  <span>Back: Item Variants</span>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="min-w-[160px] bg-[#E71D28] hover:bg-primary-hover active:bg-primary-dark text-white px-8 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-rose-200 flex items-center justify-center gap-2">
+                  {isSaving ? (
+                    <>
+                      <HiOutlineArrowPath className="h-4 w-4 animate-spin" />
+                      <span>Publishing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <HiOutlineCheck className="h-4 w-4" />
+                      <span>Save & Publish</span>
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           )}

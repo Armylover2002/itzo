@@ -9,7 +9,6 @@ import * as subscriptionPlanController from '../controllers/subscriptionPlan.con
 
 import * as feedbackExperienceController from '../controllers/feedbackExperience.controller.js';
 import * as notificationBroadcastController from '../controllers/notificationBroadcast.controller.js';
-import * as diningAdminController from '../../dining/controllers/diningAdmin.controller.js';
 import * as orderController from '../../orders/controllers/order.controller.js';
 import { getAdminPageController, upsertAdminPageController } from '../controllers/pageContent.controller.js';
 import * as employeeController from '../controllers/employee.controller.js';
@@ -190,14 +189,6 @@ router.get('/zones/:id', adminController.getZoneById);
 router.post('/zones', checkPermission('food::restaurant_management::zone_setup', 'create'), adminController.createZone);
 router.patch('/zones/:id', checkPermission('food::restaurant_management::zone_setup', 'edit'), adminController.updateZone);
 router.delete('/zones/:id', checkPermission('food::restaurant_management::zone_setup', 'delete'), adminController.deleteZone);
-
-// ----- Dining -----
-router.get('/dining/categories', diningAdminController.getDiningCategories);
-router.post('/dining/categories', checkPermission('food::dining_management::banners', 'create'), diningAdminController.createDiningCategory);
-router.patch('/dining/categories/:id', checkPermission('food::dining_management::banners', 'edit'), diningAdminController.updateDiningCategory);
-router.delete('/dining/categories/:id', checkPermission('food::dining_management::banners', 'delete'), diningAdminController.deleteDiningCategory);
-router.get('/dining/restaurants', diningAdminController.getDiningRestaurants);
-router.patch('/dining/restaurants/:restaurantId', checkPermission('food::dining_management::list', 'edit'), diningAdminController.updateDiningRestaurant);
 
 // ----- Orders -----
 router.get('/orders', orderController.listOrdersAdminController);

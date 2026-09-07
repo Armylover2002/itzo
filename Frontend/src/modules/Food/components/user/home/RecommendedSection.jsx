@@ -12,11 +12,11 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants }) => {
       initial={false}
       animate={{ opacity: 1, y: 0 }}
     >
-      <h2 className="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-3 px-4">
+      <h2 className="text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-3 px-4 md:px-0">
         RECOMMENDED FOR YOU
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 px-4 md:px-0">
         {recommendedForYouRestaurants.map((restaurant, index) => {
           const restaurantSlug =
             restaurant.slug ||

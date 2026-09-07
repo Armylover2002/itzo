@@ -511,10 +511,44 @@ const parseVariants = async (raw, req, fallback = {}) => {
       throw new ValidationError(`"${name}" needs a price greater than 0`);
     }
 
+    const rawSale = variant?.salePrice !== undefined && variant?.salePrice !== ""
+      ? variant.salePrice
+      : fallback.salePrice;
+    const salePrice = rawSale != null && rawSale !== "" ? num(rawSale, 0) : 0;
+
+    if (salePrice < 0) {
+      throw new ValidationError(`"${name}": Sale price cannot be negative`);
+    }
+    if (salePrice > 0 && salePrice > price) {
+      throw new ValidationError(
+        `"${name}": Sale price (₹${salePrice}) cannot be greater than regular price (₹${price})`
+      );
+    }
+
+    const rawCost = variant?.costPrice !== undefined && variant?.costPrice !== ""
+      ? variant.costPrice
+      : fallback.costPrice;
+    const costPrice = rawCost != null && rawCost !== "" ? num(rawCost, 0) : 0;
+
+    if (costPrice < 0) {
+      throw new ValidationError(`"${name}": Cost price cannot be negative`);
+    }
+    if (costPrice > 0 && costPrice > price) {
+      throw new ValidationError(
+        `"${name}": Cost price (₹${costPrice}) cannot be greater than regular price (₹${price})`
+      );
+    }
+    if (salePrice > 0 && costPrice > 0 && salePrice < costPrice) {
+      throw new ValidationError(
+        `"${name}": Sale price (₹${salePrice}) cannot be less than cost price (₹${costPrice})`
+      );
+    }
+
     variants.push({
       name,
+      costPrice,
       price,
-      salePrice: num(variant?.salePrice, fallback.salePrice),
+      salePrice,
       stock: Math.max(0, num(variant?.stock, fallback.stock)),
       sku: str(variant?.sku) || fallback.sku || createSellerSku(),
       images,
@@ -673,6 +707,7 @@ const parseProductPayloadAsync = async (req, existingProduct = null) => {
   const variants = await parseVariants(req.body?.variants, req, {
     price: req.body?.price,
     salePrice: req.body?.salePrice,
+    costPrice: req.body?.costPrice,
     stock: req.body?.stock,
     sku: req.body?.sku,
   });
@@ -696,8 +731,9 @@ const parseProductPayloadAsync = async (req, existingProduct = null) => {
       createSellerSku(),
     description:
       str(req.body?.description) || existingProduct?.description || "",
-    // Price/stock/MRP always reflect the current variants — they are the
+    // Price/stock/cost/MRP always reflect the current variants — they are the
     // single source of truth, never a stale value carried over from before.
+    costPrice: firstVariant.costPrice || 0,
     price: firstVariant.price,
     salePrice: firstVariant.salePrice,
     stock: totalStock,
@@ -1147,7 +1183,14 @@ export const adjustSellerStockController = async (req, res) => {
     const productId = str(req.body?.productId);
     const variantId = str(req.body?.variantId);
     const quantity = num(req.body?.quantity);
-    const type = str(req.body?.type) || "Correction";
+    const rawType = str(req.body?.type);
+    const type = ["Restock", "Remove", "Correction", "Sale"].includes(rawType)
+      ? rawType
+      : (quantity < 0 ? "Remove" : "Restock");
+
+    if (!quantity || quantity === 0) {
+      return sendError(res, 400, "Adjustment quantity must be non-zero");
+    }
 
     const product = await SellerProduct.findOne({ _id: productId, sellerId });
     if (!product) {
@@ -1164,10 +1207,19 @@ export const adjustSellerStockController = async (req, res) => {
         ? product.variants[0]
         : null;
     if (!variant) {
-      return sendError(res, 400, "variantId is required for products with multiple variants");
+      return sendError(res, 400, "Please select a variant to adjust");
     }
 
-    const nextVariantStock = Math.max(0, num(variant.stock) + quantity);
+    const currentStock = num(variant.stock, 0);
+    if (quantity < 0 && Math.abs(quantity) > currentStock) {
+      return sendError(
+        res,
+        400,
+        `Cannot remove more stock than available (${currentStock} units in "${variant.name}")`,
+      );
+    }
+
+    const nextVariantStock = Math.max(0, currentStock + quantity);
     variant.stock = nextVariantStock;
 
     const totalStock = product.variants.reduce((sum, v) => sum + Math.max(0, num(v.stock)), 0);
