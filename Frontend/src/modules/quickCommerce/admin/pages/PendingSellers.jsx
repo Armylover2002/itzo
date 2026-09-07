@@ -146,7 +146,7 @@ const PendingSellers = () => {
     const query = searchTerm.trim().toLowerCase();
     if (query) {
       result = result.filter((seller) =>
-        [seller.shopName, seller.ownerName, seller.email, seller.phone]
+        [seller.shopName, seller.ownerName, seller.email, seller.phone, seller.sellerCode]
           .filter(Boolean)
           .some((value) => value.toLowerCase().includes(query)),
       );

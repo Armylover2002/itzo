@@ -4,6 +4,7 @@ import { getIO, rooms } from '../../../config/socket.js';
 import { Seller } from '../seller/models/seller.model.js';
 import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { SellerTransaction } from '../seller/models/sellerTransaction.model.js';
+import { QuickAdminWallet } from '../models/adminWallet.model.js';
 import { QuickOrder } from '../models/order.model.js';
 import { FoodDeliveryPartner } from '../../food/delivery/models/deliveryPartner.model.js';
 import {
@@ -104,6 +105,26 @@ export const updateSellerOrderStatus = async (sellerOrderId, sellerId, nextStatu
       } catch (err) {
         logger.error(
           `[QuickEarnings] Failed to upsert seller transaction for ${sellerOrder.orderId}: ${err?.message || err}`,
+        );
+      }
+    }
+
+    const adminProfitRaw =
+      Number(sellerOrder?.pricing?.commission || 0) +
+      Number(sellerOrder?.pricing?.platformFee || 0);
+    const adminProfit = Number.isFinite(adminProfitRaw) ? Math.max(0, adminProfitRaw) : 0;
+    if (adminProfit > 0) {
+      try {
+        await QuickAdminWallet.findOneAndUpdate(
+          { key: 'quick_platform' },
+          {
+            $inc: { balance: adminProfit, totalRevenue: adminProfit },
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true },
+        );
+      } catch (err) {
+        logger.error(
+          `[QuickAdminEarnings] Failed to update quick admin wallet for ${sellerOrder.orderId}: ${err?.message || err}`,
         );
       }
     }
@@ -316,6 +337,26 @@ export const syncSellerOrderFromDelivery = async (parentOrderId, deliveryStatus)
         } catch (err) {
           logger.error(
             `[QuickEarningsSync] Failed to upsert seller transaction for ${so.orderId}: ${err?.message || err}`,
+          );
+        }
+      }
+
+      const adminProfitRaw =
+        Number(so?.pricing?.commission || 0) +
+        Number(so?.pricing?.platformFee || 0);
+      const adminProfit = Number.isFinite(adminProfitRaw) ? Math.max(0, adminProfitRaw) : 0;
+      if (adminProfit > 0) {
+        try {
+          await QuickAdminWallet.findOneAndUpdate(
+            { key: 'quick_platform' },
+            {
+              $inc: { balance: adminProfit, totalRevenue: adminProfit },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true },
+          );
+        } catch (err) {
+          logger.error(
+            `[QuickAdminEarningsSync] Failed to update quick admin wallet for ${so.orderId}: ${err?.message || err}`,
           );
         }
       }

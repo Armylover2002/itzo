@@ -393,9 +393,9 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
 
           {/* Dynamic Promotional Banner Carousel */}
           {activeBanners.length > 0 && (
-            <div className={cn("block px-3 md:px-8 lg:px-[50px] mb-3 md:mb-5", embedded ? "-mt-[1px]" : "mt-2 md:mt-4")}>
+            <div className={cn("block w-full max-w-7xl mx-auto px-3 sm:px-6 md:px-8 lg:px-8 mb-3 md:mb-5", embedded ? "-mt-[1px]" : "mt-2 md:mt-4")}>
               <div
-                className="relative w-full overflow-hidden rounded-2xl md:rounded-[28px] shadow-sm border border-gray-100 dark:border-white/5"
+                className="group relative w-full overflow-hidden rounded-2xl md:rounded-[28px] shadow-sm border border-gray-100 dark:border-white/5 bg-gray-100 dark:bg-gray-800"
                 style={embedded ? { backgroundColor: activeCategory?.headerColor || ALL_CATEGORY.headerColor } : undefined}>
                 <div
                   className="flex transition-transform duration-500 ease-out"
@@ -408,11 +408,11 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                       onClick={() => handleBannerClick(banner)}
                       whileTap={{ scale: 0.98 }}
                       className="min-w-full cursor-pointer relative select-none">
-                      <div className="w-full h-[150px] sm:h-[190px] md:h-[220px] lg:h-[260px] relative overflow-hidden bg-gray-100 dark:bg-gray-800">
+                      <div className="w-full h-[150px] sm:h-[200px] md:h-[260px] lg:h-[300px] xl:h-[340px] relative overflow-hidden">
                         <img
                           src={resolveQuickImageUrl(banner.image)}
                           alt={banner.title || "Promotional Banner"}
-                          className="w-full h-full object-cover sm:object-fill"
+                          className="w-full h-full object-cover object-center"
                           onError={(e) => {
                             e.target.style.display = "none";
                           }}
@@ -435,6 +435,34 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                     </motion.div>
                   ))}
                 </div>
+
+                {/* Left/Right Arrow Navigation for Desktop Web View */}
+                {activeBanners.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Previous Banner"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileBannerIndex((prev) => (prev === 0 ? activeBanners.length - 1 : prev - 1));
+                      }}
+                      className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 items-center justify-center shadow-md backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer"
+                    >
+                      <ChevronLeft className="w-5 h-5 -ml-0.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Next Banner"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMobileBannerIndex((prev) => (prev + 1) % activeBanners.length);
+                      }}
+                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/80 hover:bg-white text-gray-800 items-center justify-center shadow-md backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 hover:scale-110 z-20 cursor-pointer"
+                    >
+                      <ChevronRight className="w-5 h-5 -mr-0.5" />
+                    </button>
+                  </>
+                )}
 
                 {/* Indicators / Dots */}
                 {activeBanners.length > 1 && (

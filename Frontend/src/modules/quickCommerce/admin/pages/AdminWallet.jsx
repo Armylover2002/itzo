@@ -16,10 +16,7 @@ import {
     Filter,
     Search,
     ChevronRight,
-    ArrowRight,
     History,
-    PieChart,
-    BarChart3,
     ArrowDownCircle,
     ArrowUpCircle,
     RotateCw
@@ -316,9 +313,8 @@ const AdminWallet = () => {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Transaction History */}
-                <div className="lg:col-span-2 space-y-6">
+            {/* Transaction History */}
+            <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-[#f7f3fc] text-primary rounded-lg">
@@ -511,85 +507,6 @@ const AdminWallet = () => {
                             </div>
                         )}
                     </Card>
-                </div>
-
-                {/* Side Panels */}
-                <div className="space-y-8">
-                    {/* Settlement Overview */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                                <PieChart className="h-5 w-5" />
-                            </div>
-                            <h2 className="ds-h2">Settlements</h2>
-                        </div>
-                        <Card className="p-6 border-none shadow-xl ring-1 ring-slate-100 bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative">
-                            <div className="relative z-10 space-y-6">
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-2">Ready for Settlement</p>
-                                    <h3 className="text-4xl font-black">₹{((walletData.stats?.sellerPendingPayouts || 0) + (walletData.stats?.deliveryPendingPayouts || 0)).toLocaleString()}</h3>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-2xl border border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-[#9359d7]" />
-                                            <span className="text-xs font-bold text-slate-300">Sellers</span>
-                                        </div>
-                                        <span className="text-xs font-black">₹{(walletData.stats?.sellerPendingPayouts || 0).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center bg-slate-800/50 p-3 rounded-2xl border border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-2 w-2 rounded-full bg-[#9359d7]" />
-                                            <span className="text-xs font-bold text-slate-300">Riders</span>
-                                        </div>
-                                        <span className="text-xs font-black">₹{(walletData.stats?.deliveryPendingPayouts || 0).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleProcessPayouts}
-                                    disabled={isProcessing}
-                                    className="w-full py-4 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 group disabled:opacity-50"
-                                >
-                                    {isProcessing ? <RotateCw className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4 group-hover:rotate-12 transition-transform" />}
-                                    {isProcessing ? 'SETTLING...' : 'Bulk Settlement'}
-                                </button>
-                            </div>
-                            <div className="absolute -bottom-8 -right-8 opacity-10">
-                                <Wallet className="h-40 w-40" />
-                            </div>
-                        </Card>
-                    </div>
-
-                    {/* Quick Links */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-[#f7f3fc] text-primary rounded-lg">
-                                <BarChart3 className="h-5 w-5" />
-                            </div>
-                            <h2 className="text-xl font-black text-slate-900">Analytics</h2>
-                        </div>
-                        <div className="space-y-3">
-                            {[
-                                { label: 'Platform Revenue Report', icon: TrendingUp, path: '/ecs' },
-                                { label: 'Tax Statements', icon: DollarSign, path: '#' },
-                            ].map((link, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => link.path !== '#' ? navigate(link.path) : alert('Tax Statements generation is coming soon!')}
-                                    className="w-full p-4 bg-white ring-1 ring-slate-100 rounded-[24px] flex items-center justify-between group hover:ring-primary/20 hover:shadow-lg transition-all"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-slate-50 text-slate-400 rounded-xl group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                                            <link.icon className="h-4 w-4" />
-                                        </div>
-                                        <span className="text-xs font-black text-slate-700">{link.label}</span>
-                                    </div>
-                                    <ArrowRight className="h-4 w-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* Transaction Detail Modal */}

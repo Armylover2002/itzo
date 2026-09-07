@@ -1,6 +1,8 @@
 import { QuickOrder } from "../models/order.model.js";
 import { SellerOrder } from "../seller/models/sellerOrder.model.js";
 import { SellerTransaction } from "../seller/models/sellerTransaction.model.js";
+import { QuickAdminWallet } from "../models/adminWallet.model.js";
+import { Transaction } from "../../../core/payments/models/transaction.model.js";
 import { FoodDeliveryWallet } from "../../food/delivery/models/deliveryWallet.model.js";
 import { FoodDeliveryWithdrawal } from "../../food/delivery/models/foodDeliveryWithdrawal.model.js";
 import { FoodDeliveryCashDeposit } from "../../food/delivery/models/foodDeliveryCashDeposit.model.js";
@@ -134,8 +136,22 @@ export async function getQuickCommerceFinanceSummary() {
     ],
   };
 
+  // Only consider delivery partners who actually have Quick Commerce deliveries assigned
+  const quickRiderIds = await QuickOrder.distinct("dispatch.deliveryPartnerId", {
+    ...ACTIVE_ORDER_FILTER,
+    "dispatch.deliveryPartnerId": { $ne: null },
+  });
+
+  const riderWalletFilter = quickRiderIds.length > 0
+    ? { deliveryPartnerId: { $in: quickRiderIds } }
+    : { _id: { $exists: false } };
+
+  const riderWithdrawalFilter = quickRiderIds.length > 0
+    ? { deliveryPartnerId: { $in: quickRiderIds }, status: { $in: ["pending", "processing"] } }
+    : { _id: { $exists: false } };
+
   const [
-    adminWallet,
+    quickAdminWallet,
     onlineAgg,
     codAgg,
     walletFloatAgg,
@@ -144,7 +160,7 @@ export async function getQuickCommerceFinanceSummary() {
     deliveryPendingAgg,
     adminProfitAgg,
   ] = await Promise.all([
-    getBalance("admin", "platform"),
+    QuickAdminWallet.findOne({ key: "quick_platform" }).lean(),
     QuickOrder.aggregate([
       {
         $match: {
@@ -172,6 +188,7 @@ export async function getQuickCommerceFinanceSummary() {
       },
     ]),
     FoodDeliveryWallet.aggregate([
+      { $match: riderWalletFilter },
       { $group: { _id: null, float: { $sum: { $ifNull: ["$cashInHand", 0] } } } },
     ]),
     SellerOrder.aggregate([
@@ -197,7 +214,7 @@ export async function getQuickCommerceFinanceSummary() {
       },
     ]),
     FoodDeliveryWithdrawal.aggregate([
-      { $match: { status: { $in: ["pending", "processing"] } } },
+      { $match: riderWithdrawalFilter },
       {
         $group: { _id: null, total: { $sum: { $abs: { $ifNull: ["$amount", 0] } } } },
       },
@@ -219,9 +236,8 @@ export async function getQuickCommerceFinanceSummary() {
   return {
     totalPlatformEarning: totalOnline + totalCodCollected,
     totalAdminEarning: num(adminProfitAgg?.[0]?.total),
-    availableBalance: num(adminWallet?.availableBalance),
-    // COD float should represent COD cash collected by riders.
-    // Prefer tracked rider wallet cash, but never under-report compared to delivered COD collections.
+    availableBalance: num(quickAdminWallet?.balance || 0),
+    // COD float should represent COD cash collected by quick riders.
     systemFloatCOD: Math.max(walletFloat, totalCodCollected),
     // Owed to sellers = delivered net receivable (subtotal - commission) minus settled withdrawals.
     sellerPendingPayouts: Math.max(0, sellerReceivable - sellerSettledWithdrawals),
@@ -230,27 +246,77 @@ export async function getQuickCommerceFinanceSummary() {
 }
 
 export async function getQuickCommerceFinanceLedger({ page = 1, limit = 25 } = {}) {
-  const res = await getTransactionsByEntity("admin", "platform", { page, limit });
-  const items = (res.transactions || []).map((txn) => ({
+  const safePage = Math.max(1, Number(page) || 1);
+  const safeLimit = Math.max(1, Math.min(100, Number(limit) || 25));
+  const skip = (safePage - 1) * safeLimit;
+
+  // Query Quick Commerce seller transactions + platform transactions
+  const [sellerTxns, sellerTotal, platformTxns, platformTotal] = await Promise.all([
+    SellerTransaction.find({})
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(safeLimit)
+      .lean(),
+    SellerTransaction.countDocuments({}),
+    Transaction.find({
+      $or: [
+        { module: { $in: ["quick", "quick_commerce"] } },
+        { entityType: "quick_admin" },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(safeLimit)
+      .lean(),
+    Transaction.countDocuments({
+      $or: [
+        { module: { $in: ["quick", "quick_commerce"] } },
+        { entityType: "quick_admin" },
+      ],
+    }),
+  ]);
+
+  const mappedSellerTxns = (sellerTxns || []).map((st) => ({
+    _id: st._id,
+    transactionId: st.reference || st.orderId || st._id,
+    reference: st.orderId || st.reference || st._id,
+    type: st.type || "Order Payment",
+    direction: st.type === "Withdrawal" ? "DEBIT" : "CREDIT",
+    amount: Math.abs(num(st.amount)),
+    status: String(st.status || "Settled").toUpperCase(),
+    description: st.customer ? `Customer: ${st.customer}` : (st.type || "Quick Commerce Transaction"),
+    paymentMode: st.paymentMethod || "quick_commerce",
+    actorType: "SELLER",
+    createdAt: st.createdAt,
+  }));
+
+  const mappedPlatformTxns = (platformTxns || []).map((txn) => ({
     _id: txn._id,
     transactionId: txn._id,
     reference: txn.paymentId || txn.orderId || txn._id,
     type: txn.category || txn.type,
     direction: txn.type === "debit" ? "DEBIT" : "CREDIT",
-    amount: num(txn.amount),
+    amount: Math.abs(num(txn.amount)),
     status: String(txn.status || "completed").toUpperCase(),
     description: txn.description || "",
-    paymentMode: txn.module || "food",
-    actorType: txn.entityType || "SYSTEM",
+    paymentMode: txn.module || "quick_commerce",
+    actorType: txn.entityType === "quick_admin" ? "PLATFORM" : (txn.entityType || "SYSTEM"),
     createdAt: txn.createdAt,
   }));
 
+  const combined = [...mappedSellerTxns, ...mappedPlatformTxns].sort(
+    (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+  );
+
+  const total = sellerTotal + platformTotal;
+  const items = combined.slice(0, safeLimit);
+
   return {
     items,
-    total: res.total,
-    page: res.page,
-    limit: res.limit,
-    totalPages: res.totalPages,
+    total,
+    page: safePage,
+    limit: safeLimit,
+    totalPages: Math.max(1, Math.ceil(total / safeLimit)),
   };
 }
 
@@ -300,9 +366,24 @@ export async function getQuickCommerceFinancePayouts({
     };
   }
 
+  const quickRiderIds = await QuickOrder.distinct("dispatch.deliveryPartnerId", {
+    ...ACTIVE_ORDER_FILTER,
+    "dispatch.deliveryPartnerId": { $ne: null },
+  });
+
+  if (quickRiderIds.length === 0) {
+    return {
+      items: [],
+      total: 0,
+      page: safePage,
+      limit: safeLimit,
+      totalPages: 1,
+    };
+  }
+
   const deliveryStatusFilter = normalizedStatus
-    ? { status: normalizedStatus.toLowerCase() }
-    : { status: { $in: ["pending", "processing"] } };
+    ? { status: normalizedStatus.toLowerCase(), deliveryPartnerId: { $in: quickRiderIds } }
+    : { status: { $in: ["pending", "processing"] }, deliveryPartnerId: { $in: quickRiderIds } };
 
   const [items, total] = await Promise.all([
     FoodDeliveryWithdrawal.find(deliveryStatusFilter)
@@ -410,8 +491,25 @@ export async function getQuickCommerceDeliveryWithdrawals({
 } = {}) {
   const safePage = Math.max(1, Number(page) || 1);
   const safeLimit = Math.max(1, Math.min(100, Number(limit) || 25));
-  const skip = (safePage - 1) * safeLimit;
-  const filter = deliveryStatusFilter(status);
+  const quickRiderIds = await QuickOrder.distinct("dispatch.deliveryPartnerId", {
+    ...ACTIVE_ORDER_FILTER,
+    "dispatch.deliveryPartnerId": { $ne: null },
+  });
+
+  if (quickRiderIds.length === 0) {
+    return {
+      items: [],
+      total: 0,
+      page: safePage,
+      limit: safeLimit,
+      totalPages: 1,
+    };
+  }
+
+  const filter = {
+    ...deliveryStatusFilter(status),
+    deliveryPartnerId: { $in: quickRiderIds },
+  };
 
   const term = String(search || "").trim();
   if (term && !Number.isNaN(Number(term))) {

@@ -186,8 +186,8 @@ const CouponManagement = () => {
         return sellers.filter((s) => {
             const sName = (s.shopName || s.name || '').toLowerCase();
             const sPhone = (s.phone || '').toLowerCase();
-            const sId = String(s._id || s.id || '').toLowerCase();
-            return sName.includes(q) || sPhone.includes(q) || sId.includes(q);
+            const sCode = (s.sellerCode || '').toLowerCase();
+            return sName.includes(q) || sPhone.includes(q) || sCode.includes(q);
         });
     }, [sellers, sellerSearchQuery]);
 

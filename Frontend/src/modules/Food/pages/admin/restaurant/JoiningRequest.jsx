@@ -237,7 +237,8 @@ export default function JoiningRequest() {
       filtered = filtered.filter(request =>
         request.restaurantName?.toLowerCase().includes(query) ||
         request.ownerName?.toLowerCase().includes(query) ||
-        request.ownerPhone?.includes(query)
+        request.ownerPhone?.includes(query) ||
+        formatRestaurantId(request).toLowerCase().includes(query)
       )
     }
 

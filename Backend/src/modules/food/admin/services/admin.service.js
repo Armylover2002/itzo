@@ -226,10 +226,10 @@ export async function globalSearch(query = '') {
             .select('name email phone')
             .lean(),
         FoodRestaurant.find({
-            $or: [{ restaurantName: regex }, { ownerName: regex }, { city: regex }]
+            $or: [{ restaurantName: regex }, { ownerName: regex }, { city: regex }, { restaurantId: regex }]
         })
             .limit(5)
-            .select('restaurantName city area status')
+            .select('restaurantId restaurantName city area status')
             .lean(),
         FoodItem.find({
             $or: [{ name: regex }, { description: regex }]
@@ -5019,7 +5019,7 @@ export async function getWithdrawals(query = {}) {
 
     const [withdrawals, total] = await Promise.all([
         FoodRestaurantWithdrawal.find(filter)
-            .populate('restaurantId', 'restaurantName profileImage ownerName phone ownerPhone accountHolderName accountNumber ifscCode accountType upiId upiQrImage')
+            .populate('restaurantId', 'restaurantId restaurantName profileImage ownerName phone ownerPhone accountHolderName accountNumber ifscCode accountType upiId upiQrImage')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
@@ -5032,7 +5032,7 @@ export async function getWithdrawals(query = {}) {
         ...w,
         id: w._id,
         restaurantName: w.restaurantId?.restaurantName || 'N/A',
-        restaurantIdString: w.restaurantId ? `REST${w.restaurantId._id.toString().slice(-6).padStart(6, '0')}` : 'N/A',
+        restaurantIdString: w.restaurantId ? (w.restaurantId.restaurantId || String(w.restaurantId._id)) : 'N/A',
         restaurantBankDetails: {
             accountHolderName: w.restaurantId?.accountHolderName || '',
             accountNumber: w.restaurantId?.accountNumber || '',

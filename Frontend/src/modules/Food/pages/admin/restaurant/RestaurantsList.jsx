@@ -384,7 +384,8 @@ export default function RestaurantsList() {
       result = result.filter(restaurant =>
         restaurant.name.toLowerCase().includes(query) ||
         restaurant.ownerName.toLowerCase().includes(query) ||
-        restaurant.ownerPhone.includes(query)
+        restaurant.ownerPhone.includes(query) ||
+        formatRestaurantId(restaurant).toLowerCase().includes(query)
       )
     }
 
