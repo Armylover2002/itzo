@@ -155,7 +155,7 @@ export default function Home() {
   const HERO_BANNER_AUTO_SLIDE_MS = 3500;
   const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api(\/v1)?\/?$/i, "");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [heroSearch, setHeroSearch] = useState("");
   const { openSearch, closeSearch, searchValue, setSearchValue } = useSearchOverlay();
   const { openLocationSelector } = useLocationSelector();
@@ -184,7 +184,15 @@ export default function Home() {
   // Which restaurants the Food tab shows: normal ("Fixed Restaurant") or the
   // Street Food tile ("Street Food Vendor"). Kept separate from `activeTab`
   // so the food/quick fetch-gating logic in useFoodHomeData is untouched.
-  const [foodBusinessType, setFoodBusinessType] = useState("Fixed Restaurant");
+  //
+  // Seeded from `?service=streetfood` so the Street Food tile can be opened from
+  // outside this page — the Quick storefront links here, and picking Street Food there
+  // has to land on Street Food rather than the default restaurant list.
+  const [foodBusinessType, setFoodBusinessType] = useState(() =>
+    routerLocation.search.includes("service=streetfood")
+      ? "Street Food Vendor"
+      : "Fixed Restaurant",
+  );
   const [quickThemeColor, setQuickThemeColor] = useState("#FE5502");
   const [showToast, setShowToast] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -306,7 +314,18 @@ export default function Home() {
     }
     const nextBusinessType = serviceId === "streetfood" ? "Street Food Vendor" : "Fixed Restaurant";
     startTransition(() => setFoodBusinessType(nextBusinessType));
-    if (activeTab !== "food") handleTabChange("food");
+
+    // Keep the URL honest so a reload or a shared link reopens the same tile.
+    if (activeTab !== "food") {
+      startTransition(() => setActiveTab("food"));
+      navigate(serviceId === "streetfood" ? "/food/user?service=streetfood" : "/food/user");
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    if (serviceId === "streetfood") nextParams.set("service", "streetfood");
+    else nextParams.delete("service");
+    setSearchParams(nextParams, { replace: true });
   };
   const activeServiceId = activeTab === "quick"
     ? "quick"

@@ -387,7 +387,14 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
           <div className="hidden md:block">
             <ServiceSwitchCards
               activeTab="quick"
-              onTabChange={(tab) => navigate(tab === "food" ? "/food/user" : "/quick")}
+              onTabChange={(tab) => {
+                // "streetfood" is a Food-side filter, so it needs the query param —
+                // without it every non-"food" tab fell through to /quick and the
+                // Street Food tile appeared to do nothing.
+                if (tab === "food") return navigate("/food/user");
+                if (tab === "streetfood") return navigate("/food/user?service=streetfood");
+                return navigate("/quick");
+              }}
             />
           </div>
 
