@@ -23,6 +23,11 @@ const SERVICES = [
     icon: Store,
     image: "/super-app/streetfood.png",
     alt: "Street Food",
+    activeBg: "bg-gradient-to-br from-purple-100 via-fuchsia-50/80 to-purple-50/50 dark:from-purple-950/40 dark:via-neutral-900 dark:to-neutral-900 border-2 border-purple-500 shadow-md shadow-purple-500/15 ring-2 ring-purple-500/20",
+    inactiveBg: "bg-gradient-to-br from-purple-50/90 via-fuchsia-50/50 to-white dark:from-neutral-900 dark:to-neutral-900 border border-purple-200/80 dark:border-neutral-800 hover:border-purple-300 hover:shadow-md",
+    iconBg: "bg-purple-600",
+    arrowBg: "bg-purple-600",
+    glowBg: "bg-purple-500/15",
   },
   {
     id: "quick",
