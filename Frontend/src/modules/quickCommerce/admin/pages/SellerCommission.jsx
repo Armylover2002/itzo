@@ -43,7 +43,7 @@ export default function SellerCommission() {
     const query = searchQuery.toLowerCase().trim()
     return commissions.filter(commission =>
       commission.sellerName?.toLowerCase().includes(query) ||
-      commission.sellerId?.toLowerCase().includes(query)
+      commission.sellerIdDisplay?.toLowerCase().includes(query)
     )
   }, [commissions, searchQuery])
 
@@ -53,7 +53,7 @@ export default function SellerCommission() {
     return approvedSellers.filter(seller =>
       seller.name?.toLowerCase().includes(query) ||
       seller.shopName?.toLowerCase().includes(query) ||
-      String(seller._id).toLowerCase().includes(query)
+      seller.sellerCode?.toLowerCase().includes(query)
     )
   }, [approvedSellers, searchQuery])
 
@@ -209,14 +209,14 @@ export default function SellerCommission() {
         <div className="bg-white rounded-xl shadow-sm ring-1 ring-slate-100 p-5 sm:p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">
-              <h1 className="ds-h1">Seller Commission</h1>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Seller Commission</h1>
               <span className="px-3 py-1 rounded-full text-sm font-bold bg-[#6412C6]/10 text-[#6412C6]">
                 {filteredCommissions.length}
               </span>
             </div>
-            <button 
+            <button
               onClick={handleAdd}
-              className="px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl bg-[#6412C6] text-white hover:bg-[#6412C6]/90 flex items-center gap-2 transition-all shadow-xl shadow-[#6412C6]/20 active:scale-[0.98]"
+              className="px-6 py-3 text-sm font-black uppercase tracking-widest rounded-xl bg-[#6412C6] text-white hover:bg-[#6412C6]/90 flex items-center gap-2 transition-all shadow-xl shadow-[#6412C6]/20 active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
               Add Commission
@@ -224,13 +224,13 @@ export default function SellerCommission() {
           </div>
 
           <div className="mb-5 flex items-center gap-3">
-            <div className="relative flex-1 sm:flex-initial min-w-[300px] group">
+            <div className="relative flex-1 sm:flex-initial min-w-[380px] group">
               <input
                 type="text"
                 placeholder="Search by seller name or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-4 py-3 w-full text-sm rounded-2xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20 outline-none transition-all placeholder:text-slate-300 font-semibold"
+                className="pl-11 pr-4 py-3.5 w-full text-sm rounded-2xl bg-white ring-1 ring-slate-200 focus:ring-2 focus:ring-[#6412C6]/20 outline-none transition-all placeholder:text-slate-300 font-semibold"
               />
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#6412C6] transition-colors" />
             </div>
@@ -245,12 +245,12 @@ export default function SellerCommission() {
               <table className="w-full">
                 <thead className="bg-slate-50/70 border-b border-slate-100">
                   <tr>
-                    <th className="ds-table-header-cell w-16 pl-8">S.No</th>
-                    <th className="ds-table-header-cell">Seller Name</th>
-                    <th className="ds-table-header-cell">Seller ID</th>
-                    <th className="ds-table-header-cell">Default Commission</th>
-                    <th className="ds-table-header-cell">Status</th>
-                    <th className="ds-table-header-cell text-center pr-8">Action</th>
+                    <th className="ds-table-header-cell w-16 pl-8 py-4">S.No</th>
+                    <th className="ds-table-header-cell py-4">Seller</th>
+                    <th className="ds-table-header-cell py-4">Seller ID</th>
+                    <th className="ds-table-header-cell py-4">Default Commission</th>
+                    <th className="ds-table-header-cell py-4">Status</th>
+                    <th className="ds-table-header-cell text-center pr-8 py-4">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-slate-50">
@@ -268,17 +268,31 @@ export default function SellerCommission() {
                   ) : (
                     filteredCommissions.map((commission) => (
                       <tr key={commission._id} className="hover:bg-slate-50/50 transition-colors group">
-                        <td className="px-6 py-5 pl-8 whitespace-nowrap text-sm font-semibold text-slate-600">{commission.sl}</td>
-                        <td className="px-6 py-5 whitespace-nowrap">
-                          <span className="text-sm font-black text-[#6412C6] group-hover:text-[#6412C6]/80 transition-colors">{commission.sellerName}</span>
+                        <td className="px-6 py-6 pl-8 whitespace-nowrap text-sm font-semibold text-slate-600">{commission.sl}</td>
+                        <td className="px-6 py-6">
+                          <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 shrink-0 rounded-2xl overflow-hidden bg-[#6412C6]/5 ring-1 ring-slate-100 flex items-center justify-center">
+                              {commission.sellerShopImage ? (
+                                <img
+                                  src={commission.sellerShopImage}
+                                  alt={commission.sellerName || 'Shop'}
+                                  className="h-full w-full object-cover"
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              ) : (
+                                <Building2 className="w-5 h-5 text-[#6412C6]/60" />
+                              )}
+                            </div>
+                            <span className="text-base font-black text-[#6412C6] group-hover:text-[#6412C6]/80 transition-colors">{commission.sellerName}</span>
+                          </div>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-slate-500">{commission.sellerIdDisplay}</td>
-                        <td className="px-6 py-5 whitespace-nowrap">
-                          <span className="text-sm font-black text-slate-900">
+                        <td className="px-6 py-6 whitespace-nowrap text-sm font-bold text-slate-500">{commission.sellerIdDisplay}</td>
+                        <td className="px-6 py-6 whitespace-nowrap">
+                          <span className="text-base font-black text-slate-900">
                             {commission.defaultCommission?.type === 'percentage' ? `${commission.defaultCommission.value}%` : `\u20B9${commission.defaultCommission.value}`}
                           </span>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-6 py-6 whitespace-nowrap">
                           <button
                             onClick={() => handleToggleStatus(commission)}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${commission.status ? "bg-[#6412C6]" : "bg-slate-300"}`}
@@ -286,10 +300,10 @@ export default function SellerCommission() {
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${commission.status ? "translate-x-6" : "translate-x-1"}`} />
                           </button>
                         </td>
-                        <td className="px-6 py-5 whitespace-nowrap text-center pr-8">
+                        <td className="px-6 py-6 whitespace-nowrap text-center pr-8">
                           <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => handleEdit(commission)} className="p-2 rounded-xl bg-[#6412C6]/10 text-[#6412C6] hover:bg-[#6412C6] hover:text-white transition-all active:scale-90"><Edit className="w-4 h-4" /></button>
-                            <button onClick={() => handleDelete(commission)} className="p-2 rounded-xl bg-[#6412C6]/10 text-[#6412C6] hover:bg-[#6412C6] hover:text-white transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => handleEdit(commission)} className="p-2.5 rounded-xl bg-[#6412C6]/10 text-[#6412C6] hover:bg-[#6412C6] hover:text-white transition-all active:scale-90"><Edit className="w-4 h-4" /></button>
+                            <button onClick={() => handleDelete(commission)} className="p-2.5 rounded-xl bg-[#6412C6]/10 text-[#6412C6] hover:bg-[#6412C6] hover:text-white transition-all active:scale-90"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         </td>
                       </tr>
@@ -322,12 +336,23 @@ export default function SellerCommission() {
               {filteredSellers.filter(s => !s.hasCommissionSetup).map((seller) => (
                 <button key={seller._id} onClick={() => handleSelectSeller(seller)} className="w-full p-4 text-left rounded-2xl ring-1 ring-slate-100 hover:bg-[#6412C6]/5 hover:ring-[#6412C6]/30 transition-all group">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-black text-sm text-slate-900 group-hover:text-[#6412C6] transition-colors">{seller.shopName || seller.name}</p>
-                      <p className="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-wider">{String(seller._id).slice(-8).toUpperCase()}</p>
-                    </div>
-                    <div className="p-2 rounded-xl bg-slate-50 group-hover:bg-[#6412C6]/10 transition-all">
-                      <Building2 className="w-4 h-4 text-slate-400 group-hover:text-[#6412C6] transition-colors" />
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-9 w-9 shrink-0 rounded-xl overflow-hidden bg-slate-50 ring-1 ring-slate-100 flex items-center justify-center group-hover:ring-[#6412C6]/30 transition-all">
+                        {seller.shopInfo?.shopImage ? (
+                          <img
+                            src={seller.shopInfo.shopImage}
+                            alt={seller.shopName || 'Shop'}
+                            className="h-full w-full object-cover"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        ) : (
+                          <Building2 className="w-4 h-4 text-slate-400 group-hover:text-[#6412C6] transition-colors" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-black text-sm text-slate-900 group-hover:text-[#6412C6] transition-colors truncate">{seller.shopName || seller.name}</p>
+                        <p className="text-xs font-bold text-slate-500 mt-0.5 uppercase tracking-wider">{seller.sellerCode || String(seller._id).slice(-8).toUpperCase()}</p>
+                      </div>
                     </div>
                   </div>
                 </button>
@@ -353,12 +378,23 @@ export default function SellerCommission() {
           <div className="p-6 space-y-6">
             {selectedSeller && (
               <div className="p-4 bg-[#6412C6]/5 rounded-2xl ring-1 ring-[#6412C6]/20 flex items-center justify-between">
-                <div>
-                  <p className="font-black text-sm text-[#6412C6]">{selectedSeller.shopName || selectedSeller.name}</p>
-                  <p className="text-xs font-bold text-[#6412C6]/70 uppercase tracking-wider mt-0.5">{selectedSeller._id}</p>
-                </div>
-                <div className="p-2.5 rounded-xl bg-white ring-1 ring-[#6412C6]/20">
-                  <Building2 className="w-5 h-5 text-[#6412C6]" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-11 w-11 shrink-0 rounded-xl overflow-hidden bg-white ring-1 ring-[#6412C6]/20 flex items-center justify-center">
+                    {selectedSeller.shopInfo?.shopImage ? (
+                      <img
+                        src={selectedSeller.shopInfo.shopImage}
+                        alt={selectedSeller.shopName || 'Shop'}
+                        className="h-full w-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    ) : (
+                      <Building2 className="w-5 h-5 text-[#6412C6]" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-black text-sm text-[#6412C6] truncate">{selectedSeller.shopName || selectedSeller.name}</p>
+                    <p className="text-xs font-bold text-[#6412C6]/70 uppercase tracking-wider mt-0.5">{selectedSeller.sellerCode || String(selectedSeller._id)}</p>
+                  </div>
                 </div>
               </div>
             )}

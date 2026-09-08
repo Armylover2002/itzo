@@ -4,7 +4,16 @@ import mongoose from 'mongoose';
 /**
  * Creates an initial 'pending' transaction when an order is created.
  */
-export async function createInitialTransaction(order) {
+/**
+ * Create the per-order finance record.
+ *
+ * @param {object} order
+ * @param {object} [options]
+ * @param {import('mongoose').ClientSession} [options.session] run inside a caller's
+ *        transaction, so the finance record and the order it describes commit together.
+ */
+export async function createInitialTransaction(order, options = {}) {
+    const session = options?.session || null;
     const normalizedOrderType = ['food', 'quick', 'mixed'].includes(String(order?.orderType || ''))
         ? String(order.orderType)
         : 'food';
@@ -119,13 +128,14 @@ export async function createInitialTransaction(order) {
         }]
     });
 
-    await transaction.save();
+    await transaction.save(session ? { session } : undefined);
 
     // Link back to the order
     try {
         await mongoose.model('FoodOrder').updateOne(
             { _id: order._id },
-            { $set: { transactionId: transaction._id } }
+            { $set: { transactionId: transaction._id } },
+            session ? { session } : {}
         );
     } catch (err) {
         // Log but don't fail transaction if the backlink fails

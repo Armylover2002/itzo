@@ -4,6 +4,7 @@ import { FoodUserWallet } from '../../modules/food/user/models/userWallet.model.
 import { FoodRestaurantWallet } from '../../modules/food/restaurant/models/restaurantWallet.model.js';
 import { FoodDeliveryWallet } from '../../modules/food/delivery/models/deliveryWallet.model.js';
 import { FoodAdminWallet } from '../../modules/food/admin/models/adminWallet.model.js';
+import { QuickAdminWallet } from '../../modules/quick-commerce/models/adminWallet.model.js';
 import { logger } from '../../utils/logger.js';
 
 /**
@@ -26,6 +27,8 @@ function resolveWallet(entityType, entityId) {
         }
         case 'admin':
             return { Model: FoodAdminWallet, filter: { key: 'platform' }, idField: 'key' };
+        case 'quick_admin':
+            return { Model: QuickAdminWallet, filter: { key: 'quick_platform' }, idField: 'key' };
         default:
             throw new Error(`Unknown entityType: ${entityType}`);
     }
@@ -105,12 +108,12 @@ export async function recordTransaction(payload) {
             : currentBalance - amount;
 
         // Debit guard: prevent negative balance (except admin wallet which can go negative)
-        if (type === 'debit' && entityType !== 'admin' && newBalance < 0) {
+        if (type === 'debit' && entityType !== 'admin' && entityType !== 'quick_admin' && newBalance < 0) {
             throw new Error(`Insufficient balance. Current: ${currentBalance}, Debit: ${amount}`);
         }
 
         // 3. Create transaction row
-        const entityOid = entityType === 'admin'
+        const entityOid = (entityType === 'admin' || entityType === 'quick_admin')
             ? ADMIN_ENTITY_OID
             : new mongoose.Types.ObjectId(entityId);
 
@@ -126,7 +129,7 @@ export async function recordTransaction(payload) {
             status: 'completed',
             description,
             category,
-            module,
+            module: entityType === 'quick_admin' ? (module === 'food' ? 'quick' : module) : module,
             metadata
         }], { session });
 
@@ -140,7 +143,7 @@ export async function recordTransaction(payload) {
                     $set: { balance: newBalance },
                     $inc: { totalEarnings: amount }
                 }, { session });
-            } else if (entityType === 'admin') {
+            } else if (entityType === 'admin' || entityType === 'quick_admin') {
                 await Model.updateOne(filter, {
                     $set: { balance: newBalance },
                     $inc: { totalRevenue: amount }
@@ -181,7 +184,7 @@ export async function recordTransaction(payload) {
  */
 export async function getTransactionsByEntity(entityType, entityId, { page = 1, limit = 20 } = {}) {
     const skip = (Math.max(1, page) - 1) * limit;
-    const entityOid = entityType === 'admin'
+    const entityOid = (entityType === 'admin' || entityType === 'quick_admin')
         ? ADMIN_ENTITY_OID
         : new mongoose.Types.ObjectId(entityId);
     const filter = {

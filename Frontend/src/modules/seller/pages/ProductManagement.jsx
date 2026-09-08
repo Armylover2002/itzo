@@ -116,12 +116,13 @@ const ProductManagement = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [viewingVariants, setViewingVariants] = useState(null);
   const [isVariantsViewModalOpen, setIsVariantsViewModalOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [modalTab, setModalTab] = useState("general");
 
   // Lock body scroll when any modal is open
   useEffect(() => {
-    const anyOpen = isProductModalOpen || isDeleteModalOpen || isVariantsViewModalOpen;
+    const anyOpen = isProductModalOpen || isDeleteModalOpen || isVariantsViewModalOpen || !!previewImage;
     if (anyOpen) {
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = "hidden";
@@ -1152,13 +1153,51 @@ const ProductManagement = () => {
                   const vCost = Number(v.costPrice) > 0 ? Number(v.costPrice) : (Number(v.salePrice) > 0 ? Number(v.salePrice) : Number(v.price) || 0);
                   const vStock = Number(v.stock) || 0;
                   const vValuation = vStock * vCost;
+                  const vImages = Array.isArray(v.images) && v.images.length > 0
+                    ? v.images
+                    : (v.image ? [v.image] : (viewingVariants?.mainImage ? [viewingVariants.mainImage] : []));
 
                   return (
                     <tr key={idx} className="hover:bg-slate-50/30 transition-all cursor-default">
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-black text-slate-700 group-hover:text-primary transition-colors">{v.name}</span>
-                          <span className="text-[9px] text-slate-600 font-bold uppercase tracking-widest mt-0.5">Variation {idx + 1}</span>
+                        <div className="flex items-center gap-3">
+                          {/* All images uploaded for this variant */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {vImages.length > 0 ? (
+                              vImages.map((imgUrl, imgIdx) => (
+                                <div
+                                  key={imgIdx}
+                                  onClick={() => setPreviewImage(imgUrl)}
+                                  className="h-11 w-11 rounded-xl bg-white border border-slate-200 overflow-hidden shadow-xs shrink-0 cursor-pointer hover:scale-105 hover:shadow-md hover:border-primary/50 transition-all duration-200 relative group/thumb"
+                                  title={`Variant image ${imgIdx + 1} (click to enlarge)`}
+                                >
+                                  <img
+                                    src={imgUrl}
+                                    alt={`${v.name} - ${imgIdx + 1}`}
+                                    className="h-full w-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                                    <HiOutlineEye className="h-4 w-4 text-white drop-shadow" />
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="h-11 w-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0">
+                                <HiOutlineCube className="h-5 w-5 text-slate-300" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-black text-slate-800 group-hover:text-primary transition-colors truncate">{v.name}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Variation {idx + 1}</span>
+                              {vImages.length > 1 && (
+                                <span className="text-[8px] font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md border border-slate-200/60">
+                                  {vImages.length} images
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="px-5 py-4 text-center whitespace-nowrap">
@@ -1205,7 +1244,35 @@ const ProductManagement = () => {
           </div>
         </div>
       </Modal>
-    </div >
+
+      {/* Image Preview Lightbox */}
+      <AnimatePresence>
+        {previewImage && (
+          <div
+            className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setPreviewImage(null)}
+          >
+            <div
+              className="relative max-w-2xl max-h-[85vh] bg-white rounded-2xl overflow-hidden shadow-2xl p-2 border border-white/20"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setPreviewImage(null)}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors cursor-pointer shadow-lg"
+                title="Close preview"
+              >
+                <HiOutlineXMark className="h-5 w-5" />
+              </button>
+              <img
+                src={previewImage}
+                alt="Enlarged variant"
+                className="w-full h-auto max-h-[80vh] object-contain rounded-xl"
+              />
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

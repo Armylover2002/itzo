@@ -56,9 +56,15 @@ export const resolveZoneSellerIds = async ({ zoneId, lat, lng } = {}) => {
 };
 
 /**
- * Merges a "seller must be in this zone (or be an admin-owned product with no
- * seller)" constraint into an existing Mongoose filter object, matching the
- * $or/$and shape already used across the QC product queries.
+ * Returns a NEW filter with a "seller must be in this zone (or be an admin-owned
+ * product with no seller)" constraint merged in, matching the $or/$and shape already
+ * used across the QC product queries.
+ *
+ * This must never mutate `filter`. It previously did (`filter.$and.push(...)`), and
+ * callers pass filters that share their `$and` array with a module-level constant — so
+ * every request permanently appended another zone constraint to that shared array. The
+ * storefront then had to satisfy the zone of every visitor since boot, and quietly went
+ * empty until the process restarted.
  */
 export const applyZoneSellerScope = (filter, zoneSellerIds) => {
   if (!Array.isArray(zoneSellerIds)) return filter;
@@ -70,14 +76,14 @@ export const applyZoneSellerScope = (filter, zoneSellerIds) => {
   ];
 
   if (filter.$and) {
-    filter.$and.push({ $or: sellerOr });
-  } else if (filter.$or) {
-    // Preserve the existing $or by folding it into $and alongside the zone scope.
-    filter.$and = [{ $or: filter.$or }, { $or: sellerOr }];
-    delete filter.$or;
-  } else {
-    filter.$or = sellerOr;
+    return { ...filter, $and: [...filter.$and, { $or: sellerOr }] };
   }
 
-  return filter;
+  if (filter.$or) {
+    // Preserve the existing $or by folding it into $and alongside the zone scope.
+    const { $or, ...rest } = filter;
+    return { ...rest, $and: [{ $or }, { $or: sellerOr }] };
+  }
+
+  return { ...filter, $or: sellerOr };
 };

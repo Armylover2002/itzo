@@ -126,6 +126,8 @@ const buildLocationDisplay = (savedAddressText, location) => {
 export default function HomeHeader({
   activeTab,
   setActiveTab,
+  foodBusinessType = "Fixed Restaurant",
+  onServiceSelect,
   location,
   savedAddressText,
   handleLocationClick,
@@ -418,38 +420,53 @@ export default function HomeHeader({
         </div>
       </div>
 
-      {/* Mobile-only Food / Quick Toggle Buttons */}
+      {/* Mobile-only Food / Street Food / Quick Toggle Buttons */}
       {!embedded && (
         <div className="px-5 pt-3 pb-1 relative z-10 sm:hidden">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {/* Food Button */}
             <motion.button
               whileTap={{ scale: 0.96 }}
-              onClick={() => navigate('/food/user')}
+              onClick={() => onServiceSelect ? onServiceSelect('food') : navigate('/food/user')}
               className={cn(
-                "flex flex-col items-center justify-center py-2 px-4 rounded-[12px] transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-transparent",
-                isFoodActive
+                "flex flex-col items-center justify-center py-2 px-2 rounded-[12px] transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-transparent",
+                isFoodActive && foodBusinessType !== "Street Food Vendor"
                   ? "bg-[#FE5502] text-white shadow-[0_6px_20px_rgba(254,85,2,0.25)] font-bold"
                   : "bg-[#F1F5F9]/95 text-slate-600 border-transparent font-medium"
               )}
             >
               <span className="text-[18px] mb-0.5" role="img" aria-label="burger">🍔</span>
-              <span className="text-[10px] tracking-[0.5px] uppercase">FOOD</span>
+              <span className="text-[9px] tracking-[0.3px] uppercase text-center leading-tight">FOOD</span>
+            </motion.button>
+
+            {/* Street Food Button */}
+            <motion.button
+              whileTap={{ scale: 0.96 }}
+              onClick={() => onServiceSelect?.('streetfood')}
+              className={cn(
+                "flex flex-col items-center justify-center py-2 px-2 rounded-[12px] transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-transparent",
+                isFoodActive && foodBusinessType === "Street Food Vendor"
+                  ? "bg-[#FE5502] text-white shadow-[0_6px_20px_rgba(254,85,2,0.25)] font-bold"
+                  : "bg-[#F1F5F9]/95 text-slate-600 border-transparent font-medium"
+              )}
+            >
+              <span className="text-[18px] mb-0.5" role="img" aria-label="street food">🍢</span>
+              <span className="text-[9px] tracking-[0.3px] uppercase text-center leading-tight">STREET FOOD</span>
             </motion.button>
 
             {/* Quick Commerce Button */}
             <motion.button
               whileTap={{ scale: 0.96 }}
-              onClick={() => navigate('/quick')}
+              onClick={() => onServiceSelect ? onServiceSelect('quick') : navigate('/quick')}
               className={cn(
-                "flex flex-col items-center justify-center py-2 px-4 rounded-[12px] transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-transparent",
+                "flex flex-col items-center justify-center py-2 px-2 rounded-[12px] transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-transparent",
                 !isFoodActive
                   ? "bg-[#FE5502] text-white shadow-[0_6px_20px_rgba(254,85,2,0.25)] font-bold"
                   : "bg-[#F1F5F9]/95 text-slate-600 border-transparent font-medium"
               )}
             >
               <span className="text-[18px] mb-0.5" role="img" aria-label="box">📦</span>
-              <span className="text-[10px] tracking-[0.5px] uppercase">QUICK COMMERCE</span>
+              <span className="text-[9px] tracking-[0.3px] uppercase text-center leading-tight">QUICK</span>
             </motion.button>
           </div>
         </div>

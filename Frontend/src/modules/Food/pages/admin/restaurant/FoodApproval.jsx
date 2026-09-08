@@ -290,6 +290,9 @@ export default function FoodApproval() {
                         S.No
                       </th>
                       <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Image
+                      </th>
+                      <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Restaurant
                       </th>
                       <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -318,7 +321,7 @@ export default function FoodApproval() {
                   <tbody className="divide-y divide-gray-200 bg-white">
                     {filteredRequests.length === 0 ? (
                       <tr>
-                        <td colSpan="9" className="px-3 py-8 text-center text-sm text-gray-500">
+                        <td colSpan="10" className="px-3 py-8 text-center text-sm text-gray-500">
                           {loading ? "Loading..." : "No food or add-on records found."}
                         </td>
                       </tr>
@@ -327,6 +330,21 @@ export default function FoodApproval() {
                         <tr key={request._id || request.id} className="hover:bg-gray-50">
                           <td className="px-3 py-3 whitespace-nowrap text-sm text-gray-700 font-semibold">
                             {index + 1}
+                          </td>
+                          <td className="px-3 py-3 whitespace-nowrap">
+                            {request.image ? (
+                              <img
+                                src={request.image}
+                                alt={request.itemName || 'Item'}
+                                className="w-10 h-10 rounded-lg object-cover border border-gray-200 cursor-zoom-in hover:scale-105 transition-transform"
+                                onClick={() => window.open(request.image, '_blank')}
+                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://i.ibb.co/3m2Yh7r/Appzeto-Brand-Image.png'; }}
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-[9px] text-gray-400">
+                                N/A
+                              </div>
+                            )}
                           </td>
                           <td className="px-3 py-3 whitespace-nowrap">
                             <div className="text-sm">

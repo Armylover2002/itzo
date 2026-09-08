@@ -15,6 +15,38 @@ const LocationContext = createContext(undefined);
 // who previously only had the default/static location cached.
 const STORAGE_KEY = "location_v2";
 
+// Quick and Food share the delivery-address selector at /cart/address-selector. That
+// page writes the chosen address here and broadcasts `userLocationUpdated`. Reading both
+// is what keeps this header in sync — previously quick-commerce only knew about its own
+// key, so an address picked in the shared selector never appeared in the quick header.
+const SHARED_LOCATION_KEY = "userLocation";
+const SHARED_LOCATION_EVENT = "userLocationUpdated";
+
+/** Map the shared selector's payload into the shape this context exposes. */
+const mapSharedLocation = (payload) => {
+  if (!payload || typeof payload !== "object") return null;
+
+  const name =
+    payload.formattedAddress ||
+    payload.address ||
+    [payload.area, payload.street, payload.city].filter(Boolean).join(", ");
+
+  if (!name) return null;
+
+  const latitude = Number(payload.latitude);
+  const longitude = Number(payload.longitude);
+
+  return {
+    name,
+    time: "12-15 mins",
+    city: payload.city || "",
+    state: payload.state || "",
+    pincode: payload.zipCode || payload.postalCode || "",
+    ...(Number.isFinite(latitude) ? { latitude } : {}),
+    ...(Number.isFinite(longitude) ? { longitude } : {}),
+  };
+};
+
 const normalizeAddressLabel = (label = "") => {
   const normalized = String(label || "").trim().toLowerCase();
   if (normalized === "home") return "Home";
@@ -68,6 +100,11 @@ const mapSharedAddress = (addr = {}, idx = 0, profile = {}) => {
     label: normalizeAddressLabel(addr.label),
     address: addressText,
     location,
+    // Carried through so selecting a saved address keeps a usable city/state/pincode —
+    // zone lookup and delivery-fee calculation depend on them.
+    city: addr.city || "",
+    state: addr.state || "",
+    pincode: addr.zipCode || addr.pincode || "",
     placeId: typeof addr?.placeId === "string" ? addr.placeId : null,
     phone: profile?.phone ?? addr?.phone ?? "",
     name: profile?.name ?? addr?.name ?? addr?.fullName ?? "",
@@ -303,6 +340,21 @@ export const LocationProvider = ({ children }) => {
     if (typeof window === "undefined") return;
 
     try {
+      // The shared selector is the only way to pick an address in quick-commerce now,
+      // so a value under its key is the most recent deliberate choice — prefer it.
+      const sharedRaw = window.localStorage.getItem(SHARED_LOCATION_KEY);
+      if (sharedRaw) {
+        const shared = mapSharedLocation(JSON.parse(sharedRaw));
+        if (shared) {
+          updateLocation(shared, { persist: true, updateSavedHome: false });
+          return;
+        }
+      }
+    } catch {
+      // fall through to the quick-commerce cache below
+    }
+
+    try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
@@ -332,6 +384,23 @@ export const LocationProvider = ({ children }) => {
       // ignore parse errors
     }
     // Live fetch happens only when user taps location pill or "Use current location"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Reflect selections made in the shared address selector as soon as they happen, so
+  // returning from it shows the new address immediately rather than the previous one.
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const handleSharedLocation = (event) => {
+      const shared = mapSharedLocation(event?.detail?.location);
+      if (shared) {
+        updateLocation(shared, { persist: true, updateSavedHome: false });
+      }
+    };
+
+    window.addEventListener(SHARED_LOCATION_EVENT, handleSharedLocation);
+    return () => window.removeEventListener(SHARED_LOCATION_EVENT, handleSharedLocation);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

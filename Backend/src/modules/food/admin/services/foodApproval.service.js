@@ -6,11 +6,6 @@ import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
 import { syncMenuItemApprovalStatus } from '../../restaurant/services/restaurantMenu.service.js';
 import { getFoodDisplayPrice, getFoodDisplayOtherPrice, serializeFoodVariants } from './foodVariant.service.js';
 
-const toRestaurantDisplayId = (mongoId) => {
-    const s = String(mongoId || '');
-    return s.length >= 5 ? s.slice(-5) : s;
-};
-
 export async function listPendingFoodApprovals(query = {}) {
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 200, 1), 1000);
     const page = Math.max(parseInt(query.page, 10) || 1, 1);
@@ -47,9 +42,10 @@ export async function listPendingFoodApprovals(query = {}) {
     ].filter(Boolean)));
 
     const restaurants = restaurantIds.length
-        ? await FoodRestaurant.find({ _id: { $in: restaurantIds } }).select('restaurantName').lean()
+        ? await FoodRestaurant.find({ _id: { $in: restaurantIds } }).select('restaurantName restaurantId').lean()
         : [];
     const restaurantMap = new Map(restaurants.map((r) => [String(r._id), r.restaurantName]));
+    const restaurantCodeMap = new Map(restaurants.map((r) => [String(r._id), r.restaurantId || String(r._id)]));
 
     const foodRequests = foodList.map((f) => ({
         _id: f._id,
@@ -57,7 +53,7 @@ export async function listPendingFoodApprovals(query = {}) {
         entityType: 'food',
         type: 'food',
         restaurantName: restaurantMap.get(String(f.restaurantId)) || 'Unknown Restaurant',
-        restaurantId: toRestaurantDisplayId(f.restaurantId),
+        restaurantId: restaurantCodeMap.get(String(f.restaurantId)) || String(f.restaurantId),
         category: f.categoryName || '',
         itemName: f.name,
         foodType: f.foodType || 'Non-Veg',
@@ -79,7 +75,7 @@ export async function listPendingFoodApprovals(query = {}) {
         entityType: 'addon',
         type: 'addon',
         restaurantName: restaurantMap.get(String(a.restaurantId)) || 'Unknown Restaurant',
-        restaurantId: toRestaurantDisplayId(a.restaurantId),
+        restaurantId: restaurantCodeMap.get(String(a.restaurantId)) || String(a.restaurantId),
         category: 'Add-on',
         itemName: a.draft?.name || 'Unnamed Add-on',
         foodType: 'Add-on',

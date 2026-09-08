@@ -74,6 +74,29 @@ const sellerTransactionSchema = new mongoose.Schema(
 
 sellerTransactionSchema.index({ sellerId: 1, createdAt: -1 });
 
+/**
+ * Order earnings are credited with an upsert keyed on (sellerId, type, orderId) from two
+ * different delivery paths. Without a unique index that "idempotent" upsert is only
+ * idempotent when the calls are serialised — two concurrent ones both match nothing and
+ * both insert, double-crediting the seller.
+ *
+ * Partial so it constrains only order-linked earnings: withdrawals and adjustments have
+ * no orderId and may legitimately repeat for the same seller.
+ *
+ * NOTE: the app connects with autoIndex disabled, so this is created by
+ * `npm run verify:indexes`, not on boot.
+ */
+sellerTransactionSchema.index(
+  { sellerId: 1, type: 1, orderId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      type: 'Order Payment',
+      orderId: { $type: 'string' },
+    },
+  },
+);
+
 export const SellerTransaction = mongoose.model(
   "SellerTransaction",
   sellerTransactionSchema,

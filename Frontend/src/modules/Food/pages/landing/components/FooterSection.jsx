@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Store, ShoppingBag, Bike } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
 
 const InstagramOriginal = () => (
@@ -81,6 +82,22 @@ const FooterSection = React.memo(function FooterSection() {
 
   let logoImg = settings?.landingFooterLogo?.url || "/itzo-logo-transparent.png";
   if (logoImg.includes("itzo-logo.jpg")) logoImg = "/itzo-logo-transparent.png";
+
+  // Each QR points at its onboarding entry route on whichever origin the site
+  // is actually running on (localhost while testing, the live domain in
+  // production) so the same code works everywhere without hardcoding a host.
+  const onboardingQrCodes = useMemo(() => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const items = [
+      { label: 'Restaurant Onboarding', icon: Store, path: '/food/restaurant/signup' },
+      { label: 'Seller Onboarding', icon: ShoppingBag, path: '/seller/auth' },
+      { label: 'Delivery Partner Onboarding', icon: Bike, path: '/food/delivery/signup' },
+    ];
+    return items.map((item) => ({
+      ...item,
+      qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(`${origin}${item.path}`)}`,
+    }));
+  }, []);
   const appStoreImg = settings?.landingAppStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg";
   const playStoreImg = settings?.landingPlayStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg";
   const playStoreUrl = settings?.playStoreLink || "#!";
@@ -169,6 +186,33 @@ const FooterSection = React.memo(function FooterSection() {
                 <img src={playStoreImg} alt="Google Play" loading="lazy" decoding="async" className="cursor-pointer hover:opacity-80 transition-opacity w-full border border-gray-200 rounded-md" />
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Partner Onboarding QR Codes */}
+        <div className="border-t border-gray-200 pt-8 pb-2 mb-6">
+          <h3 className="font-medium text-black tracking-wide mb-5 text-[15px]">Join ItzoFood — Scan to Onboard</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {onboardingQrCodes.map((item) => (
+              <div key={item.label} className="flex items-center gap-3 min-w-0">
+                <div className="p-1.5 bg-white border border-gray-200 rounded-xl shrink-0">
+                  <img
+                    src={item.qrUrl}
+                    alt={`${item.label} QR Code`}
+                    className="w-16 h-16 sm:w-[70px] sm:h-[70px]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5 text-gray-900">
+                    <item.icon className="w-4 h-4 shrink-0" />
+                    <span className="text-sm font-semibold truncate">{item.label}</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">Scan to start onboarding</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

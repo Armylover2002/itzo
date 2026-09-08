@@ -79,6 +79,13 @@ const sellerOrderSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    // Set exactly once, by whichever delivery path gets there first, so the platform
+    // wallet is credited a single time per seller order. Both the seller-side status
+    // update and the rider-side delivery sync run on delivery, and both used to credit.
+    platformEarningCreditedAt: {
+      type: Date,
+      default: null,
+    },
     workflowVersion: {
       type: Number,
       default: 1,

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useLocation as useRouterLocation, useNavigate, Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Lottie from "lottie-react";
-import LocationDrawer from "./LocationDrawer";
-import { useLocationSelector } from "@food/components/user/UserLayout";
 import { useLocation } from "../../context/LocationContext";
 import { useProductDetail } from "../../context/ProductDetailContext";
 import { useCart } from "../../context/CartContext";
@@ -195,10 +193,6 @@ const MainLocationHeader = ({
   hideLogo = false,
 }) => {
   const { scrollY } = useScroll();
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
-  // Only resolves to Food's real address-selector flow when this header is embedded
-  // inside the shared Food/Quick page - falls back to a no-op outside that layout.
-  const { openLocationSelector } = useLocationSelector();
   const { currentLocation, refreshLocation, isFetchingLocation } =
     useLocation();
   const { isOpen: isProductDetailOpen } = useProductDetail();
@@ -213,6 +207,15 @@ const MainLocationHeader = ({
   const homePath = getQuickHomePath(routerLocation.pathname);
   const searchPath = getQuickSearchPath(routerLocation.pathname);
   const wishlistPath = getQuickWishlistPath();
+
+  // Quick and Food share one delivery-address selector so the experience is identical
+  // in both apps. It writes the chosen address to `userLocation` and broadcasts
+  // `userLocationUpdated`, which LocationContext listens for — that is what keeps this
+  // header in sync after a selection.
+  const openAddressSelector = () => {
+    const backTo = `${routerLocation.pathname || ""}${routerLocation.search || ""}` || homePath;
+    navigate("/cart/address-selector", { state: { from: backTo, backTo } });
+  };
 
   const [internalCategories, setInternalCategories] = useState([]);
 
@@ -472,7 +475,7 @@ const MainLocationHeader = ({
                       data-lenis-prevent
                       data-lenis-prevent-touch
                       onClick={() => {
-                        setIsLocationOpen(true);
+                        openAddressSelector();
                       }}
                       className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? '' : 'mt-0'}`}>
                       <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: "inherit" }} />
@@ -610,12 +613,13 @@ const MainLocationHeader = ({
                     />
                   </div>
                 )}
+                {/* Opens the shared address selector, same as the other header layouts. */}
                 <button
                   type="button"
                   data-lenis-prevent
                   data-lenis-prevent-touch
-                  onClick={() => openLocationSelector()}
-                  className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left shrink-0 ${hideLogo ? "" : "border-l border-black/10 pl-3 lg:pl-4"}`}>
+                  onClick={() => openAddressSelector()}
+                  className={`flex items-center gap-1 ${textColorClass} hover:opacity-80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left ${hideLogo ? "" : "border-l border-black/10 pl-4 lg:pl-6"}`}>
                   <LocationOnIcon sx={{ fontSize: 18, color: "inherit" }} />
                   <div className="leading-tight max-w-[180px] lg:max-w-[240px] truncate text-[14px] font-black ml-1">
                     {isFetchingLocation ? "Detecting location..." : currentLocation.name}
@@ -745,7 +749,7 @@ const MainLocationHeader = ({
                     data-lenis-prevent
                     data-lenis-prevent-touch
                     onClick={() => {
-                      setIsLocationOpen(true);
+                      openAddressSelector();
                     }}
                     className={`flex items-center gap-1.5 ${hideDeliveryTime ? textColorClass : subTextColorClass} cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left ${hideDeliveryTime ? 'mt-1' : ''}`}>
                     <LocationOnIcon sx={{ fontSize: hideDeliveryTime ? 18 : 14, color: iconColor }} />
@@ -832,10 +836,6 @@ const MainLocationHeader = ({
         </motion.div>
       </div>
 
-      <LocationDrawer
-        isOpen={isLocationOpen}
-        onClose={() => setIsLocationOpen(false)}
-      />
     </>
   );
 };

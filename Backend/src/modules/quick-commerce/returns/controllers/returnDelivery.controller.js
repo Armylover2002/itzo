@@ -364,19 +364,46 @@ export const verifySellerOtp = async (req, res) => {
       }
     }
 
-    // Pay the delivery partner for the return trip
+    // Pay the delivery partner for the return trip.
+    //
+    // This used to pass entityType 'DeliveryPartner' (not a value resolveWallet knows)
+    // and `reason` instead of `description`, so every call threw and was swallowed —
+    // return-trip riders were never actually paid, while the seller was still charged
+    // the fee. Claim the payout on the leg first so fixing that cannot turn a silent
+    // no-op into a double credit when a handover is retried.
     if (leg.returnDeliveryCommission > 0) {
-      try {
-        await creditWallet({
-          entityId: partnerId,
-          entityType: 'DeliveryPartner',
-          amount: leg.returnDeliveryCommission,
-          reason: `Earning for completed return trip: ${leg.returnRequestId}`,
-          category: 'delivery_earning',
-        });
-        logger.info(`[ReturnDelivery] Credited ₹${leg.returnDeliveryCommission} to partner ${partnerId} for return leg ${leg._id}`);
-      } catch (err) {
-        logger.error(`[ReturnDelivery] Failed to credit partner ${partnerId} for return leg ${leg._id}: ${err.message}`);
+      const claimed = await SellerReturn.findOneAndUpdate(
+        {
+          _id: leg._id,
+          $or: [
+            { returnDeliveryPaidAt: null },
+            { returnDeliveryPaidAt: { $exists: false } },
+          ],
+        },
+        { $set: { returnDeliveryPaidAt: new Date() } },
+        { new: true },
+      );
+
+      if (claimed) {
+        try {
+          await creditWallet({
+            entityId: partnerId,
+            entityType: 'deliveryBoy',
+            amount: leg.returnDeliveryCommission,
+            description: `Earning for completed return trip: ${leg.returnRequestId}`,
+            category: 'delivery_earning',
+            orderId: leg.orderId,
+            metadata: { sellerReturnId: String(leg._id), source: 'return_delivery' },
+          });
+          logger.info(`[ReturnDelivery] Credited ₹${leg.returnDeliveryCommission} to partner ${partnerId} for return leg ${leg._id}`);
+        } catch (err) {
+          // Release the claim so a retry can pay the rider rather than silently skipping.
+          await SellerReturn.updateOne(
+            { _id: leg._id },
+            { $set: { returnDeliveryPaidAt: null } },
+          ).catch(() => {});
+          logger.error(`[ReturnDelivery] Failed to credit partner ${partnerId} for return leg ${leg._id}: ${err.message}`);
+        }
       }
     }
 

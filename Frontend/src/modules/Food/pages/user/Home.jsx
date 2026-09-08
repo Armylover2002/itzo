@@ -155,7 +155,7 @@ export default function Home() {
   const HERO_BANNER_AUTO_SLIDE_MS = 3500;
   const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api(\/v1)?\/?$/i, "");
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [heroSearch, setHeroSearch] = useState("");
   const { openSearch, closeSearch, searchValue, setSearchValue } = useSearchOverlay();
   const { openLocationSelector } = useLocationSelector();
@@ -180,6 +180,18 @@ export default function Home() {
   // when landing directly on /quick.
   const [activeTab, setActiveTab] = useState(() =>
     routerLocation.pathname.endsWith("/quick") ? "quick" : "food",
+  );
+  // Which restaurants the Food tab shows: normal ("Fixed Restaurant") or the
+  // Street Food tile ("Street Food Vendor"). Kept separate from `activeTab`
+  // so the food/quick fetch-gating logic in useFoodHomeData is untouched.
+  //
+  // Seeded from `?service=streetfood` so the Street Food tile can be opened from
+  // outside this page — the Quick storefront links here, and picking Street Food there
+  // has to land on Street Food rather than the default restaurant list.
+  const [foodBusinessType, setFoodBusinessType] = useState(() =>
+    routerLocation.search.includes("service=streetfood")
+      ? "Street Food Vendor"
+      : "Fixed Restaurant",
   );
   const [quickThemeColor, setQuickThemeColor] = useState("#FE5502");
   const [showToast, setShowToast] = useState(false);
@@ -227,6 +239,7 @@ export default function Home() {
     zoneId: effectiveZoneId,
     location: effectiveLocation,
     vegMode,
+    businessType: foodBusinessType,
     backendOrigin: BACKEND_ORIGIN,
     availabilityTick,
     activeTab
@@ -291,6 +304,33 @@ export default function Home() {
     else navigate("/food/user");
   };
 
+  // Drives the 3-way Food / Street Food / Quick selector. "food" and
+  // "streetfood" both stay on the Food tab and just switch which
+  // businessType the restaurant list is filtered to.
+  const handleServiceSelect = (serviceId) => {
+    if (serviceId === "quick") {
+      handleTabChange("quick");
+      return;
+    }
+    const nextBusinessType = serviceId === "streetfood" ? "Street Food Vendor" : "Fixed Restaurant";
+    startTransition(() => setFoodBusinessType(nextBusinessType));
+
+    // Keep the URL honest so a reload or a shared link reopens the same tile.
+    if (activeTab !== "food") {
+      startTransition(() => setActiveTab("food"));
+      navigate(serviceId === "streetfood" ? "/food/user?service=streetfood" : "/food/user");
+      return;
+    }
+
+    const nextParams = new URLSearchParams(searchParams);
+    if (serviceId === "streetfood") nextParams.set("service", "streetfood");
+    else nextParams.delete("service");
+    setSearchParams(nextParams, { replace: true });
+  };
+  const activeServiceId = activeTab === "quick"
+    ? "quick"
+    : (foodBusinessType === "Street Food Vendor" ? "streetfood" : "food");
+
   const handleVegModeChange = (newValue) => {
     if (isHandlingSwitchOff.current) return;
     if (newValue && !vegMode) setShowVegModePopup(true);
@@ -323,6 +363,8 @@ export default function Home() {
           <HomeHeader
             activeTab={activeTab}
             setActiveTab={handleTabChange}
+            foodBusinessType={foodBusinessType}
+            onServiceSelect={handleServiceSelect}
             location={location}
             savedAddressText={imgUtils.formatSavedAddress(effectiveLocation)}
             handleLocationClick={() => openLocationSelector()}
@@ -384,8 +426,8 @@ export default function Home() {
                               buttons in the header, so these cards would be a duplicate there. */}
                           <div className="hidden md:block">
                             <ServiceSwitchCards
-                              activeTab={activeTab}
-                              onTabChange={handleTabChange}
+                              activeTab={activeServiceId}
+                              onTabChange={handleServiceSelect}
                             />
                           </div>
 

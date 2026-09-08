@@ -19,7 +19,9 @@
     "migrate:global-auth": "node scripts/migrate-global-auth-collections.js",
     "migrate:seller-quick-shared": "node scripts/migrate-seller-quick-commerce-to-shared.js",
     "cleanup:legacy-collections": "node scripts/cleanup-legacy-collections.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "verify:wallet": "node scripts/verify-wallet-integrity.js",
+    "verify:finance": "node scripts/verify-finance-integrity.js",
+    "test": "npm run verify:wallet"
   },
   "keywords": [],
   "author": "",

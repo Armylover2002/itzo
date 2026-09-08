@@ -286,7 +286,7 @@ export default function RestaurantNavbar({
   }, [restaurantData])
 
   const handleStatusClick = () => {
-    navigate("/restaurant/status")
+    navigate("/food/restaurant/status")
   }
 
   const handleSearchClick = () => {

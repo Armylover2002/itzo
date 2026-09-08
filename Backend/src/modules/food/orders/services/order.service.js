@@ -28,6 +28,7 @@ import {
     createRazorpayOrder,
     createPaymentLink,
     verifyPaymentSignature,
+    verifyOrderPayment,
     getRazorpayKeyId,
     isRazorpayConfigured,
     fetchRazorpayPaymentLink,
@@ -2446,19 +2447,31 @@ export async function createOrder(userId, dto) {
   }
 
   if (paymentMethod === "wallet") {
+    // The debit, the order and its finance record commit together. Previously the
+    // wallet was debited in its own committed write before `order.save()`, so a failure
+    // in between charged the customer for an order that never existed.
+    const session = await mongoose.startSession();
     try {
-      await deductWalletBalance(userId, normalizedPricing.total ?? 0, `Payment for Order #${orderId}`, {
-        orderId: order._id,
-        orderCustomId: orderId
+      await session.withTransaction(async () => {
+        await deductWalletBalance(
+          userId,
+          normalizedPricing.total ?? 0,
+          `Payment for Order #${orderId}`,
+          { orderId: order._id, orderCustomId: orderId },
+          { session },
+        );
+        await order.save({ session });
+        await foodTransactionService.createInitialTransaction(order, { session });
       });
     } catch (err) {
       throw new ValidationError(err.message || "Failed to deduct wallet balance");
+    } finally {
+      await session.endSession();
     }
+  } else {
+    await order.save();
+    await foodTransactionService.createInitialTransaction(order);
   }
-
-  await order.save();
-
-  await foodTransactionService.createInitialTransaction(order);
   const sellerOrders = hasQuickItems
     ? await upsertSellerOrdersForParent(order, {
         customerName: dto.customerName,
@@ -2579,12 +2592,19 @@ export async function verifyPayment(userId, dto) {
   if (order.payment.status === "paid")
     return { order: order.toObject(), payment: order.payment };
 
-  const valid = verifyPaymentSignature(
-    dto.razorpayOrderId,
-    dto.razorpayPaymentId,
-    dto.razorpaySignature,
-  );
-  if (!valid) throw new ValidationError("Payment verification failed");
+  // Binds the signature to THIS order and confirms the amount with Razorpay — a bare
+  // signature check would accept a genuine ₹1 payment as settlement for any order.
+  try {
+    await verifyOrderPayment({
+      razorpayOrderId: dto.razorpayOrderId,
+      razorpayPaymentId: dto.razorpayPaymentId,
+      razorpaySignature: dto.razorpaySignature,
+      expectedOrderId: order.payment?.razorpay?.orderId,
+      expectedAmount: order.payment?.amountDue ?? order.pricing?.total,
+    });
+  } catch (error) {
+    throw new ValidationError(error.message || "Payment verification failed");
+  }
 
   order.payment.status = "paid";
   order.payment.razorpay.paymentId = dto.razorpayPaymentId;
@@ -3042,40 +3062,11 @@ export async function cancelOrder(orderId, userId, reason, refundTo) {
     order.payment.status = "cancelled";
   }
 
-  // User-cancelled online refunds are handled from admin so the 30-second policy can be enforced.
-  if (
-    false &&
-    order.payment.status === "paid" &&
-    order.payment.method === "razorpay" &&
-    order.payment.razorpay?.paymentId &&
-    (!order.payment.refund || order.payment.refund.status !== "processed")
-  ) {
-    try {
-      const refundResult = await initiateRazorpayRefund(
-        order.payment.razorpay.paymentId,
-        order.pricing.total
-      );
-
-      if (refundResult.success) {
-        order.payment.status = "refunded";
-        order.payment.refund = {
-          status: "processed",
-          amount: order.pricing.total,
-          refundId: refundResult.refundId,
-          processedAt: new Date()
-        };
-      } else {
-        // Log failure but let order cancellation proceed
-        order.payment.refund = {
-          status: "failed",
-          amount: order.pricing.total
-        };
-      }
-    } catch (err) {
-      console.error(`Refund processing error for Order ${orderId}:`, err);
-      order.payment.refund = { status: "failed", amount: order.pricing.total };
-    }
-  }
+  // Gateway refunds for user-cancelled online orders are deliberately NOT issued here.
+  // They are left at refund.status = 'pending' above and processed from the admin side,
+  // where the 30-second cancellation policy is enforced. (This used to be a large
+  // refund block disabled with `if (false && …)`, which read as a bug rather than a
+  // decision — the behaviour is unchanged, the dead branch is gone.)
 
   await order.save();
 
@@ -4530,13 +4521,20 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
   });
 
   emitOrderUpdate(order, deliveryPartnerId);
+  // riderEarning and platformProfit MUST be included: the payment processor guards its
+  // payouts on `> 0`, and without these fields they default to 0, so neither the rider
+  // nor the platform was ever credited even when the job did run.
   enqueueOrderEvent('delivery_completed', {
       orderMongoId: order._id?.toString?.(),
       orderId: order.orderId,
       deliveryPartnerId,
       payMethod,
+      paymentMethod: payMethod,
       prevPayStatus,
-      paymentStatus: order.payment?.status
+      paymentStatus: order.payment?.status,
+      riderEarning: Number(order.riderEarning || 0),
+      platformProfit: Number(order.platformProfit || 0),
+      orderType: String(order.orderType || 'food')
   });
   return sanitizeOrderForExternal(order);
 }

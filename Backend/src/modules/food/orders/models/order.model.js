@@ -377,6 +377,11 @@ const orderSchema = new mongoose.Schema(
         scheduledAt: { type: Date, default: null },
         riderEarning: { type: Number, default: 0, min: 0 },
         platformProfit: { type: Number, default: 0, min: 0 },
+        /**
+         * Claimed atomically before post-delivery payouts (rider earning + platform
+         * profit) are credited, so a retried queue job cannot pay the same order twice.
+         */
+        settlementCreditedAt: { type: Date, default: null },
         /** Plain 4-digit OTP for handover; cleared after successful verify (never expose to partner in API responses). */
         deliveryOtp: { type: String, default: '', select: false },
         deliveryVerification: {

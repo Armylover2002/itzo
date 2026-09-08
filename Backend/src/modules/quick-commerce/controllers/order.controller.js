@@ -15,6 +15,7 @@ import {
   isRazorpayConfigured,
   getRazorpayKeyId,
   verifyPaymentSignature,
+  verifyOrderPayment,
   initiateRazorpayRefund
 } from '../../food/orders/helpers/razorpay.helper.js';
 import {
@@ -519,17 +520,12 @@ export const placeOrder = async (req, res) => {
     const shouldFanOutSellerOrders = true;
     const amountDue = Math.max(0, total);
 
-    if (isWalletPayment) {
-      if (!idQuery.userId) {
-        return res.status(400).json({ success: false, message: 'Please log in to pay with your wallet' });
-      }
-      try {
-        await deductWalletBalance(idQuery.userId, amountDue, `Payment for Order #${orderNumber}`, {
-          orderNumber,
-        });
-      } catch (err) {
-        return res.status(400).json({ success: false, message: err.message || 'Failed to deduct wallet balance' });
-      }
+    // The wallet debit itself is deferred until the order is actually created, so the
+    // two commit together — see the transaction around QuickOrder.create below. Debiting
+    // here (as this used to) charged the customer before the order existed, with no
+    // compensating credit if creation then failed.
+    if (isWalletPayment && !idQuery.userId) {
+      return res.status(400).json({ success: false, message: 'Please log in to pay with your wallet' });
     }
 
     let razorpayPayload = null;
@@ -578,7 +574,7 @@ export const placeOrder = async (req, res) => {
       }
     }
 
-    const order = await QuickOrder.create({
+    const orderDraft = {
       orderType: 'quick',
       orderId: orderNumber,
       sessionId: idQuery.sessionId || '',
@@ -623,7 +619,45 @@ export const placeOrder = async (req, res) => {
           note: 'Quick commerce order placed',
         },
       ],
-    });
+    };
+
+    let order;
+    if (isWalletPayment) {
+      // Debit, order creation and the finance record commit together: if any fails,
+      // none of them happened.
+      const session = await mongoose.startSession();
+      try {
+        await session.withTransaction(async () => {
+          await deductWalletBalance(
+            idQuery.userId,
+            amountDue,
+            `Payment for Order #${orderNumber}`,
+            { orderNumber },
+            { session },
+          );
+          const [created] = await QuickOrder.create([orderDraft], { session });
+          order = created;
+          await foodTransactionService.createInitialTransaction(order, { session });
+        });
+      } catch (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message || 'Failed to deduct wallet balance',
+        });
+      } finally {
+        await session.endSession();
+      }
+    } else {
+      order = await QuickOrder.create(orderDraft);
+      // Quick orders never used to get a finance record, which meant every
+      // updateTransactionStatus call this module makes silently returned null and
+      // no quick order was represented in the ledger at all.
+      try {
+        await foodTransactionService.createInitialTransaction(order);
+      } catch (err) {
+        logger.error(`Quick placeOrder: failed to create finance record for ${orderNumber}: ${err?.message || err}`);
+      }
+    }
 
     const sellerOrdersResults = sellerBuckets.size > 0
         ? await Promise.all(Array.from(sellerBuckets.entries()).map(async ([sellerId, sellerItems]) => {
@@ -985,9 +1019,29 @@ export const verifyPayment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    const isValid = verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
-    if (!isValid) {
-      return res.status(400).json({ success: false, message: 'Payment verification failed' });
+    if (order.payment?.status === 'paid') {
+      return res.json({
+        success: true,
+        message: 'Payment already verified',
+        data: { payment: order.payment },
+      });
+    }
+
+    // Binds the signature to THIS order and confirms the amount with Razorpay — a bare
+    // signature check would accept a genuine ₹1 payment as settlement for any order.
+    try {
+      await verifyOrderPayment({
+        razorpayOrderId,
+        razorpayPaymentId,
+        razorpaySignature,
+        expectedOrderId: order.payment?.razorpay?.orderId,
+        expectedAmount: order.payment?.amountDue ?? order.pricing?.total,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: error.message || 'Payment verification failed',
+      });
     }
 
     order.payment.status = 'paid';

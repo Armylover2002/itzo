@@ -56,6 +56,29 @@ async function handleDeliveryCompleted(data) {
         paymentMethod
     } = data;
 
+    // Claim the settlement before paying anyone. BullMQ retries failed jobs, and these
+    // credits are not otherwise idempotent — without the claim a single retry would pay
+    // the rider and the platform a second time for the same delivery.
+    if (orderMongoId) {
+        const { FoodOrder } = await import('../../modules/food/orders/models/order.model.js');
+        const claimed = await FoodOrder.findOneAndUpdate(
+            {
+                _id: orderMongoId,
+                $or: [
+                    { settlementCreditedAt: null },
+                    { settlementCreditedAt: { $exists: false } }
+                ]
+            },
+            { $set: { settlementCreditedAt: new Date() } },
+            { new: true }
+        );
+
+        if (!claimed) {
+            logger.info(`[PaymentProcessor] Order ${orderId} already settled — skipping duplicate payout`);
+            return;
+        }
+    }
+
     // 1. Credit delivery partner wallet with their earning
     if (deliveryPartnerId && riderEarning > 0) {
         try {

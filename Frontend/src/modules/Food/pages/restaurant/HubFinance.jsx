@@ -200,10 +200,6 @@ export default function HubFinance() {
     return { earnings, gross, count: invoiceOrders.length }
   }, [invoiceOrders])
 
-  const handleViewDetails = () => {
-    navigate("/restaurant/finance-details", { state: { financeData, restaurantData } })
-  }
-
   const getWithdrawalStatusClass = (statusRaw) => {
     const status = String(statusRaw || '').trim().toLowerCase()
     if (status === 'approved') return 'bg-green-100 text-green-700'

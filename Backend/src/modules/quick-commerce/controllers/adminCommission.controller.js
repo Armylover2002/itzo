@@ -6,7 +6,7 @@ export const getSellerCommissionBootstrap = async (req, res) => {
     try {
         const [commissions, sellers] = await Promise.all([
             QuickSellerCommission.find({}).lean(),
-            Seller.find({ approved: true }).select('_id name shopName').lean()
+            Seller.find({ approved: true }).select('_id name shopName sellerCode shopInfo').lean()
         ]);
 
         // Map commission to include seller details for UI
@@ -16,7 +16,8 @@ export const getSellerCommissionBootstrap = async (req, res) => {
                 ...comm,
                 sl: index + 1,
                 sellerName: seller?.shopName || seller?.name || 'Unknown Seller',
-                sellerIdDisplay: String(comm.sellerId).slice(-6).toUpperCase()
+                sellerIdDisplay: seller?.sellerCode || String(comm.sellerId),
+                sellerShopImage: seller?.shopInfo?.shopImage || ''
             };
         });
 
@@ -53,7 +54,7 @@ export const getSellerCommissionById = async (req, res) => {
         const commission = await QuickSellerCommission.findById(req.params.id).lean();
         if (!commission) return res.status(404).json({ success: false, message: 'Commission rule not found' });
         
-        const seller = await Seller.findById(commission.sellerId).select('_id name shopName').lean();
+        const seller = await Seller.findById(commission.sellerId).select('_id name shopName sellerCode shopInfo').lean();
         return res.json({ success: true, data: { commission: { ...commission, seller } } });
     } catch (error) {
         return res.status(500).json({ success: false, message: error.message });

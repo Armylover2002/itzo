@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import {
   adminSidebarMenu,
@@ -287,7 +287,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     } catch (e) {
       debugError('Error loading sidebar state:', e)
     }
-    return { isCollapsed: false, expandedSections: {} }
+    return { isCollapsed: false, expandedSections: {}, expandedMainSections: {} }
   }
 
   const [isCollapsed, setIsCollapsed] = useState(() => getInitialStates().isCollapsed)
@@ -307,6 +307,12 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
       }
     })
     return state
+  })
+
+  const [expandedMainSections, setExpandedMainSections] = useState(() => {
+    const initialState = getInitialStates().expandedMainSections
+    if (initialState && Object.keys(initialState).length > 0) return initialState
+    return {}
   })
 
   // Save states to consolidated localStorage and notify parent
@@ -514,10 +520,13 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
           filtered.push(item)
         }
       } else if (item.type === "section") {
+        const matchesSection = item.label.toLowerCase().includes(query)
         const filteredItems = []
 
         item.items.forEach((subItem) => {
-          if (subItem.type === "link") {
+          if (matchesSection) {
+            filteredItems.push(subItem)
+          } else if (subItem.type === "link") {
             if (subItem.label.toLowerCase().includes(query)) {
               filteredItems.push(subItem)
             }
@@ -548,10 +557,40 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     return filtered
   }, [searchQuery, activeMenuData])
 
+  const getMainSectionKey = (label) => {
+    return String(label || "").toLowerCase().replace(/[^a-z0-9]/g, "")
+  }
+
   // Auto-expand sections with matches when searching
   useEffect(() => {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim()
+
+      setExpandedMainSections((prev) => {
+        const next = { ...prev }
+        activeMenuData.forEach((item) => {
+          if (item.type === "section") {
+            const matchesLabel = item.label.toLowerCase().includes(query)
+            const hasMatchingItems = item.items?.some((subItem) => {
+              if (subItem.type === "link") {
+                return subItem.label.toLowerCase().includes(query)
+              }
+              if (subItem.type === "expandable") {
+                const subMatches = subItem.label.toLowerCase().includes(query)
+                const childMatches = subItem.subItems?.some((si) => si.label.toLowerCase().includes(query))
+                return subMatches || childMatches
+              }
+              return false
+            })
+
+            if (matchesLabel || hasMatchingItems) {
+              const mainKey = getMainSectionKey(item.label)
+              next[mainKey] = true
+            }
+          }
+        })
+        return next
+      })
 
       setExpandedSections((prev) => {
         const newExpandedState = { ...prev }
@@ -602,6 +641,48 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     return matchesPath(targetPath)
   }
 
+  const isSectionActive = (section) => {
+    if (!section || !Array.isArray(section.items)) return false
+    return section.items.some((subItem) => {
+      if (subItem.type === "link") {
+        return isActive(subItem.path)
+      }
+      if (subItem.type === "expandable" && Array.isArray(subItem.subItems)) {
+        const allSubPaths = subItem.subItems.map((si) => si.path)
+        return subItem.subItems.some((si) => isActive(si.path, allSubPaths))
+      }
+      return false
+    })
+  }
+
+  // Auto-expand main section containing active route
+  useEffect(() => {
+    activeMenuData.forEach((item) => {
+      if (item.type === "section" && isSectionActive(item)) {
+        const mainKey = getMainSectionKey(item.label)
+        setExpandedMainSections((prev) => {
+          if (prev[mainKey]) return prev
+          return { ...prev, [mainKey]: true }
+        })
+
+        // Also expand the expandable subitem if active route is inside it
+        item.items?.forEach((subItem) => {
+          if (subItem.type === "expandable" && Array.isArray(subItem.subItems)) {
+            const allSubPaths = subItem.subItems.map((si) => si.path)
+            const hasActiveChild = subItem.subItems.some((si) => isActive(si.path, allSubPaths))
+            if (hasActiveChild) {
+              const subKey = subItem.label.toLowerCase().replace(/\s+/g, "")
+              setExpandedSections((prev) => {
+                if (prev[subKey]) return prev
+                return { ...prev, [subKey]: true }
+              })
+            }
+          }
+        })
+      }
+    })
+  }, [location.pathname, activeMenuData])
+
   useEffect(() => {
     try {
       const currentState = JSON.parse(localStorage.getItem('admin_sidebar_state') || '{}')
@@ -614,27 +695,34 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     }
   }, [expandedSections])
 
+  useEffect(() => {
+    try {
+      const currentState = JSON.parse(localStorage.getItem('admin_sidebar_state') || '{}')
+      localStorage.setItem('admin_sidebar_state', JSON.stringify({
+        ...currentState,
+        expandedMainSections
+      }))
+    } catch (e) {
+      debugError('Error saving sidebar main sections state:', e)
+    }
+  }, [expandedMainSections])
+
+  const toggleMainSection = (mainSectionKey) => {
+    setExpandedMainSections((prev) => ({
+      ...prev,
+      [mainSectionKey]: !prev[mainSectionKey]
+    }))
+  }
+
   const toggleSection = (sectionKey) => {
-    setExpandedSections((prev) => {
-      const isCurrentlyOpen = Boolean(prev[sectionKey])
-      const keys = Array.from(new Set([...Object.keys(prev), sectionKey]))
-
-      // Accordion behavior:
-      // 1) If current section is open -> close it.
-      // 2) If current section is closed -> open it and close all others.
-      if (isCurrentlyOpen) {
-        return {
-          ...prev,
-          [sectionKey]: false,
-        }
-      }
-
-      const next = {}
-      keys.forEach((key) => {
-        next[key] = key === sectionKey
-      })
-      return next
-    })
+    // Independent toggle: opening one expandable section must not collapse
+    // any other already-open section (e.g. opening "Customer Support" was
+    // previously force-closing an already-open "Sellers", making its
+    // sub-items appear to vanish).
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }))
   }
 
   const renderMenuItem = (item, index, isInSection = false) => {
@@ -1023,25 +1111,71 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
               }
 
               if (item.type === "section") {
+                const mainSectionKey = getMainSectionKey(item.label)
+                const isMainSectionExpanded = Boolean(expandedMainSections[mainSectionKey])
+                const sectionActive = isSectionActive(item)
+                const sectionBadgeCount = item.items?.reduce((total, subItem) => {
+                  let count = getBadgeCount(subItem.label, subItem.path) || 0
+                  if (subItem.subItems) {
+                    count += subItem.subItems.reduce((subTotal, si) => subTotal + (getBadgeCount(si.label, si.path) || 0), 0)
+                  }
+                  return total + count
+                }, 0) || 0
+
                 return (
                   <div
                     key={index}
                     className={cn(
-                      index > 0 ? "mt-4 pt-4 border-t border-gray-100" : "",
+                      index > 0 ? "mt-2 pt-2 border-t border-gray-100" : "",
                       "animate-[fadeIn_0.4s_ease-out]"
                     )}
-                    style={{ animationDelay: `${index * 0.1}s` }}
+                    style={{ animationDelay: `${index * 0.03}s` }}
                   >
                     {!isCollapsed && (
-                      <div className="px-3 py-2 mb-2">
-                        <span className="text-black font-bold text-xs uppercase tracking-wider text-left">
+                      <button
+                        type="button"
+                        onClick={() => toggleMainSection(mainSectionKey)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-all duration-200 group cursor-pointer",
+                          isMainSectionExpanded
+                            ? "bg-purple-50/60 text-[#6412C6]"
+                            : "hover:bg-gray-50 text-gray-700"
+                        )}
+                        title={`Toggle ${item.label}`}
+                      >
+                        <span className={cn(
+                          "font-bold text-xs uppercase tracking-wider text-left transition-colors truncate",
+                          isMainSectionExpanded || sectionActive
+                            ? "text-[#6412C6]"
+                            : "text-gray-900 group-hover:text-[#6412C6]"
+                        )}>
                           {item.label}
                         </span>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {!isMainSectionExpanded && sectionBadgeCount > 0 && (
+                            <span className="bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                              {sectionBadgeCount > 99 ? "99+" : sectionBadgeCount}
+                            </span>
+                          )}
+                          <div
+                            className={cn(
+                              "transition-transform duration-300 shrink-0",
+                              isMainSectionExpanded || sectionActive
+                                ? "text-[#6412C6]"
+                                : "text-gray-400 group-hover:text-[#6412C6]"
+                            )}
+                            style={{ transform: isMainSectionExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+                          >
+                            <ChevronDown className="w-4 h-4" />
+                          </div>
+                        </div>
+                      </button>
+                    )}
+                    {(isCollapsed || isMainSectionExpanded) && (
+                      <div className={cn("space-y-1", !isCollapsed && "mt-1")}>
+                        {item.items.map((subItem, subIndex) => renderMenuItem(subItem, `${index}-${subIndex}`, true))}
                       </div>
                     )}
-                    <div className="space-y-1">
-                      {item.items.map((subItem, subIndex) => renderMenuItem(subItem, `${index}-${subIndex}`, true))}
-                    </div>
                   </div>
                 )
               }

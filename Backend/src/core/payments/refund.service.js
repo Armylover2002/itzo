@@ -142,23 +142,28 @@ export async function listRefunds({ status, page = 1, limit = 20 } = {}) {
 }
 
 /**
- * Backward compatibility: add a refund transaction to the legacy FoodUserWallet embedded array.
+ * Backward compatibility: record the refund in the legacy FoodUserWallet embedded array
+ * so existing wallet-history UIs keep showing it.
+ *
+ * HISTORY ONLY — this must never change `balance`. The caller has already credited the
+ * balance through `creditWallet` → `recordTransaction`, and that writes this same
+ * document. Incrementing here as well (as this function used to) paid every wallet
+ * refund out twice.
  */
 async function addRefundToLegacyWallet(userId, amount, orderId) {
     try {
         const { FoodUserWallet } = await import('../../modules/food/user/models/userWallet.model.js');
-        const wallet = await FoodUserWallet.findOne({ userId: new mongoose.Types.ObjectId(userId) });
-        if (wallet) {
-            wallet.transactions.unshift({
-                type: 'refund',
-                amount,
-                status: 'Completed',
-                description: 'Order refund',
-                metadata: { source: 'order_refund', orderId: String(orderId) }
-            });
-            wallet.balance = (Number(wallet.balance) || 0) + amount;
-            await wallet.save();
-        }
+        const entry = {
+            type: 'refund',
+            amount,
+            status: 'Completed',
+            description: 'Order refund',
+            metadata: { source: 'order_refund', orderId: String(orderId) }
+        };
+        await FoodUserWallet.updateOne(
+            { userId: new mongoose.Types.ObjectId(userId) },
+            { $push: { transactions: { $each: [entry], $position: 0 } } }
+        );
     } catch (err) {
         logger.warn(`addRefundToLegacyWallet failed: ${err.message}`);
     }

@@ -641,6 +641,7 @@ export default function RestaurantOnboarding() {
     if (localData) {
       if (localData.step1) {
         setStep1({
+          businessType: localData.step1.businessType || "Fixed Restaurant",
           restaurantName: localData.step1.restaurantName || "",
           pureVegRestaurant:
             typeof localData.step1.pureVegRestaurant === "boolean"
@@ -871,6 +872,7 @@ export default function RestaurantOnboarding() {
           setIsEditing(false)
           // Map Step 1
           setStep1((prev) => ({
+            businessType: data.businessType || prev.businessType || "Fixed Restaurant",
             restaurantName: data.name || data.restaurantName || "",
             pureVegRestaurant: typeof data.pureVegRestaurant === "boolean" ? data.pureVegRestaurant : null,
             ownerName: data.ownerName || "",

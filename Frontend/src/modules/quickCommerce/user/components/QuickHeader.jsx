@@ -15,7 +15,6 @@ import { useSettings } from '@core/context/SettingsContext';
 import { getAppLogo, getCachedSettings } from '@common/utils/businessSettings';
 import { useCart } from '../context/CartContext';
 import { useLocation as useAppLocation } from '../context/LocationContext';
-import LocationDrawer from './shared/LocationDrawer';
 
 // MUI Icons
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -156,7 +155,13 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
     );
   }
 
-  const [isLocationOpen, setIsLocationOpen] = useState(false);
+  // Quick and Food share one delivery-address selector so the experience is identical
+  // in both apps. It writes the chosen address to `userLocation` and broadcasts
+  // `userLocationUpdated`, which LocationContext listens for to keep this header in sync.
+  const openAddressSelector = () => {
+    const backTo = pathname || "/quick";
+    navigate("/cart/address-selector", { state: { from: backTo, backTo } });
+  };
   const { currentLocation, isFetchingLocation } = useAppLocation();
   const displayLocationText =
     currentLocation?.name ||
@@ -311,7 +316,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
               </div>
               <button
                 type="button"
-                onClick={() => setIsLocationOpen(true)}
+                onClick={() => openAddressSelector()}
                 className="flex items-center gap-1 text-white hover:text-white/80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
                 <LocationOnIcon sx={{ fontSize: 14, color: "inherit" }} />
                 <div className="text-[13px] font-bold leading-tight max-w-[180px] lg:max-w-[240px] truncate">
@@ -457,7 +462,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsLocationOpen(true)}
+                  onClick={() => openAddressSelector()}
                   className="flex items-center gap-1 text-white/90 cursor-pointer group active:scale-95 transition-transform border-0 bg-transparent p-0 text-left">
                   <LocationOnIcon sx={{ fontSize: 14, color: "#ffffff" }} />
                   <div className="text-[10px] font-medium leading-tight max-w-[280px] truncate">
@@ -545,11 +550,6 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
         {/* Background Decorative patterns */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-white/5 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none" />
       </motion.div>
-
-      <LocationDrawer
-        isOpen={isLocationOpen}
-        onClose={() => setIsLocationOpen(false)}
-      />
     </div>
   );
 }

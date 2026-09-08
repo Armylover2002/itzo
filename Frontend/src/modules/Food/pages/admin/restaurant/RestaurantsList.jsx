@@ -322,6 +322,7 @@ export default function RestaurantsList() {
             name: restaurant.name || restaurant.restaurantName || "N/A",
             ownerName: restaurant.ownerName || "N/A",
             ownerPhone: restaurant.ownerPhone || restaurant.phone || "N/A",
+            businessType: restaurant.businessType || "Fixed Restaurant",
             zone: zoneLabelFromRestaurant(restaurant),
             approvalStatus: normalizeApprovalStatus(restaurant),
             isActive: restaurant.isActive !== false,
@@ -384,7 +385,8 @@ export default function RestaurantsList() {
       result = result.filter(restaurant =>
         restaurant.name.toLowerCase().includes(query) ||
         restaurant.ownerName.toLowerCase().includes(query) ||
-        restaurant.ownerPhone.includes(query)
+        restaurant.ownerPhone.includes(query) ||
+        formatRestaurantId(restaurant).toLowerCase().includes(query)
       )
     }
 
@@ -1605,6 +1607,9 @@ export default function RestaurantsList() {
                         <ArrowUpDown className={`w-3 h-3 ${sortConfig.key === 'zone' ? 'text-primary' : 'text-slate-400'}`} />
                       </div>
                     </th>
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                      Business Type
+                    </th>
                     <th
                       className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition-colors"
                       onClick={() => handleSort('rating')}
@@ -1629,7 +1634,7 @@ export default function RestaurantsList() {
                 <tbody className="bg-white divide-y divide-slate-100">
                   {filteredRestaurants.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-20 text-center">
+                      <td colSpan={8} className="px-6 py-20 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
                           <p className="text-sm text-slate-500">No restaurants match your search</p>
@@ -1695,7 +1700,7 @@ export default function RestaurantsList() {
                                     )}
                                   </div>
                                 ) : (
-                                  "Fixed Restaurant"
+                                  restaurant.businessType || "Fixed Restaurant"
                                 )}
                               </span>
                               <span className="text-xs text-slate-500 mt-0.5">ID {formatRestaurantId(restaurant.originalData || restaurant)}</span>
@@ -1711,6 +1716,11 @@ export default function RestaurantsList() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm text-slate-700">{restaurant.zone}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                            {restaurant.businessType || "Fixed Restaurant"}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
