@@ -188,7 +188,7 @@ export default function UserLayout({ children }) {
                     {showFoodBottomNav && <DesktopNavbar showLogo={true} />}
                   </div>
                   <LocationPrompt />
-                  <main className={showFoodBottomNav ? "md:pt-40" : ""}>
+                  <main className={showFoodBottomNav ? "md:pt-20" : ""}>
                     {children || <Outlet />}
                   </main>
                   {!location.pathname.startsWith('/quick') && <Footer />}

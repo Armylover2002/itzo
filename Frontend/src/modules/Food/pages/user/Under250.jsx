@@ -844,59 +844,61 @@ export default function Under250() {
       </div>
 
       {/* Banner Section */}
-      <div
-        ref={bannerShellRef}
-        data-banner-shell="true"
-        className="relative w-full overflow-hidden h-[clamp(240px,42vw,520px)] md:h-64 lg:h-72"
-      >
-        {/* Banner Image */}
-        {bannerImages.length > 0 && (
-          <div
-            className="absolute inset-0 z-0 overflow-hidden"
-            onTouchStart={handleBannerTouchStart}
-            onTouchMove={handleBannerTouchMove}
-            onTouchEnd={handleBannerTouchEnd}
-          >
+      <div className="w-full md:max-w-7xl md:mx-auto md:px-4 lg:px-8 md:pt-3">
+        <div
+          ref={bannerShellRef}
+          data-banner-shell="true"
+          className="relative w-full overflow-hidden h-[clamp(240px,42vw,520px)] md:h-[340px] lg:h-[380px] md:rounded-3xl shadow-sm"
+        >
+          {/* Banner Image */}
+          {bannerImages.length > 0 && (
             <div
-              className="flex h-full w-full transition-transform duration-500 ease-out"
-              style={{ transform: `translateX(-${currentBannerIndex * 100}%)` }}
+              className="absolute inset-0 z-0 overflow-hidden"
+              onTouchStart={handleBannerTouchStart}
+              onTouchMove={handleBannerTouchMove}
+              onTouchEnd={handleBannerTouchEnd}
             >
-              {bannerImages.map((bannerImage, index) => (
-                <div key={`${bannerImage}-${index}`} className="relative h-full w-full shrink-0">
-                  <OptimizedImage
-                    src={bannerImage}
-                    alt={`Under 250 Banner ${index + 1}`}
-                    className="w-full h-full"
-                    objectFit="cover"
-                    priority={index === 0}
-                    sizes="100vw"
-                  />
-                </div>
-              ))}
-            </div>
-            {bannerImages.length > 1 && (
-              <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 backdrop-blur-sm">
-                {bannerImages.map((_, index) => (
-                  <button
-                    key={`banner-dot-${index}`}
-                    type="button"
-                    aria-label={`Go to banner ${index + 1}`}
-                    onClick={() => {
-                      setCurrentBannerIndex(index)
-                      resetBannerAutoSlide()
-                    }}
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      currentBannerIndex === index ? "w-5 bg-white" : "w-2 bg-white/55"
-                    }`}
-                  />
+              <div
+                className="flex h-full w-full transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${currentBannerIndex * 100}%)` }}
+              >
+                {bannerImages.map((bannerImage, index) => (
+                  <div key={`${bannerImage}-${index}`} className="relative h-full w-full shrink-0">
+                    <OptimizedImage
+                      src={bannerImage}
+                      alt={`Under 250 Banner ${index + 1}`}
+                      className="w-full h-full"
+                      objectFit="cover"
+                      priority={index === 0}
+                      sizes="100vw"
+                    />
+                  </div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
-        {bannerImages.length === 0 && !loadingBanner && (
-          <div className="absolute top-0 left-0 right-0 bottom-0 z-0 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950 dark:to-rose-950 overflow-hidden" />
-        )}
+              {bannerImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-1.5 backdrop-blur-sm">
+                  {bannerImages.map((_, index) => (
+                    <button
+                      key={`banner-dot-${index}`}
+                      type="button"
+                      aria-label={`Go to banner ${index + 1}`}
+                      onClick={() => {
+                        setCurrentBannerIndex(index)
+                        resetBannerAutoSlide()
+                      }}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        currentBannerIndex === index ? "w-5 bg-white" : "w-2 bg-white/55"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          {bannerImages.length === 0 && !loadingBanner && (
+            <div className="absolute top-0 left-0 right-0 bottom-0 z-0 bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950 dark:to-rose-950 overflow-hidden" />
+          )}
+        </div>
       </div>
 
       {/* Content Section */}
@@ -904,7 +906,7 @@ export default function Under250() {
 
         <section className="space-y-1 sm:space-y-1.5">
           <div
-            className="flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-hide scroll-smooth px-2 sm:px-3 py-2 sm:py-3"
+            className="flex gap-3 sm:gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth px-2 sm:px-3 py-2 sm:py-3"
             style={{
               scrollbarWidth: "none",
               msOverflowStyle: "none",
@@ -914,18 +916,18 @@ export default function Under250() {
             {/* All Button */}
             <div className="flex-shrink-0 cursor-pointer" onClick={() => setActiveCategory(null)}>
               <motion.div
-                className="flex flex-col items-center gap-1.5 sm:gap-2 w-[62px] sm:w-20 md:w-20"
+                className="flex flex-col items-center gap-1.5 sm:gap-2 w-[62px] sm:w-20 md:w-24 lg:w-28"
                 whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full overflow-hidden shadow-md transition-all ${!activeCategory ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
+                <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden shadow-md transition-all ${!activeCategory ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
                   <OptimizedImage
                     src={offerImage}
                     alt="All"
                     className="w-full h-full bg-white rounded-full"
                     objectFit="cover"
-                    sizes="(max-width: 640px) 62px, (max-width: 768px) 80px, 80px"
+                    sizes="(max-width: 640px) 62px, (max-width: 768px) 80px, 96px"
                     placeholder="blur"
                   />
                 </div>
@@ -939,23 +941,23 @@ export default function Under250() {
               return (
                 <div key={category.id} className="flex-shrink-0 cursor-pointer" onClick={() => setActiveCategory(isActive ? null : category.id)}>
                     <motion.div
-                      className="flex flex-col items-center gap-1.5 sm:gap-2 w-[62px] sm:w-20 md:w-20"
+                      className="flex flex-col items-center gap-1.5 sm:gap-2 w-[62px] sm:w-20 md:w-24 lg:w-28"
                       whileHover={{ scale: 1.08, y: -2 }}
                       whileTap={{ scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 rounded-full overflow-hidden shadow-md transition-all ${isActive ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full overflow-hidden shadow-md transition-all ${isActive ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
                         <OptimizedImage
                           src={category.image}
                           alt={category.name}
                           className="w-full h-full bg-white rounded-full"
                           objectFit="cover"
-                          sizes="(max-width: 640px) 62px, (max-width: 768px) 80px, 80px"
+                          sizes="(max-width: 640px) 62px, (max-width: 768px) 80px, 96px"
                           placeholder="blur"
                         />
                       </div>
                       <span className={`text-xs sm:text-xs md:text-sm font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${isActive ? 'text-[#FE5502]' : ''}`}>
-                        {category.name.length > 7 ? `${category.name.slice(0, 7)}...` : category.name}
+                        {category.name.length > 12 ? `${category.name.slice(0, 12)}...` : category.name}
                       </span>
                     </motion.div>
                 </div>
@@ -1264,9 +1266,9 @@ export default function Under250() {
               onClick={closeItemDetail}
             />
 
-            {/* Item Detail Bottom Sheet */}
+            {/* Item Detail Bottom Sheet / Desktop Modal */}
             <motion.div
-              className="fixed left-0 right-0 bottom-0 md:left-1/2 md:right-auto md:-translate-x-1/2 md:max-w-2xl lg:max-w-4xl xl:max-w-5xl z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl shadow-2xl max-h-[90vh] md:max-h-[85vh] flex flex-col"
+              className="fixed left-0 right-0 bottom-0 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:left-1/2 md:-translate-x-1/2 md:max-w-2xl lg:max-w-3xl xl:max-w-4xl z-[10000] bg-white dark:bg-[#1a1a1a] rounded-t-3xl md:rounded-3xl shadow-2xl max-h-[90vh] md:max-h-[85vh] w-full flex flex-col overflow-hidden"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
@@ -1276,22 +1278,31 @@ export default function Under250() {
               onTouchEnd={handleItemDetailTouchEnd}
               onWheel={handleItemDetailWheel}
             >
-              {/* Close Button - Top Center Above Popup with 4px gap */}
-              <div className="absolute -top-[44px] left-1/2 -translate-x-1/2 z-[10001]">
+              {/* Mobile Close Button - Top Center Above Popup */}
+              <div className="md:hidden absolute -top-[44px] left-1/2 -translate-x-1/2 z-[10001]">
                 <motion.button
                   onClick={closeItemDetail}
-                  className="h-10 w-10 md:h-12 md:w-12 rounded-full bg-gray-800 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors shadow-lg"
+                  className="h-10 w-10 rounded-full bg-gray-800 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-900 dark:hover:bg-gray-600 transition-colors shadow-lg"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <X className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                  <X className="h-5 w-5 text-white" />
                 </motion.button>
               </div>
 
+              {/* Desktop Close Button - Inside Top Right Corner */}
+              <button
+                onClick={closeItemDetail}
+                className="hidden md:flex absolute top-4 right-4 z-[10001] h-10 w-10 rounded-full bg-black/60 hover:bg-black/80 text-white items-center justify-center transition-colors shadow-md"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
               {/* Image Section */}
-              <div className="relative w-full h-64 md:h-80 lg:h-96 xl:h-[500px] overflow-hidden rounded-t-3xl">
+              <div className="relative w-full h-56 md:h-64 lg:h-72 xl:h-80 flex-shrink-0 overflow-hidden rounded-t-3xl">
                 <OptimizedImage
                   src={selectedItem.image}
                   alt={selectedItem.name}
@@ -1333,17 +1344,37 @@ export default function Under250() {
               {/* Content Section */}
               <div
                 ref={itemDetailContentRef}
-                className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 xl:px-10 py-4 md:py-6 lg:py-8"
+                className="flex-1 overflow-y-auto px-4 md:px-6 lg:px-8 py-4 md:py-6"
               >
+                {/* Restaurant Name Link */}
+                {selectedItem.restaurant && (
+                  <div className="mb-1.5">
+                    {selectedItem.restaurantSlug ? (
+                      <Link
+                        to={`/user/restaurants/${selectedItem.restaurantSlug}`}
+                        className="inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold text-[#FE5502] hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <span>{selectedItem.restaurant}</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    ) : (
+                      <span className="text-xs md:text-sm font-semibold text-gray-500 dark:text-gray-400">
+                        {selectedItem.restaurant}
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Item Name and Indicator */}
-                <div className="flex items-start justify-between mb-3 md:mb-4 lg:mb-6">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
                   <div className="flex items-center gap-2 md:gap-3 flex-1">
                     {selectedItem.isVeg && (
-                      <div className="h-5 w-5 md:h-6 md:w-6 lg:h-7 lg:w-7 rounded border-2 border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
-                        <div className="h-2.5 w-2.5 md:h-3 md:w-3 lg:h-3.5 lg:w-3.5 rounded-full bg-green-600 dark:bg-green-500" />
+                      <div className="h-5 w-5 md:h-6 md:w-6 rounded border-2 border-green-600 dark:border-green-500 bg-green-50 dark:bg-green-900/20 flex items-center justify-center flex-shrink-0">
+                        <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-green-600 dark:bg-green-500" />
                       </div>
                     )}
-                    <h2 className="text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-white">
+                    <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
                       {selectedItem.name}
                     </h2>
                   </div>
@@ -1354,13 +1385,13 @@ export default function Under250() {
                         e.stopPropagation()
                         handleBookmarkClick(selectedItem.id)
                       }}
-                      className={`h-8 w-8 lg:h-10 lg:w-10 rounded-full border flex items-center justify-center transition-all duration-300 ${bookmarkedItems.has(selectedItem.id)
+                      className={`h-9 w-9 rounded-full border flex items-center justify-center transition-all duration-300 ${bookmarkedItems.has(selectedItem.id)
                         ? "border-red-500 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400"
                         : "border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                         }`}
                     >
                       <Bookmark
-                        className={`h-4 w-4 lg:h-5 lg:w-5 transition-all duration-300 ${bookmarkedItems.has(selectedItem.id) ? "fill-red-500 dark:fill-red-400" : ""
+                        className={`h-4 w-4 transition-all duration-300 ${bookmarkedItems.has(selectedItem.id) ? "fill-red-500 dark:fill-red-400" : ""
                           }`}
                       />
                     </button>
@@ -1369,22 +1400,39 @@ export default function Under250() {
                         e.stopPropagation()
                         handleShareItem(selectedItem)
                       }}
-                      className="h-8 w-8 lg:h-10 lg:w-10 rounded-full border border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex items-center justify-center transition-colors"
+                      className="h-9 w-9 rounded-full border border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex items-center justify-center transition-colors"
                     >
-                      <Share2 className="h-4 w-4 lg:h-5 lg:w-5" />
+                      <Share2 className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
 
+                {/* Pricing Details */}
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
+                  <span className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">
+                    {RUPEE_SYMBOL}{Math.round(selectedItem.price)}
+                  </span>
+                  {selectedItem.originalPrice && selectedItem.originalPrice > selectedItem.price && (
+                    <>
+                      <span className="text-sm md:text-base line-through text-gray-400 dark:text-gray-500">
+                        {RUPEE_SYMBOL}{Math.round(selectedItem.originalPrice)}
+                      </span>
+                      <span className="text-xs md:text-sm font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded">
+                        {Math.round(((selectedItem.originalPrice - selectedItem.price) / selectedItem.originalPrice) * 100)}% OFF
+                      </span>
+                    </>
+                  )}
+                </div>
+
                 {/* Description */}
-                <p className="text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400 mb-4 md:mb-6 lg:mb-8 leading-relaxed">
+                <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
                   {selectedItem.description || `${selectedItem.name} from ${selectedItem.restaurant || 'Under 250'}`}
                 </p>
 
                 {/* Highly Reordered Progress Bar */}
                 {selectedItem.customisable && (
                   <div className="flex items-center gap-2 mb-4">
-                    <div className="flex-1 h-0.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-1 h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                       <div className="h-full bg-[#FE5502] rounded-full" style={{ width: '50%' }} />
                     </div>
                     <span className="text-xs text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap">
@@ -1402,10 +1450,10 @@ export default function Under250() {
               </div>
 
               {/* Bottom Action Bar */}
-              <div className="border-t dark:border-gray-800 border-gray-200 px-4 md:px-6 lg:px-8 xl:px-10 py-4 md:py-5 lg:py-6 bg-white dark:bg-[#1a1a1a]">
-                <div className="flex items-center gap-4 md:gap-5 lg:gap-6">
+              <div className="border-t dark:border-gray-800 border-gray-200 px-4 md:px-6 lg:px-8 py-4 bg-white dark:bg-[#1a1a1a]">
+                <div className="flex items-center gap-4 md:gap-5">
                   {/* Quantity Selector */}
-                  <div className={`flex items-center gap-3 md:gap-4 lg:gap-5 border-2 rounded-lg md:rounded-xl px-3 md:px-4 lg:px-5 h-[44px] md:h-[50px] lg:h-[56px] ${shouldShowGrayscale
+                  <div className={`flex items-center gap-3 md:gap-4 border-2 rounded-lg md:rounded-xl px-3 md:px-4 h-[44px] md:h-[48px] ${shouldShowGrayscale
                     ? 'border-gray-300 dark:border-gray-700 opacity-50'
                     : 'border-gray-300 dark:border-gray-700'
                     }`}>
@@ -1422,9 +1470,9 @@ export default function Under250() {
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 disabled:text-gray-300 dark:disabled:text-gray-600 disabled:cursor-not-allowed'
                         }`}
                     >
-                      <Minus className="h-5 w-5 md:h-6 md:w-6 lg:h-7 lg:w-7" />
+                      <Minus className="h-5 w-5" />
                     </button>
-                    <span className={`text-lg md:text-xl lg:text-2xl font-semibold min-w-[2rem] md:min-w-[2.5rem] lg:min-w-[3rem] text-center ${shouldShowGrayscale
+                    <span className={`text-lg md:text-xl font-semibold min-w-[2rem] text-center ${shouldShowGrayscale
                       ? 'text-gray-400 dark:text-gray-600'
                       : 'text-gray-900 dark:text-white'
                       }`}>
@@ -1443,13 +1491,13 @@ export default function Under250() {
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                       }
                     >
-                      <Plus className="h-5 w-5 md:h-6 md:w-6 lg:h-7 lg:w-7" />
+                      <Plus className="h-5 w-5" />
                     </button>
                   </div>
 
                   {/* Add Item Button */}
                   <Button
-                    className={`flex-1 h-[44px] md:h-[50px] lg:h-[56px] rounded-lg md:rounded-xl font-semibold flex items-center justify-center gap-2 text-sm md:text-base lg:text-lg ${shouldShowGrayscale
+                    className={`flex-1 h-[44px] md:h-[48px] rounded-lg md:rounded-xl font-semibold flex items-center justify-center gap-2 text-sm md:text-base ${shouldShowGrayscale
                       ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-600 cursor-not-allowed opacity-50'
                       : 'bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 text-white'
                       }`}
@@ -1464,12 +1512,12 @@ export default function Under250() {
                     <span>Add item</span>
                     <div className="flex items-center gap-1 md:gap-2">
                       {selectedItem.originalPrice && selectedItem.originalPrice > selectedItem.price && (
-                        <span className="text-sm md:text-base lg:text-lg line-through text-red-200">
-                          {RUPEE_SYMBOL}{Math.round(selectedItem.originalPrice)}
+                        <span className="text-sm md:text-base line-through text-red-200">
+                          {RUPEE_SYMBOL}{Math.round(selectedItem.originalPrice * itemDetailQuantity)}
                         </span>
                       )}
-                      <span className="text-base md:text-lg lg:text-xl font-bold">
-                        {RUPEE_SYMBOL}{Math.round(selectedItem.price)}
+                      <span className="text-base md:text-lg font-bold">
+                        {RUPEE_SYMBOL}{Math.round(selectedItem.price * itemDetailQuantity)}
                       </span>
                     </div>
                   </Button>
