@@ -5049,7 +5049,7 @@ export async function getWithdrawals(query = {}) {
 
 export async function updateWithdrawalStatus(id, { status, adminNote, rejectionReason, transactionId }) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) throw new ValidationError('Invalid withdrawal ID');
-    
+
     const update = {
         status: String(status).toLowerCase(),
         adminNote,
@@ -5065,6 +5065,34 @@ export async function updateWithdrawalStatus(id, { status, adminNote, rejectionR
     ).populate('restaurantId', 'restaurantName').lean();
 
     if (!updated) throw new ValidationError('Withdrawal request not found');
+
+    // Restaurant order-based earnings are tracked outside the universal wallet
+    // ledger, but Dining payouts (creditWallet, entityType:'restaurant') land
+    // directly in FoodRestaurantWallet.balance. Once a withdrawal covering that
+    // money is approved, debit the wallet for whatever portion of the request
+    // it actually backs — capped at the current balance — so Dining earnings
+    // can't be withdrawn twice. Never let this block the approval itself.
+    if (update.status === 'approved' || update.status === 'processed') {
+        try {
+            const restaurantId = updated.restaurantId?._id || updated.restaurantId;
+            const wallet = await FoodRestaurantWallet.findOne({ restaurantId }).select('balance').lean();
+            const debitAmount = Math.min(Number(updated.amount) || 0, Number(wallet?.balance) || 0);
+            if (debitAmount > 0) {
+                await debitWallet({
+                    entityType: 'restaurant',
+                    entityId: String(restaurantId),
+                    amount: debitAmount,
+                    description: `Withdrawal approved — #${String(updated._id).slice(-6)}`,
+                    category: 'settlement_payout',
+                    metadata: { withdrawalId: updated._id, transactionId },
+                });
+            }
+        } catch (err) {
+            // Wallet debit failing must never block the withdrawal-status update
+            // itself — it's already been recorded as approved above.
+        }
+    }
+
     return updated;
 }
 

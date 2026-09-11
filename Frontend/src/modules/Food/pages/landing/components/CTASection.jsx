@@ -39,13 +39,13 @@ const CTASection = React.memo(function CTASection() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       {/* Outer Banner Container */}
-      <div className="relative bg-[#fff0f2] rounded-[2.5rem] w-full overflow-hidden flex flex-col md:flex-row items-center justify-between px-8 md:px-16 pt-12 md:pt-0 md:h-[420px]">
-        
+      <div className="relative bg-orange-50 rounded-[2.5rem] w-full overflow-hidden flex flex-col md:flex-row items-center justify-between px-8 md:px-16 pt-12 md:pt-0 md:h-[420px]">
+
         {/* Background Circles (Decorative) */}
         <div className="absolute top-0 right-0 bottom-0 left-0 overflow-hidden pointer-events-none">
-          <div className="absolute w-[600px] h-[600px] rounded-full border-[1.5px] border-rose-200/40 -right-[50px] -bottom-[150px]" />
-          <div className="absolute w-[800px] h-[800px] rounded-full border-[1.5px] border-rose-200/40 -right-[150px] -bottom-[250px]" />
-          <div className="absolute w-[1000px] h-[1000px] rounded-full border-[1.5px] border-rose-200/40 -right-[250px] -bottom-[350px]" />
+          <div className="absolute w-[600px] h-[600px] rounded-full border-[1.5px] border-orange-200/50 -right-[50px] -bottom-[150px]" />
+          <div className="absolute w-[800px] h-[800px] rounded-full border-[1.5px] border-orange-200/50 -right-[150px] -bottom-[250px]" />
+          <div className="absolute w-[1000px] h-[1000px] rounded-full border-[1.5px] border-orange-200/50 -right-[250px] -bottom-[350px]" />
         </div>
 
         {/* Left Side Content */}
@@ -100,7 +100,7 @@ const CTASection = React.memo(function CTASection() {
               </p>
               
               {/* QR Code Container */}
-              <div className="bg-white p-2 rounded-2xl border border-rose-100 shadow-sm relative">
+              <div className="bg-white p-2 rounded-2xl border border-orange-100 shadow-sm relative">
                 <img 
                   src={qrCodeImg}
                   alt="QR Code"

@@ -48,7 +48,7 @@ const FoodRestaurantCard = memo(({
       <div className="h-full group">
         <Link to={`/user/restaurants/${restaurantSlug}`} className="flex h-full">
           <Card
-            className={`relative flex h-full w-full flex-col gap-0 overflow-hidden rounded-[28px] border-0 border-background bg-white py-0 shadow-sm transition-all duration-500 hover:shadow-xl dark:border-gray-800 dark:bg-[#1a1a1a] ${
+            className={`relative flex h-full w-full flex-col gap-0 overflow-hidden rounded-tl-[28px] rounded-br-[28px] rounded-tr-xl rounded-bl-xl border-0 border-background bg-white py-0 shadow-sm transition-all duration-500 hover:shadow-xl dark:border-gray-800 dark:bg-[#1a1a1a] ${
               isOutOfService || !availability.isOpen ? "grayscale opacity-75" : ""
             }`}
           >
@@ -141,7 +141,7 @@ const FoodRestaurantCard = memo(({
                   </div>
                   <div
                     className={`flex-shrink-0 rounded-xl sm:rounded-2xl px-2.5 py-1 sm:px-3 sm:py-1.5 text-white shadow-md transition-transform duration-300 group-hover:scale-105 ${
-                      Number(restaurant.rating) > 0 ? "bg-[#259539]" : "bg-gray-400"
+                      Number(restaurant.rating) > 0 ? "bg-gradient-to-br from-[#7c3aed] to-[#6412C6]" : "bg-gray-400"
                     } flex items-center gap-1 sm:gap-1.5`}
                   >
                     <span className="text-sm font-medium tracking-tight md:text-xs lg:text-sm">
@@ -169,7 +169,7 @@ const FoodRestaurantCard = memo(({
               </CardContent>
             </div>
 
-            <div className="pointer-events-none absolute inset-0 z-0 rounded-md border border-transparent transition-all duration-300 group-hover:border-[#FE5502]/30 group-hover:shadow-[inset_0_0_0_1px_rgba(204,37,50,0.2)]" />
+            <div className="pointer-events-none absolute inset-0 z-0 rounded-tl-[28px] rounded-br-[28px] rounded-tr-xl rounded-bl-xl border border-transparent transition-all duration-300 group-hover:border-[#6412C6]/25" />
           </Card>
         </Link>
       </div>

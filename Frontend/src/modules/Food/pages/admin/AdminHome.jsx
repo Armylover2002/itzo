@@ -23,7 +23,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { Activity, ArrowUpRight, ShoppingBag, CreditCard, Truck, Receipt, DollarSign, Store, UserCheck, Package, UserCircle, Clock, CheckCircle, Plus, XCircle } from "lucide-react"
+import { Activity, ArrowUpRight, ShoppingBag, CreditCard, Truck, Receipt, DollarSign, Store, UserCheck, Package, UserCircle, Clock, CheckCircle, Plus, XCircle, UtensilsCrossed, Wallet } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { useAuth } from "@core/context/AuthContext"
 import { getCurrentUser } from "@food/utils/auth"
@@ -50,6 +50,7 @@ export default function AdminHome() {
   const [dashboardData, setDashboardData] = useState(null)
   const [zones, setZones] = useState([])
   const [subOverview, setSubOverview] = useState(null)
+  const [diningStats, setDiningStats] = useState(null)
   const [resolvedPermissions, setResolvedPermissions] = useState({})
 
   useEffect(() => {
@@ -101,6 +102,20 @@ export default function AdminHome() {
       }
     }
     fetchSubOverview()
+  }, [])
+
+  useEffect(() => {
+    const fetchDiningStats = async () => {
+      try {
+        const response = await adminAPI.getDiningRevenueStats()
+        if (response.data?.success && response.data?.data?.stats) {
+          setDiningStats(response.data.data.stats)
+        }
+      } catch (err) {
+        // debugError
+      }
+    }
+    fetchDiningStats()
   }, [])
 
   // Fetch zone list for filter
@@ -450,6 +465,45 @@ export default function AdminHome() {
                 icon={<Clock className="h-5 w-5 text-amber-600" />}
                 accent="bg-amber-100/40"
                 path="/ecs/food/subscriptions?status=expiring"
+              />
+            </div>
+          </div>
+
+          {/* Dining Operations Section */}
+          <div className="pt-4 border-t border-neutral-200/60 mt-6">
+            <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest mb-4">Dining Operations</h3>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <MetricCard
+                title="Dining revenue"
+                value={formatCurrency(diningStats?.totalRevenue || 0)}
+                helper="Paid dine-in bills, all-time"
+                icon={<UtensilsCrossed className="h-5 w-5 text-[#6412C6]" />}
+                accent="bg-[#f0e7f9]/40"
+                path="/ecs/food/dining/bills"
+              />
+              <MetricCard
+                title="Dining commission"
+                value={formatCurrency(diningStats?.totalCommission || 0)}
+                helper="Platform commission earned"
+                icon={<Wallet className="h-5 w-5 text-emerald-600" />}
+                accent="bg-emerald-100/40"
+                path="/ecs/food/dining/bills"
+              />
+              <MetricCard
+                title="Restaurant payouts"
+                value={formatCurrency(diningStats?.totalRestaurantPayout || 0)}
+                helper="Settled to restaurant wallets"
+                icon={<DollarSign className="h-5 w-5 text-primary" />}
+                accent="bg-[#f0e7f9]/40"
+                path="/ecs/food/dining/bills"
+              />
+              <MetricCard
+                title="Bookings today"
+                value={(diningStats?.bookingsToday || 0).toLocaleString("en-IN")}
+                helper="Table reservations today"
+                icon={<Clock className="h-5 w-5 text-amber-600" />}
+                accent="bg-amber-100/40"
+                path="/ecs/food/dining/bookings"
               />
             </div>
           </div>

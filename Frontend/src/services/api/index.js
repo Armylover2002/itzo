@@ -1010,6 +1010,54 @@ export const adminAPI = {
       timeout: 300000, // 5 minutes for large video uploads
     });
   },
+
+  /** Dining — categories */
+  getDiningCategories: (params = {}) =>
+    apiClient.get("/food/admin/dining/categories", { params, contextModule: "admin" }),
+  createDiningCategory: (body) =>
+    apiClient.post("/food/admin/dining/categories", body ?? {}, { contextModule: "admin" }),
+  updateDiningCategory: (id, body) =>
+    apiClient.patch(`/food/admin/dining/categories/${id}`, body ?? {}, { contextModule: "admin" }),
+  deleteDiningCategory: (id) =>
+    apiClient.delete(`/food/admin/dining/categories/${id}`, { contextModule: "admin" }),
+  toggleDiningCategoryStatus: (id) =>
+    apiClient.patch(`/food/admin/dining/categories/${id}/toggle`, {}, { contextModule: "admin" }),
+
+  /** Dining — banners */
+  getDiningBanners: (params = {}) =>
+    apiClient.get("/food/admin/dining/banners", { params, contextModule: "admin" }),
+  createDiningBanner: (body) =>
+    apiClient.post("/food/admin/dining/banners", body ?? {}, { contextModule: "admin" }),
+  updateDiningBanner: (id, body) =>
+    apiClient.patch(`/food/admin/dining/banners/${id}`, body ?? {}, { contextModule: "admin" }),
+  deleteDiningBanner: (id) =>
+    apiClient.delete(`/food/admin/dining/banners/${id}`, { contextModule: "admin" }),
+  toggleDiningBannerStatus: (id) =>
+    apiClient.patch(`/food/admin/dining/banners/${id}/toggle`, {}, { contextModule: "admin" }),
+
+  /** Dining — global settings (default commission etc.) */
+  getDiningSettings: () =>
+    apiClient.get("/food/admin/dining/settings", { contextModule: "admin" }),
+  updateDiningSettings: (body) =>
+    apiClient.patch("/food/admin/dining/settings", body ?? {}, { contextModule: "admin" }),
+
+  /** Dining — requests / restaurants / commission */
+  getDiningRequests: (params = {}) =>
+    apiClient.get("/food/admin/dining/requests", { params, contextModule: "admin" }),
+  reviewDiningRequest: (id, body) =>
+    apiClient.patch(`/food/admin/dining/requests/${id}/review`, body ?? {}, { contextModule: "admin" }),
+  getDiningRestaurants: (params = {}) =>
+    apiClient.get("/food/admin/dining/restaurants", { params, contextModule: "admin" }),
+  setDiningCommissionOverride: (id, body) =>
+    apiClient.patch(`/food/admin/dining/restaurants/${id}/commission`, body ?? {}, { contextModule: "admin" }),
+
+  /** Dining — bookings / bills / revenue */
+  getDiningBookings: (params = {}) =>
+    apiClient.get("/food/admin/dining/bookings", { params, contextModule: "admin" }),
+  getDiningBills: (params = {}) =>
+    apiClient.get("/food/admin/dining/bills", { params, contextModule: "admin" }),
+  getDiningRevenueStats: (params = {}) =>
+    apiClient.get("/food/admin/dining/revenue", { params, contextModule: "admin" }),
 };
 
 /** Restaurant API - OTP login via new backend; no email/password. */
@@ -1546,6 +1594,26 @@ export const restaurantAPI = {
     apiClient.get("/food/restaurant/referral-details", {
       contextModule: "restaurant",
     }),
+
+  /** Dining — request / setup / bookings / billing */
+  getMyDiningProfile: () =>
+    apiClient.get("/food/restaurant/dining/profile", { contextModule: "restaurant" }),
+  requestDining: () =>
+    apiClient.post("/food/restaurant/dining/request", {}, { contextModule: "restaurant" }),
+  updateDiningSetup: (body) =>
+    apiClient.patch("/food/restaurant/dining/setup", body ?? {}, { contextModule: "restaurant" }),
+  toggleDiningEnabled: (enabled) =>
+    apiClient.patch("/food/restaurant/dining/toggle", { enabled }, { contextModule: "restaurant" }),
+  getDiningReservations: (params = {}) =>
+    apiClient.get("/food/restaurant/dining/reservations", { params, contextModule: "restaurant" }),
+  updateDiningReservationStatus: (id, body) =>
+    apiClient.patch(`/food/restaurant/dining/reservations/${id}/status`, body ?? {}, { contextModule: "restaurant" }),
+  saveDiningBill: (reservationId, body) =>
+    apiClient.put(`/food/restaurant/dining/reservations/${reservationId}/bill`, body ?? {}, { contextModule: "restaurant" }),
+  finalizeDiningBill: (billId) =>
+    apiClient.post(`/food/restaurant/dining/bills/${billId}/finalize`, {}, { contextModule: "restaurant" }),
+  getDiningBill: (billId) =>
+    apiClient.get(`/food/restaurant/dining/bills/${billId}`, { contextModule: "restaurant" }),
 };
 
 function stableStringify(value) {
@@ -2431,6 +2499,34 @@ export const userAPI = {
   },
   getFoodWishlist: () => apiClient.get("/food/user/wishlist", { contextModule: "user" }),
   toggleFoodWishlist: (body) => apiClient.post("/food/user/wishlist/toggle", body ?? {}, { contextModule: "user" }),
+
+  /** Dining — public browse (no auth) */
+  getDiningCategories: () =>
+    apiClient.get("/food/dining/public/categories"),
+  getDiningBanners: () =>
+    apiClient.get("/food/dining/public/banners"),
+  getDiningRestaurants: (params = {}) =>
+    apiClient.get("/food/dining/public/restaurants", { params }),
+  getDiningRestaurantDetail: (restaurantId) =>
+    apiClient.get(`/food/dining/public/restaurants/${restaurantId}`),
+  getDiningAvailability: (restaurantId, date) =>
+    apiClient.get(`/food/dining/public/restaurants/${restaurantId}/availability`, { params: { date } }),
+
+  /** Dining — booking + bill payment (auth required) */
+  createDiningReservation: (body) =>
+    apiClient.post("/food/user/dining/reservations", body ?? {}, { contextModule: "user" }),
+  getMyDiningReservations: (params = {}) =>
+    apiClient.get("/food/user/dining/reservations", { params, contextModule: "user" }),
+  getMyDiningReservationDetail: (id) =>
+    apiClient.get(`/food/user/dining/reservations/${id}`, { contextModule: "user" }),
+  cancelDiningReservation: (id, reason) =>
+    apiClient.post(`/food/user/dining/reservations/${id}/cancel`, { reason }, { contextModule: "user" }),
+  getDiningBill: (billId) =>
+    apiClient.get(`/food/user/dining/bills/${billId}`, { contextModule: "user" }),
+  createDiningBillPaymentOrder: (billId) =>
+    apiClient.post(`/food/user/dining/bills/${billId}/pay`, {}, { contextModule: "user" }),
+  verifyDiningBillPayment: (billId, body) =>
+    apiClient.post(`/food/user/dining/bills/${billId}/verify`, body ?? {}, { contextModule: "user" }),
 };
 export const locationAPI = {
   reverseGeocode: (lat, lng) =>

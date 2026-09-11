@@ -75,11 +75,11 @@ const Navbar = React.memo(function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/food/careers" className="text-lg font-medium hover:text-rose-400 transition-colors">Jobs</Link>
-            <Link to="/food/restaurant" className="text-lg font-medium hover:text-rose-400 transition-colors">Add restaurant</Link>
+            <Link to="/food/careers" className="text-lg font-medium hover:text-primary transition-colors">Jobs</Link>
+            <Link to="/food/restaurant" className="text-lg font-medium hover:text-primary transition-colors">Add restaurant</Link>
             <div className="flex items-center space-x-6">
-              <button onClick={() => navigate('/user/auth/login')} className="text-lg font-medium hover:text-rose-400 transition-colors">Log in</button>
-              <button onClick={() => navigate('/user/auth/signup')} className="text-lg font-medium hover:text-rose-400 transition-colors">Sign up</button>
+              <button onClick={() => navigate('/user/auth/login')} className="text-lg font-medium hover:text-primary transition-colors">Log in</button>
+              <button onClick={() => navigate('/user/auth/signup')} className={`text-lg font-semibold px-5 py-2 rounded-full transition-colors ${isScrolled ? 'bg-primary text-white hover:bg-[#C83C00]' : 'bg-white text-slate-900 hover:bg-white/90'}`}>Sign up</button>
             </div>
           </div>
 
@@ -98,7 +98,7 @@ const Navbar = React.memo(function Navbar() {
           <Link to="/food/careers" className="text-lg font-medium py-2 border-b border-gray-100">Jobs</Link>
           <Link to="/food/restaurant" className="text-lg font-medium py-2 border-b border-gray-100">Add restaurant</Link>
           <button onClick={() => navigate('/user/auth/login')} className="text-left text-lg font-medium py-2 border-b border-gray-100">Log in</button>
-          <button onClick={() => navigate('/user/auth/signup')} className="text-left text-lg font-medium py-2">Sign up</button>
+          <button onClick={() => navigate('/user/auth/signup')} className="text-left text-lg font-semibold py-2 text-primary">Sign up</button>
         </div>
       )}
     </nav>

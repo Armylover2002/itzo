@@ -164,12 +164,17 @@ export default function UserLayout({ children }) {
     normalizedPath === "/user/orders" ||
     normalizedPath === "/orders"
 
+  const isDiningRoot =
+    normalizedPath === "/user/dining" ||
+    normalizedPath.startsWith("/user/dining/")
+
   const showBottomNav = normalizedPath === "/" ||
     normalizedPath === "/user" ||
     normalizedPath === "/under-250" ||
     normalizedPath === "/user/under-250" ||
     isOrdersRoot ||
     isProfileRoot ||
+    isDiningRoot ||
     normalizedPath === "" // Handle empty string case for root relative to /food
 
   const isUnder250 = normalizedPath === "/under-250" || normalizedPath === "/user/under-250"
@@ -191,7 +196,11 @@ export default function UserLayout({ children }) {
                   <main className={showFoodBottomNav ? "md:pt-20" : ""}>
                     {children || <Outlet />}
                   </main>
-                  {!location.pathname.startsWith('/quick') && <Footer />}
+                  {!location.pathname.startsWith('/quick') && (
+                    <div className="hidden md:block">
+                      <Footer />
+                    </div>
+                  )}
                   {showFoodBottomNav && <BottomNavigation />}
                   {isSharedQuickProfile && <QuickBottomNav />}
                 </LocationSelectorProvider>

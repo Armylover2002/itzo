@@ -82,6 +82,7 @@ export default function UnifiedOTPFastLogin() {
   const [companyName, setCompanyName] = useState(() => getCompanyName())
   const location = useLocation()
   const navigate = useNavigate()
+  const isSignupIntent = location.pathname.includes("signup")
 
   const [growthData, setGrowthData] = useState(null)
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -517,7 +518,7 @@ export default function UnifiedOTPFastLogin() {
                 <ArrowLeft className="w-6 h-6" />
               </button>
               <h2 className="text-3xl font-semibold text-gray-800 dark:text-gray-100 tracking-tight">
-                Login
+                {isSignupIntent ? "Sign up" : "Login"}
               </h2>
             </div>
           </div>

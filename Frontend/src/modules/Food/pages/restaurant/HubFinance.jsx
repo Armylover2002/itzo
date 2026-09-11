@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { Bell, Menu, ChevronDown, Calendar, Download, ArrowRight, FileText, Wallet, X, Gift } from "lucide-react"
+import { Bell, Menu, ChevronDown, Calendar, Download, ArrowRight, FileText, Wallet, X, Gift, UtensilsCrossed } from "lucide-react"
 "@food/components/restaurant/BottomNavOrders"
 import { restaurantAPI } from "@food/api"
 const debugLog = (...args) => {}
@@ -875,6 +875,37 @@ export default function HubFinance() {
                 </div>
                 <p className="text-[11px] text-gray-500 mt-4 border-t pt-3">
                   Referral earnings are automatically added to your withdrawable balance.
+                </p>
+              </div>
+            </div>
+
+            {/* Dining Earnings */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-bold text-gray-900">Dining earnings</h2>
+                <button
+                  onClick={() => navigate("/food/restaurant/dining/bookings")}
+                  className="text-sm font-medium text-[#0b2a4d] hover:underline"
+                >
+                  View bookings
+                </button>
+              </div>
+              <div className="bg-white rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ₹{(financeData?.earnings?.diningEarnings || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      From paid dine-in bills
+                    </p>
+                  </div>
+                  <div className="bg-[#f3f5f7] p-3 rounded-full">
+                    <UtensilsCrossed className="w-6 h-6 text-[#0b2a4d]" />
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-500 mt-4 border-t pt-3">
+                  Your share of paid dining bills is automatically added to your withdrawable balance.
                 </p>
               </div>
             </div>

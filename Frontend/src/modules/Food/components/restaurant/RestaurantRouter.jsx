@@ -44,6 +44,9 @@ const RestaurantReferEarn = lazy(() => import("@food/pages/restaurant/Restaurant
 const BusinessPlanPage = lazy(() => import("@food/pages/restaurant/BusinessPlanPage"))
 const LiveLocationControl = lazy(() => import("@food/pages/restaurant/LiveLocationControl"))
 const VendorMoveLocation = lazy(() => import("@food/pages/restaurant/VendorMoveLocation"))
+const DiningSetupPage = lazy(() => import("@food/pages/restaurant/dining/DiningSetupPage"))
+const DiningBookingsPage = lazy(() => import("@food/pages/restaurant/dining/DiningBookingsPage"))
+const DiningBillingPage = lazy(() => import("@food/pages/restaurant/dining/DiningBillingPage"))
 
 const ManageOutlets = lazy(() => import("@food/pages/restaurant/ManageOutlets"))
 const UpdateBankDetails = lazy(() => import("@food/pages/restaurant/UpdateBankDetails"))
@@ -116,6 +119,9 @@ export default function RestaurantRouter() {
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><RestaurantReferEarn /></RestaurantPageShell></ProtectedRoute>} path="refer-earn" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><LiveLocationControl /></RestaurantPageShell></ProtectedRoute>} path="live-location" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><VendorMoveLocation /></ProtectedRoute>} path="move-location" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><DiningSetupPage /></RestaurantPageShell></ProtectedRoute>} path="dining/setup" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><DiningBookingsPage /></RestaurantPageShell></ProtectedRoute>} path="dining/bookings" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantPageShell><DiningBillingPage /></RestaurantPageShell></ProtectedRoute>} path="dining/bookings/:id/bill" />
           <Route path="*" element={<Navigate to="/food/restaurant" replace />} />
         </Routes>
       </Suspense>

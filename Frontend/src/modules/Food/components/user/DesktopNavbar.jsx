@@ -80,6 +80,7 @@ export default function DesktopNavbar({ showLogo = true }) {
     const profileSource = new URLSearchParams(location.search).get("from")
     const isQuick = normalizedPath === "/quick" || normalizedPath.startsWith("/quick/")
     const isUnder250 = location.pathname === "/food/user/under-250" || location.pathname === "/food/under-250"
+    const isDining = location.pathname.startsWith("/food/user/dining")
     const isSharedFoodProfile =
         (normalizedPath === "/profile" || normalizedPath.startsWith("/profile/")) &&
         profileSource !== "quick"
@@ -93,7 +94,7 @@ export default function DesktopNavbar({ showLogo = true }) {
         location.pathname === "/food/orders" ||
         normalizedPath === "/orders" ||
         normalizedPath.startsWith("/orders/")
-    const isDelivery = !isUnder250 && !isOrders && !isProfile && !isQuick && (location.pathname === "/food/user" || location.pathname === "/food" || (location.pathname.startsWith("/food/user") && !location.pathname.includes("/under-250") && !location.pathname.includes("/orders") && !location.pathname.includes("/profile")))
+    const isDelivery = !isUnder250 && !isOrders && !isProfile && !isQuick && !isDining && (location.pathname === "/food/user" || location.pathname === "/food" || (location.pathname.startsWith("/food/user") && !location.pathname.includes("/under-250") && !location.pathname.includes("/orders") && !location.pathname.includes("/profile") && !location.pathname.includes("/dining")))
     const isBannerRoute = false
     const searchPlaceholder = isQuick
         ? 'Search for milk, bread, eggs...'
@@ -332,17 +333,21 @@ export default function DesktopNavbar({ showLogo = true }) {
                                 )}
                             </Link>
 
-                            {/* Orders Tab */}
+                            {/* Dining Tab */}
                             <Link
                                 to={isAuthenticated ? "/food/user/orders" : "/user/auth/login"}
                                 state={!isAuthenticated ? { redirectTo: "/food/user/orders" } : undefined}
                                 className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isOrders
+                                to="/food/user/dining"
+                                className={`flex flex-col items-center gap-1 px-2 py-1 transition-colors relative group ${isDining
                                     ? "text-[#FE5502] dark:text-[#FE5502]"
                                     : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
                                     }`}
                             >
                                 <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Orders</span>
                                 {isOrders && (
+                                <span className="text-sm font-bold tracking-wide uppercase">Dining</span>
+                                {isDining && (
                                     <motion.div
                                         layoutId="navIndicator"
                                         className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"

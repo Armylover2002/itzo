@@ -72,6 +72,20 @@ export const adminSidebarMenu = [
   },
   {
     type: "section",
+    label: "DINING MANAGEMENT",
+    permissionKey: "dining_management",
+    items: [
+      { type: "link", label: "Categories", permissionKey: "dining_categories", path: "/ecs/food/dining/categories", icon: "FolderTree" },
+      { type: "link", label: "Banners", permissionKey: "dining_banners", path: "/ecs/food/dining/banners", icon: "Image" },
+      { type: "link", label: "Settings", permissionKey: "dining_settings", path: "/ecs/food/dining/settings", icon: "Settings" },
+      { type: "link", label: "Requests", permissionKey: "dining_requests", path: "/ecs/food/dining/requests", icon: "ClipboardCheck" },
+      { type: "link", label: "Restaurants", permissionKey: "dining_restaurants", path: "/ecs/food/dining/restaurants", icon: "UtensilsCrossed" },
+      { type: "link", label: "Bookings", permissionKey: "dining_bookings", path: "/ecs/food/dining/bookings", icon: "Clock" },
+      { type: "link", label: "Bills & Revenue", permissionKey: "dining_bills", path: "/ecs/food/dining/bills", icon: "Receipt" },
+    ],
+  },
+  {
+    type: "section",
     label: "ORDER MANAGEMENT",
     permissionKey: "order_management",
     items: [

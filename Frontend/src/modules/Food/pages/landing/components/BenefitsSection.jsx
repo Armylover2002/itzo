@@ -64,7 +64,7 @@ const BenefitsSection = React.memo(function BenefitsSection() {
           href={redirectUrl} 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 rounded-2xl md:rounded-[2rem] overflow-hidden"
+          className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-2xl md:rounded-[2rem] overflow-hidden"
         >
           {content}
         </a>

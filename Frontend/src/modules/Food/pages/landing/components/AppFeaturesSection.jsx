@@ -19,28 +19,28 @@ const FeatureCard = ({ icon, title, className, delay }) => (
 
 const AppFeaturesSection = React.memo(function AppFeaturesSection() {
   return (
-    <div className="w-full bg-[#fff0f2] pt-20 pb-12 md:pb-20 overflow-hidden relative">
+    <div className="w-full bg-orange-50 pt-20 pb-12 md:pb-20 overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-4 flex flex-col items-center">
-        
+
         {/* Heading */}
-        <motion.h2 
+        <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-[40px] md:text-[52px] font-black text-[#f43f5e] text-center leading-tight mb-5 tracking-tight"
+          className="text-[40px] md:text-[52px] font-black text-primary text-center leading-tight mb-5 tracking-tight"
         >
-          What's waiting for you<br/>on the app?
+          Everything you need,<br/>in one app
         </motion.h2>
 
         {/* Subheading */}
-        <motion.p 
+        <motion.p
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
           className="text-lg md:text-[20px] text-slate-500 text-center max-w-[600px] mb-8 md:mb-12 leading-snug font-medium px-4"
         >
-          Our app is packed with features that enable you to experience food delivery like never before
+          A handful of handy features, built to make ordering food a breeze
         </motion.p>
 
         {/* Interactive Area */}
@@ -100,11 +100,11 @@ const AppFeaturesSection = React.memo(function AppFeaturesSection() {
             </div>
             
             {/* Center Card Inside Phone */}
-            <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-rose-50 p-6 md:p-8 flex flex-col items-center gap-4 w-[180px] md:w-[210px]">
+            <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-orange-50 p-6 md:p-8 flex flex-col items-center gap-4 w-[180px] md:w-[210px]">
                <div className="relative mt-2">
-                 <Calendar className="w-16 h-16 text-rose-300" strokeWidth={1.5} />
+                 <Calendar className="w-16 h-16 text-orange-200" strokeWidth={1.5} />
                  <div className="absolute -bottom-2 -left-3 bg-white rounded-full p-[2px] shadow-sm">
-                   <Clock className="w-8 h-8 text-rose-500 bg-white rounded-full" strokeWidth={2.5} />
+                   <Clock className="w-8 h-8 text-primary bg-white rounded-full" strokeWidth={2.5} />
                  </div>
                </div>
                <span className="text-center font-medium text-slate-700 text-sm md:text-base leading-snug mt-2">

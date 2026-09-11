@@ -69,7 +69,7 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
               onClick={() => navigate(`/food/careers/${job._id || job.id}`)}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 bg-orange-50 text-primary rounded-xl flex items-center justify-center shrink-0">
                   <Briefcase className="w-6 h-6" />
                 </div>
                 <span className="bg-slate-100 text-slate-600 px-3 py-1 text-xs font-medium rounded-full">
@@ -77,7 +77,7 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
                 </span>
               </div>
               
-              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-rose-600 transition-colors">
+              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-primary transition-colors">
                 {job.title}
               </h3>
               
@@ -96,7 +96,7 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
                 {job.shortDescription}
               </p>
 
-              <div className="flex items-center text-rose-600 font-medium text-sm pt-4 border-t border-slate-100 mt-auto">
+              <div className="flex items-center text-primary font-medium text-sm pt-4 border-t border-slate-100 mt-auto">
                 View Details
                 <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
               </div>
