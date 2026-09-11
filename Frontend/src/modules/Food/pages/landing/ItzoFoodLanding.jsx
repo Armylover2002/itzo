@@ -20,10 +20,10 @@ export default function ItzoFoodLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-rose-500 selection:text-white">
+    <div className="min-h-screen bg-white font-sans selection:bg-primary selection:text-white">
       <Navbar />
       <HeroSection navigate={navigate} />
-      <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div></div>}>
+      <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
         <BetterFoodSection />
         <AppFeaturesSection />
         <GoldSection />

@@ -39,7 +39,7 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
   const videoUrl = settings?.landingVideo?.url || "";
   const posterUrl = settings?.landingPoster?.url || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop";
   const appName = settings?.landingHeroTitle || "ItzoFood";
-  const appSubtitle = settings?.landingHeroSubtitle || "India's #1\nfood delivery app";
+  const appSubtitle = settings?.landingHeroSubtitle || "Great food,\ndelivered to your door";
   const appStoreImg = settings?.landingAppStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg";
   const playStoreImg = settings?.landingPlayStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg";
   const playStoreUrl = settings?.playStoreLink || "#!";
