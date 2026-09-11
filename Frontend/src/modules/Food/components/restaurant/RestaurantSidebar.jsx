@@ -22,7 +22,8 @@ import {
   Star,
   Truck,
   Gift,
-  LogOut
+  LogOut,
+  CalendarCheck
 } from "lucide-react"
 import { cn } from "@food/utils/utils"
 import { clearModuleAuth } from "@food/utils/auth"
@@ -65,6 +66,13 @@ const getNavSections = (subscriptionRequired) => [
       { label: "Order history", path: "/food/restaurant/orders/history", icon: History },
       { label: "Complaints", path: "/food/restaurant/feedback?tab=complaints", icon: Star },
       { label: "Reviews", path: "/food/restaurant/feedback", icon: MessageSquare },
+    ],
+  },
+  {
+    title: "DINING",
+    items: [
+      { label: "Dining Setup", path: "/food/restaurant/dining/setup", icon: UtensilsCrossed },
+      { label: "Bookings & Billing", path: "/food/restaurant/dining/bookings", icon: CalendarCheck },
     ],
   },
   {

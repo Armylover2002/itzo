@@ -21,6 +21,9 @@
     "cleanup:legacy-collections": "node scripts/cleanup-legacy-collections.js",
     "verify:wallet": "node scripts/verify-wallet-integrity.js",
     "verify:finance": "node scripts/verify-finance-integrity.js",
+    "sync:dining-indexes": "node scripts/sync-dining-indexes.js",
+    "verify:dining": "node scripts/sync-dining-indexes.js && node scripts/verify-dining-integrity.js",
+    "settle:dining-bills": "node scripts/settle-unsettled-dining-bills.js",
     "test": "npm run verify:wallet"
   },
   "keywords": [],

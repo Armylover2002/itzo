@@ -145,6 +145,11 @@ export async function getRestaurantFinance(restaurantId, query = {}) {
         .lean();
 
     const referralBalance = Number(wallet?.referralEarnings || 0);
+    // FoodRestaurantWallet.balance is the universal wallet ledger's balance —
+    // currently populated exclusively by Dining bill payouts (creditWallet in
+    // diningBill.service.js). Order-based earnings are tracked separately via
+    // FoodTransaction.amounts.restaurantShare above, so this never double-counts.
+    const diningBalance = Number(wallet?.balance || 0);
 
     // Block only pending withdrawals from available balance.
     // Approved/rejected requests are processed records and should not keep locking payout.
@@ -160,7 +165,7 @@ export async function getRestaurantFinance(restaurantId, query = {}) {
         { $group: { _id: null, total: { $sum: '$amount' } } }
     ]);
     const totalPendingWithdrawals = Number(pendingWithdrawalsAgg?.[0]?.total || 0);
-    const availableBalance = Math.max(0, globalEstimatedPayout + referralBalance - totalPendingWithdrawals);
+    const availableBalance = Math.max(0, globalEstimatedPayout + referralBalance + diningBalance - totalPendingWithdrawals);
 
     const currentCycle = {
         start: { ...nowWindow.startMeta },
@@ -236,6 +241,7 @@ export async function getRestaurantFinance(restaurantId, query = {}) {
             availableBalance: availableBalance,
             pendingPayout: globalEstimatedPayout,
             referralEarnings: referralBalance,
+            diningEarnings: diningBalance,
             totalEarnings: Number(wallet?.totalEarnings || 0)
         },
         currentCycle,

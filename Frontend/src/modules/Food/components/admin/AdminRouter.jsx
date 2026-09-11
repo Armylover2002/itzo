@@ -18,6 +18,14 @@ const OrderDetectDelivery = lazy(() => import("@food/pages/admin/OrderDetectDeli
 const Category = lazy(() => import("@food/pages/admin/categories/Category"));
 const FeeSettings = lazy(() => import("@food/pages/admin/fee-settings/FeeSettings"));
 const ReferralSettings = lazy(() => import("@food/pages/admin/referral-settings/ReferralSettings"));
+// Dining Management
+const DiningCategories = lazy(() => import("@food/pages/admin/dining/DiningCategories"));
+const DiningBanners = lazy(() => import("@food/pages/admin/dining/DiningBanners"));
+const DiningSettings = lazy(() => import("@food/pages/admin/dining/DiningSettings"));
+const DiningRequests = lazy(() => import("@food/pages/admin/dining/DiningRequests"));
+const DiningRestaurants = lazy(() => import("@food/pages/admin/dining/DiningRestaurants"));
+const DiningBookings = lazy(() => import("@food/pages/admin/dining/DiningBookings"));
+const DiningBills = lazy(() => import("@food/pages/admin/dining/DiningBills"));
 // Restaurant Management
 const ZoneSetup = lazy(() => import("@food/pages/admin/restaurant/ZoneSetup"));
 const AddZone = lazy(() => import("@food/pages/admin/restaurant/AddZone"));
@@ -308,6 +316,15 @@ export default function AdminRouter() {
             <Route path="restaurants/reviews" element={<RestaurantReviews />} />
             <Route path="restaurants/bulk-import" element={<RestaurantsBulkImport />} />
             <Route path="restaurants/bulk-export" element={<RestaurantsBulkExport />} />
+
+            {/* DINING MANAGEMENT */}
+            <Route path="dining/categories" element={<DiningCategories />} />
+            <Route path="dining/banners" element={<DiningBanners />} />
+            <Route path="dining/settings" element={<DiningSettings />} />
+            <Route path="dining/requests" element={<DiningRequests />} />
+            <Route path="dining/restaurants" element={<DiningRestaurants />} />
+            <Route path="dining/bookings" element={<DiningBookings />} />
+            <Route path="dining/bills" element={<DiningBills />} />
 
             {/* FOOD & CATEGORY MANAGEMENT */}
             <Route path="categories" element={<Category />} />

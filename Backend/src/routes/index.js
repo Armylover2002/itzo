@@ -30,6 +30,10 @@ import jobApplicationRoutes from '../modules/food/admin/routes/jobApplication.ro
 import licensingRoutes from '../modules/food/licensing/routes/licensingRoutes.js';
 import hrmsRoutes from '../modules/hrms/routes/index.routes.js';
 import { reverseGeocode, geocodeAddress } from '../modules/quick-commerce/controllers/location.controller.js';
+import adminDiningRoutes from '../modules/food/dining/routes/adminDining.routes.js';
+import restaurantDiningRoutes from '../modules/food/dining/routes/restaurantDining.routes.js';
+import userDiningRoutes from '../modules/food/dining/routes/userDining.routes.js';
+import publicDiningRoutes from '../modules/food/dining/routes/publicDining.routes.js';
 
 const router = express.Router();
 
@@ -37,7 +41,15 @@ router.get('/v1/health', (req, res) => {
     res.status(200).json({ status: 'UP', message: 'Server is healthy' });
 });
 
-
+// Dining (table booking + dine-in billing). Mounted here, BEFORE the broader
+// /v1/food/admin, /v1/food/restaurant and /v1/food/user prefixes below, so
+// these more specific paths are matched first — an Express router mounted on
+// a shorter prefix will otherwise receive the request first and 404 inside
+// itself rather than falling through to a router registered later.
+router.use('/v1/food/dining/public', publicDiningRoutes);
+router.use('/v1/food/admin/dining', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), adminDiningRoutes);
+router.use('/v1/food/restaurant/dining', restaurantDiningRoutes);
+router.use('/v1/food/user/dining', authMiddleware, requireRoles('USER'), userDiningRoutes);
 
 // Food-prefixed auth routes (preferred)
 router.use('/v1/food/auth', authRoutes);
