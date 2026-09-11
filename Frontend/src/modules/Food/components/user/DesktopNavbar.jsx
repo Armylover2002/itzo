@@ -335,18 +335,13 @@ export default function DesktopNavbar({ showLogo = true }) {
 
                             {/* Dining Tab */}
                             <Link
-                                to={isAuthenticated ? "/food/user/orders" : "/user/auth/login"}
-                                state={!isAuthenticated ? { redirectTo: "/food/user/orders" } : undefined}
-                                className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isOrders
                                 to="/food/user/dining"
-                                className={`flex flex-col items-center gap-1 px-2 py-1 transition-colors relative group ${isDining
+                                className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isDining
                                     ? "text-[#FE5502] dark:text-[#FE5502]"
                                     : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
                                     }`}
                             >
-                                <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Orders</span>
-                                {isOrders && (
-                                <span className="text-sm font-bold tracking-wide uppercase">Dining</span>
+                                <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Dining</span>
                                 {isDining && (
                                     <motion.div
                                         layoutId="navIndicator"
