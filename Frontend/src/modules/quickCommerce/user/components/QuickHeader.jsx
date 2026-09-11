@@ -287,9 +287,9 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
         <div className="absolute inset-0 bg-white/8 pointer-events-none" />
 
         {/* Desktop/Tablet Header Layout (md and above) */}
-        <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-4 mt-1">
-          {/* Left Section: Logo + Location row */}
-          <div className="flex items-center gap-4 lg:gap-8">
+        <div className="hidden md:flex items-center justify-between relative z-20 px-2 lg:px-6 mb-2 mt-1">
+          {/* Left Section: Logo + Location + Expanded Search Bar */}
+          <div className="flex items-center gap-3 lg:gap-5 flex-1">
             <div
               onClick={() => navigate(getQuickHomePath(pathname))}
               className="flex items-center gap-3 cursor-pointer group shrink-0">
@@ -297,7 +297,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                 <img
                   src={logoSrc}
                   alt={`${settings?.companyName || settings?.appName || "App"} Logo`}
-                  className={cn("h-10 md:h-16 w-auto object-contain", !isCustomLogo && "brightness-0 invert")}
+                  className={cn("h-10 md:h-14 w-auto object-contain", !isCustomLogo && "brightness-0 invert")}
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = logo;
@@ -307,7 +307,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
             </div>
 
             {/* Location Block (Desktop inline row) */}
-            <div className="flex flex-col border-l border-white/20 pl-4 lg:pl-8 h-10 justify-center">
+            <div className="flex flex-col border-l border-white/20 pl-3 lg:pl-5 h-10 justify-center shrink-0">
               <div className="flex items-center gap-1.5 opacity-70">
                 <AccessTimeIcon sx={{ fontSize: 13, color: "#ffffff" }} />
                 <span className="text-[11px] font-black text-white uppercase tracking-widest leading-none">
@@ -319,7 +319,7 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                 onClick={() => openAddressSelector()}
                 className="flex items-center gap-1 text-white hover:text-white/80 cursor-pointer group active:scale-95 transition-all border-0 bg-transparent p-0 text-left">
                 <LocationOnIcon sx={{ fontSize: 14, color: "inherit" }} />
-                <div className="text-[13px] font-bold leading-tight max-w-[250px] lg:max-w-[320px] truncate">
+                <div className="text-[13px] font-bold leading-tight max-w-[180px] lg:max-w-[240px] truncate">
                   {isFetchingLocation ? "Detecting location..." : displayLocationText}
                 </div>
                 <ChevronDownIcon
@@ -327,115 +327,112 @@ export default function QuickHeader({ showSearch = true, activeCategory = null, 
                 />
               </button>
             </div>
-          </div>
 
-          {/* Center Section: Search Bar */}
-          <div className="flex-1 max-w-[450px] lg:max-w-2xl px-6">
-            <motion.div
-              onClick={handleSearchClick}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              style={{ backgroundColor: searchBarBg }}
-              className="rounded-full px-4 h-11 shadow-md flex items-center border border-white/50 transition-all duration-200 focus-within:ring-2 focus-within:ring-white/60 cursor-pointer backdrop-blur-md">
-              <SearchIcon sx={{ color: "#ffffff", fontSize: 20 }} />
-              <div className="flex-1 pl-2 text-white font-semibold flex items-center">
-                   <span className="opacity-60 text-[15px]">{searchPlaceholder}</span>
-              </div>
-              <div className="flex items-center gap-2 border-l border-white/10 pl-3">
-                <button
-                  type="button"
-                  onClick={handleVoiceSearch}
-                  className={cn(
-                    "p-1.5 rounded-full transition-all",
-                    isListening ? "bg-white text-[#FE5502] scale-110 animate-pulse" : "text-white hover:bg-white/10"
-                  )}
-                >
-                  <MicIcon sx={{ color: "inherit", fontSize: 20 }} />
-                </button>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right Section: Action Icons */}
-          <div className="flex items-center gap-5 lg:gap-8 shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.15, rotate: 5 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => navigate(getQuickWishlistPath(pathname))}
-              className="text-white hover:text-white/80 transition-all">
-              <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.15, rotate: -5 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => navigate(getQuickCartPath(pathname))}
-              className="flex items-center gap-2 rounded-2xl bg-[#f8cb46] px-4 py-2.5 text-[#111] shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-transform hover:scale-105 active:scale-95"
-            >
-              <div className="relative">
-                <ShoppingCartOutlinedIcon sx={{ fontSize: 20 }} />
-                <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                  {cartCount}
-                </span>
-              </div>
-              <div className="flex flex-col items-start leading-none">
-                <span className="text-[10px] font-black uppercase tracking-tight">View Cart</span>
-              </div>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => navigate(getQuickWalletPath())}
-              className="text-white lg:bg-white/10 p-1.5 lg:rounded-full hover:bg-white/20 transition-all transform backdrop-blur-sm"
-              aria-label="Open wallet">
-              <Wallet className="h-7 w-7" />
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Desktop Module Navigation Bar Row (DELIVERY, QUICK, UNDER 250, PROFILE) */}
-        <div className="hidden md:flex items-center justify-center border-t border-white/15 pt-2 pb-1 mt-2 w-full relative z-20">
-          <div className="flex items-center space-x-12 lg:space-x-20">
-            {/* Delivery (Food Section) */}
-            <Link
-              to="/food/user"
-              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-            >
-              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Delivery</span>
-              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-            </Link>
-
-            {/* Quick (Active Tab) */}
-            <Link
-              to="/quick"
-              className="flex flex-col items-center gap-1 px-3 py-1 text-white font-black tracking-wider uppercase relative group"
-            >
-              <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
+            {/* Search Bar - Expanded to fill space */}
+            <div className="flex-1 max-w-[320px] lg:max-w-[480px] ml-2 lg:ml-4">
               <motion.div
-                layoutId="quickNavIndicatorHeader"
-                className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                transition={{ duration: 0.3 }}
-              />
-            </Link>
+                onClick={handleSearchClick}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                style={{ backgroundColor: searchBarBg }}
+                className="rounded-full px-3 h-[40px] shadow-md flex items-center border border-white/50 transition-all duration-200 focus-within:ring-2 focus-within:ring-white/60 cursor-pointer backdrop-blur-md">
+                <SearchIcon sx={{ color: "#ffffff", fontSize: 20 }} />
+                <div className="flex-1 pl-2 text-white font-semibold flex items-center truncate">
+                  <span className="opacity-60 text-[14px] truncate">{searchPlaceholder}</span>
+                </div>
+                <div className="flex items-center gap-1 border-l border-white/10 pl-2">
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                    className={cn(
+                      "p-1 rounded-full transition-all",
+                      isListening ? "bg-white text-[#FE5502] scale-110 animate-pulse" : "text-white hover:bg-white/10"
+                    )}
+                  >
+                    <MicIcon sx={{ color: "inherit", fontSize: 18 }} />
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          </div>
 
-            {/* Under 250 */}
-            <Link
-              to="/food/user/under-250"
-              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-            >
-              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Under 250</span>
-              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-            </Link>
+          {/* Right Section: Nav Links + Action Icons */}
+          <div className="flex items-center gap-4 lg:gap-8 shrink-0">
+            {/* Nav links (QUICK, SHOP, ORDERS, PROFILE) */}
+            <div className="flex items-center space-x-6 lg:space-x-10">
+              <Link
+                to="/quick"
+                className="flex flex-col items-center gap-1 px-2 py-1 text-white font-black tracking-wider uppercase relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase text-white">Quick</span>
+                <motion.div
+                  layoutId="quickNavIndicatorHeader"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
 
-            {/* Profile */}
-            <Link
-              to="/food/user/profile"
-              className="flex flex-col items-center gap-1 px-3 py-1 text-white/75 hover:text-white transition-colors relative group"
-            >
-              <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
-              <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
-            </Link>
+              <Link
+                to="/quick/shops"
+                className="flex flex-col items-center gap-1 px-2 py-1 text-white/75 hover:text-white transition-colors relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Shop</span>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+              </Link>
+
+              <Link
+                to="/quick/orders"
+                className="flex flex-col items-center gap-1 px-2 py-1 text-white/75 hover:text-white transition-colors relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Orders</span>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+              </Link>
+
+              <Link
+                to="/food/user/profile"
+                className="flex flex-col items-center gap-1 px-2 py-1 text-white/75 hover:text-white transition-colors relative group"
+              >
+                <span className="text-xs lg:text-sm font-black tracking-wider uppercase">Profile</span>
+                <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-transparent group-hover:bg-white/50 transition-colors" />
+              </Link>
+            </div>
+
+            {/* Wallet + Wishlist + Cart */}
+            <div className="flex items-center gap-3 shrink-0">
+              <motion.button
+                whileHover={{ scale: 1.15 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate(getQuickWalletPath())}
+                className="text-white lg:bg-white/10 p-1.5 lg:rounded-full hover:bg-white/20 transition-all transform backdrop-blur-sm"
+                aria-label="Open wallet">
+                <Wallet className="h-6 w-6" />
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.15, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate(getQuickWishlistPath(pathname))}
+                className="text-white hover:text-white/80 transition-all">
+                <FavoriteBorderOutlinedIcon sx={{ fontSize: 22 }} />
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.15, rotate: -5 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate(getQuickCartPath(pathname))}
+                className="flex items-center gap-2 rounded-2xl bg-[#f8cb46] px-3 py-2 text-[#111] shadow-[0_8px_20px_rgba(0,0,0,0.15)] transition-transform hover:scale-105 active:scale-95"
+              >
+                <div className="relative">
+                  <ShoppingCartOutlinedIcon sx={{ fontSize: 18 }} />
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                    {cartCount}
+                  </span>
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] font-black uppercase tracking-tight">Cart</span>
+                </div>
+              </motion.button>
+            </div>
           </div>
         </div>
 
