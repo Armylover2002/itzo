@@ -18,12 +18,12 @@ const CategoryRail = memo(({
       </h2>
       
       <div className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide pb-2 pt-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-        {/* Offers Card - Rounded Square */}
-        <div 
+        {/* Offers Card - Rounded Square, two-tone brand gradient */}
+        <div
           className="flex-shrink-0 flex flex-col items-center gap-2 cursor-pointer group"
           onClick={() => navigate("/user/under-250")}
         >
-          <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] bg-[#FE5502] rounded-2xl flex flex-col items-center justify-center p-1 shadow-sm transition-transform group-hover:scale-105 group-active:scale-95">
+          <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] bg-gradient-to-br from-[#FE5502] to-[#6412C6] rounded-[20px] flex flex-col items-center justify-center p-1 shadow-md shadow-[#FE5502]/20 transition-transform group-hover:scale-105 group-active:scale-95">
             <span className="text-[10px] font-bold text-white/90">UNDER</span>
             <span className="text-sm sm:text-base font-black text-white">₹200</span>
             <div className="mt-1 px-2 py-0.5 bg-white rounded-full">
@@ -39,13 +39,15 @@ const CategoryRail = memo(({
             to={`/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
             className="flex-shrink-0 flex flex-col items-center gap-2 group"
           >
-            <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden shadow-sm border border-gray-100 transition-transform group-hover:scale-110">
-              <OptimizedImage
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-cover"
-                backendOrigin={backendOrigin}
-              />
+            <div className="w-[72px] h-[72px] sm:w-[84px] sm:h-[84px] rounded-[20px] p-[2.5px] bg-gradient-to-br from-[#FE5502]/70 via-gray-100 to-[#6412C6]/50 transition-transform group-hover:scale-110">
+              <div className="w-full h-full rounded-[17px] overflow-hidden bg-white">
+                <OptimizedImage
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-cover"
+                  backendOrigin={backendOrigin}
+                />
+              </div>
             </div>
             <span className="text-xs font-semibold text-gray-600 truncate w-full text-center">
               {category.name}

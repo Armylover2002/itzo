@@ -448,7 +448,8 @@ export default function Home() {
 
                           <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
                             <section className="content-auto px-4 md:px-0 py-4 sm:py-6 lg:py-6">
-                              <div className="overflow-hidden rounded-2xl h-48 sm:h-64 md:h-64 lg:h-72 shadow-lg border border-gray-100">
+                              <div className="relative overflow-hidden rounded-tl-[32px] rounded-br-[32px] rounded-tr-2xl rounded-bl-2xl h-48 sm:h-64 md:h-64 lg:h-72 shadow-lg ring-1 ring-[#FE5502]/10 p-[3px] bg-gradient-to-br from-[#FE5502]/40 via-gray-100 to-[#6412C6]/30">
+                              <div className="relative h-full w-full overflow-hidden rounded-tl-[30px] rounded-br-[30px] rounded-tr-xl rounded-bl-xl">
                                 <BannerSection
                                   showBannerSkeleton={banners.loading}
                                   heroBannerImages={banners.images}
@@ -460,6 +461,7 @@ export default function Home() {
                                   backendOrigin={BACKEND_ORIGIN}
                                   hideOverlay={true}
                                 />
+                              </div>
                               </div>
                             </section>
                           </Suspense>
