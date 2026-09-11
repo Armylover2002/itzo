@@ -175,152 +175,187 @@ export default function DiningBillingPage() {
 
   const isLocked = bill?.status && bill.status !== "draft"
 
-  return (
-    <div className="min-h-screen bg-slate-50 p-4 lg:p-6">
-      <div className="mb-6 flex items-start gap-3">
-        <button onClick={() => navigate(-1)} className="shrink-0 rounded-lg p-2 hover:bg-slate-200">
-          <ArrowLeft className="h-5 w-5 text-slate-700" />
-        </button>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-bold text-slate-900">Bill — {reservation.userNameSnapshot || "Guest"}</h1>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
-            {reservation.bookingDate && (
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                {new Date(reservation.bookingDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · {formatSlotRange(reservation.slotStart, reservation.slotEnd)}
-              </span>
-            )}
-            <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {reservation.guests} guests</span>
-            {reservation.userPhoneSnapshot && (
-              <a href={`tel:${reservation.userPhoneSnapshot}`} className="flex items-center gap-1 text-[#0f2d5a] hover:underline">
-                <Phone className="h-3.5 w-3.5" /> {reservation.userPhoneSnapshot}
-              </a>
-            )}
-          </div>
-          {reservation.specialRequest && (
-            <p className="mt-1 text-xs italic text-slate-400">"{reservation.specialRequest}"</p>
+  const header = (
+    <div className="mb-5 flex items-start gap-3">
+      <button onClick={() => navigate(-1)} className="shrink-0 rounded-lg p-2 hover:bg-slate-200 active:bg-slate-300">
+        <ArrowLeft className="h-5 w-5 text-slate-700" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h1 className="truncate text-lg font-bold text-slate-900 sm:text-xl">Bill — {reservation.userNameSnapshot || "Guest"}</h1>
+          {isLocked && (
+            <span className="inline-flex shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 capitalize">
+              {bill.status}
+            </span>
           )}
         </div>
-        {isLocked && (
-          <span className="ml-auto shrink-0 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 capitalize">
-            {bill.status}
-          </span>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 sm:text-sm">
+          {reservation.bookingDate && (
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3.5 w-3.5 shrink-0" />
+              {new Date(reservation.bookingDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · {formatSlotRange(reservation.slotStart, reservation.slotEnd)}
+            </span>
+          )}
+          <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5 shrink-0" /> {reservation.guests} guests</span>
+          {reservation.userPhoneSnapshot && (
+            <a href={`tel:${reservation.userPhoneSnapshot}`} className="flex items-center gap-1 text-[#0f2d5a] hover:underline">
+              <Phone className="h-3.5 w-3.5 shrink-0" /> {reservation.userPhoneSnapshot}
+            </a>
+          )}
+        </div>
+        {reservation.specialRequest && (
+          <p className="mt-1 text-xs italic text-slate-400">"{reservation.specialRequest}"</p>
         )}
       </div>
+    </div>
+  )
+
+  const billItems = (
+    cartLines.length === 0 ? (
+      <p className="py-8 text-center text-sm text-slate-400">Tap menu items to add them to the bill</p>
+    ) : (
+      <div className="space-y-3">
+        {cartLines.map(({ item, quantity }) => (
+          <div key={item.id} className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
+              <p className="text-xs text-slate-400">₹{item.price} each</p>
+            </div>
+            {!isLocked ? (
+              <div className="flex shrink-0 items-center gap-2">
+                <button onClick={() => changeQuantity(item.id, -1)} className="rounded-md border border-slate-300 p-1 text-slate-600 hover:bg-slate-100">
+                  <Minus className="h-3.5 w-3.5" />
+                </button>
+                <span className="w-5 text-center text-sm font-semibold">{quantity}</span>
+                <button onClick={() => changeQuantity(item.id, 1)} className="rounded-md border border-slate-300 p-1 text-slate-600 hover:bg-slate-100">
+                  <Plus className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <span className="shrink-0 text-sm font-medium text-slate-600">x{quantity}</span>
+            )}
+          </div>
+        ))
+        }
+      </div>
+    )
+  )
+
+  const totals = (
+    <div className="mt-4 space-y-1.5 border-t border-dashed border-slate-200 pt-4 text-sm">
+      <div className="flex justify-between text-slate-600">
+        <span>Subtotal</span>
+        <span>₹{(bill?.subtotal ?? cartTotal).toLocaleString("en-IN")}</span>
+      </div>
+      {!isLocked ? (
+        <div className="flex items-center justify-between text-slate-600">
+          <span>Discount</span>
+          <input
+            type="number"
+            min="0"
+            value={discount}
+            onChange={(event) => setDiscount(Number(event.target.value) || 0)}
+            className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-right text-sm outline-none focus:border-slate-900"
+          />
+        </div>
+      ) : bill?.discount > 0 && (
+        <div className="flex justify-between text-slate-600">
+          <span>Discount</span>
+          <span>-₹{Number(bill.discount).toLocaleString("en-IN")}</span>
+        </div>
+      )}
+      {bill?.taxAmount > 0 && (
+        <div className="flex justify-between text-slate-600">
+          <span>Tax ({bill.taxPercent}%)</span>
+          <span>₹{bill.taxAmount.toLocaleString("en-IN")}</span>
+        </div>
+      )}
+      <div className="flex justify-between border-t border-dashed border-slate-200 pt-2.5 text-base font-bold text-slate-900">
+        <span>Grand Total</span>
+        <span>₹{(bill?.grandTotal ?? cartTotal - discount).toLocaleString("en-IN")}</span>
+      </div>
+      {bill?.restaurantPayout != null && (
+        <p className="pt-1 text-xs text-slate-400">You'll receive ₹{bill.restaurantPayout.toLocaleString("en-IN")} after platform commission.</p>
+      )}
+    </div>
+  )
+
+  // Finalized/settled bills get a focused, single-column receipt instead of
+  // the editor layout — the menu picker has nothing to do once it's locked.
+  if (isLocked) {
+    return (
+      <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6">
+        <div className="mx-auto max-w-md">
+          {header}
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-slate-500" />
+              <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Bill</h2>
+            </div>
+            {billItems}
+            {totals}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 px-4 py-6 pb-24 sm:px-6 lg:pb-6">
+      {header}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          {!isLocked && (
-            <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search menu items"
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-slate-900"
-                />
-              </div>
-              <div className="mt-4 grid max-h-[420px] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
-                {filteredItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => addItem(item)}
-                    className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left hover:border-[#0f2d5a] hover:bg-slate-50"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">{item.name}</p>
-                      <p className="text-xs text-slate-400">{item.categoryName}</p>
-                    </div>
-                    <span className="ml-3 shrink-0 text-sm font-semibold text-slate-700">₹{item.price}</span>
-                  </button>
-                ))}
-                {filteredItems.length === 0 && (
-                  <p className="col-span-2 py-8 text-center text-sm text-slate-400">No menu items found</p>
-                )}
-              </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search menu items"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="w-full rounded-xl border border-slate-300 py-2.5 pl-10 pr-4 text-sm outline-none focus:border-slate-900"
+              />
             </div>
-          )}
+            <div className="mt-4 grid max-h-[50vh] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2 lg:max-h-[calc(100vh-260px)]">
+              {filteredItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => addItem(item)}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-left hover:border-[#0f2d5a] hover:bg-slate-50 active:bg-slate-100"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-900">{item.name}</p>
+                    <p className="text-xs text-slate-400">{item.categoryName}</p>
+                  </div>
+                  <span className="ml-3 shrink-0 text-sm font-semibold text-slate-700">₹{item.price}</span>
+                </button>
+              ))}
+              {filteredItems.length === 0 && (
+                <p className="col-span-1 py-8 text-center text-sm text-slate-400 sm:col-span-2">No menu items found</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-6 lg:self-start">
           <div className="mb-3 flex items-center gap-2">
             <Receipt className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">Bill</h2>
             {saving && <Loader2 className="ml-auto h-4 w-4 animate-spin text-slate-400" />}
           </div>
 
-          {cartLines.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-400">Tap menu items to add them to the bill</p>
-          ) : (
-            <div className="space-y-3">
-              {cartLines.map(({ item, quantity }) => (
-                <div key={item.id} className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-800">{item.name}</p>
-                    <p className="text-xs text-slate-400">₹{item.price} each</p>
-                  </div>
-                  {!isLocked ? (
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => changeQuantity(item.id, -1)} className="rounded-md border border-slate-300 p-1 text-slate-600 hover:bg-slate-100">
-                        <Minus className="h-3.5 w-3.5" />
-                      </button>
-                      <span className="w-5 text-center text-sm font-semibold">{quantity}</span>
-                      <button onClick={() => changeQuantity(item.id, 1)} className="rounded-md border border-slate-300 p-1 text-slate-600 hover:bg-slate-100">
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-sm font-medium text-slate-600">x{quantity}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          {billItems}
+          {totals}
 
-          <div className="mt-4 space-y-1.5 border-t border-slate-100 pt-4 text-sm">
-            <div className="flex justify-between text-slate-600">
-              <span>Subtotal</span>
-              <span>₹{(bill?.subtotal ?? cartTotal).toLocaleString("en-IN")}</span>
-            </div>
-            {!isLocked && (
-              <div className="flex items-center justify-between text-slate-600">
-                <span>Discount</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={discount}
-                  onChange={(event) => setDiscount(Number(event.target.value) || 0)}
-                  className="w-24 rounded-lg border border-slate-300 px-2 py-1 text-right text-sm outline-none focus:border-slate-900"
-                />
-              </div>
-            )}
-            {bill?.taxAmount > 0 && (
-              <div className="flex justify-between text-slate-600">
-                <span>Tax ({bill.taxPercent}%)</span>
-                <span>₹{bill.taxAmount.toLocaleString("en-IN")}</span>
-              </div>
-            )}
-            <div className="flex justify-between pt-2 text-base font-bold text-slate-900">
-              <span>Grand Total</span>
-              <span>₹{(bill?.grandTotal ?? cartTotal - discount).toLocaleString("en-IN")}</span>
-            </div>
-            {bill?.restaurantPayout != null && (
-              <p className="pt-1 text-xs text-slate-400">You'll receive ₹{bill.restaurantPayout.toLocaleString("en-IN")} after platform commission.</p>
-            )}
-          </div>
-
-          {!isLocked && (
-            <button
-              onClick={handleFinalize}
-              disabled={finalizing || !bill?._id}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0f2d5a] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {finalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {finalizing ? "Sending..." : "Send Bill to Guest"}
-            </button>
-          )}
+          <button
+            onClick={handleFinalize}
+            disabled={finalizing || !bill?._id}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#0f2d5a] px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {finalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {finalizing ? "Sending..." : "Send Bill to Guest"}
+          </button>
         </div>
       </div>
     </div>
