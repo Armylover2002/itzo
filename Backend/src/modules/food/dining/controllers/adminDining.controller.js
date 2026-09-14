@@ -114,8 +114,8 @@ export async function updateDiningSettingsController(req, res, next) {
 
 export async function getDiningRequests(req, res, next) {
     try {
-        const requests = await listDiningRequests({ status: req.query.status });
-        return sendResponse(res, 200, 'Dining requests fetched', { requests });
+        const result = await listDiningRequests({ status: req.query.status, search: req.query.search });
+        return sendResponse(res, 200, 'Dining requests fetched', result);
     } catch (err) { handleError(err, res, next); }
 }
 
@@ -129,8 +129,8 @@ export async function reviewDiningRequestController(req, res, next) {
 
 export async function getDiningRestaurants(req, res, next) {
     try {
-        const restaurants = await listDiningRestaurants({ status: req.query.status });
-        return sendResponse(res, 200, 'Dining restaurants fetched', { restaurants });
+        const result = await listDiningRestaurants({ status: req.query.status, search: req.query.search });
+        return sendResponse(res, 200, 'Dining restaurants fetched', result);
     } catch (err) { handleError(err, res, next); }
 }
 
@@ -144,7 +144,12 @@ export async function setDiningCommissionOverrideController(req, res, next) {
 
 export async function getDiningBookings(req, res, next) {
     try {
-        const result = await listAllReservationsAdmin({ status: req.query.status, page: req.query.page, limit: req.query.limit });
+        const result = await listAllReservationsAdmin({
+            status: req.query.status,
+            date: req.query.date,
+            page: req.query.page,
+            limit: req.query.limit,
+        });
         return sendResponse(res, 200, 'Dining bookings fetched', result);
     } catch (err) { handleError(err, res, next); }
 }

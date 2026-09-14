@@ -2,6 +2,7 @@ import { DiningBill } from '../models/diningBill.model.js';
 import { DiningReservation } from '../models/diningReservation.model.js';
 import { DiningProfile } from '../models/diningProfile.model.js';
 import { FoodItem } from '../../admin/models/food.model.js';
+import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { getDiningSettings } from './diningSettings.service.js';
 import { creditWallet } from '../../../../core/payments/wallet.service.js';
@@ -138,6 +139,25 @@ export async function listAllBillsAdmin({ status, page = 1, limit = 20 } = {}) {
         DiningBill.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).lean(),
         DiningBill.countDocuments(filter),
     ]);
+
+    if (items.length) {
+        const restaurantIds = [...new Set(items.map((b) => String(b.restaurantId)))];
+        const reservationIds = items.map((b) => b.reservationId).filter(Boolean);
+        const [restaurants, reservations] = await Promise.all([
+            FoodRestaurant.find({ _id: { $in: restaurantIds } }).select('restaurantName phone').lean(),
+            DiningReservation.find({ _id: { $in: reservationIds } })
+                .select('userNameSnapshot userPhoneSnapshot restaurantNameSnapshot bookingDate slotStart guests')
+                .lean(),
+        ]);
+        const restaurantMap = new Map(restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }]));
+        const reservationMap = new Map(reservations.map((r) => [String(r._id), r]));
+
+        for (const bill of items) {
+            bill.restaurant = restaurantMap.get(String(bill.restaurantId)) || null;
+            bill.reservation = reservationMap.get(String(bill.reservationId)) || null;
+        }
+    }
+
     return { items, total, page: Number(page), limit: Number(limit) };
 }
 
@@ -155,11 +175,20 @@ export async function getDiningRevenueStats() {
         },
     ]);
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+    const bookingsToday = await DiningReservation.countDocuments({
+        bookingDate: { $gte: todayStart, $lte: todayEnd },
+    });
+
     return {
         totalRevenue: roundMoney(agg?.totalRevenue || 0),
         totalCommission: roundMoney(agg?.totalCommission || 0),
         totalPayout: roundMoney(agg?.totalPayout || 0),
         billCount: agg?.billCount || 0,
+        bookingsToday,
     };
 }
 

@@ -48,7 +48,7 @@ async function withRestaurantInfo(reservations) {
     if (!reservations.length) return [];
     const restaurantIds = [...new Set(reservations.map((r) => String(r.restaurantId)))];
     const restaurants = await FoodRestaurant.find({ _id: { $in: restaurantIds } })
-        .select('restaurantName images image phone')
+        .select('restaurantName images image profileImage phone city area')
         .lean();
     const map = new Map(restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }]));
     return reservations.map((r) => ({ ...r, restaurant: map.get(String(r.restaurantId)) || null }));
@@ -118,8 +118,18 @@ export async function createReservation(userId, { restaurantId, bookingDate, slo
     }
 }
 
-export async function listAllReservationsAdmin({ status, page = 1, limit = 20 } = {}) {
+export async function listAllReservationsAdmin({ status, date, page = 1, limit = 20 } = {}) {
     const filter = status ? { status } : {};
+    if (date) {
+        const parsed = new Date(date);
+        if (!Number.isNaN(parsed.getTime())) {
+            const start = new Date(parsed);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(parsed);
+            end.setHours(23, 59, 59, 999);
+            filter.bookingDate = { $gte: start, $lte: end };
+        }
+    }
     const skip = (Number(page) - 1) * Number(limit);
     const [items, total] = await Promise.all([
         DiningReservation.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).lean(),

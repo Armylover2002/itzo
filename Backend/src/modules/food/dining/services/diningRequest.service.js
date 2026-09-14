@@ -26,23 +26,32 @@ export async function requestDining(restaurantId) {
     return profile;
 }
 
-export async function listDiningRequests({ status } = {}) {
+export async function listDiningRequests({ status, search } = {}) {
     const filter = status ? { status } : { status: 'pending' };
     const profiles = await DiningProfile.find(filter).sort({ requestedAt: -1 }).lean();
-    if (!profiles.length) return [];
+    if (!profiles.length) return { requests: [], total: 0 };
 
     const restaurantIds = profiles.map((p) => p.restaurantId);
-    const restaurants = await FoodRestaurant.find({ _id: { $in: restaurantIds } })
-        .select('restaurantName phone email images image')
+    const restaurantFilter = { _id: { $in: restaurantIds } };
+    if (search) {
+        const regex = new RegExp(String(search).trim(), 'i');
+        restaurantFilter.$or = [{ restaurantName: regex }, { ownerName: regex }, { ownerPhone: regex }];
+    }
+    const restaurants = await FoodRestaurant.find(restaurantFilter)
+        .select('restaurantName ownerName ownerPhone businessType profileImage images image city area')
         .lean();
     const restaurantMap = new Map(
         restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }])
     );
 
-    return profiles.map((profile) => ({
-        ...profile,
-        restaurant: restaurantMap.get(String(profile.restaurantId)) || null,
-    }));
+    const requests = profiles
+        .map((profile) => ({
+            ...profile,
+            restaurant: restaurantMap.get(String(profile.restaurantId)) || null,
+        }))
+        .filter((r) => !search || r.restaurant);
+
+    return { requests, total: requests.length };
 }
 
 export async function reviewDiningRequest(profileId, { decision, rejectionReason, adminId }) {
@@ -75,23 +84,35 @@ export async function reviewDiningRequest(profileId, { decision, rejectionReason
     return profile;
 }
 
-export async function listDiningRestaurants({ status } = {}) {
-    const filter = status ? { status } : {};
+export async function listDiningRestaurants({ status, search } = {}) {
+    // OLD itzo always scopes this list to approved dining profiles regardless of
+    // the caller's filter — mirrored here so an omitted/blank status can never
+    // leak pending/rejected profiles into the admin "Restaurants" list.
+    const filter = { status: status || 'approved' };
     const profiles = await DiningProfile.find(filter).sort({ createdAt: -1 }).lean();
-    if (!profiles.length) return [];
+    if (!profiles.length) return { restaurants: [], total: 0 };
 
     const restaurantIds = profiles.map((p) => p.restaurantId);
-    const restaurants = await FoodRestaurant.find({ _id: { $in: restaurantIds } })
-        .select('restaurantName phone email images image')
+    const restaurantFilter = { _id: { $in: restaurantIds } };
+    if (search) {
+        const regex = new RegExp(String(search).trim(), 'i');
+        restaurantFilter.$or = [{ restaurantName: regex }, { ownerName: regex }, { ownerPhone: regex }];
+    }
+    const restaurants = await FoodRestaurant.find(restaurantFilter)
+        .select('restaurantName ownerName ownerPhone businessType profileImage images image city area')
         .lean();
     const restaurantMap = new Map(
         restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }])
     );
 
-    return profiles.map((profile) => ({
-        ...profile,
-        restaurant: restaurantMap.get(String(profile.restaurantId)) || null,
-    }));
+    const list = profiles
+        .map((profile) => ({
+            ...profile,
+            restaurant: restaurantMap.get(String(profile.restaurantId)) || null,
+        }))
+        .filter((r) => !search || r.restaurant);
+
+    return { restaurants: list, total: list.length };
 }
 
 export async function setDiningCommissionOverride(profileId, { override, type, value }) {

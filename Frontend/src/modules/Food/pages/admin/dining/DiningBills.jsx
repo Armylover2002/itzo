@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, IndianRupee, Receipt, TrendingUp, Layers } from "lucide-react";
+import { Loader2, IndianRupee, Calendar, TrendingUp, Layers } from "lucide-react";
 import { toast } from "sonner";
 import { adminAPI } from "@food/api";
 
@@ -58,7 +58,7 @@ export default function DiningBills() {
           <StatCard icon={IndianRupee} label="Total revenue" value={`₹${stats.totalRevenue}`} />
           <StatCard icon={TrendingUp} label="Platform commission" value={`₹${stats.totalCommission}`} />
           <StatCard icon={Layers} label="Restaurant payout" value={`₹${stats.totalPayout}`} />
-          <StatCard icon={Receipt} label="Bills settled" value={stats.billCount} />
+          <StatCard icon={Calendar} label="Bookings today" value={stats.bookingsToday ?? 0} />
         </div>
       )}
 
@@ -81,7 +81,8 @@ export default function DiningBills() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs uppercase text-gray-500">
               <tr>
-                <th className="px-4 py-3">Bill</th>
+                <th className="px-4 py-3">Restaurant</th>
+                <th className="px-4 py-3">Guest</th>
                 <th className="px-4 py-3">Total</th>
                 <th className="px-4 py-3">Commission</th>
                 <th className="px-4 py-3">Payout</th>
@@ -91,7 +92,14 @@ export default function DiningBills() {
             <tbody className="divide-y divide-gray-100">
               {bills.map((bill) => (
                 <tr key={bill._id}>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">{bill._id.slice(-8)}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-gray-900">{bill.restaurant?.name || bill.reservation?.restaurantNameSnapshot || "—"}</div>
+                    <div className="font-mono text-[11px] text-gray-400">{bill._id.slice(-8)}</div>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {bill.reservation?.userNameSnapshot || "—"}
+                    {bill.reservation?.userPhoneSnapshot && <div className="text-[11px] text-gray-400">{bill.reservation.userPhoneSnapshot}</div>}
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-900">₹{bill.grandTotal}</td>
                   <td className="px-4 py-3 text-gray-600">₹{bill.commission?.amount || 0}</td>
                   <td className="px-4 py-3 text-gray-600">₹{bill.restaurantPayout}</td>
