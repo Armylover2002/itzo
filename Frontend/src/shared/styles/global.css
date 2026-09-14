@@ -1,0 +1,768 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
+@import "./design-system.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-poppins: 'Inter', sans-serif;
+  --font-outfit: 'Inter', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --radius: 0.625rem;
+  
+  /* Brand Theme Colors */
+  --background: #FAF7F2;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #FF0000;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFEDED;
+  --secondary-foreground: #FF0000;
+  --muted: #FAF7F2;
+  --muted-foreground: #5C5247;
+  --accent: #EAF4EA;
+  --accent-foreground: #2E7D32;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #EDE8E0;
+  --input: #EDE8E0;
+  --ring: #FF0000;
+  --sidebar: #FAF7F2;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary: #FF0000;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFEDED;
+  --sidebar-accent-foreground: #FF0000;
+  --sidebar-border: #EDE8E0;
+  --sidebar-ring: #FF0000;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+  --font-display: 'Inter', sans-serif;
+  --shadow-premium: 0 10px 40px -10px rgba(0,0,0,0.1);
+  --shadow-soft: 0 4px 20px -2px rgba(0,0,0,0.05);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Blinkit Brand Colors & Semantic Accent Colors */
+  --color-brand-50: #EAF4EA;
+  --color-brand-100: #D0E5D0;
+  --color-brand-200: #A2CBA2;
+  --color-brand-300: #73B073;
+  --color-brand-400: #2E7D32;
+  --color-brand-500: #256428;
+  --color-brand-600: #1D4F20;
+  --color-brand-700: #153917;
+  --color-brand-800: #0C240E;
+  --color-brand-900: #040E05;
+  --color-brand-950: #010401;
+  
+  /* Brand Color Overrides for Tailwind Utilities */
+  --color-orange-50: #FFEDED;
+  --color-orange-100: #FFD6D6;
+  --color-orange-500: #FF0000;
+  --color-orange-600: #CC0000;
+  --color-orange-700: #990000;
+
+  --color-green-50: #EAF4EA;
+  --color-green-100: #D0E5D0;
+  --color-green-500: #2E7D32;
+  --color-green-600: #256428;
+
+  --color-page-bg: #FAF7F2;
+  --color-primary-orange: #FF0000;
+  --color-primary-hover: #CC0000;
+  --color-primary-dark: #990000;
+  --font-poppins: var(--font-poppins);
+  --font-outfit: var(--font-outfit);
+
+  /* Specific brand mappings */
+  --color-orange-tint: #FFEDED;
+  --color-accent-green: #2E7D32;
+  --color-green-tint: #EAF4EA;
+  --color-text-dark: #1A1A1A;
+  --color-text-muted: #5C5247;
+  --color-text-subtle: #C0B5A5;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: #FF0000;
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #FF0000;
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #FF0000;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: #FF0000;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-gray-100 text-foreground m-0 min-h-screen;
+  }
+}
+
+@layer utilities {
+  .dark .quick-theme-scope [class~="bg-white"]:not([class*="dark:bg"]) {
+    background-color: #111827;
+  }
+
+  .dark .quick-theme-scope [class~="bg-slate-50"]:not([class*="dark:bg"]) {
+    background-color: #0f172a;
+  }
+
+  .dark .quick-theme-scope [class~="bg-slate-100"]:not([class*="dark:bg"]) {
+    background-color: #1e293b;
+  }
+
+  .dark .quick-theme-scope [class~="text-black"]:not([class*="dark:text"]) {
+    color: #f8fafc;
+  }
+
+  .dark .quick-theme-scope [class~="text-slate-900"]:not([class*="dark:text"]) {
+    color: #f8fafc;
+  }
+
+  .dark .quick-theme-scope [class*="text-[#1c1c1e]"]:not([class*="dark:text"]),
+  .dark .quick-theme-scope [class*="text-[#1A1A1A]"]:not([class*="dark:text"]),
+  .dark .quick-theme-scope [class*="text-[#1a1a1a]"]:not([class*="dark:text"]) {
+    color: #f8fafc;
+  }
+
+  .dark .quick-theme-scope [class*="bg-[#f8f7f6]"]:not([class*="dark:bg"]) {
+    background-color: var(--background);
+  }
+
+  .dark .quick-theme-scope [class*="bg-[#fafafa]"]:not([class*="dark:bg"]) {
+    background-color: #1e293b;
+  }
+
+  .dark .quick-theme-scope [class~="text-slate-800"]:not([class*="dark:text"]) {
+    color: #e2e8f0;
+  }
+
+  .dark .quick-theme-scope [class~="text-slate-700"]:not([class*="dark:text"]) {
+    color: #cbd5e1;
+  }
+
+  .dark .quick-theme-scope [class~="text-slate-600"]:not([class*="dark:text"]) {
+    color: #94a3b8;
+  }
+
+  .dark .quick-theme-scope [class~="text-gray-800"]:not([class*="dark:text"]) {
+    color: #e2e8f0;
+  }
+
+  .dark .quick-theme-scope [class~="text-gray-700"]:not([class*="dark:text"]) {
+    color: #cbd5e1;
+  }
+
+  .dark .quick-theme-scope [class~="text-gray-600"]:not([class*="dark:text"]) {
+    color: #94a3b8;
+  }
+
+  .dark .quick-theme-scope [class~="border-slate-100"]:not([class*="dark:border"]) {
+    border-color: rgba(148, 163, 184, 0.16);
+  }
+
+  .dark .quick-theme-scope [class~="border-slate-200"]:not([class*="dark:border"]) {
+    border-color: rgba(148, 163, 184, 0.2);
+  }
+
+  .dark .quick-theme-scope [class~="border-gray-100"]:not([class*="dark:border"]) {
+    border-color: rgba(148, 163, 184, 0.16);
+  }
+
+  .dark .quick-theme-scope [class~="border-gray-200"]:not([class*="dark:border"]) {
+    border-color: rgba(148, 163, 184, 0.2);
+  }
+
+  /* Portaled dialogs render outside quick-theme-scope — enforce dark surfaces */
+  .dark [data-slot="dialog-content"] {
+    background-color: var(--card);
+    color: var(--card-foreground);
+    border-color: var(--border);
+  }
+
+  .mesh-gradient-light {
+    background-color: #fdfdfd;
+    background-image:
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.05) 0px, transparent 50%);
+  }
+
+  .custom-scrollbar-dark::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .custom-scrollbar-dark::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar-dark::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
+
+  .scrollbar-hide,
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 720px;
+  }
+  
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  
+  .animate-scroll {
+    animation: scroll 15s linear infinite;
+  }
+
+  .classic-marquee-track {
+    animation: hero-marquee 22s linear infinite;
+    will-change: transform;
+  }
+
+  @keyframes hero-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide-in-left { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fade-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+
+.animate-fade-in { animation: fade-in 0.6s ease-out; }
+.animate-fade-in-up { animation: fade-in-up 0.6s ease-out; }
+.animate-slide-in-left { animation: slide-in-left 0.8s ease-out; }
+.animate-fade-down { animation: fade-down 0.5s ease-out; }
+
+.leaflet-container { height: 100%; width: 100%; z-index: 1; }
+.custom-marker { background: transparent; border: none; }
+.touch-none { touch-action: none; }
+.touch-pan-x { touch-action: pan-x; }
+
+/* Google Places Autocomplete dropdown should overlay modals */
+.pac-container {
+  z-index: 999999 !important;
+  pointer-events: auto !important;
+}
+}
+
+/* ==========================================================================
+   BRAND THEME UNIFICATION (Scoped to Admin, Restaurant & Seller Panels)
+   ========================================================================== 
+   By aliasing Tailwind color variables within these scopes, we unify the 
+   Admin and Seller dashboards to the primary orange brand natively, 
+   WITHOUT affecting the User Panel.
+*/
+.admin-theme-scope,
+.seller-theme-scope {
+  /* Alias Blue to Explicit Primary Orange Hex Codes */
+  --color-blue-50: #FFEDED;
+  --color-blue-100: #FFD6D6;
+  --color-blue-200: #FCDAca;
+  --color-blue-300: #F9B595;
+  --color-blue-400: #F58D60;
+  --color-blue-500: #FF0000;
+  --color-blue-600: #CC0000;
+  --color-blue-700: #990000;
+  --color-blue-800: #932D06;
+  --color-blue-900: #7A2707;
+
+  /* Alias Indigo to Explicit Primary Orange Hex Codes */
+  --color-indigo-50: #FFEDED;
+  --color-indigo-100: #FFD6D6;
+  --color-indigo-200: #FCDAca;
+  --color-indigo-300: #F9B595;
+  --color-indigo-400: #F58D60;
+  --color-indigo-500: #FF0000;
+  --color-indigo-600: #CC0000;
+  --color-indigo-700: #990000;
+  --color-indigo-800: #932D06;
+  --color-indigo-900: #7A2707;
+
+  /* Force Primary to the Brand Orange (Tailwind defaults primary) */
+  --color-primary: #FF0000;
+
+}
+
+/* ==========================================================================
+   CENTRALIZED SELLER PANEL TYPOGRAPHY & FONT STYLING
+   ==========================================================================
+   Enforces the clean, elegant font style (matching "Here's your store performance")
+   across the ENTIRE seller panel. Normalizes font weights to font-semibold (600) / 
+   font-medium (500) so text is never overly bold, heavy, or chunky, and ensures tight 
+   tracking & rich #1c1c1e text color tone.
+*/
+.seller-theme-scope {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: -0.015em;
+  color: #1c1c1e;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.seller-theme-scope h1,
+.seller-theme-scope h2,
+.seller-theme-scope h3,
+.seller-theme-scope h4,
+.seller-theme-scope h5,
+.seller-theme-scope h6,
+.seller-theme-scope .ds-h1,
+.seller-theme-scope .ds-h2,
+.seller-theme-scope .ds-h3,
+.seller-theme-scope .ds-h4 {
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: #1c1c1e;
+}
+
+/* Ensure no heavy bold or chunky text renders inside seller panel */
+.seller-theme-scope .font-black,
+.seller-theme-scope .font-extrabold {
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+}
+
+.seller-theme-scope .font-bold {
+  font-weight: 600 !important;
+}
+
+.seller-theme-scope .ds-stat-large,
+.seller-theme-scope .ds-stat-medium,
+.seller-theme-scope .ds-stat-small {
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+  color: #1c1c1e;
+}
+
+/* App-First UI Optimizations (Scoped to Admin & Seller only) */
+.admin-theme-scope button, 
+.admin-theme-scope [role="button"], 
+.admin-theme-scope .btn,
+.admin-theme-scope select,
+.admin-theme-scope input[type="submit"],
+.admin-theme-scope input[type="button"],
+.seller-theme-scope button, 
+.seller-theme-scope [role="button"], 
+.seller-theme-scope .btn,
+.seller-theme-scope select,
+.seller-theme-scope input[type="submit"],
+.seller-theme-scope input[type="button"] {
+  min-height: 44px;
+}
+
+/* Allow toggle switches and small buttons with explicit height classes or styles to bypass the 44px min-height */
+.admin-theme-scope button.min-h-0,
+.admin-theme-scope button.h-fit,
+.admin-theme-scope button.h-auto,
+.admin-theme-scope button.h-1,
+.admin-theme-scope button.h-2,
+.admin-theme-scope button.h-3,
+.admin-theme-scope button.h-4,
+.admin-theme-scope button.h-5,
+.admin-theme-scope button.h-6,
+.admin-theme-scope button.h-7,
+.admin-theme-scope button.h-8,
+.admin-theme-scope button.h-9,
+.admin-theme-scope button.h-10,
+.admin-theme-scope button.h-11,
+.admin-theme-scope button.h-12,
+.admin-theme-scope [role="button"].min-h-0,
+.admin-theme-scope [role="button"].h-fit,
+.admin-theme-scope [role="button"].h-auto,
+.admin-theme-scope [role="button"].h-1,
+.admin-theme-scope [role="button"].h-2,
+.admin-theme-scope [role="button"].h-3,
+.admin-theme-scope [role="button"].h-4,
+.admin-theme-scope [role="button"].h-5,
+.admin-theme-scope [role="button"].h-6,
+.admin-theme-scope [role="button"].h-7,
+.admin-theme-scope [role="button"].h-8,
+.admin-theme-scope [role="button"].h-9,
+.admin-theme-scope [role="button"].h-10,
+.admin-theme-scope [role="button"].h-11,
+.admin-theme-scope [role="button"].h-12,
+.seller-theme-scope button.min-h-0,
+.seller-theme-scope button.h-fit,
+.seller-theme-scope button.h-auto,
+.seller-theme-scope button.h-1,
+.seller-theme-scope button.h-2,
+.seller-theme-scope button.h-3,
+.seller-theme-scope button.h-4,
+.seller-theme-scope button.h-5,
+.seller-theme-scope button.h-6,
+.seller-theme-scope button.h-7,
+.seller-theme-scope button.h-8,
+.seller-theme-scope button.h-9,
+.seller-theme-scope button.h-10,
+.seller-theme-scope button.h-11,
+.seller-theme-scope button.h-12,
+.seller-theme-scope [role="button"].min-h-0,
+.seller-theme-scope [role="button"].h-fit,
+.seller-theme-scope [role="button"].h-auto,
+.seller-theme-scope [role="button"].h-1,
+.seller-theme-scope [role="button"].h-2,
+.seller-theme-scope [role="button"].h-3,
+.seller-theme-scope [role="button"].h-4,
+.seller-theme-scope [role="button"].h-5,
+.seller-theme-scope [role="button"].h-6,
+.seller-theme-scope [role="button"].h-7,
+.seller-theme-scope [role="button"].h-8,
+.seller-theme-scope [role="button"].h-9,
+.seller-theme-scope [role="button"].h-10,
+.seller-theme-scope [role="button"].h-11,
+.seller-theme-scope [role="button"].h-12,
+.admin-theme-scope button[style*="height"],
+.seller-theme-scope button[style*="height"],
+.admin-theme-scope [role="button"][style*="height"],
+.seller-theme-scope [role="button"][style*="height"] {
+  min-height: 0px !important;
+}
+
+.admin-theme-scope .text-xs, .seller-theme-scope .text-xs { font-size: 0.8125rem; line-height: 1.125rem; }
+.admin-theme-scope .text-sm, .seller-theme-scope .text-sm { font-size: 0.9375rem; line-height: 1.375rem; }
+.admin-theme-scope .text-base, .seller-theme-scope .text-base { font-size: 1.0625rem; line-height: 1.5rem; }
+
+/* Force Orange Theme on all Black/Slate Buttons & Icons in Seller Scope */
+.seller-theme-scope button.bg-slate-900,
+.seller-theme-scope button.bg-black,
+.seller-theme-scope button.bg-slate-800,
+.seller-theme-scope a.bg-slate-900,
+.seller-theme-scope a.bg-black,
+.seller-theme-scope span.bg-slate-900,
+.seller-theme-scope div.bg-slate-900:not([class*="fixed"]):not([class*="backdrop"]),
+.seller-theme-scope .bg-slate-900[role="button"] {
+  background-color: #FF0000 !important;
+  color: #FFFFFF !important;
+}
+
+.seller-theme-scope button.bg-slate-900:hover,
+.seller-theme-scope button.bg-black:hover,
+.seller-theme-scope button.bg-slate-800:hover,
+.seller-theme-scope a.bg-slate-900:hover,
+.seller-theme-scope a.bg-black:hover,
+.seller-theme-scope span.bg-slate-900:hover,
+.seller-theme-scope div.bg-slate-900:not([class*="fixed"]):not([class*="backdrop"]):hover,
+.seller-theme-scope .bg-slate-900[role="button"]:hover {
+  background-color: #CC0000 !important;
+  color: #FFFFFF !important;
+}
+
+/* Maintain Translucent Gray for Modal Backdrops & Overlays (so they don't turn orange) */
+.seller-theme-scope div[class*="bg-slate-900/40"],
+.seller-theme-scope div[class*="bg-slate-900/60"],
+.seller-theme-scope div.fixed[class*="bg-slate-900"],
+.seller-theme-scope div.absolute[class*="bg-slate-900"] {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+  color: inherit !important;
+}
+.seller-theme-scope div[class*="bg-slate-900/60"] {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+}
+
+/* Sidebar and BottomNav Unification strictly for Seller Workspace */
+.seller-theme-scope aside .bg-primary,
+.seller-theme-scope aside a.active .bg-primary,
+.seller-theme-scope aside a.active .bg-white\/20 {
+  background-color: #FF0000 !important;
+  color: #FFFFFF !important;
+}
+
+.seller-theme-scope .text-primary,
+.seller-theme-scope a.active,
+.seller-theme-scope a.active span,
+.seller-theme-scope a.active svg {
+  color: #FF0000 !important;
+}
+
+.seller-theme-scope a.active {
+  color: #FF0000 !important;
+}
+
+.seller-theme-scope aside .bg-primary,
+.seller-theme-scope aside .text-primary {
+  background-color: #FF0000 !important;
+  color: #FFFFFF !important;
+}
+
+.seller-theme-scope aside a.active {
+  color: #FF0000 !important;
+}
+
+.seller-theme-scope aside a.active div {
+  color: #FF0000 !important;
+}
+
+/* Bottom Nav transparent background on active items */
+.seller-theme-scope .fixed.bottom-0 a.active {
+  background-color: transparent !important;
+  color: #FF0000 !important;
+}
+
+.seller-theme-scope .fixed.bottom-0 a.active svg,
+.seller-theme-scope .fixed.bottom-0 a.active span {
+  color: #FF0000 !important;
+  background-color: transparent !important;
+}
+
+/* ==========================================================================
+   BLAZE PREMIUM THEME — Additive & Scoped (Phase 1: Dashboard only)
+   ==========================================================================
+   Applying `.blaze-theme-scope` remaps the semantic design tokens to the
+   Blaze palette for that subtree ONLY. It does not modify :root or any other
+   page, so the rest of Admin/Seller stays on the current theme until we roll
+   Blaze out globally in a later, separately-approved phase. Fully reversible.
+*/
+.blaze-theme-scope {
+  /* ------------------------------------------------------------------
+     BRANDING: reuse the EXISTING Blaze Food/Admin tokens exactly.
+     The semantic tokens (--primary, --secondary, --ring, --background,
+     --card, --border, --muted, --accent, --foreground …) are intentionally
+     NOT redeclared here, so they INHERIT the current Admin theme
+     (#FF0000 family + warm paper). This guarantees the new Dashboard keeps
+     the identical Blaze brand identity — only layout/spacing/typography/
+     shadows/animation are upgraded. No new red is introduced.
+     ------------------------------------------------------------------ */
+
+  /* Raw brand + status tokens mirrored from the existing Food theme so the
+     shared components can reference them directly via var(). */
+  --blaze-primary: #FF0000;          /* = --primary / --color-orange-500 */
+  --blaze-primary-hover: #CC0000;    /* = --color-primary-hover / orange-600 */
+  --blaze-primary-active: #990000;   /* = --color-primary-dark / orange-700 */
+  --blaze-primary-light: #FFEDED;    /* = --secondary / --color-orange-50 */
+  --blaze-success: #2E7D32;          /* = --color-accent-green */
+  --blaze-warning: #F59E0B;
+  --blaze-info: #2563EB;
+  --blaze-danger: #DC2626;
+
+  /* ---- ONE radius system ---- */
+  --blaze-radius-card: 18px;
+  --blaze-radius-control: 12px;
+  --blaze-radius-pill: 9999px;
+
+  /* ---- ONE shadow scale ---- */
+  --blaze-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --blaze-shadow-md: 0 8px 24px -12px rgba(16, 24, 40, 0.18);
+  --blaze-shadow-lg: 0 16px 40px -16px rgba(16, 24, 40, 0.22);
+  --blaze-shadow-primary: 0 16px 32px -16px rgba(255, 0, 0, 0.22);
+
+  /* ---- ONE spacing rhythm ---- */
+  --blaze-gap: 1.5rem;
+}
+
+/* ==========================================================================
+   BLAZE DESIGN SYSTEM — Reusable utility classes (scoped)
+   ==========================================================================
+   One surface, one typography ramp, one shadow scale, one radius. Every admin
+   page consumes these via the shared components so the whole product matches.
+*/
+
+/* Surfaces */
+.blaze-theme-scope .blaze-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--blaze-radius-card);
+  box-shadow: var(--blaze-shadow-sm);
+}
+.blaze-theme-scope .blaze-card-interactive {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.blaze-theme-scope .blaze-card-interactive:hover {
+  box-shadow: var(--blaze-shadow-primary);
+  border-color: rgba(255, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Typography ramp */
+.blaze-theme-scope .blaze-eyebrow {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.blaze-theme-scope .blaze-title {
+  font-size: 1.75rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.blaze-theme-scope .blaze-subtitle {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+}
+.blaze-theme-scope .blaze-section-title {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.blaze-theme-scope .blaze-section-subtitle {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--muted-foreground);
+}
+.blaze-theme-scope .blaze-label {
+  font-size: 0.8125rem;
+  line-height: 1rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.blaze-theme-scope .blaze-value {
+  font-size: 1.5rem;
+  line-height: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+}
+.blaze-theme-scope .blaze-body {
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  color: var(--foreground);
+}
+.blaze-theme-scope .blaze-muted {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  color: var(--muted-foreground);
+}
+
+/* Premium scrollbar for Blaze scope */
+.blaze-theme-scope .blaze-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.blaze-theme-scope .blaze-scroll::-webkit-scrollbar-track { background: transparent; }
+.blaze-theme-scope .blaze-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 0, 0, 0.18);
+  border-radius: 9999px;
+}
+.blaze-theme-scope .blaze-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 0, 0, 0.32); }
+.blaze-theme-scope .blaze-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,0,0,0.2) transparent; }
+
+/* Utilities to hide scrollbars while preserving scrollability */
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+}
+.no-scrollbar,
+.scrollbar-hide,
+.scrollbar-none {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Safe-area padding for native status bar */
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/*
+ * App shell layout: fixed header + scrollable body.
+ * Works reliably in Android/iOS WebView where position:sticky often fails.
+ */
+.app-shell-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-shell-page__header {
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.app-shell-page__body {
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+
+

@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "description": "Golden snapshots for resolveOrderLifecycle — regenerate only after intentional copy/stage changes",
+    "surfaces": [
+      "banner",
+      "tracking",
+      "history",
+      "notification",
+      "eta",
+      "hideBanner",
+      "timeline"
+    ]
+  },
+  "stages": {
+    "scheduled": {
+      "stage": "scheduled",
+      "title": "Order Scheduled",
+      "subtitle": "Your order is scheduled",
+      "timelineLabel": "Scheduled",
+      "showETA": false,
+      "hideBanner": true
+    },
+    "awaiting_restaurant": {
+      "stage": "awaiting_restaurant",
+      "title": "Order Placed",
+      "subtitle": "Waiting for restaurant confirmation",
+      "timelineLabel": "Placed",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "awaiting_restaurant_with_eta": {
+      "stage": "awaiting_restaurant",
+      "title": "Order Placed",
+      "subtitle": "Waiting for restaurant confirmation",
+      "timelineLabel": "Placed",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "restaurant_accepted": {
+      "stage": "restaurant_accepted",
+      "title": "Restaurant accepted",
+      "subtitle": "Restaurant accepted",
+      "timelineLabel": "Accepted",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "preparing": {
+      "stage": "preparing",
+      "title": "Preparing your order",
+      "subtitle": "Preparing your order",
+      "timelineLabel": "Preparing",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "awaiting_rider": {
+      "stage": "awaiting_rider",
+      "title": "Ready for pickup",
+      "subtitle": "Waiting for delivery partner",
+      "timelineLabel": "Ready for pickup",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "rider_assigned": {
+      "stage": "rider_assigned",
+      "title": "Delivery partner assigned",
+      "subtitle": "Delivery partner assigned",
+      "timelineLabel": "Partner assigned",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "heading_to_restaurant": {
+      "stage": "heading_to_restaurant",
+      "title": "Heading to restaurant",
+      "subtitle": "Heading to restaurant",
+      "timelineLabel": "Partner en route to restaurant",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "at_restaurant": {
+      "stage": "at_restaurant",
+      "title": "At restaurant",
+      "subtitle": "Delivery partner reached restaurant",
+      "timelineLabel": "Reached restaurant",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "on_the_way": {
+      "stage": "on_the_way",
+      "title": "On the way",
+      "subtitle": "On the way",
+      "timelineLabel": "On the way",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "arriving": {
+      "stage": "arriving",
+      "title": "Arriving",
+      "subtitle": "Arriving",
+      "timelineLabel": "Arrived near you",
+      "showETA": true,
+      "hideBanner": false
+    },
+    "delivered": {
+      "stage": "delivered",
+      "title": "Delivered",
+      "subtitle": "Delivered",
+      "timelineLabel": "Delivered",
+      "showETA": false,
+      "hideBanner": true
+    },
+    "cancelled": {
+      "stage": "cancelled",
+      "title": "Cancelled",
+      "subtitle": "Cancelled",
+      "timelineLabel": "Cancelled",
+      "showETA": false,
+      "hideBanner": true
+    },
+    "unknown": {
+      "stage": "unknown",
+      "title": "Order update",
+      "subtitle": "Order status updated",
+      "timelineLabel": "Updated",
+      "showETA": false,
+      "hideBanner": false
+    }
+  }
+}

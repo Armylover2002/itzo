@@ -1,0 +1,179 @@
+import { Suspense, lazy, useEffect } from "react"
+import { Routes, Route, Navigate } from "react-router-dom"
+import { setAppType } from "@common/utils/businessSettings"
+import ProtectedRoute from "@food/components/ProtectedRoute"
+import { AuthPageGuard } from "@core/guards/RouteGuard"
+import Loader from "@food/components/Loader"
+import ErrorBoundary from "@food/components/ErrorBoundary"
+import RestaurantLayout from "./RestaurantLayout"
+import RestaurantApprovalGuard from "./RestaurantApprovalGuard"
+import { Outlet } from "react-router-dom"
+import { LiveLocationProvider } from "@food/contexts/LiveLocationContext"
+
+const LayoutWrapper = () => (
+  <RestaurantApprovalGuard>
+    <LiveLocationProvider>
+      <RestaurantLayout>
+        <Outlet />
+      </RestaurantLayout>
+    </LiveLocationProvider>
+  </RestaurantApprovalGuard>
+)
+
+
+// Lazy Loading Components
+const AllOrdersPage = lazy(() => import("@food/pages/restaurant/AllOrdersPage"))
+const RestaurantNotifications = lazy(() => import("@food/pages/restaurant/Notifications"))
+const OrderDetails = lazy(() => import("@food/pages/restaurant/OrderDetails"))
+const OrdersMain = lazy(() => import("@food/pages/restaurant/OrdersMain"))
+const RestaurantOnboarding = lazy(() => import("@food/pages/restaurant/Onboarding"))
+const LiveLocationControl = lazy(() => import("@food/pages/restaurant/LiveLocationControl"))
+const VendorMoveLocation = lazy(() => import("@food/pages/restaurant/VendorMoveLocation"))
+const TermsAndConditionsPage = lazy(() => import("@food/pages/restaurant/TermsAndConditionsPage"))
+const PrivacyPolicyPage = lazy(() => import("@food/pages/restaurant/PrivacyPolicyPage"))
+const SupportPolicyPage = lazy(() => import("@food/pages/restaurant/SupportPolicyPage"))
+const MenuCategoriesPage = lazy(() => import("@food/pages/restaurant/MenuCategoriesPage"))
+const ItemSlotTimingsPage = lazy(() => import("@food/pages/restaurant/ItemSlotTimingsPage"))
+const CreateCouponsPage = lazy(() => import("@food/pages/restaurant/CreateCouponsPage"))
+const AdvertisementsPage = lazy(() => import("@food/pages/restaurant/AdvertisementsPage"))
+const NewAdvertisementPage = lazy(() => import("@food/pages/restaurant/NewAdvertisementPage"))
+const EditAdvertisementPage = lazy(() => import("@food/pages/restaurant/EditAdvertisementPage"))
+const AdDetailsPage = lazy(() => import("@food/pages/restaurant/AdDetailsPage"))
+const RestaurantStatus = lazy(() => import("@food/pages/restaurant/RestaurantStatus"))
+const ExploreMore = lazy(() => import("@food/pages/restaurant/ExploreMore"))
+const DeliverySettings = lazy(() => import("@food/pages/restaurant/DeliverySettings"))
+const RushHour = lazy(() => import("@food/pages/restaurant/RushHour"))
+const OutletTimings = lazy(() => import("@food/pages/restaurant/OutletTimings"))
+const DaySlots = lazy(() => import("@food/pages/restaurant/DaySlots"))
+const OutletInfo = lazy(() => import("@food/pages/restaurant/OutletInfo"))
+const RatingsReviews = lazy(() => import("@food/pages/restaurant/RatingsReviews"))
+const EditOwner = lazy(() => import("@food/pages/restaurant/EditOwner"))
+const EditRestaurantAddress = lazy(() => import("@food/pages/restaurant/EditRestaurantAddress"))
+const Inventory = lazy(() => import("@food/pages/restaurant/Inventory"))
+const Feedback = lazy(() => import("@food/pages/restaurant/Feedback"))
+const ShareFeedback = lazy(() => import("@food/pages/restaurant/ShareFeedback"))
+const DishRatings = lazy(() => import("@food/pages/restaurant/DishRatings"))
+const RestaurantSupport = lazy(() => import("@food/pages/restaurant/RestaurantSupport"))
+const FssaiDetails = lazy(() => import("@food/pages/restaurant/FssaiDetails"))
+const FssaiUpdate = lazy(() => import("@food/pages/restaurant/FssaiUpdate"))
+const Hyperpure = lazy(() => import("@food/pages/restaurant/Hyperpure"))
+const ItemDetailsPage = lazy(() => import("@food/pages/restaurant/ItemDetailsPage"))
+const HubFinance = lazy(() => import("@food/pages/restaurant/HubFinance"))
+const WalletPage = lazy(() => import("@food/pages/restaurant/WalletPage"))
+const FinanceDetailsPage = lazy(() => import("@food/pages/restaurant/FinanceDetailsPage"))
+const WithdrawalHistoryPage = lazy(() => import("@food/pages/restaurant/WithdrawalHistoryPage"))
+const DownloadReport = lazy(() => import("@food/pages/restaurant/DownloadReport"))
+const RestaurantProfilePage = lazy(() => import("@food/pages/restaurant/RestaurantProfilePage"))
+const RestaurantReferEarn = lazy(() => import("@food/pages/restaurant/RestaurantReferEarn"))
+const BusinessPlanPage = lazy(() => import("@food/pages/restaurant/BusinessPlanPage"))
+
+const ManageOutlets = lazy(() => import("@food/pages/restaurant/ManageOutlets"))
+const UpdateBankDetails = lazy(() => import("@food/pages/restaurant/UpdateBankDetails"))
+const ZoneSetup = lazy(() => import("@food/pages/restaurant/ZoneSetup"))
+const Welcome = lazy(() => import("@food/pages/restaurant/auth/Welcome"))
+const Login = lazy(() => import("@food/pages/restaurant/auth/Login"))
+const OTP = lazy(() => import("@food/pages/restaurant/auth/OTP"))
+const Signup = lazy(() => import("@food/pages/restaurant/auth/Signup"))
+const ForgotPassword = lazy(() => import("@food/pages/restaurant/auth/ForgotPassword"))
+const VerificationPending = lazy(() => import("@food/pages/restaurant/auth/VerificationPending"))
+
+export default function RestaurantRouter() {
+  useEffect(() => {
+    setAppType('restaurant')
+  }, [])
+
+  useEffect(() => {
+    document.documentElement.classList.add("restaurant-panel")
+    return () => {
+      document.documentElement.classList.remove("restaurant-panel")
+    }
+  }, [])
+
+  return (
+    <ErrorBoundary>
+      <style>{`
+        html.restaurant-panel button:not(:disabled),
+        html.restaurant-panel [data-slot="button"]:not(:disabled),
+        html.restaurant-panel [role="button"]:not([aria-disabled="true"]),
+        html.restaurant-panel input[type="button"]:not(:disabled),
+        html.restaurant-panel input[type="submit"]:not(:disabled) {
+          cursor: pointer;
+        }
+        html.restaurant-panel button:disabled,
+        html.restaurant-panel [data-slot="button"]:disabled {
+          cursor: not-allowed;
+        }
+        html.restaurant-panel a[href] {
+          cursor: pointer;
+        }
+      `}</style>
+      <Suspense fallback={<Loader />}>
+      <Routes>
+        {/* Auth Routes — redirect to dashboard if already logged in */}
+        <Route path="welcome" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Welcome /></AuthPageGuard>} />
+        <Route path="login" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Login /></AuthPageGuard>} />
+        {/* Canonical sign-in path used by AuthRedirect */}
+        <Route path="auth/sign-in" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Login /></AuthPageGuard>} />
+        <Route path="otp" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><OTP /></AuthPageGuard>} />
+        <Route path="signup" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Signup /></AuthPageGuard>} />
+        <Route path="forgot-password" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><ForgotPassword /></AuthPageGuard>} />
+        <Route path="pending-verification" element={<VerificationPending />} />
+
+        {/* Protected Routes */}
+        <Route element={<LayoutWrapper />}>
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OrdersMain /></ProtectedRoute>} path="" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantNotifications /></ProtectedRoute>} path="notifications" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AllOrdersPage /></ProtectedRoute>} path="orders/all" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OrderDetails /></ProtectedRoute>} path="orders/:orderId" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DeliverySettings /></ProtectedRoute>} path="delivery-settings" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RushHour /></ProtectedRoute>} path="rush-hour" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><MenuCategoriesPage /></ProtectedRoute>} path="menu-categories" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemSlotTimingsPage /></ProtectedRoute>} path="item-slot-timings" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><CreateCouponsPage /></ProtectedRoute>} path="create-coupons" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AdvertisementsPage /></ProtectedRoute>} path="advertisements" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><NewAdvertisementPage /></ProtectedRoute>} path="advertisements/new" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AdDetailsPage /></ProtectedRoute>} path="advertisements/:id" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditAdvertisementPage /></ProtectedRoute>} path="advertisements/:id/edit" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantStatus /></ProtectedRoute>} path="status" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ExploreMore /></ProtectedRoute>} path="explore" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OutletTimings /></ProtectedRoute>} path="outlet-timings" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DaySlots /></ProtectedRoute>} path="outlet-timings/:day" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OutletInfo /></ProtectedRoute>} path="outlet-info" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RatingsReviews /></ProtectedRoute>} path="ratings-reviews" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditOwner /></ProtectedRoute>} path="edit-owner" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditRestaurantAddress /></ProtectedRoute>} path="edit-address" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Inventory /></ProtectedRoute>} path="inventory" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Feedback /></ProtectedRoute>} path="feedback" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ShareFeedback /></ProtectedRoute>} path="share-feedback" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DishRatings /></ProtectedRoute>} path="dish-ratings" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantSupport /></ProtectedRoute>} path="help-centre/support" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FssaiDetails /></ProtectedRoute>} path="fssai" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FssaiUpdate /></ProtectedRoute>} path="fssai/update" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Hyperpure /></ProtectedRoute>} path="hyperpure" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemDetailsPage /></ProtectedRoute>} path="hub-menu/item/:id" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><HubFinance /></ProtectedRoute>} path="hub-finance" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WithdrawalHistoryPage /></ProtectedRoute>} path="withdrawal-history" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FinanceDetailsPage /></ProtectedRoute>} path="finance-details" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DownloadReport /></ProtectedRoute>} path="download-report" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ManageOutlets /></ProtectedRoute>} path="manage-outlets" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><UpdateBankDetails /></ProtectedRoute>} path="update-bank-details" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ZoneSetup /></ProtectedRoute>} path="zone-setup" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantProfilePage /></ProtectedRoute>} path="profile" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantReferEarn /></ProtectedRoute>} path="refer-earn" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WalletPage /></ProtectedRoute>} path="wallet" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><BusinessPlanPage /></ProtectedRoute>} path="business-plan" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><LiveLocationControl /></ProtectedRoute>} path="live-location" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><VendorMoveLocation /></ProtectedRoute>} path="move-location" />
+        </Route>
+
+        {/* Other Routes */}
+        <Route path="onboarding" element={<RestaurantOnboarding />} />
+        <Route path="terms" element={<TermsAndConditionsPage />} />
+        <Route path="privacy" element={<PrivacyPolicyPage />} />
+        <Route path="support" element={<SupportPolicyPage />} />
+        <Route path="*" element={<Navigate to="/food/restaurant" replace />} />
+      </Routes>
+    </Suspense>
+    </ErrorBoundary>
+  )
+}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <!-- External splash CSS avoids Vite html-inline-proxy Windows path bugs during build -->
+  <link rel="stylesheet" href="/initial-splash.css" />
+  <title>Blaze</title>
+</head>
+
+<body>
+  <div id="initial-splash">
+    <img src="/final_logo200-removebg-preview.png" alt="Blaze Logo" />
+  </div>
+  <div id="root"></div>
+  <script type="module" src="/src/index.jsx"></script>
+  <script>
+    // Wait until the main content has loaded
+    window.addEventListener('load', () => {
+      // Add a slight delay to ensure React has painted
+      setTimeout(() => {
+        const splash = document.getElementById('initial-splash');
+        if (splash) {
+          splash.style.opacity = '0';
+          setTimeout(() => splash.remove(), 600);
+        }
+      }, 100);
+    });
+  </script>
+</body>
+
+</html>

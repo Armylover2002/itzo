@@ -1,0 +1,94 @@
+import React, { Suspense } from "react"
+import {
+  Navigate,
+  Route,
+  Routes
+} from "react-router-dom"
+import Loader from "@food/components/Loader"
+
+const Dashboard = React.lazy(() => import("../pages/Dashboard"))
+const HeaderCategories = React.lazy(() => import("../pages/categories/HeaderCategories"))
+const Level2Categories = React.lazy(() => import("../pages/categories/Level2Categories"))
+const SubCategories = React.lazy(() => import("../pages/categories/SubCategories"))
+const CategoryHierarchy = React.lazy(() => import("../pages/categories/CategoryHierarchy"))
+const ProductManagement = React.lazy(() => import("../pages/ProductManagement"))
+const ActiveSellers = React.lazy(() => import("../pages/ActiveSellers"))
+const PendingSellers = React.lazy(() => import("../pages/PendingSellers"))
+const AdminWallet = React.lazy(() => import("../pages/AdminWallet"))
+const WithdrawalRequests = React.lazy(() => import("../pages/WithdrawalRequests"))
+const CustomerManagement = React.lazy(() => import("../pages/CustomerManagement"))
+const TransactionReport = React.lazy(() => import("../pages/TransactionReport"))
+const CustomerDetail = React.lazy(() => import("../pages/CustomerDetail"))
+const FAQManagement = React.lazy(() => import("../pages/FAQManagement"))
+const OrdersList = React.lazy(() => import("../pages/OrdersList"))
+const OrderDetail = React.lazy(() => import("../pages/OrderDetail"))
+const SellerDetail = React.lazy(() => import("../pages/SellerDetail"))
+const SupportTickets = React.lazy(() => import("../pages/SupportTickets"))
+const ReviewModeration = React.lazy(() => import("../pages/ReviewModeration"))
+const CouponManagement = React.lazy(() => import("../pages/CouponManagement"))
+const ContentManager = React.lazy(() => import("../pages/ContentManager"))
+const HeroCategoriesPerPage = React.lazy(() => import("../pages/HeroCategoriesPerPage"))
+const NotificationComposer = React.lazy(() => import("../pages/NotificationComposer"))
+const OfferSectionsManagement = React.lazy(() => import("../pages/OfferSectionsManagement"))
+const FastFavManagement = React.lazy(() => import("../pages/FastFavManagement"))
+const ShopByStoreManagement = React.lazy(() => import("../pages/ShopByStoreManagement"))
+const BillingCharges = React.lazy(() => import("../pages/BillingCharges"))
+const QuickZoneSetup = React.lazy(() => import("../pages/ZoneSetup"))
+const QuickAddZone = React.lazy(() => import("../pages/AddZone"))
+const QuickViewZone = React.lazy(() => import("../pages/ViewZone"))
+const AllZonesMap = React.lazy(() => import("../pages/AllZonesMap"))
+const DeliveryBoyViewMap = React.lazy(() => import("../pages/DeliveryBoyViewMap"))
+const SellerCouponRequest = React.lazy(() => import("../pages/SellerCouponRequest"))
+const AdminReturns = React.lazy(() => import("../pages/AdminReturns"))
+
+function QuickCommerceAdminRoutesInner() {
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/categories" element={<Navigate to="/ecs/quick-commerce/categories/header" replace />} />
+      <Route path="/categories/header" element={<HeaderCategories />} />
+      <Route path="/categories/level2" element={<Level2Categories />} />
+      <Route path="/categories/sub" element={<SubCategories />} />
+      <Route path="/categories/hierarchy" element={<CategoryHierarchy />} />
+      <Route path="/products" element={<ProductManagement />} />
+      <Route path="/zone-setup" element={<QuickZoneSetup />} />
+      <Route path="/zone-setup/add" element={<QuickAddZone />} />
+      <Route path="/zone-setup/edit/:id" element={<QuickAddZone />} />
+      <Route path="/zone-setup/view/:id" element={<QuickViewZone />} />
+      <Route path="/zone-setup/map" element={<AllZonesMap />} />
+      <Route path="/zone-setup/delivery-boy-view" element={<DeliveryBoyViewMap />} />
+
+      <Route path="/sellers/active" element={<ActiveSellers />} />
+      <Route path="/sellers/active/:id" element={<SellerDetail />} />
+      <Route path="/moderation" element={<ReviewModeration />} />
+      <Route path="/experience-studio" element={<ContentManager />} />
+      <Route path="/hero-categories" element={<HeroCategoriesPerPage />} />
+      <Route path="/notifications" element={<NotificationComposer />} />
+      <Route path="/offer-sections" element={<OfferSectionsManagement />} />
+      <Route path="/fast-fav" element={<FastFavManagement />} />
+      <Route path="/shop-by-store" element={<ShopByStoreManagement />} />
+      <Route path="/coupons" element={<CouponManagement />} />
+      <Route path="/sellers/pending" element={<PendingSellers />} />
+      <Route path="/wallet" element={<AdminWallet />} />
+      <Route path="/withdrawals" element={<WithdrawalRequests />} />
+      <Route path="/transactions" element={<TransactionReport />} />
+      <Route path="/returns" element={<AdminReturns />} />
+      <Route path="/customers" element={<CustomerManagement />} />
+      <Route path="/customers/:id" element={<CustomerDetail />} />
+      <Route path="/faqs" element={<FAQManagement />} />
+      <Route path="/orders/:status" element={<OrdersList />} />
+      <Route path="/orders/view/:orderId" element={<OrderDetail />} />
+      <Route path="/billing" element={<BillingCharges />} />
+      <Route path="/seller-coupon-request" element={<SellerCouponRequest />} />
+      <Route path="*" element={<Navigate to="/ecs/quick-commerce" replace />} />
+    </Routes>
+  )
+}
+
+export default function QuickCommerceAdminRoutes() {
+  return (
+    <Suspense fallback={<Loader />}>
+      <QuickCommerceAdminRoutesInner />
+    </Suspense>
+  )
+}

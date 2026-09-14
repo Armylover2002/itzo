@@ -1,0 +1,360 @@
+{
+  "generatedAt": "2026-07-20T12:17:56.288Z",
+  "backendOrderStatusEnum": [
+    "placed",
+    "created",
+    "scheduled",
+    "confirmed",
+    "preparing",
+    "ready_for_pickup",
+    "picked_up",
+    "delivered",
+    "cancelled_by_user",
+    "cancelled_by_restaurant",
+    "cancelled_by_admin",
+    "cancelled_by_system"
+  ],
+  "backendDispatchStatusEnum": [
+    "unassigned",
+    "assigned",
+    "accepted",
+    "rejected",
+    "cancelled"
+  ],
+  "backendDeliveryPhaseEnum": [
+    "waiting_activation",
+    "en_route_to_pickup",
+    "at_pickup",
+    "en_route_to_delivery",
+    "at_drop",
+    "delivered",
+    "completed",
+    "cancelled"
+  ],
+  "rows": [
+    {
+      "case": "created",
+      "banner": "Waiting for restaurant confirmation",
+      "tracking": "Order Placed | Waiting for restaurant confirmation",
+      "history": "Placed",
+      "notification": "Order Placed",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Placed",
+      "stage": "awaiting_restaurant",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": false,
+        "admin": true
+      }
+    },
+    {
+      "case": "placed",
+      "banner": "Waiting for restaurant confirmation",
+      "tracking": "Order Placed | Waiting for restaurant confirmation",
+      "history": "Placed",
+      "notification": "Order Placed",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Placed",
+      "stage": "awaiting_restaurant",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": false,
+        "admin": true
+      }
+    },
+    {
+      "case": "scheduled",
+      "banner": "(hidden)",
+      "tracking": "Order Scheduled | Your order is scheduled",
+      "history": "Scheduled",
+      "notification": "Order Scheduled",
+      "eta": "hidden",
+      "hideBanner": true,
+      "timeline": "Scheduled",
+      "stage": "scheduled",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": false,
+        "admin": true
+      }
+    },
+    {
+      "case": "created_with_idle_phase",
+      "banner": "Waiting for restaurant confirmation",
+      "tracking": "Order Placed | Waiting for restaurant confirmation",
+      "history": "Placed",
+      "notification": "Order Placed",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Placed",
+      "stage": "awaiting_restaurant",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": false,
+        "admin": true
+      }
+    },
+    {
+      "case": "preparing_false_en_route_phase",
+      "banner": "Preparing your order",
+      "tracking": "Preparing your order | Preparing your order",
+      "history": "Preparing",
+      "notification": "Preparing your order",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Preparing",
+      "stage": "preparing",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "confirmed",
+      "banner": "Restaurant accepted",
+      "tracking": "Restaurant accepted | Restaurant accepted",
+      "history": "Accepted",
+      "notification": "Restaurant accepted",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Accepted",
+      "stage": "restaurant_accepted",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": false,
+        "admin": true
+      }
+    },
+    {
+      "case": "preparing",
+      "banner": "Preparing your order",
+      "tracking": "Preparing your order | Preparing your order",
+      "history": "Preparing",
+      "notification": "Preparing your order",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Preparing",
+      "stage": "preparing",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "ready_for_pickup",
+      "banner": "Waiting for delivery partner",
+      "tracking": "Ready for pickup | Waiting for delivery partner",
+      "history": "Ready for pickup",
+      "notification": "Ready for pickup",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Ready for pickup",
+      "stage": "awaiting_rider",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "dispatch.assigned",
+      "banner": "Delivery partner assigned",
+      "tracking": "Delivery partner assigned | Delivery partner assigned",
+      "history": "Partner assigned",
+      "notification": "Delivery partner assigned",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Partner assigned",
+      "stage": "rider_assigned",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "dispatch.accepted",
+      "banner": "Heading to restaurant",
+      "tracking": "Heading to restaurant | Heading to restaurant",
+      "history": "Partner en route to restaurant",
+      "notification": "Heading to restaurant",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Partner en route to restaurant",
+      "stage": "heading_to_restaurant",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "at_pickup",
+      "banner": "Delivery partner reached restaurant",
+      "tracking": "At restaurant | Delivery partner reached restaurant",
+      "history": "Reached restaurant",
+      "notification": "At restaurant",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Reached restaurant",
+      "stage": "at_restaurant",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "picked_up",
+      "banner": "On the way",
+      "tracking": "On the way | On the way",
+      "history": "On the way",
+      "notification": "On the way",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "On the way",
+      "stage": "on_the_way",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "at_drop",
+      "banner": "Arriving",
+      "tracking": "Arriving | Arriving",
+      "history": "Arrived near you",
+      "notification": "Arriving",
+      "eta": "hidden",
+      "hideBanner": false,
+      "timeline": "Arrived near you",
+      "stage": "arriving",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "delivered",
+      "banner": "(hidden)",
+      "tracking": "Delivered | Delivered",
+      "history": "Delivered",
+      "notification": "Delivered",
+      "eta": "hidden",
+      "hideBanner": true,
+      "timeline": "Delivered",
+      "stage": "delivered",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "cancelled_by_user",
+      "banner": "(hidden)",
+      "tracking": "Cancelled | Cancelled",
+      "history": "Cancelled",
+      "notification": "Cancelled",
+      "eta": "hidden",
+      "hideBanner": true,
+      "timeline": "Cancelled",
+      "stage": "cancelled",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "cancelled_by_restaurant",
+      "banner": "(hidden)",
+      "tracking": "Cancelled | Cancelled",
+      "history": "Cancelled",
+      "notification": "Cancelled",
+      "eta": "hidden",
+      "hideBanner": true,
+      "timeline": "Cancelled",
+      "stage": "cancelled",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "cancelled_by_admin",
+      "banner": "(hidden)",
+      "tracking": "Cancelled | Cancelled",
+      "history": "Cancelled",
+      "notification": "Cancelled",
+      "eta": "hidden",
+      "hideBanner": true,
+      "timeline": "Cancelled",
+      "stage": "cancelled",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "cancelled_by_system",
+      "banner": "(hidden)",
+      "tracking": "Cancelled | Cancelled",
+      "history": "Cancelled",
+      "notification": "Cancelled",
+      "eta": "hidden",
+      "hideBanner": true,
+      "timeline": "Cancelled",
+      "stage": "cancelled",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": true,
+        "admin": true
+      }
+    },
+    {
+      "case": "created_with_quick_eta",
+      "banner": "Waiting for restaurant confirmation",
+      "tracking": "Order Placed | Waiting for restaurant confirmation",
+      "history": "Placed",
+      "notification": "Order Placed",
+      "eta": "visible-if-backend-eta",
+      "hideBanner": false,
+      "timeline": "Placed",
+      "stage": "awaiting_restaurant",
+      "roles": {
+        "user": true,
+        "restaurant": true,
+        "delivery": false,
+        "admin": true
+      }
+    }
+  ],
+  "failures": []
+}

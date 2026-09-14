@@ -1,0 +1,87 @@
+export const quickAdminSidebarMenu = [
+  {
+    type: "link",
+    label: "Dashboard",
+    permissionKey: "dashboard",
+    path: "/ecs/quick-commerce",
+    icon: "LayoutDashboard",
+  },
+  {
+    type: "section",
+    label: "CORE MANAGEMENT",
+    permissionKey: "core_management",
+    items: [
+
+      {
+        type: "expandable",
+        label: "Categories",
+        permissionKey: "categories",
+        icon: "FolderTree",
+        subItems: [
+          { label: "All Categories", path: "/ecs/quick-commerce/categories/hierarchy", permissionKey: "hierarchy" },
+          { label: "Header Categories", path: "/ecs/quick-commerce/categories/header", permissionKey: "header" },
+          { label: "Main Categories", path: "/ecs/quick-commerce/categories/level2", permissionKey: "main" },
+          { label: "Sub-Categories", path: "/ecs/quick-commerce/categories/sub", permissionKey: "sub" },
+        ],
+      },
+      { type: "link", label: "Products", permissionKey: "products", path: "/ecs/quick-commerce/products", icon: "Package" },
+      { type: "link", label: "Zone Setup", permissionKey: "zone_setup", path: "/ecs/quick-commerce/zone-setup", icon: "MapPin" },
+      {
+        type: "expandable",
+        label: "Marketing Tools",
+        permissionKey: "marketing_tools",
+        icon: "Megaphone",
+        subItems: [
+          { label: "Content Manager", path: "/ecs/quick-commerce/experience-studio", permissionKey: "experience_studio" },
+          { label: "Fast Fav & More", path: "/ecs/quick-commerce/fast-fav", permissionKey: "offer_sections" },
+          { label: "Hero & Categories Per Page", path: "/ecs/quick-commerce/hero-categories", permissionKey: "hero_categories" },
+          { label: "Send Notifications", path: "/ecs/quick-commerce/notifications", permissionKey: "notifications" },
+          { label: "Seller Coupon Request", path: "/ecs/quick-commerce/seller-coupon-request", permissionKey: "seller_coupon_request" },
+          { label: "Coupons & Promos", path: "/ecs/quick-commerce/coupons", permissionKey: "coupons" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Customer Support",
+        permissionKey: "customer_support",
+        icon: "MessageSquare",
+        subItems: [
+          { label: "Help Tickets", path: "/ecs/quick-commerce/support-tickets", permissionKey: "tickets" },
+          { label: "Review Content", path: "/ecs/quick-commerce/moderation", permissionKey: "moderation" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Sellers",
+        permissionKey: "sellers",
+        icon: "Building2",
+        subItems: [
+          { label: "Active Sellers", path: "/ecs/quick-commerce/sellers/active", permissionKey: "active" },
+          { label: "Waiting for Review", path: "/ecs/quick-commerce/sellers/pending", permissionKey: "pending" },
+        ],
+      },
+      { type: "link", label: "Wallet", permissionKey: "wallet", path: "/ecs/quick-commerce/wallet", icon: "Wallet" },
+      { type: "link", label: "Transaction Report", permissionKey: "seller_payments", path: "/ecs/quick-commerce/transactions", icon: "FileText" },
+      { type: "link", label: "Returns", permissionKey: "orders", path: "/ecs/quick-commerce/returns", icon: "Package" },
+      { type: "link", label: "Money Requests", permissionKey: "withdrawals", path: "/ecs/quick-commerce/withdrawals", icon: "CreditCard" },
+      { type: "link", label: "Customers", permissionKey: "customers", path: "/ecs/quick-commerce/customers", icon: "Users" },
+      { type: "link", label: "FAQs", permissionKey: "faqs", path: "/ecs/quick-commerce/faqs", icon: "MessageSquare" },
+      {
+        type: "expandable",
+        label: "Orders",
+        permissionKey: "orders",
+        icon: "FileText",
+        subItems: [
+          { label: "All Orders", path: "/ecs/quick-commerce/orders/all", permissionKey: "all" },
+          { label: "New Orders", path: "/ecs/quick-commerce/orders/pending", permissionKey: "pending" },
+          { label: "Being Prepared", path: "/ecs/quick-commerce/orders/processed", permissionKey: "processed" },
+          { label: "On the Way", path: "/ecs/quick-commerce/orders/out-for-delivery", permissionKey: "out_for_delivery" },
+          { label: "Delivered", path: "/ecs/quick-commerce/orders/delivered", permissionKey: "delivered" },
+          { label: "Cancelled", path: "/ecs/quick-commerce/orders/cancelled", permissionKey: "cancelled" },
+          { label: "Returned", path: "/ecs/quick-commerce/orders/returned", permissionKey: "returned" },
+        ],
+      },
+      { type: "link", label: "Fees & Charges", permissionKey: "billing", path: "/ecs/quick-commerce/billing", icon: "IndianRupee " },
+    ],
+  },
+]

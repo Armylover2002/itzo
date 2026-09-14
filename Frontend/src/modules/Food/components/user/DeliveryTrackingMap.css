@@ -1,0 +1,277 @@
+/* Bike Marker Styles - Ola Maps Style */
+.bike-marker {
+  cursor: pointer;
+  will-change: transform;
+  z-index: 1000;
+  position: relative;
+  /* Smooth movement - no pulse animation to avoid interference with rotation */
+}
+
+.bike-container {
+  filter: drop-shadow(0px 4px 12px rgba(16, 185, 129, 0.4));
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bike-container.ola-style-marker {
+  /* Ola Maps style green marker with shadow */
+  filter: drop-shadow(0px 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.bike-img {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease-out;
+  transform-origin: center center; /* Rotate from center for motorcycle */
+  /* Motorcycle icon shadow */
+  filter: drop-shadow(0px 2px 8px rgba(0, 0, 0, 0.5)); 
+}
+
+.bike-img.motorcycle-icon {
+  /* Yellow/black motorcycle style (like Ola Maps image) */
+  filter: drop-shadow(0px 3px 10px rgba(251, 191, 36, 0.7));
+}
+
+.motorcycle-svg {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease-out;
+  transform-origin: center center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.motorcycle-svg svg {
+  width: 100%;
+  height: 100%;
+}
+
+.motorcycle-marker {
+  /* Motorcycle marker container (yellow/black like Ola Maps) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+
+/* Restaurant and Customer Markers */
+.marker-pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restaurant-pin,
+.customer-pin {
+  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.restaurant-marker,
+.customer-marker {
+  cursor: pointer;
+}
+
+/* Ola Maps Style Navigation Instruction Box (Top) */
+.ola-navigation-instruction {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 350px;
+  background-color: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.instruction-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.instruction-content {
+  flex: 1;
+}
+
+.instruction-distance {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.instruction-text {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Delivery ETA Card (Ola Maps Style) */
+.delivery-eta-card {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 400px;
+  background-color: white;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.delivery-eta-card.ola-style-card {
+  /* Ola Maps style - cleaner, more professional */
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.eta-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.eta-info {
+  flex: 1;
+}
+
+.eta-label {
+  margin: 0;
+  font-size: 11px;
+  color: #666;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.eta-time {
+  margin: 2px 0;
+  color: #e03d4e;
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.eta-distance {
+  margin: 0;
+  font-size: 11px;
+  color: #888;
+  line-height: 1.2;
+}
+
+.delivery-boy-info {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.delivery-boy-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 4px;
+  border: 2px solid #e03d4e;
+}
+
+.delivery-boy-name {
+  margin: 0;
+  font-weight: bold;
+  font-size: 12px;
+  color: #333;
+  line-height: 1.2;
+}
+
+/* Tracking Progress Bar */
+.tracking-progress-bar {
+  height: 5px;
+  width: 100%;
+  background-color: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #00b14f;
+  transition: width 1s ease-in-out;
+  border-radius: 3px;
+}
+
+/* Smooth animations - removed to avoid interference with rotation */
+
+/* Hide Google Maps footer elements (Keyboard shortcuts, Map data, Terms) */
+.gm-style-cc,
+.gm-style-cc a,
+a[href*="keyboard"],
+a[href*="terms"],
+.gm-style-mtc,
+.gm-style-mtc div {
+  display: none !important;
+}
+
+/* Hide Google logo and attribution */
+.gm-style-cc,
+.gm-style-cc div,
+a[href*="google.com/maps"],
+.gm-bundled-control,
+.gm-bundled-control-on-top {
+  display: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .delivery-eta-card {
+    width: 95%;
+    padding: 10px 14px;
+    bottom: 20px;
+  }
+
+  .eta-time {
+    font-size: 20px;
+  }
+
+  .eta-label {
+    font-size: 10px;
+  }
+
+  .eta-distance {
+    font-size: 10px;
+  }
+
+  .delivery-boy-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .delivery-boy-name {
+    font-size: 11px;
+  }
+
+  .bike-img {
+    width: 40px;
+    height: 40px;
+  }
+}
+
