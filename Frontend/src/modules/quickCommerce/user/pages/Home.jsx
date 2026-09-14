@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Tag,
   CheckCircle2,
+  Flame,
 } from 'lucide-react';
 
 // MUI Icons
@@ -107,6 +108,14 @@ const tabs = [
     discount: "UPTO 20% OFF",
     image: "/super-app/grocery.png",
     icon: ShoppingBag
+  },
+  {
+    id: "street-food",
+    title: "STREET FOOD",
+    subtitle: "LOCAL VENDORS",
+    discount: "LIVE NEARBY",
+    image: "/super-app/streetfood.png",
+    icon: Flame,
   },
 ];
 
@@ -643,6 +652,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
               const isActive = tab.id === "quick";
               const handleTabClick = () => {
                 if (tab.id === "quick") navigate("/quick");
+                else if (tab.id === "street-food") navigate("/food/user?service=streetfood");
                 else navigate("/food/user");
               };
               return (

@@ -493,6 +493,8 @@ export default function Home() {
         </div>
       )}
 
+      <div className={activeTab === "food" ? "relative mx-auto w-full max-w-7xl md:px-4 lg:px-8" : "hidden"}>
+        <div className="bg-white dark:bg-[#0a0a0a]">
       {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
           switcher) so Food/Instamart/Street Food stay reachable even while on Quick. */}
       <div className="grid grid-cols-3 md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]">
@@ -598,9 +600,6 @@ export default function Home() {
           );
         })}
       </div>
-
-      <div className={activeTab === "food" ? "relative mx-auto w-full max-w-7xl md:px-4 lg:px-8" : "hidden"}>
-        <div className="bg-white dark:bg-[#0a0a0a]">
             <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
               <CategoryRail
                 displayCategories={categories.display}
