@@ -14,7 +14,7 @@ const debugError = (...args) => {}
 
 
 const ProfileContext = createContext(null)
-const USER_SESSION_PREFERENCE_KEYS = ["userVegMode", "food-under-250-filters", "activeAddressId", "deliveryAddressMode"]
+const USER_SESSION_PREFERENCE_KEYS = ["food-under-250-filters", "activeAddressId", "deliveryAddressMode"]
 
 export function ProfileProvider({ children }) {
   const getAddressId = (address) => address?.id || address?._id || null
@@ -114,7 +114,6 @@ export function ProfileProvider({ children }) {
 
   // VegMode state - stored in localStorage for persistence
   const [vegMode, setVegMode] = useState(() => {
-    if (!hasUserSession) return false
     const saved = localStorage.getItem("userVegMode")
     // Support new string values 'pure', 'all' or legacy boolean
     if (saved === "pure" || saved === "all") return saved
@@ -157,10 +156,8 @@ export function ProfileProvider({ children }) {
   }, [dishFavorites, isAuthenticated])
 
   useEffect(() => {
-    if (isAuthenticated) {
-      localStorage.setItem("userVegMode", vegMode.toString())
-    }
-  }, [vegMode, isAuthenticated])
+    localStorage.setItem("userVegMode", vegMode.toString())
+  }, [vegMode])
 
   // Single Source of Truth for Selected Address
   const [activeAddressId, setActiveAddressIdState] = useState(() => {
@@ -209,7 +206,6 @@ export function ProfileProvider({ children }) {
         setPaymentMethods([])
         setFavorites([])
         setDishFavorites([])
-        setVegMode(false)
         clearUserSession()
         invalidateUserSessionCache()
         USER_SESSION_PREFERENCE_KEYS.forEach((key) => {
