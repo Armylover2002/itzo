@@ -2750,6 +2750,24 @@ export const approveAdminSellerRequest = async (req, res) => {
     link: '/seller',
   });
 
+  // Approval mail with the partnership certificate attached. Fired on every
+  // approval, including one that follows a rejection and re-application, and
+  // deliberately not awaited so a slow mail server never blocks the response.
+  if (seller.email) {
+    import('../../../utils/email.js')
+      .then(({ sendPartnerApprovalCertificateEmail }) =>
+        sendPartnerApprovalCertificateEmail(seller.email, {
+          type: 'seller',
+          partnerName: seller.shopName || seller.name || 'Store',
+          partnerId: seller.sellerCode || String(seller._id),
+          onboardingDate: seller.approvedAt,
+        }),
+      )
+      .catch((error) =>
+        console.error('Failed to send seller approval certificate email:', error.message),
+      );
+  }
+
   return res.json({
     success: true,
     message: 'Seller approved successfully',

@@ -3,7 +3,9 @@ import discountPromoIcon from "@food/assets/category-icons/discount_promo.png";
 import vegPromoIcon from "@food/assets/category-icons/veg_promo.png";
 import pricePromoIcon from "@food/assets/category-icons/price_promo.png";
 import comboPromoIcon from "@food/assets/category-icons/combo_promo.png";
-import streetFoodPromoIcon from "@food/assets/category-icons/swadeshi.png";
+import diningPromoIcon from "@food/assets/category-icons/hotel.png";
+
+const streetFoodPromoIcon = "/super-app/streetfood.png";
 
 export default function PromoRow({ handleVegModeChange, navigate, isVegMode, toggleRef, variant = "mobile" }) {
   const promoCardsData = [
@@ -59,6 +61,16 @@ export default function PromoRow({ handleVegModeChange, navigate, isVegMode, tog
       textColor: '#ffffff',
       subTextColor: 'rgba(255,255,255,0.80)',
     },
+    {
+      id: 'dining',
+      title: "DINE",
+      value: "In",
+      icon: diningPromoIcon,
+      gradient: 'linear-gradient(145deg, #b71c1c, #d32f2f)',
+      shadowColor: 'rgba(183,28,28,0.35)',
+      textColor: '#ffffff',
+      subTextColor: 'rgba(255,255,255,0.80)',
+    },
   ];
 
   const isDesktop = variant === "desktop";
@@ -67,15 +79,16 @@ export default function PromoRow({ handleVegModeChange, navigate, isVegMode, tog
     <div
       className={
         isDesktop
-          ? "grid h-full grid-cols-2 gap-3 p-4"
-          : "grid grid-cols-4 gap-2.5 px-3.5 pt-4 pb-8 bg-white"
+          ? "grid h-full grid-cols-3 gap-3 p-4"
+          : "flex gap-2.5 overflow-x-auto px-3.5 pt-4 pb-8 bg-white scrollbar-hide snap-x"
       }
+      style={isDesktop ? undefined : { scrollbarWidth: "none", msOverflowStyle: "none" }}
     >
       {promoCardsData.map((promo) => (
         <div
           key={promo.id}
           ref={promo.id === 'pure-veg' ? toggleRef : null}
-          className={`rounded-[22px] flex flex-col items-center overflow-hidden cursor-pointer active:scale-95 group transition-all duration-300 ${isDesktop ? "min-h-[148px]" : ""}`}
+          className={`rounded-[22px] flex flex-col items-center overflow-hidden cursor-pointer active:scale-95 group transition-all duration-300 ${isDesktop ? "min-h-[148px]" : "shrink-0 snap-start w-[23vw] min-w-[92px] max-w-[110px]"}`}
           style={{
             background: promo.gradient,
             boxShadow: `0 6px 20px ${promo.shadowColor}, 0 2px 8px rgba(0,0,0,0.12)`,
@@ -86,7 +99,8 @@ export default function PromoRow({ handleVegModeChange, navigate, isVegMode, tog
             if (promo.id === 'pure-veg') handleVegModeChange(!isVegMode);
             else if (promo.id === 'offers') navigate('/food/user/offers');
             else if (promo.id === 'under-250') navigate('/food/user/under-250');
-            else if (promo.id === 'street-food') navigate('/food/user/street-food');
+            else if (promo.id === 'street-food') navigate('/food/user?service=streetfood');
+            else if (promo.id === 'dining') navigate('/food/user/dining');
           }}
         >
           {/* Label Section */}

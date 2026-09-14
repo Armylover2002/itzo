@@ -12,26 +12,31 @@ import { parseGeoPoint } from "@food/utils/geo";
  */
 let globalHomeCache = {
   bootstrap: null,
-  restaurants: null,
+  // Keyed by businessType so switching the Food-tab's restaurant list between
+  // "Fixed Restaurant" (default) and "Street Food Vendor" never overwrites the
+  // other's cached results — each businessType gets its own isolated slot.
+  restaurantsByType: {},
   advertisements: null,
   lastFetched: Date.now(),
 };
 
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+const DEFAULT_BUSINESS_TYPE = "Fixed Restaurant";
 
 /** Bust in-memory home restaurant cache after distance fixes. */
 export function invalidateFoodHomeRestaurantCache() {
-  globalHomeCache.restaurants = null;
+  globalHomeCache.restaurantsByType = {};
   globalHomeCache.lastFetched = 0;
 }
 
-export const useFoodHomeData = ({ 
-  zoneId, 
-  location, 
-  vegMode, 
+export const useFoodHomeData = ({
+  zoneId,
+  location,
+  vegMode,
   backendOrigin,
   availabilityTick,
-  enabled = true 
+  businessType = DEFAULT_BUSINESS_TYPE,
+  enabled = true
 }) => {
   // Use cache as initial state if valid
   const cachedCategories = globalHomeCache.bootstrap?.categories || [];
@@ -70,8 +75,8 @@ export const useFoodHomeData = ({
   const [loadingLandingConfig, setLoadingLandingConfig] = useState(!hasValidCache);
 
   // --- Restaurants State ---
-  const [restaurantsData, setRestaurantsData] = useState(globalHomeCache.restaurants || []);
-  const [loadingRestaurants, setLoadingRestaurants] = useState(!globalHomeCache.restaurants);
+  const [restaurantsData, setRestaurantsData] = useState(globalHomeCache.restaurantsByType[businessType] || []);
+  const [loadingRestaurants, setLoadingRestaurants] = useState(!globalHomeCache.restaurantsByType[businessType]);
   const [visibleRestaurantCount, setVisibleRestaurantCount] = useState(6);
   const [isLoadingFilterResults, setIsLoadingFilterResults] = useState(false);
   
@@ -267,6 +272,9 @@ export const useFoodHomeData = ({
       if (filters.sortBy) params.sortBy = filters.sortBy;
       if (filters.selectedCuisine) params.cuisine = filters.selectedCuisine;
       if (zoneId) params.zoneId = zoneId;
+      // Always send businessType (even the default) so Street Food Vendor listings
+      // never leak into the main Food restaurant list, and vice versa.
+      params.businessType = businessType || DEFAULT_BUSINESS_TYPE;
 
       // Map local active filters to API params
       if (filters.activeFilters?.has("rating-45-plus")) params.minRating = 4.5;
@@ -312,7 +320,7 @@ export const useFoodHomeData = ({
 
         startTransition(() => {
           setRestaurantsData(transformed);
-          globalHomeCache.restaurants = transformed;
+          globalHomeCache.restaurantsByType[businessType] = transformed;
         });
       }
     } catch (err) {
@@ -320,7 +328,21 @@ export const useFoodHomeData = ({
     } finally {
       if (requestSeq === restaurantsRequestSeqRef.current) setLoadingRestaurants(false);
     }
-  }, [roundedOriginKey, zoneId, buildRestaurantImageCandidates, extractImages]);
+  }, [roundedOriginKey, zoneId, businessType, buildRestaurantImageCandidates, extractImages]);
+
+  // Hydrate instantly from the businessType's own cache slot when switching
+  // tabs (e.g. Food <-> Street Food), so the list doesn't flash the other
+  // tab's stale data while the fresh fetch below is in flight.
+  useEffect(() => {
+    const cached = globalHomeCache.restaurantsByType[businessType];
+    if (cached) {
+      setRestaurantsData(cached);
+      setLoadingRestaurants(false);
+    } else {
+      setRestaurantsData([]);
+      setLoadingRestaurants(true);
+    }
+  }, [businessType]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -332,7 +354,7 @@ export const useFoodHomeData = ({
       fetchRestaurants(appliedFilters);
     }, 300);
     return () => clearTimeout(timer);
-  }, [appliedFilters, fetchRestaurants, enabled]);
+  }, [appliedFilters, fetchRestaurants, enabled, businessType]);
 
   // Memoized stable string key — prevents .join() re-computation on every render
   const menuUnionRestaurantIdsKey = useMemo(

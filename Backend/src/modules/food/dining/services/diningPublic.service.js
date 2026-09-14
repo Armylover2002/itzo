@@ -26,7 +26,7 @@ export async function listDiningBannersPublic() {
 function toRestaurantSummary(restaurant) {
     return {
         id: String(restaurant._id),
-        name: restaurant.name,
+        name: restaurant.restaurantName || restaurant.name || '',
         image: Array.isArray(restaurant.images) ? restaurant.images[0] : restaurant.image,
         cuisines: restaurant.cuisines || [],
         rating: restaurant.rating || 0,
@@ -46,7 +46,7 @@ export async function listDiningRestaurantsPublic({ zoneId } = {}) {
     if (zoneId) restaurantFilter.zoneId = zoneId;
 
     const restaurants = await FoodRestaurant.find(restaurantFilter)
-        .select('name images image cuisines rating location zoneId')
+        .select('restaurantName images image cuisines rating location zoneId')
         .lean();
     const restaurantMap = new Map(restaurants.map((r) => [String(r._id), r]));
 
@@ -72,7 +72,7 @@ export async function getDiningRestaurantDetail(restaurantId) {
     if (!profile) throw new ValidationError('Dining is not available for this restaurant');
 
     const restaurant = await FoodRestaurant.findOne({ _id: restaurantId, status: 'approved' })
-        .select('name images image cuisines rating location zoneId')
+        .select('restaurantName images image cuisines rating location zoneId')
         .lean();
     if (!restaurant) throw new ValidationError('Restaurant not found');
 

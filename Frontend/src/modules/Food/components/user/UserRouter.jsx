@@ -14,7 +14,10 @@ function RedirectWithState({ to }) {
 // Home & Discovery
 const Home = lazy(() => import("../../pages/user/Home"))
 const Under250 = lazy(() => import("@food/pages/user/Under250"))
-const StreetFood = lazy(() => import("@food/pages/user/StreetFood"))
+const DiningHome = lazy(() => import("@food/pages/user/dining/DiningHome"))
+const DiningRestaurantDetail = lazy(() => import("@food/pages/user/dining/DiningRestaurantDetail"))
+const MyDiningBookings = lazy(() => import("@food/pages/user/dining/MyDiningBookings"))
+const DiningBookingDetail = lazy(() => import("@food/pages/user/dining/DiningBookingDetail"))
 const Categories = lazy(() => import("@food/pages/user/Categories"))
 const CategoryPage = lazy(() => import("@food/pages/user/CategoryPage"))
 const Restaurants = lazy(() => import("@food/pages/user/restaurants/Restaurants"))
@@ -88,7 +91,10 @@ export default function UserRouter() {
           <Route path="" element={<Home />} />
           <Route path="quick" element={<Navigate to="/quick" replace />} />
           <Route path="under-250" element={<Under250 />} />
-          <Route path="street-food" element={<StreetFood />} />
+          <Route path="dining" element={<DiningHome />} />
+          <Route path="dining/bookings" element={<MyDiningBookings />} />
+          <Route path="dining/bookings/:bookingId" element={<DiningBookingDetail />} />
+          <Route path="dining/:restaurantId" element={<DiningRestaurantDetail />} />
           <Route path="categories" element={<Categories />} />
           <Route path="category/:category" element={<CategoryPage />} />
           <Route path="restaurants" element={<Restaurants />} />

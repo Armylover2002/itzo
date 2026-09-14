@@ -5628,14 +5628,20 @@ export async function approveRestaurant(id, performer = null) {
         } catch (e) {
             console.error('Failed to send restaurant approval notification:', e);
         }
-        try {
-            const { sendRestaurantApprovalEmail } = await import('../../../../utils/email.js');
-            await sendRestaurantApprovalEmail(updated.ownerEmail, {
-                ownerName: updated.ownerName,
-                restaurantName: updated.restaurantName,
-            });
-        } catch (e) {
-            console.error('Failed to send restaurant approval email:', e);
+        if (updated.ownerEmail) {
+            try {
+                // Approval mail carries the partnership certificate as a PDF. This runs on
+                // every approval, including one that follows a rejection and re-application.
+                const { sendPartnerApprovalCertificateEmail } = await import('../../../../utils/email.js');
+                await sendPartnerApprovalCertificateEmail(updated.ownerEmail, {
+                    type: 'restaurant',
+                    partnerName: updated.restaurantName,
+                    partnerId: updated.restaurantId || String(updated._id),
+                    onboardingDate: updated.approvedAt || new Date(),
+                });
+            } catch (e) {
+                console.error('Failed to send restaurant approval email:', e);
+            }
         }
     }
     if (updated) invalidateDashboardStatsCache();

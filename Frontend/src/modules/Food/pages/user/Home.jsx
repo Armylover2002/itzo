@@ -171,13 +171,21 @@ const tabs = [
     image: "/super-app/food.png",
     icon: UtensilsCrossed
   },
-  { 
-    id: "quick", 
-    title: "INSTAMART", 
-    subtitle: "INSTANT GROCERY", 
+  {
+    id: "quick",
+    title: "INSTAMART",
+    subtitle: "INSTANT GROCERY",
     discount: "UPTO 20% OFF",
     image: "/super-app/grocery.png",
     icon: ShoppingBag
+  },
+  {
+    id: "street-food",
+    title: "STREET FOOD",
+    subtitle: "LOCAL VENDORS",
+    discount: "LIVE NEARBY",
+    image: "/super-app/streetfood.png",
+    icon: Flame,
   },
 ];
 
@@ -205,6 +213,15 @@ export default function Home() {
   const [availabilityTick, setAvailabilityTick] = useState(Date.now());
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("food");
+  // Which restaurants the Food tab shows: normal ("Fixed Restaurant") or the
+  // Street Food tile ("Street Food Vendor"). Kept separate from `activeTab` so
+  // the food/quick fetch-gating logic in useFoodHomeData is untouched — Street
+  // Food stays on the Food tab and just switches which businessType the
+  // restaurant list is filtered to (matches the Food/Quick tab-switch UX
+  // instead of navigating to a separate page).
+  const [foodBusinessType, setFoodBusinessType] = useState(() =>
+    searchParams.get("service") === "streetfood" ? "Street Food Vendor" : "Fixed Restaurant"
+  );
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [mountedTabs, setMountedTabs] = useState(() => new Set(["food"]));
   const [showToast, setShowToast] = useState(false);
@@ -256,6 +273,7 @@ export default function Home() {
     vegMode,
     backendOrigin: BACKEND_ORIGIN,
     availabilityTick,
+    businessType: foodBusinessType,
     enabled: isFoodRoute
   });
 
@@ -475,19 +493,26 @@ export default function Home() {
         </div>
       )}
 
-      {/* TABS SECTION / CARDS SECTION */}
-      {activeTab === "food" && (
-        <div className="grid grid-cols-3 md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20">
-          {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
+      {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
+          switcher) so Food/Instamart/Street Food stay reachable even while on Quick. */}
+      <div className="grid grid-cols-3 md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]">
+        {tabs.map((tab) => {
+          const isActive = tab.id === "street-food"
+            ? foodBusinessType === "Street Food Vendor"
+            : tab.id === "food"
+            ? activeTab === "food" && foodBusinessType !== "Street Food Vendor"
+            : activeTab === tab.id;
           const handleTabIntent = () => {
             if (tab.id === "quick") onQuickTabIntent?.();
           };
           const handleTabClick = () => {
-            if (tab.route) {
-              const redirectTo = `${routerLocation.pathname || "/food/user"}${routerLocation.search || ""}${routerLocation.hash || ""}`;
-              navigate(tab.route, { state: { redirectTo } });
+            if (tab.id === "street-food") {
+              startTransition(() => setFoodBusinessType("Street Food Vendor"));
+              if (activeTab !== "food") handleTabChange("food");
               return;
+            }
+            if (tab.id === "food") {
+              startTransition(() => setFoodBusinessType("Fixed Restaurant"));
             }
             handleTabChange(tab.id);
           };
@@ -573,7 +598,6 @@ export default function Home() {
           );
         })}
       </div>
-      )}
 
       <div className={activeTab === "food" ? "relative mx-auto w-full max-w-7xl md:px-4 lg:px-8" : "hidden"}>
         <div className="bg-white dark:bg-[#0a0a0a]">

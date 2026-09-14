@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { Tag, User, Truck, ShoppingBag, Home } from "lucide-react"
+import { Tag, User, Truck, UtensilsCrossed, Home } from "lucide-react"
 import { isModuleAuthenticated } from "@food/utils/auth"
 import { useLocation as useUserLocation } from "@food/hooks/useLocation"
 
@@ -26,17 +26,17 @@ export default function BottomNavigation() {
     pathname.startsWith("/food/profile") ||
     pathname.startsWith("/food/user/profile") ||
     isSharedFoodProfile
-  const isOrders = pathname.startsWith("/food/user/orders")
+  const isDining = pathname.startsWith("/food/user/dining")
   const isDelivery =
     !isUnder250 &&
     !isProfile &&
-    !isOrders &&
+    !isDining &&
     (pathname === "/food" ||
       pathname === "/food/" ||
       pathname === "/food/user" ||
       (pathname.startsWith("/food/user") &&
         !pathname.includes("/under-250") &&
-        !pathname.includes("/orders") &&
+        !pathname.includes("/dining") &&
         !pathname.includes("/profile")))
 
   return (
@@ -93,20 +93,19 @@ export default function BottomNavigation() {
           <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" />
         )}
 
-        {/* Orders Tab */}
+        {/* Dining Tab */}
         <Link
-          to={isUserAuthenticated ? "/food/user/orders" : "/user/auth/login"}
-          state={!isUserAuthenticated ? { redirectTo: "/food/user/orders" } : undefined}
-          className={`flex flex-1 flex-col items-center gap-1.5 px-2 sm:px-3 py-2 transition-all duration-200 relative ${isOrders
+          to="/food/user/dining"
+          className={`flex flex-1 flex-col items-center gap-1.5 px-2 sm:px-3 py-2 transition-all duration-200 relative ${isDining
               ? "text-primary-orange dark:text-primary-orange"
               : "text-gray-600 dark:text-gray-400"
             }`}
         >
-          <ShoppingBag className={`h-5 w-5 ${isOrders ? "text-primary-orange dark:text-primary-orange fill-primary-orange dark:fill-primary-orange" : "text-gray-600 dark:text-gray-400"}`} strokeWidth={2} />
-          <span className={`text-xs sm:text-sm font-medium ${isOrders ? "text-primary-orange dark:text-primary-orange font-semibold" : "text-gray-600 dark:text-gray-400"}`}>
-            Orders
+          <UtensilsCrossed className={`h-5 w-5 ${isDining ? "text-primary-orange dark:text-primary-orange fill-primary-orange/20 dark:fill-primary-orange/20" : "text-gray-600 dark:text-gray-400"}`} strokeWidth={2} />
+          <span className={`text-xs sm:text-sm font-medium ${isDining ? "text-primary-orange dark:text-primary-orange font-semibold" : "text-gray-600 dark:text-gray-400"}`}>
+            Dining
           </span>
-          {isOrders && (
+          {isDining && (
             <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary-orange dark:bg-primary-orange rounded-b-full" />
           )}
         </Link>

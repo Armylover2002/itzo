@@ -183,6 +183,20 @@ export const adminSidebarMenu = [
   },
   {
     type: "section",
+    label: "DINING MANAGEMENT",
+    permissionKey: "dining_management",
+    items: [
+      { type: "link", label: "Categories", permissionKey: "dining_categories", path: "/ecs/food/dining/categories", icon: "LayoutGrid" },
+      { type: "link", label: "Banners", permissionKey: "dining_banners", path: "/ecs/food/dining/banners", icon: "Image" },
+      { type: "link", label: "Settings", permissionKey: "dining_settings", path: "/ecs/food/dining/settings", icon: "Settings" },
+      { type: "link", label: "Requests", permissionKey: "dining_requests", path: "/ecs/food/dining/requests", icon: "Inbox" },
+      { type: "link", label: "Restaurants", permissionKey: "dining_restaurants", path: "/ecs/food/dining/restaurants", icon: "Store" },
+      { type: "link", label: "Bookings", permissionKey: "dining_bookings", path: "/ecs/food/dining/bookings", icon: "CalendarCheck" },
+      { type: "link", label: "Bills", permissionKey: "dining_bills", path: "/ecs/food/dining/bills", icon: "Receipt" },
+    ],
+  },
+  {
+    type: "section",
     label: "DELIVERYMAN MANAGEMENT",
     permissionKey: "deliveryman_management",
     items: [

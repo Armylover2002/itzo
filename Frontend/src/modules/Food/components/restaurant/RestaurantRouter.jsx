@@ -28,6 +28,9 @@ const OrderDetails = lazy(() => import("@food/pages/restaurant/OrderDetails"))
 const OrdersMain = lazy(() => import("@food/pages/restaurant/OrdersMain"))
 const RestaurantOnboarding = lazy(() => import("@food/pages/restaurant/Onboarding"))
 const LiveLocationControl = lazy(() => import("@food/pages/restaurant/LiveLocationControl"))
+const DiningSetupPage = lazy(() => import("@food/pages/restaurant/dining/DiningSetupPage"))
+const DiningBookingsPage = lazy(() => import("@food/pages/restaurant/dining/DiningBookingsPage"))
+const DiningBillingPage = lazy(() => import("@food/pages/restaurant/dining/DiningBillingPage"))
 const VendorMoveLocation = lazy(() => import("@food/pages/restaurant/VendorMoveLocation"))
 const TermsAndConditionsPage = lazy(() => import("@food/pages/restaurant/TermsAndConditionsPage"))
 const PrivacyPolicyPage = lazy(() => import("@food/pages/restaurant/PrivacyPolicyPage"))
@@ -164,6 +167,9 @@ export default function RestaurantRouter() {
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><BusinessPlanPage /></ProtectedRoute>} path="business-plan" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><LiveLocationControl /></ProtectedRoute>} path="live-location" />
           <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><VendorMoveLocation /></ProtectedRoute>} path="move-location" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningSetupPage /></ProtectedRoute>} path="dining/setup" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningBookingsPage /></ProtectedRoute>} path="dining/bookings" />
+          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningBillingPage /></ProtectedRoute>} path="dining/bookings/:id/bill" />
         </Route>
 
         {/* Other Routes */}

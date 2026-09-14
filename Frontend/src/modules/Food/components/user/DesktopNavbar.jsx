@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useEffect, useState, useRef } from "react"
+import { motion } from "framer-motion"
 import { ChevronDown, ShoppingCart, Search, X, Tag, User, Wallet, Bell } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
@@ -57,6 +58,17 @@ export default function DesktopNavbar({ showLogo = true }) {
 
     const isQuick = location.pathname.startsWith("/quick")
     const searchPlaceholder = isQuick ? "Search milk, bread, eggs..." : "Search \"food\""
+    const isUnder250 = location.pathname === "/food/user/under-250" || location.pathname === "/food/under-250"
+    const isDining = location.pathname.startsWith("/food/user/dining")
+    const isDelivery =
+        !isQuick &&
+        !isUnder250 &&
+        !isDining &&
+        (location.pathname === "/food/user" ||
+            location.pathname === "/food" ||
+            (location.pathname.startsWith("/food/user") &&
+                !location.pathname.includes("/under-250") &&
+                !location.pathname.includes("/dining")))
 
     useEffect(() => {
         const apply = (settings) => {
@@ -157,6 +169,68 @@ export default function DesktopNavbar({ showLogo = true }) {
                                 )}
                             </div>
                         </div>
+
+                        {/* Navigation Tabs */}
+                        {!isQuick && (
+                            <div className="flex items-center space-x-4 lg:space-x-8 mx-2 flex-shrink-0">
+                                <Link
+                                    to="/food/user"
+                                    className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isDelivery
+                                        ? "text-[#FF0000] dark:text-[#FF0000]"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FF0000] dark:hover:text-[#FF0000]"
+                                        }`}
+                                >
+                                    <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Home</span>
+                                    {isDelivery && (
+                                        <motion.div
+                                            layoutId="foodNavIndicator"
+                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FF0000] dark:bg-[#FF0000]"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    )}
+                                </Link>
+
+                                <Link
+                                    to="/food/user/under-250"
+                                    className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isUnder250
+                                        ? "text-[#FF0000] dark:text-[#FF0000]"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FF0000] dark:hover:text-[#FF0000]"
+                                        }`}
+                                >
+                                    <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Under 250</span>
+                                    {isUnder250 && (
+                                        <motion.div
+                                            layoutId="foodNavIndicator"
+                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FF0000] dark:bg-[#FF0000]"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    )}
+                                </Link>
+
+                                <Link
+                                    to="/food/user/dining"
+                                    className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isDining
+                                        ? "text-[#FF0000] dark:text-[#FF0000]"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FF0000] dark:hover:text-[#FF0000]"
+                                        }`}
+                                >
+                                    <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Dining</span>
+                                    {isDining && (
+                                        <motion.div
+                                            layoutId="foodNavIndicator"
+                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FF0000] dark:bg-[#FF0000]"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    )}
+                                </Link>
+                            </div>
+                        )}
 
                         {/* Right Actions */}
                         <div className="flex items-center gap-1.5 md:gap-2 lg:gap-4 ml-auto shrink-0">

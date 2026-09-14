@@ -29,6 +29,8 @@ import {
   ChevronRight,
   CreditCard,
   Wallet,
+  UtensilsCrossed,
+  CalendarCheck,
 } from "lucide-react";
 import { restaurantAPI } from "@food/api";
 import { getAppLogo, getCompanyName } from "@common/utils/businessSettings";
@@ -122,6 +124,13 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
       title: "SUBSCRIPTION",
       items: [
         { name: "Business Plan", path: "/food/restaurant/business-plan", icon: CreditCard },
+      ],
+    },
+    {
+      title: "DINING",
+      items: [
+        { name: "Dining Setup", path: "/food/restaurant/dining/setup", icon: UtensilsCrossed },
+        { name: "Bookings & Billing", path: "/food/restaurant/dining/bookings", icon: CalendarCheck },
       ],
     },
     {

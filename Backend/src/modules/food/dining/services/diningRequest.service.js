@@ -33,9 +33,11 @@ export async function listDiningRequests({ status } = {}) {
 
     const restaurantIds = profiles.map((p) => p.restaurantId);
     const restaurants = await FoodRestaurant.find({ _id: { $in: restaurantIds } })
-        .select('name phone email images image')
+        .select('restaurantName phone email images image')
         .lean();
-    const restaurantMap = new Map(restaurants.map((r) => [String(r._id), r]));
+    const restaurantMap = new Map(
+        restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }])
+    );
 
     return profiles.map((profile) => ({
         ...profile,
@@ -80,9 +82,11 @@ export async function listDiningRestaurants({ status } = {}) {
 
     const restaurantIds = profiles.map((p) => p.restaurantId);
     const restaurants = await FoodRestaurant.find({ _id: { $in: restaurantIds } })
-        .select('name phone email images image')
+        .select('restaurantName phone email images image')
         .lean();
-    const restaurantMap = new Map(restaurants.map((r) => [String(r._id), r]));
+    const restaurantMap = new Map(
+        restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }])
+    );
 
     return profiles.map((profile) => ({
         ...profile,

@@ -48,9 +48,9 @@ async function withRestaurantInfo(reservations) {
     if (!reservations.length) return [];
     const restaurantIds = [...new Set(reservations.map((r) => String(r.restaurantId)))];
     const restaurants = await FoodRestaurant.find({ _id: { $in: restaurantIds } })
-        .select('name images image phone')
+        .select('restaurantName images image phone')
         .lean();
-    const map = new Map(restaurants.map((r) => [String(r._id), r]));
+    const map = new Map(restaurants.map((r) => [String(r._id), { ...r, name: r.restaurantName }]));
     return reservations.map((r) => ({ ...r, restaurant: map.get(String(r.restaurantId)) || null }));
 }
 
@@ -78,7 +78,7 @@ export async function createReservation(userId, { restaurantId, bookingDate, slo
     if (!claimed) throw new ValidationError('This slot is fully booked, please choose another time');
 
     const user = await FoodUser.findById(userId).select('name phone').lean();
-    const restaurant = await FoodRestaurant.findById(restaurantId).select('name').lean();
+    const restaurant = await FoodRestaurant.findById(restaurantId).select('restaurantName').lean();
 
     try {
         const reservation = await DiningReservation.create({
@@ -91,7 +91,7 @@ export async function createReservation(userId, { restaurantId, bookingDate, slo
             guests,
             specialRequest: specialRequest || '',
             status: 'pending',
-            restaurantNameSnapshot: restaurant?.name || '',
+            restaurantNameSnapshot: restaurant?.restaurantName || '',
             userNameSnapshot: user?.name || '',
             userPhoneSnapshot: user?.phone || '',
             statusHistory: [{ at: new Date(), byRole: 'USER', byId: userId, from: null, to: 'pending' }],

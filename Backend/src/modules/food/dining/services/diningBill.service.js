@@ -5,7 +5,7 @@ import { FoodItem } from '../../admin/models/food.model.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { getDiningSettings } from './diningSettings.service.js';
 import { creditWallet } from '../../../../core/payments/wallet.service.js';
-import { createRazorpayOrder, verifyPaymentSignature, isRazorpayConfigured } from '../../orders/helpers/razorpay.helper.js';
+import { createRazorpayOrder, verifyPaymentSignature, isRazorpayConfigured, getRazorpayKeyId } from '../../orders/helpers/razorpay.helper.js';
 import { logger } from '../../../../utils/logger.js';
 import { notifyOwnerWithInbox } from '../../../../core/notifications/ownerInboxNotify.js';
 import { resolveEffectiveCommission, computeCommissionAmount, roundMoney } from '../utils/dining.helpers.js';
@@ -180,7 +180,7 @@ export async function createBillPaymentOrder(userId, billId) {
     };
     await bill.save();
 
-    return { orderId: order.id, amount: order.amount, currency: order.currency, billId: String(bill._id) };
+    return { orderId: order.id, amount: order.amount, currency: order.currency, billId: String(bill._id), key: getRazorpayKeyId() };
 }
 
 export async function settleBillWallets(bill) {

@@ -59,6 +59,13 @@ const Customers = lazy(() => import("@food/pages/admin/Customers"));
 const CustomerRoleRequests = lazy(() => import("@food/pages/admin/CustomerRoleRequests"));
 const SupportTickets = lazy(() => import("@food/pages/admin/SupportTickets"));
 const SubscriptionManagement = lazy(() => import("@food/pages/admin/SubscriptionManagement"));
+const DiningCategories = lazy(() => import("@food/pages/admin/dining/DiningCategories"));
+const DiningBanners = lazy(() => import("@food/pages/admin/dining/DiningBanners"));
+const DiningSettings = lazy(() => import("@food/pages/admin/dining/DiningSettings"));
+const DiningRequests = lazy(() => import("@food/pages/admin/dining/DiningRequests"));
+const DiningRestaurants = lazy(() => import("@food/pages/admin/dining/DiningRestaurants"));
+const DiningBookings = lazy(() => import("@food/pages/admin/dining/DiningBookings"));
+const DiningBills = lazy(() => import("@food/pages/admin/dining/DiningBills"));
 const AddFund = lazy(() => import("@food/pages/admin/wallet/AddFund"));
 const Bonus = lazy(() => import("@food/pages/admin/wallet/Bonus"));
 const LoyaltyPointReport = lazy(() => import("@food/pages/admin/loyalty-point/Report"));
@@ -273,6 +280,13 @@ export default function AdminRouter() {
             {/* FOOD & CATEGORY MANAGEMENT */}
             <Route path="categories" element={<Category />} />
             <Route path="subscriptions" element={<SubscriptionManagement />} />
+            <Route path="dining/categories" element={<DiningCategories />} />
+            <Route path="dining/banners" element={<DiningBanners />} />
+            <Route path="dining/settings" element={<DiningSettings />} />
+            <Route path="dining/requests" element={<DiningRequests />} />
+            <Route path="dining/restaurants" element={<DiningRestaurants />} />
+            <Route path="dining/bookings" element={<DiningBookings />} />
+            <Route path="dining/bills" element={<DiningBills />} />
             <Route path="fee-settings" element={<FeeSettings />} />
             <Route path="referral-settings" element={<ReferralSettings />} />
             <Route path="foods" element={<FoodsList />} />

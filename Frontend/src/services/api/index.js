@@ -66,6 +66,33 @@ export const subscriptionAPI = {
     }),
 };
 
+// Dining (public discovery + user booking/bills)
+export const diningAPI = {
+  getCategories: () => apiClient.get("/food/dining/public/categories"),
+  getBanners: () => apiClient.get("/food/dining/public/banners"),
+  getRestaurants: (params = {}) =>
+    apiClient.get("/food/dining/public/restaurants", { params }),
+  getRestaurantDetail: (restaurantId) =>
+    apiClient.get(`/food/dining/public/restaurants/${restaurantId}`),
+  getAvailability: (restaurantId, date) =>
+    apiClient.get(`/food/dining/public/restaurants/${restaurantId}/availability`, { params: { date } }),
+
+  createReservation: (payload) =>
+    apiClient.post("/food/user/dining/reservations", payload, { contextModule: "user" }),
+  getMyReservations: (params = {}) =>
+    apiClient.get("/food/user/dining/reservations", { params, contextModule: "user" }),
+  getMyReservationDetail: (id) =>
+    apiClient.get(`/food/user/dining/reservations/${id}`, { contextModule: "user" }),
+  cancelReservation: (id, reason) =>
+    apiClient.post(`/food/user/dining/reservations/${id}/cancel`, { reason }, { contextModule: "user" }),
+  getBill: (billId) =>
+    apiClient.get(`/food/user/dining/bills/${billId}`, { contextModule: "user" }),
+  createBillPaymentOrder: (billId) =>
+    apiClient.post(`/food/user/dining/bills/${billId}/pay`, {}, { contextModule: "user" }),
+  verifyBillPayment: (billId, payload) =>
+    apiClient.post(`/food/user/dining/bills/${billId}/verify`, payload, { contextModule: "user" }),
+};
+
 const createStubAPI = () =>
   new Proxy(
     {},
@@ -822,6 +849,51 @@ export const adminAPI = {
       contextModule: "admin",
     }),
 
+  // Dining Management
+  getDiningCategories: () =>
+    apiClient.get("/food/admin/dining/categories", { contextModule: "admin" }),
+  createDiningCategory: (payload) =>
+    apiClient.post("/food/admin/dining/categories", payload, { contextModule: "admin" }),
+  updateDiningCategory: (id, payload) =>
+    apiClient.patch(`/food/admin/dining/categories/${id}`, payload, { contextModule: "admin" }),
+  deleteDiningCategory: (id) =>
+    apiClient.delete(`/food/admin/dining/categories/${id}`, { contextModule: "admin" }),
+  toggleDiningCategoryStatus: (id) =>
+    apiClient.patch(`/food/admin/dining/categories/${id}/toggle`, {}, { contextModule: "admin" }),
+
+  getDiningBanners: () =>
+    apiClient.get("/food/admin/dining/banners", { contextModule: "admin" }),
+  createDiningBanner: (payload) =>
+    apiClient.post("/food/admin/dining/banners", payload, { contextModule: "admin" }),
+  updateDiningBanner: (id, payload) =>
+    apiClient.patch(`/food/admin/dining/banners/${id}`, payload, { contextModule: "admin" }),
+  deleteDiningBanner: (id) =>
+    apiClient.delete(`/food/admin/dining/banners/${id}`, { contextModule: "admin" }),
+  toggleDiningBannerStatus: (id) =>
+    apiClient.patch(`/food/admin/dining/banners/${id}/toggle`, {}, { contextModule: "admin" }),
+
+  getDiningSettings: () =>
+    apiClient.get("/food/admin/dining/settings", { contextModule: "admin" }),
+  updateDiningSettings: (payload) =>
+    apiClient.patch("/food/admin/dining/settings", payload, { contextModule: "admin" }),
+
+  getDiningRequests: (params = {}) =>
+    apiClient.get("/food/admin/dining/requests", { params, contextModule: "admin" }),
+  reviewDiningRequest: (id, payload) =>
+    apiClient.patch(`/food/admin/dining/requests/${id}/review`, payload, { contextModule: "admin" }),
+
+  getDiningRestaurants: (params = {}) =>
+    apiClient.get("/food/admin/dining/restaurants", { params, contextModule: "admin" }),
+  setDiningCommissionOverride: (id, payload) =>
+    apiClient.patch(`/food/admin/dining/restaurants/${id}/commission`, payload, { contextModule: "admin" }),
+
+  getDiningBookings: (params = {}) =>
+    apiClient.get("/food/admin/dining/bookings", { params, contextModule: "admin" }),
+  getDiningBills: (params = {}) =>
+    apiClient.get("/food/admin/dining/bills", { params, contextModule: "admin" }),
+  getDiningRevenueStats: () =>
+    apiClient.get("/food/admin/dining/revenue", { contextModule: "admin" }),
+
   getTransactionReport: (params = {}) =>
     apiClient.get("/food/admin/reports/transactions", {
       params: { page: 1, limit: 50, ...params },
@@ -1252,6 +1324,25 @@ export const restaurantAPI = {
       { enabled },
       { contextModule: "restaurant" },
     ),
+  /** Dining (table booking) — restaurant side */
+  getDiningProfile: () =>
+    apiClient.get("/food/restaurant/dining/profile", { contextModule: "restaurant" }),
+  requestDining: () =>
+    apiClient.post("/food/restaurant/dining/request", {}, { contextModule: "restaurant" }),
+  updateDiningSetup: (payload) =>
+    apiClient.patch("/food/restaurant/dining/setup", payload, { contextModule: "restaurant" }),
+  toggleDiningEnabled: (enabled) =>
+    apiClient.patch("/food/restaurant/dining/toggle", { enabled }, { contextModule: "restaurant" }),
+  getDiningReservations: (params = {}) =>
+    apiClient.get("/food/restaurant/dining/reservations", { params, contextModule: "restaurant" }),
+  updateDiningReservationStatus: (id, payload) =>
+    apiClient.patch(`/food/restaurant/dining/reservations/${id}/status`, payload, { contextModule: "restaurant" }),
+  saveDiningBill: (reservationId, payload) =>
+    apiClient.put(`/food/restaurant/dining/reservations/${reservationId}/bill`, payload, { contextModule: "restaurant" }),
+  finalizeDiningBill: (billId) =>
+    apiClient.post(`/food/restaurant/dining/bills/${billId}/finalize`, {}, { contextModule: "restaurant" }),
+  getDiningBill: (billId) =>
+    apiClient.get(`/food/restaurant/dining/bills/${billId}`, { contextModule: "restaurant" }),
   /**
    * Order payout / Hub Finance (canonical — food_transactions ledger).
    * Do NOT use deprecated GET /food/payments/restaurant/:id/wallet for payouts.
