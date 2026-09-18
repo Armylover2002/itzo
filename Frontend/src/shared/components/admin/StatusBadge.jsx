@@ -11,7 +11,7 @@ const STATUS_STYLES = {
   warning: "bg-[#FFFBEB] text-[#B45309] border-[#FDE68A]",
   danger: "bg-[#FEF3F2] text-[#B42318] border-[#FECDCA]",
   info: "bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]",
-  primary: "bg-[var(--blaze-primary-light)] text-[var(--blaze-primary)] border-[#FFD6D6]",
+  primary: "bg-[var(--itzo-primary-light)] text-[var(--itzo-primary)] border-[#FFD6D6]",
   neutral: "bg-[#F4F4F5] text-[#52525B] border-[#E4E4E7]",
 };
 

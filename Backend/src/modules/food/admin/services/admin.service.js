@@ -2,7 +2,15 @@ import mongoose from 'mongoose';
 import { ValidationError, ConflictError } from '../../../../core/auth/errors.js';
 import { assertNoZoneOverlap, computePolygonAreaKm2 } from '../../../../utils/zoneOverlap.js';
 import { FoodRestaurant } from '../../restaurant/models/restaurant.model.js';
-import { DEFAULT_RESTAURANT_COMMISSION_RATE } from '../../constants/commission.constants.js';
+import { DEFAULT_RESTAURANT_COMMISSION_RATE, RESTAURANT_COMMISSION_ENABLED } from '../../constants/commission.constants.js';
+
+// When the restaurant commission flow is disabled, legacy-order fallback
+// formulas that estimate commission from subtotal must resolve to 0 too,
+// otherwise reports would reintroduce a fake commission for orders that
+// were priced with commission disabled (stored value 0, not missing).
+const EFFECTIVE_DEFAULT_RESTAURANT_COMMISSION_RATE = RESTAURANT_COMMISSION_ENABLED
+    ? DEFAULT_RESTAURANT_COMMISSION_RATE
+    : 0;
 import { validateRestaurantPhoneUniqueness, normalizeRestaurantPhone } from '../../restaurant/services/restaurant.service.js';
 import { FoodRestaurantWallet, ensureRestaurantWallet } from '../../restaurant/models/restaurantWallet.model.js';
 import { FoodDeliveryPartner } from '../../delivery/models/deliveryPartner.model.js';
@@ -792,7 +800,7 @@ export async function getDashboardStats(query = {}) {
                                     $cond: [
                                         { $gt: [{ $ifNull: ['$pricing.restaurantCommission', 0] }, 0] },
                                         '$pricing.restaurantCommission',
-                                        { $multiply: [{ $ifNull: ['$pricing.subtotal', 0] }, DEFAULT_RESTAURANT_COMMISSION_RATE] }
+                                        { $multiply: [{ $ifNull: ['$pricing.subtotal', 0] }, EFFECTIVE_DEFAULT_RESTAURANT_COMMISSION_RATE] }
                                     ]
                                 },
                                 0
@@ -929,7 +937,7 @@ export async function getDashboardStats(query = {}) {
                                     $cond: [
                                         { $gt: [{ $ifNull: ['$pricing.restaurantCommission', 0] }, 0] },
                                         '$pricing.restaurantCommission',
-                                        { $multiply: [{ $ifNull: ['$pricing.subtotal', 0] }, DEFAULT_RESTAURANT_COMMISSION_RATE] }
+                                        { $multiply: [{ $ifNull: ['$pricing.subtotal', 0] }, EFFECTIVE_DEFAULT_RESTAURANT_COMMISSION_RATE] }
                                     ]
                                 },
                                 0

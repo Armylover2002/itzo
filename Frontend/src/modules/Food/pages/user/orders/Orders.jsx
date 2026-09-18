@@ -1162,7 +1162,7 @@ Order again from this restaurant in the ${companyName} app.`
 
       {/* Footer Branding */}
       <div className="flex justify-center mt-8 mb-4">
-        <h1 className="text-4xl font-bold text-gray-200 dark:text-gray-700 tracking-tighter italic">Blaze</h1>
+        <h1 className="text-4xl font-bold text-gray-200 dark:text-gray-700 tracking-tighter italic">ItzoFood</h1>
       </div>
 
       {/* Rating & Feedback Modal */}

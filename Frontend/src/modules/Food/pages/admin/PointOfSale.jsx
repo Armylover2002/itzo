@@ -350,7 +350,7 @@ export default function PointOfSale() {
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#334257] mb-2">Restaurant POS Analytics & Benefits</h1>
-          <p className="text-sm text-[#8a94aa]">Track restaurant performance, profits, and commission details</p>
+          <p className="text-sm text-[#8a94aa]">Track restaurant performance and profits</p>
         </div>
 
         {/* Restaurant Selection Card */}

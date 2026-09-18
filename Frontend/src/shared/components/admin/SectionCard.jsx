@@ -4,7 +4,7 @@ import { cn } from "@food/utils/utils";
  * SectionCard — the one content/analytics/chart card surface.
  *
  * Use for: chart cards, analytics panels, list panels, any titled section.
- * Composes the shared `.blaze-card` surface (one radius + one shadow).
+ * Composes the shared `.itzo-card` surface (one radius + one shadow).
  *
  * Props:
  *  - title, subtitle, icon, action: header (omit all to render headerless)
@@ -26,7 +26,7 @@ export default function SectionCard({
   const hasHeader = title || subtitle || action || icon;
 
   return (
-    <div className={cn("blaze-card flex min-w-0 flex-col", className)}>
+    <div className={cn("itzo-card flex min-w-0 flex-col", className)}>
       {hasHeader && (
         <div className="border-b border-slate-200/60 px-3.5 py-2.5 sm:px-4 sm:py-3 flex items-start justify-between gap-2.5">
           <div className="flex min-w-0 items-start gap-2">

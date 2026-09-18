@@ -281,7 +281,7 @@ const Footer = ({ themeColor: themeColorProp }) => {
 
                 <div className="border-t border-white/10 mt-10 pt-6 text-center text-sm md:flex md:justify-between md:text-left md:mt-16 md:pt-8">
                     <p className="md:text-[15px] text-white/70">
-                        &copy; {currentYear} Blaze. All rights reserved.
+                        &copy; {currentYear} ItzoFood. All rights reserved.
                     </p>
                     <div className="flex gap-6 justify-center md:justify-end mt-4 md:mt-0 md:gap-8">
                         <Link to="/food/user/profile/privacy" className="hover:text-white md:text-[15px] text-white/70 transition-all font-medium">Privacy Policy</Link>

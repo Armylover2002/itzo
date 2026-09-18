@@ -32,6 +32,9 @@ import commonSettingsRoutes from '../modules/common/routes/settings.routes.js';
 import commonMapsRoutes from '../modules/common/routes/maps.routes.js';
 import { getGlobalSettings as getPublicSettings } from '../modules/common/controllers/settings.controller.js';
 import onboardingFeeRoutes from '../modules/common/routes/onboardingFee.routes.js';
+import hrmsRoutes from '../modules/hrms/routes/index.routes.js';
+import jobApplicationRoutes from '../modules/food/admin/routes/jobApplication.route.js';
+import licensingRoutes from '../modules/food/licensing/routes/licensingRoutes.js';
 
 const router = express.Router();
 
@@ -56,6 +59,10 @@ router.use('/v1/food/dining/public', requireEnabledModule('food'), publicDiningR
 router.use('/v1/food', requireEnabledModule('food'), landingRoutes);
 router.use('/v1/food/search', requireEnabledModule('food'), searchRoutes);
 router.use('/v1/uploads', uploadRoutes);
+router.use('/v1/job-applications', jobApplicationRoutes);
+router.use('/job-applications', jobApplicationRoutes);
+router.use('/v1/licensing-request', licensingRoutes);
+router.use('/licensing-request', licensingRoutes);
 
 // Mark business-settings/public as truly public (must be before protected admin block)
 // Global Settings routes
@@ -78,6 +85,9 @@ router.use('/v1/fcm-tokens', fcmRoutes);
 router.use('/fcm-tokens', fcmRoutes);
 router.use('/v1/quick-commerce', requireEnabledModule('quickCommerce'), quickCommerceRoutes);
 router.use('/v1/seller', requireEnabledModule('quickCommerce'), sellerRoutes);
+
+// HRMS Enterprise Module
+router.use('/v1/hrms', hrmsRoutes);
 
 
 // router.get('/v1/env/public', getPublicEnvController);

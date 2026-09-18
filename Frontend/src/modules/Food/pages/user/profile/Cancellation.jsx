@@ -71,7 +71,7 @@ export default function Cancellation() {
             <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight leading-none">
               {cancellationData.title || "Cancellation Policy"}
             </h1>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Blaze Policy</p>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">ItzoFood Policy</p>
           </div>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function Cancellation() {
 
         <p className="text-center mt-10 text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] leading-relaxed">
           Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} <br />
-          © {new Date().getFullYear()} Blaze. All Rights Reserved.
+          © {new Date().getFullYear()} ItzoFood. All Rights Reserved.
         </p>
       </div>
     </AnimatedPage>

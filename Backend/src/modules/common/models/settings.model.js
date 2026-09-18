@@ -67,6 +67,58 @@ const globalSettingsSchema = new mongoose.Schema(
             publicId: { type: String, default: '' },
             active: { type: Boolean, default: true }
         },
+        landingHeroTitle: { type: String, default: 'ItzoFood' },
+        landingHeroSubtitle: { type: String, default: 'Discover up to 30% off on your favorite meals & drinks in your city' },
+        landingVideo: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingPoster: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingPizzaImage: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingTomatoImage: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingQrCodeImage: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingAppStoreBadge: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingPlayStoreBadge: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingNavbarLogo: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        landingFooterLogo: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        benefitsSectionEnabled: { type: Boolean, default: false },
+        benefitsImage: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        benefitsImageAlt: { type: String, default: '' },
+        benefitsImageLink: { type: String, default: '' },
+        playStoreLink: { type: String, default: '' },
+        appStoreLink: { type: String, default: '' },
+        socialLinkedinUrl: { type: String, default: '' },
+        socialInstagramUrl: { type: String, default: '' },
+        socialYoutubeUrl: { type: String, default: '' },
+        socialFacebookUrl: { type: String, default: '' },
+        socialTwitterUrl: { type: String, default: '' },
         themeColor: { type: String, default: '#0a0a0a' },
         codEnabled: { type: Boolean, default: true },
         onlineEnabled: { type: Boolean, default: true },

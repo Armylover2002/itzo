@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, Smartphone, AlertCircle, Users, ShieldCheck } from "lucide-react"
 import AnimatedPage from "@food/components/user/AnimatedPage"
 import { Input } from "@food/components/ui/input"
 import { Button } from "@food/components/ui/button"
 import { authAPI, userAPI } from "@food/api"
 import { setAuthData as setUserAuthData } from "@food/utils/auth"
 import { markLocationPromptAfterLogin } from "@food/utils/locationStorage"
+import loginBanner from "@food/assets/loginbanner.png"
+import {
+  isNativeContactsBridgeAvailable,
+  requestDeviceContacts,
+  chunkContacts,
+} from "@food/utils/deviceContacts"
 
 export default function OTP() {
   const navigate = useNavigate()
@@ -25,8 +31,72 @@ export default function OTP() {
   const [deviceToken, setDeviceToken] = useState(null)
   const [sessionTokens, setSessionTokens] = useState(null)
   const [activePlatform, setActivePlatform] = useState("web")
+  const [showContactsPrompt, setShowContactsPrompt] = useState(false)
+  const [contactsBusy, setContactsBusy] = useState(false)
   const inputRefs = useRef([])
   const submittingRef = useRef(false)
+
+  // After a successful login/registration: if this is a native app shell and
+  // the user hasn't answered the contacts-permission prompt yet, ask before
+  // redirecting home. On plain web (no bridge) there's nothing to read, so
+  // this is skipped silently and the user is taken straight home.
+  const proceedAfterAuth = (user) => {
+    markLocationPromptAfterLogin()
+
+    if (user?.contactPermissionStatus === "PENDING" && isNativeContactsBridgeAvailable()) {
+      setShowContactsPrompt(true)
+      setIsLoading(false)
+      return
+    }
+
+    setSuccess(true)
+    setTimeout(() => {
+      navigate("/food/user")
+    }, 500)
+  }
+
+  const finishContactsStep = () => {
+    setShowContactsPrompt(false)
+    setSuccess(true)
+    setTimeout(() => {
+      navigate("/food/user")
+    }, 500)
+  }
+
+  const handleAllowContacts = async () => {
+    if (contactsBusy) return
+    setContactsBusy(true)
+    try {
+      const contacts = await requestDeviceContacts()
+      if (contacts && contacts.length > 0) {
+        const chunks = chunkContacts(contacts)
+        for (let i = 0; i < chunks.length; i++) {
+          await userAPI.importContacts(chunks[i], i === chunks.length - 1)
+        }
+      } else {
+        // Bridge available but returned nothing (denied at OS level / empty list)
+        await userAPI.updateContactsPermissionStatus("SKIPPED")
+      }
+    } catch (e) {
+      console.warn("Contacts sync failed", e)
+    } finally {
+      setContactsBusy(false)
+      finishContactsStep()
+    }
+  }
+
+  const handleSkipContacts = async () => {
+    if (contactsBusy) return
+    setContactsBusy(true)
+    try {
+      await userAPI.updateContactsPermissionStatus("SKIPPED")
+    } catch (e) {
+      // Non-fatal — user can still proceed even if this call fails
+    } finally {
+      setContactsBusy(false)
+      finishContactsStep()
+    }
+  }
 
   useEffect(() => {
     // Redirect to home if already authenticated
@@ -81,10 +151,10 @@ export default function OTP() {
 
   useEffect(() => {
     // Focus first input on mount
-    if (inputRefs.current[0] && !showNameInput) {
+    if (inputRefs.current[0] && !showNameInput && !showContactsPrompt) {
       inputRefs.current[0].focus()
     }
-  }, [showNameInput])
+  }, [showNameInput, showContactsPrompt])
 
   const handleChange = (index, value) => {
     // Only allow digits; OTP is exactly 4 digits
@@ -103,7 +173,7 @@ export default function OTP() {
     }
 
     // Auto-submit when all 4 digits are entered
-    if (!showNameInput && newOtp.slice(0, 4).every((digit) => digit !== "")) {
+    if (!showNameInput && !showContactsPrompt && newOtp.slice(0, 4).every((digit) => digit !== "")) {
       handleVerify(newOtp.slice(0, 4).join(""))
     }
   }
@@ -134,7 +204,7 @@ export default function OTP() {
           if (i < 4) newOtp[i] = digit
         })
         setOtp(newOtp)
-        if (!showNameInput && digits.length === 4) {
+        if (!showNameInput && !showContactsPrompt && digits.length === 4) {
           handleVerify(newOtp.slice(0, 4).join(""))
         } else {
           inputRefs.current[Math.min(digits.length, 3)]?.focus()
@@ -152,7 +222,7 @@ export default function OTP() {
       if (i < 4) newOtp[i] = digit
     })
     setOtp(newOtp)
-    if (!showNameInput && digits.length === 4) {
+    if (!showNameInput && !showContactsPrompt && digits.length === 4) {
       handleVerify(newOtp.slice(0, 4).join(""))
     } else {
       inputRefs.current[Math.min(digits.length, 3)]?.focus()
@@ -160,7 +230,7 @@ export default function OTP() {
   }
 
   const handleVerify = async (otpValue = null) => {
-    if (showNameInput) return
+    if (showNameInput || showContactsPrompt) return
     if (submittingRef.current) return
 
     const code = (otpValue || otp.join("")).replace(/\D/g, "")
@@ -264,17 +334,11 @@ export default function OTP() {
       sessionStorage.removeItem("userAuthData")
 
       setUserAuthData("user", accessToken, user, refreshToken)
-      markLocationPromptAfterLogin()
 
       // Dispatch custom event for same-tab updates
       window.dispatchEvent(new Event("userAuthChanged"))
 
-      setSuccess(true)
-
-      // Redirect to user home after short delay
-      setTimeout(() => {
-        navigate("/food/user")
-      }, 500)
+      proceedAfterAuth(user)
     } catch (err) {
       const status = err?.response?.status
       let message =
@@ -328,13 +392,7 @@ export default function OTP() {
         window.dispatchEvent(new Event("userAuthChanged"))
       }
 
-      markLocationPromptAfterLogin()
-
-      setSuccess(true)
-
-      setTimeout(() => {
-        navigate("/food/user")
-      }, 500)
+      proceedAfterAuth(updatedUser)
     } catch (err) {
       const message =
         err?.response?.data?.message ||
@@ -385,6 +443,7 @@ export default function OTP() {
 
     setOtp(["", "", "", ""])
     setShowNameInput(false)
+    setShowContactsPrompt(false)
     setName("")
     setNameError("")
     setVerifiedOtp("")
@@ -414,40 +473,44 @@ export default function OTP() {
             <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
           <span className="ml-4 font-bold text-gray-900 dark:text-white">
-            {showNameInput ? "Welcome!" : "OTP Verification"}
+            {showContactsPrompt ? "Sync Contacts" : showNameInput ? "Welcome!" : "OTP Verification"}
           </span>
         </div>
 
         <div className="p-6 sm:p-8 md:p-10 space-y-6 md:space-y-8">
           {/* Message */}
           <div className="text-center space-y-4">
-            {showNameInput && (
+            {(showNameInput || showContactsPrompt) && (
               <div className="flex justify-center">
                 <div className="w-16 h-16 bg-[#EB590E]/10 rounded-full flex items-center justify-center">
                   <div className="w-10 h-10 bg-[#EB590E] rounded-full flex items-center justify-center shadow-lg shadow-[#EB590E]/30 text-white">
-                    <Smartphone className="h-5 w-5" />
+                    {showContactsPrompt ? <Users className="h-5 w-5" /> : <Smartphone className="h-5 w-5" />}
                   </div>
                 </div>
               </div>
             )}
             <div className="space-y-2">
               <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
-                {showNameInput 
-                  ? "Help us know you better" 
-                  : contactType === "email"
-                    ? "Verify your email"
-                    : "Verify your phone"}
+                {showContactsPrompt
+                  ? "Find friends on ItzoFood"
+                  : showNameInput
+                    ? "Help us know you better"
+                    : contactType === "email"
+                      ? "Verify your email"
+                      : "Verify your phone"}
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-                {showNameInput
-                  ? "We're excited to have you join us! Please tell us your full name to get started."
-                  : `We've sent a 4-digit code to ${contactInfo}`}
+                {showContactsPrompt
+                  ? "Allow contacts access so we can help you connect with friends already using ItzoFood."
+                  : showNameInput
+                    ? "We're excited to have you join us! Please tell us your full name to get started."
+                    : `We've sent a 4-digit code to ${contactInfo}`}
               </p>
             </div>
           </div>
 
           {/* OTP Input Fields */}
-          {!showNameInput && (
+          {!showNameInput && !showContactsPrompt && (
             <div className="space-y-6">
               <div className="flex justify-between gap-3 sm:gap-4 max-w-[280px] mx-auto">
                 {otp.map((digit, index) => (
@@ -529,14 +592,40 @@ export default function OTP() {
             </div>
           )}
 
+          {/* Contacts Permission Prompt (native app shell only, shown once per account) */}
+          {showContactsPrompt && (
+            <div className="space-y-4">
+              <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-[#222] rounded-lg p-3">
+                <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5 text-[#EB590E]" />
+                <span>Your contacts are used only to show which friends are already on ItzoFood. You can change this anytime from your profile.</span>
+              </div>
+
+              <Button
+                onClick={handleAllowContacts}
+                disabled={contactsBusy}
+                className="w-full h-12 md:h-14 bg-[#EB590E] hover:bg-[#D94F0C] text-white font-bold text-lg rounded-xl transition-all hover:shadow-lg active:scale-[0.98]"
+              >
+                {contactsBusy ? "Syncing..." : "Allow Access"}
+              </Button>
+              <button
+                type="button"
+                onClick={handleSkipContacts}
+                disabled={contactsBusy}
+                className="w-full text-center text-sm text-gray-500 dark:text-gray-400 font-medium py-2 disabled:opacity-50"
+              >
+                Not Now
+              </button>
+            </div>
+          )}
+
           {/* Verification Loading Overlay */}
-          {isLoading && !showNameInput && (
+          {isLoading && !showNameInput && !showContactsPrompt && (
             <div className="flex justify-center pt-2">
               <Loader2 className="h-6 w-6 text-[#EB590E] animate-spin" />
             </div>
           )}
         </div>
-        
+
         {/* Footer info */}
         <div className="p-6 bg-gray-50 dark:bg-[#1f1f1f] text-center">
             <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">

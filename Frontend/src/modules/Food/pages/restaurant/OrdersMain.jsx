@@ -40,6 +40,7 @@ import RestaurantNavbar from "@food/components/restaurant/RestaurantNavbar";
 import OrderDetails from "./OrderDetails";
 import notificationSound from "@food/assets/audio/alert.mp3";
 import { restaurantAPI } from "@food/api";
+import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission";
 import { getCancellationDisplayLabel, getCancellationDisplayReason } from "@food/utils/cancellationDisplay";
 
 /** Dashboard list: one source of truth via restaurantAPI.getOrders (limit=50, 2.5s TTL). */
@@ -970,29 +971,35 @@ const computeRestaurantBreakdown = (orderLike, visibleItemsFallback) => {
   const packagingFee = Math.max(0, Number(pricing.packagingFee) || 0);
   const { quickShare, quickSharePct } = resolveQuickRestaurantShare(orderLike);
 
-  // Commission with multi-source fallback — fixes issue where commission row
-  // would not render at all when pricing.restaurantCommission was missing.
-  let commission = Math.max(
-    0,
-    Number(pricing.restaurantCommission) || Number(orderLike.restaurantCommission) || 0
-  );
-  const storedPct = Math.max(
-    0,
-    Number(pricing.restaurantCommissionPercentage) ||
-      Number(orderLike.restaurantCommissionPercentage) ||
-      0
-  );
-  if (!(commission > 0) && subtotal > 0) {
-    // Compute dynamically from stored pct or default 15%.
-    const pct = storedPct > 0 ? storedPct : 15;
-    commission = Math.round((subtotal * pct) * 100) / 10000;
+  // Restaurant commission flow is disabled (subscription based model instead) —
+  // never fall back to an estimated commission when it's off.
+  let commission = 0;
+  let commissionPct = 0;
+  if (RESTAURANT_COMMISSION_ENABLED) {
+    // Commission with multi-source fallback — fixes issue where commission row
+    // would not render at all when pricing.restaurantCommission was missing.
+    commission = Math.max(
+      0,
+      Number(pricing.restaurantCommission) || Number(orderLike.restaurantCommission) || 0
+    );
+    const storedPct = Math.max(
+      0,
+      Number(pricing.restaurantCommissionPercentage) ||
+        Number(orderLike.restaurantCommissionPercentage) ||
+        0
+    );
+    if (!(commission > 0) && subtotal > 0) {
+      // Compute dynamically from stored pct or default 15%.
+      const pct = storedPct > 0 ? storedPct : 15;
+      commission = Math.round((subtotal * pct) * 100) / 10000;
+    }
+    commissionPct =
+      commission > 0 && subtotal > 0
+        ? storedPct > 0
+          ? storedPct
+          : Number(((commission / subtotal) * 100).toFixed(1))
+        : 0;
   }
-  const commissionPct =
-    commission > 0 && subtotal > 0
-      ? storedPct > 0
-        ? storedPct
-        : Number(((commission / subtotal) * 100).toFixed(1))
-      : 0;
 
   const restaurantEarning = Math.max(0, subtotal + packagingFee + quickShare - commission);
 

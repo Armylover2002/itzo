@@ -245,7 +245,7 @@ export default function HomeHeader({
             to="/food/user"
             className="flex shrink-0 items-center border-0 bg-transparent p-0 outline-none"
           >
-            <img src="/final_logo200-removebg-preview.png" alt="Blaze" className="h-7 sm:h-8 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img src="/final_logo200-removebg-preview.png" alt="ItzoFood" className="h-7 sm:h-8 w-auto object-contain dark:brightness-0 dark:invert" />
           </Link>
 
           {!embedded && (

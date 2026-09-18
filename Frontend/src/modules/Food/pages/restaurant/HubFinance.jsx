@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner"
 import BottomNavOrders from "@food/components/restaurant/BottomNavOrders"
 import { restaurantAPI } from "@food/api"
+import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -252,15 +253,18 @@ export default function HubFinance() {
           Number(order.payout ?? order.restaurantEarning ?? 0) + Number(order.commission ?? 0)),
       0,
     )
-    const commission = invoiceOrders.reduce(
-      (sum, order) =>
-        sum + (order.commission || Math.max(0, Number(order.totalAmount || 0) - Number(order.payout || order.restaurantEarning || 0))),
-      0,
-    )
+    const commission = RESTAURANT_COMMISSION_ENABLED
+      ? invoiceOrders.reduce(
+          (sum, order) =>
+            sum + (order.commission || Math.max(0, Number(order.totalAmount || 0) - Number(order.payout || order.restaurantEarning || 0))),
+          0,
+        )
+      : 0
     return { earnings, gross, commission, count: invoiceOrders.length }
   }, [invoiceOrders])
 
   const currentCycleCommission = useMemo(() => {
+    if (!RESTAURANT_COMMISSION_ENABLED) return 0
     const cycleOrders = financeData?.currentCycle?.orders || []
     return cycleOrders.reduce(
       (sum, order) =>
@@ -441,7 +445,9 @@ export default function HubFinance() {
       const payout = Number(order.payout ?? order.restaurantEarning ?? 0) || 0
       const orderTotal = Number(order.orderTotal ?? 0) || 0
       const customerPaid = Number(order.totalAmount ?? 0) || 0
-      const commission = Number(order.commission ?? 0) || Math.max(0, customerPaid - payout)
+      const commission = RESTAURANT_COMMISSION_ENABLED
+        ? Number(order.commission ?? 0) || Math.max(0, customerPaid - payout)
+        : 0
       // Restaurant gross = item subtotal + packaging, so it always ties back to
       // earning + commission. Never the customer total (carries platform/delivery fees).
       const restaurantGross = Number(order.restaurantGross ?? 0) || payout + commission
@@ -617,10 +623,11 @@ export default function HubFinance() {
               <p class="label">Restaurant Gross</p>
               <p class="value">${fmt(summary.totalRestaurantGross)}</p>
             </div>
+            ${RESTAURANT_COMMISSION_ENABLED ? `
             <div class="summary-card">
               <p class="label">Commission</p>
               <p class="value">${fmt(summary.totalCommission)}</p>
-            </div>
+            </div>` : ''}
           </div>
         </div>
 
@@ -635,7 +642,7 @@ export default function HubFinance() {
                   <th style="width: 22%;">Items</th>
                   <th style="width: 6%;">Qty</th>
                   <th style="width: 11%;">Restaurant Gross</th>
-                  <th style="width: 10%;">Commission</th>
+                  ${RESTAURANT_COMMISSION_ENABLED ? '<th style="width: 10%;">Commission</th>' : ''}
                   <th style="width: 11%;">Earning</th>
                   <th style="width: 9%;">Payment</th>
                   <th style="width: 9%;">Status</th>
@@ -651,7 +658,7 @@ export default function HubFinance() {
                   const orderValue = Number(order.restaurantGross) || 0
                   const commission = Number(order.commission) || 0
                   const earning = Number(order.payout ?? order.restaurantEarning) || 0
-                  
+
                   return `
                     <tr>
                       <td>${order.orderId || 'N/A'}</td>
@@ -659,7 +666,7 @@ export default function HubFinance() {
                       <td>${foodItems}</td>
                       <td>${itemQuantities}</td>
                       <td>${fmt(orderValue)}</td>
-                      <td>${fmt(commission)}</td>
+                      ${RESTAURANT_COMMISSION_ENABLED ? `<td>${fmt(commission)}</td>` : ''}
                       <td>${fmt(earning)}</td>
                       <td>${order.paymentMethod || 'N/A'}</td>
                       <td>${order.orderStatus || 'N/A'}</td>
@@ -671,7 +678,7 @@ export default function HubFinance() {
                 <tr style="background-color: #e8f5e9; font-weight: bold;">
                   <td colspan="4" style="text-align: right;">Totals:</td>
                   <td>${fmt(summary.totalRestaurantGross)}</td>
-                  <td>${fmt(summary.totalCommission)}</td>
+                  ${RESTAURANT_COMMISSION_ENABLED ? `<td>${fmt(summary.totalCommission)}</td>` : ''}
                   <td>${fmt(summary.totalEarnings)}</td>
                   <td colspan="2"></td>
                 </tr>
@@ -1006,13 +1013,15 @@ export default function HubFinance() {
                   </p>
                   <p className="mt-1 text-xs text-gray-500">Total unsettled share</p>
                 </div>
-                <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">Cycle commission</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    ₹{currentCycleCommission.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500">Current cycle platform commission</p>
-                </div>
+                {RESTAURANT_COMMISSION_ENABLED && (
+                  <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                    <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">Cycle commission</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ₹{currentCycleCommission.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500">Current cycle platform commission</p>
+                  </div>
+                )}
                 <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                   <div className="flex items-center justify-between h-full">
                     <div>
@@ -1404,10 +1413,12 @@ export default function HubFinance() {
                   <p className="text-xs text-gray-600">Gross amount</p>
                   <p className="text-base font-semibold text-gray-900">₹{invoiceSummary.gross.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
-                <div className="rounded-md bg-gray-50 p-3">
-                  <p className="text-xs text-gray-600">Commission</p>
-                  <p className="text-base font-semibold text-gray-900">₹{invoiceSummary.commission.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                </div>
+                {RESTAURANT_COMMISSION_ENABLED && (
+                  <div className="rounded-md bg-gray-50 p-3">
+                    <p className="text-xs text-gray-600">Commission</p>
+                    <p className="text-base font-semibold text-gray-900">₹{invoiceSummary.commission.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  </div>
+                )}
               </div>
             </div>
 

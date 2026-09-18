@@ -3,7 +3,7 @@ import { TableSkeleton } from "@food/components/ui/loading-skeletons";
 import { cn } from "@food/utils/utils";
 
 /**
- * Loading states for the Blaze admin system. Composes the existing Skeleton
+ * Loading states for the ItzoFood admin system. Composes the existing Skeleton
  * primitive + the existing TableSkeleton (re-exported) so there is one
  * shimmer language across every page.
  */
@@ -34,7 +34,7 @@ export function KpiGridSkeleton({ count = 8, className }) {
 
 export function CardSkeleton({ lines = 4, className }) {
   return (
-    <div className={cn("blaze-card p-5", className)}>
+    <div className={cn("itzo-card p-5", className)}>
       <Skeleton className="mb-4 h-5 w-40 rounded-full" />
       <div className="space-y-3">
         {Array.from({ length: lines }).map((_, i) => (
@@ -47,7 +47,7 @@ export function CardSkeleton({ lines = 4, className }) {
 
 export function ChartSkeleton({ height = 320, className }) {
   return (
-    <div className={cn("blaze-card p-5", className)}>
+    <div className={cn("itzo-card p-5", className)}>
       <Skeleton className="mb-4 h-5 w-48 rounded-full" />
       <Skeleton className="w-full rounded-2xl" style={{ height }} />
     </div>

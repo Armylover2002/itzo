@@ -7,6 +7,7 @@ import { jsPDF } from "jspdf"
 import autoTable from "jspdf-autotable"
 import { generateOrderInvoice } from "../../utils/printOrderInvoice"
 import { restaurantAPI } from "@food/api"
+import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission"
 import {
   ArrowLeft,
   Printer,
@@ -700,10 +701,12 @@ export default function OrderDetails({ orderId: propOrderId, isSidebar = false, 
                 <span className="text-sm text-gray-900">{formatMoney(orderData.billing.quickRestaurantShare)}</span>
               </div>
             )}
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-red-700">Commission Paid</span>
-              <span className="text-sm text-red-700">{formatDiscount(orderData.billing.restaurantCommission)}</span>
-            </div>
+            {RESTAURANT_COMMISSION_ENABLED && Number(orderData.billing.restaurantCommission) > 0 && (
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-red-700">Commission Paid</span>
+                <span className="text-sm text-red-700">{formatDiscount(orderData.billing.restaurantCommission)}</span>
+              </div>
+            )}
             {Number(orderData.billing.discount) > 0 && (
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm text-green-700">Discount</span>

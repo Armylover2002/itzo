@@ -258,12 +258,12 @@ const Topbar = ({ onMenuClick }) => {
                             type="button"
                             onClick={() => navigate('/seller')}
                             className="shrink-0 mr-2 flex items-center"
-                            aria-label={companyName || 'Blaze'}
+                            aria-label={companyName || 'ItzoFood'}
                         >
                             {logoUrl ? (
                                 <img
                                     src={logoUrl}
-                                    alt={companyName || 'Blaze'}
+                                    alt={companyName || 'ItzoFood'}
                                     className="h-8 w-auto max-w-[120px] object-contain object-left"
                                 />
                             ) : (

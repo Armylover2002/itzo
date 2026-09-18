@@ -33,11 +33,11 @@ export function FormLayout({ onSubmit, children, actions, stickyActions = true, 
 /** Titled group of fields, rendered on the shared card surface. */
 export function FormSection({ title, description, children, className }) {
   return (
-    <section className={cn("blaze-card p-5", className)}>
+    <section className={cn("itzo-card p-5", className)}>
       {(title || description) && (
         <div className="mb-4 space-y-0.5">
-          {title && <h3 className="blaze-section-title">{title}</h3>}
-          {description && <p className="blaze-section-subtitle">{description}</p>}
+          {title && <h3 className="itzo-section-title">{title}</h3>}
+          {description && <p className="itzo-section-subtitle">{description}</p>}
         </div>
       )}
       <div className="space-y-4">{children}</div>
@@ -61,14 +61,14 @@ export function FormField({ label, htmlFor, required, hint, error, children, cla
   return (
     <div className={cn("space-y-1.5", className)}>
       {label && (
-        <Label htmlFor={htmlFor} className="blaze-label">
+        <Label htmlFor={htmlFor} className="itzo-label">
           {label}
-          {required && <span className="text-[var(--blaze-danger)]">*</span>}
+          {required && <span className="text-[var(--itzo-danger)]">*</span>}
         </Label>
       )}
       {children}
       {error ? (
-        <p className="text-xs font-medium text-[var(--blaze-danger)]">{error}</p>
+        <p className="text-xs font-medium text-[var(--itzo-danger)]">{error}</p>
       ) : hint ? (
         <p className="text-xs text-muted-foreground">{hint}</p>
       ) : null}

@@ -9,6 +9,7 @@ import { initializeQueues, closeBullMQConnection, initSubscriptionSchedules, ini
 import { expireExpiredOffers } from './src/modules/food/admin/services/admin.service.js';
 import { syncExpiredFssaiNotifications } from './src/modules/food/restaurant/services/fssaiExpiry.service.js';
 import { syncExpiredSellerLicenseNotifications } from './src/modules/quick-commerce/seller/services/sellerLicenseExpiry.service.js';
+import { runReportAbsentCheck } from './src/modules/hrms/crons/reportAbsentCron.js';
 
 import { logger } from './src/utils/logger.js';
 import { initializeFirebaseRealtime } from './src/config/firebase.js';
@@ -19,6 +20,7 @@ let server = null;
 let expireOffersInterval = null;
 let fssaiExpiryInterval = null;
 let foodScheduledReconcileInterval = null;
+let reportAbsentInterval = null;
 
 const gracefulShutdown = async (signal) => {
     logger.info(`${signal} received, starting graceful shutdown`);
@@ -34,6 +36,7 @@ const gracefulShutdown = async (signal) => {
             if (expireOffersInterval) clearInterval(expireOffersInterval);
             if (fssaiExpiryInterval) clearInterval(fssaiExpiryInterval);
             if (foodScheduledReconcileInterval) clearInterval(foodScheduledReconcileInterval);
+            if (reportAbsentInterval) clearInterval(reportAbsentInterval);
             logger.info('Graceful shutdown complete');
             process.exit(0);
         } catch (err) {
@@ -165,6 +168,17 @@ const startServer = async () => {
         };
         runFoodScheduledReconcile();
         foodScheduledReconcileInterval = setInterval(runFoodScheduledReconcile, 60 * 1000);
+
+        // HRMS Report Absent Cron — runs every 24 hours (recommended to start at ~11 PM IST)
+        const runReportAbsent = async () => {
+            try {
+                await runReportAbsentCheck();
+            } catch (err) {
+                logger.error(`Report absent cron error: ${err.message}`);
+            }
+        };
+        // Run once at startup (will only affect if startup happens after 10 PM) then every 24h
+        reportAbsentInterval = setInterval(runReportAbsent, 24 * 60 * 60 * 1000);
 
         process.on('SIGINT', () => gracefulShutdown('SIGINT'));
         process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

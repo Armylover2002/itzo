@@ -4,7 +4,8 @@ import {
     getPublicPageByKey,
     getAdminPageByKey,
     upsertLegalPage,
-    upsertAboutPage
+    upsertAboutPage,
+    upsertConsultingPage
 } from '../services/pageContent.service.js';
 
 const parseKeyFromParam = (req) => String(req.params?.key || '').trim().toLowerCase();
@@ -17,6 +18,7 @@ export const getPublicPageController = async (req, res, next) => {
             role = (key === 'about') ? 'all' : 'user';
         }
         const result = await getPublicPageByKey(key, role);
+        // (consulting uses per-role content, resolved via getPublicPageByKey's default fallback)
         return sendResponse(res, 200, 'Page fetched successfully', result.data);
     } catch (error) {
         next(error);
@@ -45,6 +47,10 @@ export const upsertAdminPageController = async (req, res, next) => {
 
         if (key === 'about') {
             const result = await upsertAboutPage(req.body ?? {}, updatedBy);
+            return sendResponse(res, 200, 'Page updated successfully', result.data);
+        }
+        if (key === 'consulting') {
+            const result = await upsertConsultingPage(req.body ?? {}, updatedBy, role);
             return sendResponse(res, 200, 'Page updated successfully', result.data);
         }
         if (['terms', 'privacy', 'support', 'refund', 'shipping', 'cancellation'].includes(key)) {

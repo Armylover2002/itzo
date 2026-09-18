@@ -17,6 +17,8 @@ import { getAdminPageController, upsertAdminPageController } from '../controller
 import * as employeeController from '../controllers/employee.controller.js';
 import { upload } from '../../../../middleware/upload.js';
 import { checkPermission } from '../../../../core/auth/auth.middleware.js';
+import jobRoutes from './job.route.js';
+import jobApplicationRoutes from './jobApplication.route.js';
 
 const router = express.Router();
 
@@ -297,5 +299,9 @@ router.post('/employees', checkPermission('food::staff_management::list', 'creat
 router.patch('/employees/:id', checkPermission('food::staff_management::list', 'edit'), upload.single('employeeImage'), employeeController.updateEmployee);
 router.patch('/employees/:id/status', checkPermission('food::staff_management::list', 'edit'), employeeController.toggleEmployeeStatus);
 router.delete('/employees/:id', checkPermission('food::staff_management::list', 'delete'), employeeController.deleteEmployee);
+
+// ----- Careers (Jobs + Applications) -----
+router.use('/careers/jobs', jobRoutes);
+router.use('/careers/applications', jobApplicationRoutes);
 
 export default router;

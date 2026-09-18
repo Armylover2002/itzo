@@ -9,7 +9,7 @@ import { sendTransactionalSms } from '../../../../utils/sms.js';
 
 const isPlaceholderEmail = (email) => {
     const value = String(email || '').trim().toLowerCase();
-    return !value || value.endsWith('@seller.local') || value.endsWith('@blaze.local');
+    return !value || value.endsWith('@seller.local') || value.endsWith('@itzofood.local');
 };
 
 const isStatusDecisionKey = (key = '') => {

@@ -1,7 +1,7 @@
 /**
- * BLAZE chart theme tokens.
+ * ITZO chart theme tokens.
  *
- * Mirrors the EXISTING Blaze Food/Admin brand tokens (global.css):
+ * Mirrors the EXISTING ItzoFood/Admin brand tokens (global.css):
  *   primary  = #FF0000 (--primary / --color-orange-500)
  *   hover    = #CC0000 (--color-primary-hover)
  *   light    = #FFEDED (--secondary / --color-orange-50)
@@ -9,9 +9,9 @@
  *   border   = #EDE8E0 (--border, warm paper)
  *   muted    = #5C5247 (--muted-foreground)
  * No new red is introduced — charts use the exact same brand red as the
- * rest of the Blaze Admin. This is NOT a component, only constants.
+ * rest of the ItzoFood Admin. This is NOT a component, only constants.
  */
-export const BLAZE_CHART = {
+export const ITZO_CHART = {
   primary: "#FF0000",
   primaryHover: "#CC0000",
   primaryLight: "#FFEDED",
@@ -48,4 +48,4 @@ export const BLAZE_CHART = {
   },
 };
 
-export default BLAZE_CHART;
+export default ITZO_CHART;

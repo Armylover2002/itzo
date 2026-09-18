@@ -42,8 +42,8 @@ export default function AdminTable({
     <div className={cn("space-y-3", className)}>
       {toolbar}
 
-      <div className="blaze-card overflow-hidden">
-        <div className="blaze-scroll w-full overflow-x-auto">
+      <div className="itzo-card overflow-hidden">
+        <div className="itzo-scroll w-full overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead
               className={cn(

@@ -109,6 +109,14 @@ const RoleList = lazy(() => import("@food/pages/admin/employees/RoleList"));
 const CreateRole = lazy(() => import("@food/pages/admin/employees/CreateRole"));
 const AddEmployee = lazy(() => import("@food/pages/admin/employees/AddEmployee"));
 const EmployeeList = lazy(() => import("@food/pages/admin/employees/EmployeeList"));
+const JobsList = lazy(() => import("@food/pages/admin/careers/JobsList"));
+const AddEditJob = lazy(() => import("@food/pages/admin/careers/AddEditJob"));
+const JobApplicationsList = lazy(() => import("@food/pages/admin/careers/JobApplicationsList"));
+const JobApplicationDetails = lazy(() => import("@food/pages/admin/careers/JobApplicationDetails"));
+const RestaurantConsultingSettings = lazy(() => import("@food/pages/admin/settings/RestaurantConsultingSettings"));
+const LicensingRequestsList = lazy(() => import("@food/pages/admin/settings/LicensingRequestsList"));
+const LicensingRequestDetails = lazy(() => import("@food/pages/admin/settings/LicensingRequestDetails"));
+const ItzoFoodLandingSettings = lazy(() => import("@food/pages/admin/system/ItzoFoodLandingSettings"));
 // Business Settings
 const EmailTemplate = lazy(() => import("@food/pages/admin/settings/EmailTemplate"));
 const ThemeSettings = lazy(() => import("@food/pages/admin/settings/ThemeSettings"));
@@ -151,6 +159,7 @@ const AdminLogin = lazy(() => import("@food/pages/admin/auth/AdminLogin"));
 const AdminSignup = lazy(() => import("@food/pages/admin/auth/AdminSignup"));
 const AdminForgotPassword = lazy(() => import("@food/pages/admin/auth/AdminForgotPassword"));
 const QuickCommerceAdminRoutes = lazy(() => import("@/modules/quickCommerce/admin/routes"));
+const HrmsRouter = lazy(() => import("@food/pages/admin/hrms/HrmsRouter"));
 
 
 const GlobalApplicationSettings = lazy(() => import("@/modules/common/admin/pages/GlobalApplicationSettings"));
@@ -225,7 +234,8 @@ export default function AdminRouter() {
           {/* Quick Commerce Admin Routes */}
           <Route path="quick-commerce/*" element={<QuickCommerceAdminRoutes />} />
 
-
+          {/* HRMS Enterprise Module */}
+          <Route path="hrms/*" element={<HrmsRouter />} />
 
           {/* Global Application Settings (Common Module) */}
           <Route path="global-settings">
@@ -361,6 +371,13 @@ export default function AdminRouter() {
             <Route path="employees/add" element={<AddEmployee />} />
             <Route path="employees/edit/:id" element={<AddEmployee />} />
 
+            {/* CAREERS */}
+            <Route path="careers" element={<JobsList />} />
+            <Route path="careers/add" element={<AddEditJob />} />
+            <Route path="careers/edit/:id" element={<AddEditJob />} />
+            <Route path="careers/applications" element={<JobApplicationsList />} />
+            <Route path="careers/applications/:id" element={<JobApplicationDetails />} />
+
             {/* SYSTEM & BUSINESS SETTINGS */}
             <Route path="email-template" element={<EmailTemplate />} />
             <Route path="theme-settings" element={<ThemeSettings />} />
@@ -376,7 +393,12 @@ export default function AdminRouter() {
             <Route path="pages-social-media/shipping" element={<ShippingPolicy />} />
             <Route path="pages-social-media/cancellation" element={<CancellationPolicy />} />
             <Route path="pages-social-media/react-registration" element={<ReactRegistration />} />
-            
+            <Route path="pages-social-media/consulting" element={<RestaurantConsultingSettings />} />
+
+            {/* CONSULTING & LICENSING */}
+            <Route path="consulting/licensing-requests" element={<LicensingRequestsList />} />
+            <Route path="consulting/licensing-requests/:id" element={<LicensingRequestDetails />} />
+
             <Route path="3rd-party-configurations/party" element={<ThirdParty />} />
             <Route path="3rd-party-configurations/firebase" element={<FirebaseNotification />} />
             <Route path="3rd-party-configurations/offline-payment" element={<OfflinePaymentSetup />} />
@@ -389,6 +411,7 @@ export default function AdminRouter() {
             <Route path="notification-channels" element={<NotificationChannels />} />
             <Route path="landing-page-settings/admin" element={<LandingPageSettings type="admin" />} />
             <Route path="landing-page-settings/react" element={<LandingPageSettings type="react" />} />
+            <Route path="itzofood-landing-settings" element={<ItzoFoodLandingSettings />} />
             <Route path="page-meta-data" element={<PageMetaData />} />
             <Route path="react-site" element={<ReactSite />} />
             <Route path="clean-database" element={<CleanDatabase />} />

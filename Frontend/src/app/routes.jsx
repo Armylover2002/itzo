@@ -15,6 +15,12 @@ import { AuthPageGuard } from '@core/guards/RouteGuard'
 import { UserRole } from '@core/constants/roles'
 import SellerAuthPage from '../modules/seller/pages/Auth'
 import { applyNativeShellClasses } from '@/shared/utils/nativeShell'
+import ItzoFoodLanding from '../modules/Food/pages/landing/ItzoFoodLanding'
+
+const PublicAboutPage = lazy(() => import('../modules/Food/pages/landing/pages/AboutUs'))
+const PublicContactPage = lazy(() => import('../modules/Food/pages/landing/pages/ContactUs'))
+const PublicConsultingPage = lazy(() => import('../modules/Food/pages/landing/pages/RestaurantConsulting'))
+const PublicHelpSupportPage = lazy(() => import('../modules/Food/pages/landing/pages/HelpSupport'))
 
 const NATIVE_LAST_ROUTE_KEY = 'native_last_route'
 
@@ -137,6 +143,7 @@ const SellerAppWrapper = () => {
 }
 
 const AdminRouter = lazy(() => import('../modules/Food/components/admin/AdminRouter'))
+const HrmsEmployeeApp = lazy(() => import('../modules/hrms/routes/index.jsx'))
 
 const AppRoutes = () => {
   const location = useLocation()
@@ -168,15 +175,37 @@ const AppRoutes = () => {
     if (!isNativeLikeShell) return
 
     const route = `${location.pathname || ''}${location.search || ''}`
-    if (route.startsWith('/food/') || route.startsWith('/ecs')) {
+    if (route.startsWith('/food/') || route.startsWith('/ecs') || route.startsWith('/hrms')) {
       localStorage.setItem(NATIVE_LAST_ROUTE_KEY, route)
     }
   }, [location.pathname, location.search])
 
   return (
     <Routes>
-        {/* Root lands on the first enabled customer module */}
-        <Route path="/" element={<DefaultHomeRedirect />} />
+        {/* Root now lands on the premium ItzoFood landing page */}
+        <Route path="/" element={<ItzoFoodLanding />} />
+
+        {/* Public Landing Pages */}
+        <Route path="/about" element={
+          <Suspense fallback={<PageLoader />}>
+            <PublicAboutPage />
+          </Suspense>
+        } />
+        <Route path="/contact" element={
+          <Suspense fallback={<PageLoader />}>
+            <PublicContactPage />
+          </Suspense>
+        } />
+        <Route path="/consulting" element={
+          <Suspense fallback={<PageLoader />}>
+            <PublicConsultingPage />
+          </Suspense>
+        } />
+        <Route path="/support" element={
+          <Suspense fallback={<PageLoader />}>
+            <PublicHelpSupportPage />
+          </Suspense>
+        } />
 
         {/* Auth Module */}
         <Route
@@ -291,6 +320,13 @@ const AppRoutes = () => {
             </ModuleEnabledRoute>
           }
         />
+
+        {/* HRMS Employee Portal */}
+        <Route path="/hrms/*" element={
+          <Suspense fallback={<PageLoader />}>
+            <HrmsEmployeeApp />
+          </Suspense>
+        } />
 
         {/* Global Admin Portal - wrap lazy router in Suspense to avoid blank/crash on direct admin URLs */}
         <Route

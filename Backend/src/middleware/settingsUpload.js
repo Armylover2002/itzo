@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import multer from 'multer';
 
-const SETTINGS_UPLOAD_DIR = path.join(os.tmpdir(), 'blaze-global-settings-uploads');
+const SETTINGS_UPLOAD_DIR = path.join(os.tmpdir(), 'itzo-global-settings-uploads');
 
 if (!fs.existsSync(SETTINGS_UPLOAD_DIR)) {
     fs.mkdirSync(SETTINGS_UPLOAD_DIR, { recursive: true });
@@ -35,8 +35,22 @@ const storage = multer.diskStorage({
     },
 });
 
+const ALLOWED_VIDEO_MIME_TYPES = new Set([
+    'video/mp4',
+    'video/webm',
+    'video/ogg',
+    'video/quicktime',
+]);
+
 const imageFileFilter = (_req, file, cb) => {
     const mimeType = String(file.mimetype || '').toLowerCase();
+    // landingVideo is the only video-type field on the global settings form.
+    if (file.fieldname === 'landingVideo') {
+        if (ALLOWED_VIDEO_MIME_TYPES.has(mimeType)) {
+            return cb(null, true);
+        }
+        return cb(new Error('Only video files (mp4, webm, ogg, mov) are allowed for the landing video upload'));
+    }
     if (ALLOWED_IMAGE_MIME_TYPES.has(mimeType)) {
         return cb(null, true);
     }
@@ -51,7 +65,7 @@ export const settingsUpload = multer({
     storage,
     fileFilter: imageFileFilter,
     limits: {
-        files: 13,
+        files: 25,
     },
 });
 
@@ -69,6 +83,16 @@ export const SETTINGS_UPLOAD_FIELDS = [
     { name: 'loginBanner', maxCount: 1 },
     { name: 'sellerLoginBanner', maxCount: 1 },
     { name: 'restaurantLoginBanner', maxCount: 1 },
+    { name: 'landingVideo', maxCount: 1 },
+    { name: 'landingPoster', maxCount: 1 },
+    { name: 'landingPizzaImage', maxCount: 1 },
+    { name: 'landingTomatoImage', maxCount: 1 },
+    { name: 'landingQrCodeImage', maxCount: 1 },
+    { name: 'landingAppStoreBadge', maxCount: 1 },
+    { name: 'landingPlayStoreBadge', maxCount: 1 },
+    { name: 'landingFooterLogo', maxCount: 1 },
+    { name: 'landingNavbarLogo', maxCount: 1 },
+    { name: 'benefitsImage', maxCount: 1 },
 ];
 
 export const handleSettingsUpload = (req, res, next) => {

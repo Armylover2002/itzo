@@ -67,6 +67,23 @@ export const config = {
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 10),
 
     // Uploads
+    // UPLOAD_STORAGE decides where the storage-abstraction (upload.service.js,
+    // used by HRMS payslips etc.) writes files:
+    //   'cloudinary' -> Cloudinary CDN
+    //   'local'      -> a folder on the server disk
+    // Legacy true/false values are accepted too: UPLOAD_USE_CLOUDINARY=true|false.
+    // Defaults to 'cloudinary' because this project stores every other upload
+    // (media, documents, images) on Cloudinary and does not serve /uploads statically.
+    uploadStorage: (() => {
+        const useCloudinary = String(process.env.UPLOAD_USE_CLOUDINARY || '').trim().toLowerCase();
+        if (useCloudinary === 'true') return 'cloudinary';
+        if (useCloudinary === 'false') return 'local';
+        return String(process.env.UPLOAD_STORAGE || 'cloudinary').trim().toLowerCase();
+    })(),
+    // Absolute (or project-relative) directory the 'local' driver writes into.
+    uploadLocalDir: process.env.UPLOAD_LOCAL_DIR || 'uploads',
+    // Optional absolute prefix for locally stored files, e.g. https://itzo.in
+    uploadPublicBaseUrl: (process.env.UPLOAD_PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
     uploadPath: process.env.UPLOAD_PATH || 'uploads/',
     requestBodyLimit: process.env.REQUEST_BODY_LIMIT || '2mb',
 

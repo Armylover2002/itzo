@@ -1,3 +1,5 @@
+import { RESTAURANT_COMMISSION_ENABLED } from "../constants/commission"
+
 export const adminSidebarMenu = [
   {
     type: "link",
@@ -63,7 +65,9 @@ export const adminSidebarMenu = [
         icon: "UtensilsCrossed",
         subItems: [
           { label: "Restaurants List", path: "/ecs/food/restaurants", permissionKey: "list" },
-          { label: "Restaurant Commission", path: "/ecs/food/restaurants/commission", permissionKey: "commission" },
+          ...(RESTAURANT_COMMISSION_ENABLED
+            ? [{ label: "Restaurant Commission", path: "/ecs/food/restaurants/commission", permissionKey: "commission" }]
+            : []),
           { label: "New Joining Request", path: "/ecs/food/restaurants/joining-request", permissionKey: "joining_request" },
           { label: "Restaurant Reviews", path: "/ecs/food/restaurants/reviews", permissionKey: "reviews" },
           { label: "Restaurant Complaints", path: "/ecs/food/restaurants/complaints", permissionKey: "complaints" },
@@ -273,7 +277,64 @@ export const adminSidebarMenu = [
     label: "BANNER SETTINGS",
     permissionKey: "banner_settings",
     items: [
+      { type: "link", label: "Premium Landing Page", permissionKey: "premium_landing", path: "/ecs/food/itzofood-landing-settings", icon: "Monitor" },
       { type: "link", label: "Landing Page Management", permissionKey: "landing_page", path: "/ecs/food/hero-banner-management", icon: "Image" },
+    ],
+  },
+  {
+    type: "section",
+    label: "HRMS (ENTERPRISE)",
+    permissionKey: "hrms",
+    items: [
+      { type: "link", label: "Dashboard", permissionKey: "dashboard", path: "/ecs/hrms/dashboard", icon: "LayoutDashboard" },
+      { type: "link", label: "Joining Requests", permissionKey: "joining_requests", path: "/ecs/hrms/joining-requests", icon: "UserPlus" },
+      { type: "link", label: "Employee Management", permissionKey: "employees", path: "/ecs/hrms/employees", icon: "Users" },
+      { type: "link", label: "Attendance & Leaves", permissionKey: "attendance", path: "/ecs/hrms/attendance", icon: "CalendarCheck" },
+      { type: "link", label: "Payroll & Expenses", permissionKey: "payroll", path: "/ecs/hrms/payroll", icon: "CreditCard" },
+      {
+        type: "expandable",
+        label: "Support Center",
+        icon: "LifeBuoy",
+        permissionKey: "support",
+        subItems: [
+          { label: "Dashboard", path: "/ecs/hrms/support/dashboard", permissionKey: "support_dashboard" },
+          { label: "Support Requests", path: "/ecs/hrms/support/requests", permissionKey: "support_requests" },
+          { label: "Support Settings", path: "/ecs/hrms/support/settings", permissionKey: "support_settings" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Assessment Mgmt",
+        icon: "FileQuestion",
+        permissionKey: "assessments",
+        subItems: [
+          { label: "Question Bank", path: "/ecs/hrms/assessments/question-bank", permissionKey: "questions" },
+          { label: "Settings", path: "/ecs/hrms/assessments/settings", permissionKey: "settings" },
+          { label: "Test Analysis", path: "/ecs/hrms/assessments/analysis", permissionKey: "analysis" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Daily Reports",
+        icon: "FileText",
+        permissionKey: "daily_reports",
+        subItems: [
+          { label: "Dashboard", path: "/ecs/hrms/reports/dashboard", permissionKey: "reports_dashboard" },
+          { label: "All Reports", path: "/ecs/hrms/reports/all", permissionKey: "reports_all" },
+          { label: "Report Settings", path: "/ecs/hrms/reports/settings", permissionKey: "reports_settings" },
+        ],
+      },
+      {
+        type: "expandable",
+        label: "Performance & KPIs",
+        icon: "Award",
+        permissionKey: "performance",
+        subItems: [
+          { label: "BI Dashboard", path: "/ecs/hrms/performance", permissionKey: "performance_view" },
+          { label: "KPI Settings Engine", path: "/ecs/hrms/kpi-settings", permissionKey: "kpi_settings" },
+        ],
+      },
+      { type: "link", label: "Settings", permissionKey: "settings", path: "/ecs/hrms/settings", icon: "Settings" },
     ],
   },
   {
@@ -283,6 +344,15 @@ export const adminSidebarMenu = [
     items: [
       { type: "link", label: "Roles & Permissions", permissionKey: "roles", path: "/ecs/food/employee-role", icon: "Lock" },
       { type: "link", label: "Employee List", permissionKey: "list", path: "/ecs/food/employees", icon: "Users" },
+    ],
+  },
+  {
+    type: "section",
+    label: "CAREERS",
+    permissionKey: "careers",
+    items: [
+      { type: "link", label: "Jobs", permissionKey: "list", path: "/ecs/food/careers", icon: "Briefcase" },
+      { type: "link", label: "Job Applications", permissionKey: "list", path: "/ecs/food/careers/applications", icon: "FileText" },
     ],
   },
   {

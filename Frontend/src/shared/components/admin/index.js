@@ -1,5 +1,5 @@
 /**
- * Blaze Admin Design System — single import surface.
+ * ItzoFood Admin Design System — single import surface.
  *
  * Every admin page should build from these so the whole product looks like
  * one product. New components compose existing primitives (Card, Button,
@@ -34,4 +34,4 @@ export { FormLayout, FormSection, FormRow, FormField } from "./FormLayout";
 // Reused existing primitives, surfaced here so pages have one import source
 export { default as EmptyState } from "@/shared/components/EmptyState";
 export { default as Pagination } from "@/shared/components/ui/Pagination";
-export { BLAZE_CHART } from "@/shared/theme/blazeChartTheme";
+export { ITZO_CHART } from "@/shared/theme/itzoChartTheme";

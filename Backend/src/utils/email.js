@@ -190,8 +190,8 @@ export async function sendRestaurantApprovalEmail(to, payload = {}) {
     const from = config.emailFrom || config.emailUser;
     const restaurantName = asSafeText(payload.restaurantName, "your restaurant");
     const ownerName = asSafeText(payload.ownerName, "Partner");
-    const subject = "Restaurant Approval Confirmed - Blaze";
-    const text = `Hi ${ownerName}, your restaurant "${restaurantName}" has been approved by admin. You can now log in and start accepting orders on Blaze.`;
+    const subject = "Restaurant Approval Confirmed - ItzoFood";
+    const text = `Hi ${ownerName}, your restaurant "${restaurantName}" has been approved by admin. You can now log in and start accepting orders on ItzoFood.`;
     const html = `
 <!DOCTYPE html>
 <html>
@@ -202,13 +202,13 @@ export async function sendRestaurantApprovalEmail(to, payload = {}) {
   <p>Your restaurant <strong>${restaurantName}</strong> has been approved by admin.</p>
   <p>You can now log in to your app and start accepting orders.</p>
   <hr style="border: none; border-top: 1px solid #eee; margin: 18px 0;">
-  <p style="color: #999; font-size: 12px;">Blaze Team</p>
+  <p style="color: #999; font-size: 12px;">ItzoFood Team</p>
 </body>
 </html>`;
 
     try {
         await trans.sendMail({
-            from: typeof from === "string" && from.includes("<") ? from : `Blaze <${from}>`,
+            from: typeof from === "string" && from.includes("<") ? from : `ItzoFood <${from}>`,
             to: recipient,
             subject,
             text,
@@ -239,8 +239,8 @@ export async function sendDeliveryApprovalEmail(to, payload = {}) {
 
     const from = config.emailFrom || config.emailUser;
     const partnerName = asSafeText(payload.name, "Partner");
-    const subject = "Delivery Partner Approval Confirmed - Blaze";
-    const text = `Hi ${partnerName}, your delivery partner profile has been approved by admin. You can now go online and start taking trips on Blaze.`;
+    const subject = "Delivery Partner Approval Confirmed - ItzoFood";
+    const text = `Hi ${partnerName}, your delivery partner profile has been approved by admin. You can now go online and start taking trips on ItzoFood.`;
     const html = `
 <!DOCTYPE html>
 <html>
@@ -251,13 +251,13 @@ export async function sendDeliveryApprovalEmail(to, payload = {}) {
   <p>Your delivery partner profile has been approved by admin.</p>
   <p>You can now open the app, go online, and start taking trips.</p>
   <hr style="border: none; border-top: 1px solid #eee; margin: 18px 0;">
-  <p style="color: #999; font-size: 12px;">Blaze Team</p>
+  <p style="color: #999; font-size: 12px;">ItzoFood Team</p>
 </body>
 </html>`;
 
     try {
         await trans.sendMail({
-            from: typeof from === "string" && from.includes("<") ? from : `Blaze <${from}>`,
+            from: typeof from === "string" && from.includes("<") ? from : `ItzoFood <${from}>`,
             to: recipient,
             subject,
             text,
@@ -293,10 +293,10 @@ export async function sendSellerStatusEmail(to, payload = {}) {
         payload.title,
         payload.status === "rejected" ? "Seller application update" : "Seller application approved"
     );
-    const body = asSafeText(payload.message, "There is an update on your Blaze seller account.");
+    const body = asSafeText(payload.message, "There is an update on your ItzoFood seller account.");
     const shopLine = shopName ? `Shop: ${shopName}` : "";
     const subject = heading;
-    const text = [`Hi ${sellerName},`, shopLine, body, "Open the Blaze seller app to see the latest status."]
+    const text = [`Hi ${sellerName},`, shopLine, body, "Open the ItzoFood seller app to see the latest status."]
         .filter(Boolean)
         .join("\n");
     const html = `
@@ -308,15 +308,15 @@ export async function sendSellerStatusEmail(to, payload = {}) {
   <p>Hi ${sellerName},</p>
   ${shopName ? `<p>Shop: <strong>${shopName}</strong></p>` : ""}
   <p>${body}</p>
-  <p>Open the Blaze seller app to see the latest status.</p>
+  <p>Open the ItzoFood seller app to see the latest status.</p>
   <hr style="border: none; border-top: 1px solid #eee; margin: 18px 0;">
-  <p style="color: #999; font-size: 12px;">Blaze Team</p>
+  <p style="color: #999; font-size: 12px;">ItzoFood Team</p>
 </body>
 </html>`;
 
     try {
         await trans.sendMail({
-            from: typeof from === "string" && from.includes("<") ? from : `Blaze <${from}>`,
+            from: typeof from === "string" && from.includes("<") ? from : `ItzoFood <${from}>`,
             to: recipient,
             subject,
             text,
@@ -346,7 +346,7 @@ export async function sendRestaurantRejectionEmail(to, payload = {}) {
     const restaurantName = asSafeText(payload.restaurantName, "your restaurant");
     const ownerName = asSafeText(payload.ownerName, "Partner");
     const reason = asSafeText(payload.reason, "Incomplete documents");
-    const subject = "Restaurant Application Update - Blaze";
+    const subject = "Restaurant Application Update - ItzoFood";
     const text = `Hi ${ownerName}, your restaurant "${restaurantName}" registration was not approved. Reason: ${reason}.`;
     const html = `
 <!DOCTYPE html>
@@ -359,13 +359,13 @@ export async function sendRestaurantRejectionEmail(to, payload = {}) {
   <p><strong>Reason:</strong> ${reason}</p>
   <p>You may update your details and re-apply if eligible.</p>
   <hr style="border: none; border-top: 1px solid #eee; margin: 18px 0;">
-  <p style="color: #999; font-size: 12px;">Blaze Team</p>
+  <p style="color: #999; font-size: 12px;">ItzoFood Team</p>
 </body>
 </html>`;
 
     try {
         await trans.sendMail({
-            from: typeof from === "string" && from.includes("<") ? from : `Blaze <${from}>`,
+            from: typeof from === "string" && from.includes("<") ? from : `ItzoFood <${from}>`,
             to: recipient,
             subject,
             text,
@@ -394,7 +394,7 @@ export async function sendDeliveryRejectionEmail(to, payload = {}) {
     const from = config.emailFrom || config.emailUser;
     const partnerName = asSafeText(payload.name, "Partner");
     const reason = asSafeText(payload.reason, "Application incomplete");
-    const subject = "Delivery Partner Application Update - Blaze";
+    const subject = "Delivery Partner Application Update - ItzoFood";
     const text = `Hi ${partnerName}, your delivery partner application was not approved. Reason: ${reason}.`;
     const html = `
 <!DOCTYPE html>
@@ -407,13 +407,13 @@ export async function sendDeliveryRejectionEmail(to, payload = {}) {
   <p><strong>Reason:</strong> ${reason}</p>
   <p>You may update your details and re-apply if eligible.</p>
   <hr style="border: none; border-top: 1px solid #eee; margin: 18px 0;">
-  <p style="color: #999; font-size: 12px;">Blaze Team</p>
+  <p style="color: #999; font-size: 12px;">ItzoFood Team</p>
 </body>
 </html>`;
 
     try {
         await trans.sendMail({
-            from: typeof from === "string" && from.includes("<") ? from : `Blaze <${from}>`,
+            from: typeof from === "string" && from.includes("<") ? from : `ItzoFood <${from}>`,
             to: recipient,
             subject,
             text,
@@ -530,6 +530,85 @@ export async function sendPartnerApprovalCertificateEmail(to, options = {}) {
         return true;
     } catch (err) {
         logger.error(`Failed to send partner approval certificate email to ${to}: ${err.message}`);
+        return false;
+    }
+}
+
+export async function sendJobApplicationAcknowledgementEmail(to, applicantName, jobTitle) {
+    const trans = getTransporter();
+    if (!trans) {
+        logger.warn('Job application acknowledgement email skipped: SMTP not configured');
+        return false;
+    }
+    const from = config.emailFrom || config.emailUser;
+    const subject = `Application Received: ${jobTitle} – ItzoFood`;
+    const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 500px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #ea580c;">Hello ${applicantName},</h2>
+  <p>Thank you for applying for the <strong>${jobTitle}</strong> position at ItzoFood!</p>
+  <p>We have successfully received your application and resume. Our recruitment team is currently reviewing all submissions to identify candidates whose qualifications best match our needs.</p>
+  <p>If your profile is shortlisted, someone from our team will contact you to discuss the next steps in the interview process.</p>
+  <p>We appreciate your interest in joining ItzoFood and wish you the best of luck!</p>
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+  <p style="color: #999; font-size: 12px;">Best Regards,<br>ItzoFood Careers Team</p>
+</body>
+</html>`;
+    const text = `Hello ${applicantName},\n\nThank you for applying for the ${jobTitle} position at ItzoFood!\n\nWe have successfully received your application. If your profile matches, someone from our team will reach out to you.\n\nBest Regards,\nItzoFood Careers Team`;
+
+    try {
+        await trans.sendMail({
+            from: typeof from === 'string' && from.includes('<') ? from : `ItzoFood Careers <${from}>`,
+            to,
+            subject,
+            text,
+            html
+        });
+        logger.info(`Job application acknowledgement email sent to ${to}`);
+        return true;
+    } catch (err) {
+        logger.error(`Failed to send job application acknowledgement email to ${to}:`, err.message);
+        return false;
+    }
+}
+
+export async function sendLicensingAcknowledgementEmail(to, ownerName, restaurantName, vendor) {
+    const trans = getTransporter();
+    if (!trans) {
+        logger.warn('Licensing acknowledgment email skipped: SMTP not configured');
+        return false;
+    }
+    const from = config.emailFrom || config.emailUser;
+    const subject = `Licensing Support Request Received – ItzoFood`;
+    const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 500px; margin: 0 auto; padding: 20px;">
+  <h2 style="color: #ea580c;">Hello ${ownerName},</h2>
+  <p>Thank you for submitting a licensing support request for <strong>${restaurantName}</strong> on ItzoFood.</p>
+  <p>We have forwarded your details to our trusted licensing partner, <strong>${vendor}</strong>. A representative from their team will contact you shortly on your registered contact details to assist you with the licensing and compliance onboarding process.</p>
+  <p>If you have any questions in the meantime, feel free to reach out to us.</p>
+  <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+  <p style="color: #999; font-size: 12px;">Best Regards,<br>ItzoFood Consulting & Licensing Team</p>
+</body>
+</html>`;
+    const text = `Hello ${ownerName},\n\nThank you for submitting a licensing support request for ${restaurantName} on ItzoFood.\n\nWe have forwarded your details to our trusted licensing partner, ${vendor}. A representative from their team will contact you shortly to assist with your licensing and compliance onboarding.\n\nBest Regards,\nItzoFood Consulting Team`;
+
+    try {
+        await trans.sendMail({
+            from: typeof from === 'string' && from.includes('<') ? from : `ItzoFood Consulting <${from}>`,
+            to,
+            subject,
+            text,
+            html
+        });
+        logger.info(`Licensing acknowledgement email sent to ${to}`);
+        return true;
+    } catch (err) {
+        logger.error(`Failed to send licensing acknowledgement email to ${to}:`, err.message);
         return false;
     }
 }

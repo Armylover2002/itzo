@@ -582,75 +582,75 @@
 }
 
 /* ==========================================================================
-   BLAZE PREMIUM THEME — Additive & Scoped (Phase 1: Dashboard only)
+   ITZO PREMIUM THEME — Additive & Scoped (Phase 1: Dashboard only)
    ==========================================================================
-   Applying `.blaze-theme-scope` remaps the semantic design tokens to the
-   Blaze palette for that subtree ONLY. It does not modify :root or any other
+   Applying `.itzo-theme-scope` remaps the semantic design tokens to the
+   ItzoFood palette for that subtree ONLY. It does not modify :root or any other
    page, so the rest of Admin/Seller stays on the current theme until we roll
-   Blaze out globally in a later, separately-approved phase. Fully reversible.
+   ItzoFood out globally in a later, separately-approved phase. Fully reversible.
 */
-.blaze-theme-scope {
+.itzo-theme-scope {
   /* ------------------------------------------------------------------
-     BRANDING: reuse the EXISTING Blaze Food/Admin tokens exactly.
+     BRANDING: reuse the EXISTING ItzoFood/Admin tokens exactly.
      The semantic tokens (--primary, --secondary, --ring, --background,
      --card, --border, --muted, --accent, --foreground …) are intentionally
      NOT redeclared here, so they INHERIT the current Admin theme
      (#FF0000 family + warm paper). This guarantees the new Dashboard keeps
-     the identical Blaze brand identity — only layout/spacing/typography/
+     the identical ItzoFood brand identity — only layout/spacing/typography/
      shadows/animation are upgraded. No new red is introduced.
      ------------------------------------------------------------------ */
 
   /* Raw brand + status tokens mirrored from the existing Food theme so the
      shared components can reference them directly via var(). */
-  --blaze-primary: #FF0000;          /* = --primary / --color-orange-500 */
-  --blaze-primary-hover: #CC0000;    /* = --color-primary-hover / orange-600 */
-  --blaze-primary-active: #990000;   /* = --color-primary-dark / orange-700 */
-  --blaze-primary-light: #FFEDED;    /* = --secondary / --color-orange-50 */
-  --blaze-success: #2E7D32;          /* = --color-accent-green */
-  --blaze-warning: #F59E0B;
-  --blaze-info: #2563EB;
-  --blaze-danger: #DC2626;
+  --itzo-primary: #FF0000;          /* = --primary / --color-orange-500 */
+  --itzo-primary-hover: #CC0000;    /* = --color-primary-hover / orange-600 */
+  --itzo-primary-active: #990000;   /* = --color-primary-dark / orange-700 */
+  --itzo-primary-light: #FFEDED;    /* = --secondary / --color-orange-50 */
+  --itzo-success: #2E7D32;          /* = --color-accent-green */
+  --itzo-warning: #F59E0B;
+  --itzo-info: #2563EB;
+  --itzo-danger: #DC2626;
 
   /* ---- ONE radius system ---- */
-  --blaze-radius-card: 18px;
-  --blaze-radius-control: 12px;
-  --blaze-radius-pill: 9999px;
+  --itzo-radius-card: 18px;
+  --itzo-radius-control: 12px;
+  --itzo-radius-pill: 9999px;
 
   /* ---- ONE shadow scale ---- */
-  --blaze-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --blaze-shadow-md: 0 8px 24px -12px rgba(16, 24, 40, 0.18);
-  --blaze-shadow-lg: 0 16px 40px -16px rgba(16, 24, 40, 0.22);
-  --blaze-shadow-primary: 0 16px 32px -16px rgba(255, 0, 0, 0.22);
+  --itzo-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --itzo-shadow-md: 0 8px 24px -12px rgba(16, 24, 40, 0.18);
+  --itzo-shadow-lg: 0 16px 40px -16px rgba(16, 24, 40, 0.22);
+  --itzo-shadow-primary: 0 16px 32px -16px rgba(255, 0, 0, 0.22);
 
   /* ---- ONE spacing rhythm ---- */
-  --blaze-gap: 1.5rem;
+  --itzo-gap: 1.5rem;
 }
 
 /* ==========================================================================
-   BLAZE DESIGN SYSTEM — Reusable utility classes (scoped)
+   ITZO DESIGN SYSTEM — Reusable utility classes (scoped)
    ==========================================================================
    One surface, one typography ramp, one shadow scale, one radius. Every admin
    page consumes these via the shared components so the whole product matches.
 */
 
 /* Surfaces */
-.blaze-theme-scope .blaze-card {
+.itzo-theme-scope .itzo-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--blaze-radius-card);
-  box-shadow: var(--blaze-shadow-sm);
+  border-radius: var(--itzo-radius-card);
+  box-shadow: var(--itzo-shadow-sm);
 }
-.blaze-theme-scope .blaze-card-interactive {
+.itzo-theme-scope .itzo-card-interactive {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.blaze-theme-scope .blaze-card-interactive:hover {
-  box-shadow: var(--blaze-shadow-primary);
+.itzo-theme-scope .itzo-card-interactive:hover {
+  box-shadow: var(--itzo-shadow-primary);
   border-color: rgba(255, 0, 0, 0.3);
   transform: translateY(-2px);
 }
 
 /* Typography ramp */
-.blaze-theme-scope .blaze-eyebrow {
+.itzo-theme-scope .itzo-eyebrow {
   font-size: 0.6875rem;
   line-height: 1rem;
   font-weight: 600;
@@ -658,62 +658,62 @@
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
-.blaze-theme-scope .blaze-title {
+.itzo-theme-scope .itzo-title {
   font-size: 1.75rem;
   line-height: 2.25rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--foreground);
 }
-.blaze-theme-scope .blaze-subtitle {
+.itzo-theme-scope .itzo-subtitle {
   font-size: 0.875rem;
   line-height: 1.25rem;
   color: var(--muted-foreground);
 }
-.blaze-theme-scope .blaze-section-title {
+.itzo-theme-scope .itzo-section-title {
   font-size: 1rem;
   line-height: 1.5rem;
   font-weight: 600;
   color: var(--foreground);
 }
-.blaze-theme-scope .blaze-section-subtitle {
+.itzo-theme-scope .itzo-section-subtitle {
   font-size: 0.8125rem;
   line-height: 1.125rem;
   color: var(--muted-foreground);
 }
-.blaze-theme-scope .blaze-label {
+.itzo-theme-scope .itzo-label {
   font-size: 0.8125rem;
   line-height: 1rem;
   font-weight: 600;
   color: var(--foreground);
 }
-.blaze-theme-scope .blaze-value {
+.itzo-theme-scope .itzo-value {
   font-size: 1.5rem;
   line-height: 1.875rem;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--foreground);
 }
-.blaze-theme-scope .blaze-body {
+.itzo-theme-scope .itzo-body {
   font-size: 0.875rem;
   line-height: 1.375rem;
   color: var(--foreground);
 }
-.blaze-theme-scope .blaze-muted {
+.itzo-theme-scope .itzo-muted {
   font-size: 0.8125rem;
   line-height: 1.125rem;
   color: var(--muted-foreground);
 }
 
-/* Premium scrollbar for Blaze scope */
-.blaze-theme-scope .blaze-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-.blaze-theme-scope .blaze-scroll::-webkit-scrollbar-track { background: transparent; }
-.blaze-theme-scope .blaze-scroll::-webkit-scrollbar-thumb {
+/* Premium scrollbar for ItzoFood scope */
+.itzo-theme-scope .itzo-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.itzo-theme-scope .itzo-scroll::-webkit-scrollbar-track { background: transparent; }
+.itzo-theme-scope .itzo-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 0, 0, 0.18);
   border-radius: 9999px;
 }
-.blaze-theme-scope .blaze-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 0, 0, 0.32); }
-.blaze-theme-scope .blaze-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,0,0,0.2) transparent; }
+.itzo-theme-scope .itzo-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 0, 0, 0.32); }
+.itzo-theme-scope .itzo-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,0,0,0.2) transparent; }
 
 /* Utilities to hide scrollbars while preserving scrollability */
 .no-scrollbar::-webkit-scrollbar,

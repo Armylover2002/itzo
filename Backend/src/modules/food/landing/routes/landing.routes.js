@@ -51,6 +51,7 @@ import { cacheResponse } from '../../../../middleware/cache.js';
 import { authMiddleware, checkPermission } from '../../../../core/auth/auth.middleware.js';
 import { requireRoles } from '../../../../core/roles/role.middleware.js';
 import { invalidateLandingCacheOnSuccess } from '../landingCache.js';
+import careerRoutes from './career.route.js';
 
 const router = express.Router();
 
@@ -65,6 +66,9 @@ const adminLanding = (action) => [
 router.get('/pages/:key', getPublicPageController);
 // Public referral settings (no auth required).
 router.get('/referral-settings', getPublicReferralSettingsController);
+// Public careers listing/details (no auth required).
+router.use('/careers', careerRoutes);
+router.use('/landing/careers', careerRoutes);
 
 // Admin hero banner management
 router.get('/hero-banners', ...adminLanding('view'), listHeroBannersController);

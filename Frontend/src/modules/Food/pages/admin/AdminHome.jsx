@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
+import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission"
 import {
   Select,
   SelectContent,
@@ -13,7 +14,7 @@ import {
   StatCard,
   EmptyState,
   KpiGridSkeleton,
-  BLAZE_CHART,
+  ITZO_CHART,
 } from "@/shared/components/admin"
 import {
   Area,
@@ -170,21 +171,21 @@ export default function AdminHome() {
   const orderStats = useMemo(() => {
     if (!dashboardData?.orders?.byStatus) {
       return [
-        { label: "Delivered", value: 0, color: BLAZE_CHART.success },
-        { label: "Processing", value: 0, color: BLAZE_CHART.info },
-        { label: "Cancelled", value: 0, color: BLAZE_CHART.danger },
-        { label: "Pending", value: 0, color: BLAZE_CHART.warning },
-        { label: "Refunded", value: 0, color: BLAZE_CHART.violet },
+        { label: "Delivered", value: 0, color: ITZO_CHART.success },
+        { label: "Processing", value: 0, color: ITZO_CHART.info },
+        { label: "Cancelled", value: 0, color: ITZO_CHART.danger },
+        { label: "Pending", value: 0, color: ITZO_CHART.warning },
+        { label: "Refunded", value: 0, color: ITZO_CHART.violet },
       ]
     }
 
     const byStatus = dashboardData.orders.byStatus
     return [
-      { label: "Delivered", value: byStatus.delivered || 0, color: BLAZE_CHART.success },
-      { label: "Processing", value: byStatus.processing || 0, color: BLAZE_CHART.info },
-      { label: "Cancelled", value: byStatus.cancelled || 0, color: BLAZE_CHART.danger },
-      { label: "Pending", value: byStatus.pending || 0, color: BLAZE_CHART.warning },
-      { label: "Refunded", value: byStatus.refunded || 0, color: BLAZE_CHART.violet },
+      { label: "Delivered", value: byStatus.delivered || 0, color: ITZO_CHART.success },
+      { label: "Processing", value: byStatus.processing || 0, color: ITZO_CHART.info },
+      { label: "Cancelled", value: byStatus.cancelled || 0, color: ITZO_CHART.danger },
+      { label: "Pending", value: byStatus.pending || 0, color: ITZO_CHART.warning },
+      { label: "Refunded", value: byStatus.refunded || 0, color: ITZO_CHART.violet },
     ]
   }, [dashboardData]);
 
@@ -256,8 +257,13 @@ export default function AdminHome() {
   const commissionBreakdownLabel = `Rest. commission: ${formatCurrency(ptRestaurantCommission)}`
   const quickBreakdownLabel = `Quick share: ${formatCurrency(ptQuickShare)}`
   // Old fallback helper only if breakdown is empty (legacy cache fallback)
+  const totalRevenueHelperParts = [
+    platformFeePlusCommissionLabel,
+    ...(RESTAURANT_COMMISSION_ENABLED ? [commissionBreakdownLabel] : []),
+    quickBreakdownLabel,
+  ]
   const totalRevenueHelper = ptBreakdown && (ptPlatformFee > 0 || ptRestaurantCommission > 0 || ptQuickShare > 0)
-    ? `${platformFeePlusCommissionLabel} · ${commissionBreakdownLabel} · ${quickBreakdownLabel}`
+    ? totalRevenueHelperParts.join(" · ")
     : [
         `Platform fee: ${formatCurrency(platformFeeTotal)}`,
         `Delivery net: ${formatCurrency(deliveryProfit)}`,
@@ -274,7 +280,7 @@ export default function AdminHome() {
   }
 
   return (
-    <div className="blaze-theme-scope min-h-full bg-slate-50">
+    <div className="itzo-theme-scope min-h-full bg-slate-50">
       <div className="mx-auto w-full px-3 md:px-4 py-4 max-w-[1600px]">
         <div className="space-y-4">
       <PageHeader
@@ -593,31 +599,31 @@ export default function AdminHome() {
         <SectionCard
           className="lg:col-span-2 !rounded-xl sm:!rounded-2xl !border-slate-200/80 !shadow-xs"
           title="Revenue trajectory"
-          subtitle="Commission and gross revenue with order volume"
+          subtitle="Gross revenue with order volume"
         >
           <div className="h-64 sm:h-72 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <AreaChart data={monthlyData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={BLAZE_CHART.primary} stopOpacity={0.22} />
-                    <stop offset="95%" stopColor={BLAZE_CHART.primary} stopOpacity={0} />
+                    <stop offset="5%" stopColor={ITZO_CHART.primary} stopOpacity={0.22} />
+                    <stop offset="95%" stopColor={ITZO_CHART.primary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="4 4" stroke={BLAZE_CHART.grid} vertical={false} />
-                <XAxis dataKey="month" stroke={BLAZE_CHART.axis} tickLine={false} axisLine={false} fontSize={11} />
-                <YAxis stroke={BLAZE_CHART.axis} tickLine={false} axisLine={false} fontSize={11} width={44} />
+                <CartesianGrid strokeDasharray="4 4" stroke={ITZO_CHART.grid} vertical={false} />
+                <XAxis dataKey="month" stroke={ITZO_CHART.axis} tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis stroke={ITZO_CHART.axis} tickLine={false} axisLine={false} fontSize={11} width={44} />
                 <Tooltip
-                  cursor={BLAZE_CHART.tooltip.cursor}
-                  contentStyle={BLAZE_CHART.tooltip.contentStyle}
-                  labelStyle={BLAZE_CHART.tooltip.labelStyle}
-                  itemStyle={BLAZE_CHART.tooltip.itemStyle}
+                  cursor={ITZO_CHART.tooltip.cursor}
+                  contentStyle={ITZO_CHART.tooltip.contentStyle}
+                  labelStyle={ITZO_CHART.tooltip.labelStyle}
+                  itemStyle={ITZO_CHART.tooltip.itemStyle}
                 />
                 <Legend iconType="circle" formatter={legendFormatter} />
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke={BLAZE_CHART.primary}
+                  stroke={ITZO_CHART.primary}
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#revFill)"
@@ -625,7 +631,7 @@ export default function AdminHome() {
                 />
                 <Bar
                   dataKey="orders"
-                  fill={BLAZE_CHART.info}
+                  fill={ITZO_CHART.info}
                   radius={[6, 6, 0, 0]}
                   name="Orders"
                   barSize={10}
@@ -661,9 +667,9 @@ export default function AdminHome() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={BLAZE_CHART.tooltip.contentStyle}
-                  labelStyle={BLAZE_CHART.tooltip.labelStyle}
-                  itemStyle={BLAZE_CHART.tooltip.itemStyle}
+                  contentStyle={ITZO_CHART.tooltip.contentStyle}
+                  labelStyle={ITZO_CHART.tooltip.labelStyle}
+                  itemStyle={ITZO_CHART.tooltip.itemStyle}
                 />
                 <Legend iconType="circle" formatter={legendFormatter} />
               </PieChart>
@@ -697,17 +703,17 @@ export default function AdminHome() {
           <div className="h-52 sm:h-56 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart data={monthlyData.slice(-6)} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="4 4" stroke={BLAZE_CHART.grid} vertical={false} />
-                <XAxis dataKey="month" stroke={BLAZE_CHART.axis} tickLine={false} axisLine={false} fontSize={11} />
-                <YAxis stroke={BLAZE_CHART.axis} tickLine={false} axisLine={false} fontSize={11} width={36} />
+                <CartesianGrid strokeDasharray="4 4" stroke={ITZO_CHART.grid} vertical={false} />
+                <XAxis dataKey="month" stroke={ITZO_CHART.axis} tickLine={false} axisLine={false} fontSize={11} />
+                <YAxis stroke={ITZO_CHART.axis} tickLine={false} axisLine={false} fontSize={11} width={36} />
                 <Tooltip
-                  cursor={BLAZE_CHART.tooltip.cursor}
-                  contentStyle={BLAZE_CHART.tooltip.contentStyle}
-                  labelStyle={BLAZE_CHART.tooltip.labelStyle}
-                  itemStyle={BLAZE_CHART.tooltip.itemStyle}
+                  cursor={ITZO_CHART.tooltip.cursor}
+                  contentStyle={ITZO_CHART.tooltip.contentStyle}
+                  labelStyle={ITZO_CHART.tooltip.labelStyle}
+                  itemStyle={ITZO_CHART.tooltip.itemStyle}
                 />
                 <Legend iconType="circle" formatter={legendFormatter} />
-                <Bar dataKey="orders" fill={BLAZE_CHART.primary} radius={[8, 8, 0, 0]} name="Orders" />
+                <Bar dataKey="orders" fill={ITZO_CHART.primary} radius={[8, 8, 0, 0]} name="Orders" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -719,7 +725,7 @@ export default function AdminHome() {
           subtitle="Ops notes and service health"
           flush
         >
-          <div className="blaze-scroll h-[260px] space-y-2 overflow-y-auto p-3 sm:p-4">
+          <div className="itzo-scroll h-[260px] space-y-2 overflow-y-auto p-3 sm:p-4">
             {activityFeed.length === 0 ? (
               <EmptyState
                 icon={<Activity className="h-8 w-8" />}

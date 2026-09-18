@@ -208,7 +208,7 @@ const SidebarContent = ({
               )}
               {!logoUrl && (
                 <h1 className={cn("text-base font-semibold tracking-tight leading-none", isLightSidebar ? "text-[#1c1c1e]" : "text-white")}>
-                  {companyName || 'Blaze'}
+                  {companyName || 'ItzoFood'}
                 </h1>
               )}
             </div>

@@ -6,8 +6,8 @@
 const DEFAULT_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://www.blazeapp.in',
-    'https://blazeapp.in',
+    'https://www.itzofood.com',
+    'https://itzofood.com',
    
 ]
 

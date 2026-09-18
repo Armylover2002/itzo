@@ -1,7 +1,7 @@
 const NOMINATIM_HEADERS = {
   Accept: "application/json",
   "Accept-Language": "en",
-  "User-Agent": "Blaze-Food-Zone-Setup/1.0",
+  "User-Agent": "ItzoFood-Zone-Setup/1.0",
 }
 
 const MAX_POLYGON_POINTS = 250

@@ -7,6 +7,7 @@ import {
   DEFAULT_RESTAURANT_COMMISSION_PERCENTAGE,
   resolveRestaurantCommissionPercentage,
   isCustomRestaurantCommission,
+  RESTAURANT_COMMISSION_ENABLED,
 } from "@food/constants/commission"
 
 const debugLog = (...args) => {}
@@ -345,11 +346,29 @@ export default function RestaurantCommission() {
     }
   }
 
+  if (!RESTAURANT_COMMISSION_ENABLED) {
+    return (
+      <div className="p-4 lg:p-6 bg-slate-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-10 text-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+              <Percent className="w-6 h-6 text-slate-400" />
+            </div>
+            <h2 className="text-lg font-semibold text-slate-800 mb-1">Restaurant commission is disabled</h2>
+            <p className="text-sm text-slate-500">
+              Restaurants now run on the subscription plan instead of a per-order commission.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-4 lg:p-6 bg-slate-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          
+
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex items-center gap-3">

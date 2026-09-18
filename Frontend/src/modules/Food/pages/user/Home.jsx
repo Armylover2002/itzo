@@ -157,9 +157,9 @@ const defaultBannersImages = [
 ];
 
 const defaultBannersData = [
-  { isFallback: true, title: "Order food & groceries.\nDiscover best restaurants.\nBlaze it! ⚡", subtitle: "", action: "" },
-  { isFallback: true, title: "Order food & groceries.\nDiscover best restaurants.\nBlaze it! ⚡", subtitle: "", action: "" },
-  { isFallback: true, title: "Order food & groceries.\nDiscover best restaurants.\nBlaze it! ⚡", subtitle: "", action: "" }
+  { isFallback: true, title: "Order food & groceries.\nDiscover best restaurants.\nItzoFood it! ⚡", subtitle: "", action: "" },
+  { isFallback: true, title: "Order food & groceries.\nDiscover best restaurants.\nItzoFood it! ⚡", subtitle: "", action: "" },
+  { isFallback: true, title: "Order food & groceries.\nDiscover best restaurants.\nItzoFood it! ⚡", subtitle: "", action: "" }
 ];
 
 const tabs = [
@@ -451,7 +451,7 @@ export default function Home() {
                   <h1 className="text-3xl lg:text-4xl font-bold mb-3 drop-shadow-md">
                     Order food & groceries <br /> from your favourite restaurants.
                   </h1>
-                  <p className="text-xl lg:text-2xl font-bold drop-shadow-md">Blaze It! 🔥</p>
+                  <p className="text-xl lg:text-2xl font-bold drop-shadow-md">ItzoFood It! 🔥</p>
                 </div>
               </div>
             </Suspense>

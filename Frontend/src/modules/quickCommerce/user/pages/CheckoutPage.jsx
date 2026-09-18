@@ -1099,7 +1099,7 @@ const CheckoutPage = () => {
               amount: response.data.razorpay.amount,
               currency: response.data.razorpay.currency || "INR",
               order_id: response.data.razorpay.orderId,
-              name: settings?.companyName || settings?.appName || "Blaze",
+              name: settings?.companyName || settings?.appName || "ItzoFood",
               description: "Order Payment",
               prefill: {
                 name: user?.name || currentAddress.name || "Customer",

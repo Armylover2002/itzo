@@ -1,0 +1,199 @@
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '@core/api/axios';
+import { useNavigate } from 'react-router-dom';
+import { Loader2, Search, Filter, ChevronRight, FileText } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+export default function AdminReportList() {
+    const navigate = useNavigate();
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({ status: 'All', search: '', date: '' });
+    const [pagination, setPagination] = useState({ page: 1, limit: 15, totalPages: 1 });
+
+    const fetchReports = async (page = 1) => {
+        setLoading(true);
+        try {
+            const query = new URLSearchParams({
+                page,
+                limit: pagination.limit,
+                status: filters.status,
+                search: filters.search,
+                date: filters.date
+            }).toString();
+            const res = await axiosInstance.get(`/hrms/daily-reports/admin/all?${query}`);
+            setReports(res.data?.data?.reports || []);
+            if (res.data?.data?.pagination) {
+                setPagination(res.data.data.pagination);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to load reports');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchReports(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [filters.status, filters.search, filters.date]);
+
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= pagination.totalPages) {
+            fetchReports(newPage);
+        }
+    };
+
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'Approved': return 'bg-emerald-50 text-emerald-600 border-emerald-200';
+            case 'Rejected': return 'bg-red-50 text-red-600 border-red-200';
+            case 'Draft': return 'bg-slate-100 text-slate-600 border-slate-200';
+            case 'Revision Requested': return 'bg-amber-50 text-amber-600 border-amber-200';
+            default: return 'bg-[#f7f3fc] text-[#550fa8] border-[#d8c4f1]';
+        }
+    };
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900">All Daily Reports</h1>
+                    <p className="text-sm text-slate-500 mt-1">Manage and review employee submissions</p>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-wrap items-center gap-4">
+                <div className="flex-1 min-w-[200px] relative">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                        type="text"
+                        placeholder="Search employee name..."
+                        value={filters.search}
+                        onChange={(e) => setFilters(f => ({ ...f, search: e.target.value }))}
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]"
+                    />
+                </div>
+                
+                <div className="flex items-center gap-2">
+                    <input 
+                        type="date"
+                        value={filters.date}
+                        onChange={(e) => setFilters(f => ({ ...f, date: e.target.value }))}
+                        className="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
+                    />
+                    <Filter className="w-4 h-4 text-slate-400 ml-2" />
+                    <select
+                        value={filters.status}
+                        onChange={(e) => setFilters(f => ({ ...f, status: e.target.value }))}
+                        className="py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#9359d7]"
+                    >
+                        <option value="All">All Statuses</option>
+                        <option value="Submitted">Submitted</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Revision Requested">Revision Requested</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                                <th className="px-5 py-4">Employee</th>
+                                <th className="px-5 py-4">Report Date</th>
+                                <th className="px-5 py-4">Manager</th>
+                                <th className="px-5 py-4">Status</th>
+                                <th className="px-5 py-4 text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-sm">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="5" className="px-5 py-10 text-center">
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6] mx-auto" />
+                                    </td>
+                                </tr>
+                            ) : reports.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-5 py-10 text-center text-slate-500">
+                                        <FileText className="w-10 h-10 mx-auto text-slate-300 mb-2" />
+                                        No reports found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                reports.map(report => (
+                                    <tr key={report._id} className="hover:bg-[#f7f3fc]/30 transition-colors group">
+                                        <td className="px-5 py-4 align-top">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="font-semibold text-slate-800">{report.employeeId?.adminId?.name || 'Unknown'}</span>
+                                                <span className="text-xs text-slate-400">{report.employeeId?.adminId?.email}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-5 py-4 align-top">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-medium text-slate-700">
+                                                    {new Date(report.reportDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </span>
+                                                <span className="text-xs text-slate-400">{report.tasks?.length || 0} Tasks</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-5 py-4 align-top">
+                                            <span className="text-slate-600">{report.managerId?.adminId?.name || 'Unassigned'}</span>
+                                        </td>
+                                        <td className="px-5 py-4 align-top">
+                                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase border ${getStatusStyle(report.status)}`}>
+                                                {report.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-5 py-4 align-top text-right">
+                                            <button
+                                                onClick={() => navigate(`/ecs/hrms/reports/${report._id}`)}
+                                                className="inline-flex items-center gap-1 bg-white border border-slate-200 text-slate-600 hover:text-[#550fa8] hover:border-[#c1a0e8] px-3 py-1.5 rounded-lg transition-colors font-medium text-xs"
+                                            >
+                                                Review <ChevronRight className="w-3.5 h-3.5" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                    <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+                        <p className="text-sm text-slate-500">
+                            Page <span className="font-medium text-slate-700">{pagination.page}</span> of <span className="font-medium text-slate-700">{pagination.totalPages}</span>
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => handlePageChange(pagination.page - 1)}
+                                disabled={pagination.page === 1}
+                                className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => handlePageChange(pagination.page + 1)}
+                                disabled={pagination.page === pagination.totalPages}
+                                className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

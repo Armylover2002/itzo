@@ -1251,9 +1251,12 @@ export const adminAPI = {
     
     // Add files with the same names expected by the backend
     const fileFields = [
-      'logo', 'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon', 
-      'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon', 
-      'sellerLogo', 'sellerFavicon', 'favicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner'
+      'logo', 'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon',
+      'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
+      'sellerLogo', 'sellerFavicon', 'favicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner',
+      'landingPoster', 'landingVideo', 'landingPizzaImage', 'landingTomatoImage',
+      'landingQrCodeImage', 'landingAppStoreBadge', 'landingPlayStoreBadge', 'landingFooterLogo', 'landingNavbarLogo',
+      'benefitsImage'
     ];
     fileFields.forEach(field => {
       if (files[field]) {
@@ -1263,6 +1266,7 @@ export const adminAPI = {
 
     return apiClient.patch(API_ENDPOINTS.ADMIN.BUSINESS_SETTINGS, formData, {
       contextModule: "admin",
+      timeout: 300000, // 5 minutes for large video uploads
     });
   },
   /** GET /food/admin/customer-role-requests (Bearer ADMIN) */
@@ -3118,6 +3122,20 @@ export const userAPI = {
   /** DELETE /food/user/profile (Bearer USER) */
   deleteAccount: () =>
     apiClient.delete("/food/user/profile", { contextModule: "user" }),
+  /** POST /food/user/contacts/import (Bearer USER). Uploads a batch of device contacts. */
+  importContacts: (contacts, isLastChunk = true) =>
+    apiClient.post(
+      "/food/user/contacts/import",
+      { contacts: contacts || [], isLastChunk: Boolean(isLastChunk) },
+      { contextModule: "user" },
+    ),
+  /** PATCH /food/user/contacts/permission-status (Bearer USER). status: 'DENIED' | 'SKIPPED' */
+  updateContactsPermissionStatus: (status) =>
+    apiClient.patch(
+      "/food/user/contacts/permission-status",
+      { status },
+      { contextModule: "user" },
+    ),
 };
 export const locationAPI = createStubAPI();
 export const zoneAPI = {

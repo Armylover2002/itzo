@@ -10,6 +10,7 @@ import {
 import { formatScheduledAt, parseValidDate } from "@food/utils/scheduleTime"
 import { getCancellationDisplayLabel } from "@food/utils/cancellationDisplay"
 import { adminAPI } from "@food/api"
+import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -711,7 +712,7 @@ export default function ViewOrderDialog({ isOpen, onOpenChange, order: orderProp
                 );
                 const totalAmt = Number(order.totalAmount || order.total || 0);
                 const netPayable = Math.max(0, totalAmt - commission);
-                if (commission <= 0 && commissionPct <= 0) return null;
+                if (!RESTAURANT_COMMISSION_ENABLED || (commission <= 0 && commissionPct <= 0)) return null;
                 return (
                   <>
                     <div className="pt-2 mt-2 border-t border-dashed border-slate-200 space-y-2">

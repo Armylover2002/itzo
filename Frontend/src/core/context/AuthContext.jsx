@@ -12,7 +12,8 @@ const ROLE_STORAGE_KEYS = {
     customer: 'auth_customer',
     seller: 'auth_seller',
     admin: 'auth_admin',
-    delivery: 'auth_delivery'
+    delivery: 'auth_delivery',
+    hrms: 'auth_hrms'
 };
 
 const LEGACY_ROLE_STORAGE_KEYS = {
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }) => {
         if (path.startsWith('/seller')) return 'seller';
         if (path.startsWith('/ecs')) return 'admin';
         if (path.startsWith('/food/delivery') || path.startsWith('/delivery')) return 'delivery';
+        if (path.startsWith('/hrms')) return 'hrms';
         return 'customer';
     };
 
@@ -89,6 +91,7 @@ export const AuthProvider = ({ children }) => {
         seller: getSafeToken('seller'),
         admin: getSafeToken('admin'),
         delivery: getSafeToken('delivery'),
+        hrms: getSafeToken('hrms'),
     });
 
     const currentRole = getCurrentRoleFromUrl(currentPath);
@@ -105,6 +108,7 @@ export const AuthProvider = ({ children }) => {
                 seller: getSafeToken('seller'),
                 admin: getSafeToken('admin'),
                 delivery: getSafeToken('delivery'),
+                hrms: getSafeToken('hrms'),
             });
         };
 
@@ -197,7 +201,8 @@ export const AuthProvider = ({ children }) => {
     }, [token, currentRole, onPublicAuthPath]);
 
     const login = (userData) => {
-        const role = userData.role?.toLowerCase() || 'customer';
+        let role = userData.role?.toLowerCase() || 'customer';
+        if (role === 'hrms_employee') role = 'hrms';
         const storageKey = ROLE_STORAGE_KEYS[role];
 
         if (storageKey && userData.token) {
@@ -253,6 +258,7 @@ export const AuthProvider = ({ children }) => {
             seller: null,
             admin: null,
             delivery: null,
+            hrms: null,
         });
 
         // Clear the current user profile from memory
@@ -263,6 +269,7 @@ export const AuthProvider = ({ children }) => {
         if (path.startsWith('/ecs') || hashPath.startsWith('/ecs')) window.location.href = '/ecs/login';
         else if (path.startsWith('/seller') || hashPath.startsWith('/seller')) window.location.href = '/seller/auth';
         else if (path.startsWith('/delivery') || hashPath.startsWith('/delivery')) window.location.href = '/delivery/auth';
+        else if (path.startsWith('/hrms') || hashPath.startsWith('/hrms')) window.location.href = '/hrms/login';
         else window.location.href = '/user/auth/login';
     };
 

@@ -1,6 +1,6 @@
 import { GlobalSettings } from '../models/settings.model.js';
 import { sendResponse } from '../../../utils/response.js';
-import { uploadImageBufferDetailed } from '../../../services/cloudinary.service.js';
+import { uploadImageBufferDetailed, uploadFileDetailed } from '../../../services/cloudinary.service.js';
 import {
     getGlobalSettingsImagePreset,
     optimizeImageForUpload,
@@ -41,6 +41,28 @@ const PUBLIC_SETTINGS_PROJECTION = {
     loginBanner: 1,
     sellerLoginBanner: 1,
     restaurantLoginBanner: 1,
+    landingHeroTitle: 1,
+    landingHeroSubtitle: 1,
+    landingVideo: 1,
+    landingPoster: 1,
+    landingPizzaImage: 1,
+    landingTomatoImage: 1,
+    landingQrCodeImage: 1,
+    landingAppStoreBadge: 1,
+    landingPlayStoreBadge: 1,
+    landingNavbarLogo: 1,
+    landingFooterLogo: 1,
+    benefitsSectionEnabled: 1,
+    benefitsImage: 1,
+    benefitsImageAlt: 1,
+    benefitsImageLink: 1,
+    playStoreLink: 1,
+    appStoreLink: 1,
+    socialLinkedinUrl: 1,
+    socialInstagramUrl: 1,
+    socialYoutubeUrl: 1,
+    socialFacebookUrl: 1,
+    socialTwitterUrl: 1,
     updatedAt: 1,
 };
 
@@ -48,6 +70,9 @@ const PUBLIC_MEDIA_KEYS = [
     'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon',
     'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
     'sellerLogo', 'sellerFavicon', 'loginBanner',
+    'landingVideo', 'landingPoster', 'landingPizzaImage', 'landingTomatoImage',
+    'landingQrCodeImage', 'landingAppStoreBadge', 'landingPlayStoreBadge',
+    'landingNavbarLogo', 'landingFooterLogo', 'benefitsImage',
 ];
 
 const PUBLIC_BANNER_KEYS = ['sellerLoginBanner', 'restaurantLoginBanner'];
@@ -167,6 +192,18 @@ const buildPublicSettingsPayload = (settings) => {
         },
         codEnabled: raw.codEnabled !== false,
         onlineEnabled: raw.onlineEnabled !== false,
+        landingHeroTitle: raw.landingHeroTitle || '',
+        landingHeroSubtitle: raw.landingHeroSubtitle || '',
+        playStoreLink: raw.playStoreLink || '',
+        appStoreLink: raw.appStoreLink || '',
+        benefitsSectionEnabled: !!raw.benefitsSectionEnabled,
+        benefitsImageAlt: raw.benefitsImageAlt || '',
+        benefitsImageLink: raw.benefitsImageLink || '',
+        socialLinkedinUrl: raw.socialLinkedinUrl || '',
+        socialInstagramUrl: raw.socialInstagramUrl || '',
+        socialYoutubeUrl: raw.socialYoutubeUrl || '',
+        socialFacebookUrl: raw.socialFacebookUrl || '',
+        socialTwitterUrl: raw.socialTwitterUrl || '',
         updatedAt: raw.updatedAt || null,
     };
 
@@ -253,7 +290,11 @@ export async function updateGlobalSettings(req, res, next) {
             sellerLoginBannerActive, restaurantLoginBannerActive,
             themeColor, codEnabled, onlineEnabled, modules,
             facebook, instagram, twitter, linkedin, youtube,
-            socialLinks, subscriptionEnforcement
+            socialLinks, subscriptionEnforcement,
+            landingHeroTitle, landingHeroSubtitle,
+            socialLinkedinUrl, socialInstagramUrl, socialYoutubeUrl, socialFacebookUrl, socialTwitterUrl,
+            playStoreLink, appStoreLink,
+            benefitsSectionEnabled, benefitsImageAlt, benefitsImageLink
         } = data;
         
         console.log("Updating global settings with data:", data);
@@ -291,9 +332,12 @@ export async function updateGlobalSettings(req, res, next) {
 
         // Update URLs if provided
         const mediaFields = [
-            'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon', 
-            'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon', 
-            'sellerLogo', 'sellerFavicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner'
+            'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon',
+            'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
+            'sellerLogo', 'sellerFavicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner',
+            'landingPoster', 'landingPizzaImage', 'landingTomatoImage', 'landingQrCodeImage',
+            'landingAppStoreBadge', 'landingPlayStoreBadge', 'landingFooterLogo', 'landingNavbarLogo',
+            'benefitsImage'
         ];
         mediaFields.forEach(field => {
             const urlKey = `${field}Url`;
@@ -333,6 +377,20 @@ export async function updateGlobalSettings(req, res, next) {
         if (onlineEnabled !== undefined) {
             settings.onlineEnabled = !!onlineEnabled;
         }
+
+        // Premium landing page fields
+        if (landingHeroTitle !== undefined) settings.landingHeroTitle = landingHeroTitle;
+        if (landingHeroSubtitle !== undefined) settings.landingHeroSubtitle = landingHeroSubtitle;
+        if (socialLinkedinUrl !== undefined) settings.socialLinkedinUrl = socialLinkedinUrl;
+        if (socialInstagramUrl !== undefined) settings.socialInstagramUrl = socialInstagramUrl;
+        if (socialYoutubeUrl !== undefined) settings.socialYoutubeUrl = socialYoutubeUrl;
+        if (socialFacebookUrl !== undefined) settings.socialFacebookUrl = socialFacebookUrl;
+        if (socialTwitterUrl !== undefined) settings.socialTwitterUrl = socialTwitterUrl;
+        if (playStoreLink !== undefined) settings.playStoreLink = playStoreLink;
+        if (appStoreLink !== undefined) settings.appStoreLink = appStoreLink;
+        if (benefitsSectionEnabled !== undefined) settings.benefitsSectionEnabled = !!benefitsSectionEnabled;
+        if (benefitsImageAlt !== undefined) settings.benefitsImageAlt = benefitsImageAlt;
+        if (benefitsImageLink !== undefined) settings.benefitsImageLink = benefitsImageLink;
 
         const incomingSocial = socialLinks || {};
         const hasSocialUpdate = ['facebook', 'instagram', 'twitter', 'linkedin', 'youtube'].some(
@@ -398,7 +456,16 @@ export async function updateGlobalSettings(req, res, next) {
                 { name: 'sellerFavicon', folder: 'business/favicons/seller' },
                 { name: 'loginBanner', folder: 'business/banners/login' },
                 { name: 'sellerLoginBanner', folder: 'business/banners/seller_login' },
-                { name: 'restaurantLoginBanner', folder: 'business/banners/restaurant_login' }
+                { name: 'restaurantLoginBanner', folder: 'business/banners/restaurant_login' },
+                { name: 'landingPoster', folder: 'business/landing' },
+                { name: 'landingPizzaImage', folder: 'business/landing' },
+                { name: 'landingTomatoImage', folder: 'business/landing' },
+                { name: 'landingQrCodeImage', folder: 'business/landing' },
+                { name: 'landingAppStoreBadge', folder: 'business/landing' },
+                { name: 'landingPlayStoreBadge', folder: 'business/landing' },
+                { name: 'landingFooterLogo', folder: 'business/landing' },
+                { name: 'landingNavbarLogo', folder: 'business/landing' },
+                { name: 'benefitsImage', folder: 'business/landing' }
             ];
 
             for (const field of mediaUploadFields) {
@@ -422,6 +489,26 @@ export async function updateGlobalSettings(req, res, next) {
                     settings.markModified(field.name);
                 } finally {
                     await fs.unlink(sourcePath).catch(() => {});
+                }
+            }
+
+            // landingVideo is a video file — uploaded as-is (no sharp optimization) via Cloudinary's
+            // large-file/video uploader, separate from the image whitelist above.
+            const uploadedVideo = req.files.landingVideo && req.files.landingVideo[0];
+            if (uploadedVideo && uploadedVideo.path) {
+                try {
+                    const videoBuffer = await fs.readFile(uploadedVideo.path);
+                    const result = await uploadFileDetailed(videoBuffer, {
+                        folder: 'business/landing',
+                        resourceType: 'video',
+                    });
+                    settings.landingVideo = {
+                        url: result.secure_url,
+                        publicId: result.public_id,
+                    };
+                    settings.markModified('landingVideo');
+                } finally {
+                    await fs.unlink(uploadedVideo.path).catch(() => {});
                 }
             }
         }

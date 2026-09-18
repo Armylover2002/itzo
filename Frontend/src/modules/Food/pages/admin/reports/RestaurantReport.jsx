@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { exportReportsToCSV, exportReportsToExcel, exportReportsToPDF, exportReportsToJSON } from "@food/components/admin/reports/reportsExportUtils"
 import { adminAPI } from "@food/api"
 import { toast } from "sonner"
+import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -102,7 +103,7 @@ export default function RestaurantReport() {
       { key: "totalOrder", label: "Total Order" },
       { key: "totalOrderAmount", label: "Total Order Amount" },
       { key: "totalDiscountGiven", label: "Total Discount Given" },
-      { key: "totalAdminCommission", label: "Total Admin Commission" },
+      { key: "totalAdminCommission", label: "Total Admin Earning" },
       { key: "totalVATTAX", label: "Total VAT/TAX" },
       { key: "averageRatings", label: "Average Ratings" },
       { key: "zoneName", label: "Zone" },
@@ -371,12 +372,14 @@ export default function RestaurantReport() {
                       <ArrowUpDown className="w-3 h-3 text-slate-400" />
                     </div>
                   </th>
-                  <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                    <div className="flex items-center gap-1">
-                      <span>Restaurant Commission</span>
-                      <ArrowUpDown className="w-3 h-3 text-slate-400" />
-                    </div>
-                  </th>
+                  {RESTAURANT_COMMISSION_ENABLED && (
+                    <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
+                      <div className="flex items-center gap-1">
+                        <span>Restaurant Commission</span>
+                        <ArrowUpDown className="w-3 h-3 text-slate-400" />
+                      </div>
+                    </th>
+                  )}
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-700 uppercase tracking-wider">
                     <div className="flex items-center gap-1">
                       <span>Total Admin Earning</span>
@@ -406,7 +409,7 @@ export default function RestaurantReport() {
               <tbody className="bg-white divide-y divide-slate-100">
                 {filteredRestaurants.length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="px-6 py-20 text-center">
+                    <td colSpan={RESTAURANT_COMMISSION_ENABLED ? 12 : 11} className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center justify-center">
                         <p className="text-lg font-semibold text-slate-700 mb-1">No Data Found</p>
                         <p className="text-sm text-slate-500">No restaurants match your search</p>
@@ -455,9 +458,11 @@ export default function RestaurantReport() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-slate-700">{restaurant.totalDiscountGiven}</span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-red-600">{restaurant.totalRestaurantCommission}</span>
-                      </td>
+                      {RESTAURANT_COMMISSION_ENABLED && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-red-600">{restaurant.totalRestaurantCommission}</span>
+                        </td>
+                      )}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-medium ${
                           restaurant.totalAdminCommission?.startsWith('?-') || restaurant.totalAdminCommission?.startsWith('-?')

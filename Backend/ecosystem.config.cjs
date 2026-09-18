@@ -1,5 +1,5 @@
 /**
- * PM2 process definitions for the Blaze backend.
+ * PM2 process definitions for the ItzoFood backend.
  *
  * Must stay .cjs — package.json sets "type": "module", so a .js config here would be
  * parsed as ESM and PM2 would fail to load it.
@@ -31,7 +31,7 @@ const worker = (name, script, extra = {}) => ({
 module.exports = {
     apps: [
         {
-            name: 'blaze-backend',
+            name: 'itzo-backend',
             script: path.join(CWD, 'server.js'),
             cwd: CWD,
             exec_mode: 'fork',
@@ -45,18 +45,18 @@ module.exports = {
         },
 
         // Activates scheduled orders at T-15 and runs the 30-min stuck-order watchdog.
-        worker('blaze-worker-order', 'src/queues/workers/order.worker.js'),
+        worker('itzo-worker-order', 'src/queues/workers/order.worker.js'),
 
         // Wallet credits, payment capture, refunds.
-        worker('blaze-worker-payment', 'src/queues/workers/payment.worker.js'),
+        worker('itzo-worker-payment', 'src/queues/workers/payment.worker.js'),
 
         // High-frequency delivery-partner location persistence.
-        worker('blaze-worker-tracking', 'src/queues/workers/tracking.worker.js', {
+        worker('itzo-worker-tracking', 'src/queues/workers/tracking.worker.js', {
             max_memory_restart: '300M',
         }),
 
         // Hourly subscription expiry sweep.
-        worker('blaze-worker-subscription', 'src/queues/workers/subscription.worker.js', {
+        worker('itzo-worker-subscription', 'src/queues/workers/subscription.worker.js', {
             max_memory_restart: '250M',
         }),
 

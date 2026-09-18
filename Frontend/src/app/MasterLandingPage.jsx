@@ -57,7 +57,7 @@ export default function MasterLandingPage() {
             <div className="w-11 h-11 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center font-black text-2xl text-white shadow-lg shadow-red-500/20 group-hover:scale-105 transition-transform">
               A
             </div>
-            <span className="text-2xl font-black tracking-tighter italic bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">BLAZE</span>
+            <span className="text-2xl font-black tracking-tighter italic bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700">ITZOFOOD</span>
           </div>
 
           <button
@@ -182,7 +182,7 @@ export default function MasterLandingPage() {
 
       {/* Footer */}
       <footer className="py-12 mt-10 border-t border-gray-200/60 text-center text-gray-500 font-medium relative z-10 w-full bg-white/50 backdrop-blur-sm">
-        <p>&copy; 2026 Blaze Master Product. All rights reserved.</p>
+        <p>&copy; 2026 ItzoFood Master Product. All rights reserved.</p>
       </footer>
     </div>
   )

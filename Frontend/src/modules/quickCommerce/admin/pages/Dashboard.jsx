@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
-  BLAZE_CHART,
+  ITZO_CHART,
   CardSkeleton,
   ChartSkeleton,
   EmptyState,
@@ -132,11 +132,11 @@ export default function AdminDashboard() {
 
   const orderStats = useMemo(
     () => [
-      { label: 'Delivered', value: Number(orderStatus.delivered || 0), color: BLAZE_CHART.success, route: '/ecs/quick-commerce/orders/delivered' },
-      { label: 'Processing', value: Number(orderStatus.processing || 0), color: BLAZE_CHART.info, route: '/ecs/quick-commerce/orders/processed' },
-      { label: 'Out for delivery', value: Number(orderStatus.outForDelivery || 0), color: BLAZE_CHART.primary, route: '/ecs/quick-commerce/orders/out-for-delivery' },
-      { label: 'Pending', value: Number(orderStatus.pending || 0), color: BLAZE_CHART.warning, route: '/ecs/quick-commerce/orders/pending' },
-      { label: 'Cancelled', value: Number(orderStatus.cancelled || 0), color: BLAZE_CHART.danger, route: '/ecs/quick-commerce/orders/cancelled' },
+      { label: 'Delivered', value: Number(orderStatus.delivered || 0), color: ITZO_CHART.success, route: '/ecs/quick-commerce/orders/delivered' },
+      { label: 'Processing', value: Number(orderStatus.processing || 0), color: ITZO_CHART.info, route: '/ecs/quick-commerce/orders/processed' },
+      { label: 'Out for delivery', value: Number(orderStatus.outForDelivery || 0), color: ITZO_CHART.primary, route: '/ecs/quick-commerce/orders/out-for-delivery' },
+      { label: 'Pending', value: Number(orderStatus.pending || 0), color: ITZO_CHART.warning, route: '/ecs/quick-commerce/orders/pending' },
+      { label: 'Cancelled', value: Number(orderStatus.cancelled || 0), color: ITZO_CHART.danger, route: '/ecs/quick-commerce/orders/cancelled' },
     ],
     [orderStatus]
   );
@@ -233,7 +233,7 @@ export default function AdminDashboard() {
   const showInitialSkeleton = isLoading && !dashboardData;
 
   return (
-    <div className="blaze-theme-scope min-h-full bg-background">
+    <div className="itzo-theme-scope min-h-full bg-background">
       <div className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
         <div className="space-y-6">
           <PageHeader
@@ -331,18 +331,18 @@ export default function AdminDashboard() {
                     <AreaChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                       <defs>
                         <linearGradient id="quickRevenueFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={BLAZE_CHART.primary} stopOpacity={0.22} />
-                          <stop offset="95%" stopColor={BLAZE_CHART.primary} stopOpacity={0} />
+                          <stop offset="5%" stopColor={ITZO_CHART.primary} stopOpacity={0.22} />
+                          <stop offset="95%" stopColor={ITZO_CHART.primary} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="4 4" stroke={BLAZE_CHART.grid} vertical={false} />
-                      <XAxis dataKey="name" stroke={BLAZE_CHART.axis} tickLine={false} axisLine={false} fontSize={12} />
-                      <YAxis stroke={BLAZE_CHART.axis} tickLine={false} axisLine={false} fontSize={12} width={52} />
+                      <CartesianGrid strokeDasharray="4 4" stroke={ITZO_CHART.grid} vertical={false} />
+                      <XAxis dataKey="name" stroke={ITZO_CHART.axis} tickLine={false} axisLine={false} fontSize={12} />
+                      <YAxis stroke={ITZO_CHART.axis} tickLine={false} axisLine={false} fontSize={12} width={52} />
                       <Tooltip
-                        cursor={BLAZE_CHART.tooltip.cursor}
-                        contentStyle={BLAZE_CHART.tooltip.contentStyle}
-                        labelStyle={BLAZE_CHART.tooltip.labelStyle}
-                        itemStyle={BLAZE_CHART.tooltip.itemStyle}
+                        cursor={ITZO_CHART.tooltip.cursor}
+                        contentStyle={ITZO_CHART.tooltip.contentStyle}
+                        labelStyle={ITZO_CHART.tooltip.labelStyle}
+                        itemStyle={ITZO_CHART.tooltip.itemStyle}
                         formatter={(value, name) => [
                           name === 'Revenue' ? formatCurrency(value) : formatNumber(value),
                           name,
@@ -352,7 +352,7 @@ export default function AdminDashboard() {
                       <Area
                         type="monotone"
                         dataKey="revenue"
-                        stroke={BLAZE_CHART.primary}
+                        stroke={ITZO_CHART.primary}
                         strokeWidth={2.5}
                         fillOpacity={1}
                         fill="url(#quickRevenueFill)"
@@ -360,7 +360,7 @@ export default function AdminDashboard() {
                       />
                       <Bar
                         dataKey="orders"
-                        fill={BLAZE_CHART.info}
+                        fill={ITZO_CHART.info}
                         radius={[6, 6, 0, 0]}
                         name="Orders"
                         barSize={10}
@@ -395,9 +395,9 @@ export default function AdminDashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={BLAZE_CHART.tooltip.contentStyle}
-                        labelStyle={BLAZE_CHART.tooltip.labelStyle}
-                        itemStyle={BLAZE_CHART.tooltip.itemStyle}
+                        contentStyle={ITZO_CHART.tooltip.contentStyle}
+                        labelStyle={ITZO_CHART.tooltip.labelStyle}
+                        itemStyle={ITZO_CHART.tooltip.itemStyle}
                       />
                       <Legend iconType="circle" formatter={legendFormatter} />
                     </PieChart>

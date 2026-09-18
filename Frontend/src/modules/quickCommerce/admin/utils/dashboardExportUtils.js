@@ -127,7 +127,7 @@ export async function exportDashboardToExcel(statsData) {
 
   const workbook = XLSX.utils.book_new();
   const reportHeader = [
-    ['BLAZE QUICK COMMERCE - DASHBOARD REPORT'],
+    ['ITZOFOOD QUICK COMMERCE - DASHBOARD REPORT'],
     [`Generated: ${generated.date} at ${generated.time}`],
     [],
   ];
@@ -326,7 +326,7 @@ export async function exportDashboardToPDF(statsData) {
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
     doc.text(
-      `Page ${i} of ${pageCount}  |  Blaze Quick Commerce`,
+      `Page ${i} of ${pageCount}  |  ItzoFood Quick Commerce`,
       pageWidth / 2,
       doc.internal.pageSize.getHeight() - 8,
       { align: 'center' },

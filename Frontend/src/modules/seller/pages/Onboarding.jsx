@@ -1130,7 +1130,7 @@ export default function SellerOnboarding() {
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
                     Partner Onboarding
                   </p>
-                  <p className="text-lg font-black text-white">Blaze</p>
+                  <p className="text-lg font-black text-white">ItzoFood</p>
                 </div>
               </div>
               <div className="mt-6 rounded-2xl border border-white/20 bg-white/15 p-5 backdrop-blur-sm">
