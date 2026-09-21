@@ -6,15 +6,15 @@
  *
  *   1. dataBuilder        → Transforms salary records into renderer-ready data
  *   2. pdfRenderer        → Generates a professional A4 PDF using jsPDF
- *   3. cloudinaryUploader → Streams the PDF buffer to Cloudinary
+ *   3. payslipUploader    → Stores the PDF buffer in the server uploads folder
  *
  * Exported functions maintain backward compatibility with the controller:
  *   - generatePayslipPdf(data)                → Buffer (PDF)
- *   - uploadPayslipToCloudinary(buffer, name)  → URL string
+ *   - uploadPayslip(buffer, name)              → URL string
  *   - buildPayslipData(salary, reqUser)        → data object
  * ──────────────────────────────────────────────────────────────────────────────
  */
 
 export { buildPayslipData } from './dataBuilder.js';
 export { renderPayslipPdf as generatePayslipImage } from './pdfRenderer.js';
-export { uploadPayslipToCloudinary } from './cloudinaryUploader.js';
+export { uploadPayslip } from './payslipUploader.js';

@@ -37,7 +37,7 @@ import {
   getCompletedReturnRefundTotals,
 } from '../utils/orderReturnSummary.helpers.js';
 import { resolveQuickOrderCustomer } from '../utils/customer.helpers.js';
-import { uploadImageBuffer } from '../../../services/cloudinary.service.js';
+import { uploadImageBuffer } from '../../../services/upload.service.js';
 import { getIO, rooms } from '../../../config/socket.js';
 import {
   getQuickExperienceSections,

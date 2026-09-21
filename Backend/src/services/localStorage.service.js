@@ -6,7 +6,7 @@ import { config } from '../config/env.js';
 // Base directory for all uploads. Relative values resolve against the project
 // root (Backend/); an absolute value such as /var/www/uploades is used as-is,
 // so the live server can store files outside the deployed code folder.
-const UPLOADS_BASE_DIR = path.resolve(process.cwd(), config.uploadLocalDir);
+export const UPLOADS_BASE_DIR = path.resolve(process.cwd(), config.uploadLocalDir);
 
 /**
  * Detects the real image/file type from the buffer's magic bytes so the file is
@@ -82,15 +82,40 @@ const resolveLocalPath = (publicId) => {
     if (config.uploadPublicBaseUrl && relativePath.startsWith(config.uploadPublicBaseUrl)) {
         relativePath = relativePath.slice(config.uploadPublicBaseUrl.length);
     }
-    if (/^https?:\/\//i.test(relativePath)) return null;
+    // A URL saved under a different host/port (e.g. localhost vs live) still maps to the
+    // same file as long as its path is /uploads/...; anything else is not ours.
+    if (/^https?:\/\//i.test(relativePath)) {
+        try {
+            const { pathname } = new URL(relativePath);
+            if (!pathname.startsWith('/uploads/')) return null;
+            relativePath = decodeURIComponent(pathname);
+        } catch {
+            return null;
+        }
+    }
 
     relativePath = relativePath.replace(/^\/+/, '').replace(/^uploads\//, '');
     if (!relativePath || relativePath.includes('..')) return null;
 
     const absolutePath = path.resolve(UPLOADS_BASE_DIR, relativePath);
-    if (!absolutePath.startsWith(UPLOADS_BASE_DIR)) return null;
+    if (!absolutePath.startsWith(UPLOADS_BASE_DIR + path.sep)) return null;
 
     return absolutePath;
+};
+
+/**
+ * Reads a locally stored file (by its /uploads/... URL or path) into a Buffer.
+ * Returns null when the value is not a local upload or the file does not exist,
+ * so callers can fall back to fetching remote (legacy) URLs.
+ */
+export const readLocalFile = (urlOrPath) => {
+    const absolutePath = resolveLocalPath(urlOrPath);
+    if (!absolutePath) return null;
+    try {
+        return fs.existsSync(absolutePath) ? fs.readFileSync(absolutePath) : null;
+    } catch {
+        return null;
+    }
 };
 
 export const getOptimizedCloudinaryImageUrl = (url, _options = {}) => {
@@ -215,7 +240,7 @@ export const uploadFileDetailed = async (
 };
 
 /**
- * Deletes a locally stored file. Mirrors cloudinary.uploader.destroy() so callers
+ * Deletes a locally stored file. Accepts the stored URL/path as `publicId` so callers
  * can delete an asset without knowing which storage driver is active.
  */
 export const destroyAsset = async (publicId, _options = {}) => {

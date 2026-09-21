@@ -26,7 +26,7 @@ const hrmsDocumentSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        publicId: { type: String }, // Cloudinary public ID for deletion
+        publicId: { type: String }, // Stored file reference (used for deletion)
 
         // For payslips — month/year reference
         month: { type: Number }, // 1-12

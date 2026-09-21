@@ -10,7 +10,7 @@ import { Transaction } from '../../../../core/payments/models/transaction.model.
 import { SellerReturn } from '../../../quick-commerce/seller/models/sellerReturn.model.js';
 import { resolveReturnPickupCharge } from '../../../quick-commerce/utils/return.helpers.js';
 import { calculateRiderEarningBreakdown, getActiveFeeSettings } from '../../../quick-commerce/admin/services/billing.service.js';
-import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadImageBuffer } from '../../../../services/upload.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { getDeliveryCashLimitSettings } from '../../admin/services/admin.service.js';
 import { ensureDailyPassEligibility, activateDailyPass } from '../../subscriptions/services/wallet.service.js';

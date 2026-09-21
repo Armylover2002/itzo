@@ -14,7 +14,7 @@ import { FoodRefreshToken } from "../../../../core/refreshTokens/refreshToken.mo
 import { config } from "../../../../config/env.js";
 import { getIO, rooms } from "../../../../config/socket.js";
 import { logger } from "../../../../utils/logger.js";
-import { uploadImageBuffer } from "../../../../services/cloudinary.service.js";
+import { uploadImageBuffer } from "../../../../services/upload.service.js";
 import { sendError, sendResponse } from "../../../../utils/response.js";
 import { headerMatchesSellerBusinessType } from "../../utils/category.helpers.js";
 import { Seller } from "../models/seller.model.js";

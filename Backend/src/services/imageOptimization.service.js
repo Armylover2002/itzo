@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 
-const MAX_OUTPUT_BYTES = 10 * 1024 * 1024; // 10 MB Cloudinary-safe target
+const MAX_OUTPUT_BYTES = 10 * 1024 * 1024; // 10 MB upload-safe target
 const MAX_INPUT_PIXELS = 268402689; // ~16384 x 16384, guards decompression bombs
 
 export const GLOBAL_SETTINGS_IMAGE_PRESETS = {
@@ -39,7 +39,7 @@ const encodeOptimizedImage = (sourcePath, width, height, quality) => (
 );
 
 /**
- * Optimize an on-disk image for Cloudinary upload.
+ * Optimize an on-disk image for upload.
  * Reads from file path (not full in-memory buffer) and returns a <=10MB webp buffer.
  */
 export async function optimizeImageForUpload(sourcePath, preset = GLOBAL_SETTINGS_IMAGE_PRESETS.logo) {

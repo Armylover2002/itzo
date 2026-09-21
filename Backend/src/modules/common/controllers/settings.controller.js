@@ -1,6 +1,6 @@
 import { GlobalSettings } from '../models/settings.model.js';
 import { sendResponse } from '../../../utils/response.js';
-import { uploadImageBufferDetailed, uploadFileDetailed } from '../../../services/cloudinary.service.js';
+import { uploadImageBufferDetailed, uploadFileDetailed } from '../../../services/upload.service.js';
 import {
     getGlobalSettingsImagePreset,
     optimizeImageForUpload,
@@ -181,7 +181,7 @@ const buildSettingsPayload = (settings) => {
 /**
  * Lightweight public payload — only fields consumed by frontend panels.
  * Keeps flat logo/banner keys for backward compatibility with existing clients.
- * Omits state/pincode/region and Cloudinary publicIds.
+ * Omits state/pincode/region and storage publicIds.
  */
 const buildPublicSettingsPayload = (settings) => {
     const raw = settings.toObject ? settings.toObject() : { ...settings };
@@ -531,13 +531,12 @@ export async function updateGlobalSettings(req, res, next) {
                 }
             }
 
-            // landingVideo is a video file — uploaded as-is (no sharp optimization) via Cloudinary's
-            // large-file/video uploader, separate from the image whitelist above.
+            // landingVideo is a video file — uploaded as-is (no sharp optimization) and stored on the server,
+            // separate from the image whitelist above.
             const uploadedVideo = req.files.landingVideo && req.files.landingVideo[0];
             if (uploadedVideo && uploadedVideo.path) {
                 try {
-                    const videoBuffer = await fs.readFile(uploadedVideo.path);
-                    const result = await uploadFileDetailed(videoBuffer, {
+                    const result = await uploadFileDetailed(uploadedVideo.path, {
                         folder: 'business/landing',
                         resourceType: 'video',
                     });
@@ -555,8 +554,7 @@ export async function updateGlobalSettings(req, res, next) {
             const uploadedUserLoginVideo = req.files.userLoginVideo && req.files.userLoginVideo[0];
             if (uploadedUserLoginVideo && uploadedUserLoginVideo.path) {
                 try {
-                    const videoBuffer = await fs.readFile(uploadedUserLoginVideo.path);
-                    const result = await uploadFileDetailed(videoBuffer, {
+                    const result = await uploadFileDetailed(uploadedUserLoginVideo.path, {
                         folder: 'business/banners/user_login',
                         resourceType: 'video',
                     });

@@ -4,7 +4,7 @@ import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js'
 import { uploadBufferDetailed, signApplicationUrls } from '../../../../services/upload.service.js';
 import { sendJobApplicationAcknowledgementEmail } from '../../../../utils/email.js';
 
-const uploadToCloudinary = async (file, folder = 'careers/applications') => {
+const uploadToStorage = async (file, folder = 'careers/applications') => {
     if (!file || !file.buffer) return null;
     const result = await uploadBufferDetailed(file.buffer, { folder, resourceType: 'raw' });
     return result.secure_url;
@@ -122,15 +122,15 @@ export const submitApplicationService = async (data, files = {}) => {
         throw new ValidationError('Resume file size must be 10 MB or less.');
     }
 
-    // Upload files to Cloudinary
-    const resumeUrl = await uploadToCloudinary(resumeFile, 'careers/resumes');
+    // Upload files to server storage
+    const resumeUrl = await uploadToStorage(resumeFile, 'careers/resumes');
     
     let coverLetterUrl = '';
     if (coverLetterFile) {
         if (coverLetterFile.size > maxSizeBytes) {
             throw new ValidationError('Cover letter size must be 10 MB or less.');
         }
-        coverLetterUrl = await uploadToCloudinary(coverLetterFile, 'careers/cover_letters') || '';
+        coverLetterUrl = await uploadToStorage(coverLetterFile, 'careers/cover_letters') || '';
     }
 
     const additionalFiles = [];
@@ -138,7 +138,7 @@ export const submitApplicationService = async (data, files = {}) => {
         if (file.size > maxSizeBytes) {
             throw new ValidationError('Additional files size must be 10 MB or less.');
         }
-        const fileUrl = await uploadToCloudinary(file, 'careers/additional_files');
+        const fileUrl = await uploadToStorage(file, 'careers/additional_files');
         if (fileUrl) additionalFiles.push(fileUrl);
     }
 

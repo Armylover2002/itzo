@@ -23,7 +23,7 @@ const validateAndUpload = async (file, fieldName, folder = 'licensing/documents'
         throw new ValidationError(`File size for ${fieldName} must be 10 MB or less.`);
     }
 
-    // Upload using Memory Buffer to Cloudinary as 'raw' resource
+    // Store the in-memory buffer on the server (uploads folder)
     const result = await uploadBufferDetailed(file.buffer, { folder, resourceType: 'raw' });
     return result.secure_url;
 };

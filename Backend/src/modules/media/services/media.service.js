@@ -180,7 +180,7 @@ export async function getSharedMedia(restaurantId, query = {}) {
     const paginatedItems = items.slice(skip, skip + limit);
     const total = items.length;
 
-    // Cloudinary dynamic low-res thumbnail transformations
+    // Thumbnail: legacy CDN URLs get a resized variant; server-stored files use the original
     const results = paginatedItems.map(item => {
         let thumb = null;
         if (item.url && item.url.includes('/image/upload/')) {

@@ -1,4 +1,4 @@
-import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadImageBuffer } from '../../../../services/upload.service.js';
 
 const PARTNER_UPLOAD_FIELDS = [
     ['profilePhoto', 'food/delivery/profile'],

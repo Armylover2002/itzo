@@ -6,7 +6,7 @@ import {
   ensureCashDepositIdempotencyIndexes,
 } from "../models/foodDeliveryCashDeposit.model.js";
 import { FoodDeliveryPartner } from "../models/deliveryPartner.model.js";
-import { uploadImageBuffer } from "../../../../services/cloudinary.service.js";
+import { uploadImageBuffer } from "../../../../services/upload.service.js";
 import { DeliveryBonusTransaction } from "../../admin/models/deliveryBonusTransaction.model.js";
 import { Transaction } from "../../../../core/payments/models/transaction.model.js";
 import { getDeliveryCashLimitSettings } from "../../admin/services/admin.service.js";

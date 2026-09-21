@@ -1,7 +1,7 @@
 import fs from 'fs';
 import mongoose from 'mongoose';
 import { FoodHeroBanner } from './src/modules/food/landing/models/heroBanner.model.js';
-import { uploadImageBufferDetailed } from './src/services/cloudinary.service.js';
+import { uploadImageBufferDetailed } from './src/services/upload.service.js';
 import dotenv from 'dotenv';
 
 // Load env vars
@@ -15,7 +15,7 @@ const run = async () => {
         console.log('Reading image file...');
         const buffer = fs.readFileSync('C:/Users/trish/.gemini/antigravity-ide/brain/935743b2-6833-4bad-b230-eabcc536d1c1/media__1784793733767.jpg');
         
-        console.log('Uploading to Cloudinary...');
+        console.log('Uploading to server storage...');
         const uploadResult = await uploadImageBufferDetailed(buffer, 'food/hero-banners');
         
         console.log('Saving to database...');

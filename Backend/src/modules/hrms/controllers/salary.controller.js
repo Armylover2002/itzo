@@ -5,7 +5,8 @@ import { HrmsLeave } from '../models/leave.model.js';
 import { HrmsExpense } from '../models/expense.model.js';
 import { HrmsSettings } from '../models/settings.model.js';
 import { HrmsDocument } from '../models/document.model.js';
-import { buildPayslipData, generatePayslipImage, uploadPayslipToCloudinary } from '../services/payslip/index.js';
+import { buildPayslipData, generatePayslipImage, uploadPayslip as storePayslip } from '../services/payslip/index.js';
+import { readLocalFile } from '../../../services/upload.service.js';
 import { sendResponse, sendError } from '../../../utils/response.js';
 
 /**
@@ -351,9 +352,9 @@ export const generatePayslipPdf = async (req, res, next) => {
         // 2. Render payslip as professional A4 PDF
         const pdfBuffer = generatePayslipImage(data);
 
-        // 3. Upload to Cloudinary
+        // 3. Store on server
         const filename = `Payslip_${(employee.adminId?.name || 'Employee').replace(/\s+/g, '_')}_${data.monthName}_${data.year}_v${data.payslipVersion}`;
-        const pdfUrl = await uploadPayslipToCloudinary(pdfBuffer, filename);
+        const pdfUrl = await storePayslip(pdfBuffer, filename);
 
         // 4. Update HrmsSalary record
         salary.payslipUrl = pdfUrl;
@@ -386,13 +387,13 @@ export const generatePayslipPdf = async (req, res, next) => {
 
 /**
  * PROXY: Foolproof document & image delivery endpoint
- * Proxies Cloudinary assets through Backend to eliminate client DNS/adblocker blocks
+ * Proxies stored documents through Backend to eliminate client DNS/adblocker blocks
  * and guarantee clean Content-Type headers for iframe viewing and attachment downloading.
  *
  * Handles three cases:
  * 1. Raw uploads (/raw/upload/) — always served as PDF (content is PDF regardless of extension)
- *    - .png extension: Cloudinary delivers fine (masqueraded PDF) → serve as application/pdf
- *    - .pdf extension: Cloudinary blocks with 401 → retry with .png extension fallback
+ *    - .png extension: legacy remote copy (masqueraded PDF) → serve as application/pdf
+ *    - .pdf extension: legacy remote copy blocks with 401 → retry with .png extension fallback
  * 2. Image uploads (/image/upload/ with image extension) — legacy manually-uploaded payslips → serve as image
  * 3. Everything else → default to PDF
  */
@@ -401,6 +402,20 @@ export const proxyPayslipDocument = async (req, res) => {
         const { url, mode = 'view' } = req.query;
         if (!url) {
             return res.status(400).json({ success: false, message: 'URL parameter is required' });
+        }
+
+        // Files stored on this server are read straight from the uploads folder.
+        const localBuffer = readLocalFile(url);
+        if (localBuffer) {
+            const ext = (String(url).split('?')[0].match(/\.([a-z0-9]+)$/i)?.[1] || 'pdf').toLowerCase();
+            const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+            res.setHeader('Content-Type', isImage ? `image/${ext === 'jpg' ? 'jpeg' : ext}` : 'application/pdf');
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader(
+                'Content-Disposition',
+                mode === 'download' ? `attachment; filename="Payslip_${Date.now()}.${isImage ? ext : 'pdf'}"` : 'inline'
+            );
+            return res.send(localBuffer);
         }
 
         // Determine if this is a genuine image (legacy manually-uploaded payslips)
@@ -414,15 +429,15 @@ export const proxyPayslipDocument = async (req, res) => {
         const contentType = servingAsPdf ? 'application/pdf' : 'image/png';
         const fileExt = servingAsPdf ? 'pdf' : 'png';
 
-        // Fetch the document from Cloudinary
+        // Fetch the (legacy remote) document
         let response = await fetch(url);
 
-        // If fetch failed (e.g. 401 from Cloudinary blocking raw PDF delivery),
+        // If fetch failed (e.g. 401 from a legacy remote host),
         // try swapping the extension: .pdf → .png (masquerade) or vice versa
         if (!response.ok && isRawUpload) {
             let fallbackUrl = null;
             if (url.toLowerCase().endsWith('.pdf')) {
-                // Cloudinary blocks .pdf delivery → try .png (masquerade format)
+                // legacy remote copy blocks .pdf → try .png variant
                 fallbackUrl = url.replace(/\.pdf$/i, '.png');
             } else if (url.toLowerCase().endsWith('.png')) {
                 // In case .png somehow fails, try .pdf
@@ -439,10 +454,10 @@ export const proxyPayslipDocument = async (req, res) => {
         }
 
         if (!response.ok) {
-            console.error(`[Payslip Proxy] Cloudinary fetch failed for ${url}: ${response.status} ${response.statusText}`);
+            console.error(`[Payslip Proxy] Fetch failed for ${url}: ${response.status} ${response.statusText}`);
             return res.status(response.status).json({
                 success: false,
-                message: `Failed to retrieve document from cloud storage (${response.status})`
+                message: `Failed to retrieve document from storage (${response.status})`
             });
         }
 
@@ -465,6 +480,6 @@ export const proxyPayslipDocument = async (req, res) => {
         res.send(buffer);
     } catch (error) {
         console.error('[Payslip Proxy] Error proxying document:', error.message);
-        res.status(500).json({ success: false, message: 'Failed to fetch payslip document from cloud storage' });
+        res.status(500).json({ success: false, message: 'Failed to fetch payslip document from storage' });
     }
 };

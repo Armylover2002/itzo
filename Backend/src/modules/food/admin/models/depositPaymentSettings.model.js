@@ -16,7 +16,7 @@ const depositPaymentSettingsSchema = new mongoose.Schema(
         // UPI Details
         upiId: { type: String, default: '' },
 
-        // QR Code (Cloudinary URL)
+        // QR Code (stored upload URL)
         qrCodeUrl: { type: String, default: '' },
 
     },

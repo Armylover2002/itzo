@@ -67,23 +67,25 @@ export const config = {
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 10),
 
     // Uploads
-    // UPLOAD_STORAGE decides where the storage-abstraction (upload.service.js,
-    // used by HRMS payslips etc.) writes files:
-    //   'cloudinary' -> Cloudinary CDN
-    //   'local'      -> a folder on the server disk
-    // Legacy true/false values are accepted too: UPLOAD_USE_CLOUDINARY=true|false.
-    // Defaults to 'cloudinary' because this project stores every other upload
-    // (media, documents, images) on Cloudinary and does not serve /uploads statically.
-    uploadStorage: (() => {
-        const useCloudinary = String(process.env.UPLOAD_USE_CLOUDINARY || '').trim().toLowerCase();
-        if (useCloudinary === 'true') return 'cloudinary';
-        if (useCloudinary === 'false') return 'local';
-        return String(process.env.UPLOAD_STORAGE || 'cloudinary').trim().toLowerCase();
-    })(),
-    // Absolute (or project-relative) directory the 'local' driver writes into.
-    uploadLocalDir: process.env.UPLOAD_LOCAL_DIR || 'uploads',
-    // Optional absolute prefix for locally stored files, e.g. https://itzo.in
-    uploadPublicBaseUrl: (process.env.UPLOAD_PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
+    // Every image/file is stored on the server's own disk (no third-party CDN).
+    // UPLOAD_LOCAL_DIR is where files are written:
+    //   local machine (default)  -> Backend/uploads
+    //   live server (production) -> /var/www/uploades  (override with UPLOAD_LOCAL_DIR)
+    // Files are served at /uploads/<folder>/<file> (Express static, or Nginx on the VPS).
+    uploadStorage: 'local',
+    uploadLocalDir:
+        process.env.UPLOAD_LOCAL_DIR ||
+        ((process.env.NODE_ENV || 'development') === 'production' ? '/var/www/uploades' : 'uploads'),
+    // Absolute prefix put in front of stored file URLs.
+    //   local machine  -> http://localhost:<PORT>  (so images load from the Vite dev origin too)
+    //   live server    -> set UPLOAD_PUBLIC_BASE_URL=https://<your-api-domain>; if left empty,
+    //                     relative /uploads/... URLs are stored (frontend resolves them via API base).
+    uploadPublicBaseUrl: (
+        process.env.UPLOAD_PUBLIC_BASE_URL ||
+        ((process.env.NODE_ENV || 'development') === 'production'
+            ? ''
+            : `http://localhost:${process.env.PORT || 5000}`)
+    ).replace(/\/+$/, ''),
     uploadPath: process.env.UPLOAD_PATH || 'uploads/',
     requestBodyLimit: process.env.REQUEST_BODY_LIMIT || '2mb',
 
@@ -93,11 +95,6 @@ export const config = {
 
     // BullMQ
     bullmqEnabled: process.env.BULLMQ_ENABLED === 'true',
-
-    // Cloudinary
-    cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
-    cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
-    cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET,
 
     // Firebase / FCM
     firebaseProjectId: process.env.FIREBASE_PROJECT_ID || process.env.VITE_FIREBASE_PROJECT_ID,
@@ -141,12 +138,6 @@ export const env = {
     jwtSecret: config.jwtAccessSecret,
     jwtExpiresIn: config.jwtAccessExpiresIn,
     corsOrigin: process.env.CORS_ORIGIN || process.env.FRONTEND_URL || '*',
-    cloudinary: {
-        cloudName: config.cloudinaryCloudName || '',
-        apiKey: config.cloudinaryApiKey || '',
-        apiSecret: config.cloudinaryApiSecret || '',
-        folder: process.env.CLOUDINARY_FOLDER || 'appzeto-food',
-    },
     firebase: {
         databaseURL: process.env.FIREBASE_DATABASE_URL || config.firebaseDatabaseUrl || '',
         serviceAccountPath: config.firebaseServiceAccountPath || '',

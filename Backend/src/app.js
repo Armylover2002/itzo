@@ -13,6 +13,7 @@ import { requestIdMiddleware } from './middleware/requestId.js';
 import { healthCheck } from './config/health.js';
 import { config } from './config/env.js';
 import { corsOptions } from './config/cors.js';
+import { UPLOADS_BASE_DIR } from './services/localStorage.service.js';
 
 const app = express();
 
@@ -34,6 +35,23 @@ app.get('/health', async (_req, res) => {
 app.get('/ready', (_req, res) => {
     res.status(200).json({ status: 'ready' });
 });
+
+// Uploaded files (images, videos, PDFs) stored on this server. Served before helmet/rate
+// limiting so <img>/<video> tags on other origins (Vite dev server, live frontend) can load them.
+app.use('/uploads', express.static(UPLOADS_BASE_DIR, {
+    maxAge: '30d',
+    index: false,
+    dotfiles: 'ignore',
+    setHeaders: (res, filePath) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        // Uploaded SVG/HTML must never run scripts in our origin.
+        if (/\.(svg|html?)$/i.test(filePath)) {
+            res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+        }
+    },
+}));
 
 // Security & parsing middlewares
 app.use(helmet({

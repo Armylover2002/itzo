@@ -3,7 +3,7 @@ import { AdminRole } from '../../../../core/admin/role.model.js';
 import { FoodRefreshToken } from '../../../../core/refreshTokens/refreshToken.model.js';
 import { sendResponse, sendError } from '../../../../utils/response.js';
 import { sendEmployeeCredentialsEmail } from '../../../../utils/email.js';
-import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadImageBuffer } from '../../../../services/upload.service.js';
 import { logger } from '../../../../utils/logger.js';
 import mongoose from 'mongoose';
 
