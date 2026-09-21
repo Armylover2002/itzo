@@ -2054,6 +2054,13 @@ function buildCustomerListFilter(query = {}) {
     // Include 'USER' role, as well as documents where role is missing/null (since default was commented out)
     const filter = { $or: [{ role: 'USER' }, { role: { $exists: false } }, { role: null }] };
 
+    const wantsDeleted = query.isDeleted === true || query.isDeleted === 'true';
+    filter.$and = [
+        wantsDeleted
+            ? { $or: [{ isDeleted: true }, { accountStatus: 'deleted' }] }
+            : { $nor: [{ isDeleted: true }, { accountStatus: 'deleted' }] }
+    ];
+
     if (query.status) {
         if (String(query.status) === 'active') filter.isActive = true;
         if (String(query.status) === 'inactive') filter.isActive = false;
@@ -2073,11 +2080,13 @@ function buildCustomerListFilter(query = {}) {
     if (query.search && String(query.search).trim()) {
         const raw = String(query.search).trim().slice(0, 80);
         const term = escapeRegex(raw);
-        filter.$or = [
-            { name: { $regex: term, $options: 'i' } },
-            { email: { $regex: term, $options: 'i' } },
-            { phone: { $regex: term, $options: 'i' } }
-        ];
+        filter.$and.push({
+            $or: [
+                { name: { $regex: term, $options: 'i' } },
+                { email: { $regex: term, $options: 'i' } },
+                { phone: { $regex: term, $options: 'i' } }
+            ]
+        });
     }
 
     return filter;
@@ -2320,6 +2329,100 @@ export async function getCustomerById(id) {
     };
 }
 
+const DELETED_CUSTOMER_MATCH = { $or: [{ isDeleted: true }, { accountStatus: 'deleted' }] };
+
+export async function softDeleteCustomer(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const user = await FoodUser.findOneAndUpdate(
+        { _id: id, $nor: [{ isDeleted: true }, { accountStatus: 'deleted' }] },
+        {
+            $set: {
+                isDeleted: true,
+                accountStatus: 'deleted',
+                isActive: false,
+                deletionRequest: {
+                    status: 'approved',
+                    reason: 'Deleted by admin',
+                    requestedAt: new Date(),
+                    reviewedAt: new Date()
+                }
+            }
+        },
+        { new: true }
+    );
+    if (!user) return null;
+
+    await FoodRefreshToken.deleteMany({ userId: user._id });
+    return mapCustomerListItem(user.toObject());
+}
+
+export async function getRecoveryRequests(query = {}) {
+    const limit = Math.min(Math.max(parseInt(query.limit, 10) || 50, 1), 1000);
+    const page = Math.max(parseInt(query.page, 10) || 1, 1);
+    const skip = (page - 1) * limit;
+
+    const filter = {
+        $and: [
+            { $or: [{ role: 'USER' }, { role: { $exists: false } }, { role: null }] },
+            DELETED_CUSTOMER_MATCH,
+            { 'deletionRequest.status': 'recovery_pending' }
+        ]
+    };
+
+    if (query.search && String(query.search).trim()) {
+        const term = escapeRegex(String(query.search).trim().slice(0, 80));
+        filter.$and.push({
+            $or: [
+                { name: { $regex: term, $options: 'i' } },
+                { email: { $regex: term, $options: 'i' } },
+                { phone: { $regex: term, $options: 'i' } }
+            ]
+        });
+    }
+
+    const [items, total] = await Promise.all([
+        FoodUser.find(filter)
+            .sort({ 'deletionRequest.requestedAt': -1 })
+            .skip(skip)
+            .limit(limit)
+            .select('name email phone countryCode isDeleted isActive createdAt deletionRequest profileImage')
+            .lean(),
+        FoodUser.countDocuments(filter)
+    ]);
+
+    return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+}
+
+export async function approveRecoveryRequest(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const user = await FoodUser.findOneAndUpdate(
+        { _id: id, ...DELETED_CUSTOMER_MATCH, 'deletionRequest.status': 'recovery_pending' },
+        {
+            $set: {
+                isDeleted: false,
+                accountStatus: 'active',
+                isActive: true,
+                deletionRequest: { status: 'none', reason: '', requestedAt: null, reviewedAt: new Date() }
+            }
+        },
+        { new: true }
+    );
+    return user ? mapCustomerListItem(user.toObject()) : null;
+}
+
+export async function rejectRecoveryRequest(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const user = await FoodUser.findOneAndUpdate(
+        { _id: id, ...DELETED_CUSTOMER_MATCH, 'deletionRequest.status': 'recovery_pending' },
+        { $set: { 'deletionRequest.status': 'rejected', 'deletionRequest.reviewedAt': new Date() } },
+        { new: true }
+    );
+    return user ? mapCustomerListItem(user.toObject()) : null;
+}
+
 export async function updateCustomerStatus(id, isActive) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
 
@@ -2329,6 +2432,7 @@ export async function updateCustomerStatus(id, isActive) {
         updateFields.isDeleted = false;
         updateFields.isBlocked = false;
         updateFields.accountStatus = 'active';
+        updateFields['deletionRequest.status'] = 'none';
     }
 
     const updatedDoc = await FoodUser.findOneAndUpdate(

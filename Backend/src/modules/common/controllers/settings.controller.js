@@ -9,9 +9,11 @@ import { cleanupUploadedFiles } from '../../../utils/uploadCleanup.js';
 import fs from 'fs/promises';
 import { config } from '../../../config/env.js';
 import { getRedisClient } from '../../../config/redis.js';
+import { invalidateCache } from '../../../middleware/cache.js';
 import { getCache, setCache, deleteCache } from '../../../utils/cacheManager.js';
 import { clearGlobalBrandingCache } from '../services/globalBranding.service.js';
 import { clearGlobalPaymentSettingsCache } from '../services/globalPaymentSettings.service.js';
+import { updatePrivacySettingsCache } from '../utils/privacySettingsCache.js';
 
 const SETTINGS_CACHE_KEY = 'global_settings_public_v2';
 const SETTINGS_CACHE_TTL_MS = 60 * 1000; // 1 minute server-side safety TTL
@@ -21,11 +23,15 @@ const SETTINGS_REDIS_KEY = 'common:global_settings:public:v2';
 const PUBLIC_SETTINGS_PROJECTION = {
     companyName: 1,
     email: 1,
+    customerSupportEmail: 1,
+    partnershipEmail: 1,
+    helpAndSupportEmail: 1,
     phone: 1,
     address: 1,
     themeColor: 1,
     codEnabled: 1,
     onlineEnabled: 1,
+    companySupportNumber: 1,
     socialLinks: 1,
     modules: 1,
     adminLogo: 1,
@@ -39,6 +45,12 @@ const PUBLIC_SETTINGS_PROJECTION = {
     sellerLogo: 1,
     sellerFavicon: 1,
     loginBanner: 1,
+    userLoginBanner1: 1,
+    userLoginBanner2: 1,
+    userLoginBanner3: 1,
+    userLoginBanner4: 1,
+    userLoginBanner5: 1,
+    userLoginVideo: 1,
     sellerLoginBanner: 1,
     restaurantLoginBanner: 1,
     landingHeroTitle: 1,
@@ -70,6 +82,7 @@ const PUBLIC_MEDIA_KEYS = [
     'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon',
     'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
     'sellerLogo', 'sellerFavicon', 'loginBanner',
+    'userLoginBanner1', 'userLoginBanner2', 'userLoginBanner3', 'userLoginBanner4', 'userLoginBanner5', 'userLoginVideo',
     'landingVideo', 'landingPoster', 'landingPizzaImage', 'landingTomatoImage',
     'landingQrCodeImage', 'landingAppStoreBadge', 'landingPlayStoreBadge',
     'landingNavbarLogo', 'landingFooterLogo', 'benefitsImage',
@@ -177,6 +190,9 @@ const buildPublicSettingsPayload = (settings) => {
         companyName: raw.companyName || 'Appzeto',
         themeColor: raw.themeColor || '#0a0a0a',
         email: raw.email || '',
+        customerSupportEmail: raw.customerSupportEmail || '',
+        partnershipEmail: raw.partnershipEmail || '',
+        helpAndSupportEmail: raw.helpAndSupportEmail || '',
         phone: {
             countryCode: raw.phone?.countryCode || '+91',
             number: raw.phone?.number || '',
@@ -192,6 +208,7 @@ const buildPublicSettingsPayload = (settings) => {
         },
         codEnabled: raw.codEnabled !== false,
         onlineEnabled: raw.onlineEnabled !== false,
+        companySupportNumber: raw.companySupportNumber || '',
         landingHeroTitle: raw.landingHeroTitle || '',
         landingHeroSubtitle: raw.landingHeroSubtitle || '',
         playStoreLink: raw.playStoreLink || '',
@@ -283,14 +300,17 @@ export async function updateGlobalSettings(req, res, next) {
             data = req.body;
         }
         
-        const { 
-            companyName, email, phoneCountryCode, phoneNumber, address, state, pincode, region, 
+        const {
+            companyName, email, customerSupportEmail, partnershipEmail, helpAndSupportEmail,
+            phoneCountryCode, phoneNumber, address, state, pincode, region,
+            legalName, gstin, fssai, panNumber, cinNumber,
             adminLogoUrl, adminFaviconUrl, userLogoUrl, userFaviconUrl, deliveryLogoUrl, deliveryFaviconUrl, restaurantLogoUrl, restaurantFaviconUrl, sellerLogoUrl, sellerFaviconUrl, loginBannerUrl,
             sellerLoginBannerUrl, restaurantLoginBannerUrl,
             sellerLoginBannerActive, restaurantLoginBannerActive,
             themeColor, codEnabled, onlineEnabled, modules,
             facebook, instagram, twitter, linkedin, youtube,
             socialLinks, subscriptionEnforcement,
+            enableFemaleContactProtection, companySupportNumber, companyWhatsappNumber, privacyMessage, contactsViewPassword,
             landingHeroTitle, landingHeroSubtitle,
             socialLinkedinUrl, socialInstagramUrl, socialYoutubeUrl, socialFacebookUrl, socialTwitterUrl,
             playStoreLink, appStoreLink,
@@ -319,6 +339,19 @@ export async function updateGlobalSettings(req, res, next) {
 
         if (companyName) settings.companyName = companyName;
         if (email) settings.email = email;
+        if (customerSupportEmail !== undefined) settings.customerSupportEmail = customerSupportEmail;
+        if (partnershipEmail !== undefined) settings.partnershipEmail = partnershipEmail;
+        if (helpAndSupportEmail !== undefined) settings.helpAndSupportEmail = helpAndSupportEmail;
+        if (legalName !== undefined) settings.legalName = legalName;
+        if (gstin !== undefined) settings.gstin = gstin;
+        if (fssai !== undefined) settings.fssai = fssai;
+        if (panNumber !== undefined) settings.panNumber = panNumber;
+        if (cinNumber !== undefined) settings.cinNumber = cinNumber;
+        if (enableFemaleContactProtection !== undefined) settings.enableFemaleContactProtection = enableFemaleContactProtection;
+        if (companySupportNumber !== undefined) settings.companySupportNumber = companySupportNumber;
+        if (companyWhatsappNumber !== undefined) settings.companyWhatsappNumber = companyWhatsappNumber;
+        if (privacyMessage !== undefined) settings.privacyMessage = privacyMessage;
+        if (contactsViewPassword !== undefined) settings.contactsViewPassword = contactsViewPassword;
         if (phoneCountryCode || phoneNumber) {
             settings.phone = {
                 countryCode: phoneCountryCode || settings.phone?.countryCode || '+91',
@@ -335,6 +368,7 @@ export async function updateGlobalSettings(req, res, next) {
             'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon',
             'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
             'sellerLogo', 'sellerFavicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner',
+            'userLoginBanner1', 'userLoginBanner2', 'userLoginBanner3', 'userLoginBanner4', 'userLoginBanner5', 'userLoginVideo',
             'landingPoster', 'landingPizzaImage', 'landingTomatoImage', 'landingQrCodeImage',
             'landingAppStoreBadge', 'landingPlayStoreBadge', 'landingFooterLogo', 'landingNavbarLogo',
             'benefitsImage'
@@ -455,6 +489,11 @@ export async function updateGlobalSettings(req, res, next) {
                 { name: 'sellerLogo', folder: 'business/logos/seller' },
                 { name: 'sellerFavicon', folder: 'business/favicons/seller' },
                 { name: 'loginBanner', folder: 'business/banners/login' },
+                { name: 'userLoginBanner1', folder: 'business/banners/user_login' },
+                { name: 'userLoginBanner2', folder: 'business/banners/user_login' },
+                { name: 'userLoginBanner3', folder: 'business/banners/user_login' },
+                { name: 'userLoginBanner4', folder: 'business/banners/user_login' },
+                { name: 'userLoginBanner5', folder: 'business/banners/user_login' },
                 { name: 'sellerLoginBanner', folder: 'business/banners/seller_login' },
                 { name: 'restaurantLoginBanner', folder: 'business/banners/restaurant_login' },
                 { name: 'landingPoster', folder: 'business/landing' },
@@ -511,13 +550,35 @@ export async function updateGlobalSettings(req, res, next) {
                     await fs.unlink(uploadedVideo.path).catch(() => {});
                 }
             }
+
+            // userLoginVideo follows the same video path as landingVideo.
+            const uploadedUserLoginVideo = req.files.userLoginVideo && req.files.userLoginVideo[0];
+            if (uploadedUserLoginVideo && uploadedUserLoginVideo.path) {
+                try {
+                    const videoBuffer = await fs.readFile(uploadedUserLoginVideo.path);
+                    const result = await uploadFileDetailed(videoBuffer, {
+                        folder: 'business/banners/user_login',
+                        resourceType: 'video',
+                    });
+                    settings.userLoginVideo = {
+                        url: result.secure_url,
+                        publicId: result.public_id,
+                    };
+                    settings.markModified('userLoginVideo');
+                } finally {
+                    await fs.unlink(uploadedUserLoginVideo.path).catch(() => {});
+                }
+            }
         }
 
         await settings.save();
+        updatePrivacySettingsCache(settings);
         const payload = buildSettingsPayload(settings);
         const publicPayload = buildPublicSettingsPayload(settings);
         await clearGlobalSettingsCache();
         await warmGlobalSettingsCache(publicPayload);
+        // Restaurant lists are response-cached and depend on the streetFood module flag.
+        await invalidateCache('restaurants*');
         return sendResponse(res, 200, 'Global settings updated successfully', payload);
     } catch (error) {
         await cleanupUploadedFiles(req.files);

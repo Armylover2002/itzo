@@ -14,18 +14,27 @@ import { adminAPI } from "@/services/api";
 import { setCachedSettings, getCachedSettings } from "@/modules/common/utils/businessSettings";
 import { cn } from "@/lib/utils";
 
-const ModuleCard = ({ title, description, icon: Icon, enabled, onToggle, color }) => (
+// Static class names so Tailwind can detect them (dynamic `bg-${color}-500` gets purged).
+const COLOR_CLASSES = {
+  red: { card: "border-red-100 bg-red-50/30", icon: "bg-red-500", toggle: "bg-red-500", glow: "bg-red-500" },
+  green: { card: "border-green-100 bg-green-50/30", icon: "bg-green-500", toggle: "bg-green-500", glow: "bg-green-500" },
+  purple: { card: "border-purple-100 bg-purple-50/30", icon: "bg-purple-500", toggle: "bg-purple-500", glow: "bg-purple-500" },
+};
+
+const ModuleCard = ({ title, description, icon: Icon, enabled, onToggle, color }) => {
+  const palette = COLOR_CLASSES[color] || COLOR_CLASSES.green;
+  return (
   <div className={cn(
     "relative group p-6 rounded-2xl border-2 transition-all duration-300 overflow-hidden",
-    enabled 
-      ? `border-${color}-100 bg-${color}-50/30` 
+    enabled
+      ? palette.card
       : "border-gray-100 bg-white"
   )}>
     <div className="flex items-start justify-between relative z-10">
       <div className="flex gap-4">
         <div className={cn(
           "w-12 h-12 rounded-xl flex items-center justify-center transition-colors",
-          enabled ? `bg-${color}-500 text-white` : "bg-gray-100 text-gray-400"
+          enabled ? `${palette.icon} text-white` : "bg-gray-100 text-gray-400"
         )}>
           <Icon size={24} />
         </div>
@@ -41,7 +50,7 @@ const ModuleCard = ({ title, description, icon: Icon, enabled, onToggle, color }
         onClick={onToggle}
         className={cn(
           "w-12 h-6 rounded-full relative transition-colors duration-200 outline-none",
-          enabled ? `bg-${color}-500` : "bg-gray-200"
+          enabled ? palette.toggle : "bg-gray-200"
         )}
       >
         <div className={cn(
@@ -54,10 +63,11 @@ const ModuleCard = ({ title, description, icon: Icon, enabled, onToggle, color }
     {/* Decorative background shape */}
     <div className={cn(
       "absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-3xl opacity-10 transition-colors",
-      enabled ? `bg-${color}-500` : "bg-transparent"
+      enabled ? palette.glow : "bg-transparent"
     )} />
   </div>
-);
+  );
+};
 
 const ModuleManagement = () => {
   const [loading, setLoading] = useState(true);
@@ -65,6 +75,7 @@ const ModuleManagement = () => {
   const [modules, setModules] = useState({
     food: true,
     quickCommerce: true,
+    streetFood: true,
   });
 
   const fetchSettings = async () => {
@@ -77,6 +88,7 @@ const ModuleManagement = () => {
         setModules({
           food: settings.modules.food ?? true,
           quickCommerce: settings.modules.quickCommerce ?? true,
+          streetFood: settings.modules.streetFood ?? true,
         });
       }
     } catch (err) {
@@ -166,6 +178,14 @@ const ModuleManagement = () => {
                 color="green"
               />
 
+              <ModuleCard
+                title="Street Food"
+                description="Show live street food vendors nearby in the customer app."
+                icon={Zap}
+                enabled={modules.streetFood}
+                onToggle={() => handleToggle('streetFood')}
+                color="purple"
+              />
 
             </div>
 

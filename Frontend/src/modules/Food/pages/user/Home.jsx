@@ -109,6 +109,7 @@ import { CartAnimationProvider as QuickCartAnimationProvider } from "../../../qu
 import { CartProvider as QuickCartProvider } from "../../../quickCommerce/user/context/CartContext";
 import { prefetchQuickHomeBootstrap } from "../../../quickCommerce/user/services/customerApi";
 import PromoRow from "@food/components/user/home/PromoRow";
+import { useSettings } from "@core/context/SettingsContext";
 import { optimizeCloudinaryUrl } from "../../../../shared/utils/cloudinaryUtils";
 import VegModePopups from "@food/components/user/VegModePopups";
 import AdvertisementSection from "@food/components/user/home/AdvertisementSection";
@@ -194,6 +195,16 @@ export default function Home() {
   const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { settings: appSettings } = useSettings();
+  // A module is on unless the admin explicitly switched it off (Global Settings > Modules).
+  const quickEnabled = appSettings?.modules?.quickCommerce !== false;
+  const streetFoodEnabled = appSettings?.modules?.streetFood !== false;
+  const visibleTabs = useMemo(
+    () => tabs.filter((tab) =>
+      (tab.id !== "quick" || quickEnabled) && (tab.id !== "street-food" || streetFoodEnabled)
+    ),
+    [quickEnabled, streetFoodEnabled],
+  );
   const [heroSearch, setHeroSearch] = useState("");
   const { openSearch, closeSearch, searchValue, setSearchValue } = useSearchOverlay();
   const { openLocationSelector } = useLocationSelector();
@@ -220,8 +231,15 @@ export default function Home() {
   // restaurant list is filtered to (matches the Food/Quick tab-switch UX
   // instead of navigating to a separate page).
   const [foodBusinessType, setFoodBusinessType] = useState(() =>
-    searchParams.get("service") === "streetfood" ? "Street Food Vendor" : "Fixed Restaurant"
+    searchParams.get("service") === "streetfood" && streetFoodEnabled ? "Street Food Vendor" : "Fixed Restaurant"
   );
+
+  // Module switched off while the customer is on that view → fall back to plain Food.
+  useEffect(() => {
+    if (!streetFoodEnabled && foodBusinessType === "Street Food Vendor") {
+      setFoodBusinessType("Fixed Restaurant");
+    }
+  }, [streetFoodEnabled, foodBusinessType]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [mountedTabs, setMountedTabs] = useState(() => new Set(["food"]));
   const [showToast, setShowToast] = useState(false);
@@ -497,8 +515,11 @@ export default function Home() {
         <div className="bg-white dark:bg-[#0a0a0a]">
       {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
           switcher) so Food/Instamart/Street Food stay reachable even while on Quick. */}
-      <div className="grid grid-cols-3 md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]">
-        {tabs.map((tab) => {
+      <div className={cn(
+        "grid md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]",
+        visibleTabs.length >= 3 ? "grid-cols-3" : visibleTabs.length === 2 ? "grid-cols-2" : "grid-cols-1"
+      )}>
+        {visibleTabs.map((tab) => {
           const isActive = tab.id === "street-food"
             ? foodBusinessType === "Street Food Vendor"
             : tab.id === "food"

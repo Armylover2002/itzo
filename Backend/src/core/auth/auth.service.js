@@ -13,7 +13,7 @@ import { FoodUserWallet } from "../../modules/food/user/models/userWallet.model.
 import { createOrUpdateOtp, verifyOtp } from "../otp/otp.service.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken, signRestaurantRegistrationToken } from "./token.util.js";
 import { FoodRefreshToken } from "../refreshTokens/refreshToken.model.js";
-import { ValidationError, AuthError, ForbiddenError } from "./errors.js";
+import { ValidationError, AuthError, ForbiddenError, NotFoundError } from "./errors.js";
 import { config } from "../../config/env.js";
 import { logger } from "../../utils/logger.js";
 import { sendAdminResetOtpEmail } from "../../utils/email.js";
@@ -155,7 +155,9 @@ const assertUserEligibleForOtp = (user) => {
       phone: user.phone,
       email: user.email,
     });
-    throw new ForbiddenError(ACCOUNT_DELETED_MESSAGE);
+    const err = new ForbiddenError(ACCOUNT_DELETED_MESSAGE);
+    err.code = "ACCOUNT_DELETED";
+    throw err;
   }
 
   if (user.isBlocked === true) {
@@ -256,14 +258,48 @@ export const requestUserOtp = async (phone) => {
     userDoc = await FoodUser.findOne({ phone });
   }
 
-  if (userDoc && (userDoc.isActive === false || userDoc.isDeleted === true || userDoc.accountStatus === 'deleted')) {
-    throw new AuthError("Your account has been deleted/deactivated. Please contact support.");
+  if (userDoc && (userDoc.isDeleted === true || userDoc.accountStatus === 'deleted')) {
+    const err = new AuthError(ACCOUNT_DELETED_MESSAGE);
+    err.code = "ACCOUNT_DELETED";
+    throw err;
+  }
+  if (userDoc && userDoc.isActive === false) {
+    throw new AuthError(ACCOUNT_DEACTIVATED_MESSAGE);
   }
 
   const otp = await createOrUpdateOtp(phone);
   const shouldExposeOtp =
     config.nodeEnv !== "production" || config.useDefaultOtp || isEmail;
   return shouldExposeOtp ? { otp } : {};
+};
+
+export const requestAccountRecovery = async (phone) => {
+  if (!phone) {
+    throw new ValidationError("Phone is required");
+  }
+  const last10 = String(phone).replace(/\D/g, "").slice(-10);
+  if (last10.length !== 10) {
+    throw new ValidationError("Please enter a valid 10-digit mobile number");
+  }
+
+  const user = await FoodUser.findOne({
+    $or: [{ phone: { $in: getPhoneCandidates(phone) } }, { phone: { $regex: new RegExp(`${last10}$`) } }],
+  });
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+  if (user.isDeleted !== true && user.accountStatus !== "deleted") {
+    throw new ValidationError("Account is not deleted");
+  }
+
+  user.deletionRequest = {
+    status: "recovery_pending",
+    reason: user.deletionRequest?.reason || "User requested account deletion",
+    requestedAt: user.deletionRequest?.requestedAt || new Date(),
+    reviewedAt: null,
+  };
+  await user.save();
+  return { success: true, message: "Recovery request submitted successfully" };
 };
 
 export const verifyUserOtpAndLogin = async (

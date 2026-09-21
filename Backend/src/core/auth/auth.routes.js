@@ -2,6 +2,7 @@ import express from 'express';
 import {
     requestUserOtpController,
     verifyUserOtpController,
+    requestAccountRecoveryController,
     adminLoginController,
     refreshTokenController,
     requestRestaurantOtpController,
@@ -37,6 +38,7 @@ const otpVerifyGuards = [authRateLimiter, otpVerifyRateLimiter];
 // User OTP login
 router.post('/user/request-otp', otpRequestGuards, requestUserOtpController);
 router.post('/user/verify-otp', otpVerifyGuards, verifyUserOtpController);
+router.post('/user/request-recovery', otpRequestGuards, requestAccountRecoveryController);
 
 // Restaurant OTP login
 router.post('/restaurant/request-otp', otpRequestGuards, requestRestaurantOtpController);

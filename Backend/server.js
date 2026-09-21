@@ -14,6 +14,7 @@ import { runReportAbsentCheck } from './src/modules/hrms/crons/reportAbsentCron.
 import { logger } from './src/utils/logger.js';
 import { initializeFirebaseRealtime } from './src/config/firebase.js';
 import { ensureQuickCommerceSeedData } from './src/modules/quick-commerce/services/seed.service.js';
+import { initPrivacySettingsCache } from './src/modules/common/utils/privacySettingsCache.js';
 
 const SHUTDOWN_TIMEOUT_MS = 10000;
 let server = null;
@@ -57,6 +58,7 @@ const startServer = async () => {
 
         // 1. Connect to Database (MongoDB)
         await connectDB();
+        await initPrivacySettingsCache();
 
         // 2. Create HTTP server from Express app
         const httpServer = http.createServer(app);

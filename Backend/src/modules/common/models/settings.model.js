@@ -5,6 +5,10 @@ const globalSettingsSchema = new mongoose.Schema(
     {
         companyName: { type: String, required: true, default: 'Appzeto' },
         email: { type: String, required: true, default: 'admin@appzeto.com' },
+        // Contact & support emails shown on public pages (Contact Us / Help & Support).
+        customerSupportEmail: { type: String, default: 'support@itzofood.com' },
+        partnershipEmail: { type: String, default: 'partners@itzofood.com' },
+        helpAndSupportEmail: { type: String, default: 'support@itzofood.com' },
         phone: {
             countryCode: { type: String, default: '+91' },
             number: { type: String, default: '' }
@@ -13,6 +17,12 @@ const globalSettingsSchema = new mongoose.Schema(
         state: { type: String, default: '' },
         pincode: { type: String, default: '' },
         region: { type: String, default: 'India' },
+        // Legal & tax details used on generated invoices.
+        legalName: { type: String, default: '' },
+        gstin: { type: String, default: '' },
+        fssai: { type: String, default: '' },
+        panNumber: { type: String, default: '' },
+        cinNumber: { type: String, default: '' },
         adminLogo: {
             url: { type: String, default: '' },
             publicId: { type: String, default: '' }
@@ -54,6 +64,30 @@ const globalSettingsSchema = new mongoose.Schema(
             publicId: { type: String, default: '' }
         },
         loginBanner: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        userLoginBanner1: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        userLoginBanner2: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        userLoginBanner3: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        userLoginBanner4: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        userLoginBanner5: {
+            url: { type: String, default: '' },
+            publicId: { type: String, default: '' }
+        },
+        userLoginVideo: {
             url: { type: String, default: '' },
             publicId: { type: String, default: '' }
         },
@@ -132,6 +166,7 @@ const globalSettingsSchema = new mongoose.Schema(
         modules: {
             food: { type: Boolean, default: true },
             quickCommerce: { type: Boolean, default: true },
+            streetFood: { type: Boolean, default: true },
         },
         /**
          * Master kill-switch for the food subscription paywall. Defaults OFF so existing
@@ -141,7 +176,17 @@ const globalSettingsSchema = new mongoose.Schema(
         subscriptionEnforcement: {
             restaurant: { type: Boolean, default: false },
             deliveryPartner: { type: Boolean, default: false },
-        }
+        },
+
+        // Customer Privacy Settings — female customer contact protection.
+        // When enabled, delivery partners see a support number instead of the
+        // female customer's real phone number.
+        enableFemaleContactProtection: { type: Boolean, default: true },
+        companySupportNumber: { type: String, default: '+919999999999' },
+        companyWhatsappNumber: { type: String, default: '+919999999999' },
+        privacyMessage: { type: String, default: 'For privacy and safety reasons, customer contact information is protected. Please contact ItzoFood Support.' },
+        // Gates the admin "view contacts" export/tool; never exposed via public settings.
+        contactsViewPassword: { type: String, default: 'admin123' }
     },
     { timestamps: true }
 );

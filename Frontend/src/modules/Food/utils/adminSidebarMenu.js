@@ -170,6 +170,20 @@ export const adminSidebarMenu = [
       },
       {
         type: "link",
+        label: "Recovery Requests",
+        permissionKey: "customers",
+        path: "/ecs/food/recovery-requests",
+        icon: "AlertTriangle",
+      },
+      {
+        type: "link",
+        label: "Deleted Customers",
+        permissionKey: "customers",
+        path: "/ecs/food/deleted-customers",
+        icon: "UserX",
+      },
+      {
+        type: "link",
         label: "Support Tickets (User & Restaurant)",
         permissionKey: "support_tickets",
         path: "/ecs/food/support-tickets",
@@ -369,14 +383,24 @@ export const adminSidebarMenu = [
     label: "PAGES & SOCIAL MEDIA",
     permissionKey: "pages_social_media",
     items: [
+      { type: "link", label: "Login Growth Settings", permissionKey: "login_growth", path: "/ecs/food/pages-social-media/login-growth", icon: "TrendingUp" },
       { type: "link", label: "About Us", permissionKey: "about", path: "/ecs/food/pages-social-media/about", icon: "Globe" },
       { type: "link", label: "Terms & Conditions", permissionKey: "terms", path: "/ecs/food/pages-social-media/terms", icon: "FileText" },
       { type: "link", label: "Privacy Policy", permissionKey: "privacy", path: "/ecs/food/pages-social-media/privacy", icon: "Lock" },
       { type: "link", label: "Support", permissionKey: "support", path: "/ecs/food/pages-social-media/support", icon: "LifeBuoy" },
+      { type: "link", label: "Restaurant Consulting", permissionKey: "consulting", path: "/ecs/food/pages-social-media/consulting", icon: "Briefcase" },
       { type: "link", label: "Social Media", permissionKey: "social_media", path: "/ecs/food/pages-social-media/social-media", icon: "Share2" },
       { type: "link", label: "Refund Policy", permissionKey: "refund", path: "/ecs/food/pages-social-media/refund", icon: "Receipt" },
       { type: "link", label: "Shipping Policy", permissionKey: "shipping", path: "/ecs/food/pages-social-media/shipping", icon: "Truck" },
       { type: "link", label: "Cancellation Policy", permissionKey: "cancellation", path: "/ecs/food/pages-social-media/cancellation", icon: "X" },
+    ],
+  },
+  {
+    type: "section",
+    label: "CONSULTING",
+    permissionKey: "consulting",
+    items: [
+      { type: "link", label: "Licensing Requests", permissionKey: "licensing_requests", path: "/ecs/food/consulting/licensing-requests", icon: "FileText" },
     ],
   },
 ];

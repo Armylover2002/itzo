@@ -121,6 +121,12 @@ export const deleteCurrentUserAccount = async (userId) => {
     user.isDeleted = true;
     user.accountStatus = 'deleted';
     user.isActive = false;
+    user.deletionRequest = {
+        status: 'approved',
+        reason: 'User requested account deletion',
+        requestedAt: new Date(),
+        reviewedAt: new Date()
+    };
     await user.save();
 
     // Invalidate/delete all active refresh tokens for this user

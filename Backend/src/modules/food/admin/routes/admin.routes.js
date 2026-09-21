@@ -53,6 +53,10 @@ router.put(
 
 // ----- Customers -----
 router.get('/customers', checkPermission('food::customer_management::customers', 'view'), adminController.getCustomers);
+router.get('/customers/recovery-requests', checkPermission('food::customer_management::customers', 'view'), adminController.getRecoveryRequests);
+router.post('/customers/:id/approve-recovery', checkPermission('food::customer_management::customers', 'edit'), adminController.approveRecoveryRequest);
+router.post('/customers/:id/reject-recovery', checkPermission('food::customer_management::customers', 'edit'), adminController.rejectRecoveryRequest);
+router.patch('/customers/:id/soft-delete', checkPermission('food::customer_management::customers', 'edit'), adminController.softDeleteCustomer);
 router.get('/customers/:id', checkPermission('food::customer_management::customers', 'view'), adminController.getCustomerById);
 router.get('/customers/:id/contacts', checkPermission('food::customer_management::customers', 'view'), getCustomerContactsAdminController);
 router.patch('/customers/:id/status', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerStatus);

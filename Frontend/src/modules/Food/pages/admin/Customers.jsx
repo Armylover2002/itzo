@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Search, Download, ChevronDown, Eye, FileDown, FileSpreadsheet, FileText, Mail, Phone, MapPin, Package, IndianRupee, Calendar as CalendarIcon, User, CheckCircle, XCircle } from "lucide-react"
+import { Search, Download, ChevronDown, Eye, FileDown, FileSpreadsheet, FileText, Mail, Phone, MapPin, Package, IndianRupee, Calendar as CalendarIcon, User, CheckCircle, XCircle, Trash2, Loader2, EyeOff } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { exportCustomersToCSV, exportCustomersToExcel, exportCustomersToPDF, exportCustomersToJSON } from "@food/components/admin/customers/customersExportUtils"
 import { adminAPI } from "@food/api"
@@ -28,6 +28,12 @@ export default function Customers() {
   /** null | 'enable' | 'disable' — only the clicked bulk COD button shows loading */
   const [bulkCodLoadingAction, setBulkCodLoadingAction] = useState(null)
   const [codUpdatingId, setCodUpdatingId] = useState(null)
+
+  // Soft delete state
+  const [deleteTargetCustomer, setDeleteTargetCustomer] = useState(null)
+  const [deletePassword, setDeletePassword] = useState("")
+  const [showDeletePassword, setShowDeletePassword] = useState(false)
+  const [deletingCustomer, setDeletingCustomer] = useState(false)
 
   // User Contacts state
   const [userContacts, setUserContacts] = useState([])
@@ -296,6 +302,31 @@ export default function Customers() {
       setShowUserDetails(false)
     } finally {
       setLoadingDetails(false)
+    }
+  }
+
+  const closeDeleteDialog = () => {
+    setDeleteTargetCustomer(null)
+    setDeletePassword("")
+    setShowDeletePassword(false)
+  }
+
+  const handleConfirmDelete = async () => {
+    const customerId = getCustomerId(deleteTargetCustomer)
+    if (!customerId || deletingCustomer) return
+    try {
+      setDeletingCustomer(true)
+      await adminAPI.softDeleteCustomer(customerId, deletePassword)
+      toast.success(`Customer "${deleteTargetCustomer?.name || ""}" deleted successfully`)
+      setCustomers((prev) => prev.filter((c) => getCustomerId(c) !== customerId))
+      setSelectedCustomerIds((prev) => prev.filter((id) => id !== customerId))
+      setTotalCustomers((prev) => Math.max(0, prev - 1))
+      closeDeleteDialog()
+    } catch (error) {
+      debugError("Error soft deleting customer:", error)
+      toast.error(error?.response?.data?.message || "Failed to delete customer")
+    } finally {
+      setDeletingCustomer(false)
     }
   }
 
@@ -703,12 +734,22 @@ export default function Customers() {
                         </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button
-                          onClick={() => handleViewDetails(getCustomerId(customer))}
-                          className="p-1.5 rounded text-[#6412C6] hover:bg-[#F3E8FF] transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleViewDetails(getCustomerId(customer))}
+                            className="p-1.5 rounded text-[#6412C6] hover:bg-[#F3E8FF] transition-colors"
+                            title="View details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setDeleteTargetCustomer(customer)}
+                            className="p-1.5 rounded text-red-500 hover:bg-red-50 transition-colors"
+                            title="Delete customer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -953,6 +994,60 @@ export default function Customers() {
               <div className="text-sm text-[#9E8F7E]">No user details available</div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteTargetCustomer} onOpenChange={(open) => { if (!open && !deletingCustomer) closeDeleteDialog() }}>
+        <DialogContent className="sm:max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold text-slate-900">Delete Customer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-800">
+                Are you sure you want to delete <strong>{deleteTargetCustomer?.name || "this customer"}</strong>?
+                They will be signed out and can only return through a recovery request. You can restore them later from Deleted Customers.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Enter Password to Confirm</label>
+              <div className="relative">
+                <input
+                  type={showDeletePassword ? "text" : "password"}
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleConfirmDelete() }}
+                  placeholder="Enter admin password"
+                  className="w-full px-4 py-2.5 pr-10 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm"
+                  autoFocus
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowDeletePassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none"
+                >
+                  {showDeletePassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={closeDeleteDialog}
+                disabled={deletingCustomer}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deletingCustomer || !deletePassword.trim()}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {deletingCustomer ? (<><Loader2 className="w-4 h-4 animate-spin" />Deleting...</>) : (<><Trash2 className="w-4 h-4" />Delete</>)}
+              </button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

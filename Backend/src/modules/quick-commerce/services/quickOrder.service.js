@@ -6,6 +6,7 @@ import { SellerOrder } from '../seller/models/sellerOrder.model.js';
 import { SellerTransaction } from '../seller/models/sellerTransaction.model.js';
 import { QuickOrder } from '../models/order.model.js';
 import { FoodDeliveryPartner } from '../../food/delivery/models/deliveryPartner.model.js';
+import { FoodUser } from '../../../core/users/user.model.js';
 import {
   pushStatusHistory,
   notifyOwnerSafely,
@@ -201,7 +202,20 @@ export const updateSellerOrderStatus = async (sellerOrderId, sellerId, nextStatu
         if (assignedId) {
           const seller = await Seller.findById(sellerId).select('shopName').lean();
           const io = getIO();
-          const payload = buildDeliverySocketPayload(parentOrder, seller);
+          // Look up gender separately (without populating parentOrder.userId
+          // itself — other code below still relies on it being a raw ObjectId,
+          // e.g. `ownerId: parentOrder.userId` for notifications) so the
+          // female-contact-protection mask in buildDeliverySocketPayload works.
+          const customerGenderDoc = parentOrder.userId
+            ? await FoodUser.findById(parentOrder.userId).select('gender').lean()
+            : null;
+          const payload = buildDeliverySocketPayload(
+            {
+              ...(parentOrder.toObject ? parentOrder.toObject() : parentOrder),
+              userId: { _id: parentOrder.userId, gender: customerGenderDoc?.gender },
+            },
+            seller,
+          );
           io.to(rooms.delivery(assignedId)).emit('order_ready', payload);
         }
       }

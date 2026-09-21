@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { IndianRupee, Loader2, Wallet } from "lucide-react"
+import { IndianRupee, Landmark, Loader2, Settings, Wallet } from "lucide-react"
 import { adminAPI } from "@food/api"
+import DepositSettingsModal from "./DepositSettingsModal"
 import { toast } from "sonner"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -15,6 +16,7 @@ export default function DeliveryCashLimit() {
   const [deliveryCashLimit, setDeliveryCashLimit] = useState("")
   const [deliveryWithdrawalLimit, setDeliveryWithdrawalLimit] = useState("")
   const [deliveryMaxWithdrawalLimit, setDeliveryMaxWithdrawalLimit] = useState("")
+  const [isPaymentDetailsOpen, setIsPaymentDetailsOpen] = useState(false)
   const isMountedRef = useRef(true)
 
   const fetchLimit = useCallback(async ({ silent = false } = {}) => {
@@ -343,8 +345,28 @@ export default function DeliveryCashLimit() {
               </div>
             </div>
           </div>
+
+          <div className="p-4 bg-violet-50 border border-violet-200 rounded-lg mt-6">
+            <div className="flex items-start gap-3">
+              <Landmark className="w-5 h-5 text-violet-700 mt-0.5" />
+              <div className="flex-1">
+                <div className="font-semibold text-violet-900 mb-1">Admin Payment Details</div>
+                <div className="text-sm text-violet-800/80 mb-3">
+                  Bank account, UPI ID and QR code shown to delivery partners when they deposit COD cash.
+                </div>
+                <button
+                  onClick={() => setIsPaymentDetailsOpen(true)}
+                  className="px-4 py-2.5 text-sm font-medium rounded-lg bg-violet-600 text-white hover:bg-violet-700 transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <Settings className="w-4 h-4" />
+                  Manage Payment Details
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+      <DepositSettingsModal isOpen={isPaymentDetailsOpen} onClose={() => setIsPaymentDetailsOpen(false)} />
     </div>
   )
 }

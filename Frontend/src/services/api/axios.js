@@ -61,6 +61,13 @@ function getModuleFromUrl(url = "") {
 
 function getModuleFromConfig(config) {
   if (config?.contextModule) return config.contextModule;
+
+  // Licensing requests: public POST is a user submission; GET/PATCH/DELETE are admin-only.
+  const url = String(config?.url || "").toLowerCase();
+  if (url.includes("/licensing-request")) {
+    return String(config?.method || "").toLowerCase() === "post" ? "user" : "admin";
+  }
+
   return getModuleFromUrl(config?.url);
 }
 

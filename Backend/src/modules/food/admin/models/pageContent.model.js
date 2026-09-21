@@ -124,13 +124,23 @@ const consultingPageSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const loginGrowthPageSchema = new mongoose.Schema(
+    {
+        restaurant: { type: mongoose.Schema.Types.Mixed, default: undefined },
+        delivery: { type: mongoose.Schema.Types.Mixed, default: undefined },
+        user: { type: mongoose.Schema.Types.Mixed, default: undefined },
+        seller: { type: mongoose.Schema.Types.Mixed, default: undefined }
+    },
+    { _id: false }
+);
+
 const pageContentSchema = new mongoose.Schema(
     {
         key: {
             type: String,
             required: true,
             index: true,
-            enum: ['terms', 'privacy', 'support', 'refund', 'shipping', 'cancellation', 'about', 'consulting']
+            enum: ['terms', 'privacy', 'support', 'refund', 'shipping', 'cancellation', 'about', 'consulting', 'login_growth']
         },
         role: {
             type: String,
@@ -142,6 +152,7 @@ const pageContentSchema = new mongoose.Schema(
         legal: { type: legalPageSchema, default: undefined },
         about: { type: aboutPageSchema, default: undefined },
         consulting: { type: consultingPageSchema, default: undefined },
+        loginGrowth: { type: loginGrowthPageSchema, default: undefined },
         updatedBy: { type: mongoose.Schema.Types.ObjectId, default: null },
         updatedByRole: { type: String, default: 'ADMIN' }
     },

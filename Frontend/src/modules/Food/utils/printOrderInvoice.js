@@ -246,6 +246,15 @@ const buildCustomerReceiptPdfDocument = async (order, settings = {}) => {
   const platformPhone = firstText(settings?.supportPhone, settings?.phone?.number, merchantPhone)
   const deliveryAddress = resolveInvoiceDeliveryAddress(order)
 
+  // Legal & Tax Details — Admin > Global Settings > Legal & Tax Details (Invoice).
+  // Printed only when configured; adds nothing to the layout otherwise.
+  const legalDetailLines = [
+    settings?.legalName ? `${settings.legalName}` : "",
+    settings?.gstin ? `GSTIN: ${settings.gstin}` : "",
+    settings?.fssai ? `FSSAI: ${settings.fssai}` : "",
+    settings?.cinNumber ? `CIN: ${settings.cinNumber}` : "",
+  ].filter(Boolean)
+
   const itemsSubtotal = items.reduce((sum, item) => {
     const qty = toNumber(item?.quantity || 1)
     const unitPrice = toNumber(item?.price)
@@ -321,6 +330,7 @@ const buildCustomerReceiptPdfDocument = async (order, settings = {}) => {
   estimatedHeight += itemRows.length * 8
   estimatedHeight += summaryRows.length * 4.5 + 14
   estimatedHeight += platformPhone ? 8 : 0
+  estimatedHeight += legalDetailLines.length ? legalDetailLines.length * 3.6 + 6 : 0
   estimatedHeight += 16
 
   const doc = new jsPDF({
@@ -433,6 +443,16 @@ const buildCustomerReceiptPdfDocument = async (order, settings = {}) => {
     y += 5
   }
 
+  if (legalDetailLines.length) {
+    drawReceiptLine(doc, y, receiptWidth, margin, "dashed")
+    y += 4
+    legalDetailLines.forEach((line) => {
+      centerText(line, 7, "normal")
+      y += 3.6
+    })
+    y += 1.4
+  }
+
   centerText("Thank you for ordering with us!", 8, "normal")
   y += 4
   centerText("See you again soon", 7.5, "normal")
@@ -502,6 +522,15 @@ export const generateOrderInvoice = async (order, options = {}) => {
     const companyName = settings?.companyName || "ItzoFood"
     const logoUrl = settings?.userLogo?.url || settings?.logo?.url || undefined
     const logoDataUrl = await imageUrlToDataUrl(logoUrl)
+
+    // Legal & Tax Details — Admin > Global Settings > Legal & Tax Details (Invoice).
+    // Printed as one compact line in the header band only when configured.
+    const legalDetailLine = [
+      settings?.legalName,
+      settings?.gstin ? `GSTIN: ${settings.gstin}` : "",
+      settings?.fssai ? `FSSAI: ${settings.fssai}` : "",
+      settings?.cinNumber ? `CIN: ${settings.cinNumber}` : "",
+    ].filter(Boolean).join("   •   ")
 
     const items = Array.isArray(order.items) ? order.items : []
     const itemsSubtotal = items.reduce((sum, item) => {
@@ -726,6 +755,15 @@ export const generateOrderInvoice = async (order, options = {}) => {
       logoDataUrl ? 42 : 14,
       30,
     )
+    if (legalDetailLine) {
+      // Capped to one line at a conservative width so it never reaches into
+      // the right-aligned invoice meta column, regardless of how many legal
+      // fields the admin has filled in.
+      doc.setFontSize(6.5)
+      doc.setTextColor(255, 255, 255)
+      const [legalLine] = doc.splitTextToSize(legalDetailLine, 100)
+      doc.text(legalLine, logoDataUrl ? 42 : 14, 41)
+    }
 
     doc.setFontSize(9)
     doc.text(`Invoice #: ${orderId}`, pageWidth - 14, 14, { align: "right" })

@@ -180,6 +180,7 @@ export const authAPI = {
     if (!phone) return Promise.reject(new Error("Phone is required"));
     return authService.requestUserOtp(phone);
   },
+  requestAccountRecovery: (phone) => authService.requestAccountRecovery(phone),
   verifyOTP: (
     phone,
     otp,
@@ -753,6 +754,14 @@ export const adminAPI = {
       { isActive: isActive !== false },
       { contextModule: "admin" },
     ),
+  getRecoveryRequests: (params = {}) =>
+    apiClient.get("/food/admin/customers/recovery-requests", { params, contextModule: "admin" }),
+  approveRecoveryRequest: (id) =>
+    apiClient.post(`/food/admin/customers/${String(id)}/approve-recovery`, {}, { contextModule: "admin" }),
+  rejectRecoveryRequest: (id) =>
+    apiClient.post(`/food/admin/customers/${String(id)}/reject-recovery`, {}, { contextModule: "admin" }),
+  softDeleteCustomer: (id, password) =>
+    apiClient.patch(`/food/admin/customers/${String(id)}/soft-delete`, { password }, { contextModule: "admin" }),
   updateCustomerCodAccess: (id, isCodAllowed) =>
     apiClient.patch(
       `/food/admin/customers/${String(id)}/cod-access`,
@@ -1254,6 +1263,7 @@ export const adminAPI = {
       'logo', 'adminLogo', 'adminFavicon', 'userLogo', 'userFavicon',
       'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
       'sellerLogo', 'sellerFavicon', 'favicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner',
+      'userLoginBanner1', 'userLoginBanner2', 'userLoginBanner3', 'userLoginBanner4', 'userLoginBanner5', 'userLoginVideo',
       'landingPoster', 'landingVideo', 'landingPizzaImage', 'landingTomatoImage',
       'landingQrCodeImage', 'landingAppStoreBadge', 'landingPlayStoreBadge', 'landingFooterLogo', 'landingNavbarLogo',
       'benefitsImage'

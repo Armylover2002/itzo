@@ -62,7 +62,7 @@ function normalizeGlobalSettings(raw) {
     logoUrl: raw.logoUrl || raw.userLogo?.url || DEFAULT_SETTINGS.logoUrl,
     faviconUrl: raw.faviconUrl || raw.userFavicon?.url || DEFAULT_SETTINGS.faviconUrl,
     primaryColor: raw.primaryColor || raw.themeColor || DEFAULT_SETTINGS.primaryColor,
-    supportEmail: raw.supportEmail || raw.email || DEFAULT_SETTINGS.supportEmail,
+    supportEmail: raw.supportEmail || raw.customerSupportEmail || raw.helpAndSupportEmail || raw.email || DEFAULT_SETTINGS.supportEmail,
     supportPhone: raw.supportPhone || phoneNumber || DEFAULT_SETTINGS.supportPhone,
     facebook: raw.facebook || social.facebook || DEFAULT_SETTINGS.facebook,
     twitter: raw.twitter || social.twitter || DEFAULT_SETTINGS.twitter,

@@ -84,6 +84,86 @@ const getDefaultConsultingData = () => ({
     ]
 });
 
+const getDefaultLoginGrowthData = () => ({
+    restaurant: {
+        headline: "Grow Your Restaurant Without Paying Commission",
+        subheadline: "Keep More Profit. Get More Orders. Pay Only ₹30/Day.",
+        benefits: [
+            "₹30 Daily Subscription",
+            "Unlimited Orders",
+            "0% Commission",
+            "Higher Profit Per Order",
+            "Direct Customer Relationship",
+            "Loyalty Program Opportunities",
+            "Own Delivery Staff Supported",
+            "Platform Delivery Support Available"
+        ],
+        savingsExample: {
+            orderValue: 500,
+            traditionalCommission: "₹120–₹150 Commission",
+            itzoCommission: "₹0 Commission",
+            keepsRevenueText: "Restaurant Keeps Full Revenue"
+        },
+        additionalMessaging: {
+            monthlyProfit: "₹59,100",
+            yearlyProfit: "₹7,19,050"
+        },
+        consultingServices: [
+            "FSSAI Registration",
+            "GST Registration",
+            "Trade License",
+            "Trademark Registration"
+        ]
+    },
+    delivery: {
+        headline: "Earn More. Keep 100% Of Your Delivery Earnings.",
+        subheadline: "Zero Commission. Unlimited Opportunities.",
+        benefits: [
+            "₹30 Daily Access",
+            "Unlimited Order Opportunities",
+            "100% Delivery Fee Retention",
+            "100% Customer Tips",
+            "Zero Commission",
+            "Weekly Settlement"
+        ],
+        partnerWelfare: [
+            "Accident Insurance up to ₹5 Lakhs",
+            "Emergency Medical Support",
+            "Welfare Fund Support"
+        ],
+        operationalBenefits: [
+            "Hyperlocal Deliveries",
+            "Smart Order Allocation",
+            "Flexible Working Hours"
+        ],
+        driverMarketingBanner: "AB COMMISSION KA KHEL KHATAM!",
+        ctaText: "Sirf ₹30 Mein Apni Delivery Agency Shuru Karein."
+    },
+    user: {
+        headline: "Order Smarter. Save More.",
+        subheadline: "Real Restaurant Prices. No Hidden Charges.",
+        benefits: [
+            "Actual Restaurant Menu Pricing",
+            "No Artificial Menu Markup",
+            "Transparent Delivery Charges",
+            "Affordable Food Delivery",
+            "Hyperlocal Delivery",
+            "Better Pricing Than Traditional Apps"
+        ],
+        comparison: {
+            traditionalAppsText: "Menu Price + Markup + Fees",
+            itzoFoodText: "Actual Menu Price + Delivery Fee"
+        },
+        keyAdvantages: [
+            "Lower Food Costs",
+            "More Restaurant Choices",
+            "Transparent Billing",
+            "Better Local Economy Support"
+        ],
+        privacyMessage: "Your Privacy Matters: Female customer contact information remains protected and is never shared directly with delivery partners."
+    }
+});
+
 export const getPublicPageByKey = async (key, role = 'user') => {
     const k = normalizeKey(key);
     const r = String(role || 'user').toLowerCase();
@@ -91,10 +171,12 @@ export const getPublicPageByKey = async (key, role = 'user') => {
     const doc = await FoodPageContent.findOne({ key: k, role: r }).lean();
     if (!doc) {
         if (k === 'consulting') return { key: k, role: r, data: getDefaultConsultingData() };
+        if (k === 'login_growth') return { key: k, role: r, data: getDefaultLoginGrowthData() };
         return { key: k, role: r, data: null };
     }
     if (k === 'about') return { key: k, role: r, data: normalizeAboutForResponse(doc.about || null) };
     if (k === 'consulting') return { key: k, role: r, data: doc.consulting || getDefaultConsultingData() };
+    if (k === 'login_growth') return { key: k, role: r, data: doc.loginGrowth || getDefaultLoginGrowthData() };
     return { key: k, role: r, data: normalizeLegalForResponse(doc.legal || null) };
 };
 
@@ -239,5 +321,30 @@ export const upsertConsultingPage = async (payload, updatedBy, role = 'user') =>
     ).lean();
 
     return { key: 'consulting', role: r, data: doc?.consulting || null };
+};
+
+export const upsertLoginGrowthPage = async (payload, updatedBy) => {
+    const restaurant = payload?.restaurant || {};
+    const delivery = payload?.delivery || {};
+    const user = payload?.user || {};
+
+    const doc = await FoodPageContent.findOneAndUpdate(
+        { key: 'login_growth', role: 'all' },
+        {
+            $set: {
+                key: 'login_growth',
+                role: 'all',
+                loginGrowth: { restaurant, delivery, user },
+                legal: undefined,
+                about: undefined,
+                consulting: undefined,
+                updatedBy: updatedBy || null,
+                updatedByRole: 'ADMIN'
+            }
+        },
+        { upsert: true, new: true }
+    ).lean();
+
+    return { key: 'login_growth', role: 'all', data: doc?.loginGrowth || null };
 };
 

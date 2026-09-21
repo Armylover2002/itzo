@@ -118,6 +118,10 @@ export const updateHeroBanner = async (id, updates = {}) => {
         payload.title = typeof updates.title === 'string' ? updates.title.trim() : '';
     }
 
+    if (Object.prototype.hasOwnProperty.call(updates, 'subtitle')) {
+        payload.subtitle = typeof updates.subtitle === 'string' ? updates.subtitle.trim() : '';
+    }
+
     if (Object.prototype.hasOwnProperty.call(updates, 'linkedRestaurantIds')) {
         payload.linkedRestaurantIds = normalizeLinkedRestaurantIds(updates.linkedRestaurantIds);
     }

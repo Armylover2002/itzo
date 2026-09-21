@@ -20,9 +20,9 @@ const uploadFields = upload.fields([
 router.post('/', uploadFields, licensingController.submitLicensingRequestController);
 
 // Admin-only endpoints
-router.get('/', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::pages_social_media::consulting', 'view'), licensingController.getAllLicensingRequestsController);
-router.get('/:id', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::pages_social_media::consulting', 'view'), licensingController.getLicensingRequestByIdController);
-router.patch('/:id/status', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::pages_social_media::consulting', 'edit'), licensingController.updateLicensingStatusController);
-router.delete('/:id', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::pages_social_media::consulting', 'delete'), licensingController.deleteLicensingRequestController);
+router.get('/', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::consulting::licensing_requests', 'view'), licensingController.getAllLicensingRequestsController);
+router.get('/:id', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::consulting::licensing_requests', 'view'), licensingController.getLicensingRequestByIdController);
+router.patch('/:id/status', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::consulting::licensing_requests', 'edit'), licensingController.updateLicensingStatusController);
+router.delete('/:id', authMiddleware, requireRoles('ADMIN', 'EMPLOYEE'), checkPermission('food::consulting::licensing_requests', 'delete'), licensingController.deleteLicensingRequestController);
 
 export default router;

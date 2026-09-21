@@ -136,6 +136,7 @@ export const updateHeroBannerController = async (req, res, next) => {
         if (Object.prototype.hasOwnProperty.call(body, 'ctaLink')) updates.ctaLink = body.ctaLink;
         if (Object.prototype.hasOwnProperty.call(body, 'ctaText')) updates.ctaText = body.ctaText;
         if (Object.prototype.hasOwnProperty.call(body, 'title')) updates.title = body.title;
+        if (Object.prototype.hasOwnProperty.call(body, 'subtitle')) updates.subtitle = body.subtitle;
         if (Object.prototype.hasOwnProperty.call(body, 'linkedRestaurantIds')) {
             updates.linkedRestaurantIds = body.linkedRestaurantIds;
         }

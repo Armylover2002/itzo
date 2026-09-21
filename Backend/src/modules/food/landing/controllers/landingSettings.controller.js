@@ -1,6 +1,8 @@
 import {
+    deleteLandingHeaderVideo,
     getLandingSettings,
-    updateLandingSettings
+    updateLandingSettings,
+    uploadLandingHeaderVideo
 } from '../services/landingSettings.service.js';
 import { sendResponse } from '../../../../utils/response.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
@@ -27,5 +29,23 @@ export const updateAdminLandingSettingsController = async (req, res, next) => {
     }
 };
 
+export const uploadAdminLandingHeaderVideoController = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            throw new ValidationError('Video file is required');
+        }
+        const updated = await uploadLandingHeaderVideo(req.file);
+        return sendResponse(res, 200, 'Landing header video uploaded successfully', { settings: updated });
+    } catch (error) {
+        next(error);
+    }
+};
 
-
+export const deleteAdminLandingHeaderVideoController = async (req, res, next) => {
+    try {
+        const updated = await deleteLandingHeaderVideo();
+        return sendResponse(res, 200, 'Landing header video removed successfully', { settings: updated });
+    } catch (error) {
+        next(error);
+    }
+};

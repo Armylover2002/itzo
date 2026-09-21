@@ -109,6 +109,7 @@ import { roadDistanceKm, PAYMENT_QUEUE_ACTIONS, enqueueOrderEvent, notifyRestaur
 import { scorePointsByRoadDistance } from '../../../../services/roadDistance.service.js';
 import { assertDeliveryPartnerCodHeadroom } from '../../delivery/services/deliveryFinance.service.js';
 import { getDeliveryCashLimitSettings } from '../../admin/services/admin.service.js';
+import { getPrivacySettingsSync } from '../../../common/utils/privacySettingsCache.js';
 
 export {
   tryAutoAssign,
@@ -459,7 +460,7 @@ function sanitizeOrderForExternal(orderDoc, roleContext = "") {
     }
   }
 
-  return o;
+  return applyCustomerContactProtection(o);
 }
 
 function emitDeliveryDropOtpToUser(order, plainOtp) {
@@ -1603,6 +1604,57 @@ function pushStatusHistory(order, { byRole, byId, from, to, note = "" }) {
   });
 }
 
+/**
+ * Female customer privacy mask — Admin > Global Settings > Customer Privacy Settings.
+ * When enabled, hides a female customer's real phone from delivery-partner-facing
+ * order views and routes them to the configured support number instead.
+ * No-ops (and never throws) when `userId` isn't populated with `gender`, so callers
+ * that haven't opted into the populate keep working exactly as before.
+ */
+function applyCustomerContactProtection(orderLike) {
+  const userGender = orderLike?.userId?.gender || "";
+  const isFemale = String(userGender).toLowerCase() === "female";
+  const settings = getPrivacySettingsSync();
+
+  if (isFemale && settings.enableFemaleContactProtection) {
+    orderLike.customerPhone = null;
+    orderLike.userPhone = null;
+    orderLike.isContactProtected = true;
+    orderLike.contactMessage = settings.privacyMessage;
+    orderLike.companySupportNumber = settings.companySupportNumber;
+    orderLike.companyWhatsappNumber = settings.companyWhatsappNumber;
+    if (orderLike.deliveryAddress) {
+      orderLike.deliveryAddress = { ...orderLike.deliveryAddress, phone: null };
+    }
+  } else {
+    orderLike.isContactProtected = false;
+  }
+  return orderLike;
+}
+
+/**
+ * Returns a plain-object clone of `order` with `userId` guaranteed to carry
+ * `gender` (fetched separately when not already populated), for feeding into
+ * applyCustomerContactProtection via buildDeliverySocketPayload. Never mutates
+ * the original `order` doc, since callers keep using it afterward (e.g. as a
+ * live mongoose document, or passing `order.userId` as a raw id elsewhere).
+ */
+async function resolveOrderWithCustomerGender(order) {
+  const userRef = order?.userId;
+  if (userRef && typeof userRef === "object" && "gender" in userRef) {
+    return order;
+  }
+  const userId = userRef?._id || userRef;
+  if (!userId) return order;
+  try {
+    const genderDoc = await FoodUser.findById(userId).select("gender").lean();
+    const base = order?.toObject ? order.toObject() : order;
+    return { ...base, userId: { _id: userId, gender: genderDoc?.gender } };
+  } catch {
+    return order;
+  }
+}
+
 function normalizeOrderForClient(orderDoc) {
   const order = orderDoc?.toObject ? orderDoc.toObject() : orderDoc || {};
   const mongoId = (order._id || orderDoc?._id || "").toString();
@@ -1908,7 +1960,7 @@ function buildDeliveryOrderView(orderDoc, deliveryPartnerId, options = {}) {
     order.deliveryPartnerId = assignedLeg.deliveryPartnerId || order.deliveryPartnerId || null;
   }
 
-  return order;
+  return applyCustomerContactProtection(order);
 }
 
 async function applyAggregateRating(model, entityId, newRating) {
@@ -1943,7 +1995,7 @@ function buildDeliverySocketPayload(orderDoc, restaurantDoc = null) {
   const restaurantLocation = restaurant?.location || {};
   const pickupPoints = Array.isArray(order?.pickupPoints) ? order.pickupPoints : [];
 
-  return {
+  const payload = {
     orderMongoId:
       orderDoc?._id?.toString?.() || order?._id?.toString?.() || order?._id,
     orderId: order?.orderId,
@@ -2028,6 +2080,13 @@ function buildDeliverySocketPayload(orderDoc, restaurantDoc = null) {
     createdAt: order?.createdAt,
     updatedAt: order?.updatedAt,
   };
+
+  // Reuses order.userId (populated with gender where the caller's query opted
+  // in) to apply the same female-contact-protection mask as buildDeliveryOrderView.
+  payload.userId = order?.userId;
+  const protectedPayload = applyCustomerContactProtection(payload);
+  delete protectedPayload.userId;
+  return protectedPayload;
 }
 
 function buildSplitLegSocketPayload(orderDoc, leg, restaurantDoc = null) {
@@ -2546,7 +2605,7 @@ async function notifySplitDispatchOffers(order, { restaurantDoc = null } = {}) {
   for (const leg of order.dispatchPlan?.legs || []) {
     if (toIdString(leg?.deliveryPartnerId)) continue;
 
-    const legPayload = buildSplitLegSocketPayload(order, leg, restaurant);
+    const legPayload = buildSplitLegSocketPayload(await resolveOrderWithCustomerGender(order), leg, restaurant);
     const candidatePool = Array.isArray(leg.partnerCandidates)
       ? [...leg.partnerCandidates]
       : [];
@@ -4414,7 +4473,7 @@ export async function getOrderById(
     )
     .populate("dispatch.deliveryPartnerId", "name phone rating totalRatings")
     .populate("dispatchPlan.legs.deliveryPartnerId", "name phone rating totalRatings")
-    .populate("userId", "name phone email")
+    .populate("userId", "name phone email gender")
     .lean();
   if (!order) throw new NotFoundError("Order not found");
 
@@ -4977,7 +5036,7 @@ export async function listOrdersRestaurant(restaurantId, query) {
   const [docs, total] = await Promise.all([
     FoodOrder.find(filter)
       .select(RESTAURANT_ORDER_LIST_SELECT)
-      .populate("userId", "name phone profileImage")
+      .populate("userId", "name phone profileImage gender")
       .populate("dispatch.deliveryPartnerId", "name phone rating")
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -5326,7 +5385,7 @@ export async function updateOrderStatusRestaurant(
         const restaurant = await FoodRestaurant.findById(order.restaurantId)
           .select("restaurantName location addressLine1 area city state primaryContactNumber ownerPhone")
           .lean();
-        const payload = buildDeliverySocketPayload(order, restaurant);
+        const payload = buildDeliverySocketPayload(await resolveOrderWithCustomerGender(order), restaurant);
 
         // If assigned, notify assigned partner only.
         const assignedId =
@@ -5421,7 +5480,7 @@ export async function updateOrderStatusRestaurant(
                 if (assignedId) {
                     console.log(`[DEBUG] Notifying assigned partner ${assignedId} that order is ready.`);
                     const restaurant = await FoodRestaurant.findById(order.restaurantId).select('restaurantName location addressLine1 area city state primaryContactNumber ownerPhone').lean();
-                    const payload = buildDeliverySocketPayload(order, restaurant);
+                    const payload = buildDeliverySocketPayload(await resolveOrderWithCustomerGender(order), restaurant);
                     io.to(rooms.delivery(assignedId)).emit('order_ready', payload);
                     // FCM + inbox (socket alone is not enough if app is backgrounded)
                     await notifyOwnerSafely(
@@ -5736,7 +5795,7 @@ export async function getCurrentTripDelivery(deliveryPartnerId) {
     }
   })
     .populate({ path: "restaurantId", select: "restaurantName name phone location addressLine1 area city state profileImage" })
-    .populate({ path: "userId", select: "name phone" })
+    .populate({ path: "userId", select: "name phone gender" })
     .sort({ updatedAt: -1 })
     .lean();
 
@@ -5807,7 +5866,7 @@ export async function listOrdersAvailableDelivery(deliveryPartnerId, query) {
 
   const orders = await FoodOrder.find(filter)
     .sort({ createdAt: -1 })
-    .populate("userId", "name phone email")
+    .populate("userId", "name phone email gender")
     .populate("restaurantId", "restaurantName name address phone ownerPhone location profileImage")
     .lean();
 
@@ -6295,7 +6354,7 @@ export async function confirmReachedDropDelivery(orderId, deliveryPartnerId, bod
 
   if (order.deliveryVerification?.dropOtp?.verified) {
     emitOrderUpdate(order, deliveryPartnerId);
-    return sanitizeOrderForExternal(order);
+    return sanitizeOrderForExternal(await resolveOrderWithCustomerGender(order));
   }
 
   const alreadyAtDrop =
@@ -6347,7 +6406,7 @@ export async function confirmReachedDropDelivery(orderId, deliveryPartnerId, bod
         dropOtpRequired: order.deliveryVerification?.dropOtp?.required ?? true,
         dropOtpVerified: order.deliveryVerification?.dropOtp?.verified ?? false
     });
-    return sanitizeOrderForExternal(order);
+    return sanitizeOrderForExternal(await resolveOrderWithCustomerGender(order));
 }
 
 export async function verifyDropOtpDelivery(orderId, deliveryPartnerId, otp) {
@@ -6367,7 +6426,7 @@ export async function verifyDropOtpDelivery(orderId, deliveryPartnerId, otp) {
     );
   }
   if (order.deliveryVerification?.dropOtp?.verified) {
-    return { order: sanitizeOrderForExternal(order) };
+    return { order: await resolveOrderWithCustomerGender(order).then(sanitizeOrderForExternal) };
   }
 
   const expected = String(order.deliveryOtp || "").trim();
@@ -6391,7 +6450,7 @@ export async function verifyDropOtpDelivery(orderId, deliveryPartnerId, otp) {
         orderId: order.orderId,
         deliveryPartnerId
     });
-    return { order: sanitizeOrderForExternal(order) };
+    return { order: await resolveOrderWithCustomerGender(order).then(sanitizeOrderForExternal) };
 }
 
 export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
@@ -6515,7 +6574,7 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
       platformProfit: Number(order.platformProfit || 0),
       paymentMethod: payMethod,
   });
-  return sanitizeOrderForExternal(order);
+  return sanitizeOrderForExternal(await resolveOrderWithCustomerGender(order));
 }
 
 function emitOrderUpdate(order, deliveryPartnerId) {

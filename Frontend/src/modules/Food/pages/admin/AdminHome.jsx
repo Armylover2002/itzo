@@ -31,7 +31,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { Activity, ShoppingBag, CreditCard, Truck, Receipt, IndianRupee, Store, UserCheck, Package, UserCircle, Clock, CheckCircle, Plus, XCircle } from "lucide-react"
+import { Activity, ShoppingBag, CreditCard, Truck, Receipt, IndianRupee, Store, UserCheck, Package, UserCircle, Clock, CheckCircle, Plus, XCircle, UtensilsCrossed, Wallet, CalendarCheck } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { toast } from "sonner"
 import { useAuth } from "@core/context/AuthContext"
@@ -62,6 +62,7 @@ export default function AdminHome() {
   const [zones, setZones] = useState([])
   const [resolvedPermissions, setResolvedPermissions] = useState({})
   const [subOverview, setSubOverview] = useState(null)
+  const [diningStats, setDiningStats] = useState(null)
 
   useEffect(() => {
     let isMounted = true
@@ -135,6 +136,29 @@ export default function AdminHome() {
     }
     fetchSubOverview()
   }, [])
+
+  const canViewDining = useMemo(
+    () => canAccessAdminPath(user, resolvedPermissions, "/ecs/food/dining/bills"),
+    [user, resolvedPermissions]
+  )
+
+  useEffect(() => {
+    if (!canViewDining) {
+      setDiningStats(null)
+      return undefined
+    }
+    let cancelled = false
+    adminAPI
+      .getDiningRevenueStats()
+      .then((response) => {
+        const stats = response?.data?.data
+        if (!cancelled && response?.data?.success && stats) setDiningStats(stats)
+      })
+      .catch((err) => debugError("Error fetching dining stats:", err))
+    return () => {
+      cancelled = true
+    }
+  }, [canViewDining])
 
   // Fetch dashboard stats from backend when filters change
   const fetchDashboardStats = useCallback(async () => {
@@ -593,6 +617,59 @@ export default function AdminHome() {
           />
         </div>
       </div>
+
+      {/* Dining Operations Section */}
+      {canViewDining && (
+        <div className="pt-4 border-t border-neutral-200/60 mt-6">
+          <h3 className="text-xs font-black text-neutral-400 uppercase tracking-widest mb-4">Dining Operations</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+            <StatCard
+              title="Dining revenue"
+              value={formatCurrency(diningStats?.totalRevenue || 0)}
+              helper="Paid dine-in bills, all-time"
+              icon={<UtensilsCrossed className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              cardBg="bg-[#F5F3FF] border-purple-200/60 hover:border-purple-300/80"
+              iconBg="bg-purple-100/80"
+              iconColor="text-purple-700"
+              to="/ecs/food/dining/bills"
+              canAccess={canAccessPath}
+            />
+            <StatCard
+              title="Dining commission"
+              value={formatCurrency(diningStats?.totalCommission || 0)}
+              helper="Platform commission earned"
+              icon={<Wallet className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              cardBg="bg-[#F0FDF4] border-emerald-200/60 hover:border-emerald-300/80"
+              iconBg="bg-emerald-100/80"
+              iconColor="text-emerald-700"
+              to="/ecs/food/dining/bills"
+              canAccess={canAccessPath}
+            />
+            <StatCard
+              title="Restaurant payouts"
+              value={formatCurrency(diningStats?.totalPayout || 0)}
+              helper="Settled to restaurant wallets"
+              icon={<IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              cardBg="bg-[#F0F9FF] border-sky-200/60 hover:border-sky-300/80"
+              iconBg="bg-sky-100/80"
+              iconColor="text-sky-700"
+              to="/ecs/food/dining/bills"
+              canAccess={canAccessPath}
+            />
+            <StatCard
+              title="Bookings today"
+              value={(diningStats?.bookingsToday || 0).toLocaleString("en-IN")}
+              helper="Table reservations today"
+              icon={<CalendarCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+              cardBg="bg-[#FFFBEB] border-amber-200/60 hover:border-amber-300/80"
+              iconBg="bg-amber-100/80"
+              iconColor="text-amber-700"
+              to="/ecs/food/dining/bookings"
+              canAccess={canAccessPath}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Revenue + order mix */}
       <div className="grid gap-2.5 sm:gap-3.5 lg:grid-cols-3">

@@ -115,6 +115,11 @@ const BannerSection = memo(({
                               </div>
                             ))}
                           </h3>
+                          {bannerData?.subtitle && (
+                            <p className="mt-1 text-[10px] sm:text-xs font-bold tracking-wider text-orange-200 uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+                              <TextReveal text={bannerData.subtitle} isActive={isActive} delay={0.4} />
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}

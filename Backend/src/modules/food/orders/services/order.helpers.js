@@ -7,6 +7,35 @@ import { FoodFeeSettings } from '../../admin/models/feeSettings.model.js';
 import { splitQuickDeliveryCharge } from './quick-eligibility.service.js';
 import { normalizeQuickDeliverySettings } from '../utils/quickDeliveryConstants.js';
 import { resolveRestaurantPhone } from '../../shared/restaurantContact.js';
+import { getPrivacySettingsSync } from '../../../common/utils/privacySettingsCache.js';
+
+/**
+ * Female customer privacy mask — Admin > Global Settings > Customer Privacy Settings.
+ * Mirrors the copy of this helper in order.service.js (kept local there since that
+ * file shadows these exports with its own versions for the Food order flows).
+ * No-ops when `userId` isn't populated with `gender`, so callers that haven't
+ * opted into the populate keep working exactly as before.
+ */
+function applyCustomerContactProtection(orderLike) {
+  const userGender = orderLike?.userId?.gender || "";
+  const isFemale = String(userGender).toLowerCase() === "female";
+  const settings = getPrivacySettingsSync();
+
+  if (isFemale && settings.enableFemaleContactProtection) {
+    orderLike.customerPhone = null;
+    orderLike.userPhone = null;
+    orderLike.isContactProtected = true;
+    orderLike.contactMessage = settings.privacyMessage;
+    orderLike.companySupportNumber = settings.companySupportNumber;
+    orderLike.companyWhatsappNumber = settings.companyWhatsappNumber;
+    if (orderLike.deliveryAddress) {
+      orderLike.deliveryAddress = { ...orderLike.deliveryAddress, phone: null };
+    }
+  } else {
+    orderLike.isContactProtected = false;
+  }
+  return orderLike;
+}
 
 /** Actions that must be processed by the payment worker (wallet credits / refunds). */
 export const PAYMENT_QUEUE_ACTIONS = [
@@ -187,7 +216,7 @@ export function sanitizeOrderForExternal(orderDoc, roleContext = "") {
     }
   }
 
-  return o;
+  return applyCustomerContactProtection(o);
 }
 
 export function emitDeliveryDropOtpToUser(order, plainOtp) {
@@ -560,7 +589,12 @@ export function buildDeliverySocketPayload(orderDoc, restaurantDoc = null) {
     }
   }
 
-  return payload;
+  // Reuses order.userId (populated with gender where the caller's query opted
+  // in) to apply female-contact-protection to the socket payload.
+  payload.userId = order?.userId;
+  const protectedPayload = applyCustomerContactProtection(payload);
+  delete protectedPayload.userId;
+  return protectedPayload;
 }
 
 export function canExposeOrderToRestaurant(orderLike) {

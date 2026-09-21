@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Store, ShoppingBag, Bike } from 'lucide-react';
+import { Store, Bike } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
 
 const InstagramOriginal = () => (
@@ -90,7 +90,6 @@ const FooterSection = React.memo(function FooterSection() {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const items = [
       { label: 'Restaurant Onboarding', icon: Store, path: '/food/restaurant/signup' },
-      { label: 'Seller Onboarding', icon: ShoppingBag, path: '/seller/auth' },
       { label: 'Delivery Partner Onboarding', icon: Bike, path: '/food/delivery/signup' },
     ];
     return items.map((item) => ({
@@ -192,7 +191,7 @@ const FooterSection = React.memo(function FooterSection() {
         {/* Partner Onboarding QR Codes */}
         <div className="border-t border-gray-200 pt-8 pb-2 mb-6">
           <h3 className="font-medium text-black tracking-wide mb-5 text-[15px]">Join ItzoFood — Scan to Onboard</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {onboardingQrCodes.map((item) => (
               <div key={item.label} className="flex items-center gap-3 min-w-0">
                 <div className="p-1.5 bg-white border border-gray-200 rounded-xl shrink-0">

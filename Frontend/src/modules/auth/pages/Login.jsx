@@ -1,13 +1,20 @@
 import React, { useEffect, useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { Routes, Route, Navigate, Link, useLocation, useNavigate } from "react-router-dom"
-import { Phone, Lock, ArrowRight, ArrowLeft, ShieldCheck, Loader2, UserRound, Headset, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react"
+import { Phone, Lock, ArrowRight, ArrowLeft, ShieldCheck, Loader2, UserRound, Headset, ShieldAlert, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react"
 import { toast } from "sonner"
 import { authAPI, userAPI } from "@food/api"
 import { isModuleAuthenticated, setAuthData, clearModuleAuth } from "@food/utils/auth"
 import { markLocationPromptAfterLogin } from "@food/utils/locationStorage"
 import { getCachedSettings, getAppLogo, getCompanyName, setAppType, subscribeBusinessSettings } from "@common/utils/businessSettings"
 import AuthCircleLogo from "@shared/components/AuthCircleLogo"
+import LoginGrowthPanel from "@shared/components/LoginGrowthPanel"
+
+const DEFAULT_SLIDER_IMAGES = [
+  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80",
+  "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&q=80",
+  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&q=80"
+];
 
 export default function UnifiedOTPFastLogin() {
   const RESEND_COOLDOWN_SECONDS = 60
@@ -27,6 +34,8 @@ export default function UnifiedOTPFastLogin() {
     return loginType === "email" ? emailAddress.trim().toLowerCase() : phoneNumber;
   }
   const [loading, setLoading] = useState(false)
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false)
+  const [isRecoveryLoading, setIsRecoveryLoading] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
   const [resendTimer, setResendTimer] = useState(0)
   const [showNameInput, setShowNameInput] = useState(false)
@@ -37,19 +46,17 @@ export default function UnifiedOTPFastLogin() {
   const [companyName, setCompanyName] = useState(() => getCompanyName())
   const [socialLinks, setSocialLinks] = useState(() => getCachedSettings()?.socialLinks || {})
   
-  const sliderImages = [
-    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80",
-    "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&q=80",
-    "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&q=80"
-  ];
+  const [sliderImages, setSliderImages] = useState(DEFAULT_SLIDER_IMAGES);
+  const [backgroundVideo, setBackgroundVideo] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
+    if (sliderImages.length < 2) return undefined;
     const interval = setInterval(() => {
       setCurrentImageIndex((prev) => (prev + 1) % sliderImages.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [sliderImages.length]);
 
   const location = useLocation()
   const navigate = useNavigate()
@@ -77,6 +84,14 @@ export default function UnifiedOTPFastLogin() {
       setLogoUrl(getAppLogo('user'))
       setCompanyName(getCompanyName())
       setSocialLinks(getCachedSettings()?.socialLinks || {})
+      // Admin-managed login banners / video (Global Settings > User Login Background Banners)
+      const settings = getCachedSettings() || {}
+      const dynamicBanners = [1, 2, 3, 4, 5]
+        .map((n) => settings[`userLoginBanner${n}`]?.url)
+        .filter(Boolean)
+      setSliderImages(dynamicBanners.length > 0 ? dynamicBanners : DEFAULT_SLIDER_IMAGES)
+      setCurrentImageIndex(0)
+      setBackgroundVideo(settings.userLoginVideo?.url || null)
     }
     apply()
     return subscribeBusinessSettings(apply)
@@ -138,11 +153,32 @@ export default function UnifiedOTPFastLogin() {
       setResendTimer(RESEND_COOLDOWN_SECONDS)
       toast.success(loginType === "email" ? "Verification code sent to your email!" : "OTP sent! Check your phone.")
     } catch (err) {
+      if (isDeletedAccountError(err)) {
+        setShowRecoveryModal(true)
+        return
+      }
       const msg = err?.response?.data?.message || err?.message || "Failed to send OTP."
       toast.error(msg)
     } finally {
       setLoading(false)
       submitting.current = false
+    }
+  }
+
+  const isDeletedAccountError = (err) =>
+    loginType === "phone" && err?.response?.data?.code === "ACCOUNT_DELETED"
+
+  const handleRecoveryRequest = async () => {
+    if (isRecoveryLoading) return
+    setIsRecoveryLoading(true)
+    try {
+      await authAPI.requestAccountRecovery(phoneNumber)
+      setShowRecoveryModal(false)
+      toast.success("Recovery request submitted! You will be notified once admin approves it.")
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || "Failed to submit recovery request.")
+    } finally {
+      setIsRecoveryLoading(false)
     }
   }
 
@@ -270,6 +306,10 @@ export default function UnifiedOTPFastLogin() {
       toast.success("Login successful!")
       navigate(redirectTo, { replace: true })
     } catch (err) {
+      if (isDeletedAccountError(err)) {
+        setShowRecoveryModal(true)
+        return
+      }
       const status = err?.response?.status
       let msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Invalid OTP"
       if (status === 401) {
@@ -380,8 +420,20 @@ export default function UnifiedOTPFastLogin() {
     <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col lg:flex-row pt-0 sm:pt-0">
       {/* Top Banner section with Image Slider and Curve */}
       <div className="w-full lg:w-1/2 relative h-[350px] md:h-[400px] lg:h-screen flex flex-col items-center justify-center text-center text-white lg:shadow-2xl z-10">
+        {/* Background Video (overrides banners) */}
+        {backgroundVideo && (
+          <video
+            key={backgroundVideo}
+            src={backgroundVideo}
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        )}
         {/* Background Image Slider */}
-        {sliderImages.map((img, idx) => (
+        {!backgroundVideo && sliderImages.map((img, idx) => (
           <div
             key={idx}
             className="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000"
@@ -696,7 +748,42 @@ export default function UnifiedOTPFastLogin() {
              </p>
           </div>
         )}
+
+        {step === 1 && <LoginGrowthPanel role="user" className="mt-6" />}
       </div>
+
+      {showRecoveryModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-neutral-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative p-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+                <ShieldAlert className="w-7 h-7 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Account Deleted</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
+                Your account has been deleted. You can request to recover it. The admin will review your request and restore access if approved.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowRecoveryModal(false)}
+                className="flex-1 h-12 border border-gray-300 dark:border-neutral-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRecoveryRequest}
+                disabled={isRecoveryLoading}
+                className="flex-1 h-12 bg-[#6412C6] hover:bg-[#550fa8] text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isRecoveryLoading ? (<><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>) : "Request Recovery"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

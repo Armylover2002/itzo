@@ -12,6 +12,7 @@ import {
 } from "@common/utils/businessSettings"
 import { ArrowLeft, User, Smartphone, ShieldCheck, ArrowRight, Headphones } from "lucide-react"
 import AuthCircleLogo from "@shared/components/AuthCircleLogo"
+import LoginGrowthPanel from "@shared/components/LoginGrowthPanel"
 
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
@@ -341,6 +342,8 @@ export default function DeliverySignIn() {
             {" & "}
             <Link to="/food/delivery/support" className="text-[#d80000] hover:underline">Support</Link>
           </p>
+
+          <LoginGrowthPanel role="delivery" className="mt-6" />
         </div>
       </div>
     </div>

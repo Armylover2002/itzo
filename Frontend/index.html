@@ -16,8 +16,21 @@
 
 <body>
   <div id="initial-splash">
-    <img src="/final_logo200-removebg-preview.png" alt="ItzoFood Logo" />
+    <img id="initial-splash-img" src="/useritzo.png" alt="ItzoFood Logo" />
   </div>
+  <script>
+    // Splash image per panel (files in /public), picked from the URL before the app boots.
+    (function () {
+      var p = location.pathname;
+      var src = '/useritzo.png';
+      if (/^\/ecs(\/|$)/.test(p)) src = '/ecsitzo.jpeg';
+      else if (/^(\/food)?\/restaurant(\/|$)/.test(p)) src = '/restaurantitzo.jpeg';
+      else if (/^(\/food)?\/delivery(\/|$)/.test(p)) src = '/deliveryitzo.jpeg';
+      else if (/^\/seller(\/|$)/.test(p)) src = '/selleritzo.jpeg';
+      var img = document.getElementById('initial-splash-img');
+      if (img) img.src = src;
+    })();
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/index.jsx"></script>
   <script>

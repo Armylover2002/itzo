@@ -44,6 +44,8 @@ export const API_ENDPOINTS = {
     PRIVACY_PUBLIC: "/food/pages/privacy",
     SUPPORT: "/food/admin/pages-social-media/support",
     SUPPORT_PUBLIC: "/food/pages/support",
+    LOGIN_GROWTH: "/food/admin/pages-social-media/login_growth",
+    LOGIN_GROWTH_PUBLIC: "/food/pages/login_growth",
     ABOUT: "/food/admin/pages-social-media/about",
     ABOUT_PUBLIC: "/food/pages/about",
     REFUND: "/food/admin/pages-social-media/refund",

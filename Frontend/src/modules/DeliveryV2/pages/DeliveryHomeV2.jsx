@@ -1406,16 +1406,25 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                           <div className="flex gap-2 shrink-0 ml-3">
                             <button
                               onClick={() => {
+                                if (!isReturnPickupTrip(activeOrder) && activeOrder?.isContactProtected) {
+                                  const num = (activeOrder?.companySupportNumber || '').replace(/\D/g, '');
+                                  if (num) window.location.href = `tel:${num}`;
+                                  else toast.error('Support number not configured');
+                                  return;
+                                }
                                 const phone = isReturnPickupTrip(activeOrder)
                                   ? (activeOrder?.dropPoint?.phone || activeOrder?.storePhone || activeOrder?.sellerPhone)
                                   : (activeOrder?.userPhone || activeOrder?.user?.phone || activeOrder?.customerPhone || activeOrder?.customer_phone || activeOrder?.deliveryAddress?.phone);
                                 if (phone) window.location.href = `tel:${phone}`;
                                 else toast.error('Phone number not available');
                               }}
+                              title={!isReturnPickupTrip(activeOrder) && activeOrder?.isContactProtected ? 'Contact Support' : 'Call Customer'}
                               className={`w-10 h-10 rounded-full flex items-center justify-center border ${
                                 isReturnPickupTrip(activeOrder)
                                   ? 'bg-red-50 text-red-600 border-red-100'
-                                  : 'bg-green-50 text-green-600 border-green-100'
+                                  : activeOrder?.isContactProtected
+                                    ? 'bg-amber-50 text-amber-700 border-amber-100'
+                                    : 'bg-green-50 text-green-600 border-green-100'
                               }`}
                             >
                               <Phone className="w-4 h-4" />
@@ -1435,6 +1444,21 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                             </button>
                           </div>
                         </div>
+
+                        {/* Privacy Protection Notice */}
+                        {!isReturnPickupTrip(activeOrder) && activeOrder?.isContactProtected && (
+                          <div className="w-full bg-amber-50/70 border border-amber-100 rounded-3xl p-5 mb-8 flex gap-4 items-start shadow-xs mx-2">
+                             <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-amber-500 shadow-xs shrink-0 border border-amber-50">
+                                <ShieldCheck className="w-5 h-5" />
+                             </div>
+                             <div className="flex-1">
+                                <p className="text-[10px] font-black text-amber-700 uppercase tracking-[0.2em] mb-1.5 opacity-80">🔒 Customer Contact Protected</p>
+                                <p className="text-xs font-bold text-gray-800 leading-snug">
+                                  {activeOrder.contactMessage || "For privacy and safety reasons, customer contact information is protected. Please contact ItzoFood Support."}
+                                </p>
+                             </div>
+                          </div>
+                        )}
 
                         {/* Customer Instructions Panel */}
                         {activeOrder?.note && (

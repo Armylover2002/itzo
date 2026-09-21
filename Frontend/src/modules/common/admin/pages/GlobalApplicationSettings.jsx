@@ -60,6 +60,27 @@ const InputField = ({ label, name, value, onChange, placeholder, info }) => {
   );
 };
 
+const ToggleField = ({ label, name, checked, onChange, info }) => {
+  return (
+    <div className="flex items-start justify-between p-4 bg-gray-50/50 rounded-xl border border-gray-100 mb-4">
+      <div className="flex flex-col gap-1 pr-4">
+        <span className="text-xs font-bold text-gray-700 uppercase tracking-tight">{label}</span>
+        {info && <span className="text-[11px] text-gray-500 font-medium">{info}</span>}
+      </div>
+      <label className="relative inline-flex items-center cursor-pointer select-none">
+        <input
+          type="checkbox"
+          name={name}
+          checked={!!checked}
+          onChange={(e) => onChange(name, e.target.checked)}
+          className="sr-only peer"
+        />
+        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+      </label>
+    </div>
+  );
+};
+
 const ImageUploadBox = ({ title, size, preview, onUpload, onClear }) => {
   const fileInputRef = useRef(null);
   return (
@@ -92,6 +113,41 @@ const ImageUploadBox = ({ title, size, preview, onUpload, onClear }) => {
     </div>
   );
 };
+
+const VideoUploadBox = ({ title, size, preview, onUpload, onClear }) => {
+  const fileInputRef = useRef(null);
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-0.5">
+        <label className="text-xs font-bold text-gray-500">{title}({size})</label>
+      </div>
+      <div className="aspect-[2/1] w-full rounded-xl border border-dashed border-gray-300 bg-gray-50/50 relative overflow-hidden group hover:border-indigo-300 transition-colors cursor-pointer flex items-center justify-center" onClick={() => fileInputRef.current?.click()}>
+        {preview ? (
+          <video src={preview} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+        ) : (
+          <div className="flex flex-col items-center justify-center gap-2 text-gray-400">
+            <p className="text-[11px] font-bold uppercase tracking-widest">Upload Video</p>
+            <Upload size={24} strokeWidth={1.5} />
+          </div>
+        )}
+
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          <button onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="w-8 h-8 rounded-lg bg-[#E6F8F6] text-[#00BFA5] shadow-sm border border-[#C2EFE9] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Upload size={14} />
+          </button>
+          {preview && (
+            <button onClick={(e) => { e.stopPropagation(); onClear(); }} className="w-8 h-8 rounded-lg bg-[#FFF1F1] text-[#FF4D4D] shadow-sm border border-[#FEDADA] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <input type="file" accept="video/*" className="hidden" ref={fileInputRef} onChange={(e) => { if (e.target.files[0]) onUpload(e.target.files[0]); }} />
+      </div>
+    </div>
+  );
+};
+
+const USER_LOGIN_BANNER_KEYS = ['userLoginBanner1', 'userLoginBanner2', 'userLoginBanner3', 'userLoginBanner4', 'userLoginBanner5'];
 
 const GlobalApplicationSettings = () => {
   const [loading, setLoading] = useState(true);
@@ -131,14 +187,31 @@ const GlobalApplicationSettings = () => {
   const [restaurantLoginBannerFile, setRestaurantLoginBannerFile] = useState(null);
   const [restaurantLoginBannerActive, setRestaurantLoginBannerActive] = useState(true);
 
+  // User login background banners + video: { [key]: { preview, file } }
+  const [userLoginMedia, setUserLoginMedia] = useState({});
+  const setUserLoginMediaEntry = (key, entry) => setUserLoginMedia((prev) => ({ ...prev, [key]: entry }));
+
   const [formData, setFormData] = useState({
     companyName: "",
     themeColor: "#0a0a0a",
     email: "",
+    customerSupportEmail: "",
+    partnershipEmail: "",
+    helpAndSupportEmail: "",
     phoneNumber: "",
     address: "",
     codEnabled: true,
     onlineEnabled: true,
+    legalName: "",
+    gstin: "",
+    fssai: "",
+    panNumber: "",
+    cinNumber: "",
+    enableFemaleContactProtection: true,
+    companySupportNumber: "",
+    companyWhatsappNumber: "",
+    privacyMessage: "",
+    contactsViewPassword: "",
   });
 
   const fetchSettings = async () => {
@@ -152,10 +225,23 @@ const GlobalApplicationSettings = () => {
           companyName: settings.companyName || "",
           themeColor: settings.themeColor || "#0a0a0a",
           email: settings.email || "",
+          customerSupportEmail: settings.customerSupportEmail || "",
+          partnershipEmail: settings.partnershipEmail || "",
+          helpAndSupportEmail: settings.helpAndSupportEmail || "",
           phoneNumber: settings.phone?.number || "",
           address: settings.address || "",
           codEnabled: settings.codEnabled !== false,
           onlineEnabled: settings.onlineEnabled !== false,
+          legalName: settings.legalName || "",
+          gstin: settings.gstin || "",
+          fssai: settings.fssai || "",
+          panNumber: settings.panNumber || "",
+          cinNumber: settings.cinNumber || "",
+          enableFemaleContactProtection: settings.enableFemaleContactProtection !== undefined ? !!settings.enableFemaleContactProtection : true,
+          companySupportNumber: settings.companySupportNumber || "",
+          companyWhatsappNumber: settings.companyWhatsappNumber || "",
+          privacyMessage: settings.privacyMessage || "",
+          contactsViewPassword: settings.contactsViewPassword || "",
         });
 
         syncMediaStateFromSettings(settings);
@@ -214,6 +300,11 @@ const GlobalApplicationSettings = () => {
     setSellerLoginBannerFile(null);
     setRestaurantLoginBannerPreview(settings.restaurantLoginBanner?.url || null);
     setRestaurantLoginBannerFile(null);
+    const nextUserLoginMedia = {};
+    [...USER_LOGIN_BANNER_KEYS, 'userLoginVideo'].forEach((key) => {
+      nextUserLoginMedia[key] = { preview: settings[key]?.url || null, file: null };
+    });
+    setUserLoginMedia(nextUserLoginMedia);
   };
 
   const handleUpdate = async () => {
@@ -227,10 +318,23 @@ const GlobalApplicationSettings = () => {
         companyName: formData.companyName.trim(),
         themeColor: formData.themeColor,
         email: formData.email,
+        customerSupportEmail: formData.customerSupportEmail,
+        partnershipEmail: formData.partnershipEmail,
+        helpAndSupportEmail: formData.helpAndSupportEmail,
         phoneNumber: formData.phoneNumber,
         address: formData.address,
         codEnabled: formData.codEnabled,
         onlineEnabled: formData.onlineEnabled,
+        legalName: formData.legalName,
+        gstin: formData.gstin,
+        fssai: formData.fssai,
+        panNumber: formData.panNumber,
+        cinNumber: formData.cinNumber,
+        enableFemaleContactProtection: formData.enableFemaleContactProtection,
+        companySupportNumber: formData.companySupportNumber,
+        companyWhatsappNumber: formData.companyWhatsappNumber,
+        privacyMessage: formData.privacyMessage,
+        contactsViewPassword: formData.contactsViewPassword,
         adminLogoUrl: buildMediaUrlPayload(adminLogoPreview, adminLogoFile),
         adminFaviconUrl: buildMediaUrlPayload(adminFaviconPreview, adminFaviconFile),
         userLogoUrl: buildMediaUrlPayload(userLogoPreview, userLogoFile),
@@ -246,6 +350,9 @@ const GlobalApplicationSettings = () => {
         restaurantLoginBannerUrl: buildMediaUrlPayload(restaurantLoginBannerPreview, restaurantLoginBannerFile),
         restaurantLoginBannerActive: restaurantLoginBannerActive,
       };
+      [...USER_LOGIN_BANNER_KEYS, 'userLoginVideo'].forEach((key) => {
+        dataToSend[`${key}Url`] = buildMediaUrlPayload(userLoginMedia[key]?.preview, userLoginMedia[key]?.file);
+      });
 
       const files = {};
 
@@ -266,6 +373,9 @@ const GlobalApplicationSettings = () => {
 
       if (sellerLoginBannerFile) files.sellerLoginBanner = sellerLoginBannerFile;
       if (restaurantLoginBannerFile) files.restaurantLoginBanner = restaurantLoginBannerFile;
+      [...USER_LOGIN_BANNER_KEYS, 'userLoginVideo'].forEach((key) => {
+        if (userLoginMedia[key]?.file) files[key] = userLoginMedia[key].file;
+      });
 
       const response = await adminAPI.updateBusinessSettings(dataToSend, files);
       const updatedSettings = response?.data?.data || response?.data;
@@ -287,6 +397,13 @@ const GlobalApplicationSettings = () => {
     setFile(compressed);
     const reader = new FileReader();
     reader.onload = () => setPreview(String(reader.result || ''));
+    reader.readAsDataURL(compressed);
+  };
+
+  const handleUserLoginBannerUpload = async (key, file) => {
+    const compressed = await compressImage(file);
+    const reader = new FileReader();
+    reader.onload = () => setUserLoginMediaEntry(key, { preview: String(reader.result || ''), file: compressed });
     reader.readAsDataURL(compressed);
   };
 
@@ -321,6 +438,66 @@ const GlobalApplicationSettings = () => {
             <InputField label="Support Email" name="email" value={formData.email} onChange={handleChange} placeholder="[EMAIL_ADDRESS]" />
             <InputField label="Support Phone" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="0000000000" />
             <InputField label="Office Address" name="address" value={formData.address} onChange={handleChange} placeholder="Main Street, NY" />
+          </div>
+        </SectionCard>
+
+        {/* Legal & Tax Details */}
+        <SectionCard title="Legal & Tax Details (Invoice)">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+            <InputField label="Legal Entity Name" name="legalName" value={formData.legalName} onChange={handleChange} placeholder="ITZO LIMITED" />
+            <InputField label="GSTIN" name="gstin" value={formData.gstin} onChange={handleChange} placeholder="22AAAAA0000A1Z5" />
+            <InputField label="FSSAI Number" name="fssai" value={formData.fssai} onChange={handleChange} placeholder="10000000000000" />
+            <InputField label="PAN Number" name="panNumber" value={formData.panNumber} onChange={handleChange} placeholder="ABCDE1234F" />
+            <InputField label="CIN Number" name="cinNumber" value={formData.cinNumber} onChange={handleChange} placeholder="U12345MH2024PTC123456" />
+          </div>
+        </SectionCard>
+
+        {/* Contact & Support Emails */}
+        <SectionCard title="Contact & Support Emails">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+            <InputField label="Customer Support Email (/contact page)" name="customerSupportEmail" value={formData.customerSupportEmail} onChange={handleChange} placeholder="support@itzofood.com" />
+            <InputField label="Partnership Email (/contact page)" name="partnershipEmail" value={formData.partnershipEmail} onChange={handleChange} placeholder="partners@itzofood.com" />
+            <InputField label="Help & Support Email (Help page)" name="helpAndSupportEmail" value={formData.helpAndSupportEmail} onChange={handleChange} placeholder="support@itzofood.com" />
+          </div>
+        </SectionCard>
+
+        {/* Customer Privacy Settings */}
+        <SectionCard title="Customer Privacy Settings">
+          <div className="space-y-6">
+            <ToggleField
+              label="Enable Female Contact Protection"
+              name="enableFemaleContactProtection"
+              checked={formData.enableFemaleContactProtection}
+              onChange={handleChange}
+              info="If enabled, delivery partners will not see contact numbers for female customers and will be routed to Support instead."
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8 mt-4">
+              <InputField label="Company Support Number" name="companySupportNumber" value={formData.companySupportNumber} onChange={handleChange} placeholder="+91XXXXXXXXXX" />
+              <InputField label="Company WhatsApp Number" name="companyWhatsappNumber" value={formData.companyWhatsappNumber} onChange={handleChange} placeholder="+91XXXXXXXXXX" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Privacy Message (Shown to Customers)</label>
+              <textarea
+                name="privacyMessage"
+                value={formData.privacyMessage || ''}
+                onChange={(e) => handleChange('privacyMessage', e.target.value)}
+                rows={3}
+                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors shadow-sm resize-none"
+                placeholder="Enter privacy message shown when contacts are protected"
+              />
+            </div>
+
+            <div className="md:col-span-2 pt-4 border-t border-gray-100 mt-2">
+              <h4 className="text-sm font-semibold text-gray-800 mb-3">Admin Security Features</h4>
+              <InputField
+                label="Customer Contacts Viewer Password"
+                name="contactsViewPassword"
+                value={formData.contactsViewPassword}
+                onChange={handleChange}
+                placeholder="Enter password required to view customer contacts"
+              />
+              <p className="text-[11px] text-gray-500 mt-1">This password will be required by any subadmin trying to view customer contacts in the ECS Panel.</p>
+            </div>
           </div>
         </SectionCard>
 
@@ -436,6 +613,34 @@ const GlobalApplicationSettings = () => {
                   Activate Restaurant Login Banner
                 </label>
               </div>
+            </div>
+          </div>
+        </SectionCard>
+
+        <SectionCard title="User Login Background Banners">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            {USER_LOGIN_BANNER_KEYS.map((key, idx) => (
+              <ImageUploadBox
+                key={key}
+                title={`Banner ${idx + 1}`}
+                size="HD"
+                preview={userLoginMedia[key]?.preview}
+                onUpload={(file) => handleUserLoginBannerUpload(key, file)}
+                onClear={() => setUserLoginMediaEntry(key, { preview: null, file: null })}
+              />
+            ))}
+          </div>
+
+          <div className="mt-8 border-t border-gray-100 pt-8">
+            <h4 className="text-[13px] font-bold text-gray-700 uppercase tracking-tight mb-4">Video Background (Overrides Banners)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+              <VideoUploadBox
+                title="Login Video"
+                size="MP4/WebM"
+                preview={userLoginMedia.userLoginVideo?.preview}
+                onUpload={(file) => setUserLoginMediaEntry('userLoginVideo', { preview: URL.createObjectURL(file), file })}
+                onClear={() => setUserLoginMediaEntry('userLoginVideo', { preview: null, file: null })}
+              />
             </div>
           </div>
         </SectionCard>

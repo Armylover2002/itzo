@@ -1,5 +1,6 @@
 import express from 'express';
 import { upload } from '../../../../middleware/upload.js';
+import multer from 'multer';
 import {
     listHeroBannersController,
     uploadHeroBannersController,
@@ -17,7 +18,9 @@ import {
 } from '../controllers/under250Banner.controller.js';
 import {
     getAdminLandingSettingsController,
-    updateAdminLandingSettingsController
+    updateAdminLandingSettingsController,
+    uploadAdminLandingHeaderVideoController,
+    deleteAdminLandingHeaderVideoController
 } from '../controllers/landingSettings.controller.js';
 import {
     listExploreMoreController,
@@ -54,6 +57,9 @@ import { invalidateLandingCacheOnSuccess } from '../landingCache.js';
 import careerRoutes from './career.route.js';
 
 const router = express.Router();
+
+// Header video needs a larger cap than the default 5MB image upload limit.
+const videoUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024, files: 1 } });
 
 const LANDING_PERM = 'food::banner_settings::landing_page';
 const adminLanding = (action) => [
@@ -214,6 +220,19 @@ router.patch(
     ...adminLanding('edit'),
     invalidateLandingCacheOnSuccess('landing_settings'),
     updateAdminLandingSettingsController
+);
+router.post(
+    '/hero-banners/landing/settings/header-video',
+    ...adminLanding('edit'),
+    videoUpload.single('video'),
+    invalidateLandingCacheOnSuccess('landing_settings'),
+    uploadAdminLandingHeaderVideoController
+);
+router.delete(
+    '/hero-banners/landing/settings/header-video',
+    ...adminLanding('edit'),
+    invalidateLandingCacheOnSuccess('landing_settings'),
+    deleteAdminLandingHeaderVideoController
 );
 
 export default router;

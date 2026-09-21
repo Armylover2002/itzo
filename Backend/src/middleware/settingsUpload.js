@@ -44,12 +44,12 @@ const ALLOWED_VIDEO_MIME_TYPES = new Set([
 
 const imageFileFilter = (_req, file, cb) => {
     const mimeType = String(file.mimetype || '').toLowerCase();
-    // landingVideo is the only video-type field on the global settings form.
-    if (file.fieldname === 'landingVideo') {
+    // landingVideo and userLoginVideo are the only video-type fields on the global settings form.
+    if (file.fieldname === 'landingVideo' || file.fieldname === 'userLoginVideo') {
         if (ALLOWED_VIDEO_MIME_TYPES.has(mimeType)) {
             return cb(null, true);
         }
-        return cb(new Error('Only video files (mp4, webm, ogg, mov) are allowed for the landing video upload'));
+        return cb(new Error('Only video files (mp4, webm, ogg, mov) are allowed for video uploads'));
     }
     if (ALLOWED_IMAGE_MIME_TYPES.has(mimeType)) {
         return cb(null, true);
@@ -81,6 +81,12 @@ export const SETTINGS_UPLOAD_FIELDS = [
     { name: 'sellerLogo', maxCount: 1 },
     { name: 'sellerFavicon', maxCount: 1 },
     { name: 'loginBanner', maxCount: 1 },
+    { name: 'userLoginBanner1', maxCount: 1 },
+    { name: 'userLoginBanner2', maxCount: 1 },
+    { name: 'userLoginBanner3', maxCount: 1 },
+    { name: 'userLoginBanner4', maxCount: 1 },
+    { name: 'userLoginBanner5', maxCount: 1 },
+    { name: 'userLoginVideo', maxCount: 1 },
     { name: 'sellerLoginBanner', maxCount: 1 },
     { name: 'restaurantLoginBanner', maxCount: 1 },
     { name: 'landingVideo', maxCount: 1 },

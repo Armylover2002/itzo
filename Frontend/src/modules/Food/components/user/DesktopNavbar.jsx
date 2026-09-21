@@ -237,7 +237,9 @@ export default function DesktopNavbar({ showLogo = true }) {
                             {/* Veg toggle — food home only (not Quick) */}
                             {!location.pathname.startsWith("/quick") && (
                                 <div className="flex items-center gap-1 lg:gap-1.5 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full border border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
-                                    onClick={() => setVegMode?.(!vegMode)}>
+                                    // ON = "pure": only 100% veg restaurants are listed. (Plain `true` maps to
+                                    // "all", which never filters the restaurant list.)
+                                    onClick={() => setVegMode?.(vegMode ? false : "pure")}>
                                     <span className="text-[9px] lg:text-[10px] font-extrabold text-green-600 tracking-wide">VEG</span>
                                     <button
                                         type="button"

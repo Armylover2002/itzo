@@ -191,6 +191,16 @@ const userSchema = new mongoose.Schema(
         addresses: {
             type: [userAddressSchema],
             default: []
+        },
+        deletionRequest: {
+            status: {
+                type: String,
+                enum: ['none', 'pending', 'approved', 'rejected', 'recovery_pending'],
+                default: 'none'
+            },
+            reason: { type: String, default: '', trim: true },
+            requestedAt: { type: Date, default: null },
+            reviewedAt: { type: Date, default: null }
         }
     },
     {
@@ -205,6 +215,7 @@ userSchema.index({ email: 1 }, { unique: true, sparse: true });
 userSchema.index({ 'addresses.location': '2dsphere' });
 userSchema.index({ role: 1, createdAt: -1 });
 userSchema.index({ role: 1, isActive: 1, createdAt: -1 });
+userSchema.index({ 'deletionRequest.status': 1, isDeleted: 1 });
 
 export const FoodUser = mongoose.model('FoodUser', userSchema, 'common_users');
 

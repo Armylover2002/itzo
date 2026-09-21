@@ -6,6 +6,14 @@ const foodLandingSettingsSchema = new mongoose.Schema(
             type: String,
             default: 'Explore more'
         },
+        headerVideoUrl: {
+            type: String,
+            default: ''
+        },
+        headerVideoPublicId: {
+            type: String,
+            default: ''
+        },
 
         recommendedRestaurantIds: {
             type: [mongoose.Schema.Types.ObjectId],

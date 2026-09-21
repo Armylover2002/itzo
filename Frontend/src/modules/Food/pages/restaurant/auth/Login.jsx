@@ -8,6 +8,7 @@ import { getAppLogo, getRestaurantLoginBanner, subscribeBusinessSettings } from 
 import loginBg from "@food/assets/loginbanner.png"
 import RestaurantAuthFooter from "@food/components/restaurant/RestaurantAuthFooter"
 import AuthCircleLogo from "@shared/components/AuthCircleLogo"
+import LoginGrowthPanel from "@shared/components/LoginGrowthPanel"
 
 const DEFAULT_COUNTRY_CODE = "+91"
 const countryCodes = [
@@ -267,6 +268,8 @@ export default function RestaurantLogin() {
              <div className="mt-5 sm:mt-8">
                <RestaurantAuthFooter className="pt-4 sm:pt-5 border-t border-gray-100" />
              </div>
+
+             <LoginGrowthPanel role="restaurant" className="mt-5 sm:mt-6" />
           </div>
         </div>
       </div>

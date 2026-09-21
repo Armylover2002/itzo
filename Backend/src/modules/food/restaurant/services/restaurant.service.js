@@ -23,6 +23,7 @@ import {
     mergePendingProfileChanges,
 } from '../../shared/pendingProfileChanges.js';
 import { invalidateCache } from '../../../../middleware/cache.js';
+import { isModuleEnabled } from '../../../../middleware/moduleAccess.js';
 import {
     buildActivePublicOfferFilter,
     buildActiveRestaurantCouponFilter,
@@ -2547,11 +2548,19 @@ export const listApprovedRestaurants = async (query = {}) => {
     if (query.hasOffers === 'true') {
         filter.offer = { $exists: true, $ne: null, $ne: '' };
     }
+    const streetFoodEnabled = await isModuleEnabled('streetFood');
     if (query.businessType && ['Fixed Restaurant', 'Street Food Vendor'].includes(String(query.businessType).trim())) {
         const businessType = String(query.businessType).trim();
         filter.businessType = businessType === 'Fixed Restaurant'
             ? { $in: [businessType, null] } // legacy docs with no businessType set
             : businessType;
+    }
+    // Street Food module switched off by admin: never return street vendors to customers.
+    if (!streetFoodEnabled) {
+        if (String(query.businessType || '').trim() === 'Street Food Vendor') {
+            return { restaurants: [], total: 0, page, limit };
+        }
+        if (!filter.businessType) filter.businessType = { $ne: 'Street Food Vendor' };
     }
     const minRating = toFiniteNumber(query.minRating);
     if (minRating !== null) {

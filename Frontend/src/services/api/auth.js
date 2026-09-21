@@ -8,6 +8,7 @@ import apiClient from "./axios.js";
 const AUTH = {
   USER_REQUEST_OTP: "/food/auth/user/request-otp",
   USER_VERIFY_OTP: "/food/auth/user/verify-otp",
+  USER_REQUEST_RECOVERY: "/food/auth/user/request-recovery",
   ADMIN_LOGIN: "/food/auth/admin/login",
   RESTAURANT_REQUEST_OTP: "/food/auth/restaurant/request-otp",
   RESTAURANT_VERIFY_OTP: "/food/auth/restaurant/verify-otp",
@@ -84,6 +85,17 @@ export function requestUserOtp(phone) {
     return Promise.reject(new Error("Phone number must be exactly 10 digits"));
   }
   return apiClient.post(AUTH.USER_REQUEST_OTP, { phone: normalized });
+}
+
+/**
+ * Ask admin to restore a deleted user account.
+ * @param {string} phone - Phone (with or without country code)
+ */
+export function requestAccountRecovery(phone) {
+  const digits = normalizePhone(phone);
+  const normalizedPhone =
+    digits.length > USER_PHONE_LENGTH ? digits.slice(-USER_PHONE_LENGTH) : digits;
+  return apiClient.post(AUTH.USER_REQUEST_RECOVERY, { phone: normalizedPhone });
 }
 
 /**

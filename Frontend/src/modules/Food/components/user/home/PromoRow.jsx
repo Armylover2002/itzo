@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSettings } from '@core/context/SettingsContext';
 import discountPromoIcon from "@food/assets/category-icons/discount_promo.png";
 import vegPromoIcon from "@food/assets/category-icons/veg_promo.png";
 import pricePromoIcon from "@food/assets/category-icons/price_promo.png";
@@ -8,7 +9,9 @@ import diningPromoIcon from "@food/assets/category-icons/hotel.png";
 const streetFoodPromoIcon = "/super-app/streetfood.png";
 
 export default function PromoRow({ handleVegModeChange, navigate, isVegMode, toggleRef, variant = "mobile" }) {
-  const promoCardsData = [
+  const { settings } = useSettings();
+  const streetFoodEnabled = settings?.modules?.streetFood !== false;
+  const allPromoCards = [
     {
       id: 'offers',
       title: "MIN.",
@@ -72,6 +75,7 @@ export default function PromoRow({ handleVegModeChange, navigate, isVegMode, tog
       subTextColor: 'rgba(255,255,255,0.80)',
     },
   ];
+  const promoCardsData = allPromoCards.filter((promo) => promo.id !== 'street-food' || streetFoodEnabled);
 
   const isDesktop = variant === "desktop";
 

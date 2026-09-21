@@ -13,6 +13,10 @@ const foodHeroBannerSchema = new mongoose.Schema(
         title: {
             type: String
         },
+        subtitle: {
+            type: String,
+            default: ''
+        },
         ctaText: {
             type: String
         },

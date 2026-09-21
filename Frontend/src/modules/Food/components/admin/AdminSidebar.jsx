@@ -59,8 +59,10 @@ import {
   CircleHelp,
   MessageCircle,
   Share2,
+  UserX,
   Smartphone,
   Monitor,
+  TrendingUp,
   Briefcase,
 
   ChevronDown as ChevronDownIcon,
@@ -90,7 +92,7 @@ const debugError = (...args) => { }
 // backend `modules` object is the source of truth; any key it returns is
 // normalized to a boolean, so new modules (pharmacy, taxi, hotel, ...) start
 // working without touching this file.
-const DEFAULT_ENABLED_MODULES = { food: true, quickCommerce: true }
+const DEFAULT_ENABLED_MODULES = { food: true, quickCommerce: true, streetFood: true }
 
 const normalizeEnabledModules = (modules) => {
   const result = { ...DEFAULT_ENABLED_MODULES }
@@ -151,8 +153,10 @@ const iconMap = {
   CircleHelp,
   MessageCircle,
   Share2,
+  UserX,
   Smartphone,
   Monitor,
+  TrendingUp,
   Briefcase,
 
   X,
@@ -217,12 +221,32 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     return subscribeBusinessSettings(apply)
   }, [])
 
+  // Keep only the first expanded key `true` (accordion invariant: at most one open)
+  const enforceAccordionInvariant = (expandedSections) => {
+    if (!expandedSections || typeof expandedSections !== "object") return {}
+    const next = {}
+    let foundOpen = false
+    Object.keys(expandedSections).forEach((key) => {
+      if (expandedSections[key] && !foundOpen) {
+        next[key] = true
+        foundOpen = true
+      } else {
+        next[key] = false
+      }
+    })
+    return next
+  }
+
   // Get initial states from consolidated admin_sidebar_state
   const getInitialStates = () => {
     try {
       const saved = localStorage.getItem('admin_sidebar_state')
       if (saved) {
-        return JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        return {
+          ...parsed,
+          expandedSections: enforceAccordionInvariant(parsed.expandedSections),
+        }
       }
     } catch (e) {
       debugError('Error loading sidebar state:', e)
@@ -231,6 +255,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
   }
 
   const [isCollapsed, setIsCollapsed] = useState(() => getInitialStates().isCollapsed)
+  const [expandedGroups, setExpandedGroups] = useState(() => getInitialStates().expandedGroups || {})
   const [expandedSections, setExpandedSections] = useState(() => {
     const initialState = getInitialStates().expandedSections
     if (Object.keys(initialState || {}).length > 0) return initialState
@@ -274,6 +299,23 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
 
   const toggleCollapse = () => {
     setIsCollapsed(prev => !prev)
+  }
+
+  // Persist group (top-level "section") expanded/collapsed state
+  useEffect(() => {
+    try {
+      const currentState = JSON.parse(localStorage.getItem('admin_sidebar_state') || '{}')
+      localStorage.setItem('admin_sidebar_state', JSON.stringify({
+        ...currentState,
+        expandedGroups
+      }))
+    } catch (e) {
+      debugError('Error saving sidebar group state:', e)
+    }
+  }, [expandedGroups])
+
+  const toggleGroup = (groupKey) => {
+    setExpandedGroups(prev => ({ ...prev, [groupKey]: !(prev[groupKey] !== false) }))
   }
 
   const getExpandableSectionKeys = (menuData = []) => {
@@ -977,6 +1019,9 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
               }
 
               if (item.type === "section") {
+                const groupKey = (item.label || item.title || `section-${index}`).toLowerCase().replace(/\s+/g, "")
+                const isGroupOpen = isCollapsed || expandedGroups[groupKey] !== false
+
                 return (
                   <div
                     key={index}
@@ -987,15 +1032,25 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {!isCollapsed && (item.label || item.title) && (
-                      <div className="px-3 py-1 mb-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(groupKey)}
+                        className="w-full flex items-center justify-between px-3 py-1 mb-1 group"
+                      >
                         <span className="text-[#5C5247] font-bold text-[10px] uppercase tracking-wider text-left">
                           {item.label || item.title}
                         </span>
+                        <ChevronDown
+                          className="w-3 h-3 shrink-0 text-[#5C5247] transition-transform duration-200"
+                          style={{ transform: isGroupOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+                        />
+                      </button>
+                    )}
+                    {isGroupOpen && (
+                      <div className="space-y-1">
+                        {item.items.map((subItem, subIndex) => renderMenuItem(subItem, `${index}-${subIndex}`, true))}
                       </div>
                     )}
-                    <div className="space-y-1">
-                      {item.items.map((subItem, subIndex) => renderMenuItem(subItem, `${index}-${subIndex}`, true))}
-                    </div>
                   </div>
                 )
               }

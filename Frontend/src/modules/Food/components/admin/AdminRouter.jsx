@@ -57,6 +57,8 @@ const SafetyEmergencyReports = lazy(() => import("@food/pages/admin/SafetyEmerge
 // Customer Management
 const Customers = lazy(() => import("@food/pages/admin/Customers"));
 const CustomerRoleRequests = lazy(() => import("@food/pages/admin/CustomerRoleRequests"));
+const RecoveryRequests = lazy(() => import("@food/pages/admin/RecoveryRequests"));
+const DeletedCustomers = lazy(() => import("@food/pages/admin/DeletedCustomers"));
 const SupportTickets = lazy(() => import("@food/pages/admin/SupportTickets"));
 const SubscriptionManagement = lazy(() => import("@food/pages/admin/SubscriptionManagement"));
 const DiningCategories = lazy(() => import("@food/pages/admin/dining/DiningCategories"));
@@ -113,6 +115,7 @@ const JobsList = lazy(() => import("@food/pages/admin/careers/JobsList"));
 const AddEditJob = lazy(() => import("@food/pages/admin/careers/AddEditJob"));
 const JobApplicationsList = lazy(() => import("@food/pages/admin/careers/JobApplicationsList"));
 const JobApplicationDetails = lazy(() => import("@food/pages/admin/careers/JobApplicationDetails"));
+const LoginGrowthSettings = lazy(() => import("@food/pages/admin/settings/LoginGrowthSettings"));
 const RestaurantConsultingSettings = lazy(() => import("@food/pages/admin/settings/RestaurantConsultingSettings"));
 const LicensingRequestsList = lazy(() => import("@food/pages/admin/settings/LicensingRequestsList"));
 const LicensingRequestDetails = lazy(() => import("@food/pages/admin/settings/LicensingRequestDetails"));
@@ -323,6 +326,8 @@ export default function AdminRouter() {
             
             <Route path="customers" element={<Customers />} />
             <Route path="customer-role-requests" element={<CustomerRoleRequests />} />
+            <Route path="recovery-requests" element={<RecoveryRequests />} />
+            <Route path="deleted-customers" element={<DeletedCustomers />} />
             <Route path="support-tickets" element={<SupportTickets />} />
             <Route path="wallet/add-fund" element={<AddFund />} />
             <Route path="wallet/bonus" element={<Bonus />} />
@@ -393,6 +398,7 @@ export default function AdminRouter() {
             <Route path="pages-social-media/shipping" element={<ShippingPolicy />} />
             <Route path="pages-social-media/cancellation" element={<CancellationPolicy />} />
             <Route path="pages-social-media/react-registration" element={<ReactRegistration />} />
+            <Route path="pages-social-media/login-growth" element={<LoginGrowthSettings />} />
             <Route path="pages-social-media/consulting" element={<RestaurantConsultingSettings />} />
 
             {/* CONSULTING & LICENSING */}
