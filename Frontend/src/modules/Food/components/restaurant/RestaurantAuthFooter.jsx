@@ -39,8 +39,8 @@ export default function RestaurantAuthFooter({
   const mutedTextClass = variant === "dark" ? "text-white/70" : "text-slate-400"
   const socialButtonClass = variant === "dark"
     ? "border-white/20 text-white/80 hover:text-white hover:border-white/40"
-    : "border-slate-200 text-slate-500 hover:text-[#FF0000] hover:border-[#FF0000]/30"
-  const defaultLinkClass = variant === "dark" ? "text-white/90 hover:text-white" : "text-[#FF0000]"
+    : "border-slate-200 text-slate-500 hover:text-[#0D315B] hover:border-[#0D315B]/30"
+  const defaultLinkClass = variant === "dark" ? "text-white/90 hover:text-white" : "text-[#0D315B]"
 
   return (
     <div className={`space-y-4 ${className}`}>

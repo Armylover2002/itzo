@@ -971,7 +971,7 @@ export default function PageNavbar({
             ) : (
               <div className={`flex flex-col ${showLogo ? "items-center" : "items-start w-full"} min-w-0 max-w-full`}>
                 <div className={`flex items-center min-w-0 max-w-full ${showLogo ? "justify-center gap-1" : "gap-1.5"}`}>
-                  {!showLogo && <MapPin className={`h-[18px] w-[18px] ${textColor === "white" ? "text-white" : "text-[#FF0000]"} flex-shrink-0`} strokeWidth={2.5} />}
+                  {!showLogo && <MapPin className={`h-[18px] w-[18px] ${textColor === "white" ? "text-white" : "text-[#FE5502]"} flex-shrink-0`} strokeWidth={2.5} />}
                   <div className={`flex items-center gap-1 min-w-0 max-w-full`}>
                     <span className={`${showLogo ? "text-sm sm:text-base md:text-lg" : "text-[16px]"} font-bold ${textColorClass} truncate block`}>
                       {mainLocationName}

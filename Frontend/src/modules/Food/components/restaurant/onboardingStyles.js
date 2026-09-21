@@ -35,16 +35,16 @@ export const ONBOARDING_LABEL =
 export const ONBOARDING_HINT = "text-xs text-slate-500 leading-relaxed"
 
 export const ONBOARDING_INPUT =
-  "mt-1.5 bg-slate-50/80 border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#FF0000]/20 focus-visible:border-[#FF0000]/40"
+  "mt-1.5 bg-slate-50/80 border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:ring-[#0D315B]/20 focus-visible:border-[#0D315B]/40"
 
 export const ONBOARDING_CHIP_ACTIVE =
-  "bg-[#FF0000] text-white border-[#FF0000] shadow-sm shadow-[#FF0000]/15"
+  "bg-[#0D315B] text-white border-[#0D315B] shadow-sm shadow-[#0D315B]/15"
 
 export const ONBOARDING_CHIP_INACTIVE =
   "bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
 
 export const ONBOARDING_DAY_ACTIVE =
-  "bg-[#FF0000] text-white border-[#FF0000] shadow-sm shadow-[#FF0000]/15"
+  "bg-[#0D315B] text-white border-[#0D315B] shadow-sm shadow-[#0D315B]/15"
 
 export const ONBOARDING_DAY_INACTIVE =
   "bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-white"

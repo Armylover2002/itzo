@@ -428,10 +428,10 @@ function TimeSelector({ label, value, onChange, hasError = false }) {
     <div className={`rounded-xl border bg-slate-50/80 px-4 py-3 transition-colors focus-within:ring-2 ${
       hasError
         ? "border-red-400 ring-2 ring-red-200 focus-within:border-red-400 focus-within:ring-red-200"
-        : "border-slate-200 focus-within:border-[#FF0000]/30 focus-within:ring-[#FF0000]/10"
+        : "border-slate-200 focus-within:border-[#0D315B]/30 focus-within:ring-[#0D315B]/10"
     }`}>
       <div className="mb-2 flex items-center gap-2">
-        <Clock className="h-4 w-4 text-[#FF0000]" />
+        <Clock className="h-4 w-4 text-[#0D315B]" />
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-700">{label}</span>
       </div>
       <MobileTimePicker
@@ -455,7 +455,7 @@ function TimeSelector({ label, value, onChange, hasError = false }) {
                   borderColor: "#d1d5db",
                 },
                 "&.Mui-focused fieldset": {
-                  borderColor: "#FF0000",
+                  borderColor: "#0D315B",
                 },
               },
               "& .MuiInputBase-input": {
@@ -1942,7 +1942,7 @@ export default function RestaurantOnboarding() {
           }`}>
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm">
-                <ImageIcon className="h-5 w-5 text-[#FF0000]" />
+                <ImageIcon className="h-5 w-5 text-[#0D315B]" />
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-slate-900">Upload menu images</span>
@@ -2185,7 +2185,7 @@ export default function RestaurantOnboarding() {
         {/* Open days in a calendar-like grid */}
         <div className="space-y-2">
           <Label className={`${ONBOARDING_LABEL} flex items-center gap-1.5`}>
-            <CalendarIcon className="h-3.5 w-3.5 text-[#FF0000]" />
+            <CalendarIcon className="h-3.5 w-3.5 text-[#0D315B]" />
             <span>Open days</span>
           </Label>
           <p className={ONBOARDING_HINT}>
@@ -2463,7 +2463,7 @@ export default function RestaurantOnboarding() {
                   className={`flex w-full cursor-pointer items-center justify-between rounded-xl border bg-slate-50/80 px-3 py-2.5 text-left text-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 ${
                     fieldErrors.fssaiExpiry
                       ? "border-red-400 ring-2 ring-red-200 focus-visible:ring-red-300"
-                      : "border-slate-200 focus-visible:ring-[#FF0000]/20"
+                      : "border-slate-200 focus-visible:ring-[#0D315B]/20"
                   }`}
                 >
                   <span className={step3.fssaiExpiry ? "text-slate-900" : "text-slate-500"}>
@@ -2475,7 +2475,7 @@ export default function RestaurantOnboarding() {
                       })
                       : "Select expiry date"}
                   </span>
-                  <CalendarIcon className="h-4 w-4 text-[#FF0000]" />
+                  <CalendarIcon className="h-4 w-4 text-[#0D315B]" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 z-100" align="start">
@@ -2655,8 +2655,8 @@ export default function RestaurantOnboarding() {
 
   const renderStep4 = () => (
     <div className="space-y-5 lg:space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-[#FF0000]/15 bg-gradient-to-br from-[#FF0000]/5 via-white to-orange-50 p-5 sm:p-6 lg:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF0000]">Final step</p>
+      <section className="overflow-hidden rounded-2xl border border-[#0D315B]/15 bg-gradient-to-br from-[#0D315B]/5 via-white to-orange-50 p-5 sm:p-6 lg:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0D315B]">Final step</p>
         <h2 className="mt-2 text-xl font-black text-slate-900 sm:text-2xl">You&apos;re almost live on {companyName}</h2>
         <p className={`${ONBOARDING_SECTION_DESC} mt-2 max-w-xl`}>
           Review your details below, set how long deliveries usually take, then submit for admin approval.
@@ -2670,7 +2670,7 @@ export default function RestaurantOnboarding() {
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-            <div className="mb-2 flex items-center gap-2 text-[#FF0000]">
+            <div className="mb-2 flex items-center gap-2 text-[#0D315B]">
               <Store className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Restaurant</span>
             </div>
@@ -2678,7 +2678,7 @@ export default function RestaurantOnboarding() {
             <p className="mt-1 text-xs text-slate-500">{step1.ownerName || "—"}</p>
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-            <div className="mb-2 flex items-center gap-2 text-[#FF0000]">
+            <div className="mb-2 flex items-center gap-2 text-[#0D315B]">
               <MapPin className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Zone & area</span>
             </div>
@@ -2686,7 +2686,7 @@ export default function RestaurantOnboarding() {
             <p className="mt-1 text-xs text-slate-500">{step1.location?.area || step1.location?.city || "—"}</p>
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-            <div className="mb-2 flex items-center gap-2 text-[#FF0000]">
+            <div className="mb-2 flex items-center gap-2 text-[#0D315B]">
               <Clock className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Delivery hours</span>
             </div>
@@ -2702,7 +2702,7 @@ export default function RestaurantOnboarding() {
             </p>
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-            <div className="mb-2 flex items-center gap-2 text-[#FF0000]">
+            <div className="mb-2 flex items-center gap-2 text-[#0D315B]">
               <FileText className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Documents</span>
             </div>
@@ -2742,8 +2742,8 @@ export default function RestaurantOnboarding() {
 
       <section className={`${ONBOARDING_SECTION} space-y-4`}>
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FF0000]/10">
-            <Truck className="h-5 w-5 text-[#FF0000]" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0D315B]/10">
+            <Truck className="h-5 w-5 text-[#0D315B]" />
           </div>
           <div>
             <h2 className={ONBOARDING_SECTION_TITLE}>Estimated delivery time</h2>
@@ -2786,15 +2786,15 @@ export default function RestaurantOnboarding() {
         <h2 className={ONBOARDING_SECTION_TITLE}>What happens next?</h2>
         <ol className="space-y-3 text-sm text-slate-600">
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF0000]/10 text-xs font-bold text-[#FF0000]">1</span>
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0D315B]/10 text-xs font-bold text-[#0D315B]">1</span>
             <span>Your application is sent to the {companyName} team for verification.</span>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF0000]/10 text-xs font-bold text-[#FF0000]">2</span>
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0D315B]/10 text-xs font-bold text-[#0D315B]">2</span>
             <span>We review your documents, location, and menu details.</span>
           </li>
           <li className="flex gap-3">
-            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#FF0000]/10 text-xs font-bold text-[#FF0000]">3</span>
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0D315B]/10 text-xs font-bold text-[#0D315B]">3</span>
             <span>Once approved, your restaurant dashboard and orders go live.</span>
           </li>
         </ol>
@@ -2803,7 +2803,7 @@ export default function RestaurantOnboarding() {
       {fetchingFees && !feeConfig && (
         <section className={`${ONBOARDING_SECTION} border-slate-200`}>
           <div className="flex items-center gap-3">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-[#FF0000]" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-[#0D315B]" />
             <p className="text-sm font-medium text-slate-600">Loading onboarding fee details...</p>
           </div>
         </section>

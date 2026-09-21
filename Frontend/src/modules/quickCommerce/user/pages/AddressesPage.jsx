@@ -144,11 +144,11 @@ const CenterPin = memo(() => (
     <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
         <div className="relative mb-8 flex flex-col items-center">
             <div className="w-10 h-10 rounded-full bg-[#FFE8DB] dark:bg-red-900/30 flex items-center justify-center p-2 mb-[-6px] shadow-sm animate-bounce-short">
-                <div className="w-6 h-6 rounded-full bg-[#FF0000] flex items-center justify-center border-2 border-white">
+                <div className="w-6 h-6 rounded-full bg-[#FE5502] flex items-center justify-center border-2 border-white">
                     <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 </div>
             </div>
-            <div className="w-1.5 h-6 bg-[#FF0000] border-x border-white shadow-xl rounded-b-full shadow-red-900/40" />
+            <div className="w-1.5 h-6 bg-[#FE5502] border-x border-white shadow-xl rounded-b-full shadow-red-900/40" />
             <div className="w-3 h-1.5 bg-black/20 rounded-full blur-[1px] transform scale-x-150 absolute bottom-[-4px]" />
         </div>
     </div>
@@ -760,11 +760,11 @@ const AddressesPage = () => {
                                     value={addressAutocompleteValue}
                                     onChange={(e) => setAddressAutocompleteValue(e.target.value)}
                                     placeholder="Search area, street, landmark..."
-                                    className="pl-10 h-12 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-[#FF0000] transition-all"
+                                    className="pl-10 h-12 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-[#FE5502] transition-all"
                                 />
                                 {isKeywordSearching && (
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FF0000] border-t-transparent" />
+                                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FE5502] border-t-transparent" />
                                     </div>
                                 )}
 
@@ -827,7 +827,7 @@ const AddressesPage = () => {
 
                         {mapLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0000]" />
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FE5502]" />
                             </div>
                         )}
 
@@ -836,14 +836,14 @@ const AddressesPage = () => {
                                 onClick={handleUseCurrentLocation}
                                 className="bg-white text-black hover:bg-gray-100 shadow-xl border border-gray-200 rounded-full h-12 px-6"
                             >
-                                <Navigation className="h-4 w-4 mr-2 text-[#FF0000]" /> Use My Location
+                                <Navigation className="h-4 w-4 mr-2 text-[#FE5502]" /> Use My Location
                             </Button>
                         </div>
                     </div>
 
                     <div className="relative bg-white dark:bg-[#0a0a0a] rounded-t-[32px] -mt-8 z-10 p-4 space-y-6 shadow-[0_-12px_24px_-10px_rgba(0,0,0,0.1)]">
                         <div className="bg-[#FFF2EB]/50 dark:bg-green-900/10 border border-[#FFE8DB] dark:border-green-900/20 rounded-xl p-4 flex gap-3">
-                            <MapPin className="h-5 w-5 text-[#FF0000] mt-0.5" />
+                            <MapPin className="h-5 w-5 text-[#FE5502] mt-0.5" />
                             <div className="min-w-0">
                                 <p className="text-xs font-bold text-red-800 dark:text-green-200 uppercase mb-1">
                                     Pinned Location
@@ -868,7 +868,7 @@ const AddressesPage = () => {
                                 required
                             />
 
-                            <Label className="text-sm font-bold mb-2 block text-[#FF0000] dark:text-green-400">
+                            <Label className="text-sm font-bold mb-2 block text-[#FE5502] dark:text-green-400">
                                 Secondary Address (House No. / Flat / Floor)
                             </Label>
                             <Input
@@ -936,7 +936,7 @@ const AddressesPage = () => {
                                         variant={addForm.type === l ? "default" : "outline"}
                                         onClick={() => setAddForm({ ...addForm, type: l })}
                                         className="flex-1 capitalize"
-                                        style={addForm.type === l ? { backgroundColor: "#FF0000", color: "white" } : {}}
+                                        style={addForm.type === l ? { backgroundColor: "#FE5502", color: "white" } : {}}
                                     >
                                         {l === "work" ? "Office" : l}
                                     </Button>
@@ -952,7 +952,7 @@ const AddressesPage = () => {
                 >
                     <Button
                         className="w-full h-12 text-white font-bold text-lg"
-                        style={{ backgroundColor: "#FF0000" }}
+                        style={{ backgroundColor: "#FE5502" }}
                         onClick={handleAddressFormSubmit}
                         disabled={saving}
                     >
@@ -980,10 +980,10 @@ const AddressesPage = () => {
                         className="w-full flex items-center gap-4 p-4 bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm hover:shadow-md transition-all group"
                     >
                         <div className="h-10 w-10 rounded-full bg-[#FFE8DB] dark:bg-red-900/30 flex items-center justify-center">
-                            <Navigation className="h-5 w-5 text-[#FF0000]" />
+                            <Navigation className="h-5 w-5 text-[#FE5502]" />
                         </div>
                         <div className="text-left flex-1">
-                            <p className="font-bold text-[#FF0000]">Use Current Location</p>
+                            <p className="font-bold text-[#FE5502]">Use Current Location</p>
                             <p className="text-xs text-gray-500 line-clamp-1">
                                 {currentAddress || "Enable GPS for accuracy"}
                             </p>
@@ -997,7 +997,7 @@ const AddressesPage = () => {
                         <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500">Saved Addresses</h2>
                         <Button
                             variant="ghost"
-                            className="text-[#FF0000] hover:text-[#0b721b] p-0 h-auto font-bold"
+                            className="text-[#FE5502] hover:text-[#0b721b] p-0 h-auto font-bold"
                             onClick={handleAddAddressClick}
                         >
                             <Plus className="h-4 w-4 mr-1" /> Add New
@@ -1007,7 +1007,7 @@ const AddressesPage = () => {
                     <div className="space-y-4">
                         {loading ? (
                             <div className="text-center py-10 opacity-50">
-                                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FF0000] border-t-transparent mx-auto mb-2" />
+                                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#FE5502] border-t-transparent mx-auto mb-2" />
                                 <p>Loading addresses...</p>
                             </div>
                         ) : addresses.length === 0 ? (
@@ -1049,7 +1049,7 @@ const AddressesPage = () => {
                                                     e.stopPropagation();
                                                     handleEditAddressClick(addr);
                                                 }}
-                                                className="h-8 w-8 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm hover:border-[#FF0000] text-gray-500 hover:text-[#FF0000] transition-all"
+                                                className="h-8 w-8 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm hover:border-[#FE5502] text-gray-500 hover:text-[#FE5502] transition-all"
                                             >
                                                 <Edit2 className="h-3.5 w-3.5" />
                                             </button>

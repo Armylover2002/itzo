@@ -94,7 +94,7 @@ const FoodRestaurantCard = memo(({
 
           <div className="flex flex-col flex-grow p-2.5 sm:p-3">
             <div className="flex justify-between items-start mb-1 sm:mb-1.5 gap-2">
-              <h3 className="line-clamp-1 text-[13px] sm:text-[15px] font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#FF0000] transition-colors duration-300">
+              <h3 className="line-clamp-1 text-[13px] sm:text-[15px] font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#FE5502] transition-colors duration-300">
                 {restaurant.name}
               </h3>
               <div className="flex items-center justify-center gap-0.5 bg-green-700 text-white px-1.5 py-0.5 rounded-[6px] shrink-0 shadow-sm">
@@ -215,7 +215,7 @@ const RestaurantGrid = memo(({
       <div className="flex flex-col items-center gap-2 px-4 pt-4 sm:pt-6">
         {hasMoreRestaurants && loadingRestaurants && (
           <div className="flex items-center justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FF0000] border-t-transparent"></div>
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FE5502] border-t-transparent"></div>
           </div>
         )}
         <div ref={restaurantLoadMoreRef} className="h-10 w-full" aria-hidden="true" />

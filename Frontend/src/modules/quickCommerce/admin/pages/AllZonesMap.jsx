@@ -477,7 +477,7 @@ export default function AllZonesMap() {
                 )}
                 {quickCommerces.length > 0 && (
                   <p>
-                    Click on any <span className="font-semibold text-red-600">red marker</span> to view quick commerce name and details. Total quick commerces: <strong>{quickCommerces.length}</strong>
+                    Click on any <span className="font-semibold text-purple-600">red marker</span> to view quick commerce name and details. Total quick commerces: <strong>{quickCommerces.length}</strong>
                   </p>
                 )}
               </div>

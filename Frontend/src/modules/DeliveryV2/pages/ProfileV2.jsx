@@ -204,7 +204,7 @@ export const ProfileV2 = () => {
             </div>
             <button
               onClick={handleShareReferral}
-              className="shrink-0 bg-[#FF0000] hover:bg-[#E64D02] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md transition-colors"
+              className="shrink-0 bg-[#FE5502] hover:bg-[#E64D02] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md transition-colors"
             >
               Share
             </button>

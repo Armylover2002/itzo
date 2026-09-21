@@ -122,7 +122,7 @@ export const CashLimitInfoV2 = () => {
              <div className="px-2">
                 <button 
                   onClick={goBack}
-                  className="w-full py-4 bg-black text-white rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all"
+                  className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-sm shadow-lg active:scale-95 transition-all"
                 >
                    Okay
                 </button>

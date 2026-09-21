@@ -29,7 +29,7 @@ export default function StreetFood() {
 
           {loading ? (
             <div className="flex justify-center items-center py-16">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FF0000] border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FE5502] border-t-transparent" />
             </div>
           ) : restaurants.length === 0 ? (
             <div className="flex justify-center items-center py-16 text-gray-500 dark:text-gray-400">

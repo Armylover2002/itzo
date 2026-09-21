@@ -2,19 +2,19 @@
  * ITZO chart theme tokens.
  *
  * Mirrors the EXISTING ItzoFood/Admin brand tokens (global.css):
- *   primary  = #FF0000 (--primary / --color-orange-500)
- *   hover    = #CC0000 (--color-primary-hover)
- *   light    = #FFEDED (--secondary / --color-orange-50)
+ *   primary  = #6412C6 (--primary / admin-theme-scope)
+ *   hover    = #4E0E9A (admin purple 600)
+ *   light    = #F3E8FF (--secondary / admin-theme-scope)
  *   success  = #2E7D32 (--color-accent-green)
  *   border   = #EDE8E0 (--border, warm paper)
  *   muted    = #5C5247 (--muted-foreground)
- * No new red is introduced — charts use the exact same brand red as the
- * rest of the ItzoFood Admin. This is NOT a component, only constants.
+ * No new hue is introduced — charts use the exact same brand purple as the
+ * rest of the ItzoFood ECS Admin. This is NOT a component, only constants.
  */
 export const ITZO_CHART = {
-  primary: "#FF0000",
-  primaryHover: "#CC0000",
-  primaryLight: "#FFEDED",
+  primary: "#6412C6",
+  primaryHover: "#4E0E9A",
+  primaryLight: "#F3E8FF",
   success: "#2E7D32",
   warning: "#F59E0B",
   info: "#2563EB",
@@ -25,7 +25,7 @@ export const ITZO_CHART = {
   axis: "#5C5247",
 
   // Ordered categorical palette for multi-series charts
-  series: ["#FF0000", "#2563EB", "#2E7D32", "#F59E0B", "#7C3AED", "#DC2626"],
+  series: ["#6412C6", "#2563EB", "#2E7D32", "#F59E0B", "#7C3AED", "#DC2626"],
 
   // Shared modern tooltip / cursor styling
   tooltip: {
@@ -43,8 +43,8 @@ export const ITZO_CHART = {
       fontSize: 12,
     },
     itemStyle: { color: "#1A1A1A", fontSize: 12 },
-    cursor: { fill: "rgba(255,0,0,0.05)" },
-    lineCursor: { stroke: "rgba(255,0,0,0.25)", strokeWidth: 1 },
+    cursor: { fill: "rgba(100,18,198,0.05)" },
+    lineCursor: { stroke: "rgba(100,18,198,0.25)", strokeWidth: 1 },
   },
 };
 

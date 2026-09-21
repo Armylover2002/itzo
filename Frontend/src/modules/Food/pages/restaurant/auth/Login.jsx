@@ -219,9 +219,9 @@ export default function RestaurantLogin() {
 
              <div className="space-y-5 sm:space-y-6">
                <div className="space-y-3 sm:space-y-4">
-                 <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#FF0000] transition-all py-1.5 sm:py-2 group">
+                 <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#0D315B] transition-all py-1.5 sm:py-2 group">
                    <div className="pl-1 flex items-center pointer-events-none">
-                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF0000]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#0D315B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                      </svg>
                    </div>
@@ -243,7 +243,7 @@ export default function RestaurantLogin() {
                    />
                  </div>
                  {error && (
-                   <p className="text-[#FF0000] text-xs font-bold italic animate-bounce px-2">
+                   <p className="text-[#0D315B] text-xs font-bold italic animate-bounce px-2">
                      {error}
                    </p>
                  )}
@@ -256,7 +256,7 @@ export default function RestaurantLogin() {
                   onClick={handleSendOTP}
                   disabled={!isValidPhone || isSending}
                   className={`w-full h-11 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base md:text-lg tracking-wide transition-all duration-300 ${isValidPhone && !isSending
-                    ? "bg-[#FF0000] hover:bg-[#E64D02] text-white shadow-lg shadow-[#FF0000]/20 transform active:scale-[0.98]"
+                    ? "bg-[#0D315B] hover:bg-[#E64D02] text-white shadow-lg shadow-[#0D315B]/20 transform active:scale-[0.98]"
                     : "bg-slate-100 text-slate-400 cursor-not-allowed"
                     }`}
                 >

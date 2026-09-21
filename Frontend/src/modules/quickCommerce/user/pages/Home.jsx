@@ -329,7 +329,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
         
         // Also trigger theme change so header color updates immediately
         if (typeof onThemeChange === 'function') {
-          const resolvedColor = cat?.headerColor || '#FF0000';
+          const resolvedColor = cat?.headerColor || '#FE5502';
           if (typeof window !== 'undefined') {
             window.sessionStorage.setItem('food.quick.theme', resolvedColor);
             window.dispatchEvent(new Event('quickThemeChange'));
@@ -358,7 +358,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
 
   // ── Theme change — only when activeCategory changes (fallback) ───────────
   useEffect(() => {
-    const resolvedColor = activeCategory?.headerColor || '#FF0000';
+    const resolvedColor = activeCategory?.headerColor || '#FE5502';
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(QUICK_THEME_STORAGE_KEY, resolvedColor);
       window.dispatchEvent(new Event('quickThemeChange'));
@@ -534,7 +534,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
           QUICK_HEADER_RETURN_STORAGE_KEY,
           JSON.stringify({
             headerId: activeCategory?._id || activeCategory?.id || ALL_CATEGORY._id,
-            color: '#FF0000',
+            color: '#FE5502',
             name: activeCategory?.name || ALL_CATEGORY.name,
           }),
         );
@@ -557,7 +557,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
           onCategorySelect={(cat) => {
             setActiveCategory(cat);
             if (typeof onThemeChange === 'function') {
-              const resolvedColor = cat?.headerColor || '#FF0000';
+              const resolvedColor = cat?.headerColor || '#FE5502';
               if (typeof window !== 'undefined') {
                 window.sessionStorage.setItem(QUICK_THEME_STORAGE_KEY, resolvedColor);
                 window.dispatchEvent(new Event('quickThemeChange'));
@@ -613,7 +613,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                 'relative overflow-hidden border-y transition-colors duration-300 shadow-red-700/30'
               )}
               style={{
-                backgroundColor: '#FF0000',
+                backgroundColor: '#FE5502',
                 backgroundImage: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.35))',
                 borderTopColor: 'rgba(255, 255, 255, 0.12)',
                 borderBottomColor: 'rgba(255, 255, 255, 0.12)',
@@ -622,13 +622,13 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
               <div 
                 className="absolute inset-y-0 left-0 w-16 pointer-events-none z-10"
                 style={{ 
-                  backgroundImage: `linear-gradient(to right, #FF0000, transparent)` 
+                  backgroundImage: `linear-gradient(to right, #FE5502, transparent)` 
                 }} 
               />
               <div 
                 className="absolute inset-y-0 right-0 w-16 pointer-events-none z-10"
                 style={{ 
-                  backgroundImage: `linear-gradient(to left, #FF0000, transparent)` 
+                  backgroundImage: `linear-gradient(to left, #FE5502, transparent)` 
                 }} 
               />
               <div 
@@ -674,7 +674,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                   {/* MOBILE CONTENT */}
                   <div className="flex flex-col justify-between h-full md:hidden">
                     <div className="flex gap-1.5 w-full items-start z-10">
-                      <div className="bg-[#FF0000] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-[20px] w-[20px] mt-0.5">
+                      <div className="bg-[#FE5502] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-[20px] w-[20px] mt-0.5">
                         <tab.icon className="h-3 w-3" strokeWidth={2.5} />
                       </div>
                       <div className="flex flex-col min-w-0 mt-0.5">
@@ -687,7 +687,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                       </div>
                     </div>
                     <div className="mt-1 flex items-end justify-between w-full z-10">
-                      <div className="bg-[#FF0000] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-4 w-4 shadow-sm mb-0.5">
+                      <div className="bg-[#FE5502] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-4 w-4 shadow-sm mb-0.5">
                         <ArrowRight className="h-2.5 w-2.5" strokeWidth={3} />
                       </div>
                       <div className="absolute right-[-4px] bottom-[-4px] w-[55px] h-[55px] min-[380px]:w-[65px] min-[380px]:h-[65px] pointer-events-none">
@@ -700,7 +700,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                   <div className="hidden md:flex justify-between h-full w-full p-4">
                     <div className="flex flex-col justify-between h-full z-10 w-[65%]">
                       <div className="flex items-start gap-2">
-                        <div className="bg-[#FF0000] text-white rounded-full p-1.5 shrink-0 flex items-center justify-center md:h-[28px] md:w-[28px]">
+                        <div className="bg-[#FE5502] text-white rounded-full p-1.5 shrink-0 flex items-center justify-center md:h-[28px] md:w-[28px]">
                           <tab.icon className="md:h-4 md:w-4" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col min-w-0">
@@ -712,7 +712,7 @@ const Home = ({ embedded = false, onThemeChange, embeddedHeaderColor = null }) =
                           </p>
                         </div>
                       </div>
-                      <div className="bg-[#FF0000] text-white rounded-full shrink-0 flex items-center justify-center md:h-6 md:w-6 shadow-sm">
+                      <div className="bg-[#FE5502] text-white rounded-full shrink-0 flex items-center justify-center md:h-6 md:w-6 shadow-sm">
                         <ArrowRight className="md:h-3.5 md:w-3.5" strokeWidth={3} />
                       </div>
                     </div>

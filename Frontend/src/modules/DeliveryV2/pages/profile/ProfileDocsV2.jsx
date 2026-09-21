@@ -79,7 +79,7 @@ export const ProfileDocsV2 = () => {
 
        <div className="pt-24 px-4 space-y-8">
           {/* 1. Vehicle Card */}
-          <div className="bg-[#FF0000] rounded-2xl p-6 text-white shadow-xl shadow-red-500/20 flex flex-col gap-2 relative overflow-hidden">
+          <div className="bg-[#FE5502] rounded-2xl p-6 text-white shadow-xl shadow-red-500/20 flex flex-col gap-2 relative overflow-hidden">
              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full translate-x-20 -translate-y-20" />
              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 z-10">Vehicle Registered</p>
              <h3 className="text-2xl font-black z-10">{profile?.vehicle?.number || "NO # REGISTERED"}</h3>

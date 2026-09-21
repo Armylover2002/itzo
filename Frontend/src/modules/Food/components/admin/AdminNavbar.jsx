@@ -224,7 +224,7 @@ export default function AdminNavbar({ onMenuClick }) {
           <div className="flex items-center gap-3">
             <button
               onClick={onMenuClick}
-              className="lg:hidden p-2 rounded-md text-[#5C5247] hover:bg-[#FFEDED] hover:text-[#FF0000] transition-colors"
+              className="lg:hidden p-2 rounded-md text-[#5C5247] hover:bg-[#F3E8FF] hover:text-[#6412C6] transition-colors"
               aria-label="Toggle menu"
             >
               <Menu className="w-5 h-5" />
@@ -235,7 +235,7 @@ export default function AdminNavbar({ onMenuClick }) {
           <div className="flex-1 flex justify-center max-w-md mx-8">
             <button
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#9E8F7E] cursor-pointer hover:bg-[#FFEDED]/85 hover:text-[#FF0000] hover:border-[#FF0000]/50 transition-colors w-full border border-[#EDE8E0]"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#9E8F7E] cursor-pointer hover:bg-[#F3E8FF]/85 hover:text-[#6412C6] hover:border-[#6412C6]/50 transition-colors w-full border border-[#EDE8E0]"
             >
               <Search className="w-4 h-4 text-[#9E8F7E]" />
               <span className="text-sm flex-1 text-left text-[#9E8F7E]">Search</span>
@@ -250,10 +250,10 @@ export default function AdminNavbar({ onMenuClick }) {
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="relative h-11 w-11 rounded-full border border-[#EDE8E0] bg-white text-[#1A1A1A] flex items-center justify-center hover:bg-[#FFEDED] hover:text-[#FF0000] transition-colors"
+              className="relative h-11 w-11 rounded-full border border-[#EDE8E0] bg-white text-[#1A1A1A] flex items-center justify-center hover:bg-[#F3E8FF] hover:text-[#6412C6] transition-colors"
               aria-label="Refresh"
             >
-              <RefreshCw className="w-5 h-5 text-[#5C5247] hover:text-[#FF0000]" />
+              <RefreshCw className="w-5 h-5 text-[#5C5247] hover:text-[#6412C6]" />
             </button>
             <Popover open={notificationsOpen} onOpenChange={(open) => {
               setNotificationsOpen(open);
@@ -265,12 +265,12 @@ export default function AdminNavbar({ onMenuClick }) {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="relative h-11 w-11 rounded-full border border-[#EDE8E0] bg-white text-[#1A1A1A] flex items-center justify-center hover:bg-[#FFEDED] hover:text-[#FF0000] transition-colors"
+                  className="relative h-11 w-11 rounded-full border border-[#EDE8E0] bg-white text-[#1A1A1A] flex items-center justify-center hover:bg-[#F3E8FF] hover:text-[#6412C6] transition-colors"
                   aria-label="Notifications"
                 >
-                  <Bell className="w-5 h-5 text-[#5C5247] hover:text-[#FF0000]" />
+                  <Bell className="w-5 h-5 text-[#5C5247] hover:text-[#6412C6]" />
                   {notificationCount > 0 && (
-                    <span className="absolute top-2 right-2 min-w-4 h-4 rounded-full bg-[#FF0000] text-white text-[10px] font-bold flex items-center justify-center px-1">
+                    <span className="absolute top-2 right-2 min-w-4 h-4 rounded-full bg-[#6412C6] text-white text-[10px] font-bold flex items-center justify-center px-1">
                       {notificationCount > 9 ? "9+" : notificationCount}
                     </span>
                   )}
@@ -286,7 +286,7 @@ export default function AdminNavbar({ onMenuClick }) {
                     <button
                       type="button"
                       onClick={openNotificationsPage}
-                      className="text-xs font-semibold text-[#FF0000] hover:text-[#CC0000]"
+                      className="text-xs font-semibold text-[#6412C6] hover:text-[#4E0E9A]"
                     >
                       View all
                     </button>
@@ -333,7 +333,7 @@ export default function AdminNavbar({ onMenuClick }) {
             {/* User Profile */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-2 pl-3 border-l border-[#EDE8E0] cursor-pointer hover:bg-[#FFEDED]/80 rounded-md px-2 py-1 transition-colors">
+                <div className="flex items-center gap-2 pl-3 border-l border-[#EDE8E0] cursor-pointer hover:bg-[#F3E8FF]/80 rounded-md px-2 py-1 transition-colors">
 
                   <div className="hidden md:block">
                     <p className="text-sm font-medium text-neutral-900">
@@ -408,14 +408,14 @@ export default function AdminNavbar({ onMenuClick }) {
                 </div>
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    className="cursor-pointer hover:bg-[#FFEDED] hover:text-[#FF0000] focus:bg-[#FFEDED] focus:text-[#FF0000]"
+                    className="cursor-pointer hover:bg-[#F3E8FF] hover:text-[#6412C6] focus:bg-[#F3E8FF] focus:text-[#6412C6]"
                     onClick={() => navigate("/ecs/food/profile")}
                   >
                     <User className="mr-2 w-4 h-4" />
                     <span>Profile</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    className="cursor-pointer hover:bg-[#FFEDED] hover:text-[#FF0000] focus:bg-[#FFEDED] focus:text-[#FF0000]"
+                    className="cursor-pointer hover:bg-[#F3E8FF] hover:text-[#6412C6] focus:bg-[#F3E8FF] focus:text-[#6412C6]"
                     onClick={() => navigate("/ecs/food/settings")}
                   >
                     <Settings className="mr-2 w-4 h-4" />
@@ -475,7 +475,7 @@ export default function AdminNavbar({ onMenuClick }) {
                       }}
                       className="flex items-center gap-3 p-4 rounded-lg border border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50 transition-all"
                     >
-                      <div className="p-2 rounded-md bg-black text-white">
+                      <div className="p-2 rounded-md bg-[#6412C6] text-white">
                         <action.icon className="w-5 h-5" />
                       </div>
                       <span className="text-sm font-medium text-neutral-900">{action.label}</span>

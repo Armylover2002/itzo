@@ -206,7 +206,7 @@ export default function Checkout() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-[#FF0000]" />
+                    <MapPin className="h-5 w-5 text-[#FE5502]" />
                     Delivery Address
                   </CardTitle>
                 </CardHeader>
@@ -230,7 +230,7 @@ export default function Checkout() {
                           <div
                             key={addressId || `current-${currentLocation.street}`}
                             className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${isSelected
-                                ? "border-[#FF0000] bg-red-50 dark:bg-red-900/10"
+                                ? "border-[#FE5502] bg-red-50 dark:bg-red-900/10"
                                 : "border-gray-200 dark:border-gray-800 hover:border-red-300 dark:hover:border-red-700"
                               }`}
                             onClick={() => {
@@ -240,12 +240,12 @@ export default function Checkout() {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                  <MapPin className="h-4 w-4 text-[#FF0000]" />
-                                  <h4 className="font-bold text-[#FF0000]">Current Location</h4>
+                                  <MapPin className="h-4 w-4 text-[#FE5502]" />
+                                  <h4 className="font-bold text-[#FE5502]">Current Location</h4>
                                 </div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{addressString}</p>
                               </div>
-                              {isSelected && <CheckCircle className="h-5 w-5 text-[#FF0000]" />}
+                              {isSelected && <CheckCircle className="h-5 w-5 text-[#FE5502]" />}
                             </div>
                           </div>
                         );
@@ -274,7 +274,7 @@ export default function Checkout() {
                           <div
                             key={addressId || `${address.label}-${address.street}-${address.city}`}
                             className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${isSelected
-                                ? "border-[#FF0000] bg-red-50 dark:bg-red-900/10"
+                                ? "border-[#FE5502] bg-red-50 dark:bg-red-900/10"
                                 : "border-gray-200 dark:border-gray-800 hover:border-red-300 dark:hover:border-red-700"
                               }`}
                             onClick={() => {
@@ -285,13 +285,13 @@ export default function Checkout() {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 {address.isDefault && (
-                                  <Badge className="mb-2 bg-[#FF0000] text-white">Default</Badge>
+                                  <Badge className="mb-2 bg-[#FE5502] text-white">Default</Badge>
 
                                 )}
                                 <p className="text-sm font-medium">{addressString}</p>
                               </div>
                               {isSelected && (
-                                <CheckCircle className="h-5 w-5 text-[#FF0000]" />
+                                <CheckCircle className="h-5 w-5 text-[#FE5502]" />
                               )}
                           </div>
                         )
@@ -321,7 +321,7 @@ export default function Checkout() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-[#FF0000]" />
+                    <CreditCard className="h-5 w-5 text-[#FE5502]" />
                     Payment Method
                   </CardTitle>
                 </CardHeader>
@@ -336,7 +336,7 @@ export default function Checkout() {
                           <div
                             key={payment.id}
                             className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${isSelected
-                                ? "border-[#FF0000] bg-red-50"
+                                ? "border-[#FE5502] bg-red-50"
                                 : "border-gray-200 hover:border-red-300"
                               }`}
                             onClick={() => setSelectedPayment(payment.id)}
@@ -345,7 +345,7 @@ export default function Checkout() {
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-2">
                                   {payment.isDefault && (
-                                    <Badge className="bg-[#FF0000] text-white">Default</Badge>
+                                    <Badge className="bg-[#FE5502] text-white">Default</Badge>
                                   )}
                                   <Badge variant="outline" className="capitalize">
                                     {payment.type}
@@ -357,7 +357,7 @@ export default function Checkout() {
                                 </p>
                               </div>
                               {isSelected && (
-                                <CheckCircle className="h-5 w-5 text-[#FF0000]" />
+                                <CheckCircle className="h-5 w-5 text-[#FE5502]" />
                               )}
                             </div>
                           </div>
@@ -420,13 +420,13 @@ export default function Checkout() {
                     {appliedCoupon ? (
                       <div className="flex items-center justify-between p-3 rounded-xl bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30">
                         <div className="flex items-center gap-2">
-                          <Percent className="h-4 w-4 text-[#FF0000]" />
+                          <Percent className="h-4 w-4 text-[#FE5502]" />
                           <div>
                             <p className="text-sm font-bold text-slate-800 dark:text-gray-200">'{appliedCoupon.code}' Applied</p>
                             <p className="text-[11px] text-green-600 dark:text-green-400 font-semibold mt-0.5">Saved ₹{discount}</p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={handleRemoveCoupon} className="text-xs text-[#FF0000] hover:text-[#FF0000] p-0 h-auto font-bold bg-transparent hover:bg-transparent">
+                        <Button variant="ghost" size="sm" onClick={handleRemoveCoupon} className="text-xs text-[#FE5502] hover:text-[#FE5502] p-0 h-auto font-bold bg-transparent hover:bg-transparent">
                           REMOVE
                         </Button>
                       </div>
@@ -459,7 +459,7 @@ export default function Checkout() {
                                       {coupon.description}
                                     </p>
                                     {!canApply && (
-                                      <p className="text-[9px] text-[#FF0000] font-semibold mt-0.5">
+                                      <p className="text-[9px] text-[#FE5502] font-semibold mt-0.5">
                                         Add ₹{(coupon.minOrder - subtotal).toFixed(0)} more to unlock
                                       </p>
                                     )}
@@ -467,7 +467,7 @@ export default function Checkout() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-7 text-[10px] px-2.5 font-bold text-[#FF0000] border-[#FF0000] hover:bg-red-50"
+                                    className="h-7 text-[10px] px-2.5 font-bold text-[#FE5502] border-[#FE5502] hover:bg-red-50"
                                     onClick={() => handleApplyCoupon(coupon)}
                                     disabled={!canApply}
                                   >
@@ -518,12 +518,12 @@ export default function Checkout() {
                     </div>
                     <div className="flex justify-between font-bold text-lg md:text-xl lg:text-2xl pt-2 md:pt-3 border-t dark:border-gray-700">
                       <span className="dark:text-white">Total</span>
-                      <span className="text-[#FF0000] dark:text-red-400">₹{total.toFixed(0)}</span>
+                      <span className="text-[#FE5502] dark:text-red-400">₹{total.toFixed(0)}</span>
                     </div>
                   </div>
 
                   <Button
-                    className="w-full bg-[#FF0000] hover:bg-[#C83C00] text-white mt-4 md:mt-6 h-11 md:h-12 text-sm md:text-base border-none"
+                    className="w-full bg-[#FE5502] hover:bg-[#C83C00] text-white mt-4 md:mt-6 h-11 md:h-12 text-sm md:text-base border-none"
                     onClick={handlePlaceOrder}
                     disabled={isPlacingOrder || !selectedAddress || !selectedPayment}
                   >

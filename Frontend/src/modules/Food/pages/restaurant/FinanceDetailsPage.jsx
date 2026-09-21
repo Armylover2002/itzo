@@ -585,7 +585,7 @@ export default function FinanceDetailsPage() {
               </p>
               <button
                 onClick={() => setShowDownloadPopup(false)}
-                className="w-full py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="w-full py-3 bg-[#0D315B] text-white rounded-lg font-medium hover:bg-[#0A2647] transition-colors"
               >
                 Close
               </button>
@@ -626,7 +626,7 @@ export default function FinanceDetailsPage() {
               </p>
               <button
                 onClick={() => setShowEmailPopup(false)}
-                className="w-full py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="w-full py-3 bg-[#0D315B] text-white rounded-lg font-medium hover:bg-[#0A2647] transition-colors"
               >
                 Close
               </button>

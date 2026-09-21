@@ -7,7 +7,7 @@ const TrackingPage = () => {
     <div className="relative min-h-screen bg-gray-900 font-sans overflow-hidden">
 
       {/* --- 2. Floating Header (Green) --- */}
-      <div className="absolute top-0 left-0 right-0 z-20 bg-[#FF0000] p-4 pt-4 rounded-b-2xl shadow-lg">
+      <div className="absolute top-0 left-0 right-0 z-20 bg-[#FE5502] p-4 pt-4 rounded-b-2xl shadow-lg">
         <div className="flex items-center justify-between text-white mb-3">
           <ArrowLeft className="w-6 h-6 cursor-pointer" />
           <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ const TrackingPage = () => {
           <p className="text-3xl font-bold text-red-600 mb-1">80 mins</p>
           <p className="text-sm text-gray-600 mb-2">45.1 km away</p>
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-[#FF0000] rounded-full" style={{ width: '60%' }}></div>
+            <div className="h-full bg-[#FE5502] rounded-full" style={{ width: '60%' }}></div>
           </div>
         </div>
       </div>

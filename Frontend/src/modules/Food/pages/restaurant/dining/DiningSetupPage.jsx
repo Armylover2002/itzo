@@ -130,7 +130,7 @@ export default function DiningSetupPage() {
         <button
           onClick={handleRequest}
           disabled={requesting}
-          className="mx-auto flex items-center gap-2 rounded-lg bg-[#FF0000] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          className="mx-auto flex items-center gap-2 rounded-lg bg-[#0D315B] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
         >
           {requesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Request Dining Access
         </button>
@@ -200,7 +200,7 @@ export default function DiningSetupPage() {
                 <button
                   key={cat._id}
                   onClick={() => toggleCategory(cat._id)}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-medium ${categoryIds.includes(cat._id) ? "border-[#FF0000] bg-red-50 text-[#FF0000]" : "border-gray-200 text-gray-600"}`}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-medium ${categoryIds.includes(cat._id) ? "border-[#0D315B] bg-red-50 text-[#0D315B]" : "border-gray-200 text-gray-600"}`}
                 >
                   {cat.name}
                 </button>
@@ -227,7 +227,7 @@ export default function DiningSetupPage() {
           </div>
         </div>
 
-        <button onClick={handleSaveSetup} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#FF0000] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+        <button onClick={handleSaveSetup} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#0D315B] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Setup
         </button>
       </div>

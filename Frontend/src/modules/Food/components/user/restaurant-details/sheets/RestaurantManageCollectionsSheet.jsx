@@ -87,7 +87,7 @@ export default function RestaurantManageCollectionsSheet({
                   {/* Done Button */}
                   <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4">
                     <Button
-                      className="w-full bg-[#FF0000] hover:bg-[#C83C00] text-white py-3 rounded-lg font-bold"
+                      className="w-full bg-[#FE5502] hover:bg-[#C83C00] text-white py-3 rounded-lg font-bold"
                       onClick={() => {
                         onClose()
                       }}

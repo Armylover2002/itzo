@@ -131,7 +131,7 @@ const FleetRadar = () => {
                   className={cn(
                     "w-full text-left p-4 rounded-2xl transition-all group",
                     selectedRider?.id === r.id
-                      ? "bg-red-600 text-white shadow-lg"
+                      ? "bg-purple-600 text-white shadow-lg"
                       : "hover:bg-slate-50 text-slate-700",
                   )}>
                   <div className="flex items-center gap-3">
@@ -190,7 +190,7 @@ const FleetRadar = () => {
         </div>
 
         {/* Radar Map Area */}
-        <Card className="flex-1 border-none shadow-2xl ring-1 ring-slate-200 rounded-2xl overflow-hidden bg-red-600 relative">
+        <Card className="flex-1 border-none shadow-2xl ring-1 ring-slate-200 rounded-2xl overflow-hidden bg-purple-600 relative">
           {/* Dark Map Grid Background */}
           <div className="absolute inset-0 opacity-20 bg-[url('https://api.dicebear.com/7.x/identicon/svg?seed=grid')] bg-[length:100px_100px]" />
           <div className="absolute inset-0 bg-gradient-to-tr from-slate-950 via-transparent to-slate-900" />

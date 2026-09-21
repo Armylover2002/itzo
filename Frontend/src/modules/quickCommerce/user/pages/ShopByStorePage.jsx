@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 const FALLBACK_STORE_IMAGE =
   "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=400&h=400&fit=crop";
-const ACCENT = "#FF0000";
+const ACCENT = "#FE5502";
 
 const StoreRailCard = React.memo(function StoreRailCard({
   store,
@@ -41,7 +41,7 @@ const StoreRailCard = React.memo(function StoreRailCard({
       className={cn(
         "relative flex w-[148px] shrink-0 flex-col overflow-hidden rounded-2xl border bg-white text-left transition-all duration-200",
         isActive
-          ? "border-red-500 shadow-[0_10px_28px_-16px_rgba(255,0,0,0.55)] ring-2 ring-red-500/20"
+          ? "border-red-500 shadow-[0_10px_28px_-16px_rgba(254,85,2,0.55)] ring-2 ring-red-500/20"
           : "border-slate-200/80 hover:border-slate-300 hover:shadow-md",
       )}
     >

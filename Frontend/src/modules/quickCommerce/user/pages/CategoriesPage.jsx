@@ -76,7 +76,7 @@ const CategoriesHeader = () => {
                     <div className="flex flex-col cursor-pointer" onClick={handleLocationClick}>
                         <div className="flex items-center gap-1.5 mb-1">
                             <span className="text-[10px] font-normal text-gray-500 uppercase tracking-wide">Delivery in</span>
-                            <span className="bg-[#FF0000] text-white text-[9px] font-medium px-1.5 py-0.5 rounded uppercase">App</span>
+                            <span className="bg-[#FE5502] text-white text-[9px] font-medium px-1.5 py-0.5 rounded uppercase">App</span>
                         </div>
                         <div className="flex items-center gap-1 group">
                             <span className="text-[20px] md:text-[24px] font-medium text-slate-900 leading-none tracking-tight">
@@ -92,12 +92,12 @@ const CategoriesHeader = () => {
                 
                 <div className="relative cursor-pointer" onClick={handleSearchClick}>
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                        <Search className="h-[18px] w-[18px] text-[#FF0000]" />
+                        <Search className="h-[18px] w-[18px] text-[#FE5502]" />
                     </div>
                     <input 
                         type="text"
                         placeholder="Search for bread, milk, eggs..."
-                        className="w-full bg-gray-50/80 border border-gray-200 text-gray-900 rounded-[12px] py-3.5 pl-11 pr-4 focus:outline-none focus:ring-1 focus:ring-[#FF0000]/30 text-[13px] font-normal placeholder:font-normal placeholder:text-gray-400 cursor-pointer shadow-inner"
+                        className="w-full bg-gray-50/80 border border-gray-200 text-gray-900 rounded-[12px] py-3.5 pl-11 pr-4 focus:outline-none focus:ring-1 focus:ring-[#FE5502]/30 text-[13px] font-normal placeholder:font-normal placeholder:text-gray-400 cursor-pointer shadow-inner"
                         readOnly
                         onClick={handleSearchClick}
                     />

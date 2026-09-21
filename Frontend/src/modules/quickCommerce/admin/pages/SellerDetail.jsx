@@ -148,7 +148,7 @@ const SellerDetail = () => {
         <button
           type="button"
           onClick={loadSeller}
-          className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
+          className="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
         >
           <HiOutlineArrowPath className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
@@ -170,7 +170,7 @@ const SellerDetail = () => {
             <button
               type="button"
               onClick={() => navigate('/ecs/quick-commerce/sellers/active')}
-              className="mt-2 rounded-xl bg-red-600 px-4 py-2 text-[11px] font-bold text-white"
+              className="mt-2 rounded-xl bg-purple-600 px-4 py-2 text-[11px] font-bold text-white"
             >
               Back to active sellers
             </button>

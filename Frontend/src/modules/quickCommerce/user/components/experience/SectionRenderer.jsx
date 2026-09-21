@@ -96,7 +96,7 @@ const CategoryItem = memo(({ cat, idx, onClick }) => {
           />
         ) : (
           <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
-            <ShoppingBag className="w-5 h-5 text-[#FF0000]" strokeWidth={2.5} />
+            <ShoppingBag className="w-5 h-5 text-[#FE5502]" strokeWidth={2.5} />
           </div>
         )}
       </div>
@@ -159,7 +159,7 @@ const CategoriesSection = memo(({ section }) => {
         <div className="flex items-center justify-between gap-3 mb-3 md:mb-4">
           <div className="flex items-center gap-2 min-w-0">
             {isFast && (
-              <span className="text-[#FF0000] text-[12px] md:text-[14px] opacity-90 leading-none shrink-0">
+              <span className="text-[#FE5502] text-[12px] md:text-[14px] opacity-90 leading-none shrink-0">
                 ⇋
               </span>
             )}
@@ -167,7 +167,7 @@ const CategoriesSection = memo(({ section }) => {
               {/fast\s*av/i.test(section.title) ? "Fast Fav" : section.title}
             </h3>
             {isFast && (
-              <span className="text-[#FF0000] text-[12px] md:text-[14px] opacity-90 leading-none shrink-0">
+              <span className="text-[#FE5502] text-[12px] md:text-[14px] opacity-90 leading-none shrink-0">
                 ⇌
               </span>
             )}

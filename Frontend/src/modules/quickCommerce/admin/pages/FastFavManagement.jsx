@@ -258,7 +258,7 @@ const FastFavManagement = () => {
         {canCreate && (
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-6 py-3.5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+            className="flex items-center gap-2 px-6 py-3.5 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
           >
             <HiOutlinePlus className="h-5 w-5" />
             New {activeTab === "more" ? "More" : "Fast Fav"} Card
@@ -322,7 +322,7 @@ const FastFavManagement = () => {
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all",
               activeTab === tab.id
-                ? "bg-red-600 text-white shadow-md"
+                ? "bg-purple-600 text-white shadow-md"
                 : "bg-white text-slate-500 ring-1 ring-slate-100 hover:bg-slate-50",
             )}
           >
@@ -409,7 +409,7 @@ const FastFavManagement = () => {
                   {canDelete && (
                     <button
                       onClick={() => handleDelete(tile._id)}
-                      className="p-2 rounded-lg hover:bg-red-50 text-red-600"
+                      className="p-2 rounded-lg hover:bg-purple-50 text-purple-600"
                     >
                       <HiOutlineTrash className="h-5 w-5" />
                     </button>
@@ -486,7 +486,7 @@ const FastFavManagement = () => {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-black uppercase tracking-wider disabled:opacity-50"
             >
               {isSaving ? "Saving..." : "Save Card"}
             </button>

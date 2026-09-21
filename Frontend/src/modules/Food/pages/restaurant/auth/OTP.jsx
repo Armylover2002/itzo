@@ -496,11 +496,11 @@ export default function RestaurantOTP() {
             <h2 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 tracking-wide">
               Verify OTP
             </h2>
-            <div className="h-[2px] w-16 bg-[#FF0000] mx-auto rounded-full mt-2 mb-4" />
+            <div className="h-[2px] w-16 bg-[#0D315B] mx-auto rounded-full mt-2 mb-4" />
             <p className="text-gray-500 text-sm leading-relaxed px-4">
               We have sent a verification code to
             </p>
-            <p className="text-[15px] font-bold text-[#FF0000] tracking-wide">
+            <p className="text-[15px] font-bold text-[#0D315B] tracking-wide">
               {contactInfo}
             </p>
           </div>
@@ -525,7 +525,7 @@ export default function RestaurantOTP() {
                     className={`shrink-0 w-12 h-14 sm:w-14 sm:h-16 bg-slate-50 border-2 rounded-2xl text-center text-2xl font-black text-slate-900 focus:outline-none transition-all duration-300 ${error
                         ? "border-red-500 bg-red-50"
                         : focusedIndex === index
-                          ? "border-[#FF0000] ring-4 ring-[#FF0000]/10 shadow-lg bg-white"
+                          ? "border-[#0D315B] ring-4 ring-[#0D315B]/10 shadow-lg bg-white"
                           : "border-slate-100"
                       }`}
                   />
@@ -533,7 +533,7 @@ export default function RestaurantOTP() {
               </div>
 
               {error && (
-                <p className="text-[#FF0000] text-xs font-bold text-center italic animate-pulse">
+                <p className="text-[#0D315B] text-xs font-bold text-center italic animate-pulse">
                   {error}
                 </p>
               )}
@@ -543,7 +543,7 @@ export default function RestaurantOTP() {
                   onClick={() => handleVerify()}
                   disabled={isLoading || !isOtpComplete}
                   className={`w-full h-14 sm:h-16 rounded-[32px] font-black text-base sm:text-lg tracking-widest uppercase shadow-lg transition-all duration-300 ${isOtpComplete && !isLoading
-                      ? "bg-[#FF0000] hover:bg-[#E64D02] text-white shadow-[#FF0000]/20 transform active:scale-[0.98]"
+                      ? "bg-[#0D315B] hover:bg-[#E64D02] text-white shadow-[#0D315B]/20 transform active:scale-[0.98]"
                       : "border-2 border-slate-300 bg-white text-slate-600 shadow-sm cursor-not-allowed"
                     }`}
                 >
@@ -553,14 +553,14 @@ export default function RestaurantOTP() {
                 <div className="flex flex-col items-center gap-4">
                   {resendTimer > 0 ? (
                     <div className="flex items-center gap-2 text-slate-400 text-xs font-black tracking-widest uppercase">
-                      <Timer className="w-4 h-4 text-[#FF0000]" />
-                      RESEND IN <span className="text-[#FF0000]">{resendTimer}S</span>
+                      <Timer className="w-4 h-4 text-[#0D315B]" />
+                      RESEND IN <span className="text-[#0D315B]">{resendTimer}S</span>
                     </div>
                   ) : (
                     <button
                       onClick={handleResend}
                       disabled={isLoading}
-                      className="flex items-center gap-2 text-[#FF0000] font-black text-xs tracking-widest uppercase hover:underline"
+                      className="flex items-center gap-2 text-[#0D315B] font-black text-xs tracking-widest uppercase hover:underline"
                     >
                       <RefreshCw className="w-4 h-4" />
                       RESEND CODE

@@ -88,7 +88,7 @@ export default function Refund() {
                 prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
                 prose-p:text-gray-600 dark:prose-p:text-gray-400 prose-p:leading-relaxed
                 prose-strong:text-gray-900 dark:prose-strong:text-white
-                prose-a:text-[#CB202D] dark:prose-a:text-[#FF0000]
+                prose-a:text-[#CB202D] dark:prose-a:text-[#FE5502]
                 prose-li:text-gray-600 dark:prose-li:text-gray-400"
               dangerouslySetInnerHTML={{ __html: refundData.content }}
             />

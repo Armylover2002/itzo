@@ -457,14 +457,14 @@ const MainLocationHeader = ({
                     onClick={() => navigate(item.path)}
                     className={cn(
                       "text-[12px] lg:text-[14px] font-extrabold tracking-wide relative py-1 lg:py-2 transition-colors uppercase",
-                      item.active ? "text-[#FF0000]" : "text-slate-600 hover:text-slate-900"
+                      item.active ? "text-[#FE5502]" : "text-slate-600 hover:text-slate-900"
                     )}
                   >
                     {item.name}
                     {item.active && (
                       <motion.div
                         layoutId="activeQuickNavTab"
-                        className="absolute -bottom-1 left-0 right-0 h-[3px] bg-[#FF0000] rounded-full"
+                        className="absolute -bottom-1 left-0 right-0 h-[3px] bg-[#FE5502] rounded-full"
                       />
                     )}
                   </button>
@@ -508,7 +508,7 @@ const MainLocationHeader = ({
                 >
                   <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-[#FF0000] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-red-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-[#FE5502] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-red-800 shadow-sm transition-transform group-hover:-translate-y-0.5">
                       {cartCount > 99 ? "99+" : cartCount}
                     </span>
                   )}
@@ -576,7 +576,7 @@ const MainLocationHeader = ({
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 rounded-[12px] md:rounded-full px-4 h-[44px] shadow-md flex items-center bg-white border border-gray-100 cursor-pointer"
                 >
-                  <SearchIcon sx={{ color: "#FF0000", fontSize: 22 }} />
+                  <SearchIcon sx={{ color: "#FE5502", fontSize: 22 }} />
                   <input
                     type="text"
                     placeholder={searchPlaceholder || "Search Products..."}
@@ -584,7 +584,7 @@ const MainLocationHeader = ({
                     className="flex-1 bg-transparent border-none outline-none pl-3 text-slate-800 font-bold placeholder:text-slate-300 text-[15px] cursor-pointer"
                   />
                   <div className="flex items-center gap-2 border-l border-red-100 pl-3">
-                    <MicIcon sx={{ color: "#FF0000", fontSize: 20 }} />
+                    <MicIcon sx={{ color: "#FE5502", fontSize: 20 }} />
                   </div>
                 </motion.div>
               </div>

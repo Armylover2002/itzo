@@ -18,7 +18,7 @@ export default function RestaurantMenuSheet({ open, onClose, menuCategories = []
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-md sticky top-0 z-10">
         <div className="flex items-center gap-2">
-          <UtensilsCrossed className="w-5 h-5 text-[#FF0000]" />
+          <UtensilsCrossed className="w-5 h-5 text-[#FE5502]" />
           <h3 className="font-bold text-gray-900 dark:text-white text-[16px] tracking-wide uppercase">Menu</h3>
         </div>
         <button 
@@ -36,7 +36,7 @@ export default function RestaurantMenuSheet({ open, onClose, menuCategories = []
             <motion.button
               whileTap={{ scale: 0.98 }}
               key={index}
-              className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 text-left group hover:bg-red-50 dark:hover:bg-[#FF0000]/10"
+              className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all duration-200 text-left group hover:bg-red-50 dark:hover:bg-[#FE5502]/10"
               onClick={() => {
                 onClose()
                 if (onCategoryClick) {
@@ -55,10 +55,10 @@ export default function RestaurantMenuSheet({ open, onClose, menuCategories = []
                 }, 300)
               }}
             >
-              <span className="text-[14px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-[#FF0000] dark:group-hover:text-[#FF0000] transition-colors truncate pr-4">
+              <span className="text-[14px] font-semibold text-gray-700 dark:text-gray-300 group-hover:text-[#FE5502] dark:group-hover:text-[#FE5502] transition-colors truncate pr-4">
                 {category.name}
               </span>
-              <div className="flex items-center justify-center min-w-[24px] h-[24px] px-2 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-[#FF0000] group-hover:text-white transition-colors">
+              <div className="flex items-center justify-center min-w-[24px] h-[24px] px-2 rounded-full bg-gray-100 dark:bg-gray-800 group-hover:bg-[#FE5502] group-hover:text-white transition-colors">
                 <span className="text-[12px] font-bold text-gray-600 dark:text-gray-400 group-hover:text-white transition-colors">
                   {category.count}
                 </span>

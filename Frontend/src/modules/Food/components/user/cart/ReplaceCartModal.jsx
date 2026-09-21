@@ -38,7 +38,7 @@ export default function ReplaceCartModal({
             className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-900"
           >
             <div className="flex flex-col items-center text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-[#FF0000] dark:bg-red-900/30">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-[#FE5502] dark:bg-red-900/30">
                 <AlertCircle className="h-8 w-8" />
               </div>
               
@@ -62,7 +62,7 @@ export default function ReplaceCartModal({
                 <button
                   type="button"
                   onClick={onConfirm}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF0000] px-4 py-3 font-semibold text-white shadow-lg shadow-red-500/30 transition-colors hover:bg-red-600 focus:outline-none"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FE5502] px-4 py-3 font-semibold text-white shadow-lg shadow-red-500/30 transition-colors hover:bg-red-600 focus:outline-none"
                 >
                   <Trash2 className="h-4 w-4" />
                   Clear & Continue

@@ -99,7 +99,7 @@ export default function DiningBookingsPage() {
                 {(r.status === "seated" || r.status === "completed") && (
                   <button
                     onClick={() => navigate(`/food/restaurant/dining/bookings/${r._id}/bill`)}
-                    className="flex items-center gap-1 rounded-lg bg-[#FF0000] px-3 py-1.5 text-xs font-semibold text-white"
+                    className="flex items-center gap-1 rounded-lg bg-[#0D315B] px-3 py-1.5 text-xs font-semibold text-white"
                   >
                     <Receipt className="h-3.5 w-3.5" /> {r.billId ? "View Bill" : "Create Bill"}
                   </button>

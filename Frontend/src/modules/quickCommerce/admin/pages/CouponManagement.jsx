@@ -254,7 +254,7 @@ const CouponManagement = () => {
                 {canCreate && (
                     <button
                         onClick={() => handleOpenModal()}
-                        className="flex items-center gap-2 px-6 py-3.5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+                        className="flex items-center gap-2 px-6 py-3.5 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
                     >
                         <HiOutlinePlus className="h-5 w-5" />
                         CREATE NEW PROMO
@@ -587,7 +587,7 @@ const CouponManagement = () => {
                                     type="checkbox"
                                     checked={Boolean(formData.firstOrderOnly)}
                                     onChange={(e) => setFormData({ ...formData, firstOrderOnly: e.target.checked })}
-                                    className="h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-600"
+                                    className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-600"
                                 />
                                 <span className="text-xs font-black text-slate-700 uppercase tracking-widest">First order only</span>
                             </label>

@@ -219,7 +219,7 @@ const ShopByStoreManagement = () => {
         </div>
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-2 px-6 py-3.5 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
+          className="flex items-center gap-2 px-6 py-3.5 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
         >
           <HiOutlinePlus className="h-5 w-5" />
           New Store

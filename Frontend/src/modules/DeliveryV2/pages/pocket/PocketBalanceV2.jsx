@@ -258,7 +258,7 @@ export const PocketBalanceV2 = () => {
                   }
                   className={`w-full py-4 rounded-xl font-bold text-sm shadow-lg transition-all active:scale-[0.98] ${
                      walletState.canWithdraw 
-                     ? 'bg-black text-white' 
+                     ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   } flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed`}
                 >

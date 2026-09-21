@@ -107,7 +107,7 @@ class QuickErrorBoundary extends React.Component {
               <Link 
                 to="/quick"
                 onClick={() => this.setState({ hasError: false, errorMessage: "", autoRetrying: false })}
-                className="flex items-center justify-center px-6 py-3.5 bg-[#FF0000] hover:bg-[#E54D02] text-white rounded-xl font-bold transition-colors shadow-lg shadow-[#FF0000]/20"
+                className="flex items-center justify-center px-6 py-3.5 bg-[#FE5502] hover:bg-[#E54D02] text-white rounded-xl font-bold transition-colors shadow-lg shadow-[#FE5502]/20"
               >
                 Back to Home
               </Link>

@@ -36,7 +36,7 @@ const MiniCart = ({
                         <Link
                             to="/cart"
                             className={cn(
-                                "flex items-center gap-2 text-white rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.05] active:scale-95 transition-all group border border-white/20 relative overflow-hidden py-1.5 px-2 bg-[#FF0000]",
+                                "flex items-center gap-2 text-white rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.05] active:scale-95 transition-all group border border-white/20 relative overflow-hidden py-1.5 px-2 bg-[#FE5502]",
                             )}
                         >
                             <div className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">

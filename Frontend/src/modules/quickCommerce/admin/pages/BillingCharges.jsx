@@ -564,7 +564,7 @@ export default function BillingCharges() {
                               {canDelete && (
                                 <button
                                   onClick={() => handleDeleteRange(originalIndex)}
-                                  className="p-1.5 text-slate-900 hover:bg-red-50 rounded transition-colors"
+                                  className="p-1.5 text-slate-900 hover:bg-purple-50 rounded transition-colors"
                                   title="Delete"
                                 >
                                   <Trash2 className="w-4 h-4" />

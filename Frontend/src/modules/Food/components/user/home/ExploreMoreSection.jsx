@@ -21,7 +21,7 @@ const ExploreMoreSection = memo(({
 
   const getIcon = (label, themeIndex) => {
     // Colors from screenshot: Red for Collections/Offers, Orange/Yellow for Gourmet
-    const colorClass = label === "Gourmet" ? "text-[#f59e0b]" : "text-[#FF0000]";
+    const colorClass = label === "Gourmet" ? "text-[#f59e0b]" : "text-[#FE5502]";
     switch (label) {
       case "Collections": return <ShoppingBag className={`w-4 h-4 ${colorClass}`} strokeWidth={2.5} />;
       case "Offers": return <Tag className={`w-4 h-4 ${colorClass}`} strokeWidth={2.5} fill="currentColor" />;
@@ -31,7 +31,7 @@ const ExploreMoreSection = memo(({
   };
 
   const cardThemes = [
-    { bg: "bg-[#ffd1d1]", arrow: "text-[#FF0000]" }, // Noticeably darker pink
+    { bg: "bg-[#ffd1d1]", arrow: "text-[#FE5502]" }, // Noticeably darker pink
     { bg: "bg-[#d1dcff]", arrow: "text-[#3b82f6]" }, // Noticeably darker blue
     { bg: "bg-[#ffdbb3]", arrow: "text-[#f97316]" }, // Noticeably darker orange
   ];
@@ -41,11 +41,11 @@ const ExploreMoreSection = memo(({
       <div className="relative overflow-hidden rounded-[20px] bg-[#f0e6e6] p-3 md:px-5 md:py-4 shadow-sm border border-[#e8dada]">
         
         <div className="flex items-center justify-center gap-2 mb-3 md:mb-4 mt-0.5">
-           <span className="text-[#FF0000] text-[11px] md:text-[14px] opacity-90 leading-none">⇋</span>
+           <span className="text-[#FE5502] text-[11px] md:text-[14px] opacity-90 leading-none">⇋</span>
            <h2 className="relative z-10 text-[12px] md:text-[18px] font-extrabold text-black tracking-[0.05em] uppercase">
              {exploreMoreHeading || "Explore More"}
            </h2>
-           <span className="text-[#FF0000] text-[11px] md:text-[14px] opacity-90 leading-none">⇌</span>
+           <span className="text-[#FE5502] text-[11px] md:text-[14px] opacity-90 leading-none">⇌</span>
         </div>
         
         {showExploreSkeleton ? (

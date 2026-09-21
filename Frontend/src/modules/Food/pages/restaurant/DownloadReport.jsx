@@ -129,7 +129,7 @@ export default function DownloadReport() {
       <div className="px-4 pb-6">
         <button
           onClick={handleSend}
-          className="w-full bg-black text-white py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
+          className="w-full bg-[#0D315B] hover:bg-[#0A2647] text-white py-4 rounded-xl text-sm font-semibold flex items-center justify-center gap-2"
         >
           <Mail className="w-5 h-5" />
           Send an email

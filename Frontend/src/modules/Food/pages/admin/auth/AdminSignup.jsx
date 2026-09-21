@@ -387,7 +387,7 @@ export default function AdminSignup() {
 
                 <Button
                   type="submit"
-                  className="h-12 w-full bg-black text-white transition-colors hover:bg-neutral-900"
+                  className="h-12 w-full bg-[#6412C6] text-white transition-colors hover:bg-[#4E0E9A]"
                   disabled={isLoading}
                 >
                   {isLoading ? "Sending..." : "Continue"}
@@ -417,7 +417,7 @@ export default function AdminSignup() {
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
                         onPaste={index === 0 ? handleOtpPaste : undefined}
-                        className="h-14 w-14 text-center text-2xl font-semibold border-2 focus-visible:ring-2 focus-visible:ring-black"
+                        className="h-14 w-14 text-center text-2xl font-semibold border-2 focus-visible:ring-2 focus-visible:ring-[#6412C6]"
                         disabled={isLoading}
                       />
                     ))}
@@ -441,7 +441,7 @@ export default function AdminSignup() {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={resendTimer > 0 || isLoading}
-                    className="text-black hover:underline font-medium disabled:text-gray-400 disabled:no-underline"
+                    className="text-[#6412C6] hover:underline font-medium disabled:text-gray-400 disabled:no-underline"
                   >
                     {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend code"}
                   </button>
@@ -449,7 +449,7 @@ export default function AdminSignup() {
 
                 <Button
                   type="submit"
-                  className="h-12 w-full bg-black text-white transition-colors hover:bg-neutral-900"
+                  className="h-12 w-full bg-[#6412C6] text-white transition-colors hover:bg-[#4E0E9A]"
                   disabled={isLoading}
                 >
                   {isLoading ? "Verifying..." : "Verify & Sign Up"}
@@ -469,7 +469,7 @@ export default function AdminSignup() {
             <span>Already have an account?{" "}
               <button
                 onClick={() => navigate("/ecs/login")}
-                className="text-black hover:underline font-medium"
+                className="text-[#6412C6] hover:underline font-medium"
               >
                 Sign in
               </button>

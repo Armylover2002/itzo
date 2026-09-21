@@ -776,7 +776,7 @@ export default function AddZone() {
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
               <MapPin className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -801,7 +801,7 @@ export default function AddZone() {
                   {/* Country Selection */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Country <span className="text-red-500">*</span>
+                      Country <span className="text-purple-500">*</span>
                     </label>
                     <select
                       value={formData.country}
@@ -816,7 +816,7 @@ export default function AddZone() {
                   {/* Zone Name */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Create Zone name <span className="text-red-500">*</span>
+                      Create Zone name <span className="text-purple-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -831,7 +831,7 @@ export default function AddZone() {
                   {/* Select Unit */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
-                      Select Unit <span className="text-red-500">*</span>
+                      Select Unit <span className="text-purple-500">*</span>
                     </label>
                     <select
                       value={formData.unit}
@@ -885,7 +885,7 @@ export default function AddZone() {
                     onClick={toggleDrawingMode}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                       isDrawing
-                        ? "bg-red-600 text-white hover:bg-red-700"
+                        ? "bg-purple-600 text-white hover:bg-purple-700"
                         : "bg-blue-600 text-white hover:bg-blue-700"
                     }`}
                   >
@@ -921,7 +921,7 @@ export default function AddZone() {
                   <p
                     className={`text-xs mt-2 ${
                       autoGenerateMessage.type === "error"
-                        ? "text-red-600"
+                        ? "text-purple-600"
                         : autoGenerateMessage.type === "success"
                           ? "text-emerald-700"
                           : "text-slate-600"
@@ -944,7 +944,7 @@ export default function AddZone() {
                       </span>
                     )}
                     {coordinates.length < MIN_POINTS && (
-                      <span className="text-red-600 ml-2">(Minimum {MIN_POINTS} points required)</span>
+                      <span className="text-purple-600 ml-2">(Minimum {MIN_POINTS} points required)</span>
                     )}
                   </p>
                 )}

@@ -46,7 +46,7 @@ export default function OrderInvoice() {
     return (
       <AnimatedPage className="min-h-screen bg-[#f5f5f5] dark:bg-[#0a0a0a] p-4">
         <div className="max-w-4xl mx-auto text-center py-20">
-          <div className="w-8 h-8 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-8 h-8 border-2 border-[#FE5502] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-muted-foreground">Generating invoice...</p>
         </div>
       </AnimatedPage>
@@ -113,14 +113,14 @@ export default function OrderInvoice() {
               color: #333;
             }
             .invoice-header {
-              border-bottom: 2px solid #FF0000;
+              border-bottom: 2px solid #FE5502;
               padding-bottom: 20px;
               margin-bottom: 30px;
             }
             .invoice-title {
               font-size: 32px;
               font-weight: bold;
-              color: #FF0000;
+              color: #FE5502;
               margin-bottom: 10px;
             }
             .invoice-details {
@@ -157,8 +157,8 @@ export default function OrderInvoice() {
             .grand-total {
               font-size: 24px;
               font-weight: bold;
-              color: #FF0000;
-              border-top: 2px solid #FF0000;
+              color: #FE5502;
+              border-top: 2px solid #FE5502;
               padding-top: 10px;
             }
             @media print {
@@ -210,7 +210,7 @@ export default function OrderInvoice() {
               </Button>
               <Button
                 onClick={handleDownloadPDF}
-                className="bg-[#FF0000] hover:bg-[#C83C00] flex items-center gap-2 text-xs sm:text-sm h-9 sm:h-10"
+                className="bg-[#FE5502] hover:bg-[#C83C00] flex items-center gap-2 text-xs sm:text-sm h-9 sm:h-10"
               >
                 <Download className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                 <span className="hidden sm:inline text-white">Download PDF</span>
@@ -226,8 +226,8 @@ export default function OrderInvoice() {
               {/* Invoice Header */}
               <div className="invoice-header">
                 <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                  <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#FF0000]" />
-                  <h2 className="invoice-title text-xl sm:text-2xl md:text-3xl text-[#FF0000] font-bold">INVOICE</h2>
+                  <FileText className="h-6 w-6 sm:h-8 sm:w-8 text-[#FE5502]" />
+                  <h2 className="invoice-title text-xl sm:text-2xl md:text-3xl text-[#FE5502] font-bold">INVOICE</h2>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
                   <div>
@@ -238,7 +238,7 @@ export default function OrderInvoice() {
                         : 'Food Delivery Platform'}
                     </p>
                   </div>
-                  <Badge className="bg-[#FF0000] text-white text-sm sm:text-base md:text-lg px-3 sm:px-4 py-1.5 sm:py-2 w-fit">
+                  <Badge className="bg-[#FE5502] text-white text-sm sm:text-base md:text-lg px-3 sm:px-4 py-1.5 sm:py-2 w-fit">
                     {orderStatus.toUpperCase()}
                   </Badge>
                 </div>
@@ -343,7 +343,7 @@ export default function OrderInvoice() {
                     <span>- {formatMoney(invoiceDiscount)}</span>
                   </div>
                 )}
-                <div className="grand-total flex justify-between text-base sm:text-lg md:text-xl md:text-2xl pt-2 sm:pt-3 mt-2 sm:mt-3 border-t-2 border-[#FF0000]">
+                <div className="grand-total flex justify-between text-base sm:text-lg md:text-xl md:text-2xl pt-2 sm:pt-3 mt-2 sm:mt-3 border-t-2 border-[#FE5502]">
                   <span>Total:</span>
                   <span>{formatMoney(invoiceTotal)}</span>
                 </div>

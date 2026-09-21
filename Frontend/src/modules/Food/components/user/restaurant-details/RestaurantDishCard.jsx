@@ -41,7 +41,7 @@ export default function RestaurantDishCard({
         }
       }}
       className={`bg-white dark:bg-[#1a1a1a] rounded-[12px] border overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] block hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col relative group ${
-        highlighted ? "border-[#FF0000]/30 bg-red-50/20" : "border-gray-100 dark:border-gray-800"
+        highlighted ? "border-[#FE5502]/30 bg-red-50/20" : "border-gray-100 dark:border-gray-800"
       }`}
       data-purpose="product-card"
     >
@@ -76,12 +76,12 @@ export default function RestaurantDishCard({
         >
           <Heart 
             className="h-3.5 w-3.5 transition-colors" 
-            fill={isBookmarked ? "#FF0000" : "none"} 
-            stroke={isBookmarked ? "#FF0000" : "#4B5563"} 
+            fill={isBookmarked ? "#FE5502" : "none"} 
+            stroke={isBookmarked ? "#FE5502" : "#4B5563"} 
           />
         </button>
         {isRecommended && (
-          <div className="absolute bottom-2 left-2 bg-[#FF0000]/90 backdrop-blur-sm px-1.5 py-0.5 rounded shadow-sm">
+          <div className="absolute bottom-2 left-2 bg-[#FE5502]/90 backdrop-blur-sm px-1.5 py-0.5 rounded shadow-sm">
             <span className="text-[8px] font-bold text-white uppercase tracking-wider">Bestseller</span>
           </div>
         )}
@@ -101,7 +101,7 @@ export default function RestaurantDishCard({
         <div className="flex justify-between items-center mt-auto pt-3 shrink-0">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[14px] font-bold text-[#FF0000] leading-none">
+              <span className="text-[14px] font-bold text-[#FE5502] leading-none">
                 {RUPEE_SYMBOL}{Math.round(price)}
               </span>
               {otherPrice > 0 && otherPrice > price && (
@@ -114,11 +114,11 @@ export default function RestaurantDishCard({
           
           <div className="relative z-10 flex flex-col items-center">
             {quantity > 0 ? (
-              <div className="flex items-center bg-[#FF0000] rounded-[8px] overflow-hidden shadow-sm h-7 w-20">
+              <div className="flex items-center bg-[#FE5502] rounded-[8px] overflow-hidden shadow-sm h-7 w-20">
                 <button
                   type="button"
                   disabled={disabled}
-                  className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#CC0000] transition-colors disabled:opacity-50"
+                  className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#C83C00] transition-colors disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!disabled) onDecrease?.(e);
@@ -130,7 +130,7 @@ export default function RestaurantDishCard({
                 <button
                   type="button"
                   disabled={disabled}
-                  className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#CC0000] transition-colors disabled:opacity-50"
+                  className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#C83C00] transition-colors disabled:opacity-50"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (!disabled) onIncrease?.(e);
@@ -143,13 +143,13 @@ export default function RestaurantDishCard({
               <button
                 type="button"
                 disabled={disabled}
-                className="bg-[#FF0000] text-white font-bold text-[10px] pl-3 pr-1.5 py-1.5 rounded-[8px] flex items-center gap-1 shadow-sm transition-colors hover:bg-[#CC0000] disabled:bg-gray-300 disabled:cursor-not-allowed border-0 outline-none h-7"
+                className="bg-[#FE5502] text-white font-bold text-[10px] pl-3 pr-1.5 py-1.5 rounded-[8px] flex items-center gap-1 shadow-sm transition-colors hover:bg-[#C83C00] disabled:bg-gray-300 disabled:cursor-not-allowed border-0 outline-none h-7"
                 onClick={(e) => {
                   e.stopPropagation();
                   if (!disabled) onIncrease?.(e);
                 }}
               >
-                ADD <Plus className="h-3.5 w-3.5 bg-white text-[#FF0000] rounded-full p-0.5 stroke-[3]" />
+                ADD <Plus className="h-3.5 w-3.5 bg-white text-[#FE5502] rounded-full p-0.5 stroke-[3]" />
               </button>
             )}
             

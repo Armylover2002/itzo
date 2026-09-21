@@ -2636,7 +2636,7 @@ return (
                       {/* Quantity controls */}
                       <div className="flex items-center bg-white dark:bg-[#222] rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden h-8">
                         <button
-                          className="w-8 h-full flex items-center justify-center text-[#FF0000] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                          className="w-8 h-full flex items-center justify-center text-[#FE5502] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         >
                           <Minus className="h-3 w-3 md:h-4 md:w-4" />
@@ -2645,7 +2645,7 @@ return (
                           {item.quantity}
                         </span>
                         <button
-                          className="w-8 h-full flex items-center justify-center text-[#FF0000] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                          className="w-8 h-full flex items-center justify-center text-[#FE5502] hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                           onClick={() => {
                             let itemWithVariants = item;
                             if (!hasFoodVariants(item) && item.variantId && menuData) {
@@ -2704,7 +2704,7 @@ return (
               {/* Add more items */}
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 mt-4 md:mt-6 text-[#FF0000] dark:text-[#FF0000]"
+                className="flex items-center gap-2 mt-4 md:mt-6 text-[#FE5502] dark:text-[#FE5502]"
               >
                 <Plus className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="text-sm md:text-base font-medium">Add more items</span>
@@ -2738,7 +2738,7 @@ return (
                             setDeliveryType("standard")
                           }
                         }}
-                        className="text-[13px] font-semibold text-[#FF0000] hover:underline"
+                        className="text-[13px] font-semibold text-[#FE5502] hover:underline"
                       >
                         {isScheduled ? "Switch to standard delivery" : "Schedule for later"}
                       </button>
@@ -2757,7 +2757,7 @@ return (
                       max={new Date(Date.now() + 86400000).toLocaleDateString('en-CA')}
                       value={scheduledDate}
                       onChange={(e) => setScheduledDate(e.target.value)}
-                      className="w-full rounded-xl border border-red-200 bg-white/90 p-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#FF0000] dark:border-red-900/50 dark:bg-[#0f0f0f] dark:text-gray-200"
+                      className="w-full rounded-xl border border-red-200 bg-white/90 p-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#FE5502] dark:border-red-900/50 dark:bg-[#0f0f0f] dark:text-gray-200"
                     />
                   </div>
                   <div className="flex-1">
@@ -2767,7 +2767,7 @@ return (
                         <select
                           value={scheduledTime}
                           onChange={(e) => setScheduledTime(e.target.value)}
-                          className="w-full appearance-none rounded-xl border border-red-200 bg-white/90 p-2.5 pr-8 text-sm text-gray-800 focus:outline-none focus:border-[#FF0000] dark:border-red-900/50 dark:bg-[#0f0f0f] dark:text-gray-200"
+                          className="w-full appearance-none rounded-xl border border-red-200 bg-white/90 p-2.5 pr-8 text-sm text-gray-800 focus:outline-none focus:border-[#FE5502] dark:border-red-900/50 dark:bg-[#0f0f0f] dark:text-gray-200"
                         >
                           {availableTimeSlots.map(slot => (
                             <option key={slot.value} value={slot.value}>{slot.label}</option>
@@ -2804,7 +2804,7 @@ return (
               </button>
               <button
                 onClick={() => setSendCutlery(!sendCutlery)}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg md:rounded-xl text-sm md:text-base ${sendCutlery ? 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300' : 'border-[#FF0000] dark:border-[#FF0000]/50 text-[#FF0000] dark:text-[#FF0000] bg-[#FFF2EB] dark:bg-[#FF0000]/10'}`}
+                className={`flex items-center gap-2 px-3 md:px-4 py-2 md:py-3 border rounded-lg md:rounded-xl text-sm md:text-base ${sendCutlery ? 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300' : 'border-[#FE5502] dark:border-[#FE5502]/50 text-[#FE5502] dark:text-[#FE5502] bg-[#FFF2EB] dark:bg-[#FE5502]/10'}`}
               >
                 <Utensils className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="whitespace-nowrap">
@@ -2823,7 +2823,7 @@ return (
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Eg. Call when outside, ring bell once, leave at gate"
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#FF0000] dark:focus:border-[#FF0000] bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#FE5502] dark:focus:border-[#FE5502] bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
                   maxLength={240}
                 />
                 <div className="mt-2 flex items-center justify-between gap-3">
@@ -2845,7 +2845,7 @@ return (
                   value={restaurantNote}
                   onChange={(e) => setRestaurantNote(e.target.value)}
                   placeholder="Eg. Less spicy, no onion, pack gravy separately"
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#FF0000] dark:focus:border-[#FF0000] bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
+                  className="w-full border border-gray-200 dark:border-gray-700 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base resize-none h-20 md:h-24 focus:outline-none focus:border-[#FE5502] dark:focus:border-[#FE5502] bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100"
                   maxLength={240}
                 />
                 <div className="mt-2 flex items-center justify-between gap-3">
@@ -2864,7 +2864,7 @@ return (
               <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                 <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
                   <div className="w-6 h-6 md:w-8 md:h-8 bg-gray-100 dark:bg-gray-800 rounded flex items-center justify-center">
-                    <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#FF0000]" />
+                    <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-[#FE5502]" />
                   </div>
                   <span className="text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200">Complete your meal with</span>
                 </div>
@@ -2902,7 +2902,7 @@ return (
                                 </div>
                               </div>
                               {quantity > 0 ? (
-                                <div className="absolute bottom-1 md:bottom-2 right-1 md:right-2 flex items-center bg-white border border-[#FF0000] rounded shadow-sm">
+                                <div className="absolute bottom-1 md:bottom-2 right-1 md:right-2 flex items-center bg-white border border-[#FE5502] rounded shadow-sm">
                                   <button
                                     onClick={() => {
                                       const cartRestaurantId = cart[0]?.restaurantId || restaurantId;
@@ -2917,9 +2917,9 @@ return (
                                     }}
                                     className="w-6 h-6 md:w-7 md:h-7 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors rounded-l"
                                   >
-                                    <Minus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#FF0000]" />
+                                    <Minus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#FE5502]" />
                                   </button>
-                                  <span className="w-5 text-center text-xs md:text-sm font-semibold text-[#FF0000]">
+                                  <span className="w-5 text-center text-xs md:text-sm font-semibold text-[#FE5502]">
                                     {quantity}
                                   </span>
                                   <button
@@ -2936,7 +2936,7 @@ return (
                                     }}
                                     className="w-6 h-6 md:w-7 md:h-7 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors rounded-r"
                                   >
-                                    <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#FF0000]" />
+                                    <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#FE5502]" />
                                   </button>
                                 </div>
                               ) : (
@@ -2959,9 +2959,9 @@ return (
 
                                     updateItemQuantityDetail(addonWithInfo, 1);
                                   }}
-                                  className="absolute bottom-1 md:bottom-2 right-1 md:right-2 w-6 h-6 md:w-7 md:h-7 bg-white border border-[#FF0000] rounded flex items-center justify-center shadow-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                  className="absolute bottom-1 md:bottom-2 right-1 md:right-2 w-6 h-6 md:w-7 md:h-7 bg-white border border-[#FE5502] rounded flex items-center justify-center shadow-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                                 >
-                                  <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#FF0000]" />
+                                  <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 text-[#FE5502]" />
                                 </button>
                               )}
                             </div>
@@ -2993,13 +2993,13 @@ return (
               {appliedCoupon ? (
                 <div className="px-4 py-3 md:px-6 md:py-4 flex items-center justify-between">
                   <div className="flex items-start gap-3">
-                    <Percent className="h-5 w-5 text-[#FF0000] mt-0.5" />
+                    <Percent className="h-5 w-5 text-[#FE5502] mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">'{appliedCoupon.code}' applied</p>
-                      <p className="text-xs text-[#FF0000] font-medium mt-0.5">You saved {RUPEE_SYMBOL}{discount}</p>
+                      <p className="text-xs text-[#FE5502] font-medium mt-0.5">You saved {RUPEE_SYMBOL}{discount}</p>
                     </div>
                   </div>
-                  <button onClick={handleRemoveCoupon} className="text-[#FF0000] text-xs font-semibold px-2 hover:underline">REMOVE</button>
+                  <button onClick={handleRemoveCoupon} className="text-[#FE5502] text-xs font-semibold px-2 hover:underline">REMOVE</button>
                 </div>
               ) : (
                 /* Available / Input View */
@@ -3011,10 +3011,10 @@ return (
                       value={manualCouponCode}
                       onChange={(e) => setManualCouponCode(e.target.value.toUpperCase())}
                       placeholder="Enter coupon code"
-                      className="flex-1 min-h-[48px] rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0a0a0a] px-4 py-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#FF0000]"
+                      className="flex-1 min-h-[48px] rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#0a0a0a] px-4 py-3 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-[#FE5502]"
                     />
                     <button
-                      className="bg-white dark:bg-[#1a1a1a] border border-[#FF0000] text-[#FF0000] rounded-xl px-6 min-h-[48px] text-sm font-semibold uppercase hover:bg-red-50 dark:hover:bg-red-900/10 active:scale-[0.98] transition-all"
+                      className="bg-white dark:bg-[#1a1a1a] border border-[#FE5502] text-[#FE5502] rounded-xl px-6 min-h-[48px] text-sm font-semibold uppercase hover:bg-red-50 dark:hover:bg-red-900/10 active:scale-[0.98] transition-all"
                       onClick={handleApplyCouponCode}
                     >
                       APPLY
@@ -3041,7 +3041,7 @@ return (
                                     {coupon.discountDisplay || `Save ${RUPEE_SYMBOL}${coupon.discount}`}
                                   </p>
                                   {isFirstTimeOnlyCoupon(coupon) && (
-                                    <p className="text-[11px] text-[#FF0000] mb-1 font-medium">First-time users only</p>
+                                    <p className="text-[11px] text-[#FE5502] mb-1 font-medium">First-time users only</p>
                                   )}
                                   {coupon.meetsMinOrder === false ? (
                                     <p className="text-xs text-blue-600 font-semibold mb-1">
@@ -3054,7 +3054,7 @@ return (
                               </div>
                               <button
                                 className={`border rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-wider shadow-sm transition-all duration-200 ${canApply
-                                  ? "border-[#FF0000] text-[#FF0000] hover:bg-red-50"
+                                  ? "border-[#FE5502] text-[#FE5502] hover:bg-red-50"
                                   : "border-gray-300 text-gray-400 cursor-not-allowed bg-gray-50/50"
                                   }`}
                                 onClick={() => handleApplyCoupon(coupon)}
@@ -3181,7 +3181,7 @@ return (
               <div className="flex items-start justify-between w-full text-left">
                 <div className="flex items-start gap-4 flex-1">
                   <div className="bg-red-50 dark:bg-red-900/20 p-2 rounded-xl mt-0.5">
-                    <MapPin className="h-5 w-5 text-[#FF0000]" />
+                    <MapPin className="h-5 w-5 text-[#FE5502]" />
                   </div>
                   <div className="flex-1">
                     <div className="flex flex-col">
@@ -3206,7 +3206,7 @@ return (
                             </p>
                           )}
                           <div className="mt-1 flex items-center gap-2">
-                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] md:text-[11px] font-semibold bg-[#FFF2EB] text-[#FF0000] dark:bg-[#FF0000]/10 dark:text-[#FF0000] border border-[#FF0000]/30">
+                            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] md:text-[11px] font-semibold bg-[#FFF2EB] text-[#FE5502] dark:bg-[#FE5502]/10 dark:text-[#FE5502] border border-[#FE5502]/30">
                               GPS enabled
                             </span>
                           </div>
@@ -3218,7 +3218,7 @@ return (
                       )}
                     </div>
                     {!hasSavedAddress && (
-                      <p className="text-sm text-[#FF0000] mt-2 font-medium">
+                      <p className="text-sm text-[#FE5502] mt-2 font-medium">
                         Select a delivery location to continue
                       </p>
                     )}
@@ -3261,7 +3261,7 @@ return (
                                 handleSelectSavedAddress(address)
                               }}
                               className={`w-full text-left rounded-xl border-2 p-3 transition-colors ${isSelected
-                                ? "border-[#FF0000] bg-red-50/50 dark:bg-[#FF0000]/5"
+                                ? "border-[#FE5502] bg-red-50/50 dark:bg-[#FE5502]/5"
                                 : "border-slate-100 dark:border-gray-800 hover:border-slate-200"
                                 }`}
                             >
@@ -3275,7 +3275,7 @@ return (
                                   </p>
                                 </div>
                                 {isSelected && (
-                                  <span className="text-[10px] bg-[#FF0000] text-white px-2 py-0.5 rounded uppercase font-bold tracking-wider whitespace-nowrap">
+                                  <span className="text-[10px] bg-[#FE5502] text-white px-2 py-0.5 rounded uppercase font-bold tracking-wider whitespace-nowrap">
                                     Selected
                                   </span>
                                 )}
@@ -3290,7 +3290,7 @@ return (
                 <button
                   type="button"
                   onClick={openLocationSelector}
-                  className="p-2 text-[#FF0000] bg-red-50 rounded-full hover:bg-red-100 transition-colors dark:bg-red-900/20 dark:hover:bg-red-900/40"
+                  className="p-2 text-[#FE5502] bg-red-50 rounded-full hover:bg-red-100 transition-colors dark:bg-red-900/20 dark:hover:bg-red-900/40"
                   aria-label="Open location selector"
                 >
                   <ChevronRight className="h-5 w-5" />
@@ -3315,7 +3315,7 @@ return (
                 <button
                   type="button"
                   onClick={() => setIsEditingRecipient((prev) => !prev)}
-                  className="text-[#FF0000] text-xs md:text-sm font-semibold whitespace-nowrap"
+                  className="text-[#FE5502] text-xs md:text-sm font-semibold whitespace-nowrap"
                 >
                   {isEditingRecipient ? "Done" : "Change"}
                 </button>
@@ -3338,7 +3338,7 @@ return (
                       }
                       placeholder="Enter recipient name"
                       maxLength={50}
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111] px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#FF0000]"
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111] px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#FE5502]"
                     />
                   </div>
                   <div>
@@ -3356,7 +3356,7 @@ return (
                       }
                       placeholder="Enter recipient phone"
                       maxLength={10}
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111] px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#FF0000]"
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#111111] px-3 py-2.5 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-[#FE5502]"
                     />
                   </div>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400">
@@ -3390,7 +3390,7 @@ return (
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Incl. taxes and charges</p>
                     {otherPlatformSubtotal > subtotal && (
-                      <p className="text-xs font-semibold text-[#FF0000] dark:text-red-400 mt-1">
+                      <p className="text-xs font-semibold text-[#FE5502] dark:text-red-400 mt-1">
                         Other platform item total {RUPEE_SYMBOL}{otherPlatformSubtotal.toFixed(0)} • Save {RUPEE_SYMBOL}{otherPlatformSavings.toFixed(0)}
                       </p>
                     )}
@@ -3417,7 +3417,7 @@ return (
                       Delivery Fee {hasDistanceDeliveryBreakdown ? `| ${Number(resolvedDistanceKm).toFixed(1)} kms` : ""}
                     </span>
                     <div className="text-right">
-                      <span className={deliveryFee === 0 ? "text-[#FF0000] font-semibold" : "text-gray-800 dark:text-gray-200 font-medium"}>
+                      <span className={deliveryFee === 0 ? "text-[#FE5502] font-semibold" : "text-gray-800 dark:text-gray-200 font-medium"}>
                         {deliveryFee === 0 ? "FREE" : `${RUPEE_SYMBOL}${deliveryFee.toFixed(0)}`}
                       </span>
                     </div>
@@ -3452,7 +3452,7 @@ return (
                     <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-sm text-[#FF0000] font-medium">
+                    <div className="flex justify-between text-sm text-[#FE5502] font-medium">
                       <span>Item Discount</span>
                       <span>-{RUPEE_SYMBOL}{discount.toFixed(2)}</span>
                     </div>
@@ -3467,12 +3467,12 @@ return (
                   {otherPlatformSubtotal > subtotal && (
                     <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-800/30">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-[#FF0000] dark:text-red-400 uppercase tracking-wider">Other Platform Price</span>
+                        <span className="text-xs font-bold text-[#FE5502] dark:text-red-400 uppercase tracking-wider">Other Platform Price</span>
                         <span className="text-sm font-bold text-gray-500">{RUPEE_SYMBOL}{otherPlatformSubtotal.toFixed(0)}</span>
                       </div>
                       <div className="flex justify-between items-center mt-1">
-                        <span className="text-xs font-bold text-[#FF0000] dark:text-red-400 uppercase tracking-wider">Your Savings</span>
-                        <span className="text-sm font-bold text-[#FF0000]">{RUPEE_SYMBOL}{otherPlatformSavings.toFixed(0)}</span>
+                        <span className="text-xs font-bold text-[#FE5502] dark:text-red-400 uppercase tracking-wider">Your Savings</span>
+                        <span className="text-sm font-bold text-[#FE5502]">{RUPEE_SYMBOL}{otherPlatformSavings.toFixed(0)}</span>
                       </div>
                     </div>
                   )}
@@ -3500,11 +3500,11 @@ return (
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-lg bg-red-100/80 dark:bg-red-900/40 flex items-center justify-center flex-shrink-0">
                 {selectedPaymentMethod === "wallet" ? (
-                  <Wallet className="h-5 w-5 text-[#FF0000]" />
+                  <Wallet className="h-5 w-5 text-[#FE5502]" />
                 ) : selectedPaymentMethod === "razorpay" ? (
-                  <Zap className="h-5 w-5 text-[#FF0000]" />
+                  <Zap className="h-5 w-5 text-[#FE5502]" />
                 ) : (
-                  <Banknote className="h-5 w-5 text-[#FF0000]" />
+                  <Banknote className="h-5 w-5 text-[#FE5502]" />
                 )}
               </div>
               <div className="leading-tight">
@@ -3524,7 +3524,7 @@ return (
               </div>
             </div>
 
-            <div className="flex items-center gap-0.5 text-[#FF0000] font-bold text-[11px] uppercase tracking-widest bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-lg">
+            <div className="flex items-center gap-0.5 text-[#FE5502] font-bold text-[11px] uppercase tracking-widest bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-lg">
               CHANGE <ChevronRight className="h-3.5 w-3.5" />
             </div>
           </div>
@@ -3533,7 +3533,7 @@ return (
           <button
             onClick={handlePlaceOrder}
             disabled={isPlacingOrder || (selectedPaymentMethod === "wallet" && walletBalance < total)}
-            className="w-full bg-gradient-to-r from-[#FF0000] to-[#FF0000] hover:from-[#C83C00] hover:to-[#CF2834] text-white px-6 h-12 md:h-14 rounded-2xl font-bold shadow-lg shadow-[#FF0000]/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between transition-transform active:scale-[0.98]"
+            className="w-full bg-gradient-to-r from-[#FE5502] to-[#FE5502] hover:from-[#C83C00] hover:to-[#CF2834] text-white px-6 h-12 md:h-14 rounded-2xl font-bold shadow-lg shadow-[#FE5502]/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between transition-transform active:scale-[0.98]"
           >
             {(selectedPaymentMethod === "razorpay" || selectedPaymentMethod === "wallet" || selectedPaymentMethod === "cash") && (
               <div className="text-left flex flex-col justify-center border-r-[1.5px] border-white/20 pr-4">
@@ -3610,7 +3610,7 @@ return (
             <div className="relative mb-6">
               <div className="h-2.5 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#FF0000] to-[#C83C00] rounded-full transition-all duration-100 ease-linear"
+                  className="h-full bg-gradient-to-r from-[#FE5502] to-[#C83C00] rounded-full transition-all duration-100 ease-linear"
                   style={{
                     width: `${orderProgress}%`,
                     boxShadow: '0 0 10px rgba(235, 89, 14, 0.5)'
@@ -3636,7 +3636,7 @@ return (
               }}
               className="w-full text-right"
             >
-              <span className="text-[#FF0000] font-semibold text-base hover:text-[#C83C00] transition-colors">
+              <span className="text-[#FE5502] font-semibold text-base hover:text-[#C83C00] transition-colors">
                 CANCEL
               </span>
             </button>
@@ -3661,7 +3661,7 @@ return (
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `-10%`,
-                backgroundColor: ['#FF0000', '#3b82f6', '#f59e0b', '#ef4444', '#C83C00', '#ec4899'][Math.floor(Math.random() * 6)],
+                backgroundColor: ['#FE5502', '#3b82f6', '#f59e0b', '#ef4444', '#C83C00', '#ec4899'][Math.floor(Math.random() * 6)],
                 animation: `confettiFall ${2 + Math.random() * 2}s linear ${Math.random() * 2}s infinite`,
                 transform: `rotate(${Math.random() * 360}deg)`,
               }}
@@ -3739,14 +3739,14 @@ return (
             className="mt-12 text-center"
             style={{ animation: 'slideUp 0.5s ease-out 0.8s both' }}
           >
-            <h3 className="text-3xl font-bold text-[#FF0000] dark:text-red-400 mb-2">Order Placed!</h3>
+            <h3 className="text-3xl font-bold text-[#FE5502] dark:text-red-400 mb-2">Order Placed!</h3>
             <p className="text-gray-600 dark:text-gray-300">Your delicious food is on its way</p>
           </div>
 
           {/* Action Button */}
           <button
             onClick={handleGoToOrders}
-            className="mt-10 bg-[#FF0000] hover:bg-[#C83C00] text-white font-semibold py-4 px-12 rounded-xl shadow-lg shadow-red-200/70 dark:shadow-red-950/40 transition-all hover:shadow-xl hover:scale-105"
+            className="mt-10 bg-[#FE5502] hover:bg-[#C83C00] text-white font-semibold py-4 px-12 rounded-xl shadow-lg shadow-red-200/70 dark:shadow-red-950/40 transition-all hover:shadow-xl hover:scale-105"
             style={{ animation: 'slideUp 0.5s ease-out 1s both' }}
           >
             Track Your Order
@@ -3807,26 +3807,26 @@ return (
                       }
                     }}
                     className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 group ${selectedPaymentMethod === option.id
-                      ? 'border-[#FF0000] bg-red-50 dark:bg-red-900/10 shadow-sm'
+                      ? 'border-[#FE5502] bg-red-50 dark:bg-red-900/10 shadow-sm'
                       : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] hover:border-red-200 dark:hover:border-red-900/30 shadow-sm'
                       } ${option.disabled ? 'opacity-40 grayscale-[0.8] cursor-not-allowed' : 'cursor-pointer active:scale-[0.98]'}`}
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${selectedPaymentMethod === option.id
-                        ? 'bg-red-100 dark:bg-red-900/30 text-[#FF0000]'
+                        ? 'bg-red-100 dark:bg-red-900/30 text-[#FE5502]'
                         : option.color
                         }`}>
                         {option.icon}
                       </div>
                       <div className="text-left">
                         <div className="flex items-center gap-2">
-                          <span className={`text-[15px] font-semibold tracking-tight leading-none transition-colors ${selectedPaymentMethod === option.id ? 'text-[#FF0000] dark:text-red-400' : 'text-gray-900 dark:text-gray-100'
+                          <span className={`text-[15px] font-semibold tracking-tight leading-none transition-colors ${selectedPaymentMethod === option.id ? 'text-[#FE5502] dark:text-red-400' : 'text-gray-900 dark:text-gray-100'
                             }`}>
                             {option.name}
                           </span>
                           {option.badge && (
                             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider ${selectedPaymentMethod === option.id
-                              ? 'bg-red-100 text-[#FF0000] dark:bg-red-900/40'
+                              ? 'bg-red-100 text-[#FE5502] dark:bg-red-900/40'
                               : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400'
                               }`}>
                               {option.badge}
@@ -3842,7 +3842,7 @@ return (
                             <>
                               <span className={`w-1 h-1 rounded-full ${selectedPaymentMethod === option.id ? 'bg-red-300 dark:bg-red-700' : 'bg-gray-300 dark:bg-gray-700'
                                 }`} />
-                              <p className={`text-[10px] font-bold uppercase tracking-tighter transition-colors ${selectedPaymentMethod === option.id ? 'text-[#FF0000]' : 'text-emerald-600 dark:text-emerald-500'
+                              <p className={`text-[10px] font-bold uppercase tracking-tighter transition-colors ${selectedPaymentMethod === option.id ? 'text-[#FE5502]' : 'text-emerald-600 dark:text-emerald-500'
                                 }`}>
                                 {option.subInfo}
                               </p>
@@ -3858,7 +3858,7 @@ return (
                     </div>
 
                     <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-300 ${selectedPaymentMethod === option.id
-                      ? 'bg-[#FF0000] border-[#FF0000]'
+                      ? 'bg-[#FE5502] border-[#FE5502]'
                       : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800'
                       }`}>
                       {selectedPaymentMethod === option.id && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
@@ -3873,11 +3873,11 @@ return (
               >
                 <div className="flex-shrink-0">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Total Pay</p>
-                  <p className="text-xl font-bold text-[#FF0000] tabular-nums">{RUPEE_SYMBOL}{total.toFixed(0)}</p>
+                  <p className="text-xl font-bold text-[#FE5502] tabular-nums">{RUPEE_SYMBOL}{total.toFixed(0)}</p>
                 </div>
                 <Button
                   onClick={() => setShowPaymentSheet(false)}
-                  className="flex-1 bg-[#FF0000] hover:bg-[#C83C00] text-white h-11 rounded-xl text-sm font-bold shadow-lg shadow-red-500/20 transition-all active:scale-[0.98]"
+                  className="flex-1 bg-[#FE5502] hover:bg-[#C83C00] text-white h-11 rounded-xl text-sm font-bold shadow-lg shadow-red-500/20 transition-all active:scale-[0.98]"
                 >
                   Confirm Order
                 </Button>

@@ -15,7 +15,7 @@ export default function Under250DesktopHero({
       <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
         <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
           <div className="flex flex-col justify-center lg:col-span-5">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#FF0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#FE5502]">
               Budget bites
             </p>
             <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-900 dark:text-white lg:text-4xl">

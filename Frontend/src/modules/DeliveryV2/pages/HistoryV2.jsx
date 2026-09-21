@@ -295,7 +295,7 @@ export const HistoryV2 = () => {
                 onClick={() => setActiveModuleFilter('all')}
                 className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
                   activeModuleFilter === 'all' 
-                    ? 'bg-black text-white shadow-md' 
+                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md' 
                     : 'bg-white text-gray-500 border border-gray-200'
                 }`}
               >
@@ -307,7 +307,7 @@ export const HistoryV2 = () => {
                   onClick={() => setActiveModuleFilter(normalizeModuleFilter(mod))}
                   className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
                     activeModuleFilter === normalizeModuleFilter(mod)
-                      ? 'bg-black text-white shadow-md' 
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md' 
                       : 'bg-white text-gray-500 border border-gray-200'
                   }`}
                 >
@@ -557,7 +557,7 @@ export const HistoryV2 = () => {
                       )}
                    </div>
                    
-                   <button onClick={() => setShowBonusModal(false)} className="w-full py-5 bg-black text-white rounded-2xl font-bold text-base mt-8 shrink-0 active:scale-95 transition-all">Okay, Got it</button>
+                   <button onClick={() => setShowBonusModal(false)} className="w-full py-5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold text-base mt-8 shrink-0 active:scale-95 transition-all">Okay, Got it</button>
                 </motion.div>
              </div>
           )}

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Razorpay Payment Integration Utility
  * Handles Razorpay payment initialization and verification
  */
@@ -73,7 +73,7 @@ export const initRazorpayPayment = async (options) => {
       },
       notes: options.notes || {},
       theme: {
-        color: '#FF0000'
+        color: '#FE5502'
       },
       handler: function (response) {
         if (options.handler) {
@@ -113,7 +113,7 @@ export const initRazorpayPayment = async (options) => {
 
     razorpay.open();
 
-    console.log('✅ Razorpay checkout opened successfully');
+    console.log('âœ… Razorpay checkout opened successfully');
     console.log('Razorpay options:', {
       key: razorpayOptions.key ? 'Present' : 'Missing',
       amount: razorpayOptions.amount,
@@ -154,7 +154,7 @@ export const initRazorpaySubscription = async (options) => {
         contact: options.prefill?.contact || ''
       },
       theme: {
-        color: '#FF0000'
+        color: '#FE5502'
       },
       handler: function (response) {
         if (options.handler) {
@@ -197,14 +197,14 @@ export const initRazorpaySubscription = async (options) => {
  * @returns {String} Formatted amount string
  */
 export const formatAmount = (amount) => {
-  return `₹${(amount / 100).toFixed(2)}`;
+  return `â‚¹${(amount / 100).toFixed(2)}`;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Flutter WebView Bridge Utilities
 // Shared between SignupStep2, Cart and any other page that needs Razorpay
 // inside a flutter_inappwebview WebView.
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Detect if the page is running inside a Flutter InAppWebView.
@@ -225,8 +225,8 @@ export const isFlutterWebView = () => {
  *  1. Register global JS callbacks so Flutter can call back on success/failure.
  *  2. Listen to window.postMessage for apps that use that channel instead.
  *  3. Try each possible handler name, race against 1500ms timeout.
- *     - If a handler responds quickly → it accepted the call → wait up to 10 min.
- *     - If ALL handlers timeout → no native SDK registered → fall back to web checkout.
+ *     - If a handler responds quickly â†’ it accepted the call â†’ wait up to 10 min.
+ *     - If ALL handlers timeout â†’ no native SDK registered â†’ fall back to web checkout.
  *  4. The web checkout fallback ensures payment always works even if Flutter app
  *     doesn't implement the native Razorpay handler.
  *
@@ -340,7 +340,7 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
               }
             }).catch(() => { /* handled in loop below */ });
 
-            // Race against 1500ms — if it times out, this handler name is not registered
+            // Race against 1500ms â€” if it times out, this handler name is not registered
             const result = await Promise.race([
               callPromise,
               new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 1500)),
@@ -348,14 +348,14 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
 
             if (settled) return;
 
-            // Handler responded quickly → it accepted the call
+            // Handler responded quickly â†’ it accepted the call
             if (result && typeof result === 'object') {
               const paymentId = result.razorpay_payment_id || result.paymentId || result.payment_id;
               if (paymentId) { finishSuccess(result); return; }
               if (result.error || result.cancelled) { finishFailure(result.error || 'Payment cancelled'); return; }
             }
 
-            // Handler returned void/null → it accepted the payment, native UI is open
+            // Handler returned void/null â†’ it accepted the payment, native UI is open
             // Wait up to 10 minutes for the payment to complete via callback
             timeoutId = setTimeout(() => {
               finishFailure(new Error('Payment timed out. Please try again.'));
@@ -372,7 +372,7 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
 
         if (settled) return;
 
-        // ─── No Flutter native Razorpay handler found ─────────────────────
+        // â”€â”€â”€ No Flutter native Razorpay handler found â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         // Fallback: open standard web Razorpay checkout inside the WebView.
         // This is the safe path for Flutter apps without native Razorpay SDK.
         console.warn('[Razorpay Flutter] No native handler found. Falling back to web checkout.');
@@ -391,7 +391,7 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
             description: rzpOptions.description || '',
             prefill: rzpOptions.prefill || {},
             notes: rzpOptions.notes || {},
-            theme: { color: '#FF0000' },
+            theme: { color: '#FE5502' },
             retry: { enabled: true, max_count: 3 },
             handler: (response) => {
               resolve({

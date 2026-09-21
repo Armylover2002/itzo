@@ -113,7 +113,7 @@ export default function DiningCategories() {
         {canCreate && (
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 rounded-lg bg-[#FF0000] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c83c00]"
+            className="flex items-center gap-2 rounded-lg bg-[#6412C6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c83c00]"
           >
             <Plus className="h-4 w-4" /> Add Category
           </button>
@@ -194,7 +194,7 @@ export default function DiningCategories() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 rounded-lg bg-[#FF0000] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+                className="flex items-center gap-2 rounded-lg bg-[#6412C6] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
               </button>

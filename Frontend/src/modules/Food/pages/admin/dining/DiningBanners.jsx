@@ -110,7 +110,7 @@ export default function DiningBanners() {
           <p className="text-sm text-gray-500">Promotional banners shown on the Dining home screen</p>
         </div>
         {canCreate && (
-          <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-[#FF0000] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c83c00]">
+          <button onClick={openCreate} className="flex items-center gap-2 rounded-lg bg-[#6412C6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#c83c00]">
             <Plus className="h-4 w-4" /> Add Banner
           </button>
         )}
@@ -183,7 +183,7 @@ export default function DiningBanners() {
             </div>
             <div className="mt-5 flex justify-end gap-2">
               <button onClick={() => setShowModal(false)} className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700">Cancel</button>
-              <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#FF0000] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+              <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#6412C6] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />} Save
               </button>
             </div>

@@ -29,7 +29,7 @@ const ZoneServiceUnavailable = ({
       <button
         type="button"
         onClick={onAction}
-        className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#FF0000] px-5 py-2.5 text-sm font-bold text-white shadow-sm active:scale-95 transition-transform"
+        className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#FE5502] px-5 py-2.5 text-sm font-bold text-white shadow-sm active:scale-95 transition-transform"
       >
         <MapPin className="h-4 w-4" />
         {actionLabel}

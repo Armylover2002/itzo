@@ -1173,7 +1173,7 @@ export default function HubMenu() {
             ))}
             <button
               onClick={() => setIsFilterOpen(true)}
-              className="z-10 shrink-0 bg-black text-white border-2 border-black flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap"
+              className="z-10 shrink-0 bg-[#0D315B] text-white border-2 border-[#0D315B] flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap"
             >
               <SlidersHorizontal className="w-4 h-4" />
               <span>Filter</span>
@@ -1708,7 +1708,7 @@ export default function HubMenu() {
           <motion.button
           whileTap={{ scale: 0.96 }}
           onClick={() => setIsAddPopupOpen(true)}
-          className="px-4 py-2 border bg-black text-white border-gray-800 rounded-lg text-sm font-bold"
+          className="px-4 py-2 border bg-[#0D315B] text-white border-[#0A2647] rounded-lg text-sm font-bold"
         >
           + ADD
         </motion.button>)}

@@ -454,7 +454,7 @@ export default function AddToCartAnimation({
                 debugLog('View cart clicked, navigating to:', linkTo);
                 navigate(linkTo);
               }}
-              className={`bg-[#FF0000] text-white rounded-full shadow-xl shadow-red-900/30 px-3 py-2 flex items-center gap-2 hover:bg-[#CC0000] transition-all duration-300 pointer-events-auto border border-red-800/30 backdrop-blur-sm cursor-pointer ${pillClassName}`}
+              className={`bg-[#FE5502] text-white rounded-full shadow-xl shadow-red-900/30 px-3 py-2 flex items-center gap-2 hover:bg-[#C83C00] transition-all duration-300 pointer-events-auto border border-red-800/30 backdrop-blur-sm cursor-pointer ${pillClassName}`}
             >
               {/* Left: Product thumbnails */}
               <div className="flex items-center -space-x-4">

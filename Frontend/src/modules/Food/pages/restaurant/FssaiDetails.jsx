@@ -136,7 +136,7 @@ export default function FssaiDetails() {
       <div className="px-4 pb-6 pt-3 border-t border-gray-200 bg-white lg:max-w-2xl lg:mx-auto lg:px-8 lg:w-full lg:border-t-0 lg:bg-transparent lg:pb-8">
         <button
           type="button"
-          className="w-full py-3 rounded-full bg-black text-white text-sm font-medium mb-2 lg:rounded-xl lg:py-3.5"
+          className="w-full py-3 rounded-full bg-[#0D315B] hover:bg-[#0A2647] text-white text-sm font-medium mb-2 lg:rounded-xl lg:py-3.5"
           onClick={() => navigate("/food/restaurant/fssai/update")}
         >
           {hasFssai ? "Update FSSAI license" : "Add FSSAI license"}

@@ -1305,15 +1305,15 @@ export default function CategoryPage() {
                     key={cat.id}
                     onClick={() => handleCategorySelect(cat)}
                     data-category-selected={isSelected ? "true" : "false"}
-                    className={`flex flex-col items-center gap-1.5 flex-shrink-0 pb-2 transition-all ${isSelected ? 'border-b-2 border-[#FF0000]' : ''
+                    className={`flex flex-col items-center gap-1.5 flex-shrink-0 pb-2 transition-all ${isSelected ? 'border-b-2 border-[#FE5502]' : ''
                       }`}
                   >
                     {isAllCategory ? (
-                      <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-[#FF0000] shadow-lg bg-[#FFF5F5] dark:bg-[#FF0000]/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#222222]'}`}>
-                        <Grid2x2 className={`h-6 w-6 md:h-7 md:w-7 ${isSelected ? 'text-[#FF0000]' : 'text-gray-500 dark:text-gray-400'}`} />
+                      <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-[#FE5502] shadow-lg bg-[#FFF5F5] dark:bg-[#FE5502]/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#222222]'}`}>
+                        <Grid2x2 className={`h-6 w-6 md:h-7 md:w-7 ${isSelected ? 'text-[#FE5502]' : 'text-gray-500 dark:text-gray-400'}`} />
                       </div>
                     ) : cat.image ? (
-                  <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 transition-all ${isSelected ? 'border-[#FF0000] shadow-lg' : 'border-transparent'
+                  <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 transition-all ${isSelected ? 'border-[#FE5502] shadow-lg' : 'border-transparent'
                         }`}>
                         <img
                           src={cat.image}
@@ -1328,7 +1328,7 @@ export default function CategoryPage() {
                       </div>
                     ) : (
                       <div
-                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 transition-all ${isSelected ? 'border-[#FF0000] shadow-lg bg-[#FFF5F5] dark:bg-[#FF0000]/20' : 'border-transparent'
+                        className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 transition-all ${isSelected ? 'border-[#FE5502] shadow-lg bg-[#FFF5F5] dark:bg-[#FE5502]/20' : 'border-transparent'
                           }`}
                         aria-label={`${cat.name} category`}
                       >
@@ -1337,7 +1337,7 @@ export default function CategoryPage() {
                         </span>
                       </div>
                     )}
-                    <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${isSelected ? 'text-[#FF0000] dark:text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'
+                    <span className={`text-xs md:text-sm font-medium whitespace-nowrap ${isSelected ? 'text-[#FE5502] dark:text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'
                       }`}>
                       {cat.name}
                     </span>
@@ -1382,7 +1382,7 @@ export default function CategoryPage() {
                     variant="outline"
                     onClick={() => toggleFilter(filter.id)}
                     className={`h-7 md:h-8 px-2.5 md:px-3 rounded-md flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${isActive
-                      ? 'bg-[#FF0000] text-white border border-[#FF0000] hover:bg-[#C83C00]'
+                      ? 'bg-[#FE5502] text-white border border-[#FE5502] hover:bg-[#C83C00]'
                       : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                   >
@@ -1414,7 +1414,7 @@ export default function CategoryPage() {
                     variant="outline"
                     onClick={() => toggleFilter(filter.id)}
                     className={`h-7 md:h-8 px-2.5 md:px-3 rounded-md flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${isActive
-                      ? 'bg-[#FF0000] text-white border border-[#FF0000] hover:bg-[#C83C00]'
+                      ? 'bg-[#FE5502] text-white border border-[#FE5502] hover:bg-[#C83C00]'
                       : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800'
                       }`}
                   >
@@ -1497,7 +1497,7 @@ export default function CategoryPage() {
 
                           {/* Offer Badge */}
                           {restaurant.offer && (
-                            <div className="absolute top-1.5 left-1.5 bg-gradient-to-r from-[#FF0000] to-[#C83C00] text-white text-[10px] md:text-xs font-semibold px-1.5 py-0.5 rounded shadow-sm">
+                            <div className="absolute top-1.5 left-1.5 bg-gradient-to-r from-[#FE5502] to-[#C83C00] text-white text-[10px] md:text-xs font-semibold px-1.5 py-0.5 rounded shadow-sm">
                               {restaurant.offer}
                             </div>
                           )}
@@ -1672,7 +1672,7 @@ export default function CategoryPage() {
                         {/* Offer Badge */}
                         {restaurant.offer && (
                           <div className="flex items-center gap-2 text-sm md:text-base lg:text-lg mt-auto">
-                            <BadgePercent className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 text-[#FF0000]" strokeWidth={2} />
+                            <BadgePercent className="h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 text-[#FE5502]" strokeWidth={2} />
                             <span className="text-gray-700 dark:text-gray-300 font-medium">{restaurant.offer}</span>
                           </div>
                         )}
@@ -1737,7 +1737,7 @@ export default function CategoryPage() {
                         setSortBy(null)
                         setTimeout(() => setIsLoadingFilterResults(false), 500)
                       }}
-                      className="text-[#FF0000] font-medium text-sm md:text-base hover:underline"
+                      className="text-[#FE5502] font-medium text-sm md:text-base hover:underline"
                     >
                       Clear all
                     </button>
@@ -1768,11 +1768,11 @@ export default function CategoryPage() {
                                 section.scrollIntoView({ behavior: 'smooth', block: 'start' })
                               }
                             }}
-                            className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive ? 'bg-white dark:bg-[#1a1a1a] text-[#FF0000]' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            className={`flex flex-col items-center gap-1 py-4 px-2 text-center relative transition-colors ${isActive ? 'bg-white dark:bg-[#1a1a1a] text-[#FE5502]' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                               }`}
                           >
                             {isActive && (
-                              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF0000] rounded-r" />
+                              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FE5502] rounded-r" />
                             )}
                             <Icon className="h-5 w-5 md:h-6 md:w-6" strokeWidth={1.5} />
                             <span className="text-xs md:text-sm font-medium leading-tight">{tab.label}</span>
@@ -1802,8 +1802,8 @@ export default function CategoryPage() {
                               key={option.id || 'relevance'}
                               onClick={() => setSortBy(option.id)}
                               className={`px-4 md:px-5 py-3 md:py-4 rounded-xl border text-left transition-colors ${sortBy === option.id
-                                ? 'border-[#FF0000] bg-[#FFF5F5] dark:bg-[#FF0000]/20'
-                                : 'border-gray-200 dark:border-gray-700 hover:border-[#FF0000]'
+                                ? 'border-[#FE5502] bg-[#FFF5F5] dark:bg-[#FE5502]/20'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-[#FE5502]'
                                 }`}
                             >
                               <span className={`text-sm md:text-base font-medium ${sortBy === option.id ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -1825,22 +1825,22 @@ export default function CategoryPage() {
                           <button
                             onClick={() => toggleFilter('under-30-mins')}
                             className={`flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl border transition-colors ${activeFilters.has('under-30-mins')
-                              ? 'border-[#FF0000] bg-[#FFF5F5] dark:bg-[#FF0000]/20'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-[#FF0000]'
+                              ? 'border-[#FE5502] bg-[#FFF5F5] dark:bg-[#FE5502]/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-[#FE5502]'
                               }`}
                           >
-                            <Timer className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('under-30-mins') ? 'text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('under-30-mins') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under 30 mins</span>
+                            <Timer className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('under-30-mins') ? 'text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('under-30-mins') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under 30 mins</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('delivery-under-45')}
                             className={`flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl border transition-colors ${activeFilters.has('delivery-under-45')
-                              ? 'border-[#FF0000] bg-[#FFF5F5] dark:bg-[#FF0000]/20'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-[#FF0000]'
+                              ? 'border-[#FE5502] bg-[#FFF5F5] dark:bg-[#FE5502]/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-[#FE5502]'
                               }`}
                           >
-                            <Timer className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('delivery-under-45') ? 'text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('delivery-under-45') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under 45 mins</span>
+                            <Timer className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('delivery-under-45') ? 'text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('delivery-under-45') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under 45 mins</span>
                           </button>
                         </div>
                       </div>
@@ -1856,12 +1856,12 @@ export default function CategoryPage() {
                           <button
                             onClick={() => toggleFilter('rating-35-plus')}
                             className={`flex flex-col items-center gap-2 p-4 md:p-5 rounded-xl border transition-colors ${activeFilters.has('rating-35-plus')
-                              ? 'border-[#FF0000] bg-[#FFF5F5] dark:bg-[#FF0000]/20'
-                              : 'border-gray-200 dark:border-gray-700 hover:border-[#FF0000]'
+                              ? 'border-[#FE5502] bg-[#FFF5F5] dark:bg-[#FE5502]/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-[#FE5502]'
                               }`}
                           >
-                            <Star className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('rating-35-plus') ? 'text-[#FF0000] fill-[#FF0000]' : 'text-gray-400 dark:text-gray-500'}`} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('rating-35-plus') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Rated 3.5+</span>
+                            <Star className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('rating-35-plus') ? 'text-[#FE5502] fill-[#FE5502]' : 'text-gray-400 dark:text-gray-500'}`} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('rating-35-plus') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Rated 3.5+</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('rating-4-plus')}
@@ -1870,8 +1870,8 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <Star className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('rating-4-plus') ? 'text-[#FF0000] fill-[#FF0000]' : 'text-gray-400 dark:text-gray-500'}`} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('rating-4-plus') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Rated 4.0+</span>
+                            <Star className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('rating-4-plus') ? 'text-[#FE5502] fill-[#FE5502]' : 'text-gray-400 dark:text-gray-500'}`} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('rating-4-plus') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Rated 4.0+</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('rating-45-plus')}
@@ -1880,8 +1880,8 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <Star className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('rating-45-plus') ? 'text-[#FF0000] fill-[#FF0000]' : 'text-gray-400 dark:text-gray-500'}`} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('rating-45-plus') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Rated 4.5+</span>
+                            <Star className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('rating-45-plus') ? 'text-[#FE5502] fill-[#FE5502]' : 'text-gray-400 dark:text-gray-500'}`} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('rating-45-plus') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Rated 4.5+</span>
                           </button>
                         </div>
                       </div>
@@ -1901,8 +1901,8 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <MapPin className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('distance-under-1km') ? 'text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('distance-under-1km') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under 1 km</span>
+                            <MapPin className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('distance-under-1km') ? 'text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('distance-under-1km') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under 1 km</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('distance-under-2km')}
@@ -1911,8 +1911,8 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <MapPin className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('distance-under-2km') ? 'text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('distance-under-2km') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under 2 km</span>
+                            <MapPin className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('distance-under-2km') ? 'text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('distance-under-2km') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under 2 km</span>
                           </button>
                         </div>
                       </div>
@@ -1932,7 +1932,7 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('price-under-200') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under ₹200</span>
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('price-under-200') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under ₹200</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('under-250')}
@@ -1941,7 +1941,7 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('under-250') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under ₹250</span>
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('under-250') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under ₹250</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('price-under-500')}
@@ -1950,7 +1950,7 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('price-under-500') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Under ₹500</span>
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('price-under-500') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Under ₹500</span>
                           </button>
                         </div>
                       </div>
@@ -1970,8 +1970,8 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <BadgePercent className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('flat-50-off') ? 'text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('flat-50-off') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Flat 50% OFF</span>
+                            <BadgePercent className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('flat-50-off') ? 'text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('flat-50-off') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Flat 50% OFF</span>
                           </button>
                           <button
                             onClick={() => toggleFilter('price-match')}
@@ -1980,8 +1980,8 @@ export default function CategoryPage() {
                               : 'border-gray-200 dark:border-gray-700 hover:border-green-600'
                               }`}
                           >
-                            <BadgePercent className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('price-match') ? 'text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
-                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('price-match') ? 'text-[#FF0000]' : 'text-gray-700 dark:text-gray-300'}`}>Price Match</span>
+                            <BadgePercent className={`h-6 w-6 md:h-7 md:w-7 ${activeFilters.has('price-match') ? 'text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'}`} strokeWidth={1.5} />
+                            <span className={`text-sm md:text-base font-medium ${activeFilters.has('price-match') ? 'text-[#FE5502]' : 'text-gray-700 dark:text-gray-300'}`}>Price Match</span>
                           </button>
                         </div>
                       </div>
@@ -1991,10 +1991,10 @@ export default function CategoryPage() {
                         <div className="space-y-4">
                           <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">Trust Markers</h3>
                           <div className="flex flex-col gap-3 md:gap-4">
-                            <button className="px-4 md:px-5 py-3 md:py-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-[#FF0000] text-left transition-colors">
+                            <button className="px-4 md:px-5 py-3 md:py-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-[#FE5502] text-left transition-colors">
                               <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300">Top Rated</span>
                             </button>
-                            <button className="px-4 md:px-5 py-3 md:py-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-[#FF0000] text-left transition-colors">
+                            <button className="px-4 md:px-5 py-3 md:py-4 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-[#FE5502] text-left transition-colors">
                               <span className="text-sm md:text-base font-medium text-gray-700 dark:text-gray-300">Trusted by 1000+ users</span>
                             </button>
                           </div>
@@ -2021,7 +2021,7 @@ export default function CategoryPage() {
                         }, 500)
                       }}
                       className={`flex-1 py-3 md:py-4 font-semibold rounded-xl transition-colors text-sm md:text-base ${activeFilters.size > 0 || sortBy
-                        ? 'bg-[#FF0000] text-white hover:bg-[#C83C00]'
+                        ? 'bg-[#FE5502] text-white hover:bg-[#C83C00]'
                         : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                         }`}
                     >

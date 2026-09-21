@@ -174,7 +174,7 @@ const AdminReturns = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 flex items-center gap-2">
-            <Package className="w-7 h-7 text-red-500" />
+            <Package className="w-7 h-7 text-purple-500" />
             Returns Dashboard
           </h1>
           <p className="text-slate-600 text-sm mt-1">Manage return pickups, quality checks, and refunds.</p>
@@ -281,7 +281,7 @@ const AdminReturns = () => {
                 className={cn(
                   "px-3 py-1.5 rounded-full text-xs font-bold border",
                   statusFilter === tab.id
-                    ? "bg-red-500 text-white border-red-500"
+                    ? "bg-purple-500 text-white border-purple-500"
                     : "bg-white text-slate-600 border-slate-200",
                 )}
               >
@@ -293,7 +293,7 @@ const AdminReturns = () => {
 
         {loading ? (
           <div className="min-h-[280px] flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+            <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
           </div>
         ) : filteredReturns.length === 0 ? (
           <div className="py-16 text-center text-slate-500 text-sm font-medium">No returns found</div>
@@ -331,7 +331,7 @@ const AdminReturns = () => {
                       <button
                         type="button"
                         onClick={() => openReturnModal(row)}
-                        className="text-xs font-bold text-red-600 hover:underline"
+                        className="text-xs font-bold text-purple-600 hover:underline"
                       >
                         Manage
                       </button>
@@ -373,7 +373,7 @@ const AdminReturns = () => {
             <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 text-sm text-slate-700">
               {modalLoading ? (
                 <div className="py-16 flex items-center justify-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+                  <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
                 </div>
               ) : (
                 <>

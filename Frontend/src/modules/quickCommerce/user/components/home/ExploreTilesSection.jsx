@@ -4,7 +4,7 @@ import { ArrowRight, ShoppingBag, Tag, Sparkles } from "lucide-react";
 import { resolveQuickImageUrl } from "../../utils/image";
 
 const cardThemes = [
-  { bg: "bg-[#ffd1d1]", arrow: "text-[#FF0000]" },
+  { bg: "bg-[#ffd1d1]", arrow: "text-[#FE5502]" },
   { bg: "bg-[#d1dcff]", arrow: "text-[#3b82f6]" },
   { bg: "bg-[#ffdbb3]", arrow: "text-[#f97316]" },
 ];
@@ -14,7 +14,7 @@ const getIcon = (label, index) => {
   const colorClass =
     lower.includes("gourmet") || lower.includes("premium") || index % 3 === 2
       ? "text-[#f59e0b]"
-      : "text-[#FF0000]";
+      : "text-[#FE5502]";
 
   if (lower.includes("offer") || lower.includes("deal")) {
     return <Tag className={`w-4 h-4 ${colorClass}`} strokeWidth={2.5} fill="currentColor" />;
@@ -39,11 +39,11 @@ const ExploreTilesSection = memo(({
     <section className={`px-4 py-2 w-full max-w-4xl mx-auto md:max-w-6xl md:pt-0 md:pb-4 ${className}`}>
       <div className="relative overflow-hidden rounded-[20px] bg-[#f0e6e6] p-3 md:px-5 md:py-4 shadow-sm border border-[#e8dada]">
         <div className="flex items-center justify-center gap-2 mb-3 md:mb-4 mt-0.5">
-          <span className="text-[#FF0000] text-[11px] md:text-[14px] opacity-90 leading-none">⇋</span>
+          <span className="text-[#FE5502] text-[11px] md:text-[14px] opacity-90 leading-none">⇋</span>
           <h2 className="relative z-10 text-[12px] md:text-[18px] font-extrabold text-black tracking-[0.05em] uppercase">
             {heading}
           </h2>
-          <span className="text-[#FF0000] text-[11px] md:text-[14px] opacity-90 leading-none">⇌</span>
+          <span className="text-[#FE5502] text-[11px] md:text-[14px] opacity-90 leading-none">⇌</span>
         </div>
 
         <div className="grid grid-cols-3 gap-2 md:gap-4">
@@ -70,7 +70,7 @@ const ExploreTilesSection = memo(({
                         loading="lazy"
                       />
                     ) : (
-                      <ShoppingBag className="w-4 h-4 text-[#FF0000]" strokeWidth={2.5} />
+                      <ShoppingBag className="w-4 h-4 text-[#FE5502]" strokeWidth={2.5} />
                     )}
                   </div>
                   <div className="flex flex-col mt-0.5">

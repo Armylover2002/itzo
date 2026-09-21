@@ -1300,7 +1300,7 @@ export default function AdminItemDetailsPage() {
           <p className="text-sm text-gray-500">No categories available</p>
           <button
             onClick={handleOpenCreateCategory}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#6412C6] text-white rounded-lg font-semibold hover:bg-[#4E0E9A] transition-colors"
           >
             <Plus className="w-5 h-5" />
             Add Category
@@ -1409,7 +1409,7 @@ export default function AdminItemDetailsPage() {
                     <button
                       type="button"
                       onClick={() => handleVariantChoice(true)}
-                      className="flex-1 sm:flex-none sm:min-w-[140px] px-6 py-3.5 rounded-xl text-sm font-semibold border-2 border-[#FF0000] bg-[#FF0000] text-white hover:bg-[#E64D02] transition-colors"
+                      className="flex-1 sm:flex-none sm:min-w-[140px] px-6 py-3.5 rounded-xl text-sm font-semibold border-2 border-[#6412C6] bg-[#6412C6] text-white hover:bg-[#E64D02] transition-colors"
                     >
                       Yes
                     </button>
@@ -1542,7 +1542,7 @@ export default function AdminItemDetailsPage() {
                     />
                     <button
                       onClick={handleCameraClick}
-                      className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#FF0000] hover:bg-[#E64D02] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg active:scale-95"
+                      className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#6412C6] hover:bg-[#E64D02] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg active:scale-95"
                     >
                       <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                         <Plus className="w-4 h-4" />
@@ -1607,7 +1607,7 @@ export default function AdminItemDetailsPage() {
                       value={restaurantId}
                       onChange={(e) => handleRestaurantChange(e.target.value)}
                       disabled={!isNewItem}
-                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-transparent"
+                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-transparent"
                     >
                       <option value="">Select a restaurant</option>
                       {restaurants.map((restaurant) => {
@@ -2178,7 +2178,7 @@ export default function AdminItemDetailsPage() {
               onClick={handleSave}
               disabled={uploadingImages || (isNewItem && !variantChoiceMade)}
               className={`${isNewItem ? "w-full lg:w-auto lg:min-w-[220px]" : "flex-1 lg:flex-none lg:min-w-[220px]"} py-3 px-4 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${!uploadingImages && !(isNewItem && !variantChoiceMade)
-                ? "bg-[#FF0000] text-white hover:bg-[#E64D02]"
+                ? "bg-[#6412C6] text-white hover:bg-[#E64D02]"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
             >

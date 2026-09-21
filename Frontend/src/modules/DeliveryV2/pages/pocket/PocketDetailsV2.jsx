@@ -155,7 +155,7 @@ export const PocketDetailsV2 = () => {
                     <h2 className="text-4xl font-black text-white tracking-tighter">{formatCurrency(summary.grandTotal)}</h2>
                  </div>
                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/5 backdrop-blur-md">
-                    <TrendingUp className="w-6 h-6 text-[#FF0000]" />
+                    <TrendingUp className="w-6 h-6 text-[#FE5502]" />
                  </div>
               </div>
                  <div className="grid grid-cols-3 gap-4">
@@ -184,7 +184,7 @@ export const PocketDetailsV2 = () => {
 
           {loading ? (
             <div className="py-20 flex flex-col items-center">
-              <Loader2 className="w-10 h-10 animate-spin text-[#FF0000]" />
+              <Loader2 className="w-10 h-10 animate-spin text-[#FE5502]" />
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-4">Syncing History...</p>
             </div>
           ) : orders.length > 0 ? (

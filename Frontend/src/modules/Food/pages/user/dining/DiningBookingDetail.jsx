@@ -161,7 +161,7 @@ export default function DiningBookingDetail() {
                 <button
                   onClick={handlePay}
                   disabled={paying}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#FF0000] py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-[#FE5502] py-2.5 text-sm font-semibold text-white disabled:opacity-60"
                 >
                   <IndianRupee className="h-4 w-4" /> {paying ? "Processing..." : `Pay ₹${bill.grandTotal}`}
                 </button>

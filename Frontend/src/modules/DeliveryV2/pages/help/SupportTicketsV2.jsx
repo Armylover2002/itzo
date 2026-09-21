@@ -57,7 +57,7 @@ export const SupportTicketsV2 = () => {
         {/* Create Action */}
         <button 
           onClick={() => navigate("/food/delivery/help/tickets/create")}
-          className="w-full bg-black text-white p-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground p-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all"
         >
           <Plus className="w-5 h-5" />
           Raise New Ticket

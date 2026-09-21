@@ -808,15 +808,15 @@ export default function SearchResults() {
                 <button
                   key={cat.id}
                   onClick={() => handleCategorySelect(cat.id)}
-                  className={`flex flex-col items-center gap-1.5 flex-shrink-0 pb-2 transition-all ${isSelected ? 'border-b-2 border-[#FF0000]' : ''
+                  className={`flex flex-col items-center gap-1.5 flex-shrink-0 pb-2 transition-all ${isSelected ? 'border-b-2 border-[#FE5502]' : ''
                     }`}
                 >
                   {isAllCategory ? (
-                    <div className={`w-16 h-16 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-[#FF0000] dark:border-[#FF0000] shadow-lg bg-red-50 dark:bg-[#FF0000]/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#222222]'}`}>
-                      <Grid2x2 className={`h-6 w-6 ${isSelected ? 'text-[#FF0000]' : 'text-gray-500 dark:text-gray-400'}`} />
+                    <div className={`w-16 h-16 rounded-full border-2 transition-all flex items-center justify-center ${isSelected ? 'border-[#FE5502] dark:border-[#FE5502] shadow-lg bg-red-50 dark:bg-[#FE5502]/20' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-[#222222]'}`}>
+                      <Grid2x2 className={`h-6 w-6 ${isSelected ? 'text-[#FE5502]' : 'text-gray-500 dark:text-gray-400'}`} />
                     </div>
                   ) : cat.image ? (
-                    <div className={`w-16 h-16 rounded-full overflow-hidden border-2 transition-all ${isSelected ? 'border-[#FF0000] dark:border-[#FF0000] shadow-lg' : 'border-transparent'
+                    <div className={`w-16 h-16 rounded-full overflow-hidden border-2 transition-all ${isSelected ? 'border-[#FE5502] dark:border-[#FE5502] shadow-lg' : 'border-transparent'
                       }`}>
                       <img
                         src={cat.image}
@@ -825,12 +825,12 @@ export default function SearchResults() {
                       />
                     </div>
                   ) : (
-                    <div className={`w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 transition-all ${isSelected ? 'border-[#FF0000] dark:border-[#FF0000] shadow-lg bg-red-50 dark:bg-[#FF0000]/20' : 'border-transparent'
+                    <div className={`w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center border-2 transition-all ${isSelected ? 'border-[#FE5502] dark:border-[#FE5502] shadow-lg bg-red-50 dark:bg-[#FE5502]/20' : 'border-transparent'
                       }`}>
                       <span className="text-xl">???</span>
                     </div>
                   )}
-                  <span className={`text-xs font-medium whitespace-nowrap ${isSelected ? 'text-[#FF0000] dark:text-[#FF0000]' : 'text-gray-600 dark:text-gray-400'
+                  <span className={`text-xs font-medium whitespace-nowrap ${isSelected ? 'text-[#FE5502] dark:text-[#FE5502]' : 'text-gray-600 dark:text-gray-400'
                     }`}>
                     {cat.name}
                   </span>
@@ -866,15 +866,15 @@ export default function SearchResults() {
                   variant="outline"
                   onClick={() => toggleFilter(filter.id)}
                   className={`h-9 px-3 rounded-lg flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 transition-all font-medium ${isActive
-                    ? 'bg-[#FF0000] text-white border-[#FF0000] hover:bg-[#C83C00] dark:bg-[#FF0000] dark:hover:bg-[#C83C00]'
+                    ? 'bg-[#FE5502] text-white border-[#FE5502] hover:bg-[#C83C00] dark:bg-[#FE5502] dark:hover:bg-[#C83C00]'
                     : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
                     }`}
                 >
                   {filter.hasIcon && filter.id === 'price-match' && (
-                    <span className={`text-xs ${isActive ? 'text-white' : 'text-[#FF0000] dark:text-[#FF0000]'}`}>?</span>
+                    <span className={`text-xs ${isActive ? 'text-white' : 'text-[#FE5502] dark:text-[#FE5502]'}`}>?</span>
                   )}
                   {filter.hasIcon && filter.id === 'flat-50-off' && (
-                    <span className={`text-xs ${isActive ? 'text-white' : 'text-[#FF0000] dark:text-[#FF0000]'}`}>?</span>
+                    <span className={`text-xs ${isActive ? 'text-white' : 'text-[#FE5502] dark:text-[#FE5502]'}`}>?</span>
                   )}
                   <span className={`text-sm font-bold ${isActive ? 'text-white' : 'text-black dark:text-white'}`}>{filter.label}</span>
                 </Button>
@@ -924,7 +924,7 @@ export default function SearchResults() {
                         )}
                         {/* Offer Badge - Only show if offer exists */}
                         {restaurant.offer && (
-                          <div className="absolute top-1.5 left-1.5 bg-gradient-to-r from-[#FF0000] to-[#C83C00] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
+                          <div className="absolute top-1.5 left-1.5 bg-gradient-to-r from-[#FE5502] to-[#C83C00] text-white text-[10px] font-semibold px-1.5 py-0.5 rounded">
                             {restaurant.offer}
                           </div>
                         )}
@@ -1077,7 +1077,7 @@ export default function SearchResults() {
                       {/* Offer Badge */}
                       {restaurant.offer && (
                         <div className="flex items-center gap-2 text-sm lg:text-base mt-auto">
-                          <BadgePercent className="h-4 w-4 lg:h-5 lg:w-5 text-[#FF0000] dark:text-[#FF0000]" strokeWidth={2} />
+                          <BadgePercent className="h-4 w-4 lg:h-5 lg:w-5 text-[#FE5502] dark:text-[#FE5502]" strokeWidth={2} />
                           <span className="text-gray-700 dark:text-gray-300 font-medium">{restaurant.offer}</span>
                         </div>
                       )}

@@ -188,8 +188,8 @@ const AdminWallet = () => {
             description: 'Cash with delivery partners',
             icon: Clock,
             color: 'amber',
-            bg: 'bg-red-50',
-            iconColor: 'text-red-500'
+            bg: 'bg-purple-50',
+            iconColor: 'text-purple-500'
         },
         {
             label: 'Seller Pending Payouts',
@@ -281,7 +281,7 @@ const AdminWallet = () => {
                     <button
                         onClick={handleProcessPayouts}
                         disabled={isProcessing}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl text-xs font-bold hover:bg-purple-700 transition-all shadow-lg active:scale-95 disabled:opacity-50"
                     >
                         {isProcessing ? <RotateCw className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />}
                         {isProcessing ? 'PROCESSING...' : 'PROCESS PAYOUTS'}
@@ -537,7 +537,7 @@ const AdminWallet = () => {
                     {/* Settlement Overview */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-red-50 text-primary rounded-lg">
+                            <div className="p-2 bg-purple-50 text-primary rounded-lg">
                                 <PieChart className="h-5 w-5" />
                             </div>
                             <h2 className="ds-h2">Settlements</h2>
@@ -628,7 +628,7 @@ const AdminWallet = () => {
                         <div className="pt-4 flex gap-3">
                             <button
                                 onClick={() => setSelectedTransaction(null)}
-                                className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
+                                className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-all"
                             >
                                 CLOSE
                             </button>

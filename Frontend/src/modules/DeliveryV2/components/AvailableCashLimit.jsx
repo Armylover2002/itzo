@@ -33,7 +33,7 @@ export default function AvailableCashLimit({ onClose, walletData = {} }) {
       </div>
 
       <div onClick={onClose} className="mt-6">
-        <button className="w-full bg-black text-white py-3 rounded-lg text-sm font-medium">
+        <button className="w-full bg-primary text-primary-foreground py-3 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
           Okay
         </button>
       </div>

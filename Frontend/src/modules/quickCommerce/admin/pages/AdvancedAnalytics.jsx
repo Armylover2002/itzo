@@ -95,7 +95,7 @@ const AdvancedAnalytics = () => {
                             onClick={() => setTimeRange(range)}
                             className={cn(
                                 "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
-                                timeRange === range ? "bg-red-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                timeRange === range ? "bg-purple-600 text-white shadow-lg" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
                             )}
                         >
                             {range}
@@ -287,7 +287,7 @@ const AdvancedAnalytics = () => {
                 </Card>
 
                 {/* Customer Keeping Metrics */}
-                <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-red-600 rounded-[32px] p-8 text-white overflow-hidden relative group">
+                <Card className="border-none shadow-xl ring-1 ring-slate-100 bg-purple-600 rounded-[32px] p-8 text-white overflow-hidden relative group">
                     <div className="relative z-10">
                         <h4 className="text-sm font-black opacity-60 uppercase tracking-tight mb-8">Keeping Customers</h4>
                         <div className="space-y-8">
@@ -334,7 +334,7 @@ const AdvancedAnalytics = () => {
                             { name: 'Whitefield, BLR', sales: '₹620k', growth: '+34%', status: 'Burst' },
                             { name: 'Hitech City, HYD', sales: '₹410k', growth: '+12%', status: 'Steady' },
                         ].map((zone, i) => (
-                            <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-red-600 hover:text-white transition-all">
+                            <div key={i} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between group hover:bg-purple-600 hover:text-white transition-all">
                                 <div>
                                     <p className="text-[11px] font-black uppercase">{zone.name}</p>
                                     <p className="text-[9px] font-bold text-slate-400 group-hover:text-white/50">{zone.sales} Total GMV</p>

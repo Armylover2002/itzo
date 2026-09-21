@@ -290,7 +290,7 @@ export default function RestaurantWelcome() {
         {/* Login Button */}
         <Button
           onClick={handleLogin}
-          className="w-full bg-[#FF0000] hover:bg-[#E64D02] text-white font-bold py-6 md:py-7 text-base md:text-lg rounded-lg transition-colors shadow-lg"
+          className="w-full bg-[#0D315B] hover:bg-[#E64D02] text-white font-bold py-6 md:py-7 text-base md:text-lg rounded-lg transition-colors shadow-lg"
         >
           Login
         </Button>

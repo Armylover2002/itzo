@@ -201,7 +201,7 @@ export default function RestaurantSupport() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-black text-white py-2.5 text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"
+            className="w-full rounded-lg bg-[#0D315B] hover:bg-[#0A2647] text-white py-2.5 text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             Submit Ticket

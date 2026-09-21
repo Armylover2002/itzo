@@ -182,7 +182,7 @@ export default function VerificationPending() {
     <div className="relative min-h-screen overflow-hidden bg-[#f4f6fb]">
       {/* Page-specific background — no login banner */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-[#FF0000]/8 blur-3xl" />
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-[#0D315B]/8 blur-3xl" />
         <div className="absolute right-0 top-1/4 h-96 w-96 rounded-full bg-amber-200/30 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-slate-200/40 blur-3xl" />
         <div
@@ -202,7 +202,7 @@ export default function VerificationPending() {
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="h-11 w-auto rounded-xl object-contain" />
             ) : (
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FF0000] shadow-md">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0D315B] shadow-md">
                 <Store className="h-5 w-5 text-white" />
               </div>
             )}
@@ -227,12 +227,12 @@ export default function VerificationPending() {
           <div className={`border-b border-slate-100 bg-gradient-to-r px-6 py-8 sm:px-8 sm:py-10 ${
             isRejected 
               ? "from-red-500/10 via-white to-red-50" 
-              : "from-[#FF0000]/10 via-white to-amber-50"
+              : "from-[#0D315B]/10 via-white to-amber-50"
           }`}>
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
               <div className="max-w-xl">
                 <p className={`text-[11px] font-black uppercase tracking-[0.32em] ${
-                  isRejected ? "text-red-600" : "text-[#FF0000]"
+                  isRejected ? "text-red-600" : "text-[#0D315B]"
                 }`}>
                   {isRejected ? "Application Rejected" : "Verification in progress"}
                 </p>
@@ -247,9 +247,9 @@ export default function VerificationPending() {
               </div>
 
               <div className="relative mx-auto flex h-28 w-28 shrink-0 items-center justify-center sm:mx-0">
-                <div className={`absolute inset-0 rounded-full ${isRejected ? 'bg-red-500/10' : 'bg-[#FF0000]/10'}`} />
-                <div className={`absolute inset-2 rounded-full border-2 border-dashed ${isRejected ? 'border-red-500/25' : 'border-[#FF0000]/25'}`} />
-                <div className={`relative flex h-20 w-20 items-center justify-center rounded-full shadow-lg ${isRejected ? 'bg-red-500 shadow-red-500/25' : 'bg-[#FF0000] shadow-[#FF0000]/25'}`}>
+                <div className={`absolute inset-0 rounded-full ${isRejected ? 'bg-red-500/10' : 'bg-[#0D315B]/10'}`} />
+                <div className={`absolute inset-2 rounded-full border-2 border-dashed ${isRejected ? 'border-red-500/25' : 'border-[#0D315B]/25'}`} />
+                <div className={`relative flex h-20 w-20 items-center justify-center rounded-full shadow-lg ${isRejected ? 'bg-red-500 shadow-red-500/25' : 'bg-[#0D315B] shadow-[#0D315B]/25'}`}>
                   {isRejected ? <XCircle className="h-9 w-9 text-white" /> : <Clock3 className="h-9 w-9 text-white" />}
                 </div>
                 {!isRejected && <Sparkles className="absolute -right-1 top-2 h-5 w-5 text-amber-500" />}
@@ -262,7 +262,7 @@ export default function VerificationPending() {
             <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
               <div className="flex items-start gap-4">
                 <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200`}>
-                  {isRejected ? <XCircle className="h-6 w-6 text-red-500" /> : <ShieldCheck className="h-6 w-6 text-[#FF0000]" />}
+                  {isRejected ? <XCircle className="h-6 w-6 text-red-500" /> : <ShieldCheck className="h-6 w-6 text-[#0D315B]" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -312,9 +312,9 @@ export default function VerificationPending() {
                           <div
                             className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-black ${
                               step.done
-                                ? "bg-[#FF0000] text-white shadow-md shadow-[#FF0000]/20"
+                                ? "bg-[#0D315B] text-white shadow-md shadow-[#0D315B]/20"
                                 : step.active
-                                  ? "border-2 border-[#FF0000] bg-[#FF0000]/10 text-[#FF0000]"
+                                  ? "border-2 border-[#0D315B] bg-[#0D315B]/10 text-[#0D315B]"
                                   : "border border-slate-200 bg-white text-slate-400"
                             }`}
                           >
@@ -329,7 +329,7 @@ export default function VerificationPending() {
                           {index < TIMELINE_STEPS.length - 1 ? (
                             <div
                               className={`my-1 w-0.5 flex-1 min-h-[28px] ${
-                                step.done ? "bg-[#FF0000]/30" : "bg-slate-200"
+                                step.done ? "bg-[#0D315B]/30" : "bg-slate-200"
                               }`}
                             />
                           ) : null}
@@ -337,7 +337,7 @@ export default function VerificationPending() {
                         <div className={`pb-5 ${index === TIMELINE_STEPS.length - 1 ? "pb-0" : ""}`}>
                           <p
                             className={`text-sm font-bold ${
-                              step.active ? "text-[#FF0000]" : "text-slate-900"
+                              step.active ? "text-[#0D315B]" : "text-slate-900"
                             }`}
                           >
                             {step.title}
@@ -361,7 +361,7 @@ export default function VerificationPending() {
                 <Button
                   type="button"
                   onClick={() => navigate("/restaurant/onboarding?step=1", { replace: true })}
-                  className="h-12 rounded-2xl bg-[#FF0000] text-base font-bold hover:bg-[#E00000]"
+                  className="h-12 rounded-2xl bg-[#0D315B] text-base font-bold hover:bg-[#E00000]"
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Resubmit Application
@@ -382,7 +382,7 @@ export default function VerificationPending() {
                   type="button"
                   disabled={isRefreshing}
                   onClick={() => checkApprovalStatus()}
-                  className="h-12 rounded-2xl bg-[#FF0000] text-base font-bold hover:bg-[#E00000]"
+                  className="h-12 rounded-2xl bg-[#0D315B] text-base font-bold hover:bg-[#E00000]"
                 >
                   {isRefreshing ? (
                     <>

@@ -417,7 +417,7 @@ export default function Home() {
             style={{
               background: vegMode
                 ? "linear-gradient(135deg, #2e7d32 0%, #388e3c 100%)"
-                : "linear-gradient(135deg, #FF0000 0%, #CC0000 100%)",
+                : "linear-gradient(135deg, #FE5502 0%, #C83C00 100%)",
             }}
           >
             <Suspense fallback={<HeroBannerSkeleton className="h-[130px] w-full" />}>
@@ -465,7 +465,7 @@ export default function Home() {
                   onClick={() => openLocationSelector()}
                   className="flex items-center gap-1.5 px-4 py-3 bg-transparent border-0 hover:bg-gray-50 transition-colors shrink-0 max-w-[140px]"
                 >
-                  <MapPin className="h-4 w-4 shrink-0 text-[#FF0000]" strokeWidth={2.5} />
+                  <MapPin className="h-4 w-4 shrink-0 text-[#FE5502]" strokeWidth={2.5} />
                   <div className="flex items-center min-w-0">
                     <span className="truncate text-xs font-bold text-gray-800">
                       {imgUtils.formatSavedAddress(effectiveLocation) || "Select Location"}
@@ -542,7 +542,7 @@ export default function Home() {
               <div className="flex flex-col justify-between h-full md:hidden">
                 {/* Top content */}
                 <div className="flex gap-1.5 w-full items-start z-10">
-                  <div className="bg-[#FF0000] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-[20px] w-[20px] mt-0.5">
+                  <div className="bg-[#FE5502] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-[20px] w-[20px] mt-0.5">
                     <tab.icon className="h-3 w-3" strokeWidth={2.5} />
                   </div>
                   <div className="flex flex-col min-w-0 mt-0.5">
@@ -557,7 +557,7 @@ export default function Home() {
 
                 {/* Bottom content: arrow and image */}
                 <div className="mt-1 flex items-end justify-between w-full z-10">
-                  <div className="bg-[#FF0000] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-4 w-4 shadow-sm mb-0.5">
+                  <div className="bg-[#FE5502] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-4 w-4 shadow-sm mb-0.5">
                     <ArrowRight className="h-2.5 w-2.5" strokeWidth={3} />
                   </div>
                   <div className="absolute right-[-4px] bottom-[-4px] w-[55px] h-[55px] min-[380px]:w-[65px] min-[380px]:h-[65px] pointer-events-none">
@@ -572,7 +572,7 @@ export default function Home() {
                 <div className="flex flex-col justify-between h-full z-10 w-[65%]">
                   {/* Icon + Text */}
                   <div className="flex items-start gap-2">
-                    <div className="bg-[#FF0000] text-white rounded-full p-1.5 shrink-0 flex items-center justify-center md:h-[28px] md:w-[28px]">
+                    <div className="bg-[#FE5502] text-white rounded-full p-1.5 shrink-0 flex items-center justify-center md:h-[28px] md:w-[28px]">
                       <tab.icon className="md:h-4 md:w-4" strokeWidth={2.5} />
                     </div>
                     <div className="flex flex-col min-w-0">
@@ -586,7 +586,7 @@ export default function Home() {
                   </div>
 
                   {/* Arrow Button */}
-                  <div className="bg-[#FF0000] text-white rounded-full shrink-0 flex items-center justify-center md:h-6 md:w-6 shadow-sm">
+                  <div className="bg-[#FE5502] text-white rounded-full shrink-0 flex items-center justify-center md:h-6 md:w-6 shadow-sm">
                     <ArrowRight className="md:h-3.5 md:w-3.5" strokeWidth={3} />
                   </div>
                 </div>

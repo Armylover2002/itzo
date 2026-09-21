@@ -186,7 +186,7 @@ export default function DepositPopup({ onSuccess, cashInHand = 0 }) {
   if (fetchingWallet) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FF0000] mb-3" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#FE5502] mb-3" />
         <p className="text-xs text-slate-500 font-semibold animate-pulse">Loading wallet balance...</p>
       </div>
     )
@@ -273,7 +273,7 @@ export default function DepositPopup({ onSuccess, cashInHand = 0 }) {
         <div className="p-5 flex flex-col space-y-5">
           <div className="bg-[#F8FAFC] border border-slate-100 rounded-2xl p-5 flex flex-col items-center text-center relative overflow-hidden">
             <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-20 h-20 bg-emerald-500/5 rounded-full" />
-            <div className="w-10 h-10 rounded-full bg-[#FF0000]/10 flex items-center justify-center text-[#FF0000] mb-3">
+            <div className="w-10 h-10 rounded-full bg-[#FE5502]/10 flex items-center justify-center text-[#FE5502] mb-3">
               <Wallet className="w-5 h-5" />
             </div>
             <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest">Amount to Deposit</p>
@@ -282,7 +282,7 @@ export default function DepositPopup({ onSuccess, cashInHand = 0 }) {
             </p>
             
             <div className="mt-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-200/60 border border-slate-300/40 text-[10px] font-semibold text-slate-550">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#FF0000] animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#FE5502] animate-pulse" />
               Locked & Balanced
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function DepositPopup({ onSuccess, cashInHand = 0 }) {
           <button
             type="button"
             onClick={() => setStep(2)}
-            className="w-full py-3.5 bg-black text-white hover:bg-slate-900 active:scale-[0.98] font-semibold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 uppercase tracking-wider"
+            className="w-full py-3.5 bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] font-semibold text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 uppercase tracking-wider"
           >
             Proceed to Pay
           </button>
@@ -582,7 +582,7 @@ export default function DepositPopup({ onSuccess, cashInHand = 0 }) {
                   type="button"
                   onClick={() => handleManualSubmission(adminTab === 'bank' ? 'admin_bank' : adminTab === 'upi' ? 'admin_upi' : 'admin_qr')}
                   disabled={loading || !proofFile}
-                  className="w-full mt-3 py-3.5 bg-black text-white hover:bg-slate-900 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 uppercase tracking-wider"
+                  className="w-full mt-3 py-3.5 bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 uppercase tracking-wider"
                 >
                   {loading ? (
                     <>

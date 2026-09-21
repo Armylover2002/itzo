@@ -1530,7 +1530,7 @@ export default function AddRestaurant() {
           <Button
             onClick={handleNext}
             disabled={isSubmitting}
-            className="text-sm bg-black text-white px-6"
+            className="text-sm bg-[#6412C6] hover:bg-[#4E0E9A] text-white px-6"
           >
             {step === 3 ? (isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creating... </> : "Create Restaurant") : isSubmitting ? "Saving..." : "Continue"}
           </Button>

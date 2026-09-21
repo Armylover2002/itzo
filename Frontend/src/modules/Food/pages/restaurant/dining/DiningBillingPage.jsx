@@ -137,7 +137,7 @@ export default function DiningBillingPage() {
         ))}
 
         {!isLocked && (
-          <button onClick={addItem} className="flex items-center gap-1 text-sm font-medium text-[#FF0000]">
+          <button onClick={addItem} className="flex items-center gap-1 text-sm font-medium text-[#0D315B]">
             <Plus className="h-4 w-4" /> Add item
           </button>
         )}
@@ -170,7 +170,7 @@ export default function DiningBillingPage() {
             <button onClick={handleSaveBill} disabled={saving} className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-300 py-2.5 text-sm font-semibold text-gray-700 disabled:opacity-60">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Bill
             </button>
-            <button onClick={handleFinalize} disabled={finalizing || !bill} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#FF0000] py-2.5 text-sm font-semibold text-white disabled:opacity-60">
+            <button onClick={handleFinalize} disabled={finalizing || !bill} className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[#0D315B] py-2.5 text-sm font-semibold text-white disabled:opacity-60">
               {finalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Finalize
             </button>
           </div>

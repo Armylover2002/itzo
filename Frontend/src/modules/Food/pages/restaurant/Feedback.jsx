@@ -606,7 +606,7 @@ export default function Feedback() {
                   setSearchParams(tab.id === "complaints" ? { tab: "complaints" } : {})
                 }}
                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all lg:px-8 lg:py-2.5 ${
-                  activeTab === tab.id ? "bg-[#FF0000] text-white shadow-lg shadow-[#FF0000]/20" : "bg-white text-gray-600 border border-gray-200 lg:bg-slate-100 lg:border-slate-200"
+                  activeTab === tab.id ? "bg-[#0D315B] text-white shadow-lg shadow-[#0D315B]/20" : "bg-white text-gray-600 border border-gray-200 lg:bg-slate-100 lg:border-slate-200"
                 }`}
               >
                 {tab.label}
@@ -690,7 +690,7 @@ export default function Feedback() {
             {activeTab === "reviews" && ratingSummary.totalReviews > 0 && (
               <div className="hidden lg:flex items-center gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FF0000] text-xl font-bold text-white">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#0D315B] text-xl font-bold text-white">
                     {ratingSummary.averageRating}
                   </div>
                   <div>
@@ -738,7 +738,7 @@ export default function Feedback() {
                   <div className="flex items-center gap-3">
                     <img src={review.userImage} className="w-8 h-8 rounded-full border border-gray-100" />
                     <p className="font-bold text-gray-900 text-sm">{review.userName}</p>
-                    <div className="ml-auto flex items-center gap-1 bg-[#FF0000] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
+                    <div className="ml-auto flex items-center gap-1 bg-[#0D315B] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
                       {review.rating} <Star className="w-2 h-2 fill-current" />
                     </div>
                   </div>
@@ -790,7 +790,7 @@ export default function Feedback() {
                       type="button"
                       onClick={() => handleDateRangeSelect(option.id)}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-colors ${
-                        isSelected ? "border-[#FF0000] bg-red-50" : "border-gray-200 bg-white hover:bg-gray-50"
+                        isSelected ? "border-[#0D315B] bg-red-50" : "border-gray-200 bg-white hover:bg-gray-50"
                       }`}
                     >
                       <p className="text-sm font-semibold text-gray-900">{option.label}</p>
@@ -848,7 +848,7 @@ export default function Feedback() {
                   <button
                     type="button"
                     onClick={handleCustomDateApply}
-                    className="mt-3 w-full bg-[#FF0000] text-white font-semibold py-3 rounded-xl"
+                    className="mt-3 w-full bg-[#0D315B] text-white font-semibold py-3 rounded-xl"
                   >
                     Apply {formatDate(customDateRange.start)} - {formatDate(customDateRange.end)}
                   </button>
@@ -922,7 +922,7 @@ export default function Feedback() {
                         type="button"
                         onClick={() => toggleComplaintsFilterValue(selectedComplaintsFilterCategory, option.value)}
                         className={`w-full text-left px-3 py-2.5 rounded-lg text-sm ${
-                          selected ? "bg-red-50 text-[#FF0000] font-semibold" : "hover:bg-gray-50 text-gray-800"
+                          selected ? "bg-red-50 text-[#0D315B] font-semibold" : "hover:bg-gray-50 text-gray-800"
                         }`}
                       >
                         {option.label}
@@ -935,7 +935,7 @@ export default function Feedback() {
                 <button type="button" onClick={handleComplaintsFilterReset} className="flex-1 py-3 rounded-xl bg-gray-100 font-semibold text-gray-700">
                   Reset
                 </button>
-                <button type="button" onClick={handleComplaintsFilterApply} className="flex-1 py-3 rounded-xl bg-[#FF0000] font-semibold text-white">
+                <button type="button" onClick={handleComplaintsFilterApply} className="flex-1 py-3 rounded-xl bg-[#0D315B] font-semibold text-white">
                   Apply
                 </button>
               </div>
@@ -1010,7 +1010,7 @@ export default function Feedback() {
                           }
                         }}
                         className={`w-full text-left px-3 py-2.5 rounded-lg text-sm ${
-                          selected ? "bg-red-50 text-[#FF0000] font-semibold" : "hover:bg-gray-50 text-gray-800"
+                          selected ? "bg-red-50 text-[#0D315B] font-semibold" : "hover:bg-gray-50 text-gray-800"
                         }`}
                       >
                         {option.label}
@@ -1023,7 +1023,7 @@ export default function Feedback() {
                 <button type="button" onClick={handleFilterReset} className="flex-1 py-3 rounded-xl bg-gray-100 font-semibold text-gray-700">
                   Reset
                 </button>
-                <button type="button" onClick={handleFilterApply} className="flex-1 py-3 rounded-xl bg-[#FF0000] font-semibold text-white">
+                <button type="button" onClick={handleFilterApply} className="flex-1 py-3 rounded-xl bg-[#0D315B] font-semibold text-white">
                   Apply
                 </button>
               </div>

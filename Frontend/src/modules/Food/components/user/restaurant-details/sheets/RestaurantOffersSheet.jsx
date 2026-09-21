@@ -119,7 +119,7 @@ export default function RestaurantOffersSheet({ open, onClose, restaurant, expan
                   {/* Close Button */}
                   <div className="border-t border-gray-200 dark:border-gray-800 px-4 py-4 bg-white dark:bg-[#1a1a1a]">
                     <Button
-                      className="w-full bg-[#1a1a1a] dark:bg-[#FF0000] hover:bg-[#FF0000] dark:hover:bg-[#C83C00] text-white border-0 flex items-center justify-center gap-2 py-6 rounded-xl font-bold transition-all shadow-lg"
+                      className="w-full bg-[#1a1a1a] dark:bg-[#FE5502] hover:bg-[#FE5502] dark:hover:bg-[#C83C00] text-white border-0 flex items-center justify-center gap-2 py-6 rounded-xl font-bold transition-all shadow-lg"
                       onClick={() => onClose()}
                     >
                       <X className="h-5 w-5" />

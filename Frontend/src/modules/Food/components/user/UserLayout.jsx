@@ -165,7 +165,7 @@ export default function UserLayout({ children }) {
 
   const footerColor = location.pathname.startsWith("/quick")
     ? "#ea580c"
-    : "#FF0000"
+    : "#FE5502"
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f5f5f5] dark:bg-[#0a0a0a] transition-colors duration-200">

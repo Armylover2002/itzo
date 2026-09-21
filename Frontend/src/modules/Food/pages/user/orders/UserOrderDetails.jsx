@@ -137,7 +137,7 @@ export default function UserOrderDetails() {
           <p className="text-gray-700 text-sm font-medium">Order not found</p>
           <button
             onClick={() => navigate("/user/orders")}
-            className="px-4 py-2 rounded-lg bg-[#FF0000] text-white text-sm font-semibold"
+            className="px-4 py-2 rounded-lg bg-[#FE5502] text-white text-sm font-semibold"
           >
             Back to Orders
           </button>
@@ -607,7 +607,7 @@ export default function UserOrderDetails() {
                       <button
                         type="button"
                         onClick={() => handleCallPickupSource(source.phone)}
-                        className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-[#FF0000] hover:bg-red-50 shrink-0"
+                        className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-[#FE5502] hover:bg-red-50 shrink-0"
                       >
                         <Phone className="w-4 h-4" />
                       </button>
@@ -674,7 +674,7 @@ export default function UserOrderDetails() {
             <button
               type="button"
               onClick={handleDownloadSummary}
-              className="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center text-[#FF0000] hover:bg-red-100"
+              className="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center text-[#FE5502] hover:bg-red-100"
             >
               <Download className="w-4 h-4" />
             </button>
@@ -704,11 +704,11 @@ export default function UserOrderDetails() {
               <span className="text-gray-400 font-medium">Delivery fee</span>
               <div className="flex items-center gap-1">
                 {pricing.deliveryFee === 0 && (
-                  <span className="text-[#FF0000] text-[10px] font-bold border border-[#FF0000] px-1 rounded">
+                  <span className="text-[#FE5502] text-[10px] font-bold border border-[#FE5502] px-1 rounded">
                     FREE
                   </span>
                 )}
-                <span className="text-[#FF0000] font-medium uppercase">
+                <span className="text-[#FE5502] font-medium uppercase">
                   {pricing.deliveryFee ? `₹${Number(pricing.deliveryFee).toFixed(2)}` : "Free"}
                 </span>
               </div>
@@ -778,7 +778,7 @@ export default function UserOrderDetails() {
                 </svg>
               </div>
 
-              <div className="flex items-center justify-center gap-2 pt-1 text-[#FF0000] font-bold text-sm">
+              <div className="flex items-center justify-center gap-2 pt-1 text-[#FE5502] font-bold text-sm">
                 <span>??</span>
                 <span>
                   You saved ₹{Number(savings).toFixed(2)} on this order!
@@ -853,7 +853,7 @@ export default function UserOrderDetails() {
         <button
           type="button"
           onClick={() => handleReorder(order)}
-          className="flex-1 bg-[#FF0000] text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#C83C00] transition-colors"
+          className="flex-1 bg-[#FE5502] text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#C83C00] transition-colors"
         >
           <RotateCcw className="w-4 h-4" />
           Reorder
@@ -861,7 +861,7 @@ export default function UserOrderDetails() {
         <button
           type="button"
           onClick={handleDownloadSummary}
-          className="flex-1 bg-white border border-[#FF0000] text-[#FF0000] py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
+          className="flex-1 bg-white border border-[#FE5502] text-[#FE5502] py-3 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-red-50 transition-colors"
         >
           <Download className="w-4 h-4" />
           Invoice

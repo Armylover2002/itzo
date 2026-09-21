@@ -134,7 +134,7 @@ const SubscriptionConfirmationModal = ({ isOpen, onClose, onConfirm, loading, da
           <Button 
             onClick={onConfirm}
             disabled={loading}
-            className="w-full h-15 bg-slate-900 hover:bg-black text-white rounded-[24px] font-black text-base shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full h-15 bg-primary hover:bg-primary/90 text-primary-foreground rounded-[24px] font-black text-base shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <ShieldCheck className="w-6 h-6" />}
             Go Online
@@ -191,7 +191,7 @@ const LowBalanceBlockingModal = ({ isOpen, onClose, onRecharge, data }) => {
         <div className="space-y-3">
           <Button 
             onClick={onRecharge}
-            className="w-full h-15 bg-slate-900 hover:bg-black text-white rounded-[24px] font-black text-base shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full h-15 bg-primary hover:bg-primary/90 text-primary-foreground rounded-[24px] font-black text-base shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <Wallet className="w-5 h-5" />
             Recharge Wallet
@@ -234,7 +234,7 @@ const CashLimitBlockingModal = ({ isOpen, onClose }) => {
         <div className="space-y-3">
           <button 
             onClick={onClose}
-            className="w-full h-15 bg-slate-900 hover:bg-black text-white rounded-[24px] font-black text-base shadow-xl shadow-slate-200 active:scale-95 transition-all flex items-center justify-center gap-2 py-3"
+            className="w-full h-15 bg-primary hover:bg-primary/90 text-primary-foreground rounded-[24px] font-black text-base shadow-xl shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 py-3"
           >
             Acknowledge
           </button>
@@ -1088,7 +1088,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
               {activeOrder ? (
                 <div className="grid grid-cols-2 gap-3 w-full">
                   {/* LEFT: DISTANCE (Vibrant Orange Card) */}
-                  <div className="bg-[#FF0000] rounded-2xl p-3.5 shadow-xl shadow-red-500/20 border border-red-400/50 flex items-center justify-between overflow-hidden relative">
+                  <div className="bg-[#FE5502] rounded-2xl p-3.5 shadow-xl shadow-red-500/20 border border-red-400/50 flex items-center justify-between overflow-hidden relative">
                     <div className="flex flex-col z-10">
                       <span className="text-[9px] text-white/70 font-black uppercase tracking-[0.15em] mb-1">Distance</span>
                       <div className="flex items-end gap-1">
@@ -1099,7 +1099,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                       </div>
                     </div>
                     <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center z-10 shadow-lg">
-                      <Navigation2 className="w-4 h-4 text-[#FF0000] rotate-45" />
+                      <Navigation2 className="w-4 h-4 text-[#FE5502] rotate-45" />
                     </div>
                   </div>
 
@@ -1303,7 +1303,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
              </div>
            </div>
          ) : currentTab === 'pocket' ? (
-           <React.Suspense fallback={<div className="min-h-[50vh] flex flex-col items-center justify-center font-poppins"><div className="w-10 h-10 border-4 border-[#FF0000] border-t-transparent rounded-full animate-spin mb-4" /><p className="text-xs font-semibold text-gray-500">Loading Pocket...</p></div>}>
+           <React.Suspense fallback={<div className="min-h-[50vh] flex flex-col items-center justify-center font-poppins"><div className="w-10 h-10 border-4 border-[#FE5502] border-t-transparent rounded-full animate-spin mb-4" /><p className="text-xs font-semibold text-gray-500">Loading Pocket...</p></div>}>
              <PocketV2 />
            </React.Suspense>
          ) : currentTab === 'history' ? (
@@ -1448,7 +1448,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                              </div>
                           </div>
                         )}
-                        <ActionSlider label="Slide to Arrive" successLabel="Arrived ✓" disabled={!isWithinRange} onConfirm={reachDrop} color="bg-[#FF0000]" />
+                        <ActionSlider label="Slide to Arrive" successLabel="Arrived ✓" disabled={!isWithinRange} onConfirm={reachDrop} color="bg-[#FE5502]" />
                       </div>
                     ) : (
                       <div className="px-4 pb-[92px] w-full max-w-lg mx-auto">

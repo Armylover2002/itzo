@@ -117,7 +117,7 @@ export default function Offers() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           {/* Offer Badge */}
-                          <div className="absolute top-2 left-2 bg-[#FF0000] text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
+                          <div className="absolute top-2 left-2 bg-[#FE5502] text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded">
                             {dish.offer}
                           </div>
                         </div>
@@ -165,7 +165,7 @@ export default function Offers() {
                               {o.couponCode || "-"}
                             </p>
                           </div>
-                          <span className="px-2 py-1 rounded-md text-xs font-semibold bg-[#FF0000] text-white">
+                          <span className="px-2 py-1 rounded-md text-xs font-semibold bg-[#FE5502] text-white">
                             {o.title || "Offer"}
                           </span>
                         </div>

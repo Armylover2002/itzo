@@ -359,7 +359,7 @@ export default function EditAdvertisementPage() {
                     <span className={`text-sm ${formData.startDate ? 'text-gray-900' : 'text-gray-400'}`}>
                       {formData.startDate || "Select start"}
                     </span>
-                    <Calendar className="w-5 h-5 text-[#FF0000]" />
+                    <Calendar className="w-5 h-5 text-[#0D315B]" />
                   </button>
                   {showStartDatePicker && (
                     <motion.div
@@ -383,7 +383,7 @@ export default function EditAdvertisementPage() {
                           }
                           setShowStartDatePicker(false)
                         }}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B]"
                       />
                     </motion.div>
                   )}
@@ -400,7 +400,7 @@ export default function EditAdvertisementPage() {
                     <span className={`text-sm ${formData.endDate ? 'text-gray-900' : 'text-gray-400'}`}>
                       {formData.endDate || "Select end"}
                     </span>
-                    <Calendar className="w-5 h-5 text-[#FF0000]" />
+                    <Calendar className="w-5 h-5 text-[#0D315B]" />
                   </button>
                   {showEndDatePicker && (
                     <motion.div
@@ -420,7 +420,7 @@ export default function EditAdvertisementPage() {
                           handleInputChange("endDate", e.target.value)
                           setShowEndDatePicker(false)
                         }}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B]"
                       />
                     </motion.div>
                   )}
@@ -453,7 +453,7 @@ export default function EditAdvertisementPage() {
                     placeholder="Enter description"
                     maxLength={100}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000] resize-none"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B] resize-none"
                   />
                   <div className="absolute bottom-2 right-2 text-xs text-gray-400">
                     {getCharacterCount(formData.description)}
@@ -539,7 +539,7 @@ export default function EditAdvertisementPage() {
                       placeholder="Enter description"
                       maxLength={100}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000] resize-none"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B] resize-none"
                     />
                     <div className="absolute bottom-2 right-2 text-xs text-gray-400">
                       {getCharacterCount(formData.fileDescription)}
@@ -646,7 +646,7 @@ export default function EditAdvertisementPage() {
           <Button
             onClick={handleUpdate}
             disabled={!adData || submitting}
-            className="flex-1 bg-[#FF0000] hover:bg-[#E60000] text-white font-semibold py-3 rounded-lg disabled:opacity-60"
+            className="flex-1 bg-[#0D315B] hover:bg-[#E60000] text-white font-semibold py-3 rounded-lg disabled:opacity-60"
           >
             {submitting ? "Updating..." : "Update Ads"}
           </Button>

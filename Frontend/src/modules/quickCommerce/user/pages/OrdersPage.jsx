@@ -276,7 +276,7 @@ const OrdersPage = () => {
             </p>
             <Link
               to={categoriesPath}
-              className="rounded-full bg-[#FF0000] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#CC0000]"
+              className="rounded-full bg-[#FE5502] px-7 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#C83C00]"
             >
               Start Shopping
             </Link>

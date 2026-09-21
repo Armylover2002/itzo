@@ -197,7 +197,7 @@ export default function NotificationComposer() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700 pb-16">
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
             <BellRing className="w-6 h-6" />
           </div>
           <div>
@@ -216,7 +216,7 @@ export default function NotificationComposer() {
                 value={form.title}
                 onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
                 placeholder="Enter notification title"
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
               />
             </label>
 
@@ -225,7 +225,7 @@ export default function NotificationComposer() {
               <select
                 value={form.targetType}
                 onChange={(event) => setForm((prev) => ({ ...prev, targetType: event.target.value }))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
               >
                 {TARGET_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -243,7 +243,7 @@ export default function NotificationComposer() {
               onChange={(event) => setForm((prev) => ({ ...prev, message: event.target.value }))}
               placeholder="Enter notification message"
               rows={5}
-              className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 resize-y"
+              className="mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 resize-y"
             />
           </label>
 
@@ -284,7 +284,7 @@ export default function NotificationComposer() {
                           type="checkbox"
                           checked={checked}
                           onChange={() => toggleRecipient(recipient)}
-                          className="mt-1 h-4 w-4 rounded border-slate-300 text-red-600 focus:ring-red-500"
+                          className="mt-1 h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                         />
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-slate-900">
@@ -356,7 +356,7 @@ export default function NotificationComposer() {
                       <button
                         type="button"
                         onClick={() => handleDelete(item?._id)}
-                        className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50"
+                        className="inline-flex items-center gap-2 rounded-xl border border-purple-200 px-3 py-2 text-xs font-semibold text-purple-600 hover:bg-purple-50"
                       >
                         <Trash2 className="w-4 h-4" />
                         Delete

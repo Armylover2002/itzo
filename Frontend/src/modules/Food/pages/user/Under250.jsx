@@ -942,7 +942,7 @@ export default function Under250() {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <div className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-md transition-all ${!activeCategory ? 'ring-2 ring-[#FF0000] ring-offset-2' : ''}`}>
+                <div className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-md transition-all ${!activeCategory ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
                   <OptimizedImage
                     src={offerImage}
                     alt="All"
@@ -952,7 +952,7 @@ export default function Under250() {
                     placeholder="blur"
                   />
                 </div>
-                <span className={`text-xs sm:text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${!activeCategory ? 'text-[#FF0000]' : ''}`}>
+                <span className={`text-xs sm:text-sm md:text-base font-semibold text-gray-800 dark:text-gray-200 text-center pb-1 ${!activeCategory ? 'text-[#FE5502]' : ''}`}>
                   All
                 </span>
               </motion.div>
@@ -967,7 +967,7 @@ export default function Under250() {
                       whileTap={{ scale: 0.95 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      <div className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-md transition-all ${isActive ? 'ring-2 ring-[#FF0000] ring-offset-2' : ''}`}>
+                      <div className={`w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden shadow-md transition-all ${isActive ? 'ring-2 ring-[#FE5502] ring-offset-2' : ''}`}>
                         <OptimizedImage
                           src={category.image}
                           alt={category.name}
@@ -977,7 +977,7 @@ export default function Under250() {
                           placeholder="blur"
                         />
                       </div>
-                      <span className={`max-w-full truncate pb-1 text-center text-xs font-semibold text-gray-800 dark:text-gray-200 sm:text-sm md:text-sm ${isActive ? 'text-[#FF0000]' : ''}`}>
+                      <span className={`max-w-full truncate pb-1 text-center text-xs font-semibold text-gray-800 dark:text-gray-200 sm:text-sm md:text-sm ${isActive ? 'text-[#FE5502]' : ''}`}>
                         {category.name}
                       </span>
                     </motion.div>
@@ -1004,7 +1004,7 @@ export default function Under250() {
               variant="outline"
               onClick={() => setUnder30MinsFilter(!under30MinsFilter)}
               className={`h-8 sm:h-9 md:h-10 px-3 sm:px-4 md:px-5 rounded-md flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 font-medium transition-all text-sm md:text-base ${under30MinsFilter
-                ? 'bg-[#FF0000] text-white border border-[#FF0000] hover:bg-[#C83C00]'
+                ? 'bg-[#FE5502] text-white border border-[#FE5502] hover:bg-[#C83C00]'
                 : 'bg-white dark:bg-[#1a1a1a] border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300'
                 }`}
             >
@@ -1157,7 +1157,7 @@ export default function Under250() {
                 <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">Sort By</h2>
                 <button
                   onClick={handleClearAll}
-                  className="text-[#FF0000] dark:text-[#F97316] font-medium text-sm md:text-base"
+                  className="text-[#FE5502] dark:text-[#F97316] font-medium text-sm md:text-base"
                 >
                   Clear all
                 </button>
@@ -1171,11 +1171,11 @@ export default function Under250() {
                       key={option.id || 'relevance'}
                       onClick={() => setDraftSelectedSort(option.id)}
                       className={`px-4 md:px-5 lg:px-6 py-3 md:py-4 rounded-xl border text-left transition-colors ${draftSelectedSort === option.id
-                        ? 'border-[#FF0000] bg-red-50 dark:bg-red-900/20'
-                        : 'border-gray-200 dark:border-gray-800 hover:border-[#FF0000]'
+                        ? 'border-[#FE5502] bg-red-50 dark:bg-red-900/20'
+                        : 'border-gray-200 dark:border-gray-800 hover:border-[#FE5502]'
                         }`}
                     >
-                      <span className={`text-sm md:text-base lg:text-lg font-medium ${draftSelectedSort === option.id ? 'text-[#FF0000] dark:text-[#F97316]' : 'text-gray-700 dark:text-gray-300'}`}>
+                      <span className={`text-sm md:text-base lg:text-lg font-medium ${draftSelectedSort === option.id ? 'text-[#FE5502] dark:text-[#F97316]' : 'text-gray-700 dark:text-gray-300'}`}>
                         {option.label}
                       </span>
                     </button>
@@ -1193,7 +1193,7 @@ export default function Under250() {
                 </button>
                 <button
                   onClick={handleApply}
-                  className="flex-1 py-3 md:py-4 font-semibold rounded-xl transition-colors text-sm md:text-base bg-[#FF0000] text-white hover:bg-[#C83C00]"
+                  className="flex-1 py-3 md:py-4 font-semibold rounded-xl transition-colors text-sm md:text-base bg-[#FE5502] text-white hover:bg-[#C83C00]"
                 >
                   Apply
                 </button>
@@ -1410,7 +1410,7 @@ export default function Under250() {
                 {selectedItem.customisable && (
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex-1 h-0.5 bg-gray-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#FF0000] rounded-full" style={{ width: '50%' }} />
+                      <div className="h-full bg-[#FE5502] rounded-full" style={{ width: '50%' }} />
                     </div>
                     <span className="text-xs text-gray-600 dark:text-gray-400 font-medium whitespace-nowrap">
                       highly recommended
@@ -1546,7 +1546,7 @@ export default function Under250() {
                   <button
                     key={option.id}
                     onClick={() => handleShareOption(option.id)}
-                    className="rounded-2xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:border-[#FF0000] hover:text-[#FF0000] transition-colors"
+                    className="rounded-2xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm font-medium text-gray-800 dark:text-gray-200 hover:border-[#FE5502] hover:text-[#FE5502] transition-colors"
                   >
                     {option.label}
                   </button>

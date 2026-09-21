@@ -81,7 +81,7 @@ const BottomNav = () => {
                                     className={cn(
                                         'flex flex-1 flex-col items-center gap-1.5 px-1.5 sm:px-2 py-2 transition-all duration-200 relative',
                                         isActive
-                                            ? 'text-[#FF0000]'
+                                            ? 'text-[#FE5502]'
                                             : 'text-gray-600 dark:text-gray-400',
                                     )}
                                 >
@@ -89,7 +89,7 @@ const BottomNav = () => {
                                         className={cn(
                                             'h-5 w-5',
                                             isActive
-                                                ? 'text-[#FF0000] fill-[#FF0000]'
+                                                ? 'text-[#FE5502] fill-[#FE5502]'
                                                 : 'text-gray-600 dark:text-gray-400',
                                         )}
                                         strokeWidth={2}
@@ -97,13 +97,13 @@ const BottomNav = () => {
                                     <span
                                         className={cn(
                                             'text-[10px] sm:text-xs font-medium',
-                                            isActive ? 'text-[#FF0000] font-semibold' : 'text-gray-600 dark:text-gray-400',
+                                            isActive ? 'text-[#FE5502] font-semibold' : 'text-gray-600 dark:text-gray-400',
                                         )}
                                     >
                                         {item.label}
                                     </span>
                                     {isActive && (
-                                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#FF0000] rounded-b-full" />
+                                        <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#FE5502] rounded-b-full" />
                                     )}
                                 </Link>
                             </React.Fragment>

@@ -49,7 +49,7 @@ export default function RestaurantOnboardingShell({
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#FF0000]/95 via-[#E64D02]/90 to-[#B91C1C]/95" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0D315B]/95 via-[#E64D02]/90 to-[#B91C1C]/95" />
 
         <div className="relative z-10 flex h-full flex-col overflow-hidden p-8 xl:p-10">
           <div className="shrink-0">
@@ -91,7 +91,7 @@ export default function RestaurantOnboardingShell({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF0000]/30"
+                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D315B]/30"
                   aria-label="Go back"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -110,7 +110,7 @@ export default function RestaurantOnboardingShell({
                   onClick={onEnableEdit}
                   variant="outline"
                   size="sm"
-                  className="cursor-pointer border-[#FF0000]/20 bg-[#FF0000]/5 text-[#FF0000] hover:bg-[#FF0000]/10"
+                  className="cursor-pointer border-[#0D315B]/20 bg-[#0D315B]/5 text-[#0D315B] hover:bg-[#0D315B]/10"
                 >
                   <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                   Edit
@@ -142,7 +142,7 @@ export default function RestaurantOnboardingShell({
               <button
                 type="button"
                 onClick={onBack}
-                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF0000]/30"
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D315B]/30"
                 aria-label="Go back"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function RestaurantOnboardingShell({
                 type="button"
                 onClick={onEnableEdit}
                 variant="outline"
-                className="cursor-pointer border-[#FF0000]/20 bg-[#FF0000]/5 text-[#FF0000] hover:bg-[#FF0000]/10"
+                className="cursor-pointer border-[#0D315B]/20 bg-[#0D315B]/5 text-[#0D315B] hover:bg-[#0D315B]/10"
               >
                 <Sparkles className="mr-1.5 h-4 w-4" />
                 Edit Details
@@ -192,7 +192,7 @@ export default function RestaurantOnboardingShell({
           <div className="mx-auto w-full max-w-3xl">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-4 py-20">
-                <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#FF0000]" />
+                <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#0D315B]" />
                 <p className="text-sm font-medium text-slate-500">Loading your onboarding details...</p>
               </div>
             ) : (
@@ -221,7 +221,7 @@ export default function RestaurantOnboardingShell({
               type="button"
               onClick={onNext}
               disabled={saving || (isLastStep && !isEditing)}
-              className={`min-w-[140px] w-full sm:w-auto cursor-pointer rounded-full bg-[#FF0000] px-8 text-sm font-bold text-white shadow-lg shadow-[#FF0000]/20 transition-all hover:bg-[#E64D02] disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`min-w-[140px] w-full sm:w-auto cursor-pointer rounded-full bg-[#0D315B] px-8 text-sm font-bold text-white shadow-lg shadow-[#0D315B]/20 transition-all hover:bg-[#E64D02] disabled:cursor-not-allowed disabled:opacity-50 ${
                 isLastStep && !isEditing ? "opacity-50" : ""
               }`}
             >

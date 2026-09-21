@@ -1276,7 +1276,7 @@ export default function HubFinance() {
                   <div className="relative" ref={downloadMenuRef}>
                     <button 
                       onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-                      className="bg-black text-white rounded-lg px-4 py-3 flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors"
+                      className="bg-[#0D315B] text-white rounded-lg px-4 py-3 flex items-center justify-center gap-2 hover:bg-[#0A2647] transition-colors"
                     >
                       <Download className="w-4 h-4" />
                       <span className="text-sm font-medium">Get report</span>
@@ -1618,7 +1618,7 @@ export default function HubFinance() {
                       parseFloat(withdrawalAmount) > availableBalance ||
                       parseFloat(withdrawalAmount) > maxAllowedWithdrawal
                     }
-                    className="flex-1 px-4 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-3 bg-[#0D315B] text-white rounded-lg font-medium hover:bg-[#0A2647] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     {submittingWithdrawal ? 'Submitting...' : 'Submit Request'}
                   </button>

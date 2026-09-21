@@ -167,7 +167,7 @@ export default function ItemSlotTimingsPage() {
           <button
             type="button"
             onClick={openCreateModal}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#FF0000] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#E64D02]"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#0D315B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#E64D02]"
           >
             <Plus className="h-4 w-4" />
             Add slot
@@ -190,7 +190,7 @@ export default function ItemSlotTimingsPage() {
             <button
               type="button"
               onClick={openCreateModal}
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#FF0000] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#E64D02]"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#0D315B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#E64D02]"
             >
               <Plus className="h-4 w-4" />
               Create first slot
@@ -317,7 +317,7 @@ export default function ItemSlotTimingsPage() {
                   type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex-1 rounded-xl bg-[#FF0000] px-4 py-3 text-sm font-semibold text-white hover:bg-[#E64D02] disabled:opacity-60"
+                  className="flex-1 rounded-xl bg-[#0D315B] px-4 py-3 text-sm font-semibold text-white hover:bg-[#E64D02] disabled:opacity-60"
                 >
                   {saving ? "Saving..." : editingSlot ? "Update slot" : "Create slot"}
                 </button>

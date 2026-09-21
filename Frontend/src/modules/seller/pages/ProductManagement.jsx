@@ -1190,7 +1190,7 @@ const ProductManagement = () => {
             <ShimmerButton
               onClick={() => navigate("/seller/products/add")}
               className="flex-1 sm:flex-none px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold shadow-md flex items-center justify-center space-x-1.5 text-white"
-              background="#FF0000">
+              background="#E71D28">
               <HiOutlinePlus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 shrink-0" />
               <span className="truncate">ADD PRODUCT</span>
             </ShimmerButton>
@@ -1247,7 +1247,7 @@ const ProductManagement = () => {
                 className="border-none shadow-sm ring-1 ring-slate-100 p-0 overflow-hidden group bg-white rounded-xl sm:rounded-2xl"
                 gradientColor={
                   stat.bg.includes("orange")
-                    ? "#FFEDED"
+                    ? "#FDE9EA"
                     : stat.bg.includes("emerald")
                       ? "#ecfdf5"
                       : stat.bg.includes("amber")

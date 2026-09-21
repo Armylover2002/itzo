@@ -808,11 +808,11 @@ export default function AddressSelectorPage() {
                   onFocus={() => placePredictions.length > 0 && setShowPlacePredictions(true)}
                   onBlur={() => window.setTimeout(() => setShowPlacePredictions(false), 200)}
                   placeholder="Start typing your address..."
-                  className="pl-10 h-12 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-[#FF0000] transition-all"
+                  className="pl-10 h-12 bg-white/95 dark:bg-[#1a1a1a]/95 backdrop-blur-md border-none rounded-xl shadow-lg focus:ring-2 focus:ring-[#FE5502] transition-all"
                 />
                 {isKeywordSearching && (
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FF0000] border-t-transparent" />
+                     <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FE5502] border-t-transparent" />
                   </div>
                 )}
 
@@ -860,7 +860,7 @@ export default function AddressSelectorPage() {
 
             {mapLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0000]" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FE5502]" />
               </div>
             )}
             
@@ -869,14 +869,14 @@ export default function AddressSelectorPage() {
                   onClick={handleUseCurrentLocation} 
                   className="bg-white text-black hover:bg-gray-100 shadow-xl border border-gray-200 rounded-full h-12 px-6"
               >
-                <Navigation className="h-4 w-4 mr-2 text-[#FF0000]" /> Use My Location
+                <Navigation className="h-4 w-4 mr-2 text-[#FE5502]" /> Use My Location
               </Button>
             </div>
           </div>
 
           <div className="relative bg-white dark:bg-[#0a0a0a] rounded-t-[32px] -mt-8 z-10 p-4 space-y-6 shadow-[0_-12px_24px_-10px_rgba(0,0,0,0.1)]">
             <div className="bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-xl p-4 flex gap-3">
-               <MapPin className="h-5 w-5 text-[#FF0000] mt-0.5" />
+               <MapPin className="h-5 w-5 text-[#FE5502] mt-0.5" />
                <div className="min-w-0">
                   <p className="text-xs font-bold text-red-800 dark:text-red-200 uppercase mb-1">Pinnned Location</p>
                   <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{currentAddress || "Select a location on map"}</p>
@@ -952,7 +952,7 @@ export default function AddressSelectorPage() {
                      variant={addressFormData.label === l ? "default" : "outline"}
                      onClick={() => setAddressFormData({...addressFormData, label: l})}
                      className="flex-1"
-                     style={addressFormData.label === l ? {backgroundColor: '#FF0000', color: 'white'} : {}}
+                     style={addressFormData.label === l ? {backgroundColor: '#FE5502', color: 'white'} : {}}
                    >
                      {l}
                    </Button>
@@ -968,7 +968,7 @@ export default function AddressSelectorPage() {
         >
           <Button 
             className="w-full h-12 text-white font-bold text-lg" 
-            style={{backgroundColor: '#FF0000'}}
+            style={{backgroundColor: '#FE5502'}}
             onClick={handleAddressFormSubmit}
             disabled={loadingAddress}
           >
@@ -997,10 +997,10 @@ export default function AddressSelectorPage() {
               className="w-full flex items-center gap-3 p-3 bg-white dark:bg-[#1a1a1a] rounded-xl shadow-sm hover:shadow-md transition-all group mb-3"
             >
               <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                <Navigation className="h-4 w-4 text-[#FF0000]" />
+                <Navigation className="h-4 w-4 text-[#FE5502]" />
               </div>
               <div className="text-left flex-1">
-                <p className="text-sm font-bold text-[#FF0000]">Current Location</p>
+                <p className="text-sm font-bold text-[#FE5502]">Current Location</p>
                 <p className="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{currentLocation.address || currentAddress || "Unknown location"}</p>
               </div>
               <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -1018,7 +1018,7 @@ export default function AddressSelectorPage() {
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">Saved Addresses</h2>
-            <Button variant="ghost" className="text-[#FF0000] p-0 h-auto text-sm font-bold" onClick={handleAddAddressClick}>
+            <Button variant="ghost" className="text-[#FE5502] p-0 h-auto text-sm font-bold" onClick={handleAddAddressClick}>
               <Plus className="h-3 w-3 mr-1" /> Add New
             </Button>
           </div>

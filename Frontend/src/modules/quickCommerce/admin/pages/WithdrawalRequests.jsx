@@ -441,7 +441,7 @@ const WithdrawalRequests = () => {
                                                 )}
                                                 <button
                                                     onClick={() => setSelectedRequest(req)}
-                                                    className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-red-600 hover:text-white transition-all active:scale-90"
+                                                    className="p-2 bg-slate-50 text-slate-400 rounded-xl hover:bg-purple-600 hover:text-white transition-all active:scale-90"
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </button>
@@ -580,7 +580,7 @@ const WithdrawalRequests = () => {
                             ) : (
                                 <button
                                     onClick={() => setSelectedRequest(null)}
-                                    className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest"
+                                    className="w-full py-4 bg-purple-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest"
                                 >
                                     Close Intelligence
                                 </button>

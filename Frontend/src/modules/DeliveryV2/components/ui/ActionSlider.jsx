@@ -10,7 +10,7 @@ export const ActionSlider = ({
   lockedLabel = "Action Locked",
   onConfirm, 
   disabled = false,
-  color = "bg-[#FF0000]",
+  color = "bg-[#FE5502]",
   successLabel = "Confirmed ✓",
   timeProgress = null
 }) => {
@@ -157,7 +157,7 @@ export const ActionSlider = ({
           disabled
             ? 'bg-white text-red-300 border border-red-200 cursor-not-allowed'
             : isSuccess
-              ? 'bg-white text-[#FF0000] cursor-grab active:cursor-grabbing'
+              ? 'bg-white text-[#FE5502] cursor-grab active:cursor-grabbing'
               : 'bg-white text-gray-950 cursor-grab active:cursor-grabbing'
         }`}
       >

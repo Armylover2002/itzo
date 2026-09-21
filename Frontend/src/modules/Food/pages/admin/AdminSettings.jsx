@@ -318,7 +318,7 @@ export default function AdminSettings() {
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-black text-white hover:bg-neutral-900 h-11 px-8"
+                className="bg-[#6412C6] text-white hover:bg-[#4E0E9A] h-11 px-8"
               >
                 {saving ? (
                   <>

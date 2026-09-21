@@ -481,16 +481,16 @@ export default function SellerAuth() {
                 <h2 className="text-xl sm:text-2xl font-semibold text-[#1c1c1e] tracking-tight">
                   {step === "phone" ? "Seller Login" : "Verify OTP"}
                 </h2>
-                <div className="h-[2px] w-12 sm:w-16 bg-[#FF0000] mx-auto rounded-full" />
+                <div className="h-[2px] w-12 sm:w-16 bg-[#E71D28] mx-auto rounded-full" />
              </div>
 
              <div className="space-y-5 sm:space-y-6">
                {step === "phone" ? (
                  <>
                    <div className="space-y-3 sm:space-y-4">
-                     <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#FF0000] transition-all py-1.5 sm:py-2 group">
+                     <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#E71D28] transition-all py-1.5 sm:py-2 group">
                        <div className="pl-1 flex items-center pointer-events-none">
-                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF0000]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#E71D28]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                          </svg>
                        </div>
@@ -516,7 +516,7 @@ export default function SellerAuth() {
                       onClick={handleSendOtp}
                       disabled={!isPhoneValid || isLoading}
                       className={`w-full h-11 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base md:text-lg tracking-wide transition-all duration-300 ${isPhoneValid && !isLoading
-                        ? "bg-[#FF0000] hover:bg-[#E64D02] text-white shadow-lg shadow-[#FF0000]/20 transform active:scale-[0.98]"
+                        ? "bg-[#E71D28] hover:bg-[#E64D02] text-white shadow-lg shadow-[#E71D28]/20 transform active:scale-[0.98]"
                         : "bg-slate-100 text-slate-400 cursor-not-allowed"
                         }`}
                     >
@@ -545,7 +545,7 @@ export default function SellerAuth() {
                          onBlur={() => setFocusedIndex(null)}
                          disabled={isLoading}
                          className={`w-10 h-14 sm:w-12 sm:h-14 bg-transparent border-b-2 text-center text-2xl font-medium text-slate-900 focus:outline-none transition-all duration-300 ${focusedIndex === index
-                           ? "border-[#FF0000]"
+                           ? "border-[#E71D28]"
                            : "border-gray-200"
                            }`}
                        />
@@ -556,7 +556,7 @@ export default function SellerAuth() {
                      onClick={() => handleVerifyOtp()}
                      disabled={isLoading || otp.join("").length < 4}
                      className={`w-full h-12 md:h-14 rounded-2xl font-black text-base md:text-lg tracking-wide transition-all duration-300 ${otp.join("").length >= 4 && !isLoading
-                       ? "bg-[#FF0000] hover:bg-[#E64D02] text-white shadow-lg shadow-[#FF0000]/20 transform active:scale-[0.98]"
+                       ? "bg-[#E71D28] hover:bg-[#E64D02] text-white shadow-lg shadow-[#E71D28]/20 transform active:scale-[0.98]"
                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
                        }`}
                    >
@@ -572,7 +572,7 @@ export default function SellerAuth() {
                  <p className="text-[10px] sm:text-[11px] md:text-xs text-slate-400 font-medium">
                     By logging in, you agree to our
                   </p>
-                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] md:text-xs font-bold text-[#FF0000]">
+                  <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] md:text-xs font-bold text-[#E71D28]">
                     <button
                       type="button"
                       onClick={() => handleOpenLegalPage("terms")}
@@ -682,7 +682,7 @@ export default function SellerAuth() {
             <div className="p-6 overflow-y-auto flex-1 text-slate-700 text-sm leading-relaxed prose prose-slate max-w-none">
               {legalModal.isLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
-                  <div className="w-8 h-8 border-2 border-slate-200 border-t-[#FF0000] rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-2 border-slate-200 border-t-[#E71D28] rounded-full animate-spin" />
                   <p className="font-medium">Loading...</p>
                 </div>
               ) : legalModal.kind === "support" && legalModal.supportData ? (

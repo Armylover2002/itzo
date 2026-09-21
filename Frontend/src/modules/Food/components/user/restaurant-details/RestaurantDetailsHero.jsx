@@ -83,7 +83,7 @@ export default function RestaurantDetailsHero({
                   placeholder="Search dishes..."
                   value={searchQuery}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  className="w-full h-10 pl-10 pr-10 rounded-full bg-white/95 backdrop-blur-md shadow-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                  className="w-full h-10 pl-10 pr-10 rounded-full bg-white/95 backdrop-blur-md shadow-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#FE5502]"
                   autoFocus
                 />
                 <button

@@ -520,7 +520,7 @@ export default function EditRestaurantAddress() {
             <button
               onClick={handleUpdateClick}
               disabled={loading || saving}
-              className={`w-full bg-black text-white font-semibold py-4 text-base rounded-lg flex items-center justify-center gap-2 ${loading || saving ? "opacity-70 cursor-not-allowed" : ""}`}
+              className={`w-full bg-[#0D315B] hover:bg-[#0A2647] text-white font-semibold py-4 text-base rounded-lg flex items-center justify-center gap-2 ${loading || saving ? "opacity-70 cursor-not-allowed" : ""}`}
             >
               {(loading || saving) ? (
                 <>

@@ -508,7 +508,7 @@ const ContentManager = () => {
                     </button>
                     <button
                         onClick={openCreateModal}
-                        className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
+                        className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:scale-105 transition-all"
                     >
                         <HiOutlinePlus className="h-5 w-5" />
                         ADD COMPONENT
@@ -703,7 +703,7 @@ const ContentManager = () => {
                 {/* Mobile Device Mockup — only configured sections, no fake fallback content */}
                 <div className="lg:col-span-4 sticky top-4">
                     <div className="relative mx-auto border-[8px] border-slate-900 rounded-[3rem] h-[650px] w-[320px] shadow-2xl overflow-hidden bg-white ring-8 ring-slate-100">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-red-600 rounded-b-2xl z-20" />
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-purple-600 rounded-b-2xl z-20" />
 
                         <div className="h-full overflow-y-auto pt-8 pb-20 no-scrollbar">
                             <div className="p-4 flex items-center justify-between mb-2">
@@ -1021,7 +1021,7 @@ const ContentManager = () => {
                                                             onClick={() =>
                                                                 bannerFileInputsRef.current[idx]?.click()
                                                             }
-                                                            className="inline-flex items-center px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-colors"
+                                                            className="inline-flex items-center px-3 py-1.5 rounded-lg text-[11px] font-bold bg-purple-600 text-white hover:bg-purple-700 transition-colors"
                                                         >
                                                             {item.imageUrl ? 'Change image' : 'Choose image file'}
                                                         </button>

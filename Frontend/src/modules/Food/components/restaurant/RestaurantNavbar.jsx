@@ -417,17 +417,17 @@ export default function RestaurantNavbar({
           <button
             onClick={handleStatusClick}
             className={`flex items-center gap-1.5 px-2 py-1 border rounded-full hover:opacity-80 transition-all ${displayStatus === "Online"
-                ? "bg-[#FF0000]/10 border-[#FF0000]/30"
+                ? "bg-[#0D315B]/10 border-[#0D315B]/30"
                 : "bg-gray-100 border-gray-300"
               }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${displayStatus === "Online" ? "bg-[#FF0000]" : "bg-gray-500"
+            <span className={`w-1.5 h-1.5 rounded-full ${displayStatus === "Online" ? "bg-[#0D315B]" : "bg-gray-500"
               }`}></span>
-            <span className={`text-sm font-medium ${displayStatus === "Online" ? "text-[#FF0000]" : "text-gray-700"
+            <span className={`text-sm font-medium ${displayStatus === "Online" ? "text-[#0D315B]" : "text-gray-700"
               }`}>
               {displayStatus}
             </span>
-            <ChevronRight className={`w-4 h-4 ${displayStatus === "Online" ? "text-[#FF0000]" : "text-gray-700"
+            <ChevronRight className={`w-4 h-4 ${displayStatus === "Online" ? "text-[#0D315B]" : "text-gray-700"
               }`} />
           </button>
         )}

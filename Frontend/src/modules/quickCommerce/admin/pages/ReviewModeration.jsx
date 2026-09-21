@@ -128,7 +128,7 @@ const ReviewModeration = () => {
                             {/* User Info & Rating */}
                             <div className="lg:w-64 shrink-0 space-y-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-red-600 text-white flex items-center justify-center font-black ds-h2">
+                                    <div className="h-12 w-12 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-black ds-h2">
                                         {r.user[0]}
                                     </div>
                                     <div>
@@ -191,7 +191,7 @@ const ReviewModeration = () => {
                                 </button>
                                 <button
                                     onClick={() => handleReplyClick(r)}
-                                    className="flex-1 w-full flex items-center justify-center gap-2 py-3 bg-red-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-red-700 transition-all active:scale-95"
+                                    className="flex-1 w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-purple-700 transition-all active:scale-95"
                                 >
                                     REPLY
                                 </button>

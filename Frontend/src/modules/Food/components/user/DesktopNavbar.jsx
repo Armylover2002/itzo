@@ -132,7 +132,7 @@ export default function DesktopNavbar({ showLogo = true }) {
                                 <span className="text-sm font-bold text-black">Loading...</span>
                             ) : (
                                 <div className="flex items-center gap-2 w-full">
-                                    <FaLocationDot className="h-4 w-4 text-[#FF0000]" />
+                                    <FaLocationDot className="h-4 w-4 text-[#FE5502]" />
                                     <span className="truncate text-sm font-semibold text-gray-800">
                                         {mainLocationName}
                                     </span>
@@ -176,15 +176,15 @@ export default function DesktopNavbar({ showLogo = true }) {
                                 <Link
                                     to="/food/user"
                                     className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isDelivery
-                                        ? "text-[#FF0000] dark:text-[#FF0000]"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FF0000] dark:hover:text-[#FF0000]"
+                                        ? "text-[#FE5502] dark:text-[#FE5502]"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
                                         }`}
                                 >
                                     <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Home</span>
                                     {isDelivery && (
                                         <motion.div
                                             layoutId="foodNavIndicator"
-                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FF0000] dark:bg-[#FF0000]"
+                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ duration: 0.3 }}
@@ -195,15 +195,15 @@ export default function DesktopNavbar({ showLogo = true }) {
                                 <Link
                                     to="/food/user/under-250"
                                     className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isUnder250
-                                        ? "text-[#FF0000] dark:text-[#FF0000]"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FF0000] dark:hover:text-[#FF0000]"
+                                        ? "text-[#FE5502] dark:text-[#FE5502]"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
                                         }`}
                                 >
                                     <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Under 250</span>
                                     {isUnder250 && (
                                         <motion.div
                                             layoutId="foodNavIndicator"
-                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FF0000] dark:bg-[#FF0000]"
+                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ duration: 0.3 }}
@@ -214,15 +214,15 @@ export default function DesktopNavbar({ showLogo = true }) {
                                 <Link
                                     to="/food/user/dining"
                                     className={`flex flex-col items-center gap-0.5 px-1.5 py-1 transition-colors relative group ${isDining
-                                        ? "text-[#FF0000] dark:text-[#FF0000]"
-                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FF0000] dark:hover:text-[#FF0000]"
+                                        ? "text-[#FE5502] dark:text-[#FE5502]"
+                                        : "text-gray-600 dark:text-gray-400 hover:text-[#FE5502] dark:hover:text-[#FE5502]"
                                         }`}
                                 >
                                     <span className="text-xs lg:text-sm font-bold tracking-wide uppercase whitespace-nowrap">Dining</span>
                                     {isDining && (
                                         <motion.div
                                             layoutId="foodNavIndicator"
-                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FF0000] dark:bg-[#FF0000]"
+                                            className="absolute -bottom-2 left-0 right-0 h-0.5 bg-[#FE5502] dark:bg-[#FE5502]"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ duration: 0.3 }}

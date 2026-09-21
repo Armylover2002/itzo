@@ -146,7 +146,7 @@ export default function DiningRestaurantDetail() {
                         full
                           ? "cursor-not-allowed border-gray-100 text-gray-300"
                           : selectedSlot?.start === slot.start
-                          ? "border-[#FF0000] bg-red-50 text-[#FF0000]"
+                          ? "border-[#FE5502] bg-red-50 text-[#FE5502]"
                           : "border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300"
                       }`}
                     >
@@ -168,7 +168,7 @@ export default function DiningRestaurantDetail() {
             <button
               onClick={handleBook}
               disabled={booking || !selectedSlot}
-              className="w-full rounded-lg bg-[#FF0000] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="w-full rounded-lg bg-[#FE5502] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
               {booking ? "Booking..." : "Reserve Table"}
             </button>

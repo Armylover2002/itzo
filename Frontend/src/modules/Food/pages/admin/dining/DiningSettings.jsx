@@ -99,7 +99,7 @@ export default function DiningSettings() {
         </div>
 
         {canEdit && (
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#FF0000] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 rounded-lg bg-[#6412C6] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Settings
           </button>
         )}

@@ -84,11 +84,11 @@ const CategoryRail = memo(({
           className="w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 cursor-pointer group"
           onClick={() => navigate("/user/under-250")}
         >
-          <div className="w-16 h-16 rounded-full bg-red-100/30 flex items-center justify-center p-0.5 border-2 border-[#FF0000] overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
-            <div className="bg-[#FF0000] w-full h-full rounded-full flex flex-col items-center justify-center text-white p-2">
+          <div className="w-16 h-16 rounded-full bg-red-100/30 flex items-center justify-center p-0.5 border-2 border-[#FE5502] overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
+            <div className="bg-[#FE5502] w-full h-full rounded-full flex flex-col items-center justify-center text-white p-2">
               <span className="text-[8px] font-bold uppercase">Under</span>
               <span className="text-xs font-bold">₹200</span>
-              <div className="bg-white text-[#FF0000] text-[6px] px-1 py-0.5 rounded-full mt-1 font-bold">Explore</div>
+              <div className="bg-white text-[#FE5502] text-[6px] px-1 py-0.5 rounded-full mt-1 font-bold">Explore</div>
             </div>
           </div>
           <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Offers</span>

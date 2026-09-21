@@ -13,7 +13,7 @@ const STATUS_COLORS = {
 function StatCard({ icon: Icon, label, value }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-[#FF0000]">
+      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-[#6412C6]">
         <Icon className="h-5 w-5" />
       </div>
       <div>

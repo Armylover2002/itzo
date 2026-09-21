@@ -279,8 +279,8 @@ const FAQManagement = () => {
                 <div>
                     <h1 className="ds-h1 flex items-center gap-3">
                         FAQ Management
-                        <div className="p-2 bg-red-100 rounded-xl">
-                            <HelpCircle className="h-5 w-5 text-red-600" />
+                        <div className="p-2 bg-purple-100 rounded-xl">
+                            <HelpCircle className="h-5 w-5 text-purple-600" />
                         </div>
                     </h1>
                     <p className="ds-description mt-1">Manage categories and help customers with common questions.</p>
@@ -310,7 +310,7 @@ const FAQManagement = () => {
                                 }));
                                 setIsAddModalOpen(true);
                             }}
-                            className="flex items-center gap-2 px-5 py-3 bg-red-600 text-white rounded-2xl text-xs font-bold hover:bg-red-700 transition-all shadow-lg active:scale-95 shadow-red-200"
+                            className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white rounded-2xl text-xs font-bold hover:bg-purple-700 transition-all shadow-lg active:scale-95 shadow-purple-200"
                         >
                             <Plus className="h-4 w-4" />
                             ADD FAQ
@@ -322,12 +322,12 @@ const FAQManagement = () => {
             {/* Quick Intelligence Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'Total FAQs', value: faqs.length, icon: MessageSquare, bg: 'bg-red-50', iconColor: 'text-red-600' },
+                    { label: 'Total FAQs', value: faqs.length, icon: MessageSquare, bg: 'bg-purple-50', iconColor: 'text-purple-600' },
                     { label: 'Total Views', value: faqs.reduce((acc, f) => acc + f.views, 0).toLocaleString(), icon: TrendingUp, bg: 'bg-sky-50', iconColor: 'text-sky-600' },
                     { label: 'Published', value: faqs.filter(f => f.status === 'published').length, icon: CheckCircle2, bg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
                     { label: 'Drafts', value: faqs.filter(f => f.status === 'draft').length, icon: Edit3, bg: 'bg-amber-50', iconColor: 'text-amber-600' },
                 ].map((stat, i) => (
-                    <Card key={i} className="p-5 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-red-200 transition-all overflow-hidden relative text-left">
+                    <Card key={i} className="p-5 border-none shadow-sm ring-1 ring-slate-100 bg-white group hover:ring-purple-200 transition-all overflow-hidden relative text-left">
                         <div className="relative z-10 flex items-center gap-4">
                             <div className={cn("p-3 rounded-2xl h-12 w-12 flex items-center justify-center", stat.bg)}>
                                 <stat.icon className={cn("h-6 w-6", stat.iconColor)} />
@@ -351,7 +351,7 @@ const FAQManagement = () => {
                                 onClick={() => setActiveCategory('All')}
                                 className={cn(
                                     "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all",
-                                    activeCategory === 'All' ? "bg-red-600 text-white shadow-lg" : "text-slate-600 hover:bg-slate-50"
+                                    activeCategory === 'All' ? "bg-purple-600 text-white shadow-lg" : "text-slate-600 hover:bg-slate-50"
                                 )}
                             >
                                 <span className="flex items-center gap-3">
@@ -366,7 +366,7 @@ const FAQManagement = () => {
                                     onClick={() => setActiveCategory(cat.name)}
                                     className={cn(
                                         "w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition-all",
-                                        activeCategory === cat.name ? "bg-red-600 text-white shadow-lg shadow-red-100" : "text-slate-600 hover:bg-slate-50"
+                                        activeCategory === cat.name ? "bg-purple-600 text-white shadow-lg shadow-purple-100" : "text-slate-600 hover:bg-slate-50"
                                     )}
                                 >
                                     <span className="flex items-center gap-3">
@@ -385,13 +385,13 @@ const FAQManagement = () => {
                     {/* Filter & Search Bar */}
                     <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-xl flex flex-col md:flex-row gap-4 items-center">
                         <div className="flex-1 relative group w-full text-left">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-red-500 transition-colors" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Search questions or answers..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-red-500/10 transition-all"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-purple-500/10 transition-all"
                             />
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
@@ -422,7 +422,7 @@ const FAQManagement = () => {
                                 >
                                     <Card className={cn(
                                         "border-none shadow-lg ring-1 transition-all overflow-hidden rounded-xl text-left",
-                                        expandedId === faq.id ? "ring-red-200 bg-white" : "ring-slate-100 bg-white hover:ring-slate-200"
+                                        expandedId === faq.id ? "ring-purple-200 bg-white" : "ring-slate-100 bg-white hover:ring-slate-200"
                                     )}>
                                         <div className="p-6">
                                             <div className="flex items-start gap-4">
@@ -475,7 +475,7 @@ const FAQManagement = () => {
                                                         onClick={() => setExpandedId(expandedId === faq.id ? null : faq.id)}
                                                         className="cursor-pointer group"
                                                     >
-                                                        <h3 className="text-base font-black text-slate-900 group-hover:text-red-600 transition-colors flex items-center justify-between">
+                                                        <h3 className="text-base font-black text-slate-900 group-hover:text-purple-600 transition-colors flex items-center justify-between">
                                                             {faq.question}
                                                             {expandedId === faq.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                                                         </h3>
@@ -553,7 +553,7 @@ const FAQManagement = () => {
                                 <select
                                     value={newFaq.category}
                                     onChange={(e) => setNewFaq({ ...newFaq, category: e.target.value })}
-                                    className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-red-500/10 transition-all shadow-sm cursor-pointer"
+                                    className="w-full px-5 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-500/10 transition-all shadow-sm cursor-pointer"
                                 >
                                     {categories.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
                                 </select>
@@ -564,12 +564,12 @@ const FAQManagement = () => {
                                     <button
                                         type="button"
                                         onClick={() => setNewFaq({ ...newFaq, status: 'published' })}
-                                        className={cn("flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", newFaq.status === 'published' ? "bg-white text-red-600 shadow-sm" : "text-slate-400")}
+                                        className={cn("flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", newFaq.status === 'published' ? "bg-white text-purple-600 shadow-sm" : "text-slate-400")}
                                     >PUBLISHED</button>
                                     <button
                                         type="button"
                                         onClick={() => setNewFaq({ ...newFaq, status: 'draft' })}
-                                        className={cn("flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", newFaq.status === 'draft' ? "bg-white text-red-600 shadow-sm" : "text-slate-400")}
+                                        className={cn("flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all", newFaq.status === 'draft' ? "bg-white text-purple-600 shadow-sm" : "text-slate-400")}
                                     >DRAFT</button>
                                 </div>
                             </div>
@@ -598,7 +598,7 @@ const FAQManagement = () => {
                             value={newFaq.question}
                             onChange={(e) => setNewFaq({ ...newFaq, question: e.target.value })}
                             placeholder="Enter the question..."
-                            className="w-full px-5 py-5 bg-slate-50 border-none rounded-2xl text-base font-black outline-none focus:ring-2 focus:ring-red-500/10 transition-all shadow-sm"
+                            className="w-full px-5 py-5 bg-slate-50 border-none rounded-2xl text-base font-black outline-none focus:ring-2 focus:ring-purple-500/10 transition-all shadow-sm"
                         />
                     </div>
                     <div>
@@ -609,12 +609,12 @@ const FAQManagement = () => {
                             value={newFaq.answer}
                             onChange={(e) => setNewFaq({ ...newFaq, answer: e.target.value })}
                             placeholder="Type the answer here..."
-                            className="w-full px-5 py-5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-red-500/10 transition-all shadow-sm resize-none"
+                            className="w-full px-5 py-5 bg-slate-50 border-none rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-purple-500/10 transition-all shadow-sm resize-none"
                         />
                     </div>
                     <div className="flex gap-4">
                         <button type="button" onClick={() => setIsAddModalOpen(false)} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-200 transition-all">CANCEL</button>
-                        <button type="submit" className="flex-[2] py-4 bg-red-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-100 transition-all flex items-center justify-center gap-2">
+                        <button type="submit" className="flex-[2] py-4 bg-purple-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-purple-700 shadow-xl shadow-purple-100 transition-all flex items-center justify-center gap-2">
                             <Save className="h-4 w-4" /> SAVE FAQ
                         </button>
                     </div>
@@ -651,7 +651,7 @@ const FAQManagement = () => {
                             className="w-full pl-11 pr-4 py-4 bg-white ring-1 ring-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-sky-500/10 transition-all"
                         />
                     </div>
-                    <button onClick={handleAddCategory} className="w-full py-4 bg-red-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-red-700 transition-all">GENERATE NEW CATEGORY</button>
+                    <button onClick={handleAddCategory} className="w-full py-4 bg-purple-600 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-purple-700 transition-all">GENERATE NEW CATEGORY</button>
                 </div>
             </Modal>
         </div>

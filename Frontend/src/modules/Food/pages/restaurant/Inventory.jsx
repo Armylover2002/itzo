@@ -1940,7 +1940,7 @@ export default function Inventory() {
               value="Veg"
               checked={addonFoodType === "Veg"}
               onChange={(e) => setAddonFoodType(e.target.value)}
-              className="w-4 h-4 text-[#FF0000] border-gray-300 focus:ring-[#FF0000]"
+              className="w-4 h-4 text-[#0D315B] border-gray-300 focus:ring-[#0D315B]"
             />
             <div className="flex items-center gap-1.5">
               <span className="flex items-center justify-center w-4 h-4 rounded-sm border border-green-600">
@@ -1957,7 +1957,7 @@ export default function Inventory() {
               value="Non-Veg"
               checked={addonFoodType === "Non-Veg"}
               onChange={(e) => setAddonFoodType(e.target.value)}
-              className="w-4 h-4 text-[#FF0000] border-gray-300 focus:ring-[#FF0000]"
+              className="w-4 h-4 text-[#0D315B] border-gray-300 focus:ring-[#0D315B]"
             />
             <div className="flex items-center gap-1.5">
               <span className="flex items-center justify-center w-4 h-4 rounded-sm border border-red-600">
@@ -2027,7 +2027,7 @@ export default function Inventory() {
           type="button"
           onClick={handleSaveAddon}
           disabled={savingAddon}
-          className="px-4 py-2 bg-[#FF0000] text-white rounded-md text-sm font-medium hover:bg-[#E64D02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 bg-[#0D315B] text-white rounded-md text-sm font-medium hover:bg-[#E64D02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {savingAddon && <Loader2 className="h-4 w-4 animate-spin" />}
           <span>{savingAddon ? "Saving..." : "Submit for approval"}</span>
@@ -2082,7 +2082,7 @@ export default function Inventory() {
           <motion.button
             onClick={() => setActiveTab("all-items")}
             className={`relative overflow-hidden rounded-[24px] lg:rounded-xl border lg:border-none px-4 py-3 lg:py-2 text-sm font-semibold whitespace-nowrap ${activeTab === "all-items"
-              ? "border-[#FF0000] lg:text-[#FF0000] text-white shadow-[0_18px_32px_-24px_rgba(73,171,20,0.8)] lg:shadow-none"
+              ? "border-[#0D315B] lg:text-[#0D315B] text-white shadow-[0_18px_32px_-24px_rgba(73,171,20,0.8)] lg:shadow-none"
               : "border-white/80 bg-white/80 lg:bg-transparent text-slate-700 shadow-[0_16px_40px_-34px_rgba(15,23,42,0.45)] lg:shadow-none hover:bg-slate-50 lg:hover:bg-transparent"
               }`}
             animate={{
@@ -2093,7 +2093,7 @@ export default function Inventory() {
             {activeTab === "all-items" && (
               <motion.div
                 layoutId="activeTabBackground"
-                className="absolute inset-0 rounded-[24px] lg:rounded-xl bg-[#FF0000] lg:bg-white lg:shadow-sm -z-10"
+                className="absolute inset-0 rounded-[24px] lg:rounded-xl bg-[#0D315B] lg:bg-white lg:shadow-sm -z-10"
                 initial={false}
                 transition={{
                   type: "spring",
@@ -2104,7 +2104,7 @@ export default function Inventory() {
             )}
             <span className="relative z-10 flex items-center justify-center gap-2">
               <span>Menu Items</span>
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${activeTab === "all-items" ? "bg-white lg:bg-emerald-50 lg:text-emerald-700 text-[#FF0000]" : "bg-slate-100 text-slate-600"
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${activeTab === "all-items" ? "bg-white lg:bg-emerald-50 lg:text-emerald-700 text-[#0D315B]" : "bg-slate-100 text-slate-600"
                 }`}>
                 {totalItems}
               </span>
@@ -2114,7 +2114,7 @@ export default function Inventory() {
           <motion.button
             onClick={() => setActiveTab("add-ons")}
             className={`relative overflow-hidden rounded-[24px] lg:rounded-xl border lg:border-none px-4 py-3 lg:py-2 text-sm font-semibold whitespace-nowrap ${activeTab === "add-ons"
-              ? "border-[#FF0000] lg:text-[#FF0000] text-white shadow-[0_18px_32px_-24px_rgba(73,171,20,0.8)] lg:shadow-none"
+              ? "border-[#0D315B] lg:text-[#0D315B] text-white shadow-[0_18px_32px_-24px_rgba(73,171,20,0.8)] lg:shadow-none"
               : "border-white/80 bg-white/80 lg:bg-transparent text-slate-700 shadow-[0_16px_40px_-34px_rgba(15,23,42,0.45)] lg:shadow-none hover:bg-slate-50 lg:hover:bg-transparent"
               }`}
             animate={{
@@ -2125,7 +2125,7 @@ export default function Inventory() {
             {activeTab === "add-ons" && (
               <motion.div
                 layoutId="activeTabBackground"
-                className="absolute inset-0 rounded-[24px] lg:rounded-xl bg-[#FF0000] lg:bg-white lg:shadow-sm -z-10"
+                className="absolute inset-0 rounded-[24px] lg:rounded-xl bg-[#0D315B] lg:bg-white lg:shadow-sm -z-10"
                 initial={false}
                 transition={{
                   type: "spring",
@@ -2163,7 +2163,7 @@ export default function Inventory() {
             <SlidersHorizontal className="w-4 h-4" />
             Filters
             {selectedFilter !== "all" ? (
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#FF0000]" />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#0D315B]" />
             ) : null}
           </button>
           <button
@@ -2242,7 +2242,7 @@ export default function Inventory() {
                 <SlidersHorizontal className="w-4 h-4 text-slate-700" />
                 <span>Filters</span>
                 {selectedFilter !== "all" && (
-                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#FF0000]" />
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#0D315B]" />
                 )}
               </button>
 
@@ -2264,7 +2264,7 @@ export default function Inventory() {
                     type="button"
                     onClick={() => setSelectedFilter(option.value)}
                     className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${isActive
-                      ? "border-[#FF0000] bg-[#FF0000] text-white shadow-[0_14px_28px_-24px_rgba(255,0,0,0.5)]"
+                      ? "border-[#0D315B] bg-[#0D315B] text-white shadow-[0_14px_28px_-24px_rgba(13,49,91,0.5)]"
                       : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-white"
                       }`}
                   >
@@ -2568,7 +2568,7 @@ export default function Inventory() {
                               onCheckedChange={(checked) =>
                                 handleAddonToggle(addon.id, checked)
                               }
-                              className="data-[state=checked]:bg-[#FF0000]"
+                              className="data-[state=checked]:bg-[#0D315B]"
                             />
                           </div>
                         </div>
@@ -2668,7 +2668,7 @@ export default function Inventory() {
                           onCheckedChange={(checked) =>
                             handleToggleChange("category", category.id, null, checked)
                           }
-                          className="data-[state=checked]:bg-[#FF0000]"
+                          className="data-[state=checked]:bg-[#0D315B]"
                         />
                       </div>
 
@@ -2791,7 +2791,7 @@ export default function Inventory() {
                                       onCheckedChange={(checked) =>
                                         handleToggleChange("item", category.id, item.id, checked)
                                       }
-                                      className="data-[state=checked]:bg-[#FF0000]"
+                                      className="data-[state=checked]:bg-[#0D315B]"
                                     />
                                   </div>
                                 </div>
@@ -2883,7 +2883,7 @@ export default function Inventory() {
                   </button>
                   <button
                     onClick={handleFilterApply}
-                    className={`${selectedFilter !== "all" ? 'flex-1' : 'w-full'} bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors`}
+                    className={`${selectedFilter !== "all" ? 'flex-1' : 'w-full'} bg-[#0D315B] text-white py-3 rounded-lg font-medium hover:bg-[#0A2647] transition-colors`}
                   >
                     Apply
                   </button>
@@ -2930,7 +2930,7 @@ export default function Inventory() {
                       className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left hover:bg-gray-50"
                     >
                       <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                      <span className="text-xs font-semibold text-[#FF0000]">Edit item</span>
+                      <span className="text-xs font-semibold text-[#0D315B]">Edit item</span>
                     </button>
                   ))}
                 </div>
@@ -2948,7 +2948,7 @@ export default function Inventory() {
                   <button
                     type="button"
                     onClick={() => handleOpenCategoryAssignmentEditor()}
-                    className="flex-1 rounded-xl bg-[#FF0000] py-3 text-sm font-semibold text-white"
+                    className="flex-1 rounded-xl bg-[#0D315B] py-3 text-sm font-semibold text-white"
                   >
                     Add to category
                   </button>
@@ -2976,7 +2976,7 @@ export default function Inventory() {
                       className="flex w-full items-center justify-between rounded-xl border border-gray-200 px-4 py-3 text-left hover:bg-gray-50"
                     >
                       <span className="text-sm font-medium text-gray-900">{item.name}</span>
-                      <span className="text-xs font-semibold text-[#FF0000]">Edit item</span>
+                      <span className="text-xs font-semibold text-[#0D315B]">Edit item</span>
                     </button>
                   ))}
                 </div>
@@ -2994,7 +2994,7 @@ export default function Inventory() {
                   <button
                     type="button"
                     onClick={() => handleOpenCategoryAssignmentEditor()}
-                    className="flex-1 rounded-xl bg-[#FF0000] py-3 text-sm font-semibold text-white"
+                    className="flex-1 rounded-xl bg-[#0D315B] py-3 text-sm font-semibold text-white"
                   >
                     Add to category
                   </button>
@@ -3165,7 +3165,7 @@ export default function Inventory() {
                   </button>
                   <button
                     onClick={handleToggleConfirm}
-                    className="flex-1 bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                    className="flex-1 bg-[#0D315B] text-white py-3 rounded-lg font-medium hover:bg-[#0A2647] transition-colors"
                   >
                     Confirm
                   </button>
@@ -3286,7 +3286,7 @@ export default function Inventory() {
               setIsAddAddonOpen(true)
               window.scrollTo({ top: 0, behavior: "smooth" })
             }}
-            className="rounded-full bg-[#FF0000] px-5 py-3 text-sm font-semibold text-white shadow-[0_22px_40px_-24px_rgba(73,171,20,0.6)]"
+            className="rounded-full bg-[#0D315B] px-5 py-3 text-sm font-semibold text-white shadow-[0_22px_40px_-24px_rgba(73,171,20,0.6)]"
           >
             + Add add-on
           </motion.button>
@@ -3300,7 +3300,7 @@ export default function Inventory() {
                 },
               })
             }}
-            className="rounded-full bg-[#FF0000] px-5 py-3 text-sm font-semibold text-white shadow-[0_22px_40px_-24px_rgba(73,171,20,0.6)]"
+            className="rounded-full bg-[#0D315B] px-5 py-3 text-sm font-semibold text-white shadow-[0_22px_40px_-24px_rgba(73,171,20,0.6)]"
           >
             + Add item
           </motion.button>

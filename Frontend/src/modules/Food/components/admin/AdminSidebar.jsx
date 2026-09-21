@@ -585,7 +585,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
             "flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ease-out menu-item-animate text-left group",
             isInSection ? "text-xs font-semibold" : "text-xs",
             isActive(item.path)
-              ? "bg-[#FFEDED] text-[#FF0000] border border-[#FFEDED]/30 font-semibold shadow-xs"
+              ? "bg-[#F3E8FF] text-[#6412C6] border border-[#F3E8FF]/30 font-semibold shadow-xs"
               : "text-[#5C5247] hover:bg-[#FAF7F2] hover:text-[#1A1A1A]",
             isCollapsed && "justify-center px-2"
           )}
@@ -594,7 +594,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
         >
           <Icon className={cn(
             "shrink-0 transition-all duration-200 text-left w-3.5 h-3.5",
-            isActive(item.path) ? "text-[#FF0000] scale-110" : "text-[#5C5247] group-hover:text-[#1A1A1A]"
+            isActive(item.path) ? "text-[#6412C6] scale-110" : "text-[#5C5247] group-hover:text-[#1A1A1A]"
           )} />
           {!isCollapsed && (
             <div className="flex-1 flex items-center justify-between overflow-hidden">
@@ -681,7 +681,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                     className={cn(
                       "flex w-full items-center gap-2 px-2.5 py-1 rounded-md transition-all duration-200 ease-out text-xs font-normal text-left",
                       isActive(subItem.path, allSubPaths)
-                        ? "bg-[#FFEDED] text-[#FF0000] font-semibold shadow-xs"
+                        ? "bg-[#F3E8FF] text-[#6412C6] font-semibold shadow-xs"
                         : "text-[#5C5247] hover:bg-[#FAF7F2] hover:text-[#1A1A1A]"
                     )}
                     style={{ animationDelay: `${subIndex * 0.03}s` }}
@@ -689,7 +689,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                   >
                     <span className={cn(
                       "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-200",
-                      isActive(subItem.path, allSubPaths) ? "bg-[#FF0000] scale-125" : "bg-[#5C5247]"
+                      isActive(subItem.path, allSubPaths) ? "bg-[#6412C6] scale-125" : "bg-[#5C5247]"
                     )}></span>
                     <span className="block min-w-0 flex-1 text-left text-xs font-medium leading-4 text-current truncate">
                       {subItemLabel}
@@ -907,7 +907,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                       className={cn(
                         "rounded-lg px-2 py-1.5 text-[11px] font-bold uppercase tracking-wide transition-all",
                         tab.active
-                          ? "bg-[#FF0000] text-white shadow-[0_4px_12px_rgba(255,0,0,0.2)]"
+                          ? "bg-[#6412C6] text-white shadow-[0_4px_12px_rgba(100,18,198,0.2)]"
                           : "text-[#5C5247] hover:text-[#1A1A1A] hover:bg-white/50"
                       )}
                     >
@@ -924,7 +924,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                       className={cn(
                         "rounded-lg px-2 py-1.5 mt-1 text-[11px] font-bold uppercase tracking-wide transition-all",
                         isCommonAdmin
-                          ? "bg-[#FF0000] text-white shadow-[0_4px_12px_rgba(255,0,0,0.2)]"
+                          ? "bg-[#6412C6] text-white shadow-[0_4px_12px_rgba(100,18,198,0.2)]"
                           : "text-[#5C5247] hover:text-[#1A1A1A] hover:bg-white/50"
                       )}
                     >
@@ -946,7 +946,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  "w-full pl-9 py-2 bg-[#ffffffcc] border border-[#EDE8E0] rounded-lg text-sm text-[#1A1A1A] placeholder:text-[#7C7062] focus:outline-none focus:ring-2 focus:ring-[#FF0000]/40 focus:border-[#FF0000]/40 transition-all duration-200 text-left",
+                  "w-full pl-9 py-2 bg-[#ffffffcc] border border-[#EDE8E0] rounded-lg text-sm text-[#1A1A1A] placeholder:text-[#7C7062] focus:outline-none focus:ring-2 focus:ring-[#6412C6]/40 focus:border-[#6412C6]/40 transition-all duration-200 text-left",
                   searchQuery ? "pr-9" : "pr-3"
                 )}
               />

@@ -250,7 +250,7 @@ export default function OutletTimings() {
             </div>
             <button
               onClick={handleSave}
-              className="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
+              className="px-4 py-2 bg-[#0D315B] text-white rounded-lg text-sm font-semibold hover:bg-[#0A2647] transition-colors"
             >
               Save
             </button>

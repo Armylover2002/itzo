@@ -60,7 +60,7 @@ const HomeFilterModal = ({ isOpen, onClose, activeFilters, toggleFilter }) => {
                           }}
                         />
                         <div className={`w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${
-                          isActive ? 'border-[#FF0000] bg-[#FF0000]' : 'border-gray-300 dark:border-gray-700'
+                          isActive ? 'border-[#FE5502] bg-[#FE5502]' : 'border-gray-300 dark:border-gray-700'
                         }`}>
                           {isActive && <Check className="w-3 h-3 text-white" />}
                         </div>
@@ -74,7 +74,7 @@ const HomeFilterModal = ({ isOpen, onClose, activeFilters, toggleFilter }) => {
             <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-[#111111]">
               <button 
                 onClick={onClose}
-                className="w-full py-3 bg-[#FF0000] text-white text-sm font-bold rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95"
+                className="w-full py-3 bg-[#FE5502] text-white text-sm font-bold rounded-xl shadow-lg shadow-red-500/20 hover:bg-red-600 transition-all active:scale-95"
               >
                 Apply Filters
               </button>

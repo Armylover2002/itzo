@@ -109,7 +109,7 @@ export default function DiningRestaurants() {
                       editingId === profile._id ? (
                         <div className="flex justify-end gap-2">
                           <button onClick={() => setEditingId(null)} className="text-xs text-gray-500">Cancel</button>
-                          <button onClick={() => handleSave(profile._id)} disabled={saving} className="rounded-lg bg-[#FF0000] px-3 py-1 text-xs font-semibold text-white disabled:opacity-60">
+                          <button onClick={() => handleSave(profile._id)} disabled={saving} className="rounded-lg bg-[#6412C6] px-3 py-1 text-xs font-semibold text-white disabled:opacity-60">
                             Save
                           </button>
                         </div>

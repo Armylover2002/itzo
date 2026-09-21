@@ -4,7 +4,7 @@ import DesktopSidebar from "./DesktopSidebar";
 export default function RestaurantLayout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   return (
-    <div className="flex h-screen bg-white md:bg-gray-50 overflow-hidden">
+    <div className="flex h-screen bg-white md:bg-gray-50 overflow-hidden restaurant-theme">
       <DesktopSidebar isCollapsed={isCollapsed} onToggle={() => setIsCollapsed(!isCollapsed)} />
       {/* 
         On mobile (default), there is no left margin since the sidebar is hidden.

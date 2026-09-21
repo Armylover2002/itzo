@@ -27,7 +27,7 @@ export default function RestaurantDetailsMenuToolbar({
             <SlidersHorizontal className="h-4 w-4 mr-1.5" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="ml-1.5 h-5 min-w-5 px-1 rounded-full bg-[#FF0000] text-white text-xs font-bold inline-flex items-center justify-center">
+              <span className="ml-1.5 h-5 min-w-5 px-1 rounded-full bg-[#FE5502] text-white text-xs font-bold inline-flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
@@ -76,7 +76,7 @@ export default function RestaurantDetailsMenuToolbar({
               onClick={() => onSelectCategory("all")}
               className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
                 selectedMenuCategory === "all"
-                  ? "bg-[#FF0000] text-white shadow-sm"
+                  ? "bg-[#FE5502] text-white shadow-sm"
                   : "bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
               }`}
             >
@@ -89,7 +89,7 @@ export default function RestaurantDetailsMenuToolbar({
                 onClick={() => onSelectCategory(category.id)}
                 className={`shrink-0 flex items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition-colors ${
                   selectedMenuCategory === category.id
-                    ? "bg-[#FF0000] text-white shadow-sm"
+                    ? "bg-[#FE5502] text-white shadow-sm"
                     : "bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700"
                 }`}
               >

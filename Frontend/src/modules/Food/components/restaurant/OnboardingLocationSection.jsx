@@ -259,10 +259,10 @@ export default function OnboardingLocationSection({
 
       zonePolygonRef.current = new google.maps.Polygon({
         paths: path,
-        strokeColor: "#FF0000",
+        strokeColor: "#0D315B",
         strokeOpacity: 0.85,
         strokeWeight: 2,
-        fillColor: "#FF0000",
+        fillColor: "#0D315B",
         fillOpacity: 0.12,
         clickable: false,
         zIndex: 1,
@@ -580,7 +580,7 @@ export default function OnboardingLocationSection({
             onFocus={() => predictions.length > 0 && setShowPredictions(true)}
             onBlur={() => window.setTimeout(() => setShowPredictions(false), 200)}
             disabled={locationFieldsDisabled}
-            className={`${ONBOARDING_INPUT} pr-10 text-slate-900 placeholder:text-slate-400 caret-[#FF0000] disabled:cursor-not-allowed disabled:opacity-60`}
+            className={`${ONBOARDING_INPUT} pr-10 text-slate-900 placeholder:text-slate-400 caret-[#0D315B] disabled:cursor-not-allowed disabled:opacity-60`}
             placeholder={
               zoneSelected
                 ? "Start typing your restaurant address..."
@@ -670,7 +670,7 @@ export default function OnboardingLocationSection({
             <div ref={mapContainerRef} className="absolute inset-0 h-full w-full" />
             {mapLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-100/80">
-                <Loader2 className="h-8 w-8 animate-spin text-[#FF0000]" />
+                <Loader2 className="h-8 w-8 animate-spin text-[#0D315B]" />
               </div>
             )}
           </div>

@@ -109,7 +109,7 @@ const MiniCart = React.memo(function MiniCart({
                         >
                             <Link
                                 to={resolvedLinkTo}
-                                className="flex flex-col items-center justify-center w-[72px] h-[72px] md:w-[84px] md:h-[84px] bg-black text-white rounded-full shadow-[0_15px_45px_rgba(0,0,0,0.5)] hover:scale-110 transition-all duration-300 relative group overflow-hidden border-2 border-white/10"
+                                className="flex flex-col items-center justify-center w-[72px] h-[72px] md:w-[84px] md:h-[84px] bg-primary-orange hover:bg-primary-hover active:bg-primary-dark text-white rounded-full shadow-[0_15px_45px_rgba(0,0,0,0.5)] hover:scale-110 transition-all duration-300 relative group overflow-hidden border-2 border-white/10"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
 

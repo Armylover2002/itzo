@@ -69,7 +69,7 @@ export default function DiningHome() {
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               <button
                 onClick={() => setActiveCategory(null)}
-                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${!activeCategory ? "border-[#FF0000] bg-red-50 text-[#FF0000]" : "border-gray-200 text-gray-600"}`}
+                className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${!activeCategory ? "border-[#FE5502] bg-red-50 text-[#FE5502]" : "border-gray-200 text-gray-600"}`}
               >
                 All
               </button>
@@ -77,7 +77,7 @@ export default function DiningHome() {
                 <button
                   key={cat._id}
                   onClick={() => setActiveCategory(cat._id)}
-                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${activeCategory === cat._id ? "border-[#FF0000] bg-red-50 text-[#FF0000]" : "border-gray-200 text-gray-600"}`}
+                  className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium ${activeCategory === cat._id ? "border-[#FE5502] bg-red-50 text-[#FE5502]" : "border-gray-200 text-gray-600"}`}
                 >
                   {cat.name}
                 </button>
@@ -87,7 +87,7 @@ export default function DiningHome() {
 
           {loading ? (
             <div className="flex justify-center py-16">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FF0000] border-t-transparent" />
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FE5502] border-t-transparent" />
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center text-gray-500 dark:text-gray-400">No dine-in restaurants available right now.</div>

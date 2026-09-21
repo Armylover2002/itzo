@@ -220,7 +220,7 @@ const PendingSellers = () => {
         <button
           type="button"
           onClick={() => loadPendingSellers(searchTerm)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
+          className="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
         >
           <HiOutlineArrowPath className={cn('h-4 w-4', isLoading && 'animate-spin')} />
           Refresh Queue
@@ -353,7 +353,7 @@ const PendingSellers = () => {
                           title="View application"
                           aria-label={`View ${seller.shopName || 'seller'} application`}
                           onClick={() => { setViewingSeller(seller); setIsReviewModalOpen(true); }}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition hover:bg-red-50 hover:text-red-600 hover:ring-red-100"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition hover:bg-purple-50 hover:text-purple-600 hover:ring-purple-100"
                         >
                           <HiOutlineEye className="h-5 w-5" />
                         </button>
@@ -672,7 +672,7 @@ const PendingSellers = () => {
                           <button type="button" disabled={isProcessing} onClick={() => openRejectModal(viewingSeller._id)} className="flex-1 rounded-2xl bg-slate-100 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-slate-700 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-60">
                             <span className="inline-flex items-center gap-2"><HiOutlineXCircle className="h-4 w-4" />Reject request</span>
                           </button>
-                          <button type="button" disabled={isProcessing} onClick={() => openApproveModal(viewingSeller._id)} className="flex-[1.35] rounded-2xl bg-red-600 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-black disabled:opacity-60">
+                          <button type="button" disabled={isProcessing} onClick={() => openApproveModal(viewingSeller._id)} className="flex-[1.35] rounded-2xl bg-purple-600 py-4 text-[11px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-black disabled:opacity-60">
                             <span className="inline-flex items-center gap-2 justify-center">{isProcessing ? <HiOutlineArrowPath className="h-4 w-4 animate-spin" /> : <HiOutlineCheckCircle className="h-4 w-4" />}Approve seller</span>
                           </button>
                         </div>

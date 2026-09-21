@@ -420,8 +420,8 @@ function CompletedOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
                       </div>
 
                       <div className="flex flex-col items-end gap-1">
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border border-[#FF0000]/40 text-[#FF0000]">
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#FF0000]" />
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-medium border border-[#0D315B]/40 text-[#0D315B]">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#0D315B]" />
                           Delivered
                         </span>
                         <span className="text-[11px] text-gray-500 text-right">
@@ -1260,7 +1260,7 @@ const IncomingOrderCard = memo(function IncomingOrderCard({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Ribbon */}
-        <div className="bg-[#FF0000] px-5 py-4 flex justify-between items-center text-white border-b border-red-600/20">
+        <div className="bg-[#0D315B] px-5 py-4 flex justify-between items-center text-white border-b border-red-600/20">
           <div>
             <p className="text-white/90 text-[10px] font-bold uppercase tracking-widest mb-0.5">
               Incoming Order
@@ -1300,10 +1300,10 @@ const IncomingOrderCard = memo(function IncomingOrderCard({
                 <Calendar className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-[#FF0000] uppercase tracking-wider">
+                <p className="text-[10px] font-bold text-[#0D315B] uppercase tracking-wider">
                   Scheduled Order
                 </p>
-                <p className="text-sm font-bold text-[#FF0000]">
+                <p className="text-sm font-bold text-[#0D315B]">
                   For {formatScheduledAtShort(order.scheduledAt) || "Scheduled time"}
                 </p>
               </div>
@@ -1548,7 +1548,7 @@ const IncomingOrderCard = memo(function IncomingOrderCard({
               lockedLabel="Accepting..."
               onConfirm={handleAcceptIncoming}
               disabled={isAcceptingOrder || isRejectModalOpenForThisOrder}
-              color="bg-[#FF0000]"
+              color="bg-[#0D315B]"
               successLabel="Accepted ✓"
               timeProgress={(countdown / 240) * 100}
             />
@@ -1556,7 +1556,7 @@ const IncomingOrderCard = memo(function IncomingOrderCard({
             <button
               onClick={() => handleRejectClick(order)}
               disabled={isAcceptingOrder || isRejectModalOpenForThisOrder}
-              className="w-full py-3 bg-white border border-[#FF0000]/20 text-[#FF0000] rounded-xl font-bold text-sm hover:bg-red-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-white border border-[#0D315B]/20 text-[#0D315B] rounded-xl font-bold text-sm hover:bg-red-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Reject Order
             </button>
@@ -2360,7 +2360,7 @@ case "cancelled":
               <button
                 type="button"
                 onClick={() => setIncomingPanelMinimized(false)}
-                className="inline-flex items-center rounded-full bg-[#FF0000] text-white text-xs px-2 py-0.5 font-bold hover:bg-red-600 transition-colors"
+                className="inline-flex items-center rounded-full bg-[#0D315B] text-white text-xs px-2 py-0.5 font-bold hover:bg-red-600 transition-colors"
                 title="Open incoming orders"
               >
                 {incomingQueueOrders.length}
@@ -2425,7 +2425,7 @@ case "cancelled":
                 {isActive && (
                   <motion.div
                     layoutId="activeFilterBackground"
-                    className="absolute inset-0 bg-[#FF0000] rounded-full -z-10"
+                    className="absolute inset-0 bg-[#0D315B] rounded-full -z-10"
                     initial={false}
                     transition={{
                       type: "spring",
@@ -2679,7 +2679,7 @@ case "cancelled":
                   <span className="text-white text-sm font-bold tracking-wide bg-black/55 px-2.5 py-1 rounded-lg backdrop-blur-sm">
                     Incoming Orders
                   </span>
-                  <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full bg-[#FF0000] text-white text-xs font-bold">
+                  <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 rounded-full bg-[#0D315B] text-white text-xs font-bold">
                     {incomingQueueOrders.length}
                   </span>
                 </div>
@@ -2752,10 +2752,10 @@ case "cancelled":
                 setIncomingPanelMinimized(false);
                 setIsSheetOpen(false);
               }}
-              className="fixed bottom-20 md:bottom-6 right-4 z-[210] flex items-center gap-2 px-4 py-3 rounded-full bg-[#FF0000] text-white text-sm font-bold shadow-xl hover:bg-red-600 active:scale-95 transition-all"
+              className="fixed bottom-20 md:bottom-6 right-4 z-[210] flex items-center gap-2 px-4 py-3 rounded-full bg-[#0D315B] text-white text-sm font-bold shadow-xl hover:bg-red-600 active:scale-95 transition-all"
               aria-label="Open incoming orders"
             >
-              <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-white text-[#FF0000] text-xs font-black">
+              <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-1.5 rounded-full bg-white text-[#0D315B] text-xs font-black">
                 {incomingQueueOrders.length}
               </span>
               Incoming — Open
@@ -2781,7 +2781,7 @@ case "cancelled":
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
                 onClick={(e) => e.stopPropagation()}>
                 {/* Header Ribbon */}
-                <div className="bg-[#FF0000] px-5 py-4 flex justify-between items-center text-white border-b border-red-600/20">
+                <div className="bg-[#0D315B] px-5 py-4 flex justify-between items-center text-white border-b border-red-600/20">
                   <div>
                     <p className="text-white/90 text-[10px] font-bold uppercase tracking-widest mb-0.5">
                       Incoming Order
@@ -2819,10 +2819,10 @@ case "cancelled":
                         <Calendar className="w-4 h-4 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-[#FF0000] uppercase tracking-wider">
+                        <p className="text-[10px] font-bold text-[#0D315B] uppercase tracking-wider">
                           Scheduled Order
                         </p>
-                        <p className="text-sm font-bold text-[#FF0000]">
+                        <p className="text-sm font-bold text-[#0D315B]">
                           For{" "}
                           {formatScheduledAtShort(currentPopupOrder.scheduledAt) ||
                             "Scheduled time"}
@@ -2985,7 +2985,7 @@ case "cancelled":
                       lockedLabel="Accepting..."
                       onConfirm={handleAcceptOrder}
                       disabled={isAcceptingOrder}
-                      color="bg-[#FF0000]"
+                      color="bg-[#0D315B]"
                       successLabel="Accepted ✓"
                       timeProgress={(countdown / 240) * 100}
                     />
@@ -2993,7 +2993,7 @@ case "cancelled":
                     <button
                       onClick={() => handleRejectClick(popupOrder || newOrder)}
                       disabled={isAcceptingOrder}
-                      className="w-full py-3 bg-white border border-[#FF0000]/20 text-[#FF0000] rounded-xl font-bold text-sm hover:bg-red-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="w-full py-3 bg-white border border-[#0D315B]/20 text-[#0D315B] rounded-xl font-bold text-sm hover:bg-red-50 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                       Reject Order
                     </button>
                   </div>
@@ -3309,7 +3309,7 @@ case "cancelled":
                   <div className="bg-slate-50 border border-slate-100 rounded-2xl p-3 flex flex-col gap-3">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-                        <User className="w-4 h-4 text-[#FF0000]" />
+                        <User className="w-4 h-4 text-[#0D315B]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-gray-900 truncate">
@@ -3348,7 +3348,7 @@ case "cancelled":
                           </div>
                           <a
                             href={`tel:${selectedOrder.deliveryPartnerId.phone}`}
-                            className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-[#FF0000] text-white text-[10px] font-bold rounded-lg shadow-sm hover:bg-[#e04a02] transition-colors shrink-0"
+                            className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-[#0D315B] text-white text-[10px] font-bold rounded-lg shadow-sm hover:bg-[#e04a02] transition-colors shrink-0"
                           >
                             <Phone className="w-3 h-3" />
                             Call
@@ -3361,7 +3361,7 @@ case "cancelled":
               )}
 
               <button
-                className="w-full bg-black text-white py-2.5 rounded-xl text-sm font-medium"
+                className="w-full bg-[#0D315B] hover:bg-[#0A2647] text-white py-2.5 rounded-xl text-sm font-medium"
                 onClick={() => setIsSheetOpen(false)}>
                 Close
               </button>
@@ -3534,7 +3534,7 @@ const OrderCard = memo(function OrderCard({
                 onMarkReady({ orderId, mongoId, customerName });
               }}
               disabled={isMarkingReady}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#FF0000] hover:bg-red-600 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm">
+              className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-[#0D315B] hover:bg-red-600 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm">
               {isMarkingReady ? "Marking..." : "Mark Ready"}
             </button>
           )}
@@ -4341,7 +4341,7 @@ function EmptyState({ message = "Temporarily closed" }) {
       </h2>
 
       {/* View Status Button */}
-      <button className="bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors">
+      <button className="bg-[#0D315B] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#0A2647] transition-colors">
         View status
       </button>
     </div>

@@ -23,7 +23,7 @@ const THEMES = {
   all: {
     gradient: "linear-gradient(to bottom, #D44A00, #7C2A00)",
     shadow: "shadow-red-700/30",
-    headerColor: "#FF0000",
+    headerColor: "#FE5502",
   },
 
   grocery: {

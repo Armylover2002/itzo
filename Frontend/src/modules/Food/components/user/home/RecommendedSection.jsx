@@ -309,8 +309,8 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants, isFavorite, onF
                 >
                   <Heart 
                     className="h-3.5 w-3.5 transition-colors" 
-                    fill={isDishFavorite(product.id || product._id, product.restaurantId || product.restaurantData?.mongoId || product.restaurantData?.id) ? "#FF0000" : "none"} 
-                    stroke={isDishFavorite(product.id || product._id, product.restaurantId || product.restaurantData?.mongoId || product.restaurantData?.id) ? "#FF0000" : "#4B5563"} 
+                    fill={isDishFavorite(product.id || product._id, product.restaurantId || product.restaurantData?.mongoId || product.restaurantData?.id) ? "#FE5502" : "none"} 
+                    stroke={isDishFavorite(product.id || product._id, product.restaurantId || product.restaurantData?.mongoId || product.restaurantData?.id) ? "#FE5502" : "#4B5563"} 
                   />
                 </button>
               </div>
@@ -322,7 +322,7 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants, isFavorite, onF
                 <ItemSlotAvailabilityNote item={product} className="mt-1 mb-auto" />
                 <div className="flex justify-between items-center mt-3 shrink-0">
                   <div className="flex items-center">
-                     <span className="text-[14px] font-bold text-[#FF0000] leading-none">
+                     <span className="text-[14px] font-bold text-[#FE5502] leading-none">
                        {getFoodPriceLabel(product).replace(/starting from/i, "").trim()}
                      </span>
                   </div>
@@ -331,10 +331,10 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants, isFavorite, onF
                     
                     if (quantity > 0) {
                       return (
-                        <div className="flex items-center bg-[#FF0000] rounded-[8px] overflow-hidden shadow-sm h-7 w-20">
+                        <div className="flex items-center bg-[#FE5502] rounded-[8px] overflow-hidden shadow-sm h-7 w-20">
                           <button
                             type="button"
-                            className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#CC0000] transition-colors"
+                            className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#C83C00] transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (hasFoodVariants(product)) {
@@ -349,7 +349,7 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants, isFavorite, onF
                           <span className="text-white font-bold text-[11px] px-1">{quantity}</span>
                           <button
                             type="button"
-                            className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#CC0000] transition-colors"
+                            className="flex-1 h-full text-white font-bold flex items-center justify-center hover:bg-[#C83C00] transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (hasFoodVariants(product)) {
@@ -368,10 +368,10 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants, isFavorite, onF
                     return (
                       <button
                         type="button"
-                        className="bg-[#FF0000] text-white font-bold text-[10px] pl-3 pr-1.5 py-1.5 rounded-[8px] flex items-center gap-1 shadow-sm transition-colors hover:bg-[#CC0000] border-0 outline-none h-7"
+                        className="bg-[#FE5502] text-white font-bold text-[10px] pl-3 pr-1.5 py-1.5 rounded-[8px] flex items-center gap-1 shadow-sm transition-colors hover:bg-[#C83C00] border-0 outline-none h-7"
                         onClick={(e) => handleProductAddClick(product, e)}
                       >
-                        ADD <Plus className="h-3.5 w-3.5 bg-white text-[#FF0000] rounded-full p-0.5" strokeWidth={3} />
+                        ADD <Plus className="h-3.5 w-3.5 bg-white text-[#FE5502] rounded-full p-0.5" strokeWidth={3} />
                       </button>
                     );
                   })()}

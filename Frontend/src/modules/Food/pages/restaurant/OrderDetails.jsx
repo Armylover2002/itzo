@@ -375,7 +375,7 @@ export default function OrderDetails({ orderId: propOrderId, isSidebar = false, 
       case "CANCELLED":
         return "bg-red-700 text-white"
       case "DELIVERED":
-        return "bg-[#FF0000] text-white"
+        return "bg-[#0D315B] text-white"
       default:
         return "bg-gray-600 text-white"
     }
@@ -569,7 +569,7 @@ export default function OrderDetails({ orderId: propOrderId, isSidebar = false, 
             <div className="bg-white rounded-lg p-4 flex flex-col gap-4 mb-3 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-[#FF0000]" />
+                  <User className="w-5 h-5 text-[#0D315B]" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-bold text-gray-900">{orderData.deliveryPartner.name}</p>
@@ -612,7 +612,7 @@ export default function OrderDetails({ orderId: propOrderId, isSidebar = false, 
                     </div>
                     <a
                       href={`tel:${orderData.deliveryPartner.phone}`}
-                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#FF0000] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#e04a02] transition-colors"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0D315B] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#e04a02] transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5" />
                       Call Rider

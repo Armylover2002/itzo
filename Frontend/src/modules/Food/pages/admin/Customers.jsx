@@ -413,7 +413,7 @@ export default function Customers() {
                   type="date"
                   value={filters.orderDate}
                   onChange={(e) => handleFilterChange("orderDate", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000] text-sm"
+                  className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6] text-sm"
                 />
               </div>
             </div>
@@ -427,7 +427,7 @@ export default function Customers() {
                   type="date"
                   value={filters.joiningDate}
                   onChange={(e) => handleFilterChange("joiningDate", e.target.value)}
-                  className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000] text-sm"
+                  className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6] text-sm"
                 />
               </div>
             </div>
@@ -439,7 +439,7 @@ export default function Customers() {
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange("status", e.target.value)}
-                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000] text-sm"
+                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6] text-sm"
               >
                 <option value="">Select Status</option>
                 <option value="active">Active</option>
@@ -454,7 +454,7 @@ export default function Customers() {
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000] text-sm"
+                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6] text-sm"
               >
                 <option value="">Select Customer Sorting Order</option>
                 <option value="name-asc">Name (A-Z)</option>
@@ -473,7 +473,7 @@ export default function Customers() {
                 value={filters.chooseFirst}
                 onChange={(e) => handleFilterChange("chooseFirst", e.target.value)}
                 placeholder="Ex: 100"
-                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000] text-sm"
+                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6] text-sm"
               />
             </div>
           </div>
@@ -482,13 +482,13 @@ export default function Customers() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => loadCustomers()}
-                className="px-6 py-2.5 text-sm font-medium rounded-lg bg-[#FF0000] text-white hover:bg-[#CC0000] transition-all"
+                className="px-6 py-2.5 text-sm font-medium rounded-lg bg-[#6412C6] text-white hover:bg-[#4E0E9A] transition-all"
               >
                 Apply Filters
               </button>
               <button
                 onClick={handleResetFilters}
-                className="px-6 py-2.5 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white text-[#5C5247] hover:bg-[#FFEDED] hover:text-[#FF0000] transition-all"
+                className="px-6 py-2.5 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white text-[#5C5247] hover:bg-[#F3E8FF] hover:text-[#6412C6] transition-all"
               >
                 Reset Filters
               </button>
@@ -506,7 +506,7 @@ export default function Customers() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold text-[#1A1A1A]">Customer list</h2>
-              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#FFEDED] text-[#FF0000]">
+              <span className="px-3 py-1 rounded-full text-sm font-semibold bg-[#F3E8FF] text-[#6412C6]">
                 {totalCustomers}
               </span>
             </div>
@@ -521,14 +521,14 @@ export default function Customers() {
                     setSearchQuery(e.target.value)
                     setPage(1)
                   }}
-                  className="pl-10 pr-4 py-2.5 w-full text-sm rounded-lg border border-[#EDE8E0] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000]"
+                  className="pl-10 pr-4 py-2.5 w-full text-sm rounded-lg border border-[#EDE8E0] bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6]"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E8F7E]" />
               </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="px-4 py-2.5 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white hover:bg-[#FFEDED] hover:text-[#FF0000] text-[#5C5247] flex items-center gap-2 transition-all">
+                  <button className="px-4 py-2.5 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white hover:bg-[#F3E8FF] hover:text-[#6412C6] text-[#5C5247] flex items-center gap-2 transition-all">
                     <Download className="w-4 h-4" />
                     <span className="font-bold">Export</span>
                     <ChevronDown className="w-3 h-3" />
@@ -537,19 +537,19 @@ export default function Customers() {
                 <DropdownMenuContent align="end" className="w-56 bg-white border border-[#EDE8E0] rounded-lg shadow-lg z-50">
                   <DropdownMenuLabel className="text-[#1A1A1A]">Export Format</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-[#EDE8E0]" />
-                  <DropdownMenuItem onClick={() => handleExport("csv")} className="cursor-pointer hover:bg-[#FFEDED] hover:text-[#FF0000] focus:bg-[#FFEDED] focus:text-[#FF0000]">
+                  <DropdownMenuItem onClick={() => handleExport("csv")} className="cursor-pointer hover:bg-[#F3E8FF] hover:text-[#6412C6] focus:bg-[#F3E8FF] focus:text-[#6412C6]">
                     <FileDown className="w-4 h-4 mr-2" />
                     Export as CSV
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleExport("excel")} className="cursor-pointer hover:bg-[#FFEDED] hover:text-[#FF0000] focus:bg-[#FFEDED] focus:text-[#FF0000]">
+                  <DropdownMenuItem onClick={() => handleExport("excel")} className="cursor-pointer hover:bg-[#F3E8FF] hover:text-[#6412C6] focus:bg-[#F3E8FF] focus:text-[#6412C6]">
                     <FileSpreadsheet className="w-4 h-4 mr-2" />
                     Export as Excel
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleExport("pdf")} className="cursor-pointer hover:bg-[#FFEDED] hover:text-[#FF0000] focus:bg-[#FFEDED] focus:text-[#FF0000]">
+                  <DropdownMenuItem onClick={() => handleExport("pdf")} className="cursor-pointer hover:bg-[#F3E8FF] hover:text-[#6412C6] focus:bg-[#F3E8FF] focus:text-[#6412C6]">
                     <FileText className="w-4 h-4 mr-2" />
                     Export as PDF
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleExport("json")} className="cursor-pointer hover:bg-[#FFEDED] hover:text-[#FF0000] focus:bg-[#FFEDED] focus:text-[#FF0000]">
+                  <DropdownMenuItem onClick={() => handleExport("json")} className="cursor-pointer hover:bg-[#F3E8FF] hover:text-[#6412C6] focus:bg-[#F3E8FF] focus:text-[#6412C6]">
                     <FileDown className="w-4 h-4 mr-2" />
                     Export as JSON
                   </DropdownMenuItem>
@@ -598,7 +598,7 @@ export default function Customers() {
                       type="checkbox"
                       checked={allVisibleSelected}
                       onChange={toggleSelectAllVisible}
-                      className="h-4 w-4 rounded border-[#EDE8E0] text-[#FF0000] focus:ring-[#FF0000]"
+                      className="h-4 w-4 rounded border-[#EDE8E0] text-[#6412C6] focus:ring-[#6412C6]"
                     />
                   </th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Name</th>
@@ -632,7 +632,7 @@ export default function Customers() {
                           type="checkbox"
                           checked={selectedCustomerIds.includes(getCustomerId(customer))}
                           onChange={() => toggleCustomerSelection(getCustomerId(customer))}
-                          className="h-4 w-4 rounded border-[#EDE8E0] text-[#FF0000] focus:ring-[#FF0000]"
+                          className="h-4 w-4 rounded border-[#EDE8E0] text-[#6412C6] focus:ring-[#6412C6]"
                         />
                       </td>
                       <td className="px-6 py-4">
@@ -655,7 +655,7 @@ export default function Customers() {
                             )}
                           </div>
                           <span
-                            className="text-sm font-medium text-[#1A1A1A] cursor-pointer hover:text-[#FF0000] transition-colors"
+                            className="text-sm font-medium text-[#1A1A1A] cursor-pointer hover:text-[#6412C6] transition-colors"
                             onClick={() => handleViewDetails(getCustomerId(customer))}
                           >
                             {customer.name}
@@ -705,7 +705,7 @@ export default function Customers() {
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <button
                           onClick={() => handleViewDetails(getCustomerId(customer))}
-                          className="p-1.5 rounded text-[#FF0000] hover:bg-[#FFEDED] transition-colors"
+                          className="p-1.5 rounded text-[#6412C6] hover:bg-[#F3E8FF] transition-colors"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -727,7 +727,7 @@ export default function Customers() {
                 type="button"
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page <= 1 || loading}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white text-[#5C5247] hover:bg-[#FFEDED] hover:text-[#FF0000] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white text-[#5C5247] hover:bg-[#F3E8FF] hover:text-[#6412C6] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Prev
               </button>
@@ -735,7 +735,7 @@ export default function Customers() {
                 type="button"
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page >= totalPages || loading}
-                className="px-4 py-2 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white text-[#5C5247] hover:bg-[#FFEDED] hover:text-[#FF0000] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-[#EDE8E0] bg-white text-[#5C5247] hover:bg-[#F3E8FF] hover:text-[#6412C6] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Next
               </button>
@@ -805,12 +805,12 @@ export default function Customers() {
 
               {/* Statistics Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div className="bg-[#FFEDED] border border-[#EDE8E0] rounded-xl p-3">
+                <div className="bg-[#F3E8FF] border border-[#EDE8E0] rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <Package className="w-4 h-4 text-[#FF0000]" />
+                    <Package className="w-4 h-4 text-[#6412C6]" />
                     <span className="text-xs font-semibold text-[#5C5247]">Total Orders</span>
                   </div>
-                  <p className="text-xl font-bold text-[#FF0000]">{userDetails.totalOrders || 0}</p>
+                  <p className="text-xl font-bold text-[#6412C6]">{userDetails.totalOrders || 0}</p>
                 </div>
                 <div className="bg-[#EAF4EA] border border-[#EDE8E0] rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-1">
@@ -834,7 +834,7 @@ export default function Customers() {
               {userDetails.addresses && userDetails.addresses.length > 0 && (
                 <div>
                   <h4 className="text-base font-bold text-[#1A1A1A] mb-2 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#FF0000]" />
+                    <MapPin className="w-4 h-4 text-[#6412C6]" />
                     Addresses
                   </h4>
                   <div className="space-y-2">
@@ -843,7 +843,7 @@ export default function Customers() {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-semibold text-[#1A1A1A]">{address.label || "Address"}</span>
                           {address.isDefault && (
-                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#FFEDED] text-[#FF0000] border border-[#EDE8E0]">
+                            <span className="px-2 py-1 rounded-full text-xs font-semibold bg-[#F3E8FF] text-[#6412C6] border border-[#EDE8E0]">
                               Default
                             </span>
                           )}
@@ -865,7 +865,7 @@ export default function Customers() {
               {userDetails.orders && userDetails.orders.length > 0 && (
                 <div>
                   <h4 className="text-base font-bold text-[#1A1A1A] mb-2 flex items-center gap-2">
-                    <Package className="w-4 h-4 text-[#FF0000]" />
+                    <Package className="w-4 h-4 text-[#6412C6]" />
                     Recent Orders
                   </h4>
                   <div className="space-y-2">
@@ -888,7 +888,7 @@ export default function Customers() {
               {/* Uploaded Contacts Section */}
               <div className="mt-4 border-t border-[#EDE8E0] pt-4">
                 <h4 className="text-base font-bold text-[#1A1A1A] mb-2 flex items-center gap-2">
-                  <User className="w-4 h-4 text-[#FF0000]" />
+                  <User className="w-4 h-4 text-[#6412C6]" />
                   Uploaded Contacts ({userContacts.length})
                 </h4>
                 {loadingContacts ? (
@@ -905,7 +905,7 @@ export default function Customers() {
                         placeholder="Search contacts by name or phone..."
                         value={contactsSearchQuery}
                         onChange={(e) => setContactsSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-[#EDE8E0] bg-white focus:outline-none focus:ring-2 focus:ring-[#FF0000] focus:border-[#FF0000]"
+                        className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-[#EDE8E0] bg-white focus:outline-none focus:ring-2 focus:ring-[#6412C6] focus:border-[#6412C6]"
                       />
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9E8F7E]" />
                     </div>

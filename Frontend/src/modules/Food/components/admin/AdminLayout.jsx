@@ -216,7 +216,7 @@ export default function AdminLayout() {
               onClick={() => {
                 window.location.assign("/ecs/login");
               }}
-              className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#FF0000] font-semibold text-white transition-colors hover:bg-[#CC0000]"
+              className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#6412C6] font-semibold text-white transition-colors hover:bg-[#4E0E9A]"
             >
               <LogIn className="h-4 w-4" />
               Go to Login

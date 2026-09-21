@@ -119,7 +119,7 @@ const ActiveSellers = () => {
         <button
           type="button"
           onClick={loadActiveSellers}
-          className="inline-flex items-center gap-2 rounded-2xl bg-red-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
+          className="inline-flex items-center gap-2 rounded-2xl bg-purple-600 px-4 py-3 text-[11px] font-bold uppercase tracking-[0.22em] text-white"
         >
           <HiOutlineArrowPath className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh List
@@ -266,7 +266,7 @@ const ActiveSellers = () => {
                           title="View seller"
                           aria-label={`View ${seller.shopName || 'seller'}`}
                           onClick={() => navigate(`/ecs/quick-commerce/sellers/active/${seller._id || seller.id}`)}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition hover:bg-red-50 hover:text-red-600 hover:ring-red-100"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 ring-1 ring-slate-200 transition hover:bg-purple-50 hover:text-purple-600 hover:ring-purple-100"
                         >
                           <HiOutlineEye className="h-5 w-5" />
                         </button>

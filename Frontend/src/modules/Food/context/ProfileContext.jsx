@@ -113,13 +113,24 @@ export function ProfileProvider({ children }) {
   })
 
   // VegMode state - stored in localStorage for persistence
-  const [vegMode, setVegMode] = useState(() => {
+  const [vegMode, setVegModeState] = useState(() => {
     const saved = localStorage.getItem("userVegMode")
     // Support new string values 'pure', 'all' or legacy boolean
     if (saved === "pure" || saved === "all") return saved
     if (saved === "true") return "pure" // Legacy migration
     return false
   })
+
+  // Normalize legacy boolean `true` so the live value always matches what is
+  // restored from localStorage after a refresh (otherwise refresh becomes stricter).
+  const setVegMode = useCallback((next) => {
+    setVegModeState((prev) => {
+      const value = typeof next === "function" ? next(prev) : next
+      if (value === true) return "all"
+      if (value === "pure" || value === "all") return value
+      return false
+    })
+  }, [])
 
   // Helper to check if authenticated
   const isAuthenticated = Boolean(getUserSessionToken())
@@ -156,7 +167,7 @@ export function ProfileProvider({ children }) {
   }, [dishFavorites, isAuthenticated])
 
   useEffect(() => {
-    localStorage.setItem("userVegMode", vegMode.toString())
+    localStorage.setItem("userVegMode", String(vegMode))
   }, [vegMode])
 
   // Single Source of Truth for Selected Address

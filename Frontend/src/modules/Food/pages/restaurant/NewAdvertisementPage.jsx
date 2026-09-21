@@ -294,7 +294,7 @@ export default function NewAdvertisementPage() {
                     <span className={`text-sm ${formData.startDate ? 'text-gray-900' : 'text-gray-400'}`}>
                       {formData.startDate || "Select start"}
                     </span>
-                    <Calendar className="w-5 h-5 text-[#FF0000]" />
+                    <Calendar className="w-5 h-5 text-[#0D315B]" />
                     <input
                       ref={startDateRef}
                       type="date"
@@ -339,7 +339,7 @@ export default function NewAdvertisementPage() {
                     <span className={`text-sm ${formData.endDate ? 'text-gray-900' : 'text-gray-400'}`}>
                       {formData.endDate || "Select end"}
                     </span>
-                    <Calendar className="w-5 h-5 text-[#FF0000]" />
+                    <Calendar className="w-5 h-5 text-[#0D315B]" />
                     <input
                       ref={endDateRef}
                       type="date"
@@ -379,7 +379,7 @@ export default function NewAdvertisementPage() {
                     placeholder="Enter description"
                     maxLength={100}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000] resize-none"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B] resize-none"
                   />
                   <div className="absolute bottom-2 right-2 text-xs text-gray-400">
                     {getCharacterCount(formData.description)}
@@ -454,7 +454,7 @@ export default function NewAdvertisementPage() {
                       placeholder="Enter description"
                       maxLength={100}
                       rows={3}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000] resize-none"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B] resize-none"
                     />
                     <div className="absolute bottom-2 right-2 text-xs text-gray-400">
                       {getCharacterCount(formData.fileDescription)}
@@ -523,7 +523,7 @@ export default function NewAdvertisementPage() {
                     <button
                       type="button"
                       onClick={() => videoInputRef.current?.click()}
-                      className="w-full py-2 text-sm font-medium text-[#FF0000] border border-[#FF0000]/30 rounded-lg hover:bg-red-50"
+                      className="w-full py-2 text-sm font-medium text-[#0D315B] border border-[#0D315B]/30 rounded-lg hover:bg-red-50"
                     >
                       Replace video
                     </button>
@@ -541,7 +541,7 @@ export default function NewAdvertisementPage() {
                   placeholder="Enter video description"
                   maxLength={100}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF0000] resize-none"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0D315B] resize-none"
                 />
               </div>
             </CardContent>
@@ -576,7 +576,7 @@ export default function NewAdvertisementPage() {
             <Button
               onClick={handleCreate}
               disabled={submitting}
-              className="flex-1 bg-[#FF0000] hover:bg-[#E60000] text-white font-semibold py-3 rounded-lg disabled:opacity-60"
+              className="flex-1 bg-[#0D315B] hover:bg-[#E60000] text-white font-semibold py-3 rounded-lg disabled:opacity-60"
             >
               {submitting ? "Creating..." : "Create Ads"}
             </Button>

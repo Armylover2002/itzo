@@ -1237,7 +1237,7 @@ export default function ItemDetailsPage() {
       <div className="flex items-center gap-2">
         <button
           onClick={handleOpenCreateCategory}
-          className="p-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors flex items-center gap-1.5"
+          className="p-2 rounded-lg bg-[#0D315B] text-white hover:bg-[#0A2647] transition-colors flex items-center gap-1.5"
           title="Add Category"
         >
           <Plus className="w-4 h-4" />
@@ -1264,7 +1264,7 @@ export default function ItemDetailsPage() {
           <p className="text-sm text-gray-500">No categories available</p>
           <button
             onClick={handleOpenCreateCategory}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0D315B] text-white rounded-lg font-semibold hover:bg-[#0A2647] transition-colors"
           >
             <Plus className="w-5 h-5" />
             Add Category
@@ -1373,7 +1373,7 @@ export default function ItemDetailsPage() {
                     <button
                       type="button"
                       onClick={() => handleVariantChoice(true)}
-                      className="flex-1 sm:flex-none sm:min-w-[140px] px-6 py-3.5 rounded-xl text-sm font-semibold border-2 border-[#FF0000] bg-[#FF0000] text-white hover:bg-[#E64D02] transition-colors"
+                      className="flex-1 sm:flex-none sm:min-w-[140px] px-6 py-3.5 rounded-xl text-sm font-semibold border-2 border-[#0D315B] bg-[#0D315B] text-white hover:bg-[#E64D02] transition-colors"
                     >
                       Yes
                     </button>
@@ -1506,7 +1506,7 @@ export default function ItemDetailsPage() {
                     />
                     <button
                       onClick={handleCameraClick}
-                      className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#FF0000] hover:bg-[#E64D02] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg active:scale-95"
+                      className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#0D315B] hover:bg-[#E64D02] text-white rounded-xl text-sm font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg active:scale-95"
                     >
                       <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
                         <Plus className="w-4 h-4" />
@@ -2112,7 +2112,7 @@ export default function ItemDetailsPage() {
               onClick={handleSave}
               disabled={uploadingImages || (isNewItem && !variantChoiceMade)}
               className={`${isNewItem ? "w-full lg:w-auto lg:min-w-[220px]" : "flex-1 lg:flex-none lg:min-w-[220px]"} py-3 px-4 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${!uploadingImages && !(isNewItem && !variantChoiceMade)
-                ? "bg-[#FF0000] text-white hover:bg-[#E64D02]"
+                ? "bg-[#0D315B] text-white hover:bg-[#E64D02]"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
             >

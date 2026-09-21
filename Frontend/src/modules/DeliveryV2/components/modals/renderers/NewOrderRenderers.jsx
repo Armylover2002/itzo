@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, ChefHat, Package, Clock, Phone } from 'lucide-react';
 import { formatDeliveryAddressText, isMixedOrder, normalizePickupPoints, isReturnPickupTrip, getReturnPickupStopLabels, resolveDeliveryCustomerName } from '@/modules/DeliveryV2/utils/orderRouting';
 
-const BaseOrderHeader = ({ title, subtitle, badges, earnings, timeLeft, bgColor = 'bg-[#FF0000]', orderId }) => (
+const BaseOrderHeader = ({ title, subtitle, badges, earnings, timeLeft, bgColor = 'bg-[#FE5502]', orderId }) => (
   <div className={`${bgColor} p-5 flex justify-between items-center text-white border-b border-black/10`}>
     <div>
       <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mb-0.5">{title}</p>
@@ -137,7 +137,7 @@ const FoodOrderRenderer = ({ order, distanceKm, dropDistanceKm, etaMins, timeLef
         badges={badges}
         earnings={earnings} 
         timeLeft={timeLeft} 
-        bgColor={isFoodQuick ? 'bg-emerald-600' : 'bg-[#FF0000]'}
+        bgColor={isFoodQuick ? 'bg-emerald-600' : 'bg-[#FE5502]'}
         orderId={order?.orderId || order?._id}
       />
       <BaseOrderBody 

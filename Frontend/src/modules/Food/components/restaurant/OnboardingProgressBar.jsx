@@ -17,8 +17,8 @@ function StepCircle({ stepId, currentStep, compact = false, variant = "default" 
             : "border-emerald-500 bg-emerald-500 text-white"
           : isActive
             ? isSidebar
-              ? "border-white bg-white text-[#FF0000] shadow-lg shadow-black/20"
-              : "border-[#FF0000] bg-[#FF0000] text-white shadow-lg shadow-[#FF0000]/25 motion-safe:scale-105"
+              ? "border-white bg-white text-[#0D315B] shadow-lg shadow-black/20"
+              : "border-[#0D315B] bg-[#0D315B] text-white shadow-lg shadow-[#0D315B]/25 motion-safe:scale-105"
             : isSidebar
               ? "border-white/35 bg-white/10 text-white/60"
               : "border-slate-200 bg-white text-slate-400"
@@ -70,13 +70,13 @@ export function OnboardingProgressBarHorizontal({ currentStep }) {
 
       <div className="mt-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#FF0000]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0D315B]">
             Step {currentStep} of {ONBOARDING_STEPS.length}
           </p>
           <p className="truncate text-sm font-bold text-slate-900">{activeStep?.title}</p>
         </div>
-        <div className="shrink-0 rounded-full bg-[#FF0000]/10 px-3 py-1">
-          <span className="text-xs font-bold text-[#FF0000]">
+        <div className="shrink-0 rounded-full bg-[#0D315B]/10 px-3 py-1">
+          <span className="text-xs font-bold text-[#0D315B]">
             {Math.round((currentStep / ONBOARDING_STEPS.length) * 100)}%
           </span>
         </div>

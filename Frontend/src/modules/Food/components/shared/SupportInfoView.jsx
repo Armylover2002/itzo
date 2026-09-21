@@ -48,18 +48,18 @@ export default function SupportInfoView({
           {supportData.contactNumber && (
             <a
               href={`tel:${supportData.contactNumber}`}
-              className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 hover:border-[#FF0000]/20 hover:bg-red-50/40 transition-colors"
+              className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 hover:border-[var(--primary)]/20 hover:bg-[var(--secondary)]/60 transition-colors"
             >
-              <Phone className="w-4 h-4 text-[#FF0000]" />
+              <Phone className="w-4 h-4 text-[var(--primary)]" />
               <span className="font-medium">{supportData.contactNumber}</span>
             </a>
           )}
           {supportData.email && (
             <a
               href={`mailto:${supportData.email}`}
-              className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 hover:border-[#FF0000]/20 hover:bg-red-50/40 transition-colors"
+              className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-700 hover:border-[var(--primary)]/20 hover:bg-[var(--secondary)]/60 transition-colors"
             >
-              <Mail className="w-4 h-4 text-[#FF0000]" />
+              <Mail className="w-4 h-4 text-[var(--primary)]" />
               <span className="font-medium break-all">{supportData.email}</span>
             </a>
           )}

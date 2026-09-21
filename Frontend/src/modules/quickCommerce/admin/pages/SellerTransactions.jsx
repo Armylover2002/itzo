@@ -139,8 +139,8 @@ const SellerTransactions = () => {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
                 <div className="relative">
-                    <Loader2 className="h-12 w-12 text-red-500 animate-spin" />
-                    <div className="absolute inset-0 h-12 w-12 text-red-500/20 blur-sm animate-pulse">
+                    <Loader2 className="h-12 w-12 text-purple-500 animate-spin" />
+                    <div className="absolute inset-0 h-12 w-12 text-purple-500/20 blur-sm animate-pulse">
                         <Loader2 />
                     </div>
                 </div>
@@ -156,7 +156,7 @@ const SellerTransactions = () => {
                 <div>
                     <h1 className="ds-h1 flex items-center gap-3">
                         Shop Transactions
-                        <div className="p-1.5 bg-red-100 rounded-lg">
+                        <div className="p-1.5 bg-purple-100 rounded-lg">
                             <Receipt className="h-5 w-5 text-slate-900" />
                         </div>
                     </h1>
@@ -168,10 +168,10 @@ const SellerTransactions = () => {
                         disabled={isExporting}
                         className="flex items-center gap-2 px-5 py-3 bg-white ring-1 ring-slate-200 text-slate-700 rounded-2xl text-xs font-bold hover:bg-slate-50 transition-all shadow-sm disabled:opacity-50"
                     >
-                        {isExporting ? <RotateCw className="h-4 w-4 animate-spin text-red-500" /> : <Download className="h-4 w-4" />}
+                        {isExporting ? <RotateCw className="h-4 w-4 animate-spin text-purple-500" /> : <Download className="h-4 w-4" />}
                         {isExporting ? 'Generating Report...' : 'Download Master Ledger'}
                     </button>
-                    <button className="flex items-center gap-2 px-5 py-3 bg-red-600 text-white rounded-2xl text-xs font-bold hover:bg-red-700 transition-all shadow-lg active:scale-95 group">
+                    <button className="flex items-center gap-2 px-5 py-3 bg-purple-600 text-white rounded-2xl text-xs font-bold hover:bg-purple-700 transition-all shadow-lg active:scale-95 group">
                         <TrendingUp className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                         Revenue Insights
                     </button>
@@ -182,11 +182,11 @@ const SellerTransactions = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total Sales', value: `₹${stats.totalGross.toLocaleString()}`, icon: ShoppingBag, bg: 'bg-emerald-50', color: 'text-emerald-600' },
-                    { label: 'Our Share', value: `₹${stats.totalCommission.toLocaleString()}`, icon: Percent, bg: 'bg-red-50', color: 'text-slate-900' },
+                    { label: 'Our Share', value: `₹${stats.totalCommission.toLocaleString()}`, icon: Percent, bg: 'bg-purple-50', color: 'text-slate-900' },
                     { label: 'Total Paid Out', value: `₹${stats.totalPayouts.toLocaleString()}`, icon: Banknote, bg: 'bg-blue-50', color: 'text-blue-600' },
                     { label: 'Pending Total', value: `₹${stats.pendingSettlements.toLocaleString()}`, icon: Clock, bg: 'bg-amber-50', color: 'text-amber-600' },
                 ].map((stat, i) => (
-                    <Card key={i} className="px-5 py-4 border-none shadow-sm ring-1 ring-slate-100 hover:ring-red-200 transition-all bg-white group overflow-hidden relative">
+                    <Card key={i} className="px-5 py-4 border-none shadow-sm ring-1 ring-slate-100 hover:ring-purple-200 transition-all bg-white group overflow-hidden relative">
                         <div className="relative z-10">
                             <div className={cn("p-2 rounded-xl w-fit mb-4 transition-transform group-hover:scale-110", stat.bg)}>
                                 <stat.icon className={cn("h-5 w-5", stat.color)} />
@@ -205,13 +205,13 @@ const SellerTransactions = () => {
             <Card className="p-4 border-none shadow-xl ring-1 ring-slate-100/50 bg-white/80 backdrop-blur-xl rounded-xl">
                 <div className="flex flex-col lg:flex-row gap-4">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-red-500 transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 group-focus-within:text-purple-500 transition-colors" />
                         <input
                             type="text"
                             placeholder="Filter by Store, Order ID, or Txn Reference..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-red-500/10 transition-all"
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-2xl text-xs font-semibold outline-none focus:ring-2 focus:ring-purple-500/10 transition-all"
                         />
                     </div>
 
@@ -301,7 +301,7 @@ const SellerTransactions = () => {
                                     <td className="px-6 py-5">
                                         <div className="flex flex-col gap-0.5">
                                             <span className="text-[10px] font-black text-slate-400 uppercase">{txn.type}</span>
-                                            {txn.orderId && <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">{txn.orderId}</span>}
+                                            {txn.orderId && <span className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">{txn.orderId}</span>}
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-center">
@@ -333,7 +333,7 @@ const SellerTransactions = () => {
                                     <td className="px-6 py-5 text-right pr-8">
                                         <button
                                             onClick={() => setSelectedTxn(txn)}
-                                            className="p-2 hover:bg-white hover:shadow-md rounded-xl text-slate-400 hover:text-red-500 transition-all active:scale-90"
+                                            className="p-2 hover:bg-white hover:shadow-md rounded-xl text-slate-400 hover:text-purple-500 transition-all active:scale-90"
                                         >
                                             <Eye className="h-4 w-4" />
                                         </button>
@@ -379,7 +379,7 @@ const SellerTransactions = () => {
                         <div className="flex flex-col items-center text-center p-6 bg-slate-50 rounded-xl border border-slate-100">
                             <div className={cn(
                                 "h-16 w-16 rounded-2xl flex items-center justify-center shadow-lg mb-4 text-white",
-                                selectedTxn.type === 'sale' ? "bg-red-500" : selectedTxn.type === 'payout' ? "bg-emerald-500" : "bg-rose-500"
+                                selectedTxn.type === 'sale' ? "bg-purple-500" : selectedTxn.type === 'payout' ? "bg-emerald-500" : "bg-rose-500"
                             )}>
                                 {selectedTxn.type === 'sale' ? <ShoppingCart className="h-8 w-8" /> : selectedTxn.type === 'payout' ? <ArrowUpRight className="h-8 w-8" /> : <Undo2 className="h-8 w-8" />}
                             </div>
@@ -423,7 +423,7 @@ const SellerTransactions = () => {
                             {selectedTxn.type === 'sale' && (
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest px-4">Financial Drill-Down</h4>
-                                    <div className="bg-red-600 rounded-xl p-6 text-white space-y-4">
+                                    <div className="bg-purple-600 rounded-xl p-6 text-white space-y-4">
                                         <div className="flex justify-between items-center text-sm font-medium">
                                             <span className="opacity-60">Base Subtotal</span>
                                             <span>₹{selectedTxn.amount}</span>

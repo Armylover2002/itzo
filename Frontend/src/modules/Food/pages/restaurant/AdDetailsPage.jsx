@@ -103,7 +103,7 @@ export default function AdDetailsPage() {
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
-                      <Calendar className="w-5 h-5 text-[#FF0000]" />
+                      <Calendar className="w-5 h-5 text-[#0D315B]" />
                     </div>
                     <div className="flex-1">
                       <p className="text-xs text-gray-500 mb-0.5">Ads Created</p>
@@ -113,7 +113,7 @@ export default function AdDetailsPage() {
 
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
-                      <Calendar className="w-5 h-5 text-[#FF0000]" />
+                      <Calendar className="w-5 h-5 text-[#0D315B]" />
                     </div>
                     <div className="flex-1">
                       <p className="text-xs text-gray-500 mb-0.5">Duration</p>
@@ -125,7 +125,7 @@ export default function AdDetailsPage() {
 
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
-                      <Megaphone className="w-5 h-5 text-[#FF0000]" />
+                      <Megaphone className="w-5 h-5 text-[#0D315B]" />
                     </div>
                     <div className="flex-1">
                       <p className="text-xs text-gray-500 mb-0.5">Ads Details</p>
@@ -176,7 +176,7 @@ export default function AdDetailsPage() {
 
             <Button
               onClick={() => navigate(`/food/restaurant/advertisements/${adData.id}/edit`)}
-              className="w-full bg-[#FF0000] hover:bg-[#E60000] text-white font-semibold py-3 rounded-lg"
+              className="w-full bg-[#0D315B] hover:bg-[#E60000] text-white font-semibold py-3 rounded-lg"
             >
               <Edit className="w-4 h-4 mr-2" />
               Edit Advertisement

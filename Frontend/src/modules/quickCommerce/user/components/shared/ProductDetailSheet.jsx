@@ -1110,7 +1110,7 @@ const ProductDetailSheet = () => {
                                             <Button
                                                 type="submit"
                                                 disabled={isSubmittingReview}
-                                                className="w-full h-12 bg-gray-900 hover:bg-black text-white font-black rounded-xl text-xs uppercase tracking-widest"
+                                                className="w-full h-12 bg-primary-orange hover:bg-primary-hover text-white font-black rounded-xl text-xs uppercase tracking-widest"
                                             >
                                                 {isSubmittingReview ? 'Submitting...' : 'Post Review'}
                                             </Button>

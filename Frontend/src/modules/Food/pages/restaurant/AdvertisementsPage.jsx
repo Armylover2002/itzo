@@ -178,7 +178,7 @@ export default function AdvertisementsPage() {
               {activeFilter === filter.id && (
                 <motion.div
                   layoutId="adFilterPill"
-                  className="absolute inset-0 bg-[#FF0000] rounded-full"
+                  className="absolute inset-0 bg-[#0D315B] rounded-full"
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 />
               )}
@@ -290,7 +290,7 @@ export default function AdvertisementsPage() {
                         onClick={() => {
                           navigate(`/food/restaurant/advertisements/${ad.id}`)
                         }}
-                        className="p-2 bg-[#FF0000] hover:bg-[#E60000] rounded-lg transition-colors"
+                        className="p-2 bg-[#0D315B] hover:bg-[#E60000] rounded-lg transition-colors"
                       >
                         <ChevronRight className="w-5 h-5 text-white" />
                       </motion.button>
@@ -318,7 +318,7 @@ export default function AdvertisementsPage() {
         onClick={() => {
           navigate("/food/restaurant/advertisements/new")
         }}
-        className="fixed bottom-6 right-4 md:right-6 w-14 h-14 bg-[#FF0000] hover:bg-[#E60000] text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-colors"
+        className="fixed bottom-6 right-4 md:right-6 w-14 h-14 bg-[#0D315B] hover:bg-[#E60000] text-white rounded-full shadow-lg flex items-center justify-center z-40 transition-colors"
       >
         <Plus className="w-6 h-6" />
       </motion.button>

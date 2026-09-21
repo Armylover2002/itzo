@@ -207,7 +207,7 @@ const OtpModal = ({ order, onVerified, onClose }) => {
             isAlreadyVerified
           }
           onConfirm={verifyOtp}
-          color="bg-[#FF0000]"
+          color="bg-[#FE5502]"
         />
       </motion.div>
     </div>
@@ -482,7 +482,7 @@ const PaymentModal = ({ order, otpString, onComplete, onClose }) => {
                 throw e;
               }
             }}
-            color="bg-[#FF0000]"
+            color="bg-[#FE5502]"
           />
         </motion.div>
       </div>
@@ -633,7 +633,7 @@ const ReturnSellerOtpModal = ({ order, onComplete, onClose }) => {
           successLabel="Completed!"
           disabled={otp.join("").length < 4 || isSubmitting}
           onConfirm={handleComplete}
-          color="bg-[#FF0000]"
+          color="bg-[#FE5502]"
         />
       </motion.div>
     </div>
@@ -728,7 +728,7 @@ const ForwardDeliveryVerificationModal = ({ order, onComplete, onClose }) => {
               onConfirm={async () => {
                 await onComplete(verifiedOtp);
               }}
-              color="bg-[#FF0000]"
+              color="bg-[#FE5502]"
             />
           </motion.div>
         </div>

@@ -56,7 +56,7 @@ export default function TermsAndConditionsV2() {
         <div className="max-w-4xl mx-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 text-[#FF0000] animate-spin mb-4" />
+              <Loader2 className="w-8 h-8 text-[#FE5502] animate-spin mb-4" />
               <p className="text-gray-500">Loading terms...</p>
             </div>
           ) : (

@@ -328,7 +328,7 @@ const Level2Categories = () => {
           {selectedItems.length > 0 && canDelete && (
             <button
               onClick={handleBulkDelete}
-              className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium">
+              className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors text-sm font-medium">
               <Trash2 className="w-4 h-4" />
               Delete ({selectedItems.length})
             </button>
@@ -466,7 +466,7 @@ const Level2Categories = () => {
                             setDeleteTarget(cat);
                             setIsDeleteModalOpen(true);
                           }}
-                          className="p-1 text-gray-500 hover:text-red-600 transition-colors">
+                          className="p-1 text-gray-500 hover:text-purple-600 transition-colors">
                           <Trash className="w-5 h-5" />
                         </button>
                       )}
@@ -503,7 +503,7 @@ const Level2Categories = () => {
                 {/* Image Upload */}
                 <div className="space-y-2">
                   <label className="block text-center text-sm font-medium text-gray-700">
-                    Image <span className="text-red-500">*</span>
+                    Image <span className="text-purple-500">*</span>
                   </label>
                   <div className="flex justify-center">
                   <div
@@ -633,7 +633,7 @@ const Level2Categories = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
               <div className="p-6 text-center">
-                <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-4">
                   <Trash className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
@@ -663,7 +663,7 @@ const Level2Categories = () => {
                   </button>
                   <button
                     onClick={handleDelete}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors">
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors">
                     Delete
                   </button>
                 </div>

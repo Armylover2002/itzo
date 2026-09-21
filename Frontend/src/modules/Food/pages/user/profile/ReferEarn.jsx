@@ -137,7 +137,7 @@ export default function ReferEarn() {
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">Reward per invite</p>
-                <p className="text-lg font-bold text-[#FF0000]">{"\u20B9"}{stats.rewardAmount}</p>
+                <p className="text-lg font-bold text-[#FE5502]">{"\u20B9"}{stats.rewardAmount}</p>
               </div>
               <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">
                 <p className="text-[11px] text-gray-500 dark:text-gray-400">Referral earnings</p>
@@ -150,7 +150,7 @@ export default function ReferEarn() {
               type="button"
               onClick={handleShare}
               disabled={!referralLink}
-              className="w-full mt-3 h-11 rounded-xl bg-[#FF0000] hover:bg-[#C83C00]"
+              className="w-full mt-3 h-11 rounded-xl bg-[#FE5502] hover:bg-[#C83C00]"
             >
               <Share2 className="h-4 w-4 mr-2" />
               Share Invite
