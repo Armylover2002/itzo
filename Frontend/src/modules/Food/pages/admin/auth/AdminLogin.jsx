@@ -213,34 +213,6 @@ export default function AdminLogin() {
           ) : null}
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* Login Method Tabs */}
-            <div className="flex rounded-sm border border-gray-300 p-1 bg-gray-50">
-              <button
-                type="button"
-                className={`flex-1 py-2 text-center text-sm font-semibold rounded-sm transition-all ${activeTab === 'email' ? 'bg-[#6412C6] text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                onClick={() => {
-                  setActiveTab('email');
-                  setEmail('');
-                  setError('');
-                }}
-                disabled={isLoading}
-              >
-                Email
-              </button>
-              <button
-                type="button"
-                className={`flex-1 py-2 text-center text-sm font-semibold rounded-sm transition-all ${activeTab === 'employee' ? 'bg-[#6412C6] text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
-                onClick={() => {
-                  setActiveTab('employee');
-                  setEmail('');
-                  setError('');
-                }}
-                disabled={isLoading}
-              >
-                Employee ID
-              </button>
-            </div>
-
             {/* Role Dropdown */}
             <div className="relative">
               <Select
