@@ -7,6 +7,7 @@ import PageNavbar from "@food/components/user/PageNavbar";
 import OptimizedImage from "@food/components/OptimizedImage";
 import { diningAPI } from "@food/api";
 import { isModuleAuthenticated } from "@food/utils/auth";
+import { formatTimeAMPM } from "@shared/utils/timeFormat";
 
 function todayDateString() {
   const d = new Date();
@@ -140,17 +141,18 @@ export default function DiningRestaurantDetail() {
                   return (
                     <button
                       key={slot.start}
+                      type="button"
                       disabled={full}
                       onClick={() => setSelectedSlot(slot)}
-                      className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
+                      className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
                         full
-                          ? "cursor-not-allowed border-gray-100 text-gray-300"
+                          ? "cursor-not-allowed border-gray-100 text-gray-300 dark:border-gray-800 dark:text-gray-600"
                           : selectedSlot?.start === slot.start
-                          ? "border-[#FE5502] bg-red-50 text-[#FE5502]"
-                          : "border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300"
+                          ? "border-[#FE5502] bg-orange-50 font-semibold text-[#FE5502] dark:bg-orange-950/30"
+                          : "border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300"
                       }`}
                     >
-                      {slot.start}
+                      {formatTimeAMPM(slot.start)}
                     </button>
                   );
                 })}
@@ -170,7 +172,7 @@ export default function DiningRestaurantDetail() {
               disabled={booking || !selectedSlot}
               className="w-full rounded-lg bg-[#FE5502] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
-              {booking ? "Booking..." : "Reserve Table"}
+              {booking ? "Booking..." : selectedSlot ? `Reserve Table (${formatTimeAMPM(selectedSlot.start)})` : "Reserve Table"}
             </button>
           </div>
         </div>

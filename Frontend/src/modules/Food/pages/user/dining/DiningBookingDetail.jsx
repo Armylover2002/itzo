@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import AnimatedPage from "@food/components/user/AnimatedPage";
 import PageNavbar from "@food/components/user/PageNavbar";
 import { diningAPI } from "@food/api";
+import { formatTimeAMPM } from "@shared/utils/timeFormat";
 import { getCurrentUser } from "@food/utils/auth";
 import { initRazorpayPayment } from "@food/utils/razorpay";
 import { getCompanyName } from "@common/utils/businessSettings";
@@ -122,7 +123,9 @@ export default function DiningBookingDetail() {
               <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[reservation.status] || "bg-gray-100 text-gray-500"}`}>{reservation.status}</span>
             </div>
             <div className="space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
-              <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {new Date(reservation.bookingDate).toLocaleDateString()} · {reservation.slotStart}-{reservation.slotEnd}</div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" /> {new Date(reservation.bookingDate).toLocaleDateString()} · {formatTimeAMPM(reservation.slotStart)}{reservation.slotEnd ? ` - ${formatTimeAMPM(reservation.slotEnd)}` : ""}
+              </div>
               <div className="flex items-center gap-2"><Users className="h-4 w-4" /> {reservation.guests} guests</div>
               {reservation.restaurant?.phone && <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {reservation.restaurant.phone}</div>}
             </div>
