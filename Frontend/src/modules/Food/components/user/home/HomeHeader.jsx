@@ -22,6 +22,7 @@ import {
 } from "@food/components/ui/popover";
 import { Badge } from "@food/components/ui/badge";
 import useNotificationInbox from "@food/hooks/useNotificationInbox";
+import { getAppLogo, subscribeBusinessSettings } from "@common/utils/businessSettings";
 
 const tabs = [
   { id: "food", name: "Food", shortName: "Food" },
@@ -114,6 +115,18 @@ export default function HomeHeader({
   const routerLocation = useRouterLocation();
   const headerRef = useRef(null);
   const FIXED_QUICK_THEME_COLOR = "#FE5502";
+
+  // Same admin-set logo (Global Settings) used by the desktop navbar and footer,
+  // with a static fallback so the header never shows a broken image.
+  const [logoUrl, setLogoUrl] = useState(() => getAppLogo("user") || "/final_logo200.png");
+  useEffect(() => {
+    const apply = () => {
+      const userLogo = getAppLogo("user");
+      if (userLogo) setLogoUrl(userLogo);
+    };
+    apply();
+    return subscribeBusinessSettings(apply);
+  }, []);
 
   const [notifications, setNotifications] = useState(() => {
     if (typeof window === "undefined") return [];
@@ -245,7 +258,12 @@ export default function HomeHeader({
             to="/food/user"
             className="flex shrink-0 items-center border-0 bg-transparent p-0 outline-none"
           >
-            <img src="/final_logo200-removebg-preview.png" alt="ItzoFood" className="h-7 sm:h-8 w-auto object-contain dark:brightness-0 dark:invert" />
+            <img
+              src={logoUrl}
+              alt="ItzoFood"
+              className="h-7 sm:h-8 w-auto object-contain dark:brightness-0 dark:invert"
+              onError={(e) => { e.target.onerror = null; e.target.src = "/final_logo200.png"; }}
+            />
           </Link>
 
           {!embedded && (
