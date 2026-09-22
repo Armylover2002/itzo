@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Store, MapPin, ShoppingBag, ArrowRight, Star, Bike } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
+import { EYEBROW, HEADING, BODY } from './typography';
 
 const TAGS = [
   { icon: Store, label: 'Curated restaurants' },
@@ -59,7 +60,7 @@ const BetterFoodSection = React.memo(function BetterFoodSection() {
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#FE5502]/10 px-4 py-1.5 text-[#FE5502] text-sm font-bold tracking-wide uppercase"
+            className={`mb-5 ${EYEBROW}`}
           >
             Why itzofood
           </motion.span>
@@ -69,9 +70,9 @@ const BetterFoodSection = React.memo(function BetterFoodSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-[38px] md:text-[56px] font-bold leading-[1.08] mb-6 bg-gradient-to-r from-[#ff7800] via-[#ff5b00] to-[#e64a00] bg-clip-text text-transparent"
+            className={`${HEADING} mb-6`}
           >
-            Food you&apos;ll love,<br/>delivered fast
+            Food you&apos;ll love,<br/>delivered <span className="text-[#FE5502]">fast</span>
           </motion.h2>
 
           <motion.p
@@ -79,7 +80,7 @@ const BetterFoodSection = React.memo(function BetterFoodSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-500 max-w-lg mb-8 leading-relaxed font-medium"
+            className={`${BODY} max-w-lg mb-8`}
           >
             We help you discover new tastes from restaurants you&apos;ll love, delivered right to your doorstep.
           </motion.p>

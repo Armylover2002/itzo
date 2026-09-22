@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Tag } from 'lucide-react';
+import { Calendar, Clock, Sparkles } from 'lucide-react';
+import { EYEBROW, HEADING, BODY } from './typography';
 
 const FeatureCard = ({ icon, title, className, delay }) => (
   <motion.div 
@@ -22,12 +23,23 @@ const AppFeaturesSection = React.memo(function AppFeaturesSection() {
     <div className="w-full bg-orange-50 pt-20 pb-12 md:pb-20 overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-4 flex flex-col items-center">
 
+        {/* Eyebrow */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className={`mb-5 ${EYEBROW}`}
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Made for you
+        </motion.div>
+
         {/* Heading */}
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-[40px] md:text-[52px] font-black text-primary text-center leading-tight mb-5 tracking-tight"
+          className={`${HEADING} text-center mb-5`}
         >
           Everything you need,<br/>in one app
         </motion.h2>
@@ -38,7 +50,7 @@ const AppFeaturesSection = React.memo(function AppFeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-lg md:text-[20px] text-slate-500 text-center max-w-[600px] mb-8 md:mb-12 leading-snug font-medium px-4"
+          className={`${BODY} text-center max-w-[600px] mb-8 md:mb-12 px-4`}
         >
           A handful of handy features, built to make ordering food a breeze
         </motion.p>

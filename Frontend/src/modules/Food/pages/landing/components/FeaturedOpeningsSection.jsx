@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Briefcase, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { Briefcase, MapPin, Clock, ArrowRight, Users } from 'lucide-react';
 import axiosInstance from '@food/api';
+import { EYEBROW, HEADING, BODY } from './typography';
 
 const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
   const [jobs, setJobs] = useState([]);
@@ -37,12 +38,21 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
       <div className="max-w-7xl mx-auto px-4 relative z-10">
         
         <div className="text-center mb-12">
-          <motion.h2 
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className={`inline-flex mb-5 ${EYEBROW}`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            Careers
+          </motion.div>
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-4xl font-bold text-slate-900 mb-4"
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className={`${HEADING} mb-5`}
           >
             Join Our Team
           </motion.h2>
@@ -50,8 +60,8 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg text-slate-600 max-w-2xl mx-auto"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className={`${BODY} max-w-2xl mx-auto`}
           >
             Help us shape the future of food delivery. Explore our featured open positions and start your journey with ItzoFood today.
           </motion.p>
@@ -65,11 +75,12 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 * index }}
+              whileHover={{ y: -6 }}
               className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow cursor-pointer flex flex-col h-full group"
               onClick={() => navigate(`/food/careers/${job._id || job.id}`)}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-orange-50 text-primary rounded-xl flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 bg-orange-50 text-primary rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
                   <Briefcase className="w-6 h-6" />
                 </div>
                 <span className="bg-slate-100 text-slate-600 px-3 py-1 text-xs font-medium rounded-full">
@@ -111,9 +122,9 @@ const FeaturedOpeningsSection = React.memo(function FeaturedOpeningsSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-center"
         >
-          <Link 
-            to="/food/careers" 
-            className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-slate-900 hover:bg-slate-800 transition-colors"
+          <Link
+            to="/food/careers"
+            className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-slate-900 hover:bg-slate-800 hover:scale-105 transition-all"
           >
             View All Openings
           </Link>

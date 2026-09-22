@@ -1,6 +1,43 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Store, Bike } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
+
+const FOOTER_COLUMNS = [
+  {
+    title: 'About ItzoFood',
+    links: [
+      { label: 'Who We Are', href: '/about' },
+      { label: 'Careers / Jobs', href: '/food/careers' },
+      { label: 'Contact Us', href: '/contact' },
+      { label: 'HRMS Portal', href: '/hrms' },
+    ],
+  },
+  {
+    title: 'For Restaurants',
+    links: [
+      { label: 'Partner With Us', href: '/food/restaurant' },
+      { label: 'Apps For You', href: '/food/restaurant' },
+      { label: 'Restaurant Consulting', href: '/consulting' },
+    ],
+  },
+  {
+    title: 'For Delivery Partners',
+    links: [
+      { label: 'Partner With Us', href: '/food/delivery' },
+      { label: 'Apps For You', href: '/food/delivery' },
+    ],
+  },
+  {
+    title: 'Learn More',
+    links: [
+      { label: 'Privacy', href: '/profile/privacy' },
+      { label: 'Security', href: '/profile/privacy' },
+      { label: 'Terms & Conditions', href: '/profile/terms' },
+      { label: 'Help & Support', href: '/support' },
+    ],
+  },
+];
 
 const InstagramOriginal = () => (
   <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -107,76 +144,66 @@ const FooterSection = React.memo(function FooterSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Logo Area */}
-        <div className="mb-10">
-          <img 
-            src={logoImg} 
-            alt="ItzoFood Logo" 
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mb-10"
+        >
+          <img
+            src={logoImg}
+            alt="ItzoFood Logo"
             className="h-16 md:h-20 w-auto object-contain rounded-xl"
             onError={(e) => { e.target.src = "/itzo-logo-transparent.png"; }}
           />
-        </div>
+        </motion.div>
 
         {/* Links Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 mb-12">
-          {/* Column 1 */}
-          <div>
-            <h3 className="font-medium text-black tracking-wide mb-4 text-[15px]">About ItzoFood</h3>
-            <ul className="space-y-2.5 text-gray-600 text-[14px]">
-              <li><a href="/about" className="hover:text-black transition-colors">Who We Are</a></li>
-              <li><a href="/food/careers" className="hover:text-black transition-colors">Careers / Jobs</a></li>
-              <li><a href="/contact" className="hover:text-black transition-colors">Contact Us</a></li>
-              <li><a href="/hrms" className="hover:text-black transition-colors">HRMS Portal</a></li>
-            </ul>
-          </div>
-
-          {/* Column 2 */}
-          <div>
-            <h3 className="font-medium text-black tracking-wide mb-4 text-[15px]">For Restaurants</h3>
-            <ul className="space-y-2.5 text-gray-600 text-[14px]">
-              <li><a href="/food/restaurant" className="hover:text-black transition-colors">Partner With Us</a></li>
-              <li><a href="/food/restaurant" className="hover:text-black transition-colors">Apps For You</a></li>
-              <li><a href="/consulting" className="hover:text-black transition-colors">Restaurant Consulting</a></li>
-            </ul>
-          </div>
-
-          {/* Column 3 */}
-          <div>
-            <h3 className="font-medium text-black tracking-wide mb-4 text-[15px]">For Delivery Partners</h3>
-            <ul className="space-y-2.5 text-gray-600 text-[14px]">
-              <li><a href="/food/delivery" className="hover:text-black transition-colors">Partner With Us</a></li>
-              <li><a href="/food/delivery" className="hover:text-black transition-colors">Apps For You</a></li>
-            </ul>
-          </div>
-
-          {/* Column 4 */}
-          <div>
-            <h3 className="font-medium text-black tracking-wide mb-4 text-[15px]">Learn More</h3>
-            <ul className="space-y-2.5 text-gray-600 text-[14px]">
-              <li><a href="/profile/privacy" className="hover:text-black transition-colors">Privacy</a></li>
-              <li><a href="/profile/privacy" className="hover:text-black transition-colors">Security</a></li>
-              <li><a href="/profile/terms" className="hover:text-black transition-colors">Terms & Conditions</a></li>
-              <li><a href="/support" className="hover:text-black transition-colors">Help & Support</a></li>
-            </ul>
-          </div>
+          {FOOTER_COLUMNS.map((col, i) => (
+            <motion.div
+              key={col.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.08 }}
+            >
+              <h3 className="font-medium text-black tracking-wide mb-4 text-[15px]">{col.title}</h3>
+              <ul className="space-y-2.5 text-gray-600 text-[14px]">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <a href={link.href} className="hover:text-[#FE5502] transition-colors">{link.label}</a>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
 
           {/* Column 5: Social & App */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: FOOTER_COLUMNS.length * 0.08 }}
+          >
             <h3 className="font-medium text-black tracking-wide mb-4 text-[15px]">Social Links</h3>
             <div className="flex gap-4 mb-6">
               {socialLinks.map((social) => (
-                <a 
-                  key={social.name} 
-                  href={social.url} 
-                  target="_blank" 
+                <motion.a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:scale-110 transition-transform flex items-center justify-center w-8 h-8"
+                  whileHover={{ scale: 1.15, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center justify-center w-8 h-8"
                   aria-label={social.name}
                 >
                   <social.icon />
-                </a>
+                </motion.a>
               ))}
             </div>
-            
+
             <div className="flex flex-col gap-3 w-[140px]">
               <a href={appStoreUrl} target="_blank" rel="noopener noreferrer">
                 <img src={appStoreImg} alt="App Store" loading="lazy" decoding="async" className="cursor-pointer hover:opacity-80 transition-opacity w-full border border-gray-200 rounded-md" />
@@ -185,11 +212,16 @@ const FooterSection = React.memo(function FooterSection() {
                 <img src={playStoreImg} alt="Google Play" loading="lazy" decoding="async" className="cursor-pointer hover:opacity-80 transition-opacity w-full border border-gray-200 rounded-md" />
               </a>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Partner Onboarding QR Codes */}
-        <div className="border-t border-gray-200 pt-8 pb-2 mb-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="border-t border-gray-200 pt-8 pb-2 mb-6"
+        >
           <h3 className="font-medium text-black tracking-wide mb-5 text-[15px]">Join ItzoFood — Scan to Onboard</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {onboardingQrCodes.map((item) => (
@@ -213,14 +245,19 @@ const FooterSection = React.memo(function FooterSection() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Bottom Text */}
-        <div className="border-t border-gray-200 pt-6 mt-2">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="border-t border-gray-200 pt-6 mt-2"
+        >
           <p className="text-gray-500 text-[13px] leading-relaxed">
             By continuing past this page, you agree to our Terms & Conditions, Cookie Policy, Privacy Policy and Content Policies. All trademarks are properties of their respective owners 2026 © ItzoFood Partners Private Limited. All rights reserved.
           </p>
-        </div>
+        </motion.div>
       </div>
     </footer>
   );
