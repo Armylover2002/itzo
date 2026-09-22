@@ -86,34 +86,40 @@ const AppFeaturesSection = React.memo(function AppFeaturesSection() {
             <FeatureCard icon="🍔" title="Collections" className="right-[5%] top-[45%]" delay={0.7} />
           </div>
 
-          {/* Center Phone */}
-          <motion.div 
+          {/* Center Phone — entrance spring, then a slow infinite float once it has landed */}
+          <motion.div
             initial={{ opacity: 0, y: 100 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.2, type: "spring", stiffness: 80 }}
-            className="absolute bottom-0 md:-bottom-4 w-[280px] md:w-[320px] h-[440px] md:h-[500px] bg-white rounded-[3rem] border-[12px] border-slate-800 shadow-2xl flex flex-col items-center pt-24 z-10"
+            className="absolute bottom-0 md:-bottom-4 z-10"
           >
-            {/* Phone Notch */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[110px] h-[24px] bg-slate-800 rounded-b-[1.25rem] flex justify-center items-center">
-               <div className="w-12 h-1.5 bg-slate-700 rounded-full"></div>
-            </div>
-            
-            {/* Center Card Inside Phone */}
-            <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-orange-50 p-6 md:p-8 flex flex-col items-center gap-4 w-[180px] md:w-[210px]">
-               <div className="relative mt-2">
-                 <Calendar className="w-16 h-16 text-orange-200" strokeWidth={1.5} />
-                 <div className="absolute -bottom-2 -left-3 bg-white rounded-full p-[2px] shadow-sm">
-                   <Clock className="w-8 h-8 text-primary bg-white rounded-full" strokeWidth={2.5} />
-                 </div>
-               </div>
-               <span className="text-center font-medium text-slate-700 text-sm md:text-base leading-snug mt-2">
-                 Schedule<br/>your order
-               </span>
-            </div>
+            <motion.div
+              animate={{ y: [0, -12, 0] }}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+              className="w-[280px] md:w-[320px] h-[440px] md:h-[500px] bg-white rounded-[3rem] border-[12px] border-slate-800 shadow-2xl flex flex-col items-center pt-24"
+            >
+              {/* Phone Notch */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[110px] h-[24px] bg-slate-800 rounded-b-[1.25rem] flex justify-center items-center">
+                 <div className="w-12 h-1.5 bg-slate-700 rounded-full"></div>
+              </div>
 
-            {/* Phone Home Bar */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-slate-200 rounded-full"></div>
+              {/* Center Card Inside Phone */}
+              <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-orange-50 p-6 md:p-8 flex flex-col items-center gap-4 w-[180px] md:w-[210px]">
+                 <div className="relative mt-2">
+                   <Calendar className="w-16 h-16 text-orange-200" strokeWidth={1.5} />
+                   <div className="absolute -bottom-2 -left-3 bg-white rounded-full p-[2px] shadow-sm">
+                     <Clock className="w-8 h-8 text-primary bg-white rounded-full" strokeWidth={2.5} />
+                   </div>
+                 </div>
+                 <span className="text-center font-medium text-slate-700 text-sm md:text-base leading-snug mt-2">
+                   Schedule<br/>your order
+                 </span>
+              </div>
+
+              {/* Phone Home Bar */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-24 h-1.5 bg-slate-200 rounded-full"></div>
+            </motion.div>
           </motion.div>
 
         </div>

@@ -2,6 +2,7 @@ import React, { useEffect, Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
+import MarqueeStrip from './components/MarqueeStrip';
 
 const BetterFoodSection = lazy(() => import('./components/BetterFoodSection'));
 const AppFeaturesSection = lazy(() => import('./components/AppFeaturesSection'));
@@ -23,6 +24,7 @@ export default function ItzoFoodLanding() {
     <div className="min-h-screen bg-white font-sans selection:bg-primary selection:text-white">
       <Navbar />
       <HeroSection navigate={navigate} />
+      <MarqueeStrip />
       <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
         <BetterFoodSection />
         <AppFeaturesSection />
