@@ -26,7 +26,11 @@ export default function BottomNavigation() {
     pathname.startsWith("/food/profile") ||
     pathname.startsWith("/food/user/profile") ||
     isSharedFoodProfile
-  const isDining = pathname.startsWith("/food/user/dining")
+  const isDining =
+    pathname.startsWith("/food/user/dining") ||
+    pathname.startsWith("/food/dining") ||
+    pathname.startsWith("/dining") ||
+    pathname.startsWith("/user/dining")
   const isDelivery =
     !isUnder250 &&
     !isProfile &&

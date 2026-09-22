@@ -145,14 +145,19 @@ export default function UserLayout({ children }) {
     normalizedPath === "/user/profile" ||
     isSharedFoodProfile
 
+  const isDining =
+    normalizedPath === "/dining" ||
+    normalizedPath.startsWith("/dining/") ||
+    normalizedPath === "/user/dining" ||
+    normalizedPath.startsWith("/user/dining/")
+
   const showBottomNav = normalizedPath === "/" ||
     normalizedPath === "/user" ||
     normalizedPath === "/under-250" ||
     normalizedPath === "/user/under-250" ||
     normalizedPath === "/orders" ||
     normalizedPath === "/user/orders" ||
-    normalizedPath === "/dining" ||
-    normalizedPath === "/user/dining" ||
+    isDining ||
     isProfileRoot ||
     normalizedPath === "" // Handle empty string case for root relative to /food
 

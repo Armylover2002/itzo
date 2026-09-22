@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { adminAPI } from "@food/api";
+import { formatTimeAMPM } from "@shared/utils/timeFormat";
 
 const STATUS_COLORS = {
   pending: "bg-amber-100 text-amber-700",
@@ -72,7 +73,9 @@ export default function DiningBookings() {
                 <tr key={b._id}>
                   <td className="px-4 py-3 font-medium text-gray-900">{b.restaurant?.name || b.restaurantNameSnapshot}</td>
                   <td className="px-4 py-3 text-gray-600">{b.userNameSnapshot} <span className="text-gray-400">{b.userPhoneSnapshot}</span></td>
-                  <td className="px-4 py-3 text-gray-600">{new Date(b.bookingDate).toLocaleDateString()} · {b.slotStart}-{b.slotEnd}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(b.bookingDate).toLocaleDateString()} · {formatTimeAMPM(b.slotStart)}{b.slotEnd ? ` - ${formatTimeAMPM(b.slotEnd)}` : ""}
+                  </td>
                   <td className="px-4 py-3 text-gray-600">{b.guests}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[b.status] || "bg-gray-100 text-gray-500"}`}>

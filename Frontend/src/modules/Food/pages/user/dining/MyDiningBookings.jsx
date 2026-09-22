@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import AnimatedPage from "@food/components/user/AnimatedPage";
 import PageNavbar from "@food/components/user/PageNavbar";
 import { diningAPI } from "@food/api";
+import { formatTimeAMPM } from "@shared/utils/timeFormat";
 
 const STATUS_COLORS = {
   pending: "bg-amber-100 text-amber-700",
@@ -59,7 +60,7 @@ export default function MyDiningBookings() {
                   <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[b.status] || "bg-gray-100 text-gray-500"}`}>{b.status}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                  <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(b.bookingDate).toLocaleDateString()} · {b.slotStart}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(b.bookingDate).toLocaleDateString()} · {formatTimeAMPM(b.slotStart)}</span>
                   <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {b.guests}</span>
                 </div>
               </Link>

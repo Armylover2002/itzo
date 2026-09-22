@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, Receipt } from "lucide-react";
 import { toast } from "sonner";
 import { restaurantAPI } from "@food/api";
+import { formatTimeAMPM } from "@shared/utils/timeFormat";
 
 const STATUS_COLORS = {
   pending: "bg-amber-100 text-amber-700",
@@ -80,7 +81,9 @@ export default function DiningBookingsPage() {
                 <div>
                   <p className="font-semibold text-gray-900">{r.userNameSnapshot} · {r.guests} guests</p>
                   <p className="text-xs text-gray-500">{r.userPhoneSnapshot}</p>
-                  <p className="text-xs text-gray-500">{new Date(r.bookingDate).toLocaleDateString()} · {r.slotStart}-{r.slotEnd}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(r.bookingDate).toLocaleDateString()} · {formatTimeAMPM(r.slotStart)}{r.slotEnd ? ` - ${formatTimeAMPM(r.slotEnd)}` : ""}
+                  </p>
                   {r.specialRequest && <p className="mt-1 text-xs italic text-gray-400">"{r.specialRequest}"</p>}
                 </div>
                 <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLORS[r.status] || "bg-gray-100 text-gray-500"}`}>{r.status}</span>
