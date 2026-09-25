@@ -255,7 +255,7 @@ export async function getGlobalSettings(req, res, next) {
                 .lean();
 
             if (!settings) {
-                const created = await GlobalSettings.create({
+                const created = await GlobalSettings.getSingleton({
                     companyName: 'Appzeto',
                     email: 'admin@appzeto.com',
                 });
@@ -273,7 +273,7 @@ export async function getGlobalSettings(req, res, next) {
 
         let settings = await GlobalSettings.findOne();
         if (!settings) {
-            settings = await GlobalSettings.create({
+            settings = await GlobalSettings.getSingleton({
                 companyName: 'Appzeto',
                 email: 'admin@appzeto.com',
             });
@@ -334,7 +334,7 @@ export async function updateGlobalSettings(req, res, next) {
 
         let settings = await GlobalSettings.findOne();
         if (!settings) {
-            settings = new GlobalSettings();
+            settings = await GlobalSettings.getSingleton();
         }
 
         if (companyName) settings.companyName = companyName;

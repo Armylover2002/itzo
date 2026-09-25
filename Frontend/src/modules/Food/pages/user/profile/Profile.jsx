@@ -37,7 +37,7 @@ import {
   Youtube,
 } from "lucide-react";
 
-import { getCachedSettings } from "@common/utils/businessSettings";
+import { useSettings } from "@core/context/SettingsContext";
 
 import AnimatedPage from "@food/components/user/AnimatedPage";
 import { Card, CardContent } from "@food/components/ui/card";
@@ -80,8 +80,10 @@ export default function Profile() {
   const companyName = useCompanyName();
   const { theme, setTheme } = useTheme();
   
-  const settings = getCachedSettings();
+  const { settings } = useSettings();
   const socialLinks = settings?.socialLinks || {};
+  // A module is on unless the admin explicitly switched it off (Global Settings > Modules).
+  const quickCommerceEnabled = settings?.modules?.quickCommerce !== false;
   const isSharedProfile = routerLocation.pathname.startsWith("/profile");
   const profileSource = routeSearchParams.get("from");
 
@@ -1242,6 +1244,7 @@ export default function Profile() {
         </div>
 
         {/* Quick Commerce Section */}
+        {quickCommerceEnabled && (
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-2 px-1">
             <div className="w-1 h-4 bg-[#0c831f] rounded"></div>
@@ -1326,6 +1329,7 @@ export default function Profile() {
             </Link>
           </div>
         </div>
+        )}
 
         {/* More Section */}
         <div className="mb-8 pb-8">
@@ -1336,6 +1340,7 @@ export default function Profile() {
             </h3>
           </div>
           <div className="space-y-2">
+            {quickCommerceEnabled && (
             <motion.div
               onClick={() => handleBecomeRoleClick("SELLER", () => setBecomeSellerOpen(true))}
               whileHover={{ x: 4, scale: 1.01 }}
@@ -1361,6 +1366,7 @@ export default function Profile() {
                 </CardContent>
               </Card>
             </motion.div>
+            )}
 
             <motion.div
               onClick={() => handleBecomeRoleClick("DELIVERY_BOY", () => setBecomeDeliveryOpen(true))}

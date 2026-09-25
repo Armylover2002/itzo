@@ -3,6 +3,12 @@ import mongoose from 'mongoose';
 
 const globalSettingsSchema = new mongoose.Schema(
     {
+        // Enforces a true singleton document via a unique index (separate from _id, so it
+        // doesn't disturb the existing document's ObjectId). MongoDB's unique index makes it
+        // impossible for a race (two concurrent "create if missing" requests) to insert a
+        // second doc, which previously caused reads to flip-flop between an admin-edited
+        // doc and a stale all-defaults doc (e.g. a toggled-off module reappearing later).
+        singletonKey: { type: String, default: 'global', unique: true },
         companyName: { type: String, required: true, default: 'Appzeto' },
         email: { type: String, required: true, default: 'admin@appzeto.com' },
         // Contact & support emails shown on public pages (Contact Us / Help & Support).
@@ -191,7 +197,18 @@ const globalSettingsSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-// We keep the collection name the same if we want to preserve data, 
-// or rename it if we want a fresh start. 
+// Atomic get-or-create for the singleton doc. Using findOneAndUpdate+upsert (instead of
+// findOne() followed by a separate create()) means concurrent callers can't race into
+// creating two documents — the unique index on singletonKey makes the upsert itself atomic.
+globalSettingsSchema.statics.getSingleton = function (defaults = {}) {
+    return this.findOneAndUpdate(
+        { singletonKey: 'global' },
+        { $setOnInsert: { singletonKey: 'global', ...defaults } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+};
+
+// We keep the collection name the same if we want to preserve data,
+// or rename it if we want a fresh start.
 // Given the user wants to "move" them, keeping data is likely preferred.
 export const GlobalSettings = mongoose.model('GlobalSettings', globalSettingsSchema, 'common_global_settings');
