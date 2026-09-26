@@ -60,6 +60,8 @@ axiosInstance.interceptors.request.use(
             token = localStorage.getItem('auth_seller');
         } else if (pagePath.startsWith('/ecs')) {
             token = localStorage.getItem('auth_admin');
+        } else if (pagePath.startsWith('/hrms')) {
+            token = localStorage.getItem('auth_hrms');
         } else if (isDeliveryContext(pagePath, url)) {
             token = pickDeliveryToken();
         } else if (pagePath.startsWith('/customer') || pagePath.startsWith('/quick')) {
@@ -84,7 +86,7 @@ axiosInstance.interceptors.request.use(
         }
 
         // 3. Final default: if we are on a general page and STILL no token, try customer token
-        if (!token && !pagePath.startsWith('/ecs') && !pagePath.startsWith('/seller') && !isDeliveryContext(pagePath, url)) {
+        if (!token && !pagePath.startsWith('/ecs') && !pagePath.startsWith('/seller') && !pagePath.startsWith('/hrms') && !isDeliveryContext(pagePath, url)) {
             token = pickCustomerToken();
         }
 
