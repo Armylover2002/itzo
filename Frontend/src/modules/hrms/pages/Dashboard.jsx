@@ -109,7 +109,7 @@ const DashboardLiveMap = ({ isFieldEmployee, shouldTrack, employeeProfile, isLoa
                         </div>
                     </div>
                 </div>
-                <div className="flex-1 w-full h-[400px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100">
+                <div className="flex-1 w-full h-[260px] sm:h-[320px] rounded-xl overflow-hidden border border-slate-200 relative bg-slate-100">
                     {loadError ? (
                         <div className="absolute inset-0 flex items-center justify-center text-red-500 text-sm">Failed to load Google Maps</div>
                     ) : !isLoaded ? (
@@ -120,7 +120,7 @@ const DashboardLiveMap = ({ isFieldEmployee, shouldTrack, employeeProfile, isLoa
                             center={pathCoordinates.length > 0 ? pathCoordinates[pathCoordinates.length - 1] : (employeeProfile?.assignedOfficeDetails?.latitude ? {lat: employeeProfile.assignedOfficeDetails.latitude, lng: employeeProfile.assignedOfficeDetails.longitude} : { lat: 20.5937, lng: 78.9629 })}
                             zoom={pathCoordinates.length > 0 ? 15 : (employeeProfile?.assignedOfficeDetails?.latitude ? 15 : 4)}
                             onLoad={onLoadMap}
-                            options={{ disableDefaultUI: false, zoomControl: true, mapTypeControl: false, scaleControl: true, streetViewControl: false, rotateControl: false, fullscreenControl: true }}
+                            options={{ disableDefaultUI: false, zoomControl: true, mapTypeControl: false, scaleControl: true, streetViewControl: false, rotateControl: false, fullscreenControl: true, gestureHandling: 'cooperative' }}
                         >
                             {pathCoordinates.length > 0 && <Polyline path={pathCoordinates} options={{ strokeColor: '#10b981', strokeOpacity: 0.8, strokeWeight: 4 }} />}
                             {pathCoordinates.length > 0 && <Marker position={pathCoordinates[0]} title="Start Position" icon={{ url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png' }} />}

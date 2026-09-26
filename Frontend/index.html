@@ -24,6 +24,7 @@
       var p = location.pathname;
       var src = '/useritzo.png';
       if (/^\/ecs(\/|$)/.test(p)) src = '/ecsitzo.jpeg';
+      else if (/^\/hrms(\/|$)/.test(p)) src = '/ecsitzo.jpeg';
       else if (/^(\/food)?\/restaurant(\/|$)/.test(p)) src = '/restaurantitzo.jpeg';
       else if (/^(\/food)?\/delivery(\/|$)/.test(p)) src = '/deliveryitzo.jpeg';
       else if (/^\/seller(\/|$)/.test(p)) src = '/selleritzo.jpeg';

@@ -92,7 +92,7 @@ export default function HrmsLayout() {
     }
 
     return (
-        <div className="flex h-screen bg-slate-50">
+        <div className="bg-slate-50">
             {/* Mobile Overlay */}
             {sidebarOpen && (
                 <div
@@ -101,9 +101,9 @@ export default function HrmsLayout() {
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar — fixed to the viewport; the page (not this) scrolls */}
             <aside className={`
-                fixed lg:static inset-y-0 left-0 z-50
+                fixed inset-y-0 left-0 z-50 h-screen
                 w-72 bg-white border-r border-slate-200
                 flex flex-col transition-transform duration-300 ease-in-out
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -233,8 +233,8 @@ export default function HrmsLayout() {
                 </div>
             </aside>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0">
+            {/* Main Content — offset past the fixed sidebar; the page itself scrolls */}
+            <div className="lg:pl-72 min-h-screen flex flex-col">
                 {/* Top Header */}
                 <header className="h-16 bg-white border-b border-slate-200/80 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-30 shadow-sm">
                     <div className="flex items-center gap-3">
@@ -260,8 +260,8 @@ export default function HrmsLayout() {
                     </div>
                 </header>
 
-                {/* Page Content */}
-                <main className="flex-1 overflow-y-auto">
+                {/* Page Content — normal document flow; the whole page scrolls with it */}
+                <main className="flex-1">
                     <Outlet />
                 </main>
             </div>

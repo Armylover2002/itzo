@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '@core/api/axios';
 import { toast } from 'sonner';
+import { useAuth } from '@core/context/AuthContext';
 import { User, Loader2, Building2, Phone, Mail, MapPin, CreditCard, Heart, GraduationCap, Edit2, X, Check, AlertCircle, XCircle, Camera } from 'lucide-react';
 
 const Section = ({ icon: Icon, title, children }) => (
@@ -21,6 +22,7 @@ const Field = ({ label, value }) => (
 );
 
 export default function Profile() {
+    const { refreshUser } = useAuth();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
@@ -39,6 +41,18 @@ export default function Profile() {
     useEffect(() => {
         fetchProfile();
     }, []);
+
+    // Photo/detail edits need admin approval and can land while this tab stays open
+    // (e.g. admin approves in another tab). Revalidate on refocus instead of requiring
+    // a manual reload, and refresh the cached user so the sidebar avatar stays in sync.
+    useEffect(() => {
+        const onFocus = () => {
+            fetchProfile();
+            refreshUser({ forceRefresh: true });
+        };
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, [refreshUser]);
 
     if (loading) return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
     if (!profile?.employee) return <div className="p-8 text-center text-slate-500">Profile not found</div>;
