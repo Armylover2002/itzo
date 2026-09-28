@@ -199,6 +199,10 @@ export default function Home() {
   // A module is on unless the admin explicitly switched it off (Global Settings > Modules).
   const quickEnabled = appSettings?.modules?.quickCommerce !== false;
   const streetFoodEnabled = appSettings?.modules?.streetFood !== false;
+  // Hero video uploaded in admin (Global Settings > Landing). When present it
+  // replaces the banner slider; the poster covers the gap before it plays.
+  const heroVideoUrl = appSettings?.landingVideo?.url || "";
+  const heroPosterUrl = appSettings?.landingPoster?.url || "";
   const visibleTabs = useMemo(
     () => tabs.filter((tab) =>
       (tab.id !== "quick" || quickEnabled) && (tab.id !== "street-food" || streetFoodEnabled)
@@ -440,31 +444,47 @@ export default function Home() {
           >
             <Suspense fallback={<HeroBannerSkeleton className="h-[130px] w-full" />}>
               <div className="h-[130px] sm:h-36 md:h-[450px] lg:h-[500px] mt-0 relative z-10 w-full px-0">
-                {/* Mobile Slider */}
-                <div className="block md:hidden h-full w-full">
-                  <BannerSection
-                    showBannerSkeleton={banners.loading}
-                    heroBannerImages={activeBannerImages}
-                    heroBannersData={activeBannerData}
-                    currentBannerIndex={activeBannerImages.length ? currentBannerIndex % activeBannerImages.length : 0}
-                    setCurrentBannerIndex={setCurrentBannerIndex}
-                    heroShellRef={heroShellRef}
-                    navigate={navigate}
-                  />
-                </div>
-                {/* Desktop Slider */}
-                <div className="hidden md:block absolute inset-0 z-0">
-                  <BannerSection
-                    showBannerSkeleton={banners.loading}
-                    heroBannerImages={desktopBannerImages}
-                    heroBannersData={activeBannerData}
-                    currentBannerIndex={desktopBannerImages.length ? currentBannerIndex % desktopBannerImages.length : 0}
-                    setCurrentBannerIndex={setCurrentBannerIndex}
-                    heroShellRef={heroShellRef}
-                    navigate={navigate}
-                    hideOverlay={true}
-                  />
-                </div>
+                {heroVideoUrl ? (
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    poster={heroPosterUrl || undefined}
+                    className="absolute inset-0 z-0 h-full w-full object-cover"
+                  >
+                    <source src={heroVideoUrl} type="video/mp4" />
+                  </video>
+                ) : (
+                  <>
+                    {/* Mobile Slider */}
+                    <div className="block md:hidden h-full w-full">
+                      <BannerSection
+                        showBannerSkeleton={banners.loading}
+                        heroBannerImages={activeBannerImages}
+                        heroBannersData={activeBannerData}
+                        currentBannerIndex={activeBannerImages.length ? currentBannerIndex % activeBannerImages.length : 0}
+                        setCurrentBannerIndex={setCurrentBannerIndex}
+                        heroShellRef={heroShellRef}
+                        navigate={navigate}
+                      />
+                    </div>
+                    {/* Desktop Slider */}
+                    <div className="hidden md:block absolute inset-0 z-0">
+                      <BannerSection
+                        showBannerSkeleton={banners.loading}
+                        heroBannerImages={desktopBannerImages}
+                        heroBannersData={activeBannerData}
+                        currentBannerIndex={desktopBannerImages.length ? currentBannerIndex % desktopBannerImages.length : 0}
+                        setCurrentBannerIndex={setCurrentBannerIndex}
+                        heroShellRef={heroShellRef}
+                        navigate={navigate}
+                        hideOverlay={true}
+                      />
+                    </div>
+                  </>
+                )}
                 <div className="hidden md:flex absolute inset-0 flex-col items-center justify-center text-white text-center z-10 px-4 mt-[-60px] pointer-events-none">
                   <h1 className="text-3xl lg:text-4xl font-bold mb-3 drop-shadow-md">
                     Order food & groceries <br /> from your favourite restaurants.
