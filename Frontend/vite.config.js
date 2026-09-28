@@ -184,6 +184,12 @@ export default defineConfig({
         target: process.env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:5000',
         changeOrigin: true,
       },
+      // Uploaded files are stored with relative /uploads/... URLs, so in dev they
+      // must reach the backend instead of the Vite dev server.
+      '/uploads': {
+        target: process.env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:5000',
+        changeOrigin: true,
+      },
     },
   },
   preview: {

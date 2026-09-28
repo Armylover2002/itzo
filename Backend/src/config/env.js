@@ -76,16 +76,13 @@ export const config = {
     uploadLocalDir:
         process.env.UPLOAD_LOCAL_DIR ||
         ((process.env.NODE_ENV || 'development') === 'production' ? '/var/www/uploades' : 'uploads'),
-    // Absolute prefix put in front of stored file URLs.
-    //   local machine  -> http://localhost:<PORT>  (so images load from the Vite dev origin too)
-    //   live server    -> set UPLOAD_PUBLIC_BASE_URL=https://<your-api-domain>; if left empty,
-    //                     relative /uploads/... URLs are stored (frontend resolves them via API base).
-    uploadPublicBaseUrl: (
-        process.env.UPLOAD_PUBLIC_BASE_URL ||
-        ((process.env.NODE_ENV || 'development') === 'production'
-            ? ''
-            : `http://localhost:${process.env.PORT || 5000}`)
-    ).replace(/\/+$/, ''),
+    // Absolute prefix put in front of stored file URLs. Empty by default so only a
+    // relative /uploads/... path is persisted, which stays correct on every host.
+    // Never default to a hostname here: whatever this holds is written into the
+    // database at upload time, so a wrong value (e.g. localhost on the live server
+    // when NODE_ENV isn't set) permanently breaks every file uploaded under it.
+    // Set UPLOAD_PUBLIC_BASE_URL only when uploads are served from another domain.
+    uploadPublicBaseUrl: (process.env.UPLOAD_PUBLIC_BASE_URL || '').replace(/\/+$/, ''),
     uploadPath: process.env.UPLOAD_PATH || 'uploads/',
     requestBodyLimit: process.env.REQUEST_BODY_LIMIT || '2mb',
 

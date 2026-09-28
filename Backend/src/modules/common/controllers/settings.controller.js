@@ -145,15 +145,29 @@ const normalizeModules = (modules) => {
     return cleanedModules;
 };
 
+/**
+ * Files uploaded while UPLOAD_PUBLIC_BASE_URL held a wrong host (e.g. localhost on
+ * the live server) were persisted with that host baked in, so they 404 for every
+ * other client. Every /uploads/... path is served by this API, so hand back the
+ * relative path and let the client resolve it against its own origin. Third-party
+ * URLs (Cloudinary, etc.) are left untouched.
+ */
+const normalizeUploadUrl = (url) => {
+    const value = String(url || '').trim();
+    if (!value) return '';
+    const match = /^https?:\/\/[^/]+(\/uploads\/.*)$/i.exec(value);
+    return match ? match[1] : value;
+};
+
 const slimMedia = (media) => {
     if (!media || typeof media !== 'object') return { url: '' };
-    return { url: String(media.url || '').trim() };
+    return { url: normalizeUploadUrl(media.url) };
 };
 
 const slimBanner = (banner) => {
     if (!banner || typeof banner !== 'object') return { url: '', active: true };
     return {
-        url: String(banner.url || '').trim(),
+        url: normalizeUploadUrl(banner.url),
         active: banner.active !== false,
     };
 };
@@ -171,7 +185,10 @@ const buildSettingsPayload = (settings) => {
         ...PUBLIC_BANNER_KEYS,
     ];
     imageKeys.forEach(k => {
-        if (rawSettings[k]) delete rawSettings[k].publicId;
+        if (rawSettings[k]) {
+            delete rawSettings[k].publicId;
+            rawSettings[k].url = normalizeUploadUrl(rawSettings[k].url);
+        }
     });
 
     rawSettings.modules = normalizeModules(rawSettings.modules);
