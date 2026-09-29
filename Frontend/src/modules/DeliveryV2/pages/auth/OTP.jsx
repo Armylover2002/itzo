@@ -628,7 +628,7 @@ export default function DeliveryOTP() {
                 src={logoUrl}
                 alt={companyName}
                 fallbackText={companyName}
-                accentClassName="bg-[#F35B1C]"
+                accentClassName="bg-white"
                 className="h-24 w-24 animate-logo-scale ring-4 ring-[#F35B1C]/90"
               />
             </div>
