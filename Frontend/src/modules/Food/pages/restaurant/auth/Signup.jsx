@@ -209,9 +209,6 @@ export default function RestaurantSignup() {
               </span>
             </div>
           </div>
-          <div className="absolute right-6 sm:right-10 lg:right-16 top-6 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-medium text-emerald-700 shadow-sm">
-            Software Version : 1.0.0
-          </div>
         </div>
 
         {/* Centered content (title + form + info) */}
@@ -348,22 +345,6 @@ export default function RestaurantSignup() {
           </div>
 
           <RestaurantAuthFooter className="mt-8 w-full max-w-lg" />
-
-          {/* Demo credentials / info bar */}
-          <div className="mt-8 w-full max-w-lg rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-xs sm:text-sm text-gray-800 flex items-start gap-3">
-            <div className="mt-0.5 text-[#10335D]">
-              <AlertCircle className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="font-semibold mb-1">Demo Credentials</div>
-              <div>
-                <span className="font-semibold">Phone :</span> +91 9876543210
-              </div>
-              <div>
-                <span className="font-semibold">OTP :</span> 1234
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Simple keyframe animations */}

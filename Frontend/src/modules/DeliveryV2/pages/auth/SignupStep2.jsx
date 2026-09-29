@@ -804,7 +804,7 @@ export default function SignupStep2() {
                   type="button"
                   onClick={() => handlePickFromGallery(docType)}
                   disabled={isSubmitting}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#00B761] text-white text-xs font-bold cursor-pointer hover:bg-[#00A055] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#F35B1C] text-white text-xs font-bold cursor-pointer hover:bg-[#D74C12] transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ImageIcon className="w-4 h-4" />
                   <span>Gallery</span>
@@ -926,7 +926,7 @@ export default function SignupStep2() {
             disabled={isSubmitting || !isFormValid()}
             className={`w-full py-4 rounded-lg font-bold text-white text-base transition-colors mt-6 ${isSubmitting || !isFormValid()
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-[#00B761] hover:bg-[#00A055]"
+              : "bg-[#F35B1C] hover:bg-[#D74C12]"
               }`}
           >
             {isSubmitting ? "Submitting..." : "Complete Signup"}
