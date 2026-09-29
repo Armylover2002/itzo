@@ -458,24 +458,32 @@ export async function updateGlobalSettings(req, res, next) {
             settings.markModified('socialLinks');
         }
 
-        // Strictly define modules and ensure persistence
-        const incomingModules = modules || data.modules || {};
-        const currentModules = settings.modules || {};
-        
-        // Dynamically rebuild the modules object using the schema keys (single source of truth)
-        const allowedModules = Object.keys(GlobalSettings.schema.paths)
-            .filter(p => p.startsWith('modules.'))
-            .map(p => p.replace('modules.', ''));
-            
-        settings.modules = {};
-        allowedModules.forEach(mod => {
-            settings.modules[mod] = incomingModules[mod] !== undefined 
-                ? !!incomingModules[mod] 
-                : (currentModules[mod] !== undefined ? !!currentModules[mod] : true);
-        });
-        
-        // Use markModified to ensure the modules object is fully replaced in DB
-        settings.markModified('modules');
+        // Only touch `modules` when this request actually intends to change it.
+        // Every other field on this shared document is guarded the same way (see
+        // above). Without this guard, ANY unrelated settings save (social links,
+        // hero title, subscription toggle, ...) would unconditionally rebuild and
+        // re-persist `modules` from whatever this request happened to read at its
+        // own start — silently clobbering a concurrent/just-saved module toggle
+        // with a stale value the moment two settings saves overlap. That race is
+        // what made a module flip back "on" after an unrelated admin action.
+        const incomingModules = modules || data.modules;
+        if (incomingModules && typeof incomingModules === 'object') {
+            const currentModules = settings.modules || {};
+            // Dynamically rebuild the modules object using the schema keys (single source of truth)
+            const allowedModules = Object.keys(GlobalSettings.schema.paths)
+                .filter(p => p.startsWith('modules.'))
+                .map(p => p.replace('modules.', ''));
+
+            settings.modules = {};
+            allowedModules.forEach(mod => {
+                settings.modules[mod] = incomingModules[mod] !== undefined
+                    ? !!incomingModules[mod]
+                    : (currentModules[mod] !== undefined ? !!currentModules[mod] : true);
+            });
+
+            // Use markModified to ensure the modules object is fully replaced in DB
+            settings.markModified('modules');
+        }
 
         // Subscription enforcement master toggle — only touch keys explicitly sent.
         const incomingEnforcement = subscriptionEnforcement || data.subscriptionEnforcement;

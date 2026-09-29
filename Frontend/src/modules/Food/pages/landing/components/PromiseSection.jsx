@@ -1,27 +1,47 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { PackageCheck, ReceiptText, HeartHandshake, Sparkles } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Zap, Receipt } from 'lucide-react';
 import { EYEBROW, HEADING } from './typography';
 
 const PROMISES = [
   {
-    icon: PackageCheck,
-    title: 'Fresh, sealed\n& secure',
-    desc: 'Every order is packed with care and tamper-sealed for a safe journey to your door.',
+    id: 'offline-prices',
+    title: 'Offline Prices,\nOnline Convenience',
+    desc: 'Pay what you see in the restaurant menu. Zero hidden menu markups — guaranteed.',
+    image: '/food/promise/offline_prices.png',
+    badge: '📜 100% Menu Price Match',
+    badgePosition: 'top-3 right-3',
+    alt: 'Offline Prices, Online Convenience',
   },
   {
-    icon: ReceiptText,
-    title: 'Clear, upfront\npricing',
-    desc: 'See your complete bill before you pay — no last-minute surprises at checkout.',
+    id: 'lowest-prices',
+    title: 'Lowest Prices\nof Items',
+    desc: 'Dishes start at ₹49 & most are under ₹250! Pocket-friendly meals for everyone.',
+    image: '/food/promise/lowest_prices.png',
+    badge: '✨ ₹49 • ₹69 • ₹99',
+    badgePosition: 'top-3 right-3',
+    alt: 'Lowest Prices of Items',
   },
   {
-    icon: HeartHandshake,
-    title: 'Support that\nactually cares',
-    desc: 'Real help, right when you need it — before, during and after every order.',
+    id: 'superfast-delivery',
+    title: 'Superfast Live\nDelivery',
+    desc: 'Piping hot food delivered in minutes with real-time GPS tracking & tamper-proof seal.',
+    image: '/food/promise/superfast_delivery.png',
+    badge: '⚡ Live GPS Tracking',
+    badgePosition: 'top-3 left-3',
+    alt: 'Superfast Live Delivery',
   },
 ];
 
-const PromiseCard = React.memo(function PromiseCard({ icon: Icon, title, desc, index }) {
+const PromiseCard = React.memo(function PromiseCard({
+  title,
+  desc,
+  image,
+  badge,
+  badgePosition,
+  alt,
+  index,
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -29,45 +49,64 @@ const PromiseCard = React.memo(function PromiseCard({ icon: Icon, title, desc, i
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.12 }}
       whileHover={{ y: -8 }}
-      className="relative rounded-[2rem] overflow-hidden p-8 md:p-9 bg-gradient-to-br from-[#ff7e2b] via-[#fe5502] to-[#d64300] shadow-[0_20px_45px_rgba(254,85,2,0.25)] transition-shadow duration-300 hover:shadow-[0_25px_60px_rgba(254,85,2,0.4)]"
+      className="group relative rounded-[2.2rem] overflow-hidden p-7 md:p-8 bg-gradient-to-br from-[#ff7e2b] via-[#fe5502] to-[#d64300] shadow-[0_20px_45px_rgba(254,85,2,0.25)] transition-all duration-300 hover:shadow-[0_28px_65px_rgba(254,85,2,0.42)] flex flex-col justify-between border border-white/20"
     >
-      {/* Decorative background shapes, matching the section's playful/torn-paper feel */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.15]">
+      {/* Decorative background shapes */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
         <Sparkles className="absolute -top-4 -right-4 w-32 h-32 text-white rotate-12" strokeWidth={1} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_100%,white_1px,transparent_1px)] bg-[length:14px_14px]" />
       </div>
 
+      {/* Moving shine sweep across the card on hover */}
+      <motion.div
+        animate={{ x: ['-140%', '240%'] }}
+        transition={{ duration: 3.5, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+        className="absolute top-0 left-0 h-full w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none z-20"
+      />
+
+      {/* 3D Character Illustration Area */}
+      <div className="relative w-full h-56 md:h-64 flex items-center justify-center mb-6">
+        {/* Soft radial glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.22)_0%,transparent_70%)] rounded-3xl pointer-events-none" />
+
+        {/* Floating pill badge */}
+        {badge && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ y: [0, -4, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}
+            className={`absolute ${badgePosition} z-20 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-black shadow-lg tracking-wide`}
+          >
+            {badge}
+          </motion.div>
+        )}
+
+        {/* 3D Character with floating motion */}
+        <motion.img
+          src={image}
+          alt={alt}
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: index * 0.25 }}
+          className="relative z-10 max-h-full max-w-[90%] object-contain drop-shadow-[0_16px_28px_rgba(0,0,0,0.28)] select-none pointer-events-none transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+
+      {/* Text Details */}
       <div className="relative z-10">
-        <h3 className="text-white text-[28px] md:text-[32px] font-black leading-[1.15] mb-3 whitespace-pre-line">
+        <h3 className="text-white text-[24px] md:text-[28px] font-black leading-[1.18] mb-3 whitespace-pre-line tracking-tight">
           {title}
         </h3>
-        <p className="text-white/85 text-base font-medium leading-relaxed mb-10 max-w-[26ch]">
+        <p className="text-white/90 text-sm md:text-base font-medium leading-relaxed max-w-[28ch]">
           {desc}
         </p>
-
-        {/* Glossy icon badge with a moving shine, animated float */}
-        <motion.div
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: index * 0.3 }}
-          className="relative w-24 h-24 md:w-28 md:h-28 rounded-3xl bg-white/15 border border-white/25 backdrop-blur-sm flex items-center justify-center overflow-hidden"
-        >
-          <motion.div
-            animate={{ x: ['-120%', '220%'] }}
-            transition={{ duration: 3, repeat: Infinity, repeatDelay: 1.5, ease: 'easeInOut' }}
-            className="absolute top-0 left-0 h-full w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-          />
-          <Icon className="w-11 h-11 md:w-12 md:h-12 text-white relative z-10" strokeWidth={1.5} />
-        </motion.div>
       </div>
     </motion.div>
   );
 });
 
 /**
- * "The ItzoFood Promise" — a set of trust/UX promises in our own primary-orange
- * theme. Deliberately generic, true-by-design claims (packaging, pricing
- * transparency, support) rather than specific numeric/fee guarantees, since
- * those would need to match real backend fee settings to stay honest.
+ * "The ItzoFood Promise" — upgraded cards with 3D Pixar-styled character
+ * illustrations matching the user's reference, in signature orange gradient.
  */
 const PromiseSection = React.memo(function PromiseSection() {
   return (
@@ -95,7 +134,7 @@ const PromiseSection = React.memo(function PromiseSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {PROMISES.map((p, i) => (
-            <PromiseCard key={p.title} {...p} index={i} />
+            <PromiseCard key={p.id} {...p} index={i} />
           ))}
         </div>
       </div>

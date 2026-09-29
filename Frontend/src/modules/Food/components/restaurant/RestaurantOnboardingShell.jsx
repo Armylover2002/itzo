@@ -44,12 +44,10 @@ export default function RestaurantOnboardingShell({
     <div className="min-h-screen w-full bg-slate-50 font-sans">
       {/* Desktop sidebar — fixed, does not scroll with page */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[420px] flex-col xl:w-[460px] lg:flex">
-        <img
-          src={bannerUrl || loginBg}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0D315B]/95 via-[#E64D02]/90 to-[#B91C1C]/95" />
+        {/* Unified signature orange brand gradient without color clashes or watermark bleed */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#ff6b1a] via-[#FE5502] to-[#c93b00]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.18),transparent_55%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_85%,rgba(0,0,0,0.12),transparent_55%)] pointer-events-none" />
 
         <div className="relative z-10 flex h-full flex-col overflow-hidden p-8 xl:p-10">
           <div className="shrink-0">

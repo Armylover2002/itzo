@@ -12,6 +12,19 @@ import './shared/styles/global.css'
 // eruda.init()
 const NATIVE_LAST_ROUTE_KEY = 'native_last_route'
 
+// A deep-linked/rarely-visited page (e.g. a QR-code link) can hold an index.html
+// cached from before a deploy, whose lazy-loaded chunk filenames no longer exist
+// on the server (old builds get removed on deploy). That 404 rejects the dynamic
+// import() and previously dead-ended on the ErrorBoundary's "Something went
+// wrong" screen. Vite fires this event for exactly that failure — reload once
+// (never loop) to pick up the current index.html and its real chunk hashes.
+window.addEventListener('vite:preloadError', () => {
+  const key = 'vitePreloadErrorReloaded'
+  if (sessionStorage.getItem(key)) return
+  sessionStorage.setItem(key, '1')
+  window.location.reload()
+})
+
 // ─── Quick-spicy Food Module Initialization ───────────────────────────────────
 
 // Load global business settings (favicon, title) — non-critical

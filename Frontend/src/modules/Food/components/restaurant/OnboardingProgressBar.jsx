@@ -17,8 +17,8 @@ function StepCircle({ stepId, currentStep, compact = false, variant = "default" 
             : "border-emerald-500 bg-emerald-500 text-white"
           : isActive
             ? isSidebar
-              ? "border-white bg-white text-[#0D315B] shadow-lg shadow-black/20"
-              : "border-[#0D315B] bg-[#0D315B] text-white shadow-lg shadow-[#0D315B]/25 motion-safe:scale-105"
+              ? "border-white bg-white text-[#FE5502] font-black shadow-lg shadow-black/20"
+              : "border-[#FE5502] bg-[#FE5502] text-white shadow-lg shadow-[#FE5502]/25 motion-safe:scale-105"
             : isSidebar
               ? "border-white/35 bg-white/10 text-white/60"
               : "border-slate-200 bg-white text-slate-400"

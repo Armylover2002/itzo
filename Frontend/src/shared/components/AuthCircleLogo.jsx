@@ -106,7 +106,7 @@ export default function AuthCircleLogo({
   className = "",
   accentClassName = "bg-primary-orange",
 }) {
-  const [logoSrc, setLogoSrc] = useState("")
+  const [logoSrc, setLogoSrc] = useState(src || "")
   const [trimmed, setTrimmed] = useState(false)
 
   useEffect(() => {
@@ -116,10 +116,9 @@ export default function AuthCircleLogo({
       return undefined
     }
 
-    let cancelled = false
-    setLogoSrc("")
-    setTrimmed(false)
+    setLogoSrc(src)
 
+    let cancelled = false
     removeEdgeWhite(src)
       .then((next) => {
         if (cancelled) return
@@ -137,23 +136,25 @@ export default function AuthCircleLogo({
     }
   }, [src])
 
+  const hasImage = Boolean(logoSrc || src)
+  const isDefaultOrange = accentClassName === "bg-primary-orange"
+  const effectiveBg = hasImage
+    ? (isDefaultOrange ? "bg-[#0d325e]" : accentClassName)
+    : (accentClassName || "bg-primary-orange")
+
   return (
     <div
       className={cn(
         "relative isolate flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full shadow-2xl",
-        accentClassName,
+        effectiveBg,
         className,
       )}
     >
-      {logoSrc ? (
+      {hasImage ? (
         <img
-          src={logoSrc}
+          src={logoSrc || src}
           alt={alt}
-          className={
-            trimmed
-              ? "max-h-[78%] max-w-[86%] object-contain"
-              : "max-h-[82%] max-w-[88%] object-contain"
-          }
+          className="max-h-[74%] max-w-[74%] w-auto h-auto object-contain select-none pointer-events-none"
         />
       ) : (
         <span className="text-2xl font-black italic text-white">
