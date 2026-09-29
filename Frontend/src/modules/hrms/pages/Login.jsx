@@ -56,12 +56,12 @@ export default function Login() {
                 {/* Card */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden relative z-10">
                     {/* Header Gradient Bar */}
-                    <div className="h-1.5 bg-gradient-to-r from-[#9359d7] via-[#6412c6] to-[#460d8b]" />
+                    <div className="h-1.5 bg-gradient-to-r from-[#9359d7] via-[#6413C7] to-[#460d8b]" />
 
                     <div className="p-8 sm:p-10">
                         {/* Logo */}
                         <div className="text-center mb-8">
-                            <div className="w-16 h-16 bg-gradient-to-br from-[#6412c6] to-[#550fa8] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-[#6412c6]/25 rotate-3 hover:rotate-0 transition-transform duration-300 overflow-hidden">
+                            <div className="w-16 h-16 bg-gradient-to-br from-[#6413C7] to-[#550fa8] rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-xl shadow-[#6413C7]/25 rotate-3 hover:rotate-0 transition-transform duration-300 overflow-hidden">
                                 {(hrmsSettings?.companyLogoUrl || getAppLogo('admin')) ? (
                                     <img 
                                         src={hrmsSettings?.companyLogoUrl || getAppLogo('admin')} 
@@ -86,7 +86,7 @@ export default function Login() {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        className="w-full h-12 pl-11 pr-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/50 focus:border-[#6412c6]/50 transition-all text-sm shadow-sm"
+                                        className="w-full h-12 pl-11 pr-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/50 focus:border-[#6413C7]/50 transition-all text-sm shadow-sm"
                                         placeholder="your@email.com"
                                         required
                                     />
@@ -101,7 +101,7 @@ export default function Login() {
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full h-12 pl-11 pr-11 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/50 focus:border-[#6412c6]/50 transition-all text-sm shadow-sm"
+                                        className="w-full h-12 pl-11 pr-11 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/50 focus:border-[#6413C7]/50 transition-all text-sm shadow-sm"
                                         placeholder="••••••••"
                                         required
                                     />
@@ -118,7 +118,7 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-12 bg-gradient-to-r from-[#6412c6] to-[#550fa8] hover:from-[#550fa8] hover:to-[#460d8b] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/25 hover:shadow-[#6412c6]/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                className="w-full h-12 bg-gradient-to-r from-[#6413C7] to-[#550fa8] hover:from-[#550fa8] hover:to-[#460d8b] text-white font-semibold rounded-xl shadow-lg shadow-[#6413C7]/25 hover:shadow-[#6413C7]/40 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -131,7 +131,7 @@ export default function Login() {
 
                         <div className="mt-8 text-center text-sm text-slate-500 font-medium">
                             Want to join {hrmsSettings?.companyName || 'ItzoFood'}?{' '}
-                            <Link to="/hrms/signup" className="text-[#6412c6] hover:text-[#550fa8] font-bold">
+                            <Link to="/hrms/signup" className="text-[#6413C7] hover:text-[#550fa8] font-bold">
                                 Submit a joining request
                             </Link>
                         </div>
@@ -140,15 +140,15 @@ export default function Login() {
                         <div className="mt-5 pt-4 border-t border-slate-100 text-center">
                             <p className="text-[11px] text-slate-400 font-medium mb-1.5">By continuing, you agree to our</p>
                             <div className="flex justify-center items-center gap-1.5 flex-wrap text-[11px]">
-                                <Link to="/profile/terms" className="text-[#6412c6] font-bold hover:underline">
+                                <Link to="/profile/terms" className="text-[#6413C7] font-bold hover:underline">
                                     Terms & Conditions
                                 </Link>
                                 <span className="text-slate-300">•</span>
-                                <Link to="/profile/privacy" className="text-[#6412c6] font-bold hover:underline">
+                                <Link to="/profile/privacy" className="text-[#6413C7] font-bold hover:underline">
                                     Privacy Policy
                                 </Link>
                                 <span className="text-slate-300">•</span>
-                                <Link to="/profile/support-policy" className="text-[#6412c6] font-bold hover:underline">
+                                <Link to="/profile/support-policy" className="text-[#6413C7] font-bold hover:underline">
                                     Support
                                 </Link>
                             </div>

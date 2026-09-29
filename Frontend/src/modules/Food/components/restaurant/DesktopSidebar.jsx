@@ -164,11 +164,11 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
       {/* Header */}
       <div className={`p-5 flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0 relative group">
+          <div className="w-10 h-10 rounded-xl bg-[#10335D]/10 flex items-center justify-center shrink-0 relative group">
             {logoUrl ? (
               <img src={logoUrl} alt="Logo" className="w-full h-full object-contain rounded-xl p-1" />
             ) : (
-              <Store className="w-5 h-5 text-green-600" />
+              <Store className="w-5 h-5 text-[#10335D]" />
             )}
             {isCollapsed && (
               <button
@@ -231,12 +231,12 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
                       title={isCollapsed ? item.name : undefined}
                       className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 ${
                         isActive
-                          ? "bg-green-50 text-green-700"
-                          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                          ? "bg-[#10335D]/10 text-[#10335D] font-bold"
+                          : "text-gray-600 hover:bg-[#10335D]/5 hover:text-[#10335D]"
                       } ${isCollapsed ? "justify-center" : ""}`}
                     >
                       <div className="flex items-center gap-3">
-                        <item.icon className={`w-5 h-5 ${isActive ? "text-green-600" : "text-gray-400"}`} />
+                        <item.icon className={`w-5 h-5 ${isActive ? "text-[#10335D]" : "text-gray-400"}`} />
                         {!isCollapsed && (
                           <span className={`text-sm ${isActive ? "font-semibold" : "font-medium"}`}>
                             {item.name}
@@ -264,7 +264,7 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
           onClick={() => setProfileOpen(true)}
           className="flex w-full items-center gap-3 rounded-xl bg-gray-50 p-2 mb-3 text-left transition-colors hover:bg-gray-100"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-green-600 text-sm font-bold text-white">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#10335D] text-sm font-bold text-white">
             {ownerImage ? (
               <img src={ownerImage} alt={ownerName} className="h-full w-full object-cover" />
             ) : (

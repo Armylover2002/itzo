@@ -114,6 +114,10 @@ export default function UserLayout({ children }) {
 
   useEffect(() => {
     setAppType('user')
+    document.documentElement.classList.add("user-theme-scope")
+    return () => {
+      document.documentElement.classList.remove("user-theme-scope")
+    }
   }, [])
 
   useEffect(() => {
@@ -172,10 +176,10 @@ export default function UserLayout({ children }) {
 
   const footerColor = location.pathname.startsWith("/quick")
     ? "#ea580c"
-    : "#FE5502"
+    : "#FB4F01"
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f5] dark:bg-[#0a0a0a] transition-colors duration-200">
+    <div className="user-theme-scope min-h-screen flex flex-col bg-[#f5f5f5] dark:bg-[#0a0a0a] transition-colors duration-200">
       <CartProvider>
         <ProfileProvider>
           <OrdersProvider>

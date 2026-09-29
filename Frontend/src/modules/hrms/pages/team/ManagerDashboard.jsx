@@ -85,15 +85,15 @@ export default function ManagerDashboard() {
     if (loading) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
 
     const statCards = [
-        { title: 'Pending Leaves', value: stats?.pendingLeaves || 0, icon: CalendarDays, color: 'bg-[#6412c6]', link: '/hrms/team/leaves' },
+        { title: 'Pending Leaves', value: stats?.pendingLeaves || 0, icon: CalendarDays, color: 'bg-[#6413C7]', link: '/hrms/team/leaves' },
         { title: 'Pending Expenses', value: stats?.pendingExpenses || 0, icon: Receipt, color: 'bg-emerald-500', link: '/hrms/team/expenses' },
-        { title: 'Reports Today', value: stats?.reports?.todayCount || 0, icon: ClipboardList, color: 'bg-[#6412c6]', link: '/hrms/team/reports' },
+        { title: 'Reports Today', value: stats?.reports?.todayCount || 0, icon: ClipboardList, color: 'bg-[#6413C7]', link: '/hrms/team/reports' },
     ];
 
     return (

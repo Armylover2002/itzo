@@ -56,63 +56,69 @@ const DeliveryV2Router = () => {
     };
 
     applyDeliveryFavicon();
-    return subscribeBusinessSettings(() => applyDeliveryFavicon());
+    document.documentElement.classList.add("delivery-theme-scope");
+    return () => {
+      document.documentElement.classList.remove("delivery-theme-scope");
+      subscribeBusinessSettings(() => applyDeliveryFavicon());
+    };
   }, []);
 
   return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        {/* Auth routes — redirect to home if already logged in */}
-        <Route path="welcome" element={<AuthPageGuard module="delivery" home="/food/delivery"><Welcome /></AuthPageGuard>} />
-        <Route path="login" element={<AuthPageGuard module="delivery" home="/food/delivery"><SignIn /></AuthPageGuard>} />
-        {/* Canonical auth path used by RouteGuard */}
-        <Route path="auth/login" element={<AuthPageGuard module="delivery" home="/food/delivery"><SignIn /></AuthPageGuard>} />
-        <Route path="otp" element={<AuthPageGuard module="delivery" home="/food/delivery"><OTP /></AuthPageGuard>} />
-        <Route path="signup" element={<Navigate to={`/food/delivery/login${location.search}`} replace />} />
-        <Route path="signup/details" element={<SignupStep1 />} />
-        <Route path="signup/documents" element={<SignupStep2 />} />
-        <Route path="verification" element={<PendingVerification />} />
-        <Route path="onboarding/rejected" element={<RejectedOnboarding />} />
-        <Route path="terms" element={<TermsAndConditionsV2 />} />
-        <Route path="privacy" element={<PrivacyPolicyV2 />} />
-        <Route path="support" element={<SupportInfoV2 />} />
+    <div className="delivery-theme-scope min-h-screen">
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          {/* Auth routes — redirect to home if already logged in */}
+          <Route path="welcome" element={<AuthPageGuard module="delivery" home="/food/delivery"><Welcome /></AuthPageGuard>} />
+          <Route path="login" element={<AuthPageGuard module="delivery" home="/food/delivery"><SignIn /></AuthPageGuard>} />
+          {/* Canonical auth path used by RouteGuard */}
+          <Route path="auth/login" element={<AuthPageGuard module="delivery" home="/food/delivery"><SignIn /></AuthPageGuard>} />
+          <Route path="otp" element={<AuthPageGuard module="delivery" home="/food/delivery"><OTP /></AuthPageGuard>} />
+          <Route path="signup" element={<Navigate to={`/food/delivery/login${location.search}`} replace />} />
+          <Route path="signup/details" element={<SignupStep1 />} />
+          <Route path="signup/documents" element={<SignupStep2 />} />
+          <Route path="verification" element={<PendingVerification />} />
+          <Route path="onboarding/rejected" element={<RejectedOnboarding />} />
+          <Route path="terms" element={<TermsAndConditionsV2 />} />
+          <Route path="privacy" element={<PrivacyPolicyV2 />} />
+          <Route path="support" element={<SupportInfoV2 />} />
 
-        {/* Protected routes share one shell so tab switches do not remount sockets. */}
-        <Route element={<ProtectedRoute><DeliveryShell /></ProtectedRoute>}>
-          <Route path="/" element={<DeliveryHomeV2 tab="feed" />} />
-          <Route path="/feed" element={<DeliveryHomeV2 tab="feed" />} />
-          <Route path="/pocket" element={<DeliveryHomeV2 tab="pocket" />} />
-          <Route path="/history" element={<DeliveryHomeV2 tab="history" />} />
-          <Route path="/profile" element={<DeliveryHomeV2 tab="profile" />} />
-          <Route path="/notifications" element={<NotificationsV2 />} />
-          <Route path="/profile/details" element={<ProfileDetailsV2 />} />
-          <Route path="/profile/bank" element={<ProfileBankV2 />} />
-          <Route path="/profile/documents" element={<ProfileDocsV2 />} />
-          <Route path="/subscription" element={<SubscriptionV2 />} />
+          {/* Protected routes share one shell so tab switches do not remount sockets. */}
+          <Route element={<ProtectedRoute><DeliveryShell /></ProtectedRoute>}>
+            <Route path="/" element={<DeliveryHomeV2 tab="feed" />} />
+            <Route path="/feed" element={<DeliveryHomeV2 tab="feed" />} />
+            <Route path="/pocket" element={<DeliveryHomeV2 tab="pocket" />} />
+            <Route path="/history" element={<DeliveryHomeV2 tab="history" />} />
+            <Route path="/profile" element={<DeliveryHomeV2 tab="profile" />} />
+            <Route path="/notifications" element={<NotificationsV2 />} />
+            <Route path="/profile/details" element={<ProfileDetailsV2 />} />
+            <Route path="/profile/bank" element={<ProfileBankV2 />} />
+            <Route path="/profile/documents" element={<ProfileDocsV2 />} />
+            <Route path="/subscription" element={<SubscriptionV2 />} />
 
-          {/* Support Systems */}
-          <Route path="/help/tickets" element={<SupportTicketsV2 />} />
-          <Route path="/help/tickets/create" element={<CreateSupportTicketV2 />} />
-          <Route path="/help/tickets/:ticketId" element={<ViewSupportTicketV2 />} />
-          <Route path="/help/id-card" element={<ShowIdCardV2 />} />
-          <Route path="/profile/terms" element={<TermsAndConditionsV2 />} />
-          <Route path="/profile/privacy" element={<PrivacyPolicyV2 />} />
-          <Route path="/profile/support" element={<SupportInfoV2 />} />
+            {/* Support Systems */}
+            <Route path="/help/tickets" element={<SupportTicketsV2 />} />
+            <Route path="/help/tickets/create" element={<CreateSupportTicketV2 />} />
+            <Route path="/help/tickets/:ticketId" element={<ViewSupportTicketV2 />} />
+            <Route path="/help/id-card" element={<ShowIdCardV2 />} />
+            <Route path="/profile/terms" element={<TermsAndConditionsV2 />} />
+            <Route path="/profile/privacy" element={<PrivacyPolicyV2 />} />
+            <Route path="/profile/support" element={<SupportInfoV2 />} />
 
-          {/* Financial Deep-Pages */}
-          <Route path="/pocket/payout" element={<PayoutV2 />} />
-          <Route path="/pocket/statement" element={<PocketStatementV2 />} />
-          <Route path="/pocket/deductions" element={<DeductionStatementV2 />} />
-          <Route path="/pocket/limit-settlement" element={<LimitSettlementV2 />} />
-          <Route path="/pocket/balance" element={<PocketBalanceV2 />} />
-          <Route path="/pocket/cash-limit" element={<CashLimitInfoV2 />} />
-          <Route path="/pocket/details" element={<PocketDetailsV2 />} />
-        </Route>
+            {/* Financial Deep-Pages */}
+            <Route path="/pocket/payout" element={<PayoutV2 />} />
+            <Route path="/pocket/statement" element={<PocketStatementV2 />} />
+            <Route path="/pocket/deductions" element={<DeductionStatementV2 />} />
+            <Route path="/pocket/limit-settlement" element={<LimitSettlementV2 />} />
+            <Route path="/pocket/balance" element={<PocketBalanceV2 />} />
+            <Route path="/pocket/cash-limit" element={<CashLimitInfoV2 />} />
+            <Route path="/pocket/details" element={<PocketDetailsV2 />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/food/delivery" replace />} />
-      </Routes>
-    </Suspense>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/food/delivery" replace />} />
+        </Routes>
+      </Suspense>
+    </div>
   );
 };
 

@@ -120,7 +120,7 @@ const Navbar = React.memo(function Navbar() {
               onClick={() => navigate('/user/auth/signup')}
               className={`ml-1 text-[15px] font-bold px-5 py-2.5 rounded-full shadow-sm transition-colors ${
                 isScrolled
-                  ? 'bg-[#FE5502] text-white hover:bg-[#e04a00]'
+                  ? 'bg-[#FB4F01] text-white hover:bg-[#e04a00]'
                   : 'bg-white text-slate-900 hover:bg-white/90'
               }`}
             >
@@ -193,7 +193,7 @@ const Navbar = React.memo(function Navbar() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 }}
                 onClick={() => { setMobileMenuOpen(false); navigate('/user/auth/signup'); }}
-                className="text-left text-base font-bold py-3 text-[#FE5502]"
+                className="text-left text-base font-bold py-3 text-[#FB4F01]"
               >
                 Sign up
               </motion.button>

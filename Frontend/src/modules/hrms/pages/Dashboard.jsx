@@ -36,7 +36,7 @@ const WorkingTimer = ({ attendance, isCheckedIn, isDone }) => {
             ) : isCheckedIn ? (
                 <span className="text-lg font-bold text-[#550fa8]">{elapsed}</span>
             ) : (
-                <Timer className="w-8 h-8 text-[#6412c6]" />
+                <Timer className="w-8 h-8 text-[#6413C7]" />
             )}
         </div>
     );
@@ -280,7 +280,7 @@ export default function Dashboard() {
     const firstName = user?.name?.split(' ')[0] || 'Employee';
 
     if (loading) {
-        return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
+        return <div className="flex items-center justify-center h-96"><Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" /></div>;
     }
 
     return (
@@ -289,7 +289,7 @@ export default function Dashboard() {
             {showReportPopup && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="bg-gradient-to-r from-amber-500 to-[#6412c6] px-6 py-5">
+                        <div className="bg-gradient-to-r from-amber-500 to-[#6413C7] px-6 py-5">
                             <div className="flex items-center gap-3 text-white">
                                 <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
                                     <ClipboardList className="w-6 h-6" />
@@ -312,7 +312,7 @@ export default function Dashboard() {
                         <div className="px-6 pb-5 flex flex-col gap-2.5">
                             <button
                                 onClick={() => { setShowReportPopup(false); navigate('/hrms/reports/create'); }}
-                                className="w-full h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/20 transition-all flex items-center justify-center gap-2"
+                                className="w-full h-11 bg-[#6413C7] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6413C7]/20 transition-all flex items-center justify-center gap-2"
                             >
                                 <ClipboardList className="w-4 h-4" /> Submit Report Now
                             </button>
@@ -333,7 +333,7 @@ export default function Dashboard() {
                 </div>
             )}
             {/* Welcome Banner */}
-            <div className="bg-gradient-to-r from-[#6412c6] to-amber-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-[#6412c6]/15">
+            <div className="bg-gradient-to-r from-[#6413C7] to-amber-500 rounded-2xl p-6 sm:p-8 text-white shadow-xl shadow-[#6413C7]/15">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold">Welcome back, {firstName}!</h1>
@@ -360,7 +360,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {/* Check-in Card */}
                 <div className={`bg-white rounded-2xl border shadow-sm overflow-hidden ${isDone ? 'border-slate-200' : isCheckedIn ? 'border-[#c1a0e8]' : 'border-[#d8c4f1]'}`}>
-                    <div className={`h-1 ${isDone ? 'bg-slate-300' : 'bg-gradient-to-r from-[#6412c6] to-amber-500'}`} />
+                    <div className={`h-1 ${isDone ? 'bg-slate-300' : 'bg-gradient-to-r from-[#6413C7] to-amber-500'}`} />
                     <div className="p-6 text-center">
                         <WorkingTimer attendance={attendance} isCheckedIn={isCheckedIn} isDone={isDone} />
                         <h3 className="font-bold text-slate-900 text-lg mb-1">
@@ -395,7 +395,7 @@ export default function Dashboard() {
 
                         {/* Location Status Indicator */}
                         {locationStatus === 'fetching' && (
-                            <div className="flex items-center justify-center gap-2 text-xs text-[#6412c6] mb-3">
+                            <div className="flex items-center justify-center gap-2 text-xs text-[#6413C7] mb-3">
                                 <Loader2 className="w-3 h-3 animate-spin" /> Verifying your location...
                             </div>
                         )}
@@ -442,14 +442,14 @@ export default function Dashboard() {
 
                         {!attendance?.checkInTime && (
                             <button onClick={handleCheckIn} disabled={actionLoading}
-                                className="w-full h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                className="w-full h-11 bg-[#6413C7] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6413C7]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
                                 {actionLoading ? 'Verifying Location...' : 'Check In'}
                             </button>
                         )}
                         {isCheckedIn && (
                             <button onClick={handleCheckOut} disabled={actionLoading}
-                                className="w-full h-11 bg-[#6412c6] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                className="w-full h-11 bg-[#6413C7] hover:bg-[#550fa8] text-white font-semibold rounded-xl shadow-lg shadow-[#6413C7]/20 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
                                 {actionLoading ? 'Verifying Location...' : 'Check Out'}
                             </button>
@@ -459,7 +459,7 @@ export default function Dashboard() {
 
                 {/* Leave Balance */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="h-1 bg-gradient-to-r from-[#6412c6] to-amber-500" />
+                    <div className="h-1 bg-gradient-to-r from-[#6413C7] to-amber-500" />
                     <div className="p-6">
                         <div className="flex items-center gap-3 mb-5">
                             <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
@@ -475,7 +475,7 @@ export default function Dashboard() {
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-slate-500">Used This Month</span>
-                                    <span className="font-bold text-[#6412c6]">{leaveBalance.monthly?.used || 0}</span>
+                                    <span className="font-bold text-[#6413C7]">{leaveBalance.monthly?.used || 0}</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-slate-100">
                                     <span className="text-sm font-medium text-slate-700">Remaining</span>
@@ -490,7 +490,7 @@ export default function Dashboard() {
 
                 {/* Quick Actions */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden md:col-span-2 xl:col-span-1">
-                    <div className="h-1 bg-gradient-to-r from-[#6412c6] to-amber-500" />
+                    <div className="h-1 bg-gradient-to-r from-[#6413C7] to-amber-500" />
                     <div className="p-6">
                         <div className="flex items-center gap-3 mb-5">
                             <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">

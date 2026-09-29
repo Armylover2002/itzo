@@ -43,7 +43,7 @@ export default function Documents() {
                     onClick={() => setActiveTab('Offer Letter')}
                     className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
                         activeTab === 'Offer Letter'
-                            ? 'border-[#6412c6] text-[#550fa8]'
+                            ? 'border-[#6413C7] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -53,7 +53,7 @@ export default function Documents() {
                     onClick={() => setActiveTab('Other Documents')}
                     className={`px-4 py-3 font-medium text-sm transition-colors border-b-2 ${
                         activeTab === 'Other Documents'
-                            ? 'border-[#6412c6] text-[#550fa8]'
+                            ? 'border-[#6413C7] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -143,7 +143,7 @@ export default function Documents() {
                                         </div>
                                         <div className="p-4">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <FileText className="w-4 h-4 text-[#6412c6] shrink-0" />
+                                                <FileText className="w-4 h-4 text-[#6413C7] shrink-0" />
                                                 <h3 className="font-semibold text-slate-900 text-sm truncate">{doc.name}</h3>
                                             </div>
                                             <p className="text-xs text-slate-400 pl-6">

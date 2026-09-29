@@ -110,7 +110,7 @@ export default function SupportCreate() {
     if (settingsLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -232,7 +232,7 @@ export default function SupportCreate() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="flex items-center gap-2 bg-[#6412c6] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#550fa8] transition-colors shadow-sm shadow-[#6412c6]/20 disabled:opacity-70"
+                        className="flex items-center gap-2 bg-[#6413C7] text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-[#550fa8] transition-colors shadow-sm shadow-[#6413C7]/20 disabled:opacity-70"
                     >
                         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                         Submit Request

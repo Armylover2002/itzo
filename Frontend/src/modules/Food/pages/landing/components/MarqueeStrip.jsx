@@ -23,7 +23,7 @@ const MarqueeStrip = React.memo(function MarqueeStrip() {
             className="flex items-center gap-2 px-6 text-white/70 text-base md:text-lg font-semibold whitespace-nowrap"
           >
             {item}
-            <span className="text-[#FE5502] ml-6">•</span>
+            <span className="text-[#FB4F01] ml-6">•</span>
           </span>
         ))}
       </div>

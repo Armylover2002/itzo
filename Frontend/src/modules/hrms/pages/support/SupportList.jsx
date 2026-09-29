@@ -53,7 +53,7 @@ export default function SupportList() {
             case 'Low': return 'text-slate-500 bg-slate-100';
             case 'Urgent': return 'text-red-600 bg-red-100';
             case 'High': return 'text-amber-600 bg-amber-100';
-            case 'Medium': return 'text-[#6412c6] bg-[#f0e7f9]';
+            case 'Medium': return 'text-[#6413C7] bg-[#f0e7f9]';
             default: return 'text-slate-500 bg-slate-100';
         }
     };
@@ -77,7 +77,7 @@ export default function SupportList() {
                 </div>
                 <button
                     onClick={() => navigate('/hrms/support/create')}
-                    className="flex items-center gap-2 bg-[#6412c6] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#550fa8] transition-colors shadow-sm"
+                    className="flex items-center gap-2 bg-[#6413C7] text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-[#550fa8] transition-colors shadow-sm"
                 >
                     <Plus className="w-4 h-4" />
                     Raise Request
@@ -92,7 +92,7 @@ export default function SupportList() {
                         onClick={() => setStatusFilter(status)}
                         className={`px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-colors ${
                             statusFilter === status
-                                ? 'bg-[#6412c6] text-white shadow-md shadow-[#6412c6]/20'
+                                ? 'bg-[#6413C7] text-white shadow-md shadow-[#6413C7]/20'
                                 : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                         }`}
                     >
@@ -105,7 +105,7 @@ export default function SupportList() {
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                 {loading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
                     </div>
                 ) : tickets.length === 0 ? (
                     <div className="text-center py-20 px-6">

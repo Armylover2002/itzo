@@ -188,7 +188,7 @@ export default function DeliverySignup() {
         {/* Orange half-circle text block attached to the left with animation */}
         <div className="absolute inset-0 flex items-center text-white pointer-events-none">
           <div
-            className="bg-red-600/80 rounded-r-full py-10 xl:py-20 pl-10 xl:pl-14 pr-10 xl:pr-20 max-w-[70%] shadow-xl backdrop-blur-[1px]"
+            className="bg-[#F35B1C]/85 rounded-r-full py-10 xl:py-20 pl-10 xl:pl-14 pr-10 xl:pr-20 max-w-[70%] shadow-xl backdrop-blur-[1px]"
             style={{ animation: "slideInLeft 0.8s ease-out both" }}
           >
             <h1 className="text-3xl xl:text-4xl font-extrabold mb-4 tracking-wide leading-tight">
@@ -211,11 +211,11 @@ export default function DeliverySignup() {
             className="flex items-center gap-3"
             style={{ animation: "fadeInDown 0.7s ease-out both" }}
           >
-            <div className="h-11 w-11 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-lg">
+            <div className="h-11 w-11 rounded-xl bg-[#F35B1C] flex items-center justify-center text-white shadow-lg">
               <Truck className="h-6 w-6" />
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-2xl font-bold tracking-wide text-red-600">
+              <span className="text-2xl font-bold tracking-wide text-[#F35B1C]">
                 {companyName}
               </span>
               <span className="text-xs font-medium text-gray-500">
@@ -270,7 +270,7 @@ export default function DeliverySignup() {
                   placeholder="Enter your full name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`h-11 pl-9 border-gray-300 rounded-md shadow-sm focus-visible:ring-red-600 focus-visible:ring-2 transition-colors placeholder:text-gray-400 ${errors.name ? "border-red-500" : ""}`}
+                  className={`h-11 pl-9 border-gray-300 rounded-md shadow-sm focus-visible:ring-[#F35B1C] focus-visible:ring-2 transition-colors placeholder:text-gray-400 ${errors.name ? "border-red-500" : ""}`}
                   required
                 />
               </div>
@@ -308,7 +308,7 @@ export default function DeliverySignup() {
                       placeholder="Enter 10-digit number"
                       value={formData.phone}
                       onChange={handleChange}
-                      className={`h-11 pl-9 border-gray-300 rounded-md shadow-sm focus-visible:ring-red-600 focus-visible:ring-2 transition-colors placeholder:text-gray-400 ${errors.phone ? "border-red-500" : ""}`}
+                      className={`h-11 pl-9 border-gray-300 rounded-md shadow-sm focus-visible:ring-[#F35B1C] focus-visible:ring-2 transition-colors placeholder:text-gray-400 ${errors.phone ? "border-red-500" : ""}`}
                       required
                     />
                   </div>
@@ -325,7 +325,7 @@ export default function DeliverySignup() {
             {/* Sign up button */}
             <Button
               type="submit"
-              className="mt-2 h-11 w-full bg-red-600 hover:bg-red-600/90 text-white text-base font-semibold rounded-md shadow-md transition-colors"
+              className="mt-2 h-11 w-full bg-[#F35B1C] hover:bg-[#D74C12] text-white text-base font-semibold rounded-md shadow-md transition-colors"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -344,14 +344,14 @@ export default function DeliverySignup() {
               <span className="text-gray-600">Already have an account? </span>
               <Link
                 to="/food/delivery/login"
-                className="text-red-600 hover:underline font-medium"
+                className="text-[#F35B1C] hover:underline font-medium"
               >
                 Login
               </Link>
             </p>
             <p className="text-xs text-gray-500">
               By continuing, you agree to our{" "}
-              <Link to="/food/delivery/terms" className="text-red-600 hover:underline">
+              <Link to="/food/delivery/terms" className="text-[#F35B1C] hover:underline">
                 Terms and Conditions
               </Link>
             </p>

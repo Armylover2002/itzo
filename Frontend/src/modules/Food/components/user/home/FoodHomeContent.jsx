@@ -351,8 +351,8 @@ function FoodHomeContent({
                       <p className="truncate text-sm font-semibold tracking-tight text-gray-900 dark:text-white">
                         {restaurant.name}
                       </p>
-                      <p className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#FE5502]">
-                        <Flame className="h-3.5 w-3.5 fill-[#FE5502]" />
+                      <p className="mt-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#FB4F01]">
+                        <Flame className="h-3.5 w-3.5 fill-[#FB4F01]" />
                         Near & Fast
                       </p>
                     </div>

@@ -36,11 +36,11 @@ export default function BottomNavigation() {
 
   const TabIcon = (active, Outline, Solid) => {
     const Icon = active ? Solid : Outline
-    return <Icon className={iconClass} />
+    return <Icon className={`${iconClass} ${active ? "text-[#F35B1C]" : ""}`} />
   }
 
   const TabLabel = (active, label) => (
-    <span className={`text-[10px] font-medium ${active ? "text-black" : "text-gray-500"}`}>
+    <span className={`text-[10px] font-medium ${active ? "text-[#F35B1C]" : "text-gray-500"}`}>
       {label}
     </span>
   )
@@ -124,7 +124,7 @@ export default function BottomNavigation() {
               src={profileImage}
               alt="Profile"
               className={`w-7 h-7 rounded-full border-2 object-cover ${
-                isActive("/delivery/profile") ? "border-black" : "border-gray-300"
+                isActive("/delivery/profile") ? "border-[#F35B1C]" : "border-gray-300"
               }`}
               onError={() => {
                 setImageError(true)
@@ -132,7 +132,7 @@ export default function BottomNavigation() {
             />
           ) : (
             <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center bg-gray-200 ${
-              isActive("/delivery/profile") ? "border-black" : "border-gray-300"
+              isActive("/delivery/profile") ? "border-[#F35B1C]" : "border-gray-300"
             }`}>
               <User className="w-4 h-4 text-gray-500" />
             </div>

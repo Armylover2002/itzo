@@ -111,7 +111,7 @@ function LiveFleetOverview() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-[#f7f3fc] flex items-center justify-center">
-                        <MapPin className="w-5 h-5 text-[#6412c6]" />
+                        <MapPin className="w-5 h-5 text-[#6413C7]" />
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">Live Tracking</h1>
@@ -128,7 +128,7 @@ function LiveFleetOverview() {
                 <button
                     onClick={() => fetchLiveLocations()}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] hover:bg-[#550fa8] disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#6413C7] hover:bg-[#550fa8] disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
                 >
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
@@ -175,7 +175,7 @@ function LiveFleetOverview() {
             {/* Employee List */}
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                    <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
                 </div>
             ) : liveData.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-2xl p-16 text-center shadow-sm">
@@ -388,7 +388,7 @@ function EmployeeTrackMap({ employeeId }) {
                             type="date"
                             value={date}
                             onChange={e => setDate(e.target.value)}
-                            className="h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-slate-50"
+                            className="h-10 pl-10 pr-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30 bg-slate-50"
                         />
                         <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     </div>
@@ -405,7 +405,7 @@ function EmployeeTrackMap({ employeeId }) {
                 {loading && !polling && (
                     <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/50 backdrop-blur-sm">
                         <div className="bg-white p-4 rounded-xl shadow-lg flex items-center gap-3">
-                            <Loader2 className="w-5 h-5 animate-spin text-[#6412c6]" />
+                            <Loader2 className="w-5 h-5 animate-spin text-[#6413C7]" />
                             <span className="font-medium text-slate-700">Loading tracking data...</span>
                         </div>
                     </div>
@@ -413,7 +413,7 @@ function EmployeeTrackMap({ employeeId }) {
 
                 {!isLoaded ? (
                     <div className="w-full h-full flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                        <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
                     </div>
                 ) : points.length === 0 && !loading ? (
                     <div className="w-full h-full flex items-center justify-center bg-slate-50">
@@ -427,7 +427,7 @@ function EmployeeTrackMap({ employeeId }) {
                             </p>
                             <a
                                 href={backPath}
-                                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-[#6412c6] text-white rounded-xl text-sm font-semibold hover:bg-[#550fa8] transition-colors"
+                                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-[#6413C7] text-white rounded-xl text-sm font-semibold hover:bg-[#550fa8] transition-colors"
                             >
                                 <ArrowLeft className="w-4 h-4" /> Back to Fleet Overview
                             </a>

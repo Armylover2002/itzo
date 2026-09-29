@@ -57,7 +57,7 @@ export default function ReportList() {
                 </div>
                 <button
                     onClick={() => navigate('/hrms/reports/create')}
-                    className="w-full sm:w-auto bg-[#6412c6] hover:bg-[#550fa8] text-white px-4 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto bg-[#6413C7] hover:bg-[#550fa8] text-white px-4 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#6413C7]/20 transition-all flex items-center justify-center gap-2"
                 >
                     <Plus className="w-5 h-5" />
                     Submit Report
@@ -100,7 +100,7 @@ export default function ReportList() {
                             {loading ? (
                                 <tr>
                                     <td colSpan="4" className="px-5 py-10 text-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6] mx-auto" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#6413C7] mx-auto" />
                                     </td>
                                 </tr>
                             ) : reports.length === 0 ? (

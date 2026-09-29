@@ -118,7 +118,7 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
         <motion.div
           animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
           transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full bg-[#FE5502]/25 blur-[110px]"
+          className="absolute -top-32 -left-24 w-[420px] h-[420px] rounded-full bg-[#FB4F01]/25 blur-[110px]"
         />
         <motion.div
           animate={{ x: [0, -25, 0], y: [0, -15, 0] }}
@@ -143,8 +143,8 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
               style={{ rotate }}
               className="flex items-center gap-3 rounded-2xl bg-white/95 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.35)] pl-3 pr-5 py-3"
             >
-              <div className="w-9 h-9 rounded-full bg-[#FE5502]/10 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-[18px] h-[18px] text-[#FE5502]" strokeWidth={2.25} />
+              <div className="w-9 h-9 rounded-full bg-[#FB4F01]/10 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-[18px] h-[18px] text-[#FB4F01]" strokeWidth={2.25} />
               </div>
               <span className="text-slate-800 text-sm font-bold whitespace-nowrap">{label}</span>
             </motion.div>
@@ -166,7 +166,7 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
             variants={itemVariants}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-1.5 text-white/90 text-sm font-semibold tracking-wide"
           >
-            <Sparkles className="w-4 h-4 text-[#FE5502]" />
+            <Sparkles className="w-4 h-4 text-[#FB4F01]" />
             India&apos;s favourite way to order food
           </motion.div>
 
@@ -210,7 +210,7 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
                 whileHover={{ scale: 1.04, boxShadow: '0 12px 30px rgba(255,120,0,0.45)' }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => navigate('/food/user')}
-                className="px-8 py-3.5 rounded-full bg-[#FE5502] text-white text-lg font-semibold shadow-[0_8px_24px_rgba(255,120,0,0.35)] transition-colors hover:bg-[#e56800]"
+                className="px-8 py-3.5 rounded-full bg-[#FB4F01] text-white text-lg font-semibold shadow-[0_8px_24px_rgba(255,120,0,0.35)] transition-colors hover:bg-[#e56800]"
               >
                 Order food now
               </motion.button>

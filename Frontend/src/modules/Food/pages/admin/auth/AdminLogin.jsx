@@ -192,7 +192,7 @@ export default function AdminLogin() {
             }}
           />
         ) : (
-          <span className="text-2xl font-bold text-[#6412C6]">
+          <span className="text-2xl font-bold text-[#6413C7]">
             {companyName || "ItzoFood"}
           </span>
         )}
@@ -220,7 +220,7 @@ export default function AdminLogin() {
                 onValueChange={setSelectedRoleId}
                 disabled={isLoading}
               >
-                <SelectTrigger className="h-12 text-base w-full border-gray-300 rounded-sm focus:ring-[#6412C6] focus:border-[#6412C6] text-gray-500">
+                <SelectTrigger className="h-12 text-base w-full border-gray-300 rounded-sm focus:ring-[#6413C7] focus:border-[#6413C7] text-gray-500">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -246,10 +246,10 @@ export default function AdminLogin() {
                 autoComplete="off"
                 required
                 maxLength={activeTab === 'email' ? 100 : 20}
-                className="h-12 pl-4 pr-12 text-base border-gray-300 rounded-sm focus-visible:ring-1 focus-visible:ring-[#6412C6] focus-visible:border-[#6412C6] placeholder:text-gray-400"
+                className="h-12 pl-4 pr-12 text-base border-gray-300 rounded-sm focus-visible:ring-1 focus-visible:ring-[#6413C7] focus-visible:border-[#6413C7] placeholder:text-gray-400"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <UserCircle className="h-5 w-5 text-[#6412C6]" fill="currentColor" strokeWidth={1} />
+                <UserCircle className="h-5 w-5 text-[#6413C7]" fill="currentColor" strokeWidth={1} />
               </div>
             </div>
 
@@ -265,7 +265,7 @@ export default function AdminLogin() {
                 autoComplete="new-password"
                 required
                 maxLength={50}
-                className="h-12 pl-4 pr-12 text-base border-gray-300 rounded-sm focus-visible:ring-1 focus-visible:ring-[#6412C6] focus-visible:border-[#6412C6] placeholder:text-gray-400 [&::-ms-reveal]:hidden [&::-webkit-password-reveal-button]:hidden"
+                className="h-12 pl-4 pr-12 text-base border-gray-300 rounded-sm focus-visible:ring-1 focus-visible:ring-[#6413C7] focus-visible:border-[#6413C7] placeholder:text-gray-400 [&::-ms-reveal]:hidden [&::-webkit-password-reveal-button]:hidden"
               />
               <button
                 type="button"
@@ -274,9 +274,9 @@ export default function AdminLogin() {
                 disabled={isLoading}
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-[#6412C6]" />
+                  <EyeOff className="h-5 w-5 text-[#6413C7]" />
                 ) : (
-                  <Eye className="h-5 w-5 text-[#6412C6]" />
+                  <Eye className="h-5 w-5 text-[#6413C7]" />
                 )}
               </button>
             </div>
@@ -285,7 +285,7 @@ export default function AdminLogin() {
             <div className="flex items-start justify-between pt-2">
               <Button
                 type="submit"
-                className="h-10 px-8 bg-[#6412C6] hover:bg-[#4E0E9A] text-white rounded-sm font-medium transition-colors"
+                className="h-10 px-8 bg-[#6413C7] hover:bg-[#4E0E9A] text-white rounded-sm font-medium transition-colors"
                 disabled={isLoading}
               >
                 {isLoading ? "Wait..." : "Login"}
@@ -295,7 +295,7 @@ export default function AdminLogin() {
                 <button
                   type="button"
                   onClick={() => navigate("/ecs/forgot-password")}
-                  className="text-[15px] text-[#6412C6] hover:underline focus:outline-none"
+                  className="text-[15px] text-[#6413C7] hover:underline focus:outline-none"
                   disabled={isLoading}
                 >
                   Forgot Password

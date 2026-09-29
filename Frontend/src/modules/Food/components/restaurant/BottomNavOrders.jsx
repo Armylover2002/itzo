@@ -72,14 +72,14 @@ export default function BottomNavOrders() {
                   aria-current={isActive ? "page" : undefined}
                   className={`flex flex-1 flex-col items-center gap-1.5 px-2 sm:px-3 py-2 transition-all duration-200 relative w-full ${
                     isActive
-                      ? "text-green-600 dark:text-green-500"
+                      ? "text-[#10335D]"
                       : "text-gray-600 dark:text-gray-400"
                   }`}
                 >
                   <Icon
                     className={`h-5 w-5 ${
                       isActive
-                        ? "text-green-600 dark:text-green-500 fill-green-600 dark:fill-green-500"
+                        ? "text-[#10335D] fill-[#10335D]"
                         : "text-gray-600 dark:text-gray-400"
                     }`}
                     strokeWidth={isActive ? 2 : 2}
@@ -87,14 +87,14 @@ export default function BottomNavOrders() {
                   <span
                     className={`text-xs sm:text-sm font-medium ${
                       isActive
-                        ? "text-green-600 dark:text-green-500 font-semibold"
+                        ? "text-[#10335D] font-semibold"
                         : "text-gray-600 dark:text-gray-400"
                     }`}
                   >
                     {tab.label}
                   </span>
                   {isActive && (
-                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-green-600 dark:bg-green-500 rounded-b-full" />
+                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#10335D] rounded-b-full" />
                   )}
                 </button>
                 {!isLast && (

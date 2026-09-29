@@ -126,7 +126,7 @@ const CTASection = React.memo(function CTASection() {
                 <motion.div
                   animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.04, 1] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -inset-1 rounded-2xl bg-[#FE5502]/20 -z-10 blur-md"
+                  className="absolute -inset-1 rounded-2xl bg-[#FB4F01]/20 -z-10 blur-md"
                 />
                 <img
                   src={qrCodeImg}

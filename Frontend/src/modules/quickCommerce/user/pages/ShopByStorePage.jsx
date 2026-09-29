@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 const FALLBACK_STORE_IMAGE =
   "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?w=400&h=400&fit=crop";
-const ACCENT = "#FE5502";
+const ACCENT = "#FB4F01";
 
 const StoreRailCard = React.memo(function StoreRailCard({
   store,

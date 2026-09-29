@@ -45,12 +45,17 @@ export default function HrmsEmployeeApp() {
             const freshFav = getAppFavicon('admin');
             if (freshFav) updateBrowserFavicon(freshFav);
         }).catch(() => {});
+
+        document.documentElement.classList.add("hrms-theme");
+        return () => {
+            document.documentElement.classList.remove("hrms-theme");
+        };
     }, []);
 
     return (
         <div className="hrms-theme">
         <HrmsSettingsProvider>
-            <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-8 h-8 animate-spin border-4 border-[#6412C6] border-t-transparent rounded-full" /></div>}>
+            <Suspense fallback={<div className="flex h-screen items-center justify-center"><div className="w-8 h-8 animate-spin border-4 border-[#6413C7] border-t-transparent rounded-full" /></div>}>
                 <Routes>
                     {/* Public Routes */}
                     <Route path="login" element={<Login />} />

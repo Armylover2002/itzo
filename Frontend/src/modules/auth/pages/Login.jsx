@@ -776,7 +776,7 @@ export default function UnifiedOTPFastLogin() {
                 type="button"
                 onClick={handleRecoveryRequest}
                 disabled={isRecoveryLoading}
-                className="flex-1 h-12 bg-[#6412C6] hover:bg-[#550fa8] text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 h-12 bg-[#6413C7] hover:bg-[#550fa8] text-white font-semibold rounded-xl transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isRecoveryLoading ? (<><Loader2 className="w-5 h-5 animate-spin" /> Submitting...</>) : "Request Recovery"}
               </button>

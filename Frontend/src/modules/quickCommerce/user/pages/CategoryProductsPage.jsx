@@ -13,7 +13,7 @@ import { useLocation as useAppLocation } from '../context/LocationContext';
 import ZoneServiceUnavailable from '../components/shared/ZoneServiceUnavailable';
 import { getQuickCategoryPath, getQuickCategoriesPath } from '../utils/routes';
 
-const FALLBACK_HEADER_COLOR = "#FE5502";
+const FALLBACK_HEADER_COLOR = "#FB4F01";
 const ALL_ICON = "https://cdn-icons-png.flaticon.com/128/2321/2321831.png";
 const FALLBACK_SUB_ICON = "https://cdn-icons-png.flaticon.com/128/2321/2321801.png";
 

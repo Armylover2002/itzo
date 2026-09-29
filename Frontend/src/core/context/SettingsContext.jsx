@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS = {
   timezone: "Asia/Kolkata",
   logoUrl: "",
   faviconUrl: "",
-  primaryColor: "#FE5502",
+  primaryColor: "#FB4F01",
   secondaryColor: "#64748b",
   companyName: "",
   taxId: "",

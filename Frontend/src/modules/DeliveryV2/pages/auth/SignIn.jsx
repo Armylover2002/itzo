@@ -224,8 +224,8 @@ export default function DeliverySignIn() {
               src={logoUrl}
               alt={companyName}
               fallbackText={companyName}
-              accentClassName="bg-[#d80000]"
-              className="h-24 w-24 animate-logo-scale ring-4 ring-[#d80000]/90"
+              accentClassName="bg-[#F35B1C]"
+              className="h-24 w-24 animate-logo-scale ring-4 ring-[#F35B1C]/90"
             />
           </div>
 
@@ -235,7 +235,7 @@ export default function DeliverySignIn() {
           </h1>
 
           {/* DELIVERY PARTNER Badge */}
-          <div className="bg-[#d80000] px-5 py-1.5 rounded-full shadow-sm mb-3">
+          <div className="bg-[#F35B1C] px-5 py-1.5 rounded-full shadow-sm mb-3">
             <span className="text-white font-bold text-[12px] uppercase tracking-wider">
               Delivery Partner
             </span>
@@ -243,9 +243,9 @@ export default function DeliverySignIn() {
 
           {/* Tagline */}
           <div className="flex items-center gap-3">
-            <div className="h-[2px] w-6 bg-[#d80000]"></div>
+            <div className="h-[2px] w-6 bg-[#F35B1C]"></div>
             <p className="text-white text-[15px] font-medium drop-shadow-sm">Deliver happiness, every time</p>
-            <div className="h-[2px] w-6 bg-[#d80000]"></div>
+            <div className="h-[2px] w-6 bg-[#F35B1C]"></div>
           </div>
         </div>
       </div>
@@ -256,12 +256,12 @@ export default function DeliverySignIn() {
           
           {/* Header Row: Icon + Texts */}
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-full bg-[#fff0f0] flex items-center justify-center shrink-0">
-              <User className="w-6 h-6 text-[#d80000]" strokeWidth={2} />
+            <div className="w-14 h-14 rounded-full bg-[#FEF0EA] flex items-center justify-center shrink-0">
+              <User className="w-6 h-6 text-[#F35B1C]" strokeWidth={2} />
             </div>
             <div>
               <h2 className="text-[22px] font-bold text-[#1a1a1a] leading-tight">
-                <span className="text-[#d80000]">Login</span> to your account
+                <span className="text-[#F35B1C]">Login</span> to your account
               </h2>
               <p className="text-[14px] text-gray-500 mt-0.5">
                 Enter your mobile number to continue
@@ -273,7 +273,7 @@ export default function DeliverySignIn() {
           <label htmlFor="delivery-login-phone" className="block text-[13px] font-semibold text-gray-700 mb-2">
             Mobile Number
           </label>
-          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden h-14 mb-4 focus-within:border-[#d80000] focus-within:ring-1 focus-within:ring-[#d80000] transition-all bg-white shadow-sm">
+          <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden h-14 mb-4 focus-within:border-[#F35B1C] focus-within:ring-1 focus-within:ring-[#F35B1C] transition-all bg-white shadow-sm">
             {/* Country Code Block */}
             <div className="flex items-center gap-1.5 px-3 border-r border-gray-200 bg-white h-full shrink-0">
               <span className="text-lg leading-none">🇮🇳</span>
@@ -282,7 +282,7 @@ export default function DeliverySignIn() {
             
             {/* Input Block */}
             <div className="flex flex-1 items-center px-2.5 h-full bg-white min-w-0">
-              <Smartphone className="w-4 h-4 text-[#d80000] mr-1.5 shrink-0 sm:mr-2" strokeWidth={1.5} />
+              <Smartphone className="w-4 h-4 text-[#F35B1C] mr-1.5 shrink-0 sm:mr-2" strokeWidth={1.5} />
               <input
                 id="delivery-login-phone"
                 name="phone"
@@ -301,8 +301,8 @@ export default function DeliverySignIn() {
           {error && <p className="text-sm text-red-500 mb-2 pl-1">{error}</p>}
 
           {/* Verification Note Box */}
-          <div className="bg-[#fdf4f4] rounded-xl p-3.5 flex items-center gap-3 mb-6">
-            <ShieldCheck className="w-5 h-5 text-[#d80000] shrink-0" strokeWidth={2} />
+          <div className="bg-[#FEF0EA] rounded-xl p-3.5 flex items-center gap-3 mb-6">
+            <ShieldCheck className="w-5 h-5 text-[#F35B1C] shrink-0" strokeWidth={2} />
             <p className="text-[13px] text-gray-700 font-medium">
               We will send you a verification code on this number
             </p>
@@ -314,14 +314,14 @@ export default function DeliverySignIn() {
             disabled={!isValid || isSending}
             className={`w-full h-14 rounded-xl flex items-center justify-center relative font-bold text-[16px] transition-all
               ${isValid && !isSending
-                ? "bg-[#d80000] hover:bg-red-700 active:scale-[0.98] text-white shadow-lg shadow-red-200/50"
+                ? "bg-[#F35B1C] hover:bg-[#D74C12] active:scale-[0.98] text-white shadow-lg shadow-orange-200/50"
                 : "bg-gray-100 text-gray-400 cursor-not-allowed"
               }`}
           >
             {isSending ? "Sending Code..." : "Get Verification Code"}
             {isValid && !isSending && (
               <div className="absolute right-2 w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                <ArrowRight className="w-5 h-5 text-[#d80000]" strokeWidth={2.5} />
+                <ArrowRight className="w-5 h-5 text-[#F35B1C]" strokeWidth={2.5} />
               </div>
             )}
           </button>
@@ -336,11 +336,11 @@ export default function DeliverySignIn() {
           {/* Terms text */}
           <p className="text-[13px] text-center text-gray-500 px-2 leading-relaxed font-medium">
             By continuing, you agree to our<br/>
-            <Link to="/food/delivery/terms" className="text-[#d80000] hover:underline">Terms & Conditions</Link>
+            <Link to="/food/delivery/terms" className="text-[#F35B1C] hover:underline">Terms & Conditions</Link>
             {" , "}
-            <Link to="/food/delivery/privacy" className="text-[#d80000] hover:underline">Privacy Policy</Link>
+            <Link to="/food/delivery/privacy" className="text-[#F35B1C] hover:underline">Privacy Policy</Link>
             {" & "}
-            <Link to="/food/delivery/support" className="text-[#d80000] hover:underline">Support</Link>
+            <Link to="/food/delivery/support" className="text-[#F35B1C] hover:underline">Support</Link>
           </p>
 
           <LoginGrowthPanel role="delivery" className="mt-6" />

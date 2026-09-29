@@ -72,7 +72,7 @@ const BetterFoodSection = React.memo(function BetterFoodSection() {
             transition={{ delay: 0.1 }}
             className={`${HEADING} mb-6`}
           >
-            Food you&apos;ll love,<br/>delivered <span className="text-[#FE5502]">fast</span>
+            Food you&apos;ll love,<br/>delivered <span className="text-[#FB4F01]">fast</span>
           </motion.h2>
 
           <motion.p
@@ -97,8 +97,8 @@ const BetterFoodSection = React.memo(function BetterFoodSection() {
                 whileHover={{ y: -3 }}
                 className="flex items-center gap-2 rounded-full bg-white border border-gray-100 shadow-[0_4px_16px_rgba(0,0,0,0.05)] pl-2.5 pr-4 py-2"
               >
-                <div className="w-7 h-7 rounded-full bg-[#FE5502]/10 flex items-center justify-center">
-                  <Icon className="w-3.5 h-3.5 text-[#FE5502]" strokeWidth={2} />
+                <div className="w-7 h-7 rounded-full bg-[#FB4F01]/10 flex items-center justify-center">
+                  <Icon className="w-3.5 h-3.5 text-[#FB4F01]" strokeWidth={2} />
                 </div>
                 <span className="text-sm font-bold text-slate-700">{label}</span>
               </motion.div>
@@ -177,8 +177,8 @@ const BetterFoodSection = React.memo(function BetterFoodSection() {
             transition={{ delay: 0.75 }}
             className="absolute bottom-2 right-0 md:-right-4 flex items-center gap-2.5 rounded-2xl bg-white shadow-[0_10px_30px_rgba(0,0,0,0.12)] pl-2.5 pr-4 py-2.5"
           >
-            <div className="w-9 h-9 rounded-full bg-[#FE5502]/10 flex items-center justify-center">
-              <Bike className="w-4 h-4 text-[#FE5502]" />
+            <div className="w-9 h-9 rounded-full bg-[#FB4F01]/10 flex items-center justify-center">
+              <Bike className="w-4 h-4 text-[#FB4F01]" />
             </div>
             <span className="text-sm font-bold text-slate-800">Doorstep in minutes</span>
           </motion.div>

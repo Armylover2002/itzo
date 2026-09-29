@@ -215,24 +215,32 @@ function FoodAdminIndex() {
 
 
 export default function AdminRouter() {
-  return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        {/* Admin Auth Routes — redirect to dashboard if already logged in */}
-        <Route path="login" element={<AuthPageGuard module="admin" home="/ecs/food"><AdminLogin /></AuthPageGuard>} />
-        <Route path="forgot-password" element={<AuthPageGuard module="admin" home="/ecs/food"><AdminForgotPassword /></AuthPageGuard>} />
-        <Route path="signup" element={<AuthPageGuard module="admin" home="/ecs/food"><AdminSignup /></AuthPageGuard>} />
+  useEffect(() => {
+    document.documentElement.classList.add("admin-theme-scope");
+    return () => {
+      document.documentElement.classList.remove("admin-theme-scope");
+    };
+  }, []);
 
-        {/* Protected Routes - With Layout */}
-        <Route
-          element={
-            <ProtectedRoute requiredRole="admin" loginPath="/ecs/login">
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* Default Admin Redirect */}
-          <Route path="/" element={<Navigate to="food" replace />} />
+  return (
+    <div className="admin-theme-scope min-h-screen">
+      <Suspense fallback={<Loader />}>
+        <Routes>
+          {/* Admin Auth Routes — redirect to dashboard if already logged in */}
+          <Route path="login" element={<AuthPageGuard module="admin" home="/ecs/food"><AdminLogin /></AuthPageGuard>} />
+          <Route path="forgot-password" element={<AuthPageGuard module="admin" home="/ecs/food"><AdminForgotPassword /></AuthPageGuard>} />
+          <Route path="signup" element={<AuthPageGuard module="admin" home="/ecs/food"><AdminSignup /></AuthPageGuard>} />
+
+          {/* Protected Routes - With Layout */}
+          <Route
+            element={
+              <ProtectedRoute requiredRole="admin" loginPath="/ecs/login">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* Default Admin Redirect */}
+            <Route path="/" element={<Navigate to="food" replace />} />
 
           {/* Quick Commerce Admin Routes */}
           <Route path="quick-commerce/*" element={<QuickCommerceAdminRoutes />} />
@@ -434,5 +442,6 @@ export default function AdminRouter() {
         <Route path="*" element={<Navigate to="/ecs/food" replace />} />
       </Routes>
     </Suspense>
+    </div>
   );
 }

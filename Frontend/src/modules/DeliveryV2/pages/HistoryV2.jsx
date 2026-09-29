@@ -13,7 +13,7 @@ import { addDeliveryNotification } from '@food/utils/deliveryNotifications';
 /**
  * HistoryV2 - EXACT 1:1 Match with User Screenshot.
  * Theme: Clean White
- * Accent: Emerald Green (#10B981)
+ * Accent: Emerald Green (#F35B1C)
  * Font: Poppins
  */
 export const HistoryV2 = () => {
@@ -261,10 +261,10 @@ export const HistoryV2 = () => {
                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Your delivery milestones</p>
             </div>
           </div>
-          <button onClick={() => setShowBonusModal(true)} className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-[#10B981] border border-green-500/20 relative active:scale-90 transition-all">
+          <button onClick={() => setShowBonusModal(true)} className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-[#F35B1C] border border-green-500/20 relative active:scale-90 transition-all">
              <Gift className="w-5 h-5" />
              {bonusCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#10B981] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#F35B1C] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                    {bonusCount}
                 </span>
              )}
@@ -279,10 +279,10 @@ export const HistoryV2 = () => {
              <button
                key={tab}
                onClick={() => setActiveTab(tab)}
-               className={`py-4 text-base font-medium capitalize relative ${activeTab === tab ? 'text-[#10B981]' : 'text-gray-400'}`}
+               className={`py-4 text-base font-medium capitalize relative ${activeTab === tab ? 'text-[#F35B1C]' : 'text-gray-400'}`}
              >
                 {tab}
-                {activeTab === tab && <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#10B981]" />}
+                {activeTab === tab && <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F35B1C]" />}
              </button>
           ))}
        </div>
@@ -344,7 +344,7 @@ export const HistoryV2 = () => {
                    <button 
                       key={idx} 
                       onClick={() => { setSelectedDate(date); setShowDatePicker(false); }}
-                      className={`w-full text-left p-4 rounded-xl text-sm font-medium ${date.toDateString() === selectedDate.toDateString() ? 'bg-green-50 text-[#10B981] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
+                      className={`w-full text-left p-4 rounded-xl text-sm font-medium ${date.toDateString() === selectedDate.toDateString() ? 'bg-green-50 text-[#F35B1C] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
                    >
                       {formatDateDisplay(date)}
                    </button>
@@ -357,7 +357,7 @@ export const HistoryV2 = () => {
                    <button 
                       key={idx} 
                       onClick={() => { setSelectedTripType(type); setShowTripTypePicker(false); }}
-                      className={`w-full text-left p-4 rounded-xl text-sm font-medium ${type === selectedTripType ? 'bg-green-50 text-[#10B981] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
+                      className={`w-full text-left p-4 rounded-xl text-sm font-medium ${type === selectedTripType ? 'bg-green-50 text-[#F35B1C] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
                    >
                       {type}
                    </button>
@@ -371,11 +371,11 @@ export const HistoryV2 = () => {
           {/* Performance Summary Banner (Matched to Image) */}
           <div className="bg-[#E9F9F4] rounded-2xl p-6 border border-[#D1F2E8] flex justify-between items-center">
              <div>
-                <p className="text-[11px] font-bold text-[#10B981] mb-1">COD Collected</p>
+                <p className="text-[11px] font-bold text-[#F35B1C] mb-1">COD Collected</p>
                 <h3 className="text-xl font-bold text-gray-950">₹{metrics.cod.toFixed(2)}</h3>
              </div>
              <div className="text-right">
-                <p className="text-[11px] font-bold text-[#10B981] mb-1">Earnings</p>
+                <p className="text-[11px] font-bold text-[#F35B1C] mb-1">Earnings</p>
                 <h3 className="text-xl font-bold text-gray-950">₹{metrics.earnings.toFixed(2)}</h3>
              </div>
           </div>
@@ -383,7 +383,7 @@ export const HistoryV2 = () => {
           {/* Trip List */}
           {loading ? (
              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <Loader2 className="w-8 h-8 animate-spin text-[#10B981]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#F35B1C]" />
                 <p className="text-gray-400 text-xs font-medium">Fetching trips...</p>
              </div>
           ) : visibleTrips.length > 0 ? (
@@ -428,7 +428,7 @@ export const HistoryV2 = () => {
                                   <p className="text-xs text-gray-400 font-medium mt-0.5 line-clamp-1">{extractItems(trip)}</p>
                                 </div>
                              </div>
-                             <span className={`text-sm font-bold ${isCompleted ? 'text-[#10B981]' : isCancelled ? 'text-red-500' : 'text-red-500'}`}>
+                             <span className={`text-sm font-bold ${isCompleted ? 'text-[#F35B1C]' : isCancelled ? 'text-red-500' : 'text-red-500'}`}>
                                 {trip.status || 'Status'}
                              </span>
                          </div>
@@ -443,7 +443,7 @@ export const HistoryV2 = () => {
                                  Delivery
                                </span>
                              )}
-                             <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${isCOD ? 'bg-red-50 text-red-600' : 'bg-green-50 text-[#10B981]'}`}>
+                             <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${isCOD ? 'bg-red-50 text-red-600' : 'bg-green-50 text-[#F35B1C]'}`}>
                                 {isCOD ? 'COD' : 'Online'}
                              </span>
                          </div>
@@ -527,7 +527,7 @@ export const HistoryV2 = () => {
                    <div className="w-12 h-1 bg-gray-100 rounded-full mx-auto mb-8 shrink-0" />
                    <div className="flex items-center justify-between mb-8 shrink-0">
                       <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-[#10B981] border border-green-100">
+                         <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-[#F35B1C] border border-green-100">
                             <Gift className="w-6 h-6" />
                          </div>
                          <div>
@@ -539,7 +539,7 @@ export const HistoryV2 = () => {
                    
                    <div className="flex-1 overflow-y-auto pr-1 space-y-4">
                       {bonusLoading ? (
-                         <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#10B981]" /></div>
+                         <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#F35B1C]" /></div>
                       ) : bonusTransactions.length > 0 ? bonusTransactions.map((tx, i) => (
                          <div key={i} className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex justify-between items-center">
                             <div>
@@ -547,7 +547,7 @@ export const HistoryV2 = () => {
                                <p className="text-sm font-medium text-gray-600 line-clamp-1">{tx.description || 'Bonus Payout'}</p>
                                <p className="text-[10px] text-gray-400 font-medium mt-1">{new Date(tx.createdAt || tx.date).toLocaleDateString()}</p>
                             </div>
-                            <span className="bg-green-100 text-[#10B981] text-[10px] font-bold px-3 py-1 rounded-full uppercase">DELIVERED</span>
+                            <span className="bg-green-100 text-[#F35B1C] text-[10px] font-bold px-3 py-1 rounded-full uppercase">DELIVERED</span>
                          </div>
                       )) : (
                          <div className="py-20 text-center flex flex-col items-center">

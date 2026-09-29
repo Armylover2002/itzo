@@ -148,7 +148,7 @@ export default function DiningRestaurantDetail() {
                         full
                           ? "cursor-not-allowed border-gray-100 text-gray-300 dark:border-gray-800 dark:text-gray-600"
                           : selectedSlot?.start === slot.start
-                          ? "border-[#FE5502] bg-orange-50 font-semibold text-[#FE5502] dark:bg-orange-950/30"
+                          ? "border-[#FB4F01] bg-orange-50 font-semibold text-[#FB4F01] dark:bg-orange-950/30"
                           : "border-gray-200 text-gray-700 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300"
                       }`}
                     >
@@ -170,7 +170,7 @@ export default function DiningRestaurantDetail() {
             <button
               onClick={handleBook}
               disabled={booking || !selectedSlot}
-              className="w-full rounded-lg bg-[#FE5502] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+              className="w-full rounded-lg bg-[#FB4F01] py-2.5 text-sm font-semibold text-white disabled:opacity-50"
             >
               {booking ? "Booking..." : selectedSlot ? `Reserve Table (${formatTimeAMPM(selectedSlot.start)})` : "Reserve Table"}
             </button>

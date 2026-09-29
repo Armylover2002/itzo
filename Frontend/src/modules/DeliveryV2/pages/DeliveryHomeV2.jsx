@@ -1088,7 +1088,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
               {activeOrder ? (
                 <div className="grid grid-cols-2 gap-3 w-full">
                   {/* LEFT: DISTANCE (Vibrant Orange Card) */}
-                  <div className="bg-[#FE5502] rounded-2xl p-3.5 shadow-xl shadow-red-500/20 border border-red-400/50 flex items-center justify-between overflow-hidden relative">
+                  <div className="bg-[#F35B1C] rounded-2xl p-3.5 shadow-xl shadow-red-500/20 border border-red-400/50 flex items-center justify-between overflow-hidden relative">
                     <div className="flex flex-col z-10">
                       <span className="text-[9px] text-white/70 font-black uppercase tracking-[0.15em] mb-1">Distance</span>
                       <div className="flex items-end gap-1">
@@ -1099,7 +1099,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                       </div>
                     </div>
                     <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center z-10 shadow-lg">
-                      <Navigation2 className="w-4 h-4 text-[#FE5502] rotate-45" />
+                      <Navigation2 className="w-4 h-4 text-[#F35B1C] rotate-45" />
                     </div>
                   </div>
 
@@ -1303,7 +1303,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
              </div>
            </div>
          ) : currentTab === 'pocket' ? (
-           <React.Suspense fallback={<div className="min-h-[50vh] flex flex-col items-center justify-center font-poppins"><div className="w-10 h-10 border-4 border-[#FE5502] border-t-transparent rounded-full animate-spin mb-4" /><p className="text-xs font-semibold text-gray-500">Loading Pocket...</p></div>}>
+           <React.Suspense fallback={<div className="min-h-[50vh] flex flex-col items-center justify-center font-poppins"><div className="w-10 h-10 border-4 border-[#F35B1C] border-t-transparent rounded-full animate-spin mb-4" /><p className="text-xs font-semibold text-gray-500">Loading Pocket...</p></div>}>
              <PocketV2 />
            </React.Suspense>
          ) : currentTab === 'history' ? (
@@ -1472,7 +1472,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                              </div>
                           </div>
                         )}
-                        <ActionSlider label="Slide to Arrive" successLabel="Arrived ✓" disabled={!isWithinRange} onConfirm={reachDrop} color="bg-[#FE5502]" />
+                        <ActionSlider label="Slide to Arrive" successLabel="Arrived ✓" disabled={!isWithinRange} onConfirm={reachDrop} color="bg-[#F35B1C]" />
                       </div>
                     ) : (
                       <div className="px-4 pb-[92px] w-full max-w-lg mx-auto">
@@ -1552,16 +1552,16 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
 
       {/* ─── 3. BOTTOM NAV (Fixed - Compact Pro) ─── */}
       <div className="bg-white border-t border-gray-100 px-8 py-3 pb-6 flex justify-between items-center z-[200] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
-         <button onClick={() => navigate('/food/delivery/feed')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'feed' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
+         <button onClick={() => navigate('/food/delivery/feed')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'feed' ? 'text-[#F35B1C] font-semibold scale-110' : 'text-gray-400 opacity-70'}`}>
             <LayoutGrid className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Feed</span>
          </button>
-         <button onClick={() => navigate('/food/delivery/pocket')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'pocket' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
+         <button onClick={() => navigate('/food/delivery/pocket')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'pocket' ? 'text-[#F35B1C] font-semibold scale-110' : 'text-gray-400 opacity-70'}`}>
             <Wallet className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Pocket</span>
          </button>
-         <button onClick={() => navigate('/food/delivery/history')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'history' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
+         <button onClick={() => navigate('/food/delivery/history')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'history' ? 'text-[#F35B1C] font-semibold scale-110' : 'text-gray-400 opacity-70'}`}>
             <History className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Trip History</span>
          </button>
-         <button onClick={() => navigate('/food/delivery/profile')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'profile' ? 'text-gray-950 scale-110' : 'text-gray-400 opacity-70'}`}>
+         <button onClick={() => navigate('/food/delivery/profile')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'profile' ? 'text-[#F35B1C] font-semibold scale-110' : 'text-gray-400 opacity-70'}`}>
             <UserIcon className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Profile</span>
          </button>
       </div>

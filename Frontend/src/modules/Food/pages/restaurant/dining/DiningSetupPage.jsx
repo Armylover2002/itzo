@@ -16,7 +16,7 @@ function SectionCard({ icon: Icon, title, subtitle, children }) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0D315B]/10 text-[#0D315B]">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#10335D]/10 text-[#10335D]">
           <Icon className="h-[18px] w-[18px]" />
         </span>
         <div>
@@ -145,7 +145,7 @@ export default function DiningSetupPage() {
   if (!profile || profile.status === "not_requested" || profile.status === "rejected") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-lg flex-col items-center justify-center p-6 text-center">
-        <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0D315B]/10 text-[#0D315B]">
+        <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#10335D]/10 text-[#10335D]">
           <UtensilsCrossed className="h-7 w-7" />
         </span>
         <h1 className="mb-2 text-xl font-bold text-gray-900">Enable Dine-In Bookings</h1>
@@ -157,7 +157,7 @@ export default function DiningSetupPage() {
         <button
           onClick={handleRequest}
           disabled={requesting}
-          className="mx-auto flex items-center gap-2 rounded-full bg-[#0D315B] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
+          className="mx-auto flex items-center gap-2 rounded-full bg-[#10335D] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
         >
           {requesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />} Request Dining Access
         </button>
@@ -204,7 +204,7 @@ export default function DiningSetupPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            className="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#0D315B] focus:outline-none focus:ring-1 focus:ring-[#0D315B]"
+            className="w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm focus:border-[#10335D] focus:outline-none focus:ring-1 focus:ring-[#10335D]"
             placeholder="Tell guests about your dining ambience..."
           />
 
@@ -215,7 +215,7 @@ export default function DiningSetupPage() {
               type="number"
               value={avgCostForTwo}
               onChange={(e) => setAvgCostForTwo(e.target.value)}
-              className="w-full rounded-xl border border-gray-300 py-2.5 pl-9 pr-3 text-sm focus:border-[#0D315B] focus:outline-none focus:ring-1 focus:ring-[#0D315B]"
+              className="w-full rounded-xl border border-gray-300 py-2.5 pl-9 pr-3 text-sm focus:border-[#10335D] focus:outline-none focus:ring-1 focus:ring-[#10335D]"
             />
           </div>
         </SectionCard>
@@ -233,7 +233,7 @@ export default function DiningSetupPage() {
                 </button>
               </div>
             ))}
-            <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-[#0D315B] hover:text-[#0D315B]">
+            <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-gray-300 text-gray-400 transition-colors hover:border-[#10335D] hover:text-[#10335D]">
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ImagePlus className="h-5 w-5" />}
               <span className="text-[10px] font-medium">Add photo</span>
               <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
@@ -251,7 +251,7 @@ export default function DiningSetupPage() {
                     key={cat._id}
                     onClick={() => toggleCategory(cat._id)}
                     className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                      active ? "border-[#0D315B] bg-[#0D315B]/5 text-[#0D315B]" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                      active ? "border-[#10335D] bg-[#10335D]/5 text-[#10335D]" : "border-gray-200 text-gray-600 hover:border-gray-300"
                     }`}
                   >
                     {cat.image && <img src={cat.image} alt="" className="h-4 w-4 rounded-full object-cover" />}
@@ -284,7 +284,7 @@ export default function DiningSetupPage() {
                     type="checkbox"
                     checked={slot.isOpen}
                     onChange={(e) => updateSlot(idx, "isOpen", e.target.checked)}
-                    className="h-4 w-4 accent-[#0D315B]"
+                    className="h-4 w-4 accent-[#10335D]"
                   />
                   {DAY_LABELS[slot.day] || slot.day}
                 </label>
@@ -341,7 +341,7 @@ export default function DiningSetupPage() {
         <button
           onClick={handleSaveSetup}
           disabled={saving}
-          className="mx-auto flex w-full max-w-3xl items-center justify-center gap-2 rounded-xl bg-[#0D315B] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60"
+          className="mx-auto flex w-full max-w-3xl items-center justify-center gap-2 rounded-xl bg-[#10335D] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60"
         >
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save Setup
         </button>

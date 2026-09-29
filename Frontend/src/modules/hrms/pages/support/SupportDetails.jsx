@@ -107,7 +107,7 @@ export default function SupportDetails() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full min-h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -158,7 +158,7 @@ export default function SupportDetails() {
                         <div key={msg._id || index} className={`flex ${isEmployee ? 'justify-end' : 'justify-start'}`}>
                             <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] ${isEmployee ? 'flex-row-reverse' : 'flex-row'}`}>
                                 {/* Avatar */}
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isEmployee ? 'bg-gradient-to-br from-[#6412c6] to-amber-500 text-white' : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm ${isEmployee ? 'bg-gradient-to-br from-[#6413C7] to-amber-500 text-white' : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white'}`}>
                                     {isEmployee ? <User className="w-4 h-4" /> : <Building2 className="w-4 h-4" />}
                                 </div>
                                 
@@ -236,7 +236,7 @@ export default function SupportDetails() {
                                 type="button"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={uploading || sending}
-                                className="p-3.5 text-slate-400 hover:text-[#6412c6] hover:bg-[#f7f3fc] rounded-xl transition-all disabled:opacity-50 shrink-0"
+                                className="p-3.5 text-slate-400 hover:text-[#6413C7] hover:bg-[#f7f3fc] rounded-xl transition-all disabled:opacity-50 shrink-0"
                             >
                                 {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Paperclip className="w-5 h-5" />}
                             </button>
@@ -265,7 +265,7 @@ export default function SupportDetails() {
                             <button
                                 type="submit"
                                 disabled={sending || (!replyText.trim() && attachments.length === 0)}
-                                className="p-3.5 bg-[#6412c6] text-white rounded-xl hover:bg-[#550fa8] transition-all shadow-sm shadow-[#6412c6]/20 disabled:opacity-50 disabled:shadow-none shrink-0"
+                                className="p-3.5 bg-[#6413C7] text-white rounded-xl hover:bg-[#550fa8] transition-all shadow-sm shadow-[#6413C7]/20 disabled:opacity-50 disabled:shadow-none shrink-0"
                             >
                                 {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                             </button>

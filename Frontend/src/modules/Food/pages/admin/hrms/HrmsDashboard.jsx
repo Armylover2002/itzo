@@ -478,7 +478,7 @@ export default function HrmsDashboard() {
                     >
                         <Bell className="w-5 h-5 text-slate-600" />
                         {notifications.length > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 bg-[#6412c6] text-white text-[11px] font-bold rounded-full shadow-md">
+                            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 bg-[#6413C7] text-white text-[11px] font-bold rounded-full shadow-md">
                                 {notifications.length > 99 ? '99+' : notifications.length}
                             </span>
                         )}
@@ -497,7 +497,7 @@ export default function HrmsDashboard() {
                             <div className="max-h-80 overflow-y-auto">
                                 {notifLoading ? (
                                     <div className="flex items-center justify-center py-10 gap-2">
-                                        <Loader2 className="w-5 h-5 animate-spin text-[#6412c6]" />
+                                        <Loader2 className="w-5 h-5 animate-spin text-[#6413C7]" />
                                         <span className="text-sm text-slate-500">Loading…</span>
                                     </div>
                                 ) : notifications.length === 0 ? (
@@ -537,7 +537,7 @@ export default function HrmsDashboard() {
                                                             <span className="text-[10px] text-slate-400 shrink-0">{timeAgo}</span>
                                                         </div>
                                                         <p className="text-xs text-slate-400 truncate mt-0.5">{n.subtitle}</p>
-                                                        <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider text-[#6412c6]">{n.type}</span>
+                                                        <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider text-[#6413C7]">{n.type}</span>
                                                     </div>
                                                 </button>
                                             );
@@ -575,7 +575,7 @@ export default function HrmsDashboard() {
                             onFocus={() => setShowResults(true)}
                             className="bg-transparent w-full text-sm text-slate-700 placeholder:text-slate-400 placeholder:uppercase placeholder:tracking-wider placeholder:text-xs focus:outline-none"
                         />
-                        {isSearching && <Loader2 className="w-4 h-4 animate-spin text-[#6412c6] ml-2 shrink-0" />}
+                        {isSearching && <Loader2 className="w-4 h-4 animate-spin text-[#6413C7] ml-2 shrink-0" />}
                     </div>
 
                     {/* Search Results Dropdown */}
@@ -583,7 +583,7 @@ export default function HrmsDashboard() {
                         <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 max-h-80 overflow-y-auto">
                             {isSearching ? (
                                 <div className="flex items-center justify-center py-8 gap-2">
-                                    <Loader2 className="w-5 h-5 animate-spin text-[#6412c6]" />
+                                    <Loader2 className="w-5 h-5 animate-spin text-[#6413C7]" />
                                     <span className="text-sm text-slate-500">Searching…</span>
                                 </div>
                             ) : searchResults.length === 0 ? (
@@ -598,7 +598,7 @@ export default function HrmsDashboard() {
                                     </p>
                                     {Object.entries(groupedResults).map(([type, results]) => (
                                         <div key={type}>
-                                            <p className="px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#6412c6]">{type}s</p>
+                                            <p className="px-4 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-[#6413C7]">{type}s</p>
                                             {results.map((result, idx) => (
                                                 <button
                                                     key={`${type}-${idx}`}
@@ -612,7 +612,7 @@ export default function HrmsDashboard() {
                                                         <p className="text-sm font-medium text-slate-800 truncate">{result.title}</p>
                                                         <p className="text-xs text-slate-400 truncate">{result.description}</p>
                                                     </div>
-                                                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6412c6] shrink-0 transition-colors" />
+                                                    <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6413C7] shrink-0 transition-colors" />
                                                 </button>
                                             ))}
                                         </div>
@@ -633,7 +633,7 @@ export default function HrmsDashboard() {
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">System Active</span>
                     </div>
                     <div className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full">
-                        <CalendarDays className="w-3.5 h-3.5 text-[#6412c6]" />
+                        <CalendarDays className="w-3.5 h-3.5 text-[#6413C7]" />
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-600">{dateStr}</span>
                     </div>
                 </div>
@@ -648,7 +648,7 @@ export default function HrmsDashboard() {
                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.color.split(' ')[1]}`}>
                                 <card.icon className={`w-5 h-5 ${card.color.split(' ')[0]}`} />
                             </div>
-                            {card.highlight && <span className="w-2.5 h-2.5 rounded-full bg-[#6412c6] animate-pulse" />}
+                            {card.highlight && <span className="w-2.5 h-2.5 rounded-full bg-[#6413C7] animate-pulse" />}
                         </div>
                         <p className="text-3xl font-bold text-slate-900">{card.value}</p>
                         <p className="text-sm text-slate-500 mt-0.5">{card.label}</p>
@@ -665,7 +665,7 @@ export default function HrmsDashboard() {
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-[#6412c6] inline-block"></span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#6413C7] inline-block"></span>
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Present</span>
                         </div>
                         {chartLoading ? (

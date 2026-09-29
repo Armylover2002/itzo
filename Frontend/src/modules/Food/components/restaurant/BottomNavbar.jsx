@@ -24,7 +24,7 @@ export default function BottomNavbar({ onMenuClick }) {
         <button
           onClick={() => navigate("/restaurant")}
           className={`flex flex-col items-center gap-1 p-2 transition-colors ${
-            isActive("/restaurant") ? "text-[#ff8100]" : "text-gray-600"
+            isActive("/restaurant") ? "text-[#10335D]" : "text-gray-600"
           }`}
         >
           <Home className="w-6 h-6" />
@@ -32,7 +32,7 @@ export default function BottomNavbar({ onMenuClick }) {
         <button
           onClick={() => navigate("/restaurant/orders/all")}
           className={`flex flex-col items-center gap-1 p-2 transition-colors ${
-            isActive("/restaurant/orders/all") ? "text-[#ff8100]" : "text-gray-600"
+            isActive("/restaurant/orders/all") ? "text-[#10335D]" : "text-gray-600"
           }`}
         >
           <ShoppingBag className="w-6 h-6" />
@@ -40,13 +40,13 @@ export default function BottomNavbar({ onMenuClick }) {
         <button
           onClick={() => navigate("/restaurant/outlet-info")}
           className={`flex flex-col items-center gap-1 p-2 -mt-8 transition-colors ${
-            isActive("/restaurant/outlet-info") ? "text-[#ff8100]" : "text-gray-600"
+            isActive("/restaurant/outlet-info") ? "text-[#10335D]" : "text-gray-600"
           }`}
         >
           <div
             className={`rounded-full p-3 shadow-lg border-2 transition-colors ${
               isActive("/restaurant/outlet-info")
-                ? "bg-[#ff8100] border-white"
+                ? "bg-[#10335D] border-white"
                 : "bg-white border-gray-200"
             }`}
           >
@@ -60,7 +60,7 @@ export default function BottomNavbar({ onMenuClick }) {
         <button
           onClick={() => navigate("/restaurant/hub-finance")}
           className={`flex flex-col items-center gap-1 p-2 transition-colors ${
-            isActive("/restaurant/hub-finance") ? "text-[#ff8100]" : "text-gray-600"
+            isActive("/restaurant/hub-finance") ? "text-[#10335D]" : "text-gray-600"
           }`}
         >
           <Wallet className="w-6 h-6" />
@@ -79,7 +79,7 @@ export default function BottomNavbar({ onMenuClick }) {
             navigate("/restaurant/explore")
           }}
           className={`flex flex-col items-center gap-1 p-2 transition-colors ${
-            isActive("/restaurant/explore") ? "text-[#ff8100]" : "text-gray-600"
+            isActive("/restaurant/explore") ? "text-[#10335D]" : "text-gray-600"
           }`}
         >
           <Menu className="w-6 h-6" />

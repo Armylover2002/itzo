@@ -172,7 +172,7 @@ const FooterSection = React.memo(function FooterSection() {
               <ul className="space-y-2.5 text-gray-600 text-[14px]">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="hover:text-[#FE5502] transition-colors">{link.label}</a>
+                    <a href={link.href} className="hover:text-[#FB4F01] transition-colors">{link.label}</a>
                   </li>
                 ))}
               </ul>

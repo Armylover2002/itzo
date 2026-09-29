@@ -179,7 +179,7 @@ export const PocketV2 = () => {
 
   if (loading) return (
     <div className="min-h-screen bg-[#f6e9dc] flex flex-col items-center justify-center font-poppins">
-       <div className="w-10 h-10 border-4 border-[#FE5502] border-t-transparent rounded-full animate-spin mb-4" />
+       <div className="w-10 h-10 border-4 border-[#F35B1C] border-t-transparent rounded-full animate-spin mb-4" />
        <p className="text-xs font-semibold text-gray-500">Loading Pocket...</p>
     </div>
   );
@@ -190,7 +190,7 @@ export const PocketV2 = () => {
        {/* 0. Header */}
        <div className="app-shell-page__header safe-top bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-             <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-[#FE5502] border border-red-100">
+             <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-[#F35B1C] border border-red-100">
                 <Wallet className="w-5 h-5" />
              </div>
              <div>
@@ -315,7 +315,7 @@ export const PocketV2 = () => {
                       <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
                          <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="8" />
                          <motion.circle 
-                            cx="50" cy="50" r="45" fill="none" stroke="#FE5502" strokeWidth="8" strokeLinecap="round"
+                            cx="50" cy="50" r="45" fill="none" stroke="#F35B1C" strokeWidth="8" strokeLinecap="round"
                             initial={{ pathLength: 0 }} animate={{ pathLength: earningsProgress }} transition={{ duration: 1.5, ease: "easeOut" }}
                          />
                       </svg>
@@ -372,7 +372,7 @@ export const PocketV2 = () => {
              <div className="p-5">
                 <button 
                    onClick={() => setShowDepositPopup(true)}
-                   className="w-full py-4 bg-[#FE5502] hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                   className="w-full py-4 bg-[#F35B1C] hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/20 active:scale-95 transition-all"
                 >
                    Deposit Cash
                 </button>
@@ -392,7 +392,7 @@ export const PocketV2 = () => {
                 </div>
 
                 <div onClick={() => navigate('/food/delivery/pocket/limit-settlement')} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50 flex flex-col justify-between">
-                   <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-[#FE5502] mb-4 border border-red-100">
+                   <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-[#F35B1C] mb-4 border border-red-100">
                       <Receipt className="w-5 h-5" />
                    </div>
                    <p className="text-sm font-bold text-gray-800 leading-tight">Limit Settlement</p>

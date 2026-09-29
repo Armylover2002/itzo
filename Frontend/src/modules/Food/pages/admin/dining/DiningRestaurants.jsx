@@ -151,7 +151,7 @@ export default function DiningRestaurants() {
                           <button onClick={() => setEditingId(null)} className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1 text-xs text-gray-600">
                             <X className="h-3 w-3" /> Cancel
                           </button>
-                          <button onClick={() => handleSave(profile._id)} disabled={saving} className="flex items-center gap-1 rounded-lg bg-[#6412C6] px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-60">
+                          <button onClick={() => handleSave(profile._id)} disabled={saving} className="flex items-center gap-1 rounded-lg bg-[#6413C7] px-2.5 py-1 text-xs font-semibold text-white disabled:opacity-60">
                             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />} Save
                           </button>
                         </div>

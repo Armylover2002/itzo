@@ -87,8 +87,10 @@ export default function RestaurantRouter() {
 
   useEffect(() => {
     document.documentElement.classList.add("restaurant-panel")
+    document.documentElement.classList.add("restaurant-theme")
     return () => {
       document.documentElement.classList.remove("restaurant-panel")
+      document.documentElement.classList.remove("restaurant-theme")
     }
   }, [])
 
@@ -110,76 +112,78 @@ export default function RestaurantRouter() {
           cursor: pointer;
         }
       `}</style>
-      <Suspense fallback={<Loader />}>
-      <Routes>
-        {/* Auth Routes — redirect to dashboard if already logged in */}
-        <Route path="welcome" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Welcome /></AuthPageGuard>} />
-        <Route path="login" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Login /></AuthPageGuard>} />
-        {/* Canonical sign-in path used by AuthRedirect */}
-        <Route path="auth/sign-in" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Login /></AuthPageGuard>} />
-        <Route path="otp" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><OTP /></AuthPageGuard>} />
-        <Route path="signup" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Signup /></AuthPageGuard>} />
-        <Route path="forgot-password" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><ForgotPassword /></AuthPageGuard>} />
-        <Route path="pending-verification" element={<VerificationPending />} />
+      <div className="restaurant-theme min-h-screen">
+        <Suspense fallback={<Loader />}>
+        <Routes>
+          {/* Auth Routes — redirect to dashboard if already logged in */}
+          <Route path="welcome" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Welcome /></AuthPageGuard>} />
+          <Route path="login" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Login /></AuthPageGuard>} />
+          {/* Canonical sign-in path used by AuthRedirect */}
+          <Route path="auth/sign-in" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Login /></AuthPageGuard>} />
+          <Route path="otp" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><OTP /></AuthPageGuard>} />
+          <Route path="signup" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><Signup /></AuthPageGuard>} />
+          <Route path="forgot-password" element={<AuthPageGuard module="restaurant" home="/food/restaurant"><ForgotPassword /></AuthPageGuard>} />
+          <Route path="pending-verification" element={<VerificationPending />} />
 
-        {/* Protected Routes */}
-        <Route element={<LayoutWrapper />}>
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OrdersMain /></ProtectedRoute>} path="" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantNotifications /></ProtectedRoute>} path="notifications" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AllOrdersPage /></ProtectedRoute>} path="orders/all" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OrderDetails /></ProtectedRoute>} path="orders/:orderId" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DeliverySettings /></ProtectedRoute>} path="delivery-settings" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RushHour /></ProtectedRoute>} path="rush-hour" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><MenuCategoriesPage /></ProtectedRoute>} path="menu-categories" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemSlotTimingsPage /></ProtectedRoute>} path="item-slot-timings" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><CreateCouponsPage /></ProtectedRoute>} path="create-coupons" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AdvertisementsPage /></ProtectedRoute>} path="advertisements" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><NewAdvertisementPage /></ProtectedRoute>} path="advertisements/new" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AdDetailsPage /></ProtectedRoute>} path="advertisements/:id" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditAdvertisementPage /></ProtectedRoute>} path="advertisements/:id/edit" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantStatus /></ProtectedRoute>} path="status" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ExploreMore /></ProtectedRoute>} path="explore" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OutletTimings /></ProtectedRoute>} path="outlet-timings" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DaySlots /></ProtectedRoute>} path="outlet-timings/:day" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OutletInfo /></ProtectedRoute>} path="outlet-info" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RatingsReviews /></ProtectedRoute>} path="ratings-reviews" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditOwner /></ProtectedRoute>} path="edit-owner" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditRestaurantAddress /></ProtectedRoute>} path="edit-address" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Inventory /></ProtectedRoute>} path="inventory" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Feedback /></ProtectedRoute>} path="feedback" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ShareFeedback /></ProtectedRoute>} path="share-feedback" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DishRatings /></ProtectedRoute>} path="dish-ratings" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantSupport /></ProtectedRoute>} path="help-centre/support" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FssaiDetails /></ProtectedRoute>} path="fssai" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FssaiUpdate /></ProtectedRoute>} path="fssai/update" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Hyperpure /></ProtectedRoute>} path="hyperpure" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemDetailsPage /></ProtectedRoute>} path="hub-menu/item/:id" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><HubFinance /></ProtectedRoute>} path="hub-finance" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WithdrawalHistoryPage /></ProtectedRoute>} path="withdrawal-history" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FinanceDetailsPage /></ProtectedRoute>} path="finance-details" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DownloadReport /></ProtectedRoute>} path="download-report" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ManageOutlets /></ProtectedRoute>} path="manage-outlets" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><UpdateBankDetails /></ProtectedRoute>} path="update-bank-details" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ZoneSetup /></ProtectedRoute>} path="zone-setup" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantProfilePage /></ProtectedRoute>} path="profile" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantReferEarn /></ProtectedRoute>} path="refer-earn" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WalletPage /></ProtectedRoute>} path="wallet" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><BusinessPlanPage /></ProtectedRoute>} path="business-plan" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><LiveLocationControl /></ProtectedRoute>} path="live-location" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><VendorMoveLocation /></ProtectedRoute>} path="move-location" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningSetupPage /></ProtectedRoute>} path="dining/setup" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningBookingsPage /></ProtectedRoute>} path="dining/bookings" />
-          <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningBillingPage /></ProtectedRoute>} path="dining/bookings/:id/bill" />
-        </Route>
+          {/* Protected Routes */}
+          <Route element={<LayoutWrapper />}>
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OrdersMain /></ProtectedRoute>} path="" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantNotifications /></ProtectedRoute>} path="notifications" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AllOrdersPage /></ProtectedRoute>} path="orders/all" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OrderDetails /></ProtectedRoute>} path="orders/:orderId" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DeliverySettings /></ProtectedRoute>} path="delivery-settings" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RushHour /></ProtectedRoute>} path="rush-hour" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><MenuCategoriesPage /></ProtectedRoute>} path="menu-categories" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemSlotTimingsPage /></ProtectedRoute>} path="item-slot-timings" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><CreateCouponsPage /></ProtectedRoute>} path="create-coupons" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AdvertisementsPage /></ProtectedRoute>} path="advertisements" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><NewAdvertisementPage /></ProtectedRoute>} path="advertisements/new" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><AdDetailsPage /></ProtectedRoute>} path="advertisements/:id" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditAdvertisementPage /></ProtectedRoute>} path="advertisements/:id/edit" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantStatus /></ProtectedRoute>} path="status" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ExploreMore /></ProtectedRoute>} path="explore" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OutletTimings /></ProtectedRoute>} path="outlet-timings" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DaySlots /></ProtectedRoute>} path="outlet-timings/:day" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><OutletInfo /></ProtectedRoute>} path="outlet-info" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RatingsReviews /></ProtectedRoute>} path="ratings-reviews" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditOwner /></ProtectedRoute>} path="edit-owner" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><EditRestaurantAddress /></ProtectedRoute>} path="edit-address" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Inventory /></ProtectedRoute>} path="inventory" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Feedback /></ProtectedRoute>} path="feedback" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ShareFeedback /></ProtectedRoute>} path="share-feedback" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DishRatings /></ProtectedRoute>} path="dish-ratings" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantSupport /></ProtectedRoute>} path="help-centre/support" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FssaiDetails /></ProtectedRoute>} path="fssai" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FssaiUpdate /></ProtectedRoute>} path="fssai/update" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><Hyperpure /></ProtectedRoute>} path="hyperpure" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ItemDetailsPage /></ProtectedRoute>} path="hub-menu/item/:id" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><HubFinance /></ProtectedRoute>} path="hub-finance" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WithdrawalHistoryPage /></ProtectedRoute>} path="withdrawal-history" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><FinanceDetailsPage /></ProtectedRoute>} path="finance-details" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DownloadReport /></ProtectedRoute>} path="download-report" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ManageOutlets /></ProtectedRoute>} path="manage-outlets" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><UpdateBankDetails /></ProtectedRoute>} path="update-bank-details" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><ZoneSetup /></ProtectedRoute>} path="zone-setup" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantProfilePage /></ProtectedRoute>} path="profile" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><RestaurantReferEarn /></ProtectedRoute>} path="refer-earn" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><WalletPage /></ProtectedRoute>} path="wallet" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><BusinessPlanPage /></ProtectedRoute>} path="business-plan" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><LiveLocationControl /></ProtectedRoute>} path="live-location" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><VendorMoveLocation /></ProtectedRoute>} path="move-location" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningSetupPage /></ProtectedRoute>} path="dining/setup" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningBookingsPage /></ProtectedRoute>} path="dining/bookings" />
+            <Route element={<ProtectedRoute requiredRole="restaurant" loginPath="/food/restaurant/login"><DiningBillingPage /></ProtectedRoute>} path="dining/bookings/:id/bill" />
+          </Route>
 
-        {/* Other Routes */}
-        <Route path="onboarding" element={<RestaurantOnboarding />} />
-        <Route path="terms" element={<TermsAndConditionsPage />} />
-        <Route path="privacy" element={<PrivacyPolicyPage />} />
-        <Route path="support" element={<SupportPolicyPage />} />
-        <Route path="*" element={<Navigate to="/food/restaurant" replace />} />
-      </Routes>
-    </Suspense>
+          {/* Other Routes */}
+          <Route path="onboarding" element={<RestaurantOnboarding />} />
+          <Route path="terms" element={<TermsAndConditionsPage />} />
+          <Route path="privacy" element={<PrivacyPolicyPage />} />
+          <Route path="support" element={<SupportPolicyPage />} />
+          <Route path="*" element={<Navigate to="/food/restaurant" replace />} />
+        </Routes>
+        </Suspense>
+      </div>
     </ErrorBoundary>
   )
 }

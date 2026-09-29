@@ -65,7 +65,7 @@ export default function RestaurantFilterSheet({ open, onClose, filters, setFilte
                           }))
                         }
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 transition-all w-full ${filters.highlyReordered
-                          ? "border-[#FE5502] dark:border-[#FE5502] bg-red-50 dark:bg-[#FE5502]/20 text-[#FE5502] dark:text-[#FE5502]"
+                          ? "border-[#FB4F01] dark:border-[#FB4F01] bg-red-50 dark:bg-[#FB4F01]/20 text-[#FB4F01] dark:text-[#FB4F01]"
                           : "border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a] text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
                           }`}
                       >
@@ -93,7 +93,7 @@ export default function RestaurantFilterSheet({ open, onClose, filters, setFilte
                       Clear All
                     </button>
                     <Button
-                      className="bg-[#FE5502] hover:bg-[#C83C00] text-white px-6 py-2.5 rounded-lg font-bold"
+                      className="bg-[#FB4F01] hover:bg-[#C83C00] text-white px-6 py-2.5 rounded-lg font-bold"
                       onClick={() => onClose()}
                     >
                       Apply {activeFilterCount > 0 && `(${activeFilterCount})`}

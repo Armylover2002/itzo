@@ -181,11 +181,22 @@ const SellerAccessRouter = () => {
   );
 };
 
-const SellerRoutes = () => (
-  <Suspense fallback={<Loader />}>
+const SellerRoutes = () => {
+  useEffect(() => {
+    document.documentElement.classList.add("seller-theme-scope");
+    return () => {
+      document.documentElement.classList.remove("seller-theme-scope");
+    };
+  }, []);
+
+  return (
+  <div className="seller-theme-scope min-h-screen">
+    <Suspense fallback={<Loader />}>
     <SellerLiveUpdates />
     <SellerAccessRouter />
-  </Suspense>
-);
+    </Suspense>
+  </div>
+  );
+};
 
 export default SellerRoutes;

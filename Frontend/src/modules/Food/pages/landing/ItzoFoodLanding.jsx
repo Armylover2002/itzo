@@ -27,15 +27,15 @@ export default function ItzoFoodLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-sans selection:bg-[#FE5502] selection:text-white">
+    <div className="min-h-screen bg-white font-sans selection:bg-[#FB4F01] selection:text-white">
       <motion.div
         style={{ scaleX: progressBar }}
-        className="fixed top-0 left-0 right-0 h-[3px] bg-[#FE5502] origin-left z-[60]"
+        className="fixed top-0 left-0 right-0 h-[3px] bg-[#FB4F01] origin-left z-[60]"
       />
       <Navbar />
       <HeroSection navigate={navigate} />
       <MarqueeStrip />
-      <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#FE5502] border-t-transparent rounded-full animate-spin"></div></div>}>
+      <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#FB4F01] border-t-transparent rounded-full animate-spin"></div></div>}>
         <BetterFoodSection />
         <AppFeaturesSection />
         <PromiseSection />

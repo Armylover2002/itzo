@@ -275,9 +275,9 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
 
             <div className="flex gap-2">
                 {!hidePayroll && (
-                    <button onClick={() => setTab('payroll')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payroll' ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payroll</button>
+                    <button onClick={() => setTab('payroll')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payroll' ? 'bg-[#6413C7] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payroll</button>
                 )}
-                <button onClick={() => setTab('expenses')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'expenses' ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Pending Expenses</button>
+                <button onClick={() => setTab('expenses')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'expenses' ? 'bg-[#6413C7] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Pending Expenses</button>
             </div>
 
             {tab === 'payroll' && (
@@ -290,16 +290,16 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                             {[2024,2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                         <button onClick={handleGenerate} disabled={genLoading}
-                            className="flex items-center gap-2 px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
+                            className="flex items-center gap-2 px-4 h-10 bg-[#6413C7] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm disabled:opacity-50">
                             <Play className="w-4 h-4" />{genLoading ? 'Generating...' : 'Generate Payroll'}
                         </button>
                         {hasDrafts && (
-                            <button onClick={handleApprovePayroll} className="flex items-center gap-2 px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm">
+                            <button onClick={handleApprovePayroll} className="flex items-center gap-2 px-4 h-10 bg-[#6413C7] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm">
                                 <CheckCircle className="w-4 h-4" /> Approve All
                             </button>
                         )}
                         {hasApproved && (
-                            <button onClick={handleMarkPaid} className="flex items-center gap-2 px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm">
+                            <button onClick={handleMarkPaid} className="flex items-center gap-2 px-4 h-10 bg-[#6413C7] hover:bg-[#550fa8] text-white font-medium rounded-xl text-sm">
                                 <DollarSign className="w-4 h-4" /> Mark Paid
                             </button>
                         )}
@@ -401,8 +401,8 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                                             </p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button onClick={() => handleExpenseAction(batch._id, 'Approved', batch.totalAmount)} className="px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
-                                            <button onClick={() => handleExpenseAction(batch._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
+                                            <button onClick={() => handleExpenseAction(batch._id, 'Approved', batch.totalAmount)} className="px-4 h-9 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
+                                            <button onClick={() => handleExpenseAction(batch._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6413C7] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
                                         </div>
                                     </div>
                                 );
@@ -417,7 +417,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                 <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 backdrop-blur-md">
                     <div className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 text-white shadow-lg">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#6412c6]/20 flex items-center justify-center text-[#9359d7]">
+                            <div className="w-8 h-8 rounded-lg bg-[#6413C7]/20 flex items-center justify-center text-[#9359d7]">
                                 <FileText className="w-4 h-4" />
                             </div>
                             <div>
@@ -435,7 +435,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                             </button>
                             <button
                                 onClick={() => handleProxyDownload(previewPdf)}
-                                className="px-4 py-2 bg-gradient-to-r from-[#6412c6] to-amber-500 hover:from-[#550fa8] hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center gap-2 transform hover:scale-105"
+                                className="px-4 py-2 bg-gradient-to-r from-[#6413C7] to-amber-500 hover:from-[#550fa8] hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-[#6413C7]/20 transition-all flex items-center gap-2 transform hover:scale-105"
                                 title="Download Payslip"
                             >
                                 <Download className="w-3.5 h-3.5" /> Download PDF
@@ -468,10 +468,10 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                                 <FileText className="w-12 h-12 text-slate-500" />
                                 <p className="text-slate-400 text-sm">Could not load payslip.</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => handleProxyOpen(previewPdf)} className="px-4 py-2 bg-[#6412c6] text-white rounded-xl text-xs font-bold">
+                                    <button onClick={() => handleProxyOpen(previewPdf)} className="px-4 py-2 bg-[#6413C7] text-white rounded-xl text-xs font-bold">
                                         Open in Tab
                                     </button>
-                                    <button onClick={() => handleProxyDownload(previewPdf)} className="px-4 py-2 bg-[#6412c6] text-white rounded-xl text-xs font-bold">
+                                    <button onClick={() => handleProxyDownload(previewPdf)} className="px-4 py-2 bg-[#6413C7] text-white rounded-xl text-xs font-bold">
                                         Download
                                     </button>
                                 </div>
@@ -498,7 +498,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
                                     <button type="button" onClick={() => { setUploadModalOpen(false); setFile(null); setSelectedSalaryId(null); }} className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium transition-colors">
                                         Cancel
                                     </button>
-                                    <button type="submit" disabled={uploading || !file} className="px-6 py-2 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2">
+                                    <button type="submit" disabled={uploading || !file} className="px-6 py-2 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2">
                                         {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                                         {uploading ? 'Uploading...' : 'Upload Payslip'}
                                     </button>

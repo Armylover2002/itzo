@@ -247,7 +247,7 @@ const Topbar = ({ onMenuClick }) => {
                         onClick={onMenuClick}
                         className={cn(
                             "p-2 mr-1.5 rounded-xl text-gray-600 transition-all duration-300 md:hidden shrink-0",
-                            isSeller ? "hover:text-red-500" : "hover:text-primary"
+                            isSeller ? "hover:text-[#E51D27]" : "hover:text-primary"
                         )}
                     >
                         <HiOutlineMenu className="h-5 w-5" />
@@ -278,14 +278,14 @@ const Topbar = ({ onMenuClick }) => {
                         "relative group",
                         isSeller ? "hidden md:block md:w-[320px] lg:w-[380px] md:flex-1 md:max-w-[380px]" : "w-full md:w-[320px] lg:w-[380px]"
                     )}>
-                        <HiOutlineSearch className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-all duration-300", isSeller ? "group-focus-within:text-red-500" : "group-focus-within:text-primary")} />
+                        <HiOutlineSearch className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 transition-all duration-300", isSeller ? "group-focus-within:text-[#E51D27]" : "group-focus-within:text-primary")} />
                         <input
                             type="text"
                             placeholder={isSeller ? "Search products by name or SKU" : "Search anything..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
-                            className={cn("w-full pl-10 pr-4 py-2 bg-gray-100/50 border border-transparent rounded-xl text-xs font-medium focus:bg-white transition-all duration-500 outline-none", isSeller ? "focus:ring-2 focus:ring-red-500/10 focus:border-red-500/20" : "focus:ring-2 focus:ring-primary/10 focus:border-primary/20")}
+                            className={cn("w-full pl-10 pr-4 py-2 bg-gray-100/50 border border-transparent rounded-xl text-xs font-medium focus:bg-white transition-all duration-500 outline-none", isSeller ? "focus:ring-2 focus:ring-[#E51D27]/10 focus:border-[#E51D27]/20" : "focus:ring-2 focus:ring-primary/10 focus:border-primary/20")}
                         />
                     </form>
 
@@ -312,8 +312,8 @@ const Topbar = ({ onMenuClick }) => {
                             onClick={toggleNotifications}
                             className={cn(
                                 "p-2 text-gray-500 rounded-xl transition-all duration-300 relative group",
-                                isSeller ? "hover:bg-red-500/5 hover:text-red-500" : "hover:bg-primary/5 hover:text-primary",
-                                showNotifications && (isSeller ? "bg-red-500/5 text-red-500" : "bg-primary/5 text-primary")
+                                isSeller ? "hover:bg-[#E51D27]/5 hover:text-[#E51D27]" : "hover:bg-primary/5 hover:text-primary",
+                                showNotifications && (isSeller ? "bg-[#E51D27]/10 text-[#E51D27]" : "bg-primary/5 text-primary")
                             )}
                         >
                             <HiOutlineBell className="h-5 w-5" />
@@ -355,7 +355,7 @@ const Topbar = ({ onMenuClick }) => {
                         <div className={cn(
                             "h-8 w-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-lg hover:scale-105 transition-transform overflow-hidden",
                             isSeller
-                                ? "bg-gradient-to-br from-red-500 to-rose-500 shadow-red-500/20"
+                                ? "bg-gradient-to-br from-[#E51D27] to-[#C71821] shadow-[#E51D27]/20"
                                 : "bg-gradient-to-br from-primary to-indigo-600 shadow-primary/20"
                         )}>
                             {isSeller && user?.shopInfo?.shopImage ? (

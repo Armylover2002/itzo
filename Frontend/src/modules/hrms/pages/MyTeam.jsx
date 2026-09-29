@@ -62,7 +62,7 @@ export default function MyTeam() {
     if (loading) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -84,7 +84,7 @@ export default function MyTeam() {
                     onClick={() => setActiveTab('team')}
                     className={`pb-4 px-4 text-sm font-medium border-b-2 transition-colors ${
                         activeTab === 'team'
-                            ? 'border-[#6412c6] text-[#550fa8]'
+                            ? 'border-[#6413C7] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -94,7 +94,7 @@ export default function MyTeam() {
                     onClick={() => setActiveTab('add')}
                     className={`pb-4 px-4 text-sm font-medium border-b-2 transition-colors ${
                         activeTab === 'add'
-                            ? 'border-[#6412c6] text-[#550fa8]'
+                            ? 'border-[#6413C7] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                     }`}
                 >
@@ -111,7 +111,7 @@ export default function MyTeam() {
                             placeholder="Search team members..."
                             value={searchTeam}
                             onChange={(e) => setSearchTeam(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
+                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30"
                         />
                     </div>
 
@@ -178,7 +178,7 @@ export default function MyTeam() {
             {activeTab === 'add' && (
                 <div className="space-y-4">
                     <div className="bg-[#f7f3fc] border border-[#f0e7f9] rounded-xl p-4 flex gap-3">
-                        <ShieldAlert className="w-5 h-5 text-[#6412c6] shrink-0 mt-0.5" />
+                        <ShieldAlert className="w-5 h-5 text-[#6413C7] shrink-0 mt-0.5" />
                         <div>
                             <h4 className="text-sm font-semibold text-[#370a6d]">Assigning Members</h4>
                             <p className="text-xs text-[#550fa8] mt-1">You can only add employees who are currently unassigned. Employees already assigned to another manager are shown for visibility but cannot be added. To transfer an employee, please contact the Admin.</p>
@@ -204,7 +204,7 @@ export default function MyTeam() {
                             placeholder="Search employees..."
                             value={searchAdd}
                             onChange={(e) => setSearchAdd(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
+                            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30"
                         />
                     </div>
 

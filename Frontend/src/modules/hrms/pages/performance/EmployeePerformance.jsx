@@ -71,11 +71,11 @@ export default function EmployeePerformance() {
                         type="month" 
                         value={period}
                         onChange={(e) => setPeriod(e.target.value)}
-                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                     />
                     <button
                         onClick={() => fetchPerformance(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-xs transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-xs transition-colors"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -85,7 +85,7 @@ export default function EmployeePerformance() {
 
             {loading ? (
                 <div className="flex flex-col justify-center items-center py-24">
-                    <RefreshCw className="w-8 h-8 text-[#6412c6] animate-spin mb-3" />
+                    <RefreshCw className="w-8 h-8 text-[#6413C7] animate-spin mb-3" />
                     <p className="text-slate-400 font-medium text-sm">Loading your scorecard...</p>
                 </div>
             ) : !performanceData ? (
@@ -100,7 +100,7 @@ export default function EmployeePerformance() {
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 rounded-2xl bg-[#f7f3fc] flex items-center justify-center flex-shrink-0">
-                                <Trophy className="w-7 h-7 text-[#6412c6]" />
+                                <Trophy className="w-7 h-7 text-[#6413C7]" />
                             </div>
                             <div>
                                 <span className="text-xs font-semibold text-[#550fa8] block mb-1">
@@ -255,7 +255,7 @@ export default function EmployeePerformance() {
                                                 </span>
                                             </div>
                                             <span className={`text-lg font-bold ${
-                                                kpiData.result.scorePercentage >= 80 ? 'text-emerald-600' : kpiData.result.scorePercentage >= 50 ? 'text-[#6412c6]' : 'text-red-500'
+                                                kpiData.result.scorePercentage >= 80 ? 'text-emerald-600' : kpiData.result.scorePercentage >= 50 ? 'text-[#6413C7]' : 'text-red-500'
                                             }`}>
                                                 {kpiData.result.scorePercentage}%
                                             </span>
@@ -265,7 +265,7 @@ export default function EmployeePerformance() {
                                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                             <div 
                                                 className={`h-full rounded-full transition-all duration-1000 ${
-                                                    kpiData.result.scorePercentage >= 80 ? 'bg-emerald-500' : kpiData.result.scorePercentage >= 50 ? 'bg-[#6412c6]' : 'bg-red-500'
+                                                    kpiData.result.scorePercentage >= 80 ? 'bg-emerald-500' : kpiData.result.scorePercentage >= 50 ? 'bg-[#6413C7]' : 'bg-red-500'
                                                 }`}
                                                 style={{ width: `${Math.min(100, kpiData.result.scorePercentage)}%` }}
                                             />

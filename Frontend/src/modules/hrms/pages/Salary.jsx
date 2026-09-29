@@ -160,14 +160,14 @@ export default function Salary() {
                     <p className="text-sm text-slate-500 mt-1">View your salary history and download payslips</p>
                 </div>
                 <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}
-                    className="h-10 px-4 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30">
+                    className="h-10 px-4 border border-slate-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30">
                     {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
             </div>
 
             <div className="flex gap-2">
-                <button onClick={() => setTab('overview')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'overview' ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Salary Overview</button>
-                <button onClick={() => setTab('payslips')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payslips' ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payslips</button>
+                <button onClick={() => setTab('overview')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'overview' ? 'bg-[#6413C7] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Salary Overview</button>
+                <button onClick={() => setTab('payslips')} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === 'payslips' ? 'bg-[#6413C7] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200'}`}>Payslips</button>
             </div>
 
             {/* Payslip Detail Modal */}
@@ -271,7 +271,7 @@ export default function Salary() {
                 <div className="fixed inset-0 z-50 flex flex-col bg-slate-900/95 backdrop-blur-md">
                     <div className="flex items-center justify-between px-6 py-4 bg-slate-900 border-b border-slate-800 text-white shadow-lg">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#6412c6]/20 flex items-center justify-center text-[#9359d7]">
+                            <div className="w-8 h-8 rounded-lg bg-[#6413C7]/20 flex items-center justify-center text-[#9359d7]">
                                 <FileText className="w-4 h-4" />
                             </div>
                             <div>
@@ -289,7 +289,7 @@ export default function Salary() {
                             </button>
                             <button
                                 onClick={() => handleProxyDownload(previewPdf)}
-                                className="px-4 py-2 bg-gradient-to-r from-[#6412c6] to-amber-500 hover:from-[#550fa8] hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center gap-2 transform hover:scale-105"
+                                className="px-4 py-2 bg-gradient-to-r from-[#6413C7] to-amber-500 hover:from-[#550fa8] hover:to-amber-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-[#6413C7]/20 transition-all flex items-center gap-2 transform hover:scale-105"
                                 title="Download Payslip"
                             >
                                 <Download className="w-3.5 h-3.5" /> Download PDF
@@ -322,7 +322,7 @@ export default function Salary() {
                                 <FileText className="w-12 h-12 text-slate-500" />
                                 <p className="text-slate-400 text-sm">Could not load payslip.</p>
                                 <div className="flex gap-3">
-                                    <button onClick={() => handleProxyOpen(previewPdf)} className="px-4 py-2 bg-[#6412c6] text-white rounded-xl text-xs font-bold">
+                                    <button onClick={() => handleProxyOpen(previewPdf)} className="px-4 py-2 bg-[#6413C7] text-white rounded-xl text-xs font-bold">
                                         Open in Tab
                                     </button>
                                     <button onClick={() => handleProxyDownload(previewPdf)} className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold">

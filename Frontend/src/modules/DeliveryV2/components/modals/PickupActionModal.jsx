@@ -312,7 +312,7 @@ export const PickupActionModal = ({
                 successLabel="Reached!"
                 disabled={!isWithinRange}
                 onConfirm={onReachedPickup}
-                color="bg-[#FE5502]"
+                color="bg-[#F35B1C]"
               />
             </div>
           ) : (
@@ -349,7 +349,7 @@ export const PickupActionModal = ({
                     pickupPhotoUrl: billImageUrl,
                     pickupImages: billImageUrl ? [billImageUrl] : [],
                   })}
-                  color="bg-[#FE5502]"
+                  color="bg-[#F35B1C]"
                 />
               </div>
             </div>

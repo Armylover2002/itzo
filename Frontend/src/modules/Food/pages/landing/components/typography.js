@@ -6,7 +6,7 @@
  * consistent design instead of each section inventing its own sizes/colors.
  */
 export const EYEBROW =
-  'inline-flex items-center gap-2 rounded-full bg-[#FE5502]/10 px-4 py-1.5 text-[#FE5502] text-xs sm:text-sm font-bold tracking-[0.18em] uppercase';
+  'inline-flex items-center gap-2 rounded-full bg-[#FB4F01]/10 px-4 py-1.5 text-[#FB4F01] text-xs sm:text-sm font-bold tracking-[0.18em] uppercase';
 
 export const HEADING =
   'text-4xl sm:text-5xl md:text-6xl font-black leading-[1.08] tracking-tight text-slate-900';

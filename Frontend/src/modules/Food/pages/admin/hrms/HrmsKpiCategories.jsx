@@ -85,7 +85,7 @@ export default function HrmsKpiCategories() {
                         className="p-2.5 bg-white hover:bg-slate-50 text-slate-500 rounded-xl border border-slate-200 transition-colors"
                         title="Refresh"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#6412c6]' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#6413C7]' : ''}`} />
                     </button>
                     <button
                         onClick={() => {
@@ -93,7 +93,7 @@ export default function HrmsKpiCategories() {
                             setFormData({ name: '', description: '', isActive: true });
                             setIsModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-sm transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-sm transition-colors"
                     >
                         <Plus className="w-4 h-4" /> Add Category
                     </button>
@@ -103,7 +103,7 @@ export default function HrmsKpiCategories() {
             {/* Categories Grid */}
             {loading ? (
                 <div className="flex justify-center items-center py-20">
-                    <RefreshCw className="w-7 h-7 text-[#6412c6] animate-spin" />
+                    <RefreshCw className="w-7 h-7 text-[#6413C7] animate-spin" />
                 </div>
             ) : categories.length === 0 ? (
                 <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
@@ -173,7 +173,7 @@ export default function HrmsKpiCategories() {
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
                         <div className="flex items-center justify-between p-5 border-b border-slate-100">
                             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                <FolderTree className="w-5 h-5 text-[#6412c6]" />
+                                <FolderTree className="w-5 h-5 text-[#6413C7]" />
                                 {editId ? 'Edit Category' : 'New Category'}
                             </h3>
                             <button onClick={() => setIsModalOpen(false)} className="p-1.5 hover:bg-slate-100 text-slate-400 rounded-lg transition-colors">
@@ -189,7 +189,7 @@ export default function HrmsKpiCategories() {
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="e.g. Restaurant Onboarding"
-                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] transition-colors"
+                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7] transition-colors"
                                 />
                             </div>
                             <div>
@@ -199,7 +199,7 @@ export default function HrmsKpiCategories() {
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     placeholder="What metrics belong in this category..."
-                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] transition-colors resize-none"
+                                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7] transition-colors resize-none"
                                 />
                             </div>
                             <div className="flex items-center gap-2.5">
@@ -208,7 +208,7 @@ export default function HrmsKpiCategories() {
                                     id="isActive"
                                     checked={formData.isActive}
                                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                    className="w-4 h-4 rounded border-slate-300 text-[#6412c6] focus:ring-[#6412c6]"
+                                    className="w-4 h-4 rounded border-slate-300 text-[#6413C7] focus:ring-[#6413C7]"
                                 />
                                 <label htmlFor="isActive" className="text-sm font-medium text-slate-700 cursor-pointer">
                                     Active (available for new KPIs)
@@ -224,7 +224,7 @@ export default function HrmsKpiCategories() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-5 py-2.5 rounded-xl bg-[#6412c6] hover:bg-[#550fa8] text-white text-sm font-semibold transition-colors"
+                                    className="px-5 py-2.5 rounded-xl bg-[#6413C7] hover:bg-[#550fa8] text-white text-sm font-semibold transition-colors"
                                 >
                                     {editId ? 'Update Category' : 'Create Category'}
                                 </button>

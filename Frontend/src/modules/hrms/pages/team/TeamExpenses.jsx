@@ -68,7 +68,7 @@ export default function TeamExpenses() {
     if (loading && batches.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -150,7 +150,7 @@ export default function TeamExpenses() {
                                                 <p className="text-xs text-slate-500 mt-0.5">
                                                     {batch.entries?.length || 0} {(batch.entries?.length || 0) === 1 ? 'visit entry' : 'visit entries'}
                                                     {batch.isLegacy && <span className="ml-2 text-amber-500 font-medium">(Migrated)</span>}
-                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-[#6412c6] font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
+                                                    {batch.resubmissionCount > 0 && <span className="ml-2 text-[#6413C7] font-medium">Resubmitted ×{batch.resubmissionCount}</span>}
                                                 </p>
                                             </div>
                                         </div>

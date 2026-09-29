@@ -1059,7 +1059,7 @@ export default function Profile() {
                       e.stopPropagation();
                       handleShareReferral();
                     }}
-                    className="inline-flex items-center gap-1 text-xs text-[#FE5502] font-medium ml-2 px-2 py-1 rounded-md"
+                    className="inline-flex items-center gap-1 text-xs text-[#FB4F01] font-medium ml-2 px-2 py-1 rounded-md"
                     disabled={!referralLink}>
                     <Share2 className="h-3.5 w-3.5" />
                     Refer
@@ -1181,7 +1181,7 @@ export default function Profile() {
         {/* Food Section */}
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-2 px-1">
-            <div className="w-1 h-4 bg-[#FE5502] rounded"></div>
+            <div className="w-1 h-4 bg-[#FB4F01] rounded"></div>
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               Food
             </h3>
@@ -1334,7 +1334,7 @@ export default function Profile() {
         {/* More Section */}
         <div className="mb-8 pb-8">
           <div className="flex items-center gap-2 mb-2 px-1">
-            <div className="w-1 h-4 bg-[#FE5502] rounded"></div>
+            <div className="w-1 h-4 bg-[#FB4F01] rounded"></div>
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               More
             </h3>

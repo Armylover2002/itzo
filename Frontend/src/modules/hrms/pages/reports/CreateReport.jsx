@@ -243,7 +243,7 @@ export default function CreateReport() {
         }
     };
 
-    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
+    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" /></div>;
 
     const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]";
     const labelClass = "block text-xs font-semibold text-slate-500 mb-1.5";
@@ -312,7 +312,7 @@ export default function CreateReport() {
                         <div className="mb-5">
                             <label className={labelClass}>
                                 <span className="flex items-center gap-1.5">
-                                    <Store className="w-3.5 h-3.5 text-[#6412c6]" />
+                                    <Store className="w-3.5 h-3.5 text-[#6413C7]" />
                                     Restaurants Visited ({formData.metrics.restaurantsVisitedNames.length})
                                 </span>
                             </label>
@@ -349,7 +349,7 @@ export default function CreateReport() {
                                         className={`${inputClass} pl-9 pr-10`}
                                     />
                                     {restaurantSearchLoading && (
-                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6412c6] animate-spin" />
+                                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6413C7] animate-spin" />
                                     )}
                                 </div>
 
@@ -448,7 +448,7 @@ export default function CreateReport() {
                     </div>
 
                     <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading || formData.attachments.length >= (settings?.maxAttachments || 5)} className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-300 rounded-xl p-8 hover:bg-slate-50 hover:border-[#c1a0e8] transition-colors disabled:opacity-50">
-                        {uploading ? <Loader2 className="w-6 h-6 text-[#6412c6] animate-spin" /> : <Upload className="w-6 h-6 text-slate-400" />}
+                        {uploading ? <Loader2 className="w-6 h-6 text-[#6413C7] animate-spin" /> : <Upload className="w-6 h-6 text-slate-400" />}
                         <span className="text-sm font-medium text-slate-600">{uploading ? 'Uploading...' : 'Click to upload files'}</span>
                     </button>
                     <input type="file" multiple ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={settings?.allowedFileTypes?.join(',')} />
@@ -467,7 +467,7 @@ export default function CreateReport() {
                 <button
                     onClick={() => handleSubmit('Submitted')}
                     disabled={saving || uploading}
-                    className="px-6 py-2.5 rounded-xl bg-[#6412c6] text-white font-semibold hover:bg-[#550fa8] shadow-lg shadow-[#6412c6]/20 transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-xl bg-[#6413C7] text-white font-semibold hover:bg-[#550fa8] shadow-lg shadow-[#6413C7]/20 transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Submit Report
                 </button>

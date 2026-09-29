@@ -294,7 +294,7 @@ const ItzoFoodLandingSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 font-sans selection:bg-[#6412c6]/30">
+    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 font-sans selection:bg-[#6413C7]/30">
 
       {/* Header */}
       <div className="mb-10 flex items-center justify-between">
@@ -376,7 +376,7 @@ const ItzoFoodLandingSettings = () => {
                 type="button"
                 onClick={() => handleChange('benefitsSectionEnabled', !formData.benefitsSectionEnabled)}
                 className={cn(
-                  "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#6412c6] focus:ring-offset-2",
+                  "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#6413C7] focus:ring-offset-2",
                   formData.benefitsSectionEnabled ? "bg-[#550fa8]" : "bg-gray-200"
                 )}
               >
@@ -464,7 +464,7 @@ const ItzoFoodLandingSettings = () => {
 
       {/* Persistence Controls */}
       <div className="fixed bottom-10 right-10 z-50">
-        <button onClick={handleUpdate} disabled={saving} className="bg-gradient-to-r from-[#6412c6] to-rose-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_15px_40px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-90 transition-all disabled:opacity-50">
+        <button onClick={handleUpdate} disabled={saving} className="bg-gradient-to-r from-[#6413C7] to-rose-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-[0_15px_40px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-90 transition-all disabled:opacity-50">
           {saving ? <Loader2 size={24} className="animate-spin" /> : <Save size={24} />}
         </button>
       </div>

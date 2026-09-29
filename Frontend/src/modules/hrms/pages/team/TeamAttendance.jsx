@@ -90,7 +90,7 @@ export default function TeamAttendance() {
     if (loading && records.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -113,7 +113,7 @@ export default function TeamAttendance() {
                         placeholder="Search employee..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
+                        className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30"
                     />
                 </div>
                 <div>
@@ -121,13 +121,13 @@ export default function TeamAttendance() {
                         type="date"
                         value={dateFilter}
                         onChange={e => setDateFilter(e.target.value)}
-                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30"
                     />
                 </div>
                 <select 
                     value={statusFilter}
                     onChange={e => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
+                    className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30"
                 >
                     <option value="All">All Statuses</option>
                     <option value="Present">Present</option>

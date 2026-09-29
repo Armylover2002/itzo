@@ -251,7 +251,7 @@ export default function Signup() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
                 <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-                    <div className="h-1.5 bg-[#6412c6] hover:bg-[#550fa8]" />
+                    <div className="h-1.5 bg-[#6413C7] hover:bg-[#550fa8]" />
                     <div className="p-10 text-center">
                         <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Check className="w-10 h-10 text-emerald-500" />
@@ -280,7 +280,7 @@ export default function Signup() {
         );
     }
 
-    const inputClass = "w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 focus:border-[#6412c6] transition-all text-sm";
+    const inputClass = "w-full h-11 px-4 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30 focus:border-[#6413C7] transition-all text-sm";
     const labelClass = "text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5 block";
 
     return (
@@ -288,7 +288,7 @@ export default function Signup() {
             <div className="w-full max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#6412c6] to-[#550fa8] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#6412c6]/20 overflow-hidden">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#6413C7] to-[#550fa8] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-[#6413C7]/20 overflow-hidden">
                         {(hrmsSettings?.companyLogoUrl || getAppLogo('admin')) ? (
                             <img 
                                 src={hrmsSettings?.companyLogoUrl || getAppLogo('admin')} 
@@ -310,7 +310,7 @@ export default function Signup() {
                         <div key={i} className="flex items-center gap-2">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                                 i < currentStep ? 'bg-emerald-500 text-white'
-                                : i === currentStep ? 'bg-[#6412c6] text-white shadow-lg shadow-[#6412c6]/30'
+                                : i === currentStep ? 'bg-[#6413C7] text-white shadow-lg shadow-[#6413C7]/30'
                                 : 'bg-slate-200 text-slate-500'
                             }`}>
                                 {i < currentStep ? <Check className="w-4 h-4" /> : i + 1}
@@ -325,7 +325,7 @@ export default function Signup() {
 
                 {/* Form Card */}
                 <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
-                    <div className="h-1 bg-gradient-to-r from-[#6412c6] via-amber-500 to-[#550fa8]" />
+                    <div className="h-1 bg-gradient-to-r from-[#6413C7] via-amber-500 to-[#550fa8]" />
                     <div className="p-6 sm:p-8">
                         {/* Step 1: Personal Info */}
                         {currentStep === 0 && (
@@ -362,7 +362,7 @@ export default function Signup() {
                                         <div className="flex gap-4">
                                             {['Male', 'Female', 'Other'].map(g => (
                                                 <label key={g} className="flex items-center gap-2 cursor-pointer">
-                                                    <input type="radio" name="gender" value={g} checked={form.gender === g} onChange={e => updateField('gender', e.target.value)} className="accent-[#6412c6]" />
+                                                    <input type="radio" name="gender" value={g} checked={form.gender === g} onChange={e => updateField('gender', e.target.value)} className="accent-[#6413C7]" />
                                                     <span className="text-sm text-slate-300">{g}</span>
                                                 </label>
                                             ))}
@@ -376,7 +376,7 @@ export default function Signup() {
                                                 <label key={opt.value}
                                                     className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                                                         form.employeeType === opt.value
-                                                            ? 'border-[#6412c6] bg-[#f7f3fc]'
+                                                            ? 'border-[#6413C7] bg-[#f7f3fc]'
                                                             : 'border-slate-200 hover:border-slate-300'
                                                     }`}>
                                                     <input type="radio" name="employeeType" value={opt.value}
@@ -384,7 +384,7 @@ export default function Signup() {
                                                         onChange={e => updateField('employeeType', e.target.value)}
                                                         className="hidden" />
                                                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                                                        form.employeeType === opt.value ? 'bg-[#6412c6] text-white' : 'bg-slate-100 text-slate-500'
+                                                        form.employeeType === opt.value ? 'bg-[#6413C7] text-white' : 'bg-slate-100 text-slate-500'
                                                     }`}>
                                                         <opt.icon className="w-4 h-4" />
                                                     </div>
@@ -429,7 +429,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload Aadhaar</label>
                                         <div className="relative">
                                             <input type="file" id="aadhaar-upload" className="hidden" accept="image/*,.pdf" onChange={e => handleFileUpload('aadhaar', e.target.files?.[0])} />
-                                            <label htmlFor="aadhaar-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.aadhaarPhotoUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
+                                            <label htmlFor="aadhaar-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.aadhaarPhotoUrl ? 'text-[#6413C7] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.aadhaar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.aadhaar ? 'Uploading...' : form.aadhaarPhotoUrl ? 'Uploaded' : 'Upload File'}</span>
                                             </label>
@@ -443,7 +443,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload PAN</label>
                                         <div className="relative">
                                             <input type="file" id="pan-upload" className="hidden" accept="image/*,.pdf" onChange={e => handleFileUpload('pan', e.target.files?.[0])} />
-                                            <label htmlFor="pan-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.panPhotoUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
+                                            <label htmlFor="pan-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.panPhotoUrl ? 'text-[#6413C7] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.pan ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.pan ? 'Uploading...' : form.panPhotoUrl ? 'Uploaded' : 'Upload File'}</span>
                                             </label>
@@ -453,7 +453,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload Profile Photo</label>
                                         <div className="relative">
                                             <input type="file" id="profile-upload" className="hidden" accept="image/*" onChange={e => handleFileUpload('profilePhoto', e.target.files?.[0])} />
-                                            <label htmlFor="profile-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.profilePhotoUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
+                                            <label htmlFor="profile-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.profilePhotoUrl ? 'text-[#6413C7] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.profilePhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.profilePhoto ? 'Uploading...' : form.profilePhotoUrl ? 'Uploaded' : 'Upload Photo'}</span>
                                             </label>
@@ -463,7 +463,7 @@ export default function Signup() {
                                         <label className={labelClass}>Upload Resume / CV</label>
                                         <div className="relative">
                                             <input type="file" id="resume-upload" className="hidden" accept="image/*,.pdf,.doc,.docx" onChange={e => handleFileUpload('resume', e.target.files?.[0])} />
-                                            <label htmlFor="resume-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.resumeUrl ? 'text-[#6412c6] border-[#c1a0e8]' : 'text-slate-400'}`}>
+                                            <label htmlFor="resume-upload" className={`flex items-center justify-center gap-2 w-full h-11 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${form.resumeUrl ? 'text-[#6413C7] border-[#c1a0e8]' : 'text-slate-400'}`}>
                                                 {uploading.resume ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                                                 <span className="text-sm font-medium">{uploading.resume ? 'Uploading...' : form.resumeUrl ? 'Uploaded' : 'Upload Resume'}</span>
                                             </label>
@@ -657,7 +657,7 @@ export default function Signup() {
 
                                 <button
                                     onClick={nextStep}
-                                    className="flex items-center gap-2 px-5 h-11 bg-gradient-to-r from-[#6412c6] to-[#550fa8] hover:from-[#550fa8] hover:to-[#460d8b] text-white font-semibold rounded-xl shadow-lg shadow-[#6412c6]/25 transition-all text-sm"
+                                    className="flex items-center gap-2 px-5 h-11 bg-gradient-to-r from-[#6413C7] to-[#550fa8] hover:from-[#550fa8] hover:to-[#460d8b] text-white font-semibold rounded-xl shadow-lg shadow-[#6413C7]/25 transition-all text-sm"
                                 >
                                     {currentStep === 3 ? 'Start Assessment' : 'Next'}
                                     <ChevronRight className="w-4 h-4" />

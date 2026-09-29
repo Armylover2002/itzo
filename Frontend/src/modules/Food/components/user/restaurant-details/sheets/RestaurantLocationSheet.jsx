@@ -25,9 +25,9 @@ export default function RestaurantLocationSheet({ open, onClose, restaurant }) {
                             className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-[#2a2a2a]"
                           >
                             {outlet?.isNearest && (
-                              <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-red-50 dark:bg-[#FE5502]/20 rounded-md">
-                                <Zap className="h-3.5 w-3.5 text-[#FE5502] dark:text-[#FE5502] fill-[#FE5502] dark:fill-[#FE5502]" />
-                                <span className="text-xs font-semibold text-[#FE5502] dark:text-[#FE5502]">
+                              <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-red-50 dark:bg-[#FB4F01]/20 rounded-md">
+                                <Zap className="h-3.5 w-3.5 text-[#FB4F01] dark:text-[#FB4F01] fill-[#FB4F01] dark:fill-[#FB4F01]" />
+                                <span className="text-xs font-semibold text-[#FB4F01] dark:text-[#FB4F01]">
                                   Nearest available outlet
                                 </span>
                               </div>

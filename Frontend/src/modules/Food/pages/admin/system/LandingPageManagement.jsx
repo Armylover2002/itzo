@@ -115,7 +115,7 @@ const BannerHeaderFormBlock = ({ banner, index, onSave }) => {
         <Button
           onClick={handleSave}
           disabled={saving || !dirty}
-          className="inline-flex h-9 items-center justify-center rounded-lg bg-[#6412c6] hover:bg-[#550fa8] text-white px-4 text-xs font-semibold transition disabled:opacity-50"
+          className="inline-flex h-9 items-center justify-center rounded-lg bg-[#6413C7] hover:bg-[#550fa8] text-white px-4 text-xs font-semibold transition disabled:opacity-50"
         >
           {saving ? (<><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Saving...</>) : 'Save Changes'}
         </Button>
@@ -2042,7 +2042,7 @@ export default function LandingPageManagement() {
                   type="button"
                   onClick={() => headerVideoInputRef.current?.click()}
                   disabled={headerVideoUploading || settingsLoading}
-                  className="bg-[#6412c6] hover:bg-[#6412c6] text-white"
+                  className="bg-[#6413C7] hover:bg-[#6413C7] text-white"
                 >
                   {headerVideoUploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
                   Upload Video
@@ -2051,7 +2051,7 @@ export default function LandingPageManagement() {
 
               {settingsLoading ? (
                 <div className="flex items-center justify-center py-10">
-                  <Loader2 className="w-6 h-6 text-[#6412c6] animate-spin" />
+                  <Loader2 className="w-6 h-6 text-[#6413C7] animate-spin" />
                 </div>
               ) : settings.headerVideoUrl ? (
                 <div className="space-y-4">

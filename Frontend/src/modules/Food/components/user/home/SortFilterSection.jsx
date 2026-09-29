@@ -42,7 +42,7 @@ const SortFilterSection = memo(({ activeFilters, toggleFilter, setIsFilterOpen }
                 onClick={() => toggleFilter(filter.id)}
                 className={`flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 font-medium transition-all active:scale-95 sm:h-8 sm:px-4 ${
                   isActive
-                    ? "border border-[#FE5502] bg-[#FE5502] text-white hover:bg-[#FE5502]/90"
+                    ? "border border-[#FB4F01] bg-[#FB4F01] text-white hover:bg-[#FB4F01]/90"
                     : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 dark:border-gray-800 dark:bg-[#1a1a1a] dark:text-gray-300 dark:hover:bg-gray-800"
                 }`}
               >

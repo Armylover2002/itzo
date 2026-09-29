@@ -185,11 +185,11 @@ export default function HrmsKpiSettings() {
                         className="p-2.5 bg-white hover:bg-slate-50 text-slate-500 rounded-xl border border-slate-200 transition-colors"
                         title="Refresh"
                     >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#6412c6]' : ''}`} />
+                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#6413C7]' : ''}`} />
                     </button>
                     <button
                         onClick={openNew}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-sm transition-colors"
+                        className="flex items-center gap-2 px-5 py-2.5 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-sm transition-colors"
                     >
                         <Plus className="w-4 h-4" /> Add KPI
                     </button>
@@ -202,7 +202,7 @@ export default function HrmsKpiSettings() {
                     onClick={() => setActiveMainTab('kpis')}
                     className={`flex items-center gap-2 px-5 py-2.5 font-semibold text-sm transition-all border-b-2 -mb-px ${
                         activeMainTab === 'kpis'
-                            ? 'border-[#6412c6] text-[#550fa8]'
+                            ? 'border-[#6413C7] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                     }`}
                 >
@@ -212,7 +212,7 @@ export default function HrmsKpiSettings() {
                     onClick={() => setActiveMainTab('categories')}
                     className={`flex items-center gap-2 px-5 py-2.5 font-semibold text-sm transition-all border-b-2 -mb-px ${
                         activeMainTab === 'categories'
-                            ? 'border-[#6412c6] text-[#550fa8]'
+                            ? 'border-[#6413C7] text-[#550fa8]'
                             : 'border-transparent text-slate-500 hover:text-slate-700'
                     }`}
                 >
@@ -234,7 +234,7 @@ export default function HrmsKpiSettings() {
                             onClick={() => setSelectedCategoryFilter('All')}
                             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                 selectedCategoryFilter === 'All'
-                                    ? 'bg-[#6412c6] text-white'
+                                    ? 'bg-[#6413C7] text-white'
                                     : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                             }`}
                         >
@@ -248,7 +248,7 @@ export default function HrmsKpiSettings() {
                                     onClick={() => setSelectedCategoryFilter(cat._id)}
                                     className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                                         selectedCategoryFilter === cat._id
-                                            ? 'bg-[#6412c6] text-white'
+                                            ? 'bg-[#6413C7] text-white'
                                             : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
                                     }`}
                                 >
@@ -261,7 +261,7 @@ export default function HrmsKpiSettings() {
                     {/* KPI Cards Grid */}
                     {loading ? (
                         <div className="flex justify-center items-center py-20">
-                            <RefreshCw className="w-7 h-7 text-[#6412c6] animate-spin" />
+                            <RefreshCw className="w-7 h-7 text-[#6413C7] animate-spin" />
                         </div>
                     ) : filteredKpis.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
@@ -377,7 +377,7 @@ export default function HrmsKpiSettings() {
                                         value={formData.name}
                                         onChange={e => setFormData({...formData, name: e.target.value})}
                                         placeholder="e.g. Restaurant Onboarding Target"
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] transition-colors"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7] transition-colors"
                                     />
                                 </div>
 
@@ -386,7 +386,7 @@ export default function HrmsKpiSettings() {
                                     <select
                                         value={formData.categoryId}
                                         onChange={e => setFormData({...formData, categoryId: e.target.value})}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     >
                                         <option value="">-- Select --</option>
                                         {categories.map(cat => (
@@ -402,7 +402,7 @@ export default function HrmsKpiSettings() {
                                         value={formData.description}
                                         onChange={e => setFormData({...formData, description: e.target.value})}
                                         placeholder="What does this KPI measure?"
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6] transition-colors"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7] transition-colors"
                                     />
                                 </div>
 
@@ -415,7 +415,7 @@ export default function HrmsKpiSettings() {
                                         max="100"
                                         value={formData.weightage}
                                         onChange={e => setFormData({...formData, weightage: Number(e.target.value)})}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#550fa8] focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-[#550fa8] focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     />
                                 </div>
 
@@ -426,7 +426,7 @@ export default function HrmsKpiSettings() {
                                         type="number"
                                         value={formData.target}
                                         onChange={e => setFormData({...formData, target: Number(e.target.value)})}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     />
                                 </div>
 
@@ -435,7 +435,7 @@ export default function HrmsKpiSettings() {
                                     <select
                                         value={formData.targetType}
                                         onChange={e => setFormData({...formData, targetType: e.target.value})}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     >
                                         <option value="Numeric">Numeric</option>
                                         <option value="Currency">Currency (₹)</option>
@@ -448,7 +448,7 @@ export default function HrmsKpiSettings() {
                                     <select
                                         value={formData.metricKey}
                                         onChange={e => setFormData({...formData, metricKey: e.target.value})}
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     >
                                         <option value="REST_ONBOARDED_COUNT">Restaurants Onboarded</option>
                                         <option value="REST_ACTIVE_COUNT">Active Restaurants</option>
@@ -467,7 +467,7 @@ export default function HrmsKpiSettings() {
                                         value={formData.department}
                                         onChange={e => setFormData({...formData, department: e.target.value})}
                                         placeholder="e.g. Sales, All"
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     />
                                 </div>
 
@@ -478,7 +478,7 @@ export default function HrmsKpiSettings() {
                                         value={formData.role}
                                         onChange={e => setFormData({...formData, role: e.target.value})}
                                         placeholder="e.g. Manager, All"
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     />
                                 </div>
 
@@ -488,7 +488,7 @@ export default function HrmsKpiSettings() {
                                         id="isActiveKpi"
                                         checked={formData.isActive}
                                         onChange={e => setFormData({...formData, isActive: e.target.checked})}
-                                        className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]"
+                                        className="w-4 h-4 text-[#6413C7] rounded border-slate-300 focus:ring-[#6413C7]"
                                     />
                                     <label htmlFor="isActiveKpi" className="text-sm font-medium text-slate-700 cursor-pointer">
                                         Enable this KPI for evaluation
@@ -517,7 +517,7 @@ export default function HrmsKpiSettings() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-6 py-2.5 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors"
+                                    className="px-6 py-2.5 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-sm flex items-center gap-2 transition-colors"
                                 >
                                     <Save className="w-4 h-4" /> {editId ? 'Update KPI' : 'Create KPI'}
                                 </button>

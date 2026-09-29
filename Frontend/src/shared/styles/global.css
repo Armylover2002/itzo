@@ -25,10 +25,10 @@
   --card-foreground: #1A1A1A;
   --popover: #FFFFFF;
   --popover-foreground: #1A1A1A;
-  --primary: #FE5502;
+  --primary: #FB4F01;
   --primary-foreground: #FFFFFF;
-  --secondary: #FFEDE3;
-  --secondary-foreground: #FE5502;
+  --secondary: #FFF1EB;
+  --secondary-foreground: #FB4F01;
   --muted: #FAF7F2;
   --muted-foreground: #5C5247;
   --accent: #EAF4EA;
@@ -36,15 +36,15 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: #EDE8E0;
   --input: #EDE8E0;
-  --ring: #FE5502;
+  --ring: #FB4F01;
   --sidebar: #FAF7F2;
   --sidebar-foreground: #1A1A1A;
-  --sidebar-primary: #FE5502;
+  --sidebar-primary: #FB4F01;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FFEDE3;
-  --sidebar-accent-foreground: #FE5502;
+  --sidebar-accent: #FFF1EB;
+  --sidebar-accent-foreground: #FB4F01;
   --sidebar-border: #EDE8E0;
-  --sidebar-ring: #FE5502;
+  --sidebar-ring: #FB4F01;
 }
 
 @theme inline {
@@ -98,11 +98,11 @@
   --color-brand-950: #010401;
   
   /* Brand Color Overrides for Tailwind Utilities */
-  --color-orange-50: #FFEDE3;
-  --color-orange-100: #FFD5BE;
-  --color-orange-500: #FE5502;
-  --color-orange-600: #C83C00;
-  --color-orange-700: #A03000;
+  --color-orange-50: #FFF1EB;
+  --color-orange-100: #FED7C5;
+  --color-orange-500: #FB4F01;
+  --color-orange-600: #D84200;
+  --color-orange-700: #B03600;
 
   --color-green-50: #EAF4EA;
   --color-green-100: #D0E5D0;
@@ -110,14 +110,14 @@
   --color-green-600: #256428;
 
   --color-page-bg: #FAF7F2;
-  --color-primary-orange: #FE5502;
-  --color-primary-hover: #C83C00;
-  --color-primary-dark: #A03000;
+  --color-primary-orange: #FB4F01;
+  --color-primary-hover: #D84200;
+  --color-primary-dark: #B03600;
   --font-poppins: var(--font-poppins);
   --font-outfit: var(--font-outfit);
 
   /* Specific brand mappings */
-  --color-orange-tint: #FFEDE3;
+  --color-orange-tint: #FFF1EB;
   --color-accent-green: #2E7D32;
   --color-green-tint: #EAF4EA;
   --color-text-dark: #1A1A1A;
@@ -132,7 +132,7 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: #FE5502;
+  --primary: #FB4F01;
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
@@ -143,15 +143,15 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: #FE5502;
+  --ring: #FB4F01;
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: #FE5502;
+  --sidebar-primary: #FB4F01;
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: #FE5502;
+  --sidebar-ring: #FB4F01;
 }
 
 @layer base {
@@ -324,110 +324,176 @@
 }
 
 /* ==========================================================================
-   BRAND THEME UNIFICATION (Scoped to Admin, Restaurant, HRMS & Seller Panels)
+   BRAND THEME UNIFICATION ACROSS ALL ITZO PANELS
    ==========================================================================
-   By aliasing Tailwind color variables within these scopes, we unify each
-   panel to its own ITZO brand color, WITHOUT affecting the User/Delivery
-   panels (which keep the default orange brand).
+   Exact primary brand colors:
+   - ITZO USER:       #FB4F01
+   - ITZO SELLER:     #E51D27
+   - ITZO DELIVERY:   #F35B1C
+   - ITZO ADMIN:      #6413C7
+   - ITZO HRMS:       #6413C7
+   - ITZO RESTAURANT: #10335D
 */
+
+/* 1. ITZO USER SCOPE */
+.user-theme-scope {
+  --color-primary: #FB4F01;
+  --primary: #FB4F01;
+  --color-orange-500: #FB4F01;
+  --color-primary-orange: #FB4F01;
+  --secondary: #FFF1EB;
+  --secondary-foreground: #FB4F01;
+  --ring: #FB4F01;
+  --sidebar-primary: #FB4F01;
+  --sidebar-accent: #FFF1EB;
+  --sidebar-accent-foreground: #FB4F01;
+  --sidebar-ring: #FB4F01;
+}
+
+/* 2. ITZO SELLER SCOPE */
+.seller-theme-scope {
+  --color-blue-50: #FDE8E9;
+  --color-blue-100: #FCD1D4;
+  --color-blue-200: #F8A3A8;
+  --color-blue-300: #F4757D;
+  --color-blue-400: #EE4751;
+  --color-blue-500: #E51D27;
+  --color-blue-600: #C71821;
+  --color-blue-700: #9E1219;
+  --color-blue-800: #730C12;
+  --color-blue-900: #4A070B;
+
+  --color-indigo-50: #FDE8E9;
+  --color-indigo-100: #FCD1D4;
+  --color-indigo-200: #F8A3A8;
+  --color-indigo-300: #F4757D;
+  --color-indigo-400: #EE4751;
+  --color-indigo-500: #E51D27;
+  --color-indigo-600: #C71821;
+  --color-indigo-700: #9E1219;
+  --color-indigo-800: #730C12;
+  --color-indigo-900: #4A070B;
+
+  --color-red-50: #FDE8E9;
+  --color-red-100: #FCD1D4;
+  --color-red-200: #F8A3A8;
+  --color-red-300: #F4757D;
+  --color-red-400: #EE4751;
+  --color-red-500: #E51D27;
+  --color-red-600: #C71821;
+  --color-red-700: #9E1219;
+  --color-red-800: #730C12;
+  --color-red-900: #4A070B;
+
+  --color-primary: #E51D27;
+  --primary: #E51D27;
+  --secondary: #FDE8E9;
+  --secondary-foreground: #E51D27;
+  --ring: #E51D27;
+  --sidebar-primary: #E51D27;
+  --sidebar-accent: #FDE8E9;
+  --sidebar-accent-foreground: #E51D27;
+  --sidebar-ring: #E51D27;
+}
+
+/* 3. ITZO DELIVERY SCOPE */
+.delivery-theme-scope {
+  --color-orange-50: #FEF0EA;
+  --color-orange-100: #FCDCCF;
+  --color-orange-200: #FAB89E;
+  --color-orange-300: #F8946E;
+  --color-orange-400: #F57744;
+  --color-orange-500: #F35B1C;
+  --color-orange-600: #D74C12;
+  --color-orange-700: #AB3A0C;
+  --color-orange-800: #7F2A07;
+  --color-orange-900: #541B03;
+
+  --color-primary-orange: #F35B1C;
+  --color-primary: #F35B1C;
+  --primary: #F35B1C;
+  --secondary: #FEF0EA;
+  --secondary-foreground: #F35B1C;
+  --ring: #F35B1C;
+  --sidebar-primary: #F35B1C;
+  --sidebar-accent: #FEF0EA;
+  --sidebar-accent-foreground: #F35B1C;
+  --sidebar-ring: #F35B1C;
+}
+
+/* 4. ITZO ADMIN & HRMS SCOPE */
 .admin-theme-scope,
 .hrms-theme {
-  /* Alias Blue to Explicit Admin/HRMS Purple Hex Codes */
   --color-blue-50: #F3E8FF;
   --color-blue-100: #E9D5FF;
   --color-blue-200: #D9B8FA;
   --color-blue-300: #C08DF0;
   --color-blue-400: #9F5EE0;
-  --color-blue-500: #6412C6;
-  --color-blue-600: #4E0E9A;
-  --color-blue-700: #3A0B73;
+  --color-blue-500: #6413C7;
+  --color-blue-600: #520FA6;
+  --color-blue-700: #3E0B7D;
   --color-blue-800: #2C0857;
-  --color-blue-900: #1F053D;
+  --color-blue-900: #1B0436;
 
-  /* Alias Indigo to Explicit Admin/HRMS Purple Hex Codes */
   --color-indigo-50: #F3E8FF;
   --color-indigo-100: #E9D5FF;
   --color-indigo-200: #D9B8FA;
   --color-indigo-300: #C08DF0;
   --color-indigo-400: #9F5EE0;
-  --color-indigo-500: #6412C6;
-  --color-indigo-600: #4E0E9A;
-  --color-indigo-700: #3A0B73;
+  --color-indigo-500: #6413C7;
+  --color-indigo-600: #520FA6;
+  --color-indigo-700: #3E0B7D;
   --color-indigo-800: #2C0857;
-  --color-indigo-900: #1F053D;
+  --color-indigo-900: #1B0436;
 
-  /* Force Primary to the ECS Admin/HRMS Brand Purple */
-  --color-primary: #6412C6;
-  --primary: #6412C6;
+  --color-purple-50: #F3E8FF;
+  --color-purple-100: #E9D5FF;
+  --color-purple-200: #D9B8FA;
+  --color-purple-300: #C08DF0;
+  --color-purple-400: #9F5EE0;
+  --color-purple-500: #6413C7;
+  --color-purple-600: #520FA6;
+  --color-purple-700: #3E0B7D;
+  --color-purple-800: #2C0857;
+  --color-purple-900: #1B0436;
+
+  --color-primary: #6413C7;
+  --primary: #6413C7;
   --secondary: #F3E8FF;
-  --secondary-foreground: #6412C6;
-  --ring: #6412C6;
-  --sidebar-primary: #6412C6;
+  --secondary-foreground: #6413C7;
+  --ring: #6413C7;
+  --sidebar-primary: #6413C7;
   --sidebar-accent: #F3E8FF;
-  --sidebar-accent-foreground: #6412C6;
-  --sidebar-ring: #6412C6;
+  --sidebar-accent-foreground: #6413C7;
+  --sidebar-ring: #6413C7;
+  --itzo-primary: #6413C7;
+  --itzo-primary-hover: #520FA6;
+  --itzo-primary-active: #3E0B7D;
+  --itzo-primary-light: #F3E8FF;
 }
 
-.seller-theme-scope {
-  /* Alias Blue to Explicit Seller Red Hex Codes */
-  --color-blue-50: #FDE9EA;
-  --color-blue-100: #FBD2D4;
-  --color-blue-200: #F5A6AB;
-  --color-blue-300: #EF7981;
-  --color-blue-400: #EC4A54;
-  --color-blue-500: #E71D28;
-  --color-blue-600: #B8161F;
-  --color-blue-700: #8A1017;
-  --color-blue-800: #630B11;
-  --color-blue-900: #40070B;
-
-  /* Alias Indigo to Explicit Seller Red Hex Codes */
-  --color-indigo-50: #FDE9EA;
-  --color-indigo-100: #FBD2D4;
-  --color-indigo-200: #F5A6AB;
-  --color-indigo-300: #EF7981;
-  --color-indigo-400: #EC4A54;
-  --color-indigo-500: #E71D28;
-  --color-indigo-600: #B8161F;
-  --color-indigo-700: #8A1017;
-  --color-indigo-800: #630B11;
-  --color-indigo-900: #40070B;
-
-  /* Alias native Tailwind red-* to the exact Seller brand red shade too,
-     since red-* is used natively across seller pages for CTAs/badges. */
-  --color-red-50: #FDE9EA;
-  --color-red-100: #FBD2D4;
-  --color-red-200: #F5A6AB;
-  --color-red-300: #EF7981;
-  --color-red-400: #EC4A54;
-  --color-red-500: #E71D28;
-  --color-red-600: #B8161F;
-  --color-red-700: #8A1017;
-  --color-red-800: #630B11;
-  --color-red-900: #40070B;
-
-  /* Force Primary to the Seller Brand Red */
-  --color-primary: #E71D28;
-  --primary: #E71D28;
-  --secondary: #FDE9EA;
-  --secondary-foreground: #E71D28;
-  --ring: #E71D28;
-  --sidebar-primary: #E71D28;
-  --sidebar-accent: #FDE9EA;
-  --sidebar-accent-foreground: #E71D28;
-  --sidebar-ring: #E71D28;
-}
-
+/* 5. ITZO RESTAURANT SCOPE */
 .restaurant-theme {
-  --color-primary: #0D315B;
-  --primary: #0D315B;
-  --secondary: #E8EEF5;
-  --secondary-foreground: #0D315B;
-  --ring: #0D315B;
-  --sidebar-primary: #0D315B;
-  --sidebar-accent: #E8EEF5;
-  --sidebar-accent-foreground: #0D315B;
-  --sidebar-ring: #0D315B;
+  --color-blue-50: #EBF1F7;
+  --color-blue-100: #D3E0EE;
+  --color-blue-200: #A8C2DE;
+  --color-blue-300: #7AA2CD;
+  --color-blue-400: #4B83BD;
+  --color-blue-500: #10335D;
+  --color-blue-600: #0C2747;
+  --color-blue-700: #091C33;
+  --color-blue-800: #061221;
+  --color-blue-900: #030910;
+
+  --color-primary: #10335D;
+  --primary: #10335D;
+  --secondary: #EBF1F7;
+  --secondary-foreground: #10335D;
+  --ring: #10335D;
+  --sidebar-primary: #10335D;
+  --sidebar-accent: #EBF1F7;
+  --sidebar-accent-foreground: #10335D;
+  --sidebar-ring: #10335D;
 }
 
 /* ==========================================================================
@@ -577,7 +643,7 @@
 .seller-theme-scope span.bg-slate-900,
 .seller-theme-scope div.bg-slate-900:not([class*="fixed"]):not([class*="backdrop"]),
 .seller-theme-scope .bg-slate-900[role="button"] {
-  background-color: #E71D28 !important;
+  background-color: #E51D27 !important;
   color: #FFFFFF !important;
 }
 
@@ -589,7 +655,7 @@
 .seller-theme-scope span.bg-slate-900:hover,
 .seller-theme-scope div.bg-slate-900:not([class*="fixed"]):not([class*="backdrop"]):hover,
 .seller-theme-scope .bg-slate-900[role="button"]:hover {
-  background-color: #B8161F !important;
+  background-color: #C71821 !important;
   color: #FFFFFF !important;
 }
 
@@ -609,7 +675,7 @@
 .seller-theme-scope aside .bg-primary,
 .seller-theme-scope aside a.active .bg-primary,
 .seller-theme-scope aside a.active .bg-white\/20 {
-  background-color: #E71D28 !important;
+  background-color: #E51D27 !important;
   color: #FFFFFF !important;
 }
 
@@ -617,36 +683,36 @@
 .seller-theme-scope a.active,
 .seller-theme-scope a.active span,
 .seller-theme-scope a.active svg {
-  color: #E71D28 !important;
+  color: #E51D27 !important;
 }
 
 .seller-theme-scope a.active {
-  color: #E71D28 !important;
+  color: #E51D27 !important;
 }
 
 .seller-theme-scope aside .bg-primary,
 .seller-theme-scope aside .text-primary {
-  background-color: #E71D28 !important;
+  background-color: #E51D27 !important;
   color: #FFFFFF !important;
 }
 
 .seller-theme-scope aside a.active {
-  color: #E71D28 !important;
+  color: #E51D27 !important;
 }
 
 .seller-theme-scope aside a.active div {
-  color: #E71D28 !important;
+  color: #E51D27 !important;
 }
 
 /* Bottom Nav transparent background on active items */
 .seller-theme-scope .fixed.bottom-0 a.active {
   background-color: transparent !important;
-  color: #E71D28 !important;
+  color: #E51D27 !important;
 }
 
 .seller-theme-scope .fixed.bottom-0 a.active svg,
 .seller-theme-scope .fixed.bottom-0 a.active span {
-  color: #E71D28 !important;
+  color: #E51D27 !important;
   background-color: transparent !important;
 }
 
@@ -659,21 +725,11 @@
    ItzoFood out globally in a later, separately-approved phase. Fully reversible.
 */
 .itzo-theme-scope {
-  /* ------------------------------------------------------------------
-     BRANDING: reuse the EXISTING ItzoFood/Admin tokens exactly.
-     The semantic tokens (--primary, --secondary, --ring, --background,
-     --card, --border, --muted, --accent, --foreground …) are intentionally
-     NOT redeclared here, so they INHERIT the current Admin theme
-     (#6412C6 family + warm paper). This guarantees the new Dashboard keeps
-     the identical ITZO ECS Admin brand identity — only layout/spacing/typography/
-     shadows/animation are upgraded. No new hue is introduced.
-     ------------------------------------------------------------------ */
-
   /* Raw brand + status tokens mirrored from the existing Admin theme so the
      shared components can reference them directly via var(). */
-  --itzo-primary: #6412C6;          /* = --primary (admin-theme-scope) */
-  --itzo-primary-hover: #4E0E9A;    /* = admin purple 600 */
-  --itzo-primary-active: #3A0B73;   /* = admin purple 700 */
+  --itzo-primary: #6413C7;          /* = --primary (admin-theme-scope) */
+  --itzo-primary-hover: #520FA6;    /* = admin purple 600 */
+  --itzo-primary-active: #3E0B7D;   /* = admin purple 700 */
   --itzo-primary-light: #F3E8FF;    /* = --secondary (admin-theme-scope) */
   --itzo-success: #2E7D32;          /* = --color-accent-green */
   --itzo-warning: #F59E0B;
@@ -689,7 +745,7 @@
   --itzo-shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
   --itzo-shadow-md: 0 8px 24px -12px rgba(16, 24, 40, 0.18);
   --itzo-shadow-lg: 0 16px 40px -16px rgba(16, 24, 40, 0.22);
-  --itzo-shadow-primary: 0 16px 32px -16px rgba(100, 18, 198, 0.22);
+  --itzo-shadow-primary: 0 16px 32px -16px rgba(100, 19, 199, 0.22);
 
   /* ---- ONE spacing rhythm ---- */
   --itzo-gap: 1.5rem;

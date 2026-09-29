@@ -75,7 +75,7 @@ export default function DiningHome() {
             </div>
             <Link
               to="/food/user/dining/bookings"
-              className="flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:border-[#FE5502]/40 hover:text-[#FE5502] dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-300"
+              className="flex shrink-0 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:border-[#FB4F01]/40 hover:text-[#FB4F01] dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-300"
             >
               <CalendarCheck className="h-3.5 w-3.5" /> My bookings
             </Link>
@@ -88,7 +88,7 @@ export default function DiningHome() {
                 onClick={() => setActiveCategory(null)}
                 className={`flex shrink-0 flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-xs font-semibold transition-colors ${
                   !activeCategory
-                    ? "border-[#FE5502] bg-[#FE5502]/5 text-[#FE5502]"
+                    ? "border-[#FB4F01] bg-[#FB4F01]/5 text-[#FB4F01]"
                     : "border-transparent bg-white text-gray-600 dark:bg-[#1a1a1a] dark:text-gray-300"
                 }`}
               >
@@ -103,7 +103,7 @@ export default function DiningHome() {
                   onClick={() => setActiveCategory(cat._id)}
                   className={`flex shrink-0 flex-col items-center gap-1.5 rounded-2xl border-2 px-3 py-2 text-xs font-semibold transition-colors ${
                     activeCategory === cat._id
-                      ? "border-[#FE5502] bg-[#FE5502]/5 text-[#FE5502]"
+                      ? "border-[#FB4F01] bg-[#FB4F01]/5 text-[#FB4F01]"
                       : "border-transparent bg-white text-gray-600 dark:bg-[#1a1a1a] dark:text-gray-300"
                   }`}
                 >

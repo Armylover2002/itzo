@@ -44,8 +44,8 @@ export default function RestaurantOnboardingShell({
     <div className="min-h-screen w-full bg-slate-50 font-sans">
       {/* Desktop sidebar — fixed, does not scroll with page */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[420px] flex-col xl:w-[460px] lg:flex">
-        {/* Unified signature orange brand gradient without color clashes or watermark bleed */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#ff6b1a] via-[#FE5502] to-[#c93b00]" />
+        {/* Unified signature restaurant blue brand gradient without color clashes or watermark bleed */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#10335D] via-[#164275] to-[#0A223E]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,rgba(255,255,255,0.18),transparent_55%)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_85%,rgba(0,0,0,0.12),transparent_55%)] pointer-events-none" />
 
@@ -89,7 +89,7 @@ export default function RestaurantOnboardingShell({
                 <button
                   type="button"
                   onClick={onBack}
-                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D315B]/30"
+                  className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#10335D]/30"
                   aria-label="Go back"
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -108,7 +108,7 @@ export default function RestaurantOnboardingShell({
                   onClick={onEnableEdit}
                   variant="outline"
                   size="sm"
-                  className="cursor-pointer border-[#0D315B]/20 bg-[#0D315B]/5 text-[#0D315B] hover:bg-[#0D315B]/10"
+                  className="cursor-pointer border-[#10335D]/20 bg-[#10335D]/5 text-[#10335D] hover:bg-[#10335D]/10"
                 >
                   <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                   Edit
@@ -140,7 +140,7 @@ export default function RestaurantOnboardingShell({
               <button
                 type="button"
                 onClick={onBack}
-                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0D315B]/30"
+                className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#10335D]/30"
                 aria-label="Go back"
               >
                 <ChevronLeft className="h-5 w-5" />
@@ -163,7 +163,7 @@ export default function RestaurantOnboardingShell({
                 type="button"
                 onClick={onEnableEdit}
                 variant="outline"
-                className="cursor-pointer border-[#0D315B]/20 bg-[#0D315B]/5 text-[#0D315B] hover:bg-[#0D315B]/10"
+                className="cursor-pointer border-[#10335D]/20 bg-[#10335D]/5 text-[#10335D] hover:bg-[#10335D]/10"
               >
                 <Sparkles className="mr-1.5 h-4 w-4" />
                 Edit Details
@@ -190,7 +190,7 @@ export default function RestaurantOnboardingShell({
           <div className="mx-auto w-full max-w-3xl">
             {loading ? (
               <div className="flex flex-col items-center justify-center gap-4 py-20">
-                <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#0D315B]" />
+                <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#10335D]" />
                 <p className="text-sm font-medium text-slate-500">Loading your onboarding details...</p>
               </div>
             ) : (
@@ -219,7 +219,7 @@ export default function RestaurantOnboardingShell({
               type="button"
               onClick={onNext}
               disabled={saving || (isLastStep && !isEditing)}
-              className={`min-w-[140px] w-full sm:w-auto cursor-pointer rounded-full bg-[#0D315B] px-8 text-sm font-bold text-white shadow-lg shadow-[#0D315B]/20 transition-all hover:bg-[#E64D02] disabled:cursor-not-allowed disabled:opacity-50 ${
+              className={`min-w-[140px] w-full sm:w-auto cursor-pointer rounded-full bg-[#10335D] px-8 text-sm font-bold text-white shadow-lg shadow-[#10335D]/20 transition-all hover:bg-[#0c2747] disabled:cursor-not-allowed disabled:opacity-50 ${
                 isLastStep && !isEditing ? "opacity-50" : ""
               }`}
             >

@@ -70,7 +70,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                     { key: 'leaves', label: 'Pending Leaves', count: pendingLeaves.length },
                 ].map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === t.key ? 'bg-[#6412c6] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${tab === t.key ? 'bg-[#6413C7] text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`}>
                         {t.label}
                     </button>
                 ))}
@@ -136,7 +136,7 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                                         </div>
                                                     )}
                                                     {r.employeeType === 'Field' && r.checkInTime && (
-                                                        <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}` : `/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-[#6412c6] hover:underline block mt-1 font-medium">View Route Map</a>
+                                                        <a href={window.location.pathname.startsWith('/hrms') ? `/hrms/team/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}` : `/ecs/hrms/live-tracking?employeeId=${r.employeeId?._id}&date=${r.date.split('T')[0]}`} className="text-[#6413C7] hover:underline block mt-1 font-medium">View Route Map</a>
                                                     )}
                                                     {!r.checkInLocation?.address && !r.checkOutLocation?.address && !r.locationValidation?.officeName && (
                                                         <span className="text-slate-400">—</span>
@@ -163,8 +163,8 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                         <p className="text-xs text-slate-400">Requested: {r.regularization?.requestedCheckInTime ? new Date(r.regularization.requestedCheckInTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''} - {r.regularization?.requestedCheckOutTime ? new Date(r.regularization.requestedCheckOutTime).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : ''}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleRegAction(r._id, 'Approved')} className="px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
-                                        <button onClick={() => handleRegAction(r._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
+                                        <button onClick={() => handleRegAction(r._id, 'Approved')} className="px-4 h-9 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
+                                        <button onClick={() => handleRegAction(r._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6413C7] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
                                     </div>
                                 </div>
                             ))}
@@ -183,8 +183,8 @@ export default function HrmsAttendance({ defaultTab = 'attendance' }) {
                                         <p className="text-xs text-slate-400">Reason: {l.reason}</p>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={() => handleLeaveAction(l._id, 'Approved')} className="px-4 h-9 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
-                                        <button onClick={() => handleLeaveAction(l._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6412c6] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
+                                        <button onClick={() => handleLeaveAction(l._id, 'Approved')} className="px-4 h-9 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl text-sm font-medium">Approve</button>
+                                        <button onClick={() => handleLeaveAction(l._id, 'Rejected')} className="px-4 h-9 bg-white border-2 border-[#6413C7] text-[#550fa8] hover:bg-[#f7f3fc] rounded-xl text-sm font-medium">Reject</button>
                                     </div>
                                 </div>
                             ))}

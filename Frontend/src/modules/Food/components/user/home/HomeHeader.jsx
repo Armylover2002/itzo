@@ -32,7 +32,7 @@ const tabs = [
 const TAB_GLYPHS = { food: "🍔", quick: "📦" };
 
 const foodTheme = (vegMode) => ({
-  accent: vegMode ? "#2e7d32" : "#FE5502",
+  accent: vegMode ? "#2e7d32" : "#FB4F01",
 });
 
 const isMeaningfulLocationValue = (value) => {
@@ -114,7 +114,7 @@ export default function HomeHeader({
   const [isListening, setIsListening] = useState(false);
   const routerLocation = useRouterLocation();
   const headerRef = useRef(null);
-  const FIXED_QUICK_THEME_COLOR = "#FE5502";
+  const FIXED_QUICK_THEME_COLOR = "#FB4F01";
 
   // Same admin-set logo (Global Settings) used by the desktop navbar and footer,
   // with a static fallback so the header never shows a broken image.
@@ -292,7 +292,7 @@ export default function HomeHeader({
               >
                 <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2} />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#FE5502] text-[10px] sm:text-[11px] font-bold text-white border-2 border-white shadow-sm">
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#FB4F01] text-[10px] sm:text-[11px] font-bold text-white border-2 border-white shadow-sm">
                     {cartItemCount > 9 ? "9+" : cartItemCount}
                   </span>
                 )}
@@ -329,7 +329,7 @@ export default function HomeHeader({
                   >
                     <Bell className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2} />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#FE5502] text-[10px] sm:text-[11px] font-bold text-white border-2 border-white shadow-sm">
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-[#FB4F01] text-[10px] sm:text-[11px] font-bold text-white border-2 border-white shadow-sm">
                         {unreadCount > 9 ? "9+" : unreadCount}
                       </span>
                     )}

@@ -86,11 +86,11 @@ export default function TeamPerformance() {
                         type="month" 
                         value={period}
                         onChange={(e) => setPeriod(e.target.value)}
-                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                     />
                     <button
                         onClick={() => fetchPerformance(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-xs transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl font-semibold text-xs transition-colors"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
@@ -100,7 +100,7 @@ export default function TeamPerformance() {
 
             {loading ? (
                 <div className="flex flex-col justify-center items-center py-24">
-                    <RefreshCw className="w-8 h-8 text-[#6412c6] animate-spin mb-3" />
+                    <RefreshCw className="w-8 h-8 text-[#6413C7] animate-spin mb-3" />
                     <p className="text-slate-400 font-medium text-sm">Loading team data...</p>
                 </div>
             ) : !teamData ? (
@@ -304,7 +304,7 @@ export default function TeamPerformance() {
                         <div className="p-5 overflow-y-auto flex-1 space-y-5">
                             {loadingMember ? (
                                 <div className="flex justify-center items-center py-20">
-                                    <RefreshCw className="w-7 h-7 text-[#6412c6] animate-spin" />
+                                    <RefreshCw className="w-7 h-7 text-[#6413C7] animate-spin" />
                                 </div>
                             ) : !memberPerformance ? (
                                 <p className="text-center py-10 text-slate-400 font-medium">Failed to load scorecard.</p>

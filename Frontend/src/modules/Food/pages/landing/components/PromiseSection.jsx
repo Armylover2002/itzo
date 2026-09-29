@@ -49,7 +49,7 @@ const PromiseCard = React.memo(function PromiseCard({
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay: index * 0.12 }}
       whileHover={{ y: -8 }}
-      className="group relative rounded-[2.2rem] overflow-hidden p-7 md:p-8 bg-gradient-to-br from-[#ff7e2b] via-[#fe5502] to-[#d64300] shadow-[0_20px_45px_rgba(254,85,2,0.25)] transition-all duration-300 hover:shadow-[0_28px_65px_rgba(254,85,2,0.42)] flex flex-col justify-between border border-white/20"
+      className="group relative rounded-[2.2rem] overflow-hidden p-7 md:p-8 bg-gradient-to-br from-[#ff7e2b] via-[#FB4F01] to-[#d64300] shadow-[0_20px_45px_rgba(254,85,2,0.25)] transition-all duration-300 hover:shadow-[0_28px_65px_rgba(254,85,2,0.42)] flex flex-col justify-between border border-white/20"
     >
       {/* Decorative background shapes */}
       <div className="absolute inset-0 pointer-events-none opacity-20">

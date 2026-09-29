@@ -2,7 +2,7 @@
  * ITZO chart theme tokens.
  *
  * Mirrors the EXISTING ItzoFood/Admin brand tokens (global.css):
- *   primary  = #6412C6 (--primary / admin-theme-scope)
+ *   primary  = #6413C7 (--primary / admin-theme-scope)
  *   hover    = #4E0E9A (admin purple 600)
  *   light    = #F3E8FF (--secondary / admin-theme-scope)
  *   success  = #2E7D32 (--color-accent-green)
@@ -12,7 +12,7 @@
  * rest of the ItzoFood ECS Admin. This is NOT a component, only constants.
  */
 export const ITZO_CHART = {
-  primary: "#6412C6",
+  primary: "#6413C7",
   primaryHover: "#4E0E9A",
   primaryLight: "#F3E8FF",
   success: "#2E7D32",
@@ -25,7 +25,7 @@ export const ITZO_CHART = {
   axis: "#5C5247",
 
   // Ordered categorical palette for multi-series charts
-  series: ["#6412C6", "#2563EB", "#2E7D32", "#F59E0B", "#7C3AED", "#DC2626"],
+  series: ["#6413C7", "#2563EB", "#2E7D32", "#F59E0B", "#7C3AED", "#DC2626"],
 
   // Shared modern tooltip / cursor styling
   tooltip: {

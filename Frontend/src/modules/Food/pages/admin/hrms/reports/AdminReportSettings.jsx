@@ -77,7 +77,7 @@ export default function AdminReportSettings() {
         handleChange('categories', newCats);
     };
 
-    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" /></div>;
+    if (loading) return <div className="flex h-[500px] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" /></div>;
 
     const inputClass = "w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#f0e7f9] focus:border-[#9359d7]";
     const labelClass = "block text-xs font-semibold text-slate-500 mb-1.5";
@@ -92,7 +92,7 @@ export default function AdminReportSettings() {
                 <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="w-full sm:w-auto bg-[#6412c6] hover:bg-[#550fa8] text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#6412c6]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full sm:w-auto bg-[#6413C7] hover:bg-[#550fa8] text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-[#6413C7]/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                     Save Changes
@@ -107,21 +107,21 @@ export default function AdminReportSettings() {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                            <input type="checkbox" checked={formData.requireMetrics} onChange={e => handleChange('requireMetrics', e.target.checked)} className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]" />
+                            <input type="checkbox" checked={formData.requireMetrics} onChange={e => handleChange('requireMetrics', e.target.checked)} className="w-4 h-4 text-[#6413C7] rounded border-slate-300 focus:ring-[#6413C7]" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-slate-800">Require Performance Metrics</span>
                                 <span className="text-xs text-slate-500">Show numeric input fields for visits, calls, etc.</span>
                             </div>
                         </label>
                         <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                            <input type="checkbox" checked={formData.requireTomorrowPlan} onChange={e => handleChange('requireTomorrowPlan', e.target.checked)} className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]" />
+                            <input type="checkbox" checked={formData.requireTomorrowPlan} onChange={e => handleChange('requireTomorrowPlan', e.target.checked)} className="w-4 h-4 text-[#6413C7] rounded border-slate-300 focus:ring-[#6413C7]" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-slate-800">Require Tomorrow's Plan</span>
                                 <span className="text-xs text-slate-500">Make the tomorrow plan field mandatory to submit.</span>
                             </div>
                         </label>
                         <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
-                            <input type="checkbox" checked={formData.requireAttachments} onChange={e => handleChange('requireAttachments', e.target.checked)} className="w-4 h-4 text-[#6412c6] rounded border-slate-300 focus:ring-[#6412c6]" />
+                            <input type="checkbox" checked={formData.requireAttachments} onChange={e => handleChange('requireAttachments', e.target.checked)} className="w-4 h-4 text-[#6413C7] rounded border-slate-300 focus:ring-[#6413C7]" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold text-slate-800">Require Attachments</span>
                                 <span className="text-xs text-slate-500">Mandate at least one uploaded file/image.</span>

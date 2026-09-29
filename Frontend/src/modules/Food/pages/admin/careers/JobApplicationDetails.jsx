@@ -73,7 +73,7 @@ export default function JobApplicationDetails() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
         <span className="text-sm text-slate-500 font-medium">Loading application details...</span>
       </div>
     );
@@ -155,7 +155,7 @@ export default function JobApplicationDetails() {
             {/* Personal Details */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <User className="w-4.5 h-4.5 text-[#6412c6]" />
+                <User className="w-4.5 h-4.5 text-[#6413C7]" />
                 Personal Details
               </h2>
               
@@ -192,7 +192,7 @@ export default function JobApplicationDetails() {
             {/* Address Details */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <MapPin className="w-4.5 h-4.5 text-[#6412c6]" />
+                <MapPin className="w-4.5 h-4.5 text-[#6413C7]" />
                 Address
               </h2>
               
@@ -219,7 +219,7 @@ export default function JobApplicationDetails() {
             {/* Professional Details */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <Award className="w-4.5 h-4.5 text-[#6412c6]" />
+                <Award className="w-4.5 h-4.5 text-[#6413C7]" />
                 Professional Details
               </h2>
               
@@ -270,7 +270,7 @@ export default function JobApplicationDetails() {
             {/* Skills & Tags */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <Award className="w-4.5 h-4.5 text-[#6412c6]" />
+                <Award className="w-4.5 h-4.5 text-[#6413C7]" />
                 Skills & Certifications
               </h2>
               
@@ -325,7 +325,7 @@ export default function JobApplicationDetails() {
             {/* Additional Questions */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-2">
-                <FileText className="w-4.5 h-4.5 text-[#6412c6]" />
+                <FileText className="w-4.5 h-4.5 text-[#6413C7]" />
                 Additional Questions
               </h2>
               
@@ -349,14 +349,14 @@ export default function JobApplicationDetails() {
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-black text-slate-950 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <FileText className="w-4.5 h-4.5 text-[#6412c6]" />
+                  <FileText className="w-4.5 h-4.5 text-[#6413C7]" />
                   Resume Preview
                 </span>
                 <a 
                   href={application.resumeUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-[#6412c6] hover:text-[#550fa8] font-bold text-xs inline-flex items-center gap-1"
+                  className="text-[#6413C7] hover:text-[#550fa8] font-bold text-xs inline-flex items-center gap-1"
                 >
                   Open in New Tab
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -379,7 +379,7 @@ export default function JobApplicationDetails() {
                     </div>
                     <a 
                       href={application.resumeUrl} 
-                      className="inline-flex items-center gap-2 bg-[#6412c6] hover:bg-[#550fa8] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
+                      className="inline-flex items-center gap-2 bg-[#6413C7] hover:bg-[#550fa8] text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95"
                     >
                       <Download className="w-4 h-4" />
                       Download Resume
@@ -406,7 +406,7 @@ export default function JobApplicationDetails() {
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors"
+                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6413C7] focus:bg-white transition-colors"
                   >
                     {STATUS_OPTIONS.map(opt => (
                       <option key={opt} value={opt}>{opt}</option>
@@ -421,14 +421,14 @@ export default function JobApplicationDetails() {
                     onChange={(e) => setRemarks(e.target.value)}
                     rows="4"
                     placeholder="Enter review remarks..."
-                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6412c6] focus:bg-white transition-colors resize-none"
+                    className="px-3 py-2 w-full text-xs rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:border-[#6413C7] focus:bg-white transition-colors resize-none"
                   />
                 </div>
 
                 <button
                   onClick={handleUpdateStatus}
                   disabled={updatingStatus}
-                  className="w-full py-2.5 bg-[#6412c6] hover:bg-[#550fa8] text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
+                  className="w-full py-2.5 bg-[#6413C7] hover:bg-[#550fa8] text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5 disabled:opacity-50"
                 >
                   {updatingStatus ? (
                     <>
@@ -512,7 +512,7 @@ export default function JobApplicationDetails() {
                 {/* Resume download */}
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
                   <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="w-4 h-4 text-[#6412c6] shrink-0" />
+                    <FileText className="w-4 h-4 text-[#6413C7] shrink-0" />
                     <span className="text-slate-700 truncate">Resume Document</span>
                   </div>
                   <a 
@@ -564,7 +564,7 @@ export default function JobApplicationDetails() {
                           href={file}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#6412c6] font-bold text-[10px] hover:underline"
+                          className="text-[#6413C7] font-bold text-[10px] hover:underline"
                         >
                           View
                         </a>

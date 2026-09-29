@@ -57,7 +57,7 @@ export default function Leave() {
                     <p className="text-sm text-slate-500 mt-1">Apply and track your leaves</p>
                 </div>
                 <button onClick={() => setShowForm(!showForm)}
-                    className="flex items-center gap-2 px-4 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl shadow-sm transition-all text-sm">
+                    className="flex items-center gap-2 px-4 h-10 bg-[#6413C7] hover:bg-[#550fa8] text-white font-medium rounded-xl shadow-sm transition-all text-sm">
                     {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     {showForm ? 'Cancel' : 'Apply Leave'}
                 </button>
@@ -88,7 +88,7 @@ export default function Leave() {
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Leave Type</label>
                             <select value={form.leaveType} onChange={e => setForm(p => ({ ...p, leaveType: e.target.value }))}
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 bg-white">
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30 bg-white">
                                 <option>Casual Leave</option>
                                 <option>Sick Leave</option>
                                 <option>Personal Leave</option>
@@ -97,28 +97,28 @@ export default function Leave() {
                         </div>
                         <div className="flex items-end">
                             <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={form.isHalfDay} onChange={e => setForm(p => ({ ...p, isHalfDay: e.target.checked }))} className="accent-[#6412c6] w-4 h-4" />
+                                <input type="checkbox" checked={form.isHalfDay} onChange={e => setForm(p => ({ ...p, isHalfDay: e.target.checked }))} className="accent-[#6413C7] w-4 h-4" />
                                 <span className="text-sm text-slate-700 font-medium">Half Day</span>
                             </label>
                         </div>
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Start Date</label>
                             <input type="date" value={form.startDate} onChange={e => setForm(p => ({ ...p, startDate: e.target.value }))}
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" />
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30" />
                         </div>
                         <div>
                             <label className="text-xs font-medium text-slate-600 mb-1 block">End Date</label>
                             <input type="date" value={form.endDate} onChange={e => setForm(p => ({ ...p, endDate: e.target.value }))}
-                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30" />
+                                className="w-full h-10 px-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30" />
                         </div>
                         <div className="sm:col-span-2">
                             <label className="text-xs font-medium text-slate-600 mb-1 block">Reason</label>
                             <textarea value={form.reason} onChange={e => setForm(p => ({ ...p, reason: e.target.value }))} rows={2} placeholder="Reason for leave"
-                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30 resize-none" />
+                                className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30 resize-none" />
                         </div>
                     </div>
                     <button onClick={handleSubmit} disabled={submitLoading}
-                        className="mt-4 px-6 h-10 bg-[#6412c6] hover:bg-[#550fa8] text-white font-medium rounded-xl transition-all text-sm disabled:opacity-50">
+                        className="mt-4 px-6 h-10 bg-[#6413C7] hover:bg-[#550fa8] text-white font-medium rounded-xl transition-all text-sm disabled:opacity-50">
                         {submitLoading ? 'Submitting...' : 'Submit Leave'}
                     </button>
                 </div>

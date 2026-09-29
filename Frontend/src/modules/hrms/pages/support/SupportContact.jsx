@@ -25,7 +25,7 @@ export default function SupportContact() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full min-h-[400px]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -74,7 +74,7 @@ export default function SupportContact() {
                 {cards.map((c, i) => (
                     <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-shadow">
                         <div className="w-12 h-12 rounded-xl bg-[#f7f3fc] flex items-center justify-center shrink-0">
-                            <c.icon className="w-6 h-6 text-[#6412c6]" />
+                            <c.icon className="w-6 h-6 text-[#6413C7]" />
                         </div>
                         <div>
                             <p className="text-sm font-medium text-slate-500">{c.title}</p>
@@ -87,7 +87,7 @@ export default function SupportContact() {
             <div className="bg-[#f7f3fc] border border-[#f0e7f9] rounded-2xl p-6 text-center">
                 <h3 className="text-lg font-bold text-[#370a6d] mb-2">Need Help?</h3>
                 <p className="text-[#550fa8]/80 mb-4">If you are facing issues that require a detailed explanation, please raise a support request.</p>
-                <a href="/hrms/support/create" className="inline-flex items-center gap-2 bg-[#6412c6] text-white px-5 py-2.5 rounded-xl font-medium hover:bg-[#550fa8] transition-colors shadow-sm">
+                <a href="/hrms/support/create" className="inline-flex items-center gap-2 bg-[#6413C7] text-white px-5 py-2.5 rounded-xl font-medium hover:bg-[#550fa8] transition-colors shadow-sm">
                     Raise a Request
                 </a>
             </div>

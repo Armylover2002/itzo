@@ -1,4 +1,4 @@
-export const FOOD_THEME_COLOR = "#FE5502";
-export const FOOD_THEME_HOVER = "#C83C00";
-export const FOOD_THEME_SHADOW = "rgba(254,85,2, 0.2)";
-export const FOOD_THEME_GRADIENT = "linear-gradient(to right, #FE5502, #C83C00)";
+export const FOOD_THEME_COLOR = "#FB4F01";
+export const FOOD_THEME_HOVER = "#D84200";
+export const FOOD_THEME_SHADOW = "rgba(251,79,1, 0.2)";
+export const FOOD_THEME_GRADIENT = "linear-gradient(to right, #FB4F01, #D84200)";

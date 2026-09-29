@@ -134,12 +134,12 @@ export default function HrmsAdminPerformance() {
                         type="month"
                         value={period}
                         onChange={(e) => setPeriod(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                     />
                     <select
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                     >
                         <option value="All">All Departments</option>
                         <option value="Sales">Sales</option>
@@ -150,7 +150,7 @@ export default function HrmsAdminPerformance() {
                     <select
                         value={zone}
                         onChange={(e) => setZone(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                     >
                         <option value="All">All Zones</option>
                         <option value="North">North</option>
@@ -161,7 +161,7 @@ export default function HrmsAdminPerformance() {
                     </select>
                     <button
                         onClick={() => fetchAnalytics(true)}
-                        className="p-2.5 bg-[#6412c6] hover:bg-[#550fa8] text-white rounded-xl transition-colors"
+                        className="p-2.5 bg-[#6413C7] hover:bg-[#550fa8] text-white rounded-xl transition-colors"
                         title="Recalculate All"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -173,7 +173,7 @@ export default function HrmsAdminPerformance() {
                             disabled={exporting}
                             className="flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition-colors"
                         >
-                            <Download className="w-4 h-4 text-[#6412c6]" />
+                            <Download className="w-4 h-4 text-[#6413C7]" />
                             Export
                         </button>
                         <div className="absolute right-0 mt-1 w-52 bg-white border border-slate-200 rounded-xl shadow-lg py-1.5 hidden group-hover:block z-50">
@@ -181,7 +181,7 @@ export default function HrmsAdminPerformance() {
                                 onClick={() => handleExport('Employee', 'csv')}
                                 className="w-full px-4 py-2.5 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2"
                             >
-                                <FileText className="w-4 h-4 text-[#6412c6]" /> Export Scorecards (CSV)
+                                <FileText className="w-4 h-4 text-[#6413C7]" /> Export Scorecards (CSV)
                             </button>
                             <button
                                 onClick={() => handleExport('Revenue', 'excel')}
@@ -204,7 +204,7 @@ export default function HrmsAdminPerformance() {
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-2.5 font-semibold text-sm transition-all border-b-2 -mb-px ${
                                 activeTab === tab.id
-                                    ? 'border-[#6412c6] text-[#550fa8]'
+                                    ? 'border-[#6413C7] text-[#550fa8]'
                                     : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                         >
@@ -225,7 +225,7 @@ export default function HrmsAdminPerformance() {
             {/* TAB CONTENT */}
             {loading ? (
                 <div className="flex flex-col justify-center items-center py-24">
-                    <RefreshCw className="w-8 h-8 text-[#6412c6] animate-spin mb-3" />
+                    <RefreshCw className="w-8 h-8 text-[#6413C7] animate-spin mb-3" />
                     <p className="text-slate-400 font-medium text-sm">Loading performance data...</p>
                 </div>
             ) : !data ? (
@@ -462,7 +462,7 @@ export default function HrmsAdminPerformance() {
                         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 border-b border-slate-100">
                                 <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                    <Users className="w-5 h-5 text-[#6412c6]" /> All Employees ({filteredDirectory.length})
+                                    <Users className="w-5 h-5 text-[#6413C7]" /> All Employees ({filteredDirectory.length})
                                 </h3>
                                 <div className="relative w-full md:w-72">
                                     <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
@@ -471,7 +471,7 @@ export default function HrmsAdminPerformance() {
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder="Search employee, department, zone..."
-                                        className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6412c6]/20 focus:border-[#6412c6]"
+                                        className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6413C7]/20 focus:border-[#6413C7]"
                                     />
                                 </div>
                             </div>

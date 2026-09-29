@@ -40,7 +40,7 @@ export default function TeamReports() {
     if (loading && reports.length === 0) {
         return (
             <div className="flex-1 p-6 lg:p-8 flex items-center justify-center h-full">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -61,7 +61,7 @@ export default function TeamReports() {
                         type="date"
                         value={dateFilter}
                         onChange={e => setDateFilter(e.target.value)}
-                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6412c6]/30"
+                        className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7]/30"
                     />
                 </div>
                 <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -132,7 +132,7 @@ export default function TeamReports() {
                                     <div className="flex items-center gap-1.5 text-xs font-medium">
                                         <MessageSquare className="w-3.5 h-3.5" /> Reply / View
                                     </div>
-                                    <ChevronRight className="w-4 h-4 group-hover:text-[#6412c6] group-hover:translate-x-1 transition-all" />
+                                    <ChevronRight className="w-4 h-4 group-hover:text-[#6413C7] group-hover:translate-x-1 transition-all" />
                                 </div>
                             </Link>
                         ))}

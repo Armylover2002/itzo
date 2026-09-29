@@ -27,7 +27,7 @@ export default function SupportDashboard() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-full min-h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-[#6412c6]" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#6413C7]" />
             </div>
         );
     }
@@ -86,7 +86,7 @@ export default function SupportDashboard() {
                                     <div className={`w-2 h-2 rounded-full shrink-0 ${
                                         ticket.priority === 'Urgent' ? 'bg-red-500' :
                                         ticket.priority === 'High' ? 'bg-amber-500' :
-                                        ticket.priority === 'Medium' ? 'bg-[#6412c6]' :
+                                        ticket.priority === 'Medium' ? 'bg-[#6413C7]' :
                                         'bg-slate-300'
                                     }`} />
                                     <div className="min-w-0">

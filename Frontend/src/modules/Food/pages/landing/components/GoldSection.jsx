@@ -24,8 +24,8 @@ const GoldSection = React.memo(function GoldSection() {
 
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute -bottom-[30%] -left-[10%] w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FE5502]/20 via-transparent to-transparent blur-3xl" />
-        <div className="absolute -bottom-[30%] -right-[10%] w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FE5502]/20 via-transparent to-transparent blur-3xl" />
+        <div className="absolute -bottom-[30%] -left-[10%] w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FB4F01]/20 via-transparent to-transparent blur-3xl" />
+        <div className="absolute -bottom-[30%] -right-[10%] w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#FB4F01]/20 via-transparent to-transparent blur-3xl" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center w-full max-w-5xl px-4">
@@ -62,7 +62,7 @@ const GoldSection = React.memo(function GoldSection() {
           viewport={{ once: true }}
           whileHover={{ rotate: 0, scale: 1.015 }}
           transition={{ duration: 0.7, type: 'spring', stiffness: 80 }}
-          className="relative w-full max-w-md p-[1.5px] rounded-[2rem] bg-gradient-to-br from-[#ffb37a] via-[#FE5502]/60 to-[#8a2c00]/40 shadow-[0_25px_70px_rgba(254,85,2,0.25)]"
+          className="relative w-full max-w-md p-[1.5px] rounded-[2rem] bg-gradient-to-br from-[#ffb37a] via-[#FB4F01]/60 to-[#8a2c00]/40 shadow-[0_25px_70px_rgba(254,85,2,0.25)]"
         >
           <div className="relative rounded-[calc(2rem-1.5px)] bg-gradient-to-b from-[#1c0f06] to-black overflow-hidden px-8 pt-8 pb-7">
 
@@ -75,8 +75,8 @@ const GoldSection = React.memo(function GoldSection() {
 
             {/* Badge row */}
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-full bg-[#FE5502]/15 border border-[#FE5502]/40 flex items-center justify-center">
-                <Crown className="w-4 h-4 text-[#FE5502]" />
+              <div className="w-9 h-9 rounded-full bg-[#FB4F01]/15 border border-[#FB4F01]/40 flex items-center justify-center">
+                <Crown className="w-4 h-4 text-[#FB4F01]" />
               </div>
               <span className="text-white/70 text-xs font-bold tracking-[0.25em] uppercase">Membership</span>
             </div>
@@ -93,7 +93,7 @@ const GoldSection = React.memo(function GoldSection() {
               </motion.span>
             </div>
 
-            <p className="text-[#FE5502] text-base font-medium leading-relaxed mb-6 max-w-[280px]">
+            <p className="text-[#FB4F01] text-base font-medium leading-relaxed mb-6 max-w-[280px]">
               A membership built for everyday food lovers
             </p>
 
@@ -114,7 +114,7 @@ const GoldSection = React.memo(function GoldSection() {
                   transition={{ delay: 0.3 + i * 0.1 }}
                   className={`flex items-center gap-4 py-3.5 ${i < BENEFITS.length - 1 ? 'border-b border-white/5' : ''}`}
                 >
-                  <div className="w-11 h-11 rounded-full bg-[#1a0e05] flex items-center justify-center border border-[#FE5502]/30 flex-shrink-0">
+                  <div className="w-11 h-11 rounded-full bg-[#1a0e05] flex items-center justify-center border border-[#FB4F01]/30 flex-shrink-0">
                     <span className="text-xl">{benefit.emoji}</span>
                   </div>
                   <div className="flex flex-col text-left">
@@ -146,7 +146,7 @@ const GoldSection = React.memo(function GoldSection() {
           transition={{ delay: 0.6 }}
           className="flex items-center gap-1.5 mt-7 text-white/40 text-sm font-medium"
         >
-          <Star className="w-4 h-4 text-[#FE5502] fill-[#FE5502]" />
+          <Star className="w-4 h-4 text-[#FB4F01] fill-[#FB4F01]" />
           Loved by foodies who order often
         </motion.div>
       </div>

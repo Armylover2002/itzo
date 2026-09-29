@@ -119,7 +119,7 @@ export default function AdminReportList() {
                             {loading ? (
                                 <tr>
                                     <td colSpan="5" className="px-5 py-10 text-center">
-                                        <Loader2 className="w-8 h-8 animate-spin text-[#6412c6] mx-auto" />
+                                        <Loader2 className="w-8 h-8 animate-spin text-[#6413C7] mx-auto" />
                                     </td>
                                 </tr>
                             ) : reports.length === 0 ? (

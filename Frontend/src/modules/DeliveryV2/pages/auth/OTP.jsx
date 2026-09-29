@@ -618,7 +618,7 @@ export default function DeliveryOTP() {
             onClick={() => navigate("/food/delivery/login")}
             className="absolute top-6 left-6 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md z-20"
           >
-            <ArrowLeft className="w-5 h-5 text-[#d80000]" />
+            <ArrowLeft className="w-5 h-5 text-[#F35B1C]" />
           </button>
 
           {/* Content */}
@@ -628,8 +628,8 @@ export default function DeliveryOTP() {
                 src={logoUrl}
                 alt={companyName}
                 fallbackText={companyName}
-                accentClassName="bg-[#d80000]"
-                className="h-24 w-24 animate-logo-scale ring-4 ring-[#d80000]/90"
+                accentClassName="bg-[#F35B1C]"
+                className="h-24 w-24 animate-logo-scale ring-4 ring-[#F35B1C]/90"
               />
             </div>
 
@@ -639,7 +639,7 @@ export default function DeliveryOTP() {
             </h1>
 
             {/* DELIVERY PARTNER Badge */}
-            <div className="bg-[#d80000] px-5 py-1.5 rounded-full shadow-sm mb-3">
+            <div className="bg-[#F35B1C] px-5 py-1.5 rounded-full shadow-sm mb-3">
               <span className="text-white font-bold text-[12px] uppercase tracking-wider">
                 Delivery Partner
               </span>
@@ -647,9 +647,9 @@ export default function DeliveryOTP() {
 
             {/* Tagline */}
             <div className="flex items-center gap-3">
-              <div className="h-[2px] w-6 bg-[#d80000]"></div>
+              <div className="h-[2px] w-6 bg-[#F35B1C]"></div>
               <p className="text-white text-[15px] font-medium drop-shadow-sm">Deliver happiness, every time</p>
-              <div className="h-[2px] w-6 bg-[#d80000]"></div>
+              <div className="h-[2px] w-6 bg-[#F35B1C]"></div>
             </div>
           </div>
         </div>
@@ -660,8 +660,8 @@ export default function DeliveryOTP() {
             
             {/* Header Icon & Message */}
             <div className="flex flex-col items-center text-center space-y-4 mb-8">
-              <div className="w-16 h-16 bg-[#fdf4f4] rounded-full flex items-center justify-center mb-2 shadow-sm">
-                <Smartphone className="w-8 h-8 text-[#d80000]" strokeWidth={1.5} />
+              <div className="w-16 h-16 bg-[#FEF0EA] rounded-full flex items-center justify-center mb-2 shadow-sm">
+                <Smartphone className="w-8 h-8 text-[#F35B1C]" strokeWidth={1.5} />
               </div>
               <div>
                 <h2 className="text-[22px] font-bold text-[#1a1a1a] mb-2 leading-tight">
@@ -673,7 +673,7 @@ export default function DeliveryOTP() {
                     : "We have sent a verification code to"}
                 </p>
                 {!showNameInput && (
-                  <p className="text-[15px] font-bold text-[#d80000] mt-1 tracking-wide">
+                  <p className="text-[15px] font-bold text-[#F35B1C] mt-1 tracking-wide">
                     {getPhoneNumber()}
                   </p>
                 )}
@@ -715,7 +715,7 @@ export default function DeliveryOTP() {
                         sessionStorage.setItem("deliverySignupDetails", JSON.stringify(details))
                         navigate("/food/delivery/signup/details", { replace: true })
                       }}
-                      className="w-full h-12 bg-[#d80000] text-white rounded-xl font-bold text-[14px] hover:bg-red-700 shadow-lg shadow-red-200/50 transition-all active:scale-[0.98]"
+                      className="w-full h-12 bg-[#F35B1C] text-white rounded-xl font-bold text-[14px] hover:bg-[#D74C12] shadow-lg shadow-orange-200/50 transition-all active:scale-[0.98]"
                     >
                       Re-apply Now
                     </button>
@@ -757,7 +757,7 @@ export default function DeliveryOTP() {
                       disabled={isLoading}
                       autoComplete="off"
                       autoFocus={false}
-                      className="w-14 h-14 md:w-16 md:h-16 text-center text-2xl font-bold p-0 border border-gray-200 rounded-xl focus:border-[#d80000] focus:ring-1 focus:ring-[#d80000] focus:bg-white transition-all bg-gray-50 shadow-inner text-[#1a1a1a]"
+                      className="w-14 h-14 md:w-16 md:h-16 text-center text-2xl font-bold p-0 border border-gray-200 rounded-xl focus:border-[#F35B1C] focus:ring-1 focus:ring-[#F35B1C] focus:bg-white transition-all bg-gray-50 shadow-inner text-[#1a1a1a]"
                     />
                   ))}
                 </div>
@@ -769,14 +769,14 @@ export default function DeliveryOTP() {
                   </p>
                   {resendTimer > 0 ? (
                     <p className="text-[14px] font-bold text-gray-400">
-                      Resend SMS in <span className="text-[#d80000]">{resendTimer}s</span>
+                      Resend SMS in <span className="text-[#F35B1C]">{resendTimer}s</span>
                     </p>
                   ) : (
                     <button
                       type="button"
                       onClick={handleResend}
                       disabled={isLoading}
-                      className="text-[14px] font-bold text-[#d80000] hover:text-red-700 disabled:opacity-50 transition-colors"
+                      className="text-[14px] font-bold text-[#F35B1C] hover:text-[#D74C12] disabled:opacity-50 transition-colors"
                     >
                       Resend SMS Now
                     </button>
@@ -802,7 +802,7 @@ export default function DeliveryOTP() {
                     disabled={isLoading}
                     placeholder="Enter your full name"
                     className={`h-14 border rounded-xl bg-gray-50 text-[15px] px-4 font-medium focus:bg-white transition-all ${
-                      nameError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#d80000] focus:ring-[#d80000]"
+                      nameError ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-[#F35B1C] focus:ring-[#F35B1C]"
                     }`}
                   />
                   {nameError && (
@@ -815,7 +815,7 @@ export default function DeliveryOTP() {
                 <button
                   onClick={handleSubmitName}
                   disabled={isLoading}
-                  className="w-full h-14 bg-[#d80000] hover:bg-red-700 active:scale-[0.98] text-white rounded-xl font-bold text-[16px] shadow-lg shadow-red-200/50 transition-all flex items-center justify-center"
+                  className="w-full h-14 bg-[#F35B1C] hover:bg-[#D74C12] active:scale-[0.98] text-white rounded-xl font-bold text-[16px] shadow-lg shadow-orange-200/50 transition-all flex items-center justify-center"
                 >
                   {isLoading ? "Continuing..." : "Continue"}
                 </button>
@@ -825,7 +825,7 @@ export default function DeliveryOTP() {
             {/* Loading Spinner */}
             {isLoading && !showNameInput && (
               <div className="flex justify-center pt-6">
-                <Loader2 className="h-8 w-8 text-[#d80000] animate-spin" />
+                <Loader2 className="h-8 w-8 text-[#F35B1C] animate-spin" />
               </div>
             )}
           </div>

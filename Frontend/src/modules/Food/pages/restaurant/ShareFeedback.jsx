@@ -191,7 +191,7 @@ export default function ShareFeedback() {
                 </p>
                 <button
                   type="button"
-                  className="w-full py-2.5 rounded-full bg-[#0D315B] hover:bg-[#0A2647] text-white text-sm font-medium"
+                  className="w-full py-2.5 rounded-full bg-[#10335D] hover:bg-[#0A2647] text-white text-sm font-medium"
                   onClick={() => {
                     setShowThanks(false)
                     goBack()
