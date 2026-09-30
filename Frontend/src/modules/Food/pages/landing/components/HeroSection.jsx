@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Star, Bike, MapPin } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
@@ -58,6 +58,19 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
   // Hero video playlist — auto-advances to the next clip when one ends, then loops.
   const landingVideoUrls = (settings?.landingVideos || []).map((v) => v.url).filter(Boolean);
   const { currentUrl: videoUrl, currentIndex: videoIndex, handleEnded: handleVideoEnded } = useVideoPlaylist(landingVideoUrls);
+  const heroVideoElRef = useRef(null);
+  // The `autoPlay` attribute alone isn't reliable when a <video> is remounted mid-session
+  // (WebKit/mobile-WebView quirk) — if the browser silently fails to start clip 2/3, it
+  // never fires `ended`, so the playlist visually freezes instead of skipping ahead. Call
+  // `.play()` explicitly per clip and auto-advance past any clip that won't start.
+  useEffect(() => {
+    const el = heroVideoElRef.current;
+    if (!el || !videoUrl) return;
+    const playPromise = el.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => handleVideoEnded());
+    }
+  }, [videoIndex, videoUrl, handleVideoEnded]);
   const posterUrl = settings?.landingPoster?.url || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop";
   const appName = settings?.landingHeroTitle || "ItzoFood";
   const appSubtitle = settings?.landingHeroSubtitle || "Great food,\ndelivered to your door";
@@ -76,6 +89,7 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
             // Remounts per clip so the browser reliably picks up the new source —
             // swapping just the <source src> doesn't reload in every browser.
             key={videoIndex}
+            ref={heroVideoElRef}
             autoPlay
             muted
             playsInline

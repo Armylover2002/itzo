@@ -466,10 +466,10 @@ export default function UnifiedOTPFastLogin() {
         </button>
         
         <div className="relative z-10 flex flex-col items-center mt-[-40px]">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0 }}
-            animate={{ scale: 1, rotate: currentImageIndex * 360 }}
-            transition={{ duration: 0.8, ease: "easeInOut" }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
             className="mb-4"
           >
             <AuthCircleLogo src={logoUrl} alt={companyName} fallbackText={companyName} />

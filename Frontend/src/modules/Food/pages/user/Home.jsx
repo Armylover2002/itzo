@@ -206,6 +206,19 @@ export default function Home() {
   const homeHeroVideoUrls = (appSettings?.homeHeroVideos || []).map((v) => v.url).filter(Boolean);
   const { currentUrl: heroVideoUrl, currentIndex: heroVideoIndex, handleEnded: handleHeroVideoEnded } = useVideoPlaylist(homeHeroVideoUrls);
   const heroPosterUrl = appSettings?.landingPoster?.url || "";
+  const heroVideoElRef = useRef(null);
+  // The `autoPlay` attribute alone isn't reliable when a <video> is remounted mid-session
+  // (WebKit/mobile-WebView quirk) — if the browser silently fails to start clip 2/3, it
+  // never fires `ended`, so the playlist visually freezes instead of skipping ahead. Call
+  // `.play()` explicitly per clip and auto-advance past any clip that won't start.
+  useEffect(() => {
+    const el = heroVideoElRef.current;
+    if (!el || !heroVideoUrl) return;
+    const playPromise = el.play();
+    if (playPromise?.catch) {
+      playPromise.catch(() => handleHeroVideoEnded());
+    }
+  }, [heroVideoIndex, heroVideoUrl, handleHeroVideoEnded]);
   const visibleTabs = useMemo(
     () => tabs.filter((tab) =>
       (tab.id !== "quick" || quickEnabled) && (tab.id !== "street-food" || streetFoodEnabled)
@@ -451,6 +464,7 @@ export default function Home() {
                   <video
                     // Remounts per clip so the browser reliably loads the new source.
                     key={heroVideoIndex}
+                    ref={heroVideoElRef}
                     autoPlay
                     muted
                     playsInline

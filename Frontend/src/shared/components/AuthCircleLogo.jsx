@@ -137,10 +137,10 @@ export default function AuthCircleLogo({
   }, [src])
 
   const hasImage = Boolean(logoSrc || src)
-  const isDefaultOrange = accentClassName === "bg-primary-orange"
-  const effectiveBg = hasImage
-    ? (isDefaultOrange ? "bg-[#0d325e]" : accentClassName)
-    : (accentClassName || "bg-primary-orange")
+  // Logos are trimmed to their own artwork (removeEdgeWhite above) and can be any color,
+  // so the canvas behind them must stay neutral white — a fixed accent color here would
+  // clash with whatever the admin has actually uploaded as the app logo.
+  const effectiveBg = hasImage ? "bg-white" : (accentClassName || "bg-primary-orange")
 
   return (
     <div
