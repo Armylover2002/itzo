@@ -63,7 +63,7 @@ import {
     deleteAddonController
 } from '../controllers/restaurantAddon.controller.js';
 import * as orderController from '../../orders/controllers/order.controller.js';
-import { authMiddleware, optionalAuthMiddleware, requireRestaurantRegistrationToken } from '../../../../core/auth/auth.middleware.js';
+import { authMiddleware, authMiddlewareAllowRejectedRestaurant, optionalAuthMiddleware, requireRestaurantRegistrationToken } from '../../../../core/auth/auth.middleware.js';
 import { sendError } from '../../../../utils/response.js';
 import { getRestaurantFinanceController, getRestaurantSubscriptionWalletController } from '../controllers/restaurantFinance.controller.js';
 import { createTopupOrderController, verifyTopupController } from '../../subscriptions/controllers/subscription.controller.js';
@@ -152,7 +152,7 @@ const uploadFields = upload.fields([
     { name: 'panImage', maxCount: 1 },
     { name: 'gstImage', maxCount: 1 },
     { name: 'fssaiImage', maxCount: 1 },
-    { name: 'menuImages', maxCount: 10 }
+    { name: 'menuImages', maxCount: 10 },
 ]);
 
 router.post('/register', requireRestaurantRegistrationToken, uploadFields, registerRestaurantController);
@@ -180,7 +180,11 @@ router.get('/categories/public', cacheResponse(600, 'categories'), listCategorie
 
 // Restaurant dashboard/profile (Bearer token + RESTAURANT role)
 // /current stays open for first-time pending status polling; privileged routes need approval.
-router.get('/current', authMiddleware, requireRestaurant, getCurrentRestaurantController);
+// Read-only status endpoint — deliberately uses the rejection-tolerant auth variant so the
+// pending-verification screen's polling can detect a rejection in real time (see
+// authMiddlewareAllowRejectedRestaurant). Every other restaurant route below still uses the
+// strict authMiddleware, which 401s a rejected account.
+router.get('/current', authMiddlewareAllowRejectedRestaurant, requireRestaurant, getCurrentRestaurantController);
 
 // Street Food Vendor specific endpoints
 router.put('/live-location', authMiddleware, requireRestaurant, vendorLocationRateLimiter, async (req, res, next) => {

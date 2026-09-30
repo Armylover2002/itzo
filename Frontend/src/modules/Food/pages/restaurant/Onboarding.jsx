@@ -5,6 +5,7 @@ import { Button } from "@food/components/ui/button"
 import { Label } from "@food/components/ui/label"
 import { Image as ImageIcon, Upload, Clock, Calendar as CalendarIcon, X, CheckCircle2, Store, MapPin, FileText, Truck } from "lucide-react"
 import RestaurantOnboardingShell from "@food/components/restaurant/RestaurantOnboardingShell"
+import LicensingSupportModal from "@food/pages/landing/pages/LicensingSupportModal"
 import OnboardingLocationSection from "@food/components/restaurant/OnboardingLocationSection"
 import {
   ONBOARDING_SECTION,
@@ -44,6 +45,7 @@ import {
 } from "@food/utils/onboardingValidation"
 import { clearOnboardingDraft, clearOnboardingFileCache } from "@food/utils/onboardingDraftStorage"
 import OnboardingRestaurantCardPreview from "@food/components/restaurant/OnboardingRestaurantCardPreview"
+import ShiftTimingsEditor, { shiftsFromLegacyWindow } from "@food/components/restaurant/ShiftTimingsEditor"
 import { toast } from "sonner"
 
 const OWNER_PHONE_DUPLICATE_MSG = "This phone number is already registered with another restaurant."
@@ -185,6 +187,16 @@ const buildOnboardingStepFormData = (stepNum, { step1, step2, step3 }) => {
     formData.append("openingTime", normalizeTimeValue(step2.openingTime) || "")
     formData.append("closingTime", normalizeTimeValue(step2.closingTime) || "")
     formData.append("openDays", (step2.openDays || []).join(","))
+    formData.append(
+      "shifts",
+      JSON.stringify(
+        (step2.shifts || []).map((s) => ({
+          openingTime: s.openingTime,
+          closingTime: s.closingTime,
+          days: s.days,
+        })),
+      ),
+    )
 
     const menuFiles = (step2.menuImages || []).filter((f) => isUploadableFile(f))
     menuFiles.forEach((file) => formData.append("menuImages", file))
@@ -211,10 +223,15 @@ const buildOnboardingStepFormData = (stepNum, { step1, step2, step3 }) => {
       }
     }
 
-    formData.append("fssaiNumber", step3.fssaiNumber || "")
-    formData.append("fssaiExpiry", step3.fssaiExpiry || "")
-    if (isUploadableFile(step3.fssaiImage)) {
-      formData.append("fssaiImage", step3.fssaiImage)
+    formData.append("fssaiApplyForLicense", step3.fssaiApplyForLicense ? "true" : "false")
+    if (step3.fssaiApplyForLicense) {
+      formData.append("fssaiApplicationId", step3.fssaiApplicationId || "")
+    } else {
+      formData.append("fssaiNumber", step3.fssaiNumber || "")
+      formData.append("fssaiExpiry", step3.fssaiExpiry || "")
+      if (isUploadableFile(step3.fssaiImage)) {
+        formData.append("fssaiImage", step3.fssaiImage)
+      }
     }
 
     formData.append("accountNumber", step3.accountNumber || "")
@@ -308,6 +325,10 @@ const finishRegistrationAndGoPending = async (registerResponse, ownerPhone, navi
     localStorage.setItem("restaurant_pendingPhone", phone)
   } catch {
     // Ignore storage failures
+  }
+  const registeredRestaurant = registerResponse?.data?.data || registerResponse?.data
+  if (registeredRestaurant?.fssaiApplicationStatus === "applied") {
+    toast.success("FSSAI application submitted — you'll be notified once reviewed.", { duration: 5000 })
   }
   toast.success("Registration submitted. Awaiting admin approval.", { duration: 4000 })
   navigate("/food/restaurant/pending-verification", {
@@ -563,6 +584,7 @@ export default function RestaurantOnboarding() {
   const [keyboardInset, setKeyboardInset] = useState(0)
   const [isEditing, setIsEditing] = useState(true)
   const [isFssaiCalendarOpen, setIsFssaiCalendarOpen] = useState(false)
+  const [fssaiLicensingModalOpen, setFssaiLicensingModalOpen] = useState(false)
   const [zones, setZones] = useState([])
   const [zonesLoading, setZonesLoading] = useState(false)
 
@@ -604,6 +626,7 @@ export default function RestaurantOnboarding() {
     openingTime: "11:00",
     closingTime: "23:00",
     openDays: [...daysOfWeek],
+    shifts: shiftsFromLegacyWindow("11:00", "23:00", [...daysOfWeek]),
   })
 
   const [step3, setStep3] = useState({
@@ -618,6 +641,8 @@ export default function RestaurantOnboarding() {
     fssaiNumber: "",
     fssaiExpiry: "",
     fssaiImage: null,
+    fssaiApplyForLicense: false,
+    fssaiApplicationId: "",
     accountNumber: "",
     confirmAccountNumber: "",
     ifscCode: "",
@@ -841,6 +866,7 @@ export default function RestaurantOnboarding() {
           openingTime: "11:00",
           closingTime: "23:00",
           openDays: [...daysOfWeek],
+          shifts: shiftsFromLegacyWindow("11:00", "23:00", [...daysOfWeek]),
         }
 
         let initialStep3 = {
@@ -855,6 +881,8 @@ export default function RestaurantOnboarding() {
           fssaiNumber: "",
           fssaiExpiry: "",
           fssaiImage: null,
+          fssaiApplyForLicense: false,
+          fssaiApplicationId: "",
           accountNumber: "",
           confirmAccountNumber: "",
           ifscCode: "",
@@ -918,6 +946,14 @@ export default function RestaurantOnboarding() {
             openingTime: normalizeTimeValue(serverData.openingTime),
             closingTime: normalizeTimeValue(serverData.closingTime),
             openDays: serverData.openDays || [],
+            // Backend draft response doesn't return granular per-shift data yet, only the
+            // flat opening/closing/openDays mirror — seed a single shift from those so a
+            // resumed draft doesn't show an empty shift picker.
+            shifts: shiftsFromLegacyWindow(
+              normalizeTimeValue(serverData.openingTime),
+              normalizeTimeValue(serverData.closingTime),
+              serverData.openDays || [],
+            ),
           }
 
           initialStep3 = {
@@ -932,6 +968,8 @@ export default function RestaurantOnboarding() {
             fssaiNumber: serverData.fssaiNumber || "",
             fssaiExpiry: serverData.fssaiExpiry ? String(serverData.fssaiExpiry).split('T')[0] : "",
             fssaiImage: serverData.fssaiImage || null,
+            fssaiApplyForLicense: serverData.fssaiApplicationStatus === "applied",
+            fssaiApplicationId: serverData.fssaiApplicationId || "",
             accountNumber: serverData.accountNumber || "",
             confirmAccountNumber: serverData.accountNumber || "",
             ifscCode: (serverData.ifscCode || "").toUpperCase(),
@@ -1312,6 +1350,16 @@ export default function RestaurantOnboarding() {
         formData.append("openingTime", normalizeTimeValue(mergedStep2.openingTime) || "")
         formData.append("closingTime", normalizeTimeValue(mergedStep2.closingTime) || "")
         formData.append("openDays", (mergedStep2.openDays || []).join(","))
+        formData.append(
+          "shifts",
+          JSON.stringify(
+            (mergedStep2.shifts || []).map((s) => ({
+              openingTime: s.openingTime,
+              closingTime: s.closingTime,
+              days: s.days,
+            })),
+          ),
+        )
 
         const menuFiles = (mergedStep2.menuImages || []).filter((f) => isUploadableFile(f))
         const hasExistingMenuImages = (mergedStep2.menuImages || []).some(hasValidMenuImageAsset)
@@ -1347,19 +1395,27 @@ export default function RestaurantOnboarding() {
           }
         }
 
-        formData.append("fssaiNumber", mergedStep3.fssaiNumber || "")
-        formData.append("fssaiExpiry", mergedStep3.fssaiExpiry || "")
-        if (isUploadableFile(mergedStep3.fssaiImage)) {
-          formData.append("fssaiImage", mergedStep3.fssaiImage)
-        } else if (!hasValidImageAsset(mergedStep3.fssaiImage)) {
-          throw new Error("FSSAI image is required")
+        formData.append("fssaiApplyForLicense", mergedStep3.fssaiApplyForLicense ? "true" : "false")
+        if (mergedStep3.fssaiApplyForLicense) {
+          if (!mergedStep3.fssaiApplicationId) {
+            throw new Error("Please submit the FSSAI licensing application form before continuing")
+          }
+          formData.append("fssaiApplicationId", mergedStep3.fssaiApplicationId)
+        } else {
+          formData.append("fssaiNumber", mergedStep3.fssaiNumber || "")
+          formData.append("fssaiExpiry", mergedStep3.fssaiExpiry || "")
+          if (isUploadableFile(mergedStep3.fssaiImage)) {
+            formData.append("fssaiImage", mergedStep3.fssaiImage)
+          } else if (!hasValidImageAsset(mergedStep3.fssaiImage)) {
+            throw new Error("FSSAI image is required")
+          }
         }
 
         const usesExistingAssets =
           (menuFiles.length === 0 && hasExistingMenuImages) ||
           (!isUploadableFile(mergedStep2.profileImage) && hasValidImageAsset(mergedStep2.profileImage)) ||
           (!isUploadableFile(mergedStep3.panImage) && hasValidImageAsset(mergedStep3.panImage)) ||
-          (!isUploadableFile(mergedStep3.fssaiImage) && hasValidImageAsset(mergedStep3.fssaiImage)) ||
+          (!mergedStep3.fssaiApplyForLicense && !isUploadableFile(mergedStep3.fssaiImage) && hasValidImageAsset(mergedStep3.fssaiImage)) ||
           (mergedStep3.gstRegistered && !isUploadableFile(mergedStep3.gstImage) && hasValidImageAsset(mergedStep3.gstImage))
 
         if (usesExistingAssets || onboardingDraftRef.current?.status === "onboarding") {
@@ -1502,15 +1558,22 @@ export default function RestaurantOnboarding() {
 
 
 
-  const toggleDay = (day) => {
+  // Shifts are the source of truth for step2 timings; openingTime/closingTime/openDays are
+  // kept as derived flat mirrors (first shift's times, union of all shifts' days) so other
+  // code paths reading those flat fields directly (preview cards, submit payload) still work.
+  const handleShiftsChange = (shifts) => {
+    clearFieldError("openingTime")
+    clearFieldError("closingTime")
     clearFieldError("openDays")
-    setStep2((prev) => {
-      const exists = prev.openDays.includes(day)
-      if (exists) {
-        return { ...prev, openDays: prev.openDays.filter((d) => d !== day) }
-      }
-      return { ...prev, openDays: [...prev.openDays, day] }
-    })
+    clearFieldError("shifts")
+    const openDays = daysOfWeek.filter((day) => shifts.some((s) => (s.days || []).includes(day)))
+    setStep2((prev) => ({
+      ...prev,
+      shifts,
+      openingTime: shifts[0]?.openingTime || "",
+      closingTime: shifts[0]?.closingTime || "",
+      openDays,
+    }))
   }
 
   const handleZoneChange = (newZoneId) => {
@@ -2156,66 +2219,27 @@ export default function RestaurantOnboarding() {
         </div>
       </section>
 
-      <section className={`${ONBOARDING_SECTION} space-y-5`}>
-        <div className="space-y-3">
-          <Label className={ONBOARDING_LABEL}>Delivery timings</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <TimeSelector
-              label="Opening time"
-              value={step2.openingTime || ""}
-              hasError={Boolean(fieldErrors.openingTime)}
-              onChange={(val) => {
-                clearFieldError("openingTime")
-                setStep2((prev) => ({ ...prev, openingTime: normalizeTimeValue(val) || "" }))
-              }}
-            />
-            <TimeSelector
-              label="Closing time"
-              value={step2.closingTime || ""}
-              hasError={Boolean(fieldErrors.closingTime)}
-              onChange={(val) => {
-                clearFieldError("closingTime")
-                setStep2((prev) => ({ ...prev, closingTime: normalizeTimeValue(val) || "" }))
-              }}
-            />
-          </div>
-          <FieldErrorMsg message={fieldErrors.openingTime || fieldErrors.closingTime} />
-        </div>
-
-        {/* Open days in a calendar-like grid */}
-        <div className="space-y-2">
-          <Label className={`${ONBOARDING_LABEL} flex items-center gap-1.5`}>
-            <CalendarIcon className="h-3.5 w-3.5 text-[#10335D]" />
-            <span>Open days</span>
-          </Label>
-          <p className={ONBOARDING_HINT}>
-            Select the days your restaurant accepts delivery orders.
-          </p>
-          <div className={`mt-2 grid grid-cols-7 gap-1.5 sm:gap-2 ${
-            fieldErrors.openDays ? "rounded-xl p-1 ring-2 ring-red-200" : ""
-          }`}>
-            {daysOfWeek.map((day) => {
-              const active = step2.openDays.includes(day)
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => toggleDay(day)}
-                  className={`flex aspect-square cursor-pointer items-center justify-center rounded-xl border text-[11px] font-semibold transition-all duration-200 ${
-                    active ? ONBOARDING_DAY_ACTIVE : ONBOARDING_DAY_INACTIVE
-                  }`}
-                >
-                  {day.charAt(0)}
-                </button>
-              )
-            })}
-          </div>
-          <FieldErrorMsg message={fieldErrors.openDays} />
-        </div>
+      <section className={`${ONBOARDING_SECTION} space-y-3`}>
+        <Label className={`${ONBOARDING_LABEL} flex items-center gap-1.5`}>
+          <CalendarIcon className="h-3.5 w-3.5 text-[#10335D]" />
+          <span>Delivery timings</span>
+        </Label>
+        <p className={ONBOARDING_HINT}>
+          Add up to 3 shifts with their own hours and open days (e.g. a lunch shift and a
+          separate dinner shift).
+        </p>
+        <ShiftTimingsEditor
+          shifts={step2.shifts}
+          onChange={handleShiftsChange}
+          errors={fieldErrors.shifts || {}}
+        />
       </section>
     </div>
   )
 
+  // One document-upload field for the "apply for FSSAI" flow — mirrors the existing
+  // panImage/gstImage/fssaiImage upload pattern (camera/gallery picker + hidden input +
+  // preview) so the 5 apply-flow documents don't repeat that block five times.
   const renderStep3 = () => (
     <div className="space-y-5 lg:space-y-6">
       <section className={`${ONBOARDING_SECTION} space-y-4`}>
@@ -2439,129 +2463,212 @@ export default function RestaurantOnboarding() {
 
       <section className={`${ONBOARDING_SECTION} space-y-4`}>
         <h2 className={ONBOARDING_SECTION_TITLE}>FSSAI details</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <Label className={ONBOARDING_LABEL}>FSSAI number</Label>
-            <Input
-              value={step3.fssaiNumber || ""}
+
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => setStep3((prev) => ({ ...prev, fssaiApplyForLicense: false }))}
+            className={`flex-1 cursor-pointer rounded-xl border px-4 py-2.5 text-left text-xs font-semibold transition-colors ${
+              !step3.fssaiApplyForLicense
+                ? "border-[#10335D] bg-[#10335D]/5 text-[#10335D]"
+                : "border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}
+          >
+            I already have FSSAI
+          </button>
+          <button
+            type="button"
+            onClick={() => setStep3((prev) => ({ ...prev, fssaiApplyForLicense: true }))}
+            className={`flex-1 cursor-pointer rounded-xl border px-4 py-2.5 text-left text-xs font-semibold transition-colors ${
+              step3.fssaiApplyForLicense
+                ? "border-[#10335D] bg-[#10335D]/5 text-[#10335D]"
+                : "border-slate-200 text-slate-500 hover:border-slate-300"
+            }`}
+          >
+            I don&apos;t have FSSAI yet — Apply for FSSAI
+          </button>
+        </div>
+
+        {!step3.fssaiApplyForLicense ? (
+          <>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <Label className={ONBOARDING_LABEL}>FSSAI number</Label>
+                <Input
+                  value={step3.fssaiNumber || ""}
+                  onChange={(e) => {
+                    clearFieldError("fssaiNumber")
+                    setStep3({ ...step3, fssaiNumber: e.target.value.replace(/\D/g, "").slice(0, 14) })
+                  }}
+                  className={inputCls("fssaiNumber")}
+                  placeholder="FSSAI number (14 digits)"
+                />
+                <FieldErrorMsg message={fieldErrors.fssaiNumber} />
+              </div>
+              <div>
+                <Label className={`${ONBOARDING_LABEL} mb-1 block`}>FSSAI expiry date</Label>
+                <Popover open={isFssaiCalendarOpen} onOpenChange={setIsFssaiCalendarOpen}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setIsFssaiCalendarOpen(true)}
+                      className={`flex w-full cursor-pointer items-center justify-between rounded-xl border bg-slate-50/80 px-3 py-2.5 text-left text-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 ${
+                        fieldErrors.fssaiExpiry
+                          ? "border-red-400 ring-2 ring-red-200 focus-visible:ring-red-300"
+                          : "border-slate-200 focus-visible:ring-[#10335D]/20"
+                      }`}
+                    >
+                      <span className={step3.fssaiExpiry ? "text-slate-900" : "text-slate-500"}>
+                        {step3.fssaiExpiry
+                          ? parseLocalYMDDate(step3.fssaiExpiry)?.toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })
+                          : "Select expiry date"}
+                      </span>
+                      <CalendarIcon className="h-4 w-4 text-[#10335D]" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-100" align="start">
+                    <div className="bg-white rounded-md shadow-lg border border-gray-200">
+                      <Calendar
+                        mode="single"
+                        selected={parseLocalYMDDate(step3.fssaiExpiry)}
+                        disabled={(date) => formatDateToLocalYMD(date) < getTodayLocalYMD()}
+                        onSelect={(date) => {
+                          if (date && formatDateToLocalYMD(date) >= getTodayLocalYMD()) {
+                            clearFieldError("fssaiExpiry")
+                            const formattedDate = formatDateToLocalYMD(date)
+                            setStep3({ ...step3, fssaiExpiry: formattedDate })
+                            setIsFssaiCalendarOpen(false)
+                          }
+                        }}
+                        initialFocus
+                        classNames={{
+                          today: "bg-transparent text-foreground border-none", // Remove today highlight
+                        }}
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <FieldErrorMsg message={fieldErrors.fssaiExpiry} />
+              </div>
+            </div>
+            <div className={fieldErrors.fssaiImage ? "rounded-xl ring-2 ring-red-200 p-2" : ""}>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full cursor-pointer rounded-full border-slate-200 text-xs"
+              onClick={() =>
+                openOnboardingImagePicker({
+                  title: "Upload FSSAI image",
+                  fallbackInputRef: fssaiImageInputRef,
+                  fileNamePrefix: "fssai-image",
+                  onSelectFile: (file) => {
+                    clearFieldError("fssaiImage")
+                    setStep3((prev) => ({ ...prev, fssaiImage: file }))
+                  },
+                })
+              }
+            >
+              <Upload className="w-4 h-4 mr-1.5" />
+              Upload
+            </Button>
+            <input
+              type="file"
+              accept={GALLERY_IMAGE_ACCEPT}
+              className="hidden"
+              ref={fssaiImageInputRef}
               onChange={(e) => {
-                clearFieldError("fssaiNumber")
-                setStep3({ ...step3, fssaiNumber: e.target.value.replace(/\D/g, "").slice(0, 14) })
+                clearFieldError("fssaiImage")
+                setStep3((prev) => ({ ...prev, fssaiImage: e.target.files?.[0] || null }))
               }}
-              className={inputCls("fssaiNumber")}
-              placeholder="FSSAI number (14 digits)"
             />
-            <FieldErrorMsg message={fieldErrors.fssaiNumber} />
-          </div>
-          <div>
-            <Label className={`${ONBOARDING_LABEL} mb-1 block`}>FSSAI expiry date</Label>
-            <Popover open={isFssaiCalendarOpen} onOpenChange={setIsFssaiCalendarOpen}>
-              <PopoverTrigger asChild>
+            {step3.fssaiImage && (
+              <div className={ONBOARDING_DOC_PREVIEW}>
+                {getPreviewImageUrl(step3.fssaiImage) ? (
+                  <img
+                    src={getPreviewImageUrl(step3.fssaiImage)}
+                    alt="FSSAI document"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                    Preview unavailable
+                  </div>
+                )}
                 <button
                   type="button"
-                  onClick={() => setIsFssaiCalendarOpen(true)}
-                  className={`flex w-full cursor-pointer items-center justify-between rounded-xl border bg-slate-50/80 px-3 py-2.5 text-left text-sm transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 ${
-                    fieldErrors.fssaiExpiry
-                      ? "border-red-400 ring-2 ring-red-200 focus-visible:ring-red-300"
-                      : "border-slate-200 focus-visible:ring-[#10335D]/20"
-                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setStep3((prev) => ({ ...prev, fssaiImage: null }))
+                  }}
+                  className="absolute right-2 top-2 cursor-pointer rounded-full bg-red-500 p-1 text-white shadow-md transition-colors hover:bg-red-600"
                 >
-                  <span className={step3.fssaiExpiry ? "text-slate-900" : "text-slate-500"}>
-                    {step3.fssaiExpiry
-                      ? parseLocalYMDDate(step3.fssaiExpiry)?.toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })
-                      : "Select expiry date"}
-                  </span>
-                  <CalendarIcon className="h-4 w-4 text-[#10335D]" />
+                  <X className="w-3 h-3" />
                 </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-100" align="start">
-                <div className="bg-white rounded-md shadow-lg border border-gray-200">
-                  <Calendar
-                    mode="single"
-                    selected={parseLocalYMDDate(step3.fssaiExpiry)}
-                    disabled={(date) => formatDateToLocalYMD(date) < getTodayLocalYMD()}
-                    onSelect={(date) => {
-                      if (date && formatDateToLocalYMD(date) >= getTodayLocalYMD()) {
-                        clearFieldError("fssaiExpiry")
-                        const formattedDate = formatDateToLocalYMD(date)
-                        setStep3({ ...step3, fssaiExpiry: formattedDate })
-                        setIsFssaiCalendarOpen(false)
-                      }
-                    }}
-                    initialFocus
-                    classNames={{
-                      today: "bg-transparent text-foreground border-none", // Remove today highlight
-                    }}
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
-            <FieldErrorMsg message={fieldErrors.fssaiExpiry} />
-          </div>
-        </div>
-        <div className={fieldErrors.fssaiImage ? "rounded-xl ring-2 ring-red-200 p-2" : ""}>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full cursor-pointer rounded-full border-slate-200 text-xs"
-          onClick={() =>
-            openOnboardingImagePicker({
-              title: "Upload FSSAI image",
-              fallbackInputRef: fssaiImageInputRef,
-              fileNamePrefix: "fssai-image",
-              onSelectFile: (file) => {
-                clearFieldError("fssaiImage")
-                setStep3((prev) => ({ ...prev, fssaiImage: file }))
-              },
-            })
-          }
-        >
-          <Upload className="w-4 h-4 mr-1.5" />
-          Upload
-        </Button>
-        <input
-          type="file"
-          accept={GALLERY_IMAGE_ACCEPT}
-          className="hidden"
-          ref={fssaiImageInputRef}
-          onChange={(e) => {
-            clearFieldError("fssaiImage")
-            setStep3((prev) => ({ ...prev, fssaiImage: e.target.files?.[0] || null }))
-          }}
-        />
-        {step3.fssaiImage && (
-          <div className={ONBOARDING_DOC_PREVIEW}>
-            {getPreviewImageUrl(step3.fssaiImage) ? (
-              <img
-                src={getPreviewImageUrl(step3.fssaiImage)}
-                alt="FSSAI document"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
-                Preview unavailable
               </div>
             )}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setStep3((prev) => ({ ...prev, fssaiImage: null }))
-              }}
-              className="absolute right-2 top-2 cursor-pointer rounded-full bg-red-500 p-1 text-white shadow-md transition-colors hover:bg-red-600"
-            >
-              <X className="w-3 h-3" />
-            </button>
+            <FieldErrorMsg message={fieldErrors.fssaiImage} />
+            </div>
+          </>
+        ) : (
+          <div className="space-y-4">
+            {step3.fssaiApplicationId ? (
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                <div className="flex-1 text-xs">
+                  <p className="font-semibold text-emerald-800">FSSAI application submitted</p>
+                  <p className="text-emerald-700">Our licensing partner will reach out to help you complete registration.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFssaiLicensingModalOpen(true)}
+                  className="shrink-0 cursor-pointer rounded-full border border-emerald-300 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                >
+                  Edit
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className={ONBOARDING_HINT}>
+                  Fill out our licensing partner application — the same form used on our Restaurant
+                  Consulting page — and they&apos;ll help you obtain a new FSSAI license.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full cursor-pointer rounded-full border-slate-200 text-xs"
+                  onClick={() => setFssaiLicensingModalOpen(true)}
+                >
+                  Apply for FSSAI via Licensing Partner
+                </Button>
+              </>
+            )}
+            <FieldErrorMsg message={fieldErrors.fssaiApplicationId} />
           </div>
         )}
-        <FieldErrorMsg message={fieldErrors.fssaiImage} />
-        </div>
       </section>
+
+      <LicensingSupportModal
+        isOpen={fssaiLicensingModalOpen}
+        onClose={() => setFssaiLicensingModalOpen(false)}
+        preFillData={{
+          restaurantName: step1.restaurantName || "",
+          ownerName: step1.ownerName || "",
+          city: step1.location?.city || "",
+          address: step1.location?.addressLine1 || "",
+          mobile: step1.ownerPhone || "",
+          email: step1.ownerEmail || "",
+          selectedLicenses: ["FSSAI License"],
+        }}
+        onSuccess={(request) => {
+          clearFieldError("fssaiApplicationId")
+          setStep3((prev) => ({ ...prev, fssaiApplicationId: request?._id || "" }))
+        }}
+      />
 
       <section className={`${ONBOARDING_SECTION} space-y-4`}>
         <h2 className={ONBOARDING_SECTION_TITLE}>Bank account details</h2>

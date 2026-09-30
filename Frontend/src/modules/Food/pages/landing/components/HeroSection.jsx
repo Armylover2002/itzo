@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Star, Bike, MapPin } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
+import { useVideoPlaylist } from '@common/hooks/useVideoPlaylist';
 
 const containerVariants = {
   hidden: {},
@@ -54,8 +55,9 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
     };
   }, []);
 
-  // Use the admin video if available, else fallback to business settings video
-  const videoUrl = settings?.landingVideo?.url || "";
+  // Hero video playlist — auto-advances to the next clip when one ends, then loops.
+  const landingVideoUrls = (settings?.landingVideos || []).map((v) => v.url).filter(Boolean);
+  const { currentUrl: videoUrl, currentIndex: videoIndex, handleEnded: handleVideoEnded } = useVideoPlaylist(landingVideoUrls);
   const posterUrl = settings?.landingPoster?.url || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=2070&auto=format&fit=crop";
   const appName = settings?.landingHeroTitle || "ItzoFood";
   const appSubtitle = settings?.landingHeroSubtitle || "Great food,\ndelivered to your door";
@@ -71,17 +73,22 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
       <div className="absolute inset-0 z-0">
         {videoUrl ? (
           <video
+            // Remounts per clip so the browser reliably picks up the new source —
+            // swapping just the <source src> doesn't reload in every browser.
+            key={videoIndex}
             autoPlay
-            loop
             muted
             playsInline
             preload="metadata"
             poster={posterUrl}
             onLoadedData={() => setIsLoaded(true)}
+            // Playlist advance: move to the next clip when this one finishes, looping
+            // back to the first after the last (single-video playlists just repeat).
+            onEnded={handleVideoEnded}
             // If the uploaded video fails to load, still fade in — the poster
             // frame (or, once opacity is up, the browser's own fallback) shows
-            // instead of leaving the hero blank.
-            onError={() => setIsLoaded(true)}
+            // instead of leaving the hero blank — and skip ahead to the next clip.
+            onError={() => { setIsLoaded(true); handleVideoEnded(); }}
             className={`object-cover w-full h-full transition-opacity duration-[1400ms] ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
           >
             <source src={videoUrl} type="video/mp4" />

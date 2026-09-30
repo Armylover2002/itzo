@@ -374,17 +374,17 @@ router.patch(
   checkPermission("quick::core_management::customer_support::tickets", "edit"),
   updateAdminSupportTicketController,
 );
-router.get("/admin/seller-requests", ...adminOrEmployee, checkPermission("quick::core_management::seller_requests", "view"), getAdminSellerRequests);
+router.get("/admin/seller-requests", ...adminOrEmployee, checkPermission("quick::core_management::sellers", "view"), getAdminSellerRequests);
 router.put(
   "/admin/seller-requests/:sellerId/approve",
   ...adminOrEmployee,
-  checkPermission("quick::core_management::seller_requests", "edit"),
+  checkPermission("quick::core_management::sellers", "edit"),
   approveAdminSellerRequest,
 );
 router.put(
   "/admin/seller-requests/:sellerId/reject",
   ...adminOrEmployee,
-  checkPermission("quick::core_management::seller_requests", "edit"),
+  checkPermission("quick::core_management::sellers", "edit"),
   rejectAdminSellerRequest,
 );
 router.get("/admin/zones", ...adminOrEmployee, checkPermission("quick::core_management::zone_setup", "view"), getAdminZones);

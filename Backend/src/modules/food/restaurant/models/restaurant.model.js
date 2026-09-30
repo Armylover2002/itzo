@@ -42,12 +42,29 @@ const geoPointSchema = new mongoose.Schema(
   { _id: false },
 );
 
+const openingDayShiftSchema = new mongoose.Schema(
+  {
+    openingTime: { type: String, trim: true },
+    closingTime: { type: String, trim: true },
+  },
+  { _id: false },
+);
+
 const openingDayTimingSchema = new mongoose.Schema(
   {
     day: { type: String, trim: true },
     isOpen: { type: Boolean, default: true },
+    // Back-compat mirror of shifts[0].
     openingTime: { type: String, trim: true },
     closingTime: { type: String, trim: true },
+    shifts: {
+      type: [openingDayShiftSchema],
+      default: undefined,
+      validate: {
+        validator: (v) => !Array.isArray(v) || v.length <= 3,
+        message: 'A maximum of 3 shifts is allowed per day',
+      },
+    },
   },
   { _id: false },
 );
@@ -283,6 +300,21 @@ const restaurantSchema = new mongoose.Schema(
     },
     fssaiImage: {
       type: String,
+    },
+    /**
+     * Set when the owner chose "Apply for FSSAI" during onboarding instead of
+     * uploading an existing license: a LicensingRequest is filed alongside the
+     * restaurant onboarding submission. `uploaded` = normal upload flow.
+     */
+    fssaiApplicationStatus: {
+      type: String,
+      enum: ['uploaded', 'applied', null],
+      default: null,
+    },
+    fssaiApplicationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'LicensingRequest',
+      default: null,
     },
     estimatedDeliveryTime: { type: String },
     /** Numeric delivery time in minutes for filtering/sorting. */

@@ -208,12 +208,76 @@ export const getRestaurantAvailabilityStatus = (restaurant, now = new Date(), op
     }
   }
 
+  // Multi-shift path: when today's timing carries a `shifts` array (2+ windows/day), a
+  // restaurant is open if `now` falls within ANY shift. "Closes in Xm" reflects the active
+  // shift's end; between shifts, we surface the next upcoming shift's start instead.
+  const todayShifts = Array.isArray(todayTiming?.shifts) && todayTiming.shifts.length > 1
+    ? todayTiming.shifts
+    : null
+
+  const nowMinutes = istNow.getHours() * 60 + istNow.getMinutes()
+
+  if (todayShifts) {
+    let activeShift = null
+    let activeMinutesUntilClose = null
+    let nextShift = null
+    let nextShiftWaitMinutes = Infinity
+
+    for (const shift of todayShifts) {
+      const shiftOpenMinutes = parseTimeToMinutes(shift?.openingTime)
+      const shiftCloseMinutes = parseTimeToMinutes(shift?.closingTime)
+      if (shiftOpenMinutes === null || shiftCloseMinutes === null) continue
+
+      if (isWithinTimeWindow(nowMinutes, shiftOpenMinutes, shiftCloseMinutes)) {
+        activeShift = shift
+        activeMinutesUntilClose = getMinutesUntilClosing(nowMinutes, shiftOpenMinutes, shiftCloseMinutes)
+        break
+      }
+
+      let waitMinutes = shiftOpenMinutes - nowMinutes
+      if (waitMinutes < 0) waitMinutes += 24 * 60
+      if (waitMinutes < nextShiftWaitMinutes) {
+        nextShiftWaitMinutes = waitMinutes
+        nextShift = shift
+      }
+    }
+
+    if (activeShift) {
+      return {
+        isOpen: true,
+        isActive,
+        isAcceptingOrders,
+        isWithinTimings: true,
+        openingTime: activeShift.openingTime,
+        closingTime: activeShift.closingTime,
+        minutesUntilClose: activeMinutesUntilClose,
+        closingCountdownLabel: formatClosingCountdown(activeMinutesUntilClose, activeShift.closingTime),
+        reason: isAcceptingOrders ? "open" : "open-by-timings",
+      }
+    }
+
+    const nextOpeningLabel = nextShift?.openingTime ? formatTimeLabel(nextShift.openingTime) : null
+    return {
+      isOpen: false,
+      isActive,
+      isAcceptingOrders,
+      isWithinTimings: false,
+      openingTime: nextShift?.openingTime || null,
+      closingTime: nextShift?.closingTime || null,
+      minutesUntilClose: null,
+      closingCountdownLabel: nextOpeningLabel ? `Opens at ${nextOpeningLabel}` : null,
+      reason: "outside-hours",
+    }
+  }
+
   const openingTime =
+    todayTiming?.shifts?.[0]?.openingTime ||
     todayTiming?.openingTime ||
     restaurant?.deliveryTimings?.openingTime ||
     restaurant?.openingTime ||
     null
   const closingTime =
+    todayTiming?.shifts?.[0]?.closingTime ||
     todayTiming?.closingTime ||
     restaurant?.deliveryTimings?.closingTime ||
     restaurant?.closingTime ||
@@ -221,7 +285,6 @@ export const getRestaurantAvailabilityStatus = (restaurant, now = new Date(), op
 
   const openingMinutes = parseTimeToMinutes(openingTime)
   const closingMinutes = parseTimeToMinutes(closingTime)
-  const nowMinutes = istNow.getHours() * 60 + istNow.getMinutes()
   const hasExplicitWindow = Boolean(openingTime || closingTime)
   // If a restaurant provides only one side of the window, treat timings as not enforced
   // (prevents accidental "offline" due to partial data).

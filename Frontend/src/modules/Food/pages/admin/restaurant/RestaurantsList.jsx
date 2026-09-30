@@ -12,6 +12,7 @@ import { useAuth } from "@core/context/AuthContext"
 import { getCurrentUser } from "@food/utils/auth"
 import { canPerformAdminPermissionAction, extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions } from "@food/utils/adminPermissions"
 import { toast } from "sonner"
+import ShiftTimingsEditor, { shiftsFromLegacyWindow, SHIFT_DAY_LABELS } from "@food/components/restaurant/ShiftTimingsEditor"
 
 const OWNER_PHONE_DUPLICATE_MSG = "This phone number is already registered with another restaurant."
 const PRIMARY_CONTACT_DUPLICATE_MSG = "This contact number is already registered with another restaurant."
@@ -101,6 +102,26 @@ const formatTime12Hour = (value) => {
   const hour12 = h % 12 === 0 ? 12 : h % 12
   const period = h >= 12 ? "PM" : "AM"
   return `${String(hour12).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`
+}
+
+const OUTLET_TIMINGS_DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+const formatShiftRange = (shift) => `${formatTime12Hour(shift?.openingTime)} – ${formatTime12Hour(shift?.closingTime)}`
+
+/** Renders a per-day shift breakdown. `days` is an array of {day, isOpen, shifts}. */
+const ShiftBreakdownList = ({ days }) => {
+  const openDays = (days || []).filter((d) => d?.isOpen !== false && Array.isArray(d?.shifts) && d.shifts.length)
+  if (!openDays.length) return <span className="text-xs text-slate-500">—</span>
+  return (
+    <div className="space-y-1">
+      {openDays.map((d) => (
+        <div key={d.day} className="flex items-start gap-2 text-xs">
+          <span className="font-semibold text-slate-700 w-24 shrink-0">{d.day}</span>
+          <span className="text-slate-600">{d.shifts.map((s, i) => <span key={i}>{i > 0 && ", "}{formatShiftRange(s)}</span>)}</span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const normalizeImageUrl = (image) => {
@@ -1143,6 +1164,32 @@ export default function RestaurantsList() {
     return restaurantDetails || selectedRestaurant?.originalData || selectedRestaurant || null
   }
 
+  /**
+   * Seed the shift editor from restaurant.outletTimings (day-keyed, `{Monday: {isOpen, shifts}}`)
+   * by grouping days that share an identical first shift into one shift card. This is a
+   * best-effort seed for this "quick edit" form — a restaurant with genuinely different
+   * shift times on different days will only show its per-day shift[0] here, same as the
+   * flat openingTime/closingTime fields this replaces. Falls back to a single card built
+   * from the flat opening/closing time + openDays when outletTimings isn't available.
+   */
+  const buildShiftsSeed = (restaurant, openingTimeValue, closingTimeValue) => {
+    const timingsMap = restaurant?.outletTimings
+    const openDays = Array.isArray(restaurant?.openDays) ? restaurant.openDays : []
+    if (timingsMap && typeof timingsMap === "object") {
+      const cardsByKey = new Map()
+      OUTLET_TIMINGS_DAY_ORDER.forEach((fullDay, idx) => {
+        const dayInfo = timingsMap[fullDay]
+        const shift = dayInfo && dayInfo.isOpen !== false && Array.isArray(dayInfo.shifts) ? dayInfo.shifts[0] : null
+        if (!shift?.openingTime || !shift?.closingTime) return
+        const key = `${shift.openingTime}-${shift.closingTime}`
+        if (!cardsByKey.has(key)) cardsByKey.set(key, { openingTime: shift.openingTime, closingTime: shift.closingTime, days: [] })
+        cardsByKey.get(key).days.push(SHIFT_DAY_LABELS[idx])
+      })
+      if (cardsByKey.size) return [...cardsByKey.values()]
+    }
+    return shiftsFromLegacyWindow(openingTimeValue, closingTimeValue, openDays)
+  }
+
   const buildDetailsFormFromRestaurant = (restaurant) => {
     if (!restaurant) {
       return {
@@ -1156,6 +1203,7 @@ export default function RestaurantsList() {
         estimatedDeliveryTime: "",
         openingTime: "",
         closingTime: "",
+        shifts: shiftsFromLegacyWindow("", "", []),
         isActive: true,
         quickDeliveryEnabled: false,
       }
@@ -1190,6 +1238,7 @@ export default function RestaurantsList() {
       estimatedDeliveryTime: estimatedDeliveryTimeValue,
       openingTime: openingTimeValue,
       closingTime: closingTimeValue,
+      shifts: buildShiftsSeed(restaurant, openingTimeValue, closingTimeValue),
       isActive: restaurant.isActive !== false,
       quickDeliveryEnabled: restaurant.quickDeliveryEnabled === true,
     }
@@ -1254,20 +1303,27 @@ export default function RestaurantsList() {
         }
       }
 
-      const normalizedOpeningTime = normalizeTimeValue(detailsForm.openingTime.trim())
-      const normalizedClosingTime = normalizeTimeValue(detailsForm.closingTime.trim())
-      const openingMinutes = timeToMinutes(normalizedOpeningTime)
-      const closingMinutes = timeToMinutes(normalizedClosingTime)
-      if (openingMinutes !== null && closingMinutes !== null) {
-        if (openingMinutes === closingMinutes) {
+      const shiftsList = (Array.isArray(detailsForm.shifts) ? detailsForm.shifts : []).filter(
+        (s) => s.openingTime || s.closingTime || (Array.isArray(s.days) && s.days.length)
+      )
+      const normalizedShifts = []
+      for (const shift of shiftsList) {
+        const so = normalizeTimeValue(shift.openingTime)
+        const sc = normalizeTimeValue(shift.closingTime)
+        if (!so || !sc) {
+          alert("Each shift requires a valid opening and closing time")
+          return
+        }
+        if (timeToMinutes(so) === timeToMinutes(sc)) {
           alert("Opening time and closing time cannot be same")
           return
         }
-        if (closingMinutes < openingMinutes) {
-          alert("Closing time cannot be less than opening time")
-          return
-        }
+        normalizedShifts.push({ openingTime: so, closingTime: sc, days: Array.isArray(shift.days) ? shift.days : [] })
       }
+      // Mirror shift[0] into the flat legacy fields for back-compat readers.
+      const normalizedOpeningTime = normalizedShifts[0]?.openingTime || ""
+      const normalizedClosingTime = normalizedShifts[0]?.closingTime || ""
+      const openDaysUnion = [...new Set(normalizedShifts.flatMap((s) => s.days))]
 
       const payload = {
         name: detailsForm.name.trim(),
@@ -1280,6 +1336,8 @@ export default function RestaurantsList() {
         estimatedDeliveryTime: detailsForm.estimatedDeliveryTime.trim(),
         openingTime: normalizedOpeningTime,
         closingTime: normalizedClosingTime,
+        shifts: normalizedShifts,
+        openDays: openDaysUnion,
         isActive: detailsForm.isActive,
         quickDeliveryEnabled: detailsForm.quickDeliveryEnabled === true,
       }
@@ -2048,13 +2106,12 @@ export default function RestaurantsList() {
                       <input type="text" id="restaurant-field-primaryContactNumber" data-restaurant-field="primaryContactNumber" value={detailsForm.primaryContactNumber} onChange={(e) => { setDetailsFieldErrors((prev) => ({ ...prev, primaryContactNumber: undefined })); setDetailsForm((prev) => ({ ...prev, primaryContactNumber: e.target.value.replace(/\D/g, "").slice(0, 10) })) }} className={`w-full px-3 py-2 rounded-lg border text-sm ${detailsFieldErrors.primaryContactNumber ? "border-red-500 ring-1 ring-red-300" : "border-slate-300"}`} />
                       {detailsFieldErrors.primaryContactNumber && <p className="mt-1 text-xs text-red-600">{detailsFieldErrors.primaryContactNumber}</p>}
                     </div>
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1">Opening Time</label>
-                      <input type="text" value={detailsForm.openingTime} onChange={(e) => setDetailsForm((prev) => ({ ...prev, openingTime: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1">Closing Time</label>
-                      <input type="text" value={detailsForm.closingTime} onChange={(e) => setDetailsForm((prev) => ({ ...prev, closingTime: e.target.value }))} className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
+                    <div className="md:col-span-2">
+                      <label className="block text-xs text-slate-500 mb-2">Outlet Timings (up to 3 shifts)</label>
+                      <ShiftTimingsEditor
+                        shifts={detailsForm.shifts}
+                        onChange={(shifts) => setDetailsForm((prev) => ({ ...prev, shifts }))}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs text-slate-500 mb-1">Estimated Delivery Time</label>
@@ -2298,7 +2355,17 @@ export default function RestaurantsList() {
                     <div>
                       <h4 className="text-lg font-semibold text-slate-900 mb-4">Timings & Status</h4>
                       <div className="space-y-3">
-                        {(openingTimeVal || closingTimeVal) && (
+                        {r?.outletTimings && typeof r.outletTimings === "object" ? (
+                          <div className="flex items-start gap-3">
+                            <Clock className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-xs text-slate-500 mb-1">Shift Timings</p>
+                              <ShiftBreakdownList
+                                days={OUTLET_TIMINGS_DAY_ORDER.map((day) => ({ day, ...r.outletTimings[day] }))}
+                              />
+                            </div>
+                          </div>
+                        ) : (openingTimeVal || closingTimeVal) && (
                           <div className="flex items-center gap-3">
                             <Clock className="w-5 h-5 text-slate-400" />
                             <div>
@@ -2582,8 +2649,34 @@ export default function RestaurantsList() {
                           </div>
                         )}
 
+                        {/* FSSAI – applied-in-onboarding: owner filed via ItzoZip instead of uploading their own license */}
+                        {r?.fssaiApplicationStatus === "applied" && (
+                          <div className="bg-blue-50 rounded-lg p-4">
+                            <h5 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                              <FileText className="w-4 h-4" />
+                              FSSAI Details
+                            </h5>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                              FSSAI: Application submitted
+                            </span>
+                            {r?.fssaiApplicationId && (
+                              <div className="mt-2">
+                                <a
+                                  href={`/ecs/food/consulting/licensing-requests/${r.fssaiApplicationId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>View Licensing Request</span>
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {/* FSSAI – flat or onboarding.step3 */}
-                        {hasFssaiSection && (
+                        {r?.fssaiApplicationStatus !== "applied" && hasFssaiSection && (
                           <div className="bg-slate-50 rounded-lg p-4">
                             <h5 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
                               <FileText className="w-4 h-4" />

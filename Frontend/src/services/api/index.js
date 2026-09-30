@@ -1264,12 +1264,17 @@ export const adminAPI = {
       'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
       'sellerLogo', 'sellerFavicon', 'favicon', 'loginBanner', 'sellerLoginBanner', 'restaurantLoginBanner',
       'userLoginBanner1', 'userLoginBanner2', 'userLoginBanner3', 'userLoginBanner4', 'userLoginBanner5', 'userLoginVideo',
-      'landingPoster', 'landingVideo', 'landingPizzaImage', 'landingTomatoImage',
+      'landingPoster', 'landingVideos', 'homeHeroVideos', 'landingPizzaImage', 'landingTomatoImage',
       'landingQrCodeImage', 'landingAppStoreBadge', 'landingPlayStoreBadge', 'landingFooterLogo', 'landingNavbarLogo',
       'benefitsImage'
     ];
     fileFields.forEach(field => {
-      if (files[field]) {
+      if (!files[field]) return;
+      // landingVideos/homeHeroVideos send several files under the same field name —
+      // multer's .fields({ maxCount > 1 }) collects repeated appends into an array.
+      if (Array.isArray(files[field])) {
+        files[field].forEach((file) => formData.append(field, file));
+      } else {
         formData.append(field, files[field]);
       }
     });

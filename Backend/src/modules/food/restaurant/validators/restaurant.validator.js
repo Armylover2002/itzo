@@ -178,6 +178,8 @@ const onboardingStep2Schema = z.object({
         .string()
         .optional()
         .transform((val) => (val ? val.split(',').map((d) => d.trim()).filter(Boolean) : [])),
+    // Optional richer multi-shift schedule (JSON string; see outletTimings.service.js).
+    shifts: z.string().optional(),
 });
 
 const onboardingStep3Schema = z.object({
@@ -197,6 +199,14 @@ const onboardingStep3Schema = z.object({
     gstAddress: z.string().optional(),
     fssaiNumber: z.string().optional(),
     fssaiExpiry: z.string().optional(),
+    // "Apply for FSSAI" (instead of upload) toggle.
+    fssaiApplyForLicense: z
+        .string()
+        .optional()
+        .transform((val) => val === 'true' || val === '1'),
+    // id of the LicensingRequest the owner already created by submitting the licensing
+    // partner form (see fssaiApplyForLicense above).
+    fssaiApplicationId: z.string().optional(),
     accountNumber: z.string().optional(),
     ifscCode: z.string().optional(),
     accountHolderName: z.string().optional(),

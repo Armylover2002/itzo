@@ -115,6 +115,14 @@ export const validateOnboardingStep1 = (step1, zones = []) => {
   return errors
 }
 
+const MAX_SHIFTS = 3
+const timeStringToMinutes = (value) => {
+  if (!value || typeof value !== "string") return null
+  const [h, m] = value.split(":").map(Number)
+  if (Number.isNaN(h) || Number.isNaN(m)) return null
+  return h * 60 + m
+}
+
 export const validateOnboardingStep2 = (step2) => {
   const errors = {}
   const hasMenuImages = step2.menuImages && step2.menuImages.length > 0
@@ -134,14 +142,63 @@ export const validateOnboardingStep2 = (step2) => {
     errors.profileImage = "Please upload a valid restaurant profile image"
   }
 
-  if (!step2.openingTime?.trim()) {
-    errors.openingTime = "Opening time is required"
+  // Mirrors AddRestaurant.jsx's validateShifts / backend normalizeShiftsList rules: each
+  // shift's times set and open != close, at least one day selected across shifts, max 3
+  // shifts, no overlapping shifts on a shared day (skip strict overlap math for overnight
+  // shifts, closingTime < openingTime — same wraparound convention as restaurantAvailability.js).
+  const shifts = Array.isArray(step2.shifts) ? step2.shifts : []
+  const shiftErrors = {}
+
+  if (shifts.length === 0) {
+    shiftErrors.general = "Please add at least one shift"
+  } else {
+    if (shifts.length > MAX_SHIFTS) {
+      shiftErrors.general = `A maximum of ${MAX_SHIFTS} shifts is allowed`
+    }
+
+    const withMinutes = shifts.map((shift) => ({
+      ...shift,
+      openingMinutes: timeStringToMinutes(shift.openingTime),
+      closingMinutes: timeStringToMinutes(shift.closingTime),
+    }))
+
+    withMinutes.forEach((shift, index) => {
+      if (shift.openingMinutes === null || shift.closingMinutes === null) {
+        shiftErrors[index] = "Opening and closing time are required"
+      } else if (shift.openingMinutes === shift.closingMinutes) {
+        shiftErrors[index] = "Opening time and closing time cannot be same"
+      } else if (!shift.days || shift.days.length === 0) {
+        shiftErrors[index] = "Please select at least one day"
+      }
+    })
+
+    const allDays = new Set(shifts.flatMap((s) => s.days || []))
+    if (allDays.size === 0 && !shiftErrors.general) {
+      shiftErrors.general = "Select at least one open day"
+    }
+
+    allDays.forEach((day) => {
+      const dayShifts = withMinutes
+        .map((shift, index) => ({ ...shift, index }))
+        .filter((shift) => (shift.days || []).includes(day) && shift.openingMinutes !== null && shift.closingMinutes !== null)
+      for (let i = 0; i < dayShifts.length; i++) {
+        for (let j = i + 1; j < dayShifts.length; j++) {
+          const a = dayShifts[i]
+          const b = dayShifts[j]
+          const aOvernight = a.closingMinutes < a.openingMinutes
+          const bOvernight = b.closingMinutes < b.openingMinutes
+          if (!aOvernight && !bOvernight && a.openingMinutes < b.closingMinutes && b.openingMinutes < a.closingMinutes) {
+            const msg = `Overlaps with another shift on ${day}`
+            shiftErrors[a.index] = shiftErrors[a.index] || msg
+            shiftErrors[b.index] = shiftErrors[b.index] || msg
+          }
+        }
+      }
+    })
   }
-  if (!step2.closingTime?.trim()) {
-    errors.closingTime = "Closing time is required"
-  }
-  if (!step2.openDays || step2.openDays.length === 0) {
-    errors.openDays = "Select at least one open day"
+
+  if (Object.keys(shiftErrors).length > 0) {
+    errors.shifts = shiftErrors
   }
 
   return errors
@@ -164,20 +221,28 @@ export const validateOnboardingStep3 = (step3, getTodayLocalYMD) => {
     errors.panImage = "Please upload a valid PAN image"
   }
 
-  if (!step3.fssaiNumber?.trim()) {
-    errors.fssaiNumber = "FSSAI number is required"
-  } else if (!FSSAI_NUMBER_REGEX.test(step3.fssaiNumber.trim())) {
-    errors.fssaiNumber = "FSSAI number must contain exactly 14 digits"
-  }
-  if (!step3.fssaiExpiry?.trim()) {
-    errors.fssaiExpiry = "FSSAI expiry date is required"
-  } else if (step3.fssaiExpiry < getTodayLocalYMD()) {
-    errors.fssaiExpiry = "FSSAI expiry date cannot be in the past"
-  }
-  if (!step3.fssaiImage) {
-    errors.fssaiImage = "FSSAI image is required"
-  } else if (!hasValidImageAsset(step3.fssaiImage)) {
-    errors.fssaiImage = "Please upload a valid FSSAI image"
+  // When applying for FSSAI through onboarding, the owner has no number/expiry/image yet —
+  // skip those checks and instead require the licensing partner application (the same form
+  // used on the public Restaurant Consulting page — see LicensingSupportModal) to have been
+  // submitted, which is how fssaiApplicationId gets set.
+  if (!step3.fssaiApplyForLicense) {
+    if (!step3.fssaiNumber?.trim()) {
+      errors.fssaiNumber = "FSSAI number is required"
+    } else if (!FSSAI_NUMBER_REGEX.test(step3.fssaiNumber.trim())) {
+      errors.fssaiNumber = "FSSAI number must contain exactly 14 digits"
+    }
+    if (!step3.fssaiExpiry?.trim()) {
+      errors.fssaiExpiry = "FSSAI expiry date is required"
+    } else if (step3.fssaiExpiry < getTodayLocalYMD()) {
+      errors.fssaiExpiry = "FSSAI expiry date cannot be in the past"
+    }
+    if (!step3.fssaiImage) {
+      errors.fssaiImage = "FSSAI image is required"
+    } else if (!hasValidImageAsset(step3.fssaiImage)) {
+      errors.fssaiImage = "Please upload a valid FSSAI image"
+    }
+  } else if (!step3.fssaiApplicationId) {
+    errors.fssaiApplicationId = "Please submit the FSSAI licensing application form"
   }
 
   if (step3.gstRegistered) {

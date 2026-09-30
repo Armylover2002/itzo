@@ -11,6 +11,7 @@ import {
   BellOff,
   X,
   ShoppingCart,
+  Gift,
 } from "lucide-react";
 import { useCart } from "@food/context/CartContext";
 import { cn } from "@/lib/utils";
@@ -278,6 +279,25 @@ export default function HomeHeader({
                   />
                 </div>
               )}
+              <Link
+                to="/food/user/profile/refer-earn"
+                className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FB4F01] to-[#ff8a4d] text-white shadow-sm transition-transform hover:scale-105 active:scale-95 sm:h-10 sm:w-10"
+                aria-label="Refer & Earn"
+              >
+                <motion.span
+                  className="absolute inset-0 rounded-full bg-[#FB4F01]/60"
+                  animate={{ scale: [1, 1.6], opacity: [0.6, 0] }}
+                  transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
+                />
+                <motion.span
+                  className="relative flex"
+                  animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
+                  transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
+                >
+                  <Gift className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={2.2} />
+                </motion.span>
+              </Link>
+
               <Link
                 to="/food/user/cart"
                 className={cn(

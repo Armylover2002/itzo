@@ -85,7 +85,14 @@ export const requireRestaurantRegistrationToken = (req, res, next) => {
     }
 };
 
-export const authMiddleware = (req, res, next) => {
+/**
+ * `allowRejectedRestaurant`: lets a rejected restaurant's still-valid token through instead
+ * of hard-401ing — used only on the restaurant's own read-only status endpoint (GET
+ * /restaurant/current), so the pending-verification screen's polling can actually see a
+ * rejection in real time instead of silently failing every request until the owner
+ * logs out and back in. Every other restaurant route keeps the full 401 block.
+ */
+const createAuthMiddleware = ({ allowRejectedRestaurant = false } = {}) => (req, res, next) => {
     const authHeader = req.headers.authorization || '';
     const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
@@ -146,11 +153,12 @@ export const authMiddleware = (req, res, next) => {
                         return sendError(res, 401, 'Your account has been deleted/deactivated. Please contact support.');
                     }
 
-                    if (String(doc.status || '').toLowerCase() === 'rejected') {
+                    const isRejected = String(doc.status || '').toLowerCase() === 'rejected';
+                    if (isRejected && !allowRejectedRestaurant) {
                         return sendError(res, 401, 'Your account has been rejected. Please contact support.');
                     }
 
-                    if (doc.isActive === false && String(doc.status || '').toLowerCase() !== 'pending') {
+                    if (!isRejected && doc.isActive === false && String(doc.status || '').toLowerCase() !== 'pending') {
                         return sendError(res, 401, 'Your account has been deleted/deactivated. Please contact support.');
                     }
 
@@ -164,6 +172,9 @@ export const authMiddleware = (req, res, next) => {
         return sendError(res, 401, 'Invalid or expired token');
     }
 };
+
+export const authMiddleware = createAuthMiddleware();
+export const authMiddlewareAllowRejectedRestaurant = createAuthMiddleware({ allowRejectedRestaurant: true });
 
 /** Sets req.user when a valid Bearer token is present; continues without error when absent. */
 export const optionalAuthMiddleware = (req, res, next) => {

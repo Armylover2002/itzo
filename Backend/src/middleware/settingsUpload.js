@@ -42,10 +42,11 @@ const ALLOWED_VIDEO_MIME_TYPES = new Set([
     'video/quicktime',
 ]);
 
+const VIDEO_FIELD_NAMES = new Set(['landingVideos', 'homeHeroVideos', 'userLoginVideo']);
+
 const imageFileFilter = (_req, file, cb) => {
     const mimeType = String(file.mimetype || '').toLowerCase();
-    // landingVideo and userLoginVideo are the only video-type fields on the global settings form.
-    if (file.fieldname === 'landingVideo' || file.fieldname === 'userLoginVideo') {
+    if (VIDEO_FIELD_NAMES.has(file.fieldname)) {
         if (ALLOWED_VIDEO_MIME_TYPES.has(mimeType)) {
             return cb(null, true);
         }
@@ -65,7 +66,8 @@ export const settingsUpload = multer({
     storage,
     fileFilter: imageFileFilter,
     limits: {
-        files: 25,
+        // Raised from 25 to fit the two 10-video hero playlists alongside every other field.
+        files: 45,
     },
 });
 
@@ -89,7 +91,8 @@ export const SETTINGS_UPLOAD_FIELDS = [
     { name: 'userLoginVideo', maxCount: 1 },
     { name: 'sellerLoginBanner', maxCount: 1 },
     { name: 'restaurantLoginBanner', maxCount: 1 },
-    { name: 'landingVideo', maxCount: 1 },
+    { name: 'landingVideos', maxCount: 10 },
+    { name: 'homeHeroVideos', maxCount: 10 },
     { name: 'landingPoster', maxCount: 1 },
     { name: 'landingPizzaImage', maxCount: 1 },
     { name: 'landingTomatoImage', maxCount: 1 },

@@ -12,6 +12,7 @@ import React, {
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { isModuleAuthenticated } from "@food/utils/auth";
+import { useVideoPlaylist } from "@common/hooks/useVideoPlaylist";
 import { cn } from "@/lib/utils";
 import {
   Star,
@@ -199,9 +200,11 @@ export default function Home() {
   // A module is on unless the admin explicitly switched it off (Global Settings > Modules).
   const quickEnabled = appSettings?.modules?.quickCommerce !== false;
   const streetFoodEnabled = appSettings?.modules?.streetFood !== false;
-  // Hero video uploaded in admin (Global Settings > Landing). When present it
-  // replaces the banner slider; the poster covers the gap before it plays.
-  const heroVideoUrl = appSettings?.landingVideo?.url || "";
+  // Hero video playlist uploaded in admin (Global Settings > Landing > Home Page
+  // Hero — separate from the marketing landing page's playlist). When present it
+  // replaces the banner slider; the poster covers the gap before the first clip plays.
+  const homeHeroVideoUrls = (appSettings?.homeHeroVideos || []).map((v) => v.url).filter(Boolean);
+  const { currentUrl: heroVideoUrl, currentIndex: heroVideoIndex, handleEnded: handleHeroVideoEnded } = useVideoPlaylist(homeHeroVideoUrls);
   const heroPosterUrl = appSettings?.landingPoster?.url || "";
   const visibleTabs = useMemo(
     () => tabs.filter((tab) =>
@@ -446,12 +449,16 @@ export default function Home() {
               <div className="h-[130px] sm:h-36 md:h-[450px] lg:h-[500px] mt-0 relative z-10 w-full px-0">
                 {heroVideoUrl ? (
                   <video
+                    // Remounts per clip so the browser reliably loads the new source.
+                    key={heroVideoIndex}
                     autoPlay
-                    loop
                     muted
                     playsInline
                     preload="metadata"
                     poster={heroPosterUrl || undefined}
+                    // Playlist advance: next clip on end, looping back to the first.
+                    onEnded={handleHeroVideoEnded}
+                    onError={handleHeroVideoEnded}
                     className="absolute inset-0 z-0 h-full w-full object-cover"
                   >
                     <source src={heroVideoUrl} type="video/mp4" />

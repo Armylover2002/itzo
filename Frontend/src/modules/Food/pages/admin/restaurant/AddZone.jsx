@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { MapPin, ArrowLeft, Save, X, Shapes, Search, LocateFixed } from "lucide-react"
+import { MapPin, ArrowLeft, Save, X, Shapes, Search, LocateFixed, Circle as CircleIcon, Check } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { getGoogleMapsApiKey } from "@food/utils/googleMapsApiKey"
 import { generateCityZoneFromCurrentLocation } from "@food/utils/cityZoneBoundary"
@@ -17,6 +17,37 @@ const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
 const MIN_POINTS = 3;
+const CIRCLE_ZONE_POINTS = 48; // vertex count when a radius circle is converted to a polygon
+const EARTH_RADIUS_KM = 6371;
+
+// Convert a center point + radius (km) into an N-point polygon ring so it can be saved
+// through the exact same `coordinates` array every other zone uses — no backend/consumer
+// changes needed, the zone lookup logic already just point-in-polygon tests `coordinates`.
+const circleToPolygonPoints = (centerLat, centerLng, radiusKm, numPoints = CIRCLE_ZONE_POINTS) => {
+  const latRad = (centerLat * Math.PI) / 180;
+  const lngRad = (centerLng * Math.PI) / 180;
+  const angularDistance = radiusKm / EARTH_RADIUS_KM;
+
+  const points = [];
+  for (let i = 0; i < numPoints; i++) {
+    const bearing = (i * 2 * Math.PI) / numPoints;
+    const pointLatRad = Math.asin(
+      Math.sin(latRad) * Math.cos(angularDistance) +
+        Math.cos(latRad) * Math.sin(angularDistance) * Math.cos(bearing)
+    );
+    const pointLngRad =
+      lngRad +
+      Math.atan2(
+        Math.sin(bearing) * Math.sin(angularDistance) * Math.cos(latRad),
+        Math.cos(angularDistance) - Math.sin(latRad) * Math.sin(pointLatRad)
+      );
+    points.push({
+      latitude: parseFloat(((pointLatRad * 180) / Math.PI).toFixed(6)),
+      longitude: parseFloat(((pointLngRad * 180) / Math.PI).toFixed(6)),
+    });
+  }
+  return points;
+};
 
 // Order points by angle around their centroid so polygon edges never self-intersect,
 // while KEEPING every clicked point (unlike a convex hull).
@@ -52,6 +83,8 @@ export default function AddZone() {
   const mapClickListenerRef = useRef(null)
   const drawPointsRef = useRef([])
   const isDrawingRef = useRef(false)
+  const circleShapeRef = useRef(null)
+  const radiusModeRef = useRef(false)
   // Draw the loaded zone polygon once per edit session — not on every coordinates.length change
   const initialPolygonDrawnRef = useRef(false)
   
@@ -70,6 +103,9 @@ export default function AddZone() {
   
   const [coordinates, setCoordinates] = useState([])
   const [isDrawing, setIsDrawing] = useState(false)
+  const [radiusMode, setRadiusMode] = useState(false)
+  const [radiusKm, setRadiusKm] = useState(2)
+  const [hasCircleCenter, setHasCircleCenter] = useState(false)
   const [autoGenerating, setAutoGenerating] = useState(false)
   const [autoGenerateMessage, setAutoGenerateMessage] = useState({ type: "", text: "" })
   const [locationSearch, setLocationSearch] = useState("")
@@ -107,6 +143,7 @@ export default function AddZone() {
       }
       pathMarkersRef.current?.forEach(m => m.setMap(null));
       existingZonesPolygonsRef.current?.forEach(p => p?.setMap(null));
+      circleShapeRef.current?.setMap(null);
     };
   }, []);
 
@@ -293,8 +330,12 @@ export default function AddZone() {
 
     mapInstanceRef.current = map
 
-    // Setup map click listener for drawing points
+    // Setup map click listener for drawing points / placing a radius-circle center
     mapClickListenerRef.current = google.maps.event.addListener(map, 'click', (event) => {
+      if (radiusModeRef.current) {
+        placeOrMoveCircleCenter(google, map, event.latLng);
+        return;
+      }
       if (!isDrawingRef.current) return;
       drawPointsRef.current.push(event.latLng);
       renderDrawingPolygon(google, map);
@@ -548,6 +589,7 @@ export default function AddZone() {
       map.setOptions({ draggableCursor: null });
       existingZonesPolygonsRef.current.forEach(p => p?.setOptions?.({ clickable: true }));
     } else {                               // START
+      exitRadiusMode();
       clearDrawing();
       drawPointsRef.current = [];
       isDrawingRef.current = true;
@@ -578,6 +620,102 @@ export default function AddZone() {
       mapInstanceRef.current.setOptions({ draggableCursor: null });
     }
     existingZonesPolygonsRef.current.forEach(p => p?.setOptions?.({ clickable: true }));
+  };
+
+  // --- Radius/circle zone mode ---------------------------------------------------------
+  // Alternative to point-by-point polygon drawing: admin enters a radius (km), clicks a
+  // center on the map, gets a live editable circle (drag to move, drag the edge to resize
+  // or type the km field), then "Apply as Zone" converts it into the same polygon-points
+  // shape the rest of the app already understands.
+
+  const clearCircleShape = () => {
+    if (circleShapeRef.current) {
+      circleShapeRef.current.setMap(null);
+      circleShapeRef.current = null;
+    }
+    setHasCircleCenter(false);
+  };
+
+  const placeOrMoveCircleCenter = (google, map, latLng) => {
+    if (circleShapeRef.current) {
+      circleShapeRef.current.setCenter(latLng);
+      return;
+    }
+    const circle = new google.maps.Circle({
+      center: latLng,
+      radius: Math.max(0.05, Number(radiusKm) || 2) * 1000, // meters
+      strokeColor: "#059669",
+      strokeOpacity: 0.9,
+      strokeWeight: 3,
+      fillColor: "#059669",
+      fillOpacity: 0.25,
+      editable: true,
+      draggable: true,
+      clickable: false,
+    });
+    circle.setMap(map);
+    circleShapeRef.current = circle;
+    setHasCircleCenter(true);
+
+    google.maps.event.addListener(circle, 'radius_changed', () => {
+      const km = circle.getRadius() / 1000;
+      setRadiusKm(Math.round(km * 100) / 100);
+    });
+  };
+
+  const toggleRadiusMode = () => {
+    const map = mapInstanceRef.current;
+    if (!map) { alert("Map is still loading."); return; }
+
+    if (radiusMode) {
+      exitRadiusMode();
+      return;
+    }
+    exitDrawingMode();
+    clearDrawing();
+    clearCircleShape();
+    radiusModeRef.current = true;
+    setRadiusMode(true);
+    map.setOptions({ draggableCursor: 'crosshair' });
+    existingZonesPolygonsRef.current.forEach(p => p?.setOptions?.({ clickable: false }));
+  };
+
+  const exitRadiusMode = () => {
+    radiusModeRef.current = false;
+    setRadiusMode(false);
+    clearCircleShape();
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setOptions({ draggableCursor: null });
+    }
+    existingZonesPolygonsRef.current.forEach(p => p?.setOptions?.({ clickable: true }));
+  };
+
+  const handleRadiusKmChange = (value) => {
+    const km = Number(value);
+    setRadiusKm(value);
+    if (circleShapeRef.current && Number.isFinite(km) && km > 0) {
+      circleShapeRef.current.setRadius(km * 1000);
+    }
+  };
+
+  const applyCircleAsZone = () => {
+    const google = window.google, map = mapInstanceRef.current;
+    const circle = circleShapeRef.current;
+    if (!google || !map || !circle) return;
+
+    const center = circle.getCenter();
+    const km = circle.getRadius() / 1000;
+    const coords = circleToPolygonPoints(center.lat(), center.lng(), km);
+
+    exitRadiusMode();
+    clearActivePolygon();
+    setCoordinates(coords);
+    drawEditablePolygon(google, map, coords); // same editable polygon as manual drawing — fine-tunable after
+    initialPolygonDrawnRef.current = true;
+
+    const bounds = new google.maps.LatLngBounds();
+    coords.forEach(c => bounds.extend(new google.maps.LatLng(c.latitude, c.longitude)));
+    map.fitBounds(bounds);
   };
 
   const applyGeneratedPolygon = (coords, locationMeta) => {
@@ -915,6 +1053,18 @@ export default function AddZone() {
                     <Shapes className="w-4 h-4" />
                     <span>{isDrawing ? "Stop Drawing" : "Start Drawing"}</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={toggleRadiusMode}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                      radiusMode
+                        ? "bg-red-600 text-white hover:bg-red-700"
+                        : "bg-emerald-600 text-white hover:bg-emerald-700"
+                    }`}
+                  >
+                    <CircleIcon className="w-4 h-4" />
+                    <span>{radiusMode ? "Cancel Radius" : "Draw by Radius"}</span>
+                  </button>
                   {coordinates.length > 0 && (
                     <button
                       type="button"
@@ -927,6 +1077,37 @@ export default function AddZone() {
                   )}
                 </div>
               </div>
+
+              {radiusMode && (
+                <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                  <label className="flex items-center gap-2 text-sm text-emerald-900">
+                    Radius (km)
+                    <input
+                      type="number"
+                      min="0.1"
+                      step="0.1"
+                      value={radiusKm}
+                      onChange={(e) => handleRadiusKmChange(e.target.value)}
+                      className="w-24 rounded-lg border border-emerald-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </label>
+                  <p className="text-xs text-emerald-800 flex-1 min-w-[200px]">
+                    {hasCircleCenter
+                      ? "Drag the circle to move it, or drag its edge to resize. Adjust the km field too."
+                      : `Click on the map to place the zone center (${radiusKm} km radius).`}
+                  </p>
+                  {hasCircleCenter && (
+                    <button
+                      type="button"
+                      onClick={applyCircleAsZone}
+                      className="flex items-center gap-2 px-4 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Apply as Zone</span>
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className="mb-4">
                 <div className="relative">

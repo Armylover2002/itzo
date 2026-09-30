@@ -11,7 +11,9 @@ const documentSchema = new mongoose.Schema({
 }, { _id: false });
 
 const licensingRequestSchema = new mongoose.Schema({
-    vendor: { type: String, required: true },
+    // Landing-page submissions pick a consultant ("vendor"); onboarding-originated
+    // FSSAI applications have no such concept, so default keeps `required` satisfied.
+    vendor: { type: String, required: true, default: 'itzo-onboarding' },
     restaurantName: { type: String, required: true },
     ownerName: { type: String, required: true },
     city: { type: String, required: true },

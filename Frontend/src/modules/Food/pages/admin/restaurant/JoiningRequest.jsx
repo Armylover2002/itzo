@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react"
+import { Link } from "react-router-dom"
 import { toast } from "react-hot-toast"
 import {
   Search, Filter, Eye, Check, X, UtensilsCrossed, ArrowUpDown, Loader2,
@@ -107,6 +108,26 @@ const formatTime12Hour = (timeStr) => {
   const period = h >= 12 ? "PM" : "AM"
   const hour = h % 12 || 12
   return `${String(hour).padStart(2, "0")}:${String(m).padStart(2, "0")} ${period}`
+}
+
+const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+const formatShiftRange = (shift) => `${formatTime12Hour(shift?.openingTime)} – ${formatTime12Hour(shift?.closingTime)}`
+
+/** Renders a per-day shift breakdown. `days` is an array of {day, isOpen, shifts}. */
+const ShiftBreakdownList = ({ days }) => {
+  const openDays = (days || []).filter((d) => d?.isOpen !== false && Array.isArray(d?.shifts) && d.shifts.length)
+  if (!openDays.length) return <span className="text-xs text-slate-500">—</span>
+  return (
+    <div className="space-y-1">
+      {openDays.map((d) => (
+        <div key={d.day} className="flex items-start gap-2 text-xs">
+          <span className="font-semibold text-slate-700 w-24 shrink-0">{d.day}</span>
+          <span className="text-slate-600">{d.shifts.map((s, i) => <span key={i}>{i > 0 && ", "}{formatShiftRange(s)}</span>)}</span>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const formatRestaurantId = (restaurant) => {
@@ -1125,28 +1146,34 @@ export default function JoiningRequest() {
                             </p>
                             <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-teal-200">
                               <div>
-                                <p className="text-xs text-teal-700 font-bold uppercase tracking-wider mb-1">Requested Days</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {(r.pendingOpenDays.proposedOpenDays || []).length > 0 ? (
-                                    r.pendingOpenDays.proposedOpenDays.map((day, idx) => (
+                                <p className="text-xs text-teal-700 font-bold uppercase tracking-wider mb-1">Requested Schedule</p>
+                                {Array.isArray(r.pendingOpenDays.proposedTimings) && r.pendingOpenDays.proposedTimings.length > 0 ? (
+                                  <ShiftBreakdownList days={r.pendingOpenDays.proposedTimings} />
+                                ) : (r.pendingOpenDays.proposedOpenDays || []).length > 0 ? (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {r.pendingOpenDays.proposedOpenDays.map((day, idx) => (
                                       <span key={idx} className="px-2 py-1 bg-teal-100 text-teal-800 rounded text-xs font-medium capitalize">{day}</span>
-                                    ))
-                                  ) : (
-                                    <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Closed all week</span>
-                                  )}
-                                </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Closed all week</span>
+                                )}
                               </div>
                               <div>
-                                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Current Days</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {(r.pendingOpenDays.previousOpenDays || []).length > 0 ? (
-                                    r.pendingOpenDays.previousOpenDays.map((day, idx) => (
+                                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Current Schedule</p>
+                                {Array.isArray(r.pendingOpenDays.previousTimings) && r.pendingOpenDays.previousTimings.length > 0 ? (
+                                  <div className="opacity-70 line-through decoration-slate-400">
+                                    <ShiftBreakdownList days={r.pendingOpenDays.previousTimings} />
+                                  </div>
+                                ) : (r.pendingOpenDays.previousOpenDays || []).length > 0 ? (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {r.pendingOpenDays.previousOpenDays.map((day, idx) => (
                                       <span key={idx} className="px-2 py-1 bg-slate-100 text-slate-600 rounded text-xs font-medium capitalize line-through opacity-70">{day}</span>
-                                    ))
-                                  ) : (
-                                    <span className="text-xs text-slate-500">—</span>
-                                  )}
-                                </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-slate-500">—</span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -1311,7 +1338,17 @@ export default function JoiningRequest() {
                       <div>
                         <h4 className="text-lg font-semibold text-slate-900 mb-4">Timings & Status</h4>
                         <div className="space-y-3">
-                          {(openingTime || closingTime) && (
+                          {r?.outletTimings && typeof r.outletTimings === "object" ? (
+                            <div className="flex items-start gap-3">
+                              <Clock className="w-5 h-5 text-slate-400 mt-0.5 shrink-0" />
+                              <div className="flex-1">
+                                <p className="text-xs text-slate-500 mb-1">Shift Timings</p>
+                                <ShiftBreakdownList
+                                  days={DAY_ORDER.map((day) => ({ day, ...r.outletTimings[day] }))}
+                                />
+                              </div>
+                            </div>
+                          ) : (openingTime || closingTime) && (
                             <div className="flex items-center gap-3">
                               <Clock className="w-5 h-5 text-slate-400" />
                               <div>
@@ -1475,8 +1512,32 @@ export default function JoiningRequest() {
                             </div>
                           )}
 
+                          {/* FSSAI – applied-in-onboarding: owner filed via ItzoZip instead of uploading their own license */}
+                          {r?.fssaiApplicationStatus === "applied" && (
+                            <div className="bg-blue-50 rounded-lg p-4">
+                              <h5 className="font-semibold text-slate-900 mb-2 flex items-center gap-2">
+                                <FileText className="w-4 h-4" />
+                                FSSAI Details
+                              </h5>
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                FSSAI: Application submitted
+                              </span>
+                              {r?.fssaiApplicationId && (
+                                <div className="mt-2">
+                                  <Link
+                                    to={`/ecs/food/consulting/licensing-requests/${r.fssaiApplicationId}`}
+                                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
+                                  >
+                                    <ExternalLink className="w-3 h-3" />
+                                    <span>View Licensing Request</span>
+                                  </Link>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           {/* FSSAI – flat: fssaiNumber, fssaiExpiry, fssaiImage */}
-                          {(r.fssaiNumber || r.fssaiExpiry || r?.onboarding?.step3?.fssai) && (
+                          {r?.fssaiApplicationStatus !== "applied" && (r.fssaiNumber || r.fssaiExpiry || r?.onboarding?.step3?.fssai) && (
                             <div className="bg-slate-50 rounded-lg p-4">
                               <h5 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
                                 <FileText className="w-4 h-4" />

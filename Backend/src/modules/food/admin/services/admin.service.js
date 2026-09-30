@@ -58,7 +58,7 @@ import { FoodTransaction } from '../../orders/models/foodTransaction.model.js';
 import { Transaction } from '../../../../core/payments/models/transaction.model.js';
 import { buildOrderIdentityFilter } from '../../orders/services/order.helpers.js';
 import { FoodRestaurantWithdrawal } from '../../restaurant/models/foodRestaurantWithdrawal.model.js';
-import { applyPendingOpenDaysUpdate, discardPendingOpenDaysUpdate, syncOutletTimingsFromOpenDays } from '../../restaurant/services/outletTimings.service.js';
+import { applyPendingOpenDaysUpdate, discardPendingOpenDaysUpdate, syncOutletTimingsFromOpenDays, attachOutletTimingsToRestaurants } from '../../restaurant/services/outletTimings.service.js';
 import { buildPaginationMeta, buildPaginationOptions } from '../../../../utils/helpers.js';
 // import { applyPendingOpenDaysUpdate, discardPendingOpenDaysUpdate } from '../../restaurant/services/outletTimings.service.js';
 import {
@@ -460,11 +460,12 @@ export async function getRestaurants(query) {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .select('restaurantId restaurantName location area city profileImage coverImages menuImages status ownerName ownerPhone zoneId commissionPercentage isListed productCount pureVegRestaurant businessType liveTrackingEnabled currentLocation lastLocationUpdate createdAt updatedAt showWithoutMenu')
+            .select('restaurantId restaurantName location area city profileImage coverImages menuImages status ownerName ownerPhone zoneId commissionPercentage isListed productCount pureVegRestaurant businessType liveTrackingEnabled currentLocation lastLocationUpdate createdAt updatedAt showWithoutMenu openingTime closingTime openDays fssaiNumber fssaiExpiry fssaiImage fssaiApplicationStatus fssaiApplicationId')
             .populate('zoneId', 'name zoneName')
             .lean(),
         FoodRestaurant.countDocuments(filter)
     ]);
+    await attachOutletTimingsToRestaurants(restaurants);
     return { restaurants, total, page, limit };
 }
 
@@ -3534,10 +3535,13 @@ export async function getRestaurantReviews(query = {}) {
 
 export async function getRestaurantById(id) {
     if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
-    return FoodRestaurant.findById(id)
+    const restaurant = await FoodRestaurant.findById(id)
         .select('-__v')
         .populate('zoneId', 'name zoneName serviceLocation isActive')
         .lean();
+    if (!restaurant) return null;
+    const [withTimings] = await attachOutletTimingsToRestaurants([restaurant]);
+    return withTimings;
 }
 
 export async function getRestaurantAnalytics(restaurantId) {
@@ -4020,6 +4024,11 @@ export async function getPendingRestaurants() {
         .populate('zoneId', 'name zoneName serviceLocation')
         .sort({ createdAt: -1 })
         .lean();
+    // Attach the shift-aware outlet timings (source of truth for new/onboarding
+    // restaurants; already-approved restaurants requesting a change carry their own
+    // shift data in pendingOpenDays.proposedTimings/previousTimings).
+    await attachOutletTimingsToRestaurants(restaurants);
+
     return restaurants.map((r, i) => ({
         ...r,
         sl: i + 1,
@@ -4130,6 +4139,10 @@ export async function updateRestaurantById(id, body = {}) {
     if (body.openDays !== undefined && Array.isArray(body.openDays)) {
         doc.openDays = body.openDays.map(d => toStr(d)).filter(Boolean);
     }
+    // Optional richer multi-shift schedule from the shared shift editor (same shape as
+    // onboarding's `shifts`: up to 3 {openingTime, closingTime, days} cards). When present,
+    // it becomes the source of truth for the outlet-timings collection.
+    const shiftsInput = Array.isArray(body.shifts) ? body.shifts : undefined;
     if (body.offer !== undefined) doc.offer = toStr(body.offer);
 
     if (body.estimatedDeliveryTime !== undefined) {
@@ -4192,7 +4205,15 @@ export async function updateRestaurantById(id, body = {}) {
     }
 
     await doc.save();
-    return FoodRestaurant.findById(id).select('-__v').populate('zoneId', 'name zoneName serviceLocation isActive').lean();
+
+    if (shiftsInput || body.openingTime !== undefined || body.closingTime !== undefined || body.openDays !== undefined) {
+        await syncOutletTimingsFromOpenDays(doc._id, doc.openDays, doc.openingTime, doc.closingTime, shiftsInput);
+    }
+
+    const updatedRestaurant = await FoodRestaurant.findById(id).select('-__v').populate('zoneId', 'name zoneName serviceLocation isActive').lean();
+    if (!updatedRestaurant) return null;
+    const [withTimings] = await attachOutletTimingsToRestaurants([updatedRestaurant]);
+    return withTimings;
 }
 
 export async function updateRestaurantStatus(id, body = {}) {
@@ -5427,11 +5448,16 @@ export async function createRestaurantByAdmin(body, performer = null) {
 
     const restaurant = await FoodRestaurant.create(doc);
 
+    // Optional richer multi-shift schedule from the shared shift editor (same shape as
+    // onboarding's `shifts`: up to 3 {openingTime, closingTime, days} cards).
+    const shiftsInput = Array.isArray(body.shifts) ? body.shifts : undefined;
+
     await syncOutletTimingsFromOpenDays(
         restaurant._id,
         doc.openDays,
         doc.openingTime,
-        doc.closingTime
+        doc.closingTime,
+        shiftsInput
     );
 
     return restaurant.toObject();

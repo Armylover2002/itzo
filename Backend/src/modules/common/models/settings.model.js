@@ -109,9 +109,26 @@ const globalSettingsSchema = new mongoose.Schema(
         },
         landingHeroTitle: { type: String, default: 'ItzoFood' },
         landingHeroSubtitle: { type: String, default: 'Discover up to 30% off on your favorite meals & drinks in your city' },
-        landingVideo: {
-            url: { type: String, default: '' },
-            publicId: { type: String, default: '' }
+        // Hero background playlist for the marketing landing page ("/"). Plays in array
+        // order; the last video loops back to the first — see HeroSection.jsx.
+        landingVideos: {
+            type: [{
+                url: { type: String, default: '' },
+                publicId: { type: String, default: '' },
+                _id: false,
+            }],
+            default: [],
+        },
+        // Same idea, separate playlist for the logged-in home page ("/food/user") hero —
+        // deliberately independent of landingVideos so admin can run different footage
+        // on each page. See Home.jsx.
+        homeHeroVideos: {
+            type: [{
+                url: { type: String, default: '' },
+                publicId: { type: String, default: '' },
+                _id: false,
+            }],
+            default: [],
         },
         landingPoster: {
             url: { type: String, default: '' },

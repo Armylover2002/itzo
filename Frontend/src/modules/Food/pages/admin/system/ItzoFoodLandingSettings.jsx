@@ -53,6 +53,99 @@ const InputField = ({ label, name, value, onChange, placeholder, info }) => {
   );
 };
 
+let videoPlaylistKeySeq = 0;
+const nextVideoKey = () => `v${Date.now()}-${videoPlaylistKeySeq++}`;
+
+/** Converts a stored {url, publicId} playlist into the box's editable item list. */
+const toPlaylistItems = (list) =>
+  (Array.isArray(list) ? list : [])
+    .filter((v) => v?.url)
+    .map((v) => ({ key: nextVideoKey(), type: 'existing', url: v.url, publicId: v.publicId || '' }));
+
+/**
+ * A hero video playlist editor: shows every clip as a tile (in play order), lets the
+ * admin drop any one of them and add more — new files are appended at the end, which
+ * is exactly where the backend puts newly uploaded clips too, so the order shown here
+ * always matches what actually plays.
+ */
+const VideoPlaylistBox = ({ title, hint, items, onChange, maxSizeMB = 100 }) => {
+  const fileInputRef = useRef(null);
+
+  const addFiles = (fileList) => {
+    const incoming = Array.from(fileList || []);
+    if (!incoming.length) return;
+    const tooLarge = incoming.find((f) => f.size > maxSizeMB * 1024 * 1024);
+    if (tooLarge) {
+      toast.error(`Video size exceeds the maximum allowed limit. Please upload videos smaller than ${maxSizeMB} MB.`);
+      return;
+    }
+    const newItems = incoming.map((file) => ({
+      key: nextVideoKey(),
+      type: 'new',
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    onChange([...items, ...newItems]);
+  };
+
+  const removeAt = (key) => onChange(items.filter((item) => item.key !== key));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-0.5">
+        <label className="text-xs font-bold text-gray-500">{title}</label>
+        {hint && <span className="text-[11px] text-gray-400">{hint}</span>}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        {items.map((item, idx) => (
+          <div key={item.key} className="relative aspect-video rounded-xl border border-gray-200 overflow-hidden bg-black group">
+            <video
+              src={item.type === 'new' ? item.previewUrl : item.url}
+              className="w-full h-full object-cover"
+              muted
+              loop
+              autoPlay
+              playsInline
+            />
+            <div className="absolute top-1.5 left-1.5 bg-black/60 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+              {idx + 1}
+            </div>
+            <button
+              type="button"
+              onClick={() => removeAt(item.key)}
+              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-[#FFF1F1] text-[#FF4D4D] shadow-sm border border-[#FEDADA] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="aspect-video rounded-xl border border-dashed border-gray-300 bg-gray-50/50 hover:border-[#c1a0e8] transition-colors flex flex-col items-center justify-center gap-1.5 text-gray-400"
+        >
+          <Video size={20} strokeWidth={1.5} />
+          <span className="text-[10px] font-bold uppercase tracking-widest">Add Video(s)</span>
+        </button>
+      </div>
+
+      <input
+        type="file"
+        accept="video/*"
+        multiple
+        className="hidden"
+        ref={fileInputRef}
+        onChange={(e) => {
+          addFiles(e.target.files);
+          e.target.value = '';
+        }}
+      />
+    </div>
+  );
+};
+
 const MediaUploadBox = ({ title, size, preview, onUpload, onClear, type = 'image', maxSizeMB }) => {
   const fileInputRef = useRef(null);
 
@@ -121,10 +214,11 @@ const ItzoFoodLandingSettings = () => {
   const [landingPosterPreview, setLandingPosterPreview] = useState(null);
   const [landingPosterFile, setLandingPosterFile] = useState(null);
 
-  const [landingVideoPreview, setLandingVideoPreview] = useState(null);
-  const [landingVideoFile, setLandingVideoFile] = useState(null);
-
-
+  // Hero video playlists — independent lists for the marketing landing page ("/")
+  // and the logged-in home page ("/food/user"). Each item is either
+  // { type: 'existing', url, publicId } (already saved) or { type: 'new', file, previewUrl }.
+  const [landingVideos, setLandingVideos] = useState([]);
+  const [homeHeroVideos, setHomeHeroVideos] = useState([]);
 
   const [landingPizzaPreview, setLandingPizzaPreview] = useState(null);
   const [landingPizzaFile, setLandingPizzaFile] = useState(null);
@@ -188,7 +282,8 @@ const ItzoFoodLandingSettings = () => {
         });
 
         if (settings.landingPoster?.url) setLandingPosterPreview(settings.landingPoster.url);
-        if (settings.landingVideo?.url) setLandingVideoPreview(settings.landingVideo.url);
+        setLandingVideos(toPlaylistItems(settings.landingVideos));
+        setHomeHeroVideos(toPlaylistItems(settings.homeHeroVideos));
         if (settings.landingPizzaImage?.url) setLandingPizzaPreview(settings.landingPizzaImage.url);
         if (settings.landingTomatoImage?.url) setLandingTomatoPreview(settings.landingTomatoImage.url);
         if (settings.landingQrCodeImage?.url) setLandingQrCodePreview(settings.landingQrCodeImage.url);
@@ -235,9 +330,21 @@ const ItzoFoodLandingSettings = () => {
         benefitsImageLink: formData.benefitsImageLink.trim(),
       };
 
+      // Videos the admin kept (in play order) go as JSON; newly picked files upload
+      // and land after them — see processVideoPlaylistField on the backend.
+      dataToSend.landingVideos = landingVideos
+        .filter((v) => v.type === 'existing')
+        .map((v) => ({ url: v.url, publicId: v.publicId }));
+      dataToSend.homeHeroVideos = homeHeroVideos
+        .filter((v) => v.type === 'existing')
+        .map((v) => ({ url: v.url, publicId: v.publicId }));
+
       const files = {};
       if (landingPosterFile) files.landingPoster = landingPosterFile;
-      if (landingVideoFile) files.landingVideo = landingVideoFile;
+      const newLandingVideoFiles = landingVideos.filter((v) => v.type === 'new').map((v) => v.file);
+      if (newLandingVideoFiles.length) files.landingVideos = newLandingVideoFiles;
+      const newHomeHeroVideoFiles = homeHeroVideos.filter((v) => v.type === 'new').map((v) => v.file);
+      if (newHomeHeroVideoFiles.length) files.homeHeroVideos = newHomeHeroVideoFiles;
       if (landingPizzaFile) files.landingPizzaImage = landingPizzaFile;
       if (landingTomatoFile) files.landingTomatoImage = landingTomatoFile;
       if (landingQrCodeFile) files.landingQrCodeImage = landingQrCodeFile;
@@ -256,6 +363,10 @@ const ItzoFoodLandingSettings = () => {
 
       if (updatedSettings) {
         setCachedSettings(updatedSettings);
+        // Re-sync from the server response so newly uploaded clips become "existing"
+        // (with their real url/publicId) — otherwise saving again would re-upload them.
+        setLandingVideos(toPlaylistItems(updatedSettings.landingVideos));
+        setHomeHeroVideos(toPlaylistItems(updatedSettings.homeHeroVideos));
       }
       toast.success('Landing settings saved successfully!');
     } catch (err) {
@@ -276,13 +387,6 @@ const ItzoFoodLandingSettings = () => {
     const reader = new FileReader();
     reader.onload = () => setPreview(String(reader.result || ''));
     reader.readAsDataURL(compressed);
-  };
-
-  const handleVideoUpload = (file, setFile, setPreview) => {
-    // We do not compress the video on client side, we just send it.
-    setFile(file);
-    const url = URL.createObjectURL(file);
-    setPreview(url);
   };
 
   if (loading) {
@@ -317,27 +421,37 @@ const ItzoFoodLandingSettings = () => {
         </SectionCard>
 
         {/* Media */}
-        <SectionCard title="Hero Media">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            <MediaUploadBox
-              type="video"
-              title="Background Video"
-              size="1080p, <100MB"
+        <SectionCard title="Hero Media — Landing Page (itzofood.com)">
+          <div className="space-y-8">
+            <VideoPlaylistBox
+              title="Background Video Playlist"
+              hint="Plays in order shown, then loops back to the first — visitors on the marketing landing page only"
+              items={landingVideos}
+              onChange={setLandingVideos}
               maxSizeMB={100}
-              preview={landingVideoPreview}
-              onUpload={(file) => handleVideoUpload(file, setLandingVideoFile, setLandingVideoPreview)}
-              onClear={() => { setLandingVideoPreview(null); setLandingVideoFile(null); }}
             />
-            <MediaUploadBox
-              type="image"
-              title="Fallback Poster Image"
-              size="HD, <10MB"
-              maxSizeMB={10}
-              preview={landingPosterPreview}
-              onUpload={(file) => handleImageUpload(file, setLandingPosterFile, setLandingPosterPreview)}
-              onClear={() => { setLandingPosterPreview(null); setLandingPosterFile(null); }}
-            />
+            <div className="max-w-sm">
+              <MediaUploadBox
+                type="image"
+                title="Fallback Poster Image"
+                size="HD, <10MB"
+                maxSizeMB={10}
+                preview={landingPosterPreview}
+                onUpload={(file) => handleImageUpload(file, setLandingPosterFile, setLandingPosterPreview)}
+                onClear={() => { setLandingPosterPreview(null); setLandingPosterFile(null); }}
+              />
+            </div>
           </div>
+        </SectionCard>
+
+        <SectionCard title="Hero Media — Home Page (logged-in users)">
+          <VideoPlaylistBox
+            title="Background Video Playlist"
+            hint="Plays in order shown, then loops back to the first — shown on the home page after login, independent of the landing page playlist above"
+            items={homeHeroVideos}
+            onChange={setHomeHeroVideos}
+            maxSizeMB={100}
+          />
         </SectionCard>
 
         {/* Additional Landing Assets */}

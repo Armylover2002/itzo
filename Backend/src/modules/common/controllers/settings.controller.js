@@ -55,7 +55,8 @@ const PUBLIC_SETTINGS_PROJECTION = {
     restaurantLoginBanner: 1,
     landingHeroTitle: 1,
     landingHeroSubtitle: 1,
-    landingVideo: 1,
+    landingVideos: 1,
+    homeHeroVideos: 1,
     landingPoster: 1,
     landingPizzaImage: 1,
     landingTomatoImage: 1,
@@ -83,12 +84,16 @@ const PUBLIC_MEDIA_KEYS = [
     'deliveryLogo', 'deliveryFavicon', 'restaurantLogo', 'restaurantFavicon',
     'sellerLogo', 'sellerFavicon', 'loginBanner',
     'userLoginBanner1', 'userLoginBanner2', 'userLoginBanner3', 'userLoginBanner4', 'userLoginBanner5', 'userLoginVideo',
-    'landingVideo', 'landingPoster', 'landingPizzaImage', 'landingTomatoImage',
+    'landingPoster', 'landingPizzaImage', 'landingTomatoImage',
     'landingQrCodeImage', 'landingAppStoreBadge', 'landingPlayStoreBadge',
     'landingNavbarLogo', 'landingFooterLogo', 'benefitsImage',
 ];
 
 const PUBLIC_BANNER_KEYS = ['sellerLoginBanner', 'restaurantLoginBanner'];
+
+// Hero video playlists — array-shaped, so they're normalized separately from the
+// single-object media keys above.
+const PUBLIC_VIDEO_LIST_KEYS = ['landingVideos', 'homeHeroVideos'];
 
 const getRedisCache = async (key) => {
     if (!config.redisEnabled) return null;
@@ -191,6 +196,15 @@ const buildSettingsPayload = (settings) => {
         }
     });
 
+    // Keep publicId here (unlike the single-media keys above) — the admin UI needs it
+    // to let the admin remove one specific video from the playlist.
+    PUBLIC_VIDEO_LIST_KEYS.forEach((k) => {
+        rawSettings[k] = (Array.isArray(rawSettings[k]) ? rawSettings[k] : []).map((v) => ({
+            url: normalizeUploadUrl(v?.url),
+            publicId: v?.publicId || '',
+        }));
+    });
+
     rawSettings.modules = normalizeModules(rawSettings.modules);
     return rawSettings;
 };
@@ -246,6 +260,9 @@ const buildPublicSettingsPayload = (settings) => {
     });
     PUBLIC_BANNER_KEYS.forEach((key) => {
         payload[key] = slimBanner(raw[key]);
+    });
+    PUBLIC_VIDEO_LIST_KEYS.forEach((key) => {
+        payload[key] = (Array.isArray(raw[key]) ? raw[key] : []).map(slimMedia);
     });
 
     return payload;
@@ -556,26 +573,42 @@ export async function updateGlobalSettings(req, res, next) {
                 }
             }
 
-            // landingVideo is a video file — uploaded as-is (no sharp optimization) and stored on the server,
-            // separate from the image whitelist above.
-            const uploadedVideo = req.files.landingVideo && req.files.landingVideo[0];
-            if (uploadedVideo && uploadedVideo.path) {
-                try {
-                    const result = await uploadFileDetailed(uploadedVideo.path, {
-                        folder: 'business/landing',
-                        resourceType: 'video',
-                    });
-                    settings.landingVideo = {
-                        url: result.secure_url,
-                        publicId: result.public_id,
-                    };
-                    settings.markModified('landingVideo');
-                } finally {
-                    await fs.unlink(uploadedVideo.path).catch(() => {});
-                }
-            }
+            // Hero video playlists (landingVideos, homeHeroVideos) — video files, uploaded
+            // as-is (no sharp optimization), array-shaped so each page can run several
+            // clips back-to-back. The admin sends the list of existing videos it wants to
+            // KEEP (by url/publicId, in the order they should play) as JSON in `data`;
+            // anything newly selected in the file picker is uploaded and appended after
+            // the kept ones. Leaving the field out of `data` entirely (and picking no new
+            // files) leaves the stored playlist untouched, same as every other field here.
+            const processVideoPlaylistField = async (fieldName, folder) => {
+                const keptRaw = data[fieldName];
+                const newFiles = (req.files[fieldName] || []);
+                if (keptRaw === undefined && newFiles.length === 0) return;
 
-            // userLoginVideo follows the same video path as landingVideo.
+                const keptVideos = Array.isArray(keptRaw)
+                    ? keptRaw
+                        .filter((v) => v && typeof v === 'object' && v.url)
+                        .map((v) => ({ url: String(v.url).trim(), publicId: String(v.publicId || '').trim() }))
+                    : (Array.isArray(settings[fieldName]) ? settings[fieldName].map((v) => ({ url: v.url, publicId: v.publicId })) : []);
+
+                const uploadedVideos = [];
+                for (const file of newFiles) {
+                    try {
+                        const result = await uploadFileDetailed(file.path, { folder, resourceType: 'video' });
+                        uploadedVideos.push({ url: result.secure_url, publicId: result.public_id });
+                    } finally {
+                        await fs.unlink(file.path).catch(() => {});
+                    }
+                }
+
+                settings[fieldName] = [...keptVideos, ...uploadedVideos];
+                settings.markModified(fieldName);
+            };
+
+            await processVideoPlaylistField('landingVideos', 'business/landing');
+            await processVideoPlaylistField('homeHeroVideos', 'business/home-hero');
+
+            // userLoginVideo is a single (non-playlist) video field, uploaded the same way.
             const uploadedUserLoginVideo = req.files.userLoginVideo && req.files.userLoginVideo[0];
             if (uploadedUserLoginVideo && uploadedUserLoginVideo.path) {
                 try {

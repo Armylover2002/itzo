@@ -180,6 +180,9 @@ export default function RestaurantRouter() {
           <Route path="terms" element={<TermsAndConditionsPage />} />
           <Route path="privacy" element={<PrivacyPolicyPage />} />
           <Route path="support" element={<SupportPolicyPage />} />
+          {/* Alias for links/QR codes pointing at /food/restaurant/support-policy directly
+              (was previously unmatched, falling through to the catch-all -> login redirect). */}
+          <Route path="support-policy" element={<SupportPolicyPage />} />
           <Route path="*" element={<Navigate to="/food/restaurant" replace />} />
         </Routes>
         </Suspense>

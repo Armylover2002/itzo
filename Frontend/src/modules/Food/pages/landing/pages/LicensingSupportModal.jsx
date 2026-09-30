@@ -27,7 +27,7 @@ const LICENSE_OPTIONS = [
     'Other'
 ];
 
-export default function LicensingSupportModal({ isOpen, onClose, preFillData }) {
+export default function LicensingSupportModal({ isOpen, onClose, preFillData, onSuccess }) {
     const [currentStep, setCurrentStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
@@ -152,7 +152,7 @@ export default function LicensingSupportModal({ isOpen, onClose, preFillData }) 
             }
             if (!formData.email.trim()) {
                 tempErrors.email = 'Email Address is required.';
-            } else if (!/^[a-zA-Z0-9._%+-]+@(?!(gmail\\.comm|yahoo\\.con)$)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/.test(formData.email)) {
+            } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
                 tempErrors.email = 'Invalid email format.';
             }
         } else if (step === 3) {
@@ -218,6 +218,7 @@ export default function LicensingSupportModal({ isOpen, onClose, preFillData }) 
 
             if (res.data.success) {
                 toast.success('Your request has been submitted successfully. Our licensing partner will contact you shortly.');
+                onSuccess?.(res.data.data);
                 onClose();
                 // Reset form
                 setFormData({

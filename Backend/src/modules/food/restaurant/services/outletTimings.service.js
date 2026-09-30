@@ -55,16 +55,72 @@ const FULL_TO_SHORT_DAYS = {
     Sunday: 'Sun'
 };
 
+const MAX_SHIFTS_PER_DAY = 3;
+
+const timeToMinutesLocal = (t) => {
+    const m = /^(\d{2}):(\d{2})$/.exec(t || '');
+    if (!m) return null;
+    return Number(m[1]) * 60 + Number(m[2]);
+};
+
+/**
+ * Normalize+validate a raw list of {openingTime, closingTime} shifts for a single day.
+ * Max 3, each open<close, and no two non-overnight shifts overlapping. Overnight
+ * (wraparound) shifts are accepted without strict overlap math, consistent with the
+ * existing single-window overnight handling elsewhere.
+ */
+const normalizeShiftsList = (rawShifts, dayLabel = '') => {
+    if (!Array.isArray(rawShifts) || rawShifts.length === 0) return [];
+    if (rawShifts.length > MAX_SHIFTS_PER_DAY) {
+        throw new ValidationError(`A maximum of ${MAX_SHIFTS_PER_DAY} shifts is allowed${dayLabel ? ` on ${dayLabel}` : ''}`);
+    }
+
+    const list = rawShifts.map((s) => ({
+        openingTime: normalizeTime(s?.openingTime, ''),
+        closingTime: normalizeTime(s?.closingTime, '')
+    }));
+
+    const withMinutes = list.map((s) => {
+        if (!s.openingTime || !s.closingTime) {
+            throw new ValidationError(`Each shift requires a valid opening and closing time${dayLabel ? ` on ${dayLabel}` : ''}`);
+        }
+        const start = timeToMinutesLocal(s.openingTime);
+        const end = timeToMinutesLocal(s.closingTime);
+        if (start === end) {
+            throw new ValidationError(`Shift opening and closing time cannot be the same${dayLabel ? ` on ${dayLabel}` : ''}`);
+        }
+        return { ...s, start, end };
+    });
+
+    for (let i = 0; i < withMinutes.length; i++) {
+        for (let j = i + 1; j < withMinutes.length; j++) {
+            const a = withMinutes[i];
+            const b = withMinutes[j];
+            const aOvernight = a.end < a.start;
+            const bOvernight = b.end < b.start;
+            if (!aOvernight && !bOvernight && a.start < b.end && b.start < a.end) {
+                throw new ValidationError(`Shift timings overlap${dayLabel ? ` on ${dayLabel}` : ''}; please adjust the shift times`);
+            }
+        }
+    }
+
+    return list;
+};
+
 /** Normalize an incoming day-keyed timings object into the canonical stored array. */
 const normalizeTimingsFromInput = (outletTimings) =>
     DAY_NAMES.map((day) => {
         const src = outletTimings[day] && typeof outletTimings[day] === 'object' ? outletTimings[day] : {};
         const isOpen = src.isOpen !== false;
+        const shifts = normalizeShiftsList(src.shifts, day);
+        const openingTime = shifts[0]?.openingTime || normalizeTime(src.openingTime, '09:00');
+        const closingTime = shifts[0]?.closingTime || normalizeTime(src.closingTime, '22:00');
         return {
             day,
             isOpen,
-            openingTime: normalizeTime(src.openingTime, '09:00'),
-            closingTime: normalizeTime(src.closingTime, '22:00')
+            openingTime,
+            closingTime,
+            shifts: shifts.length ? shifts : (isOpen ? [{ openingTime, closingTime }] : [])
         };
     });
 
@@ -78,11 +134,20 @@ const canonicalTimingsArray = (rawTimings) => {
     return DAY_NAMES.map((day) => {
         const found = map[day];
         const isOpen = found ? found.isOpen !== false : true;
+        const shifts = Array.isArray(found?.shifts) && found.shifts.length
+            ? found.shifts.slice(0, MAX_SHIFTS_PER_DAY).map((s) => ({
+                openingTime: normalizeTime(s?.openingTime, '09:00'),
+                closingTime: normalizeTime(s?.closingTime, '22:00')
+            }))
+            : [];
+        const openingTime = shifts[0]?.openingTime || normalizeTime(found?.openingTime, '09:00');
+        const closingTime = shifts[0]?.closingTime || normalizeTime(found?.closingTime, '22:00');
         return {
             day,
             isOpen,
-            openingTime: normalizeTime(found?.openingTime, '09:00'),
-            closingTime: normalizeTime(found?.closingTime, '22:00')
+            openingTime,
+            closingTime,
+            shifts: shifts.length ? shifts : (isOpen ? [{ openingTime, closingTime }] : [])
         };
     });
 };
@@ -122,8 +187,50 @@ const notifyAdminsAboutOpeningDaysReview = (restaurantId, restaurantName) => {
     })();
 };
 
-/** Build per-day outlet timings from onboarding delivery schedule (openDays + times). */
-export function buildOutletTimingsArrayFromSchedule(openDays, openingTime, closingTime) {
+/**
+ * Build per-day outlet timings from onboarding delivery schedule (openDays + times), OR,
+ * when `shiftsInput` is given, from a flat list of up to 3 shift cards each carrying its
+ * own day selection: [{ openingTime, closingTime, days: ['Mon', ...] }, ...]. This is the
+ * shape the shift-picker UI (Onboarding/AddRestaurant/OutletTimings) submits.
+ */
+export function buildOutletTimingsArrayFromSchedule(openDays, openingTime, closingTime, shiftsInput) {
+    if (Array.isArray(shiftsInput) && shiftsInput.length > 0) {
+        if (shiftsInput.length > 3) {
+            throw new ValidationError('A maximum of 3 shifts is allowed');
+        }
+        const shiftCards = shiftsInput.map((s) => {
+            const openTime = normalizeTime(s?.openingTime, '');
+            const closeTime = normalizeTime(s?.closingTime, '');
+            if (!openTime || !closeTime) {
+                throw new ValidationError('Each shift requires a valid opening and closing time');
+            }
+            const rawDays = Array.isArray(s?.days)
+                ? s.days
+                : typeof s?.days === 'string'
+                    ? s.days.split(',').map((d) => d.trim()).filter(Boolean)
+                    : [];
+            const days = rawDays.map((d) => SHORT_DAYS_MAP[d] || normalizeDay(d)).filter(Boolean);
+            return { openingTime: openTime, closingTime: closeTime, days };
+        });
+
+        return DAY_NAMES.map((day) => {
+            const dayShifts = normalizeShiftsList(
+                shiftCards
+                    .filter((s) => s.days.includes(day))
+                    .map(({ openingTime: o, closingTime: c }) => ({ openingTime: o, closingTime: c })),
+                day
+            );
+            const isOpen = dayShifts.length > 0;
+            return {
+                day,
+                isOpen,
+                openingTime: dayShifts[0]?.openingTime || '',
+                closingTime: dayShifts[0]?.closingTime || '',
+                shifts: dayShifts
+            };
+        });
+    }
+
     const rawDays = Array.isArray(openDays)
         ? openDays
         : typeof openDays === 'string'
@@ -143,17 +250,18 @@ export function buildOutletTimingsArrayFromSchedule(openDays, openingTime, closi
             day,
             isOpen,
             openingTime: openTime,
-            closingTime: closeTime
+            closingTime: closeTime,
+            shifts: isOpen && openTime && closeTime ? [{ openingTime: openTime, closingTime: closeTime }] : []
         };
     });
 }
 
-export async function syncOutletTimingsFromOpenDays(restaurantId, openDays, openingTime, closingTime) {
+export async function syncOutletTimingsFromOpenDays(restaurantId, openDays, openingTime, closingTime, shiftsInput) {
     if (!restaurantId || !mongoose.Types.ObjectId.isValid(String(restaurantId))) {
         throw new ValidationError('Invalid restaurant id');
     }
 
-    const timings = buildOutletTimingsArrayFromSchedule(openDays, openingTime, closingTime);
+    const timings = buildOutletTimingsArrayFromSchedule(openDays, openingTime, closingTime, shiftsInput);
 
     await FoodRestaurantOutletTimings.findOneAndUpdate(
         { restaurantId },
@@ -168,10 +276,21 @@ const toClientShape = (doc) => {
     for (const day of DAY_NAMES) {
         const found = timings.find((t) => normalizeDay(t?.day) === day);
         const isOpen = found ? found.isOpen !== false : true;
+        const shifts = Array.isArray(found?.shifts) && found.shifts.length
+            ? found.shifts.map((s) => ({
+                openingTime: normalizeTime(s?.openingTime, '09:00'),
+                closingTime: normalizeTime(s?.closingTime, '22:00')
+            }))
+            : [];
+        const openingTime = shifts[0]?.openingTime || normalizeTime(found?.openingTime, '09:00');
+        const closingTime = shifts[0]?.closingTime || normalizeTime(found?.closingTime, '22:00');
         map[day] = {
             isOpen,
-            openingTime: normalizeTime(found?.openingTime, '09:00'),
-            closingTime: normalizeTime(found?.closingTime, '22:00')
+            openingTime,
+            closingTime,
+            // Back-compat: single-window consumers keep reading openingTime/closingTime above.
+            // Shift-aware consumers read this instead; falls back to the single window as shift 1.
+            shifts: shifts.length ? shifts : (isOpen ? [{ openingTime, closingTime }] : [])
         };
     }
     return map;

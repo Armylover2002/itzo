@@ -8,6 +8,7 @@ import { Label } from "@food/components/ui/label"
 import { Button } from "@food/components/ui/button"
 import { adminAPI, uploadAPI, zoneAPI } from "@food/api"
 import { toast } from "sonner"
+import ShiftTimingsEditor, { MAX_SHIFTS, shiftsFromLegacyWindow } from "@food/components/restaurant/ShiftTimingsEditor"
 
 const OWNER_PHONE_DUPLICATE_MSG = "This phone number is already registered with another restaurant."
 const PRIMARY_CONTACT_DUPLICATE_MSG = "This contact number is already registered with another restaurant."
@@ -42,7 +43,6 @@ const cuisinesOptions = [
   "Cafe",
 ]
 
-const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const PHONE_REGEX = /^\d{10}$/
 const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/
@@ -215,6 +215,7 @@ export default function AddRestaurant() {
     openingTime: "",
     closingTime: "",
     openDays: [],
+    shifts: shiftsFromLegacyWindow("", "", []),
   })
 
   // Step 3: Documents
@@ -456,18 +457,55 @@ export default function AddRestaurant() {
     if (!step2.profileImage) errors.push("Restaurant profile image is required")
     if (!step2.cuisines || step2.cuisines.length === 0) errors.push("Please select at least one cuisine")
     if (!step2.estimatedDeliveryTime?.trim()) errors.push("Estimated delivery time is required")
-    if (!step2.openingTime?.trim()) errors.push("Opening time is required")
-    if (!step2.closingTime?.trim()) errors.push("Closing time is required")
-    const openingMinutes = timeStringToMinutes(step2.openingTime)
-    const closingMinutes = timeStringToMinutes(step2.closingTime)
-    if (openingMinutes !== null && closingMinutes !== null) {
-      if (openingMinutes === closingMinutes) {
-        errors.push("Opening time and closing time cannot be same")
-      } else if (closingMinutes < openingMinutes) {
-        errors.push("Closing time cannot be less than opening time")
+    errors.push(...validateShifts(step2.shifts))
+    return errors
+  }
+
+  // Mirrors backend normalizeShiftsList rules: each shift's times set and open != close,
+  // at least one day selected across shifts, max 3 shifts, no overlapping shifts on a
+  // shared day (skip strict overlap math for overnight shifts, closingTime < openingTime).
+  const validateShifts = (shifts) => {
+    const errors = []
+    const list = Array.isArray(shifts) ? shifts : []
+    if (list.length === 0) {
+      errors.push("Please add at least one shift")
+      return errors
+    }
+    if (list.length > MAX_SHIFTS) errors.push(`A maximum of ${MAX_SHIFTS} shifts is allowed`)
+
+    const withMinutes = []
+    list.forEach((shift, idx) => {
+      const openingMinutes = timeStringToMinutes(shift.openingTime)
+      const closingMinutes = timeStringToMinutes(shift.closingTime)
+      if (openingMinutes === null || closingMinutes === null) {
+        errors.push(`Shift ${idx + 1}: opening and closing time are required`)
+      } else if (openingMinutes === closingMinutes) {
+        errors.push(`Shift ${idx + 1}: opening time and closing time cannot be same`)
+      }
+      if (!shift.days || shift.days.length === 0) {
+        errors.push(`Shift ${idx + 1}: please select at least one day`)
+      }
+      withMinutes.push({ ...shift, openingMinutes, closingMinutes })
+    })
+
+    const allDays = new Set(list.flatMap((s) => s.days || []))
+    if (allDays.size === 0) errors.push("Please select at least one open day")
+
+    for (const day of allDays) {
+      const dayShifts = withMinutes.filter((s) => (s.days || []).includes(day) && s.openingMinutes !== null && s.closingMinutes !== null)
+      for (let i = 0; i < dayShifts.length; i++) {
+        for (let j = i + 1; j < dayShifts.length; j++) {
+          const a = dayShifts[i]
+          const b = dayShifts[j]
+          const aOvernight = a.closingMinutes < a.openingMinutes
+          const bOvernight = b.closingMinutes < b.openingMinutes
+          if (!aOvernight && !bOvernight && a.openingMinutes < b.closingMinutes && b.openingMinutes < a.closingMinutes) {
+            errors.push(`Shift timings overlap on ${day}; please adjust the shift times`)
+          }
+        }
       }
     }
-    if (!step2.openDays || step2.openDays.length === 0) errors.push("Please select at least one open day")
+
     return errors
   }
 
@@ -611,6 +649,12 @@ export default function AddRestaurant() {
         fssaiImageData = step3.fssaiImage
       }
 
+      // Derive flat opening/closing/openDays from shifts for consumers still reading those
+      // fields directly; shifts[] itself is the source of truth for backend multi-shift sync.
+      const derivedOpenDays = Array.from(new Set((step2.shifts || []).flatMap((s) => s.days || [])))
+      const derivedOpeningTime = step2.shifts?.[0]?.openingTime || ""
+      const derivedClosingTime = step2.shifts?.[0]?.closingTime || ""
+
       // Prepare payload
       const payload = {
         // Step 1
@@ -627,9 +671,10 @@ export default function AddRestaurant() {
         profileImage: profileImageData,
         cuisines: step2.cuisines,
         estimatedDeliveryTime: step2.estimatedDeliveryTime,
-        openingTime: step2.openingTime,
-        closingTime: step2.closingTime,
-        openDays: step2.openDays,
+        openingTime: derivedOpeningTime,
+        closingTime: derivedClosingTime,
+        openDays: derivedOpenDays,
+        shifts: step2.shifts,
         // Step 3
         panNumber: step3.panNumber,
         nameOnPan: step3.nameOnPan,
@@ -1269,62 +1314,6 @@ export default function AddRestaurant() {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <Label className="text-xs text-gray-700">Outlet timings*</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label className="text-xs text-gray-700 mb-1 block">Opening time</Label>
-              <Input
-                type="time"
-                value={step2.openingTime || ""}
-                onChange={(e) => {
-                  const nextOpening = e.target.value
-                  const closingMinutes = timeStringToMinutes(step2.closingTime)
-                  const openingMinutes = timeStringToMinutes(nextOpening)
-                  if (openingMinutes !== null && closingMinutes !== null) {
-                    if (openingMinutes === closingMinutes) {
-                      toast.error("Opening time and closing time cannot be same")
-                      return
-                    }
-                    if (closingMinutes < openingMinutes) {
-                      toast.error("Closing time cannot be less than opening time")
-                      return
-                    }
-                  }
-                  setStep2({ ...step2, openingTime: nextOpening })
-                }}
-                autoComplete="off"
-                className="bg-white text-sm"
-              />
-            </div>
-            <div>
-              <Label className="text-xs text-gray-700 mb-1 block">Closing time</Label>
-              <Input
-                type="time"
-                value={step2.closingTime || ""}
-                onChange={(e) => {
-                  const nextClosing = e.target.value
-                  const openingMinutes = timeStringToMinutes(step2.openingTime)
-                  const closingMinutes = timeStringToMinutes(nextClosing)
-                  if (openingMinutes !== null && closingMinutes !== null) {
-                    if (openingMinutes === closingMinutes) {
-                      toast.error("Opening time and closing time cannot be same")
-                      return
-                    }
-                    if (closingMinutes < openingMinutes) {
-                      toast.error("Closing time cannot be less than opening time")
-                      return
-                    }
-                  }
-                  setStep2({ ...step2, closingTime: nextClosing })
-                }}
-                autoComplete="off"
-                className="bg-white text-sm"
-              />
-            </div>
-          </div>
-        </div>
-
         <div>
           <Label className="text-xs text-gray-700">Estimated delivery time*</Label>
           <Input
@@ -1339,29 +1328,12 @@ export default function AddRestaurant() {
         <div className="space-y-2">
           <Label className="text-xs text-gray-700 flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-gray-800" />
-            <span>Open days*</span>
+            <span>Outlet timings & open days* (up to {MAX_SHIFTS} shifts)</span>
           </Label>
-          <div className="mt-1 grid grid-cols-7 gap-1.5 sm:gap-2">
-            {daysOfWeek.map((day) => {
-              const active = step2.openDays.includes(day)
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => {
-                    setStep2((prev) => {
-                      const exists = prev.openDays.includes(day)
-                      if (exists) return { ...prev, openDays: prev.openDays.filter((d) => d !== day) }
-                      return { ...prev, openDays: [...prev.openDays, day] }
-                    })
-                  }}
-                  className={`aspect-square flex items-center justify-center rounded-md text-[11px] font-medium ${active ? "bg-black text-white" : "bg-gray-100 text-gray-800"}`}
-                >
-                  {day.charAt(0)}
-                </button>
-              )
-            })}
-          </div>
+          <ShiftTimingsEditor
+            shifts={step2.shifts}
+            onChange={(shifts) => setStep2((prev) => ({ ...prev, shifts }))}
+          />
         </div>
       </section>
     </div>

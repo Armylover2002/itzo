@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useEffect, useState, useRef } from "react"
 import { motion } from "framer-motion"
-import { ChevronDown, ShoppingCart, Search, X, Tag, User, Wallet, Bell } from "lucide-react"
+import { ChevronDown, ShoppingCart, Search, X, Tag, User, Wallet, Bell, Gift } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
 import { useLocation as useLocationHook } from "@food/hooks/useLocation"
@@ -251,6 +251,28 @@ export default function DesktopNavbar({ showLogo = true }) {
                                     </button>
                                 </div>
                               )}
+
+                            {/* Refer & Earn */}
+                            <Link
+                                to="/food/user/profile/refer-earn"
+                                className="group relative flex items-center gap-1.5 overflow-hidden rounded-full bg-gradient-to-r from-[#FB4F01] to-[#ff8a4d] px-3 lg:px-4 py-1.5 lg:py-2 text-white shadow-md shadow-orange-500/30 transition-transform hover:scale-105 active:scale-95 flex-shrink-0"
+                            >
+                                <motion.span
+                                    className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+                                    animate={{ x: ["-120%", "320%"] }}
+                                    transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 1.6, ease: "easeInOut" }}
+                                />
+                                <motion.span
+                                    className="relative flex"
+                                    animate={{ rotate: [0, -12, 12, -8, 8, 0] }}
+                                    transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2, ease: "easeInOut" }}
+                                >
+                                    <Gift className="h-4 w-4 lg:h-5 lg:w-5" strokeWidth={2.2} />
+                                </motion.span>
+                                <span className="relative text-xs lg:text-sm font-bold whitespace-nowrap">
+                                    Refer & Earn
+                                </span>
+                            </Link>
 
                             {/* Cart */}
                             <Link to="/food/user/cart" className="flex items-center justify-center relative w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors group">

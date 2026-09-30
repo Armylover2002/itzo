@@ -276,7 +276,9 @@ export default function RestaurantProfile({ isOpen, onClose }) {
         </div>
       </div>
 
-      <div className="space-y-3 px-6 pb-8 lg:px-8 lg:pb-6">
+      {/* Logout / Logout-all-devices / Delete Account moved to the Explore more page —
+          Logout already lives there, Delete Account was added below it there too. */}
+      {/* <div className="space-y-3 px-6 pb-8 lg:px-8 lg:pb-6">
         <button
           onClick={handleLogout}
           disabled={isLoggingOut}
@@ -303,7 +305,7 @@ export default function RestaurantProfile({ isOpen, onClose }) {
             Delete Account
           </button>
         )}
-      </div>
+      </div> */}
 
       <div className="border-t border-gray-100 bg-gray-50/50 px-6 py-6 lg:rounded-b-2xl">
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[13px] font-medium text-gray-500">

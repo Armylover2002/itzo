@@ -3,6 +3,7 @@ import { FoodRestaurantWallet, ensureRestaurantWallet } from '../models/restaura
 import { FoodReferralSettings } from '../../admin/models/referralSettings.model.js';
 import { FoodReferralLog } from '../../admin/models/referralLog.model.js';
 import { attachOutletTimingsToRestaurants, syncOutletTimingsFromOpenDays } from './outletTimings.service.js';
+import { LicensingRequest } from '../../licensing/models/LicensingRequest.js';
 import { uploadImageBuffer } from '../../../../services/upload.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import mongoose from 'mongoose';
@@ -335,6 +336,8 @@ const toRestaurantProfile = (doc) => {
         fssaiNumber: doc.fssaiNumber || doc.fssai || '',
         fssaiExpiry: doc.fssaiExpiry || doc.fssai_expiry || null,
         fssaiImage: (doc.fssaiImage || doc.fssai_image) ? { url: (doc.fssaiImage || doc.fssai_image) } : null,
+        fssaiApplicationStatus: doc.fssaiApplicationStatus || null,
+        fssaiApplicationId: doc.fssaiApplicationId ? String(doc.fssaiApplicationId) : null,
         accountNumber: doc.accountNumber || '',
         ifscCode: doc.ifscCode || '',
         accountHolderName: doc.accountHolderName || '',
@@ -886,8 +889,11 @@ export const getOnboardingDraftByPhone = async (phone) => {
     const { digits: ownerPhoneDigits, last10: ownerPhoneLast10 } = normalizePhone(phone);
     if (!ownerPhoneLast10) return null;
 
+    // 'rejected' is included so a reapplying owner sees everything they filled in
+    // before, instead of a blank form — see saveOnboardingStep's step-1 handling,
+    // which reuses this same document and resets it back to 'onboarding'.
     const doc = await FoodRestaurant.findOne({
-        status: 'onboarding',
+        status: { $in: ['onboarding', 'rejected'] },
         $or: buildPhoneConflictConditions(ownerPhoneLast10, ownerPhoneDigits)
     }).lean();
 
@@ -1005,8 +1011,14 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
     }
 
     const existingRestaurant = await findRestaurantByOwnerPhone(ownerPhone);
+    // A rejected restaurant reapplying is allowed to keep using its own phone number —
+    // step 1 below reuses this same document and resets it back to 'onboarding'
+    // (mirrors registerRestaurant's excludeRestaurant handling). Steps 2/3 require
+    // status === 'onboarding', which step 1 will have already set by the time they run.
     const onboardingRestaurant =
-        existingRestaurant && existingRestaurant.status === 'onboarding' ? existingRestaurant : null;
+        existingRestaurant && (existingRestaurant.status === 'onboarding' || existingRestaurant.status === 'rejected')
+            ? existingRestaurant
+            : null;
 
     await validateRestaurantPhoneUniqueness({
         ownerPhone,
@@ -1021,9 +1033,6 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
         }
         if (existingRestaurant.status === 'pending') {
             throw new ValidationError('Restaurant registration is pending approval');
-        }
-        if (existingRestaurant.status === 'rejected') {
-            throw new ValidationError('Please use the re-apply flow for rejected applications');
         }
     }
 
@@ -1046,7 +1055,12 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
             ...step1Data,
             status: 'onboarding',
             onboardingStep: 2,
-            isActive: false
+            isActive: false,
+            // Clear any prior rejection so admin review doesn't show stale info for
+            // what is now a fresh reapplication.
+            rejectedAt: null,
+            rejectedBy: null,
+            rejectionReason: null,
         };
 
         if (!existingRestaurant) {
@@ -1106,6 +1120,21 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                     ? payload.openDays.split(',').map((d) => d.trim()).filter(Boolean)
                     : []);
 
+            // Optional richer multi-shift schedule (up to 3 shifts, each with its own days),
+            // sent as a JSON string field alongside the flat fields (mirrors `openDays`).
+            let shiftsInput;
+            if (payload.shifts !== undefined && payload.shifts !== null && payload.shifts !== '') {
+                if (Array.isArray(payload.shifts)) {
+                    shiftsInput = payload.shifts;
+                } else if (typeof payload.shifts === 'string') {
+                    try {
+                        shiftsInput = JSON.parse(payload.shifts);
+                    } catch {
+                        throw new ValidationError('Invalid shifts data');
+                    }
+                }
+            }
+
             Object.assign(restaurant, {
                 cuisines,
                 openingTime: normalizedOpeningTime || undefined,
@@ -1123,11 +1152,17 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                 restaurant._id,
                 openDaysArray,
                 normalizedOpeningTime,
-                normalizedClosingTime
+                normalizedClosingTime,
+                shiftsInput
             );
         }
 
         if (step === 3) {
+            // Owner chose "Apply for FSSAI" instead of uploading an existing license:
+            // file a LicensingRequest alongside this step, skip the mandatory fssaiImage gate.
+            const fssaiApplyForLicense =
+                payload.fssaiApplyForLicense === true || payload.fssaiApplyForLicense === 'true';
+
             const images = {};
             if (files?.panImage?.[0]) {
                 images.panImage = await uploadImageBuffer(files.panImage[0].buffer, 'food/restaurants/pan');
@@ -1137,15 +1172,36 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
             if (files?.gstImage?.[0]) {
                 images.gstImage = await uploadImageBuffer(files.gstImage[0].buffer, 'food/restaurants/gst');
             }
-            if (files?.fssaiImage?.[0]) {
-                images.fssaiImage = await uploadImageBuffer(files.fssaiImage[0].buffer, 'food/restaurants/fssai');
-            } else if (!restaurant.fssaiImage) {
-                throw new ValidationError('FSSAI image is required');
+            if (!fssaiApplyForLicense) {
+                if (files?.fssaiImage?.[0]) {
+                    images.fssaiImage = await uploadImageBuffer(files.fssaiImage[0].buffer, 'food/restaurants/fssai');
+                } else if (!restaurant.fssaiImage) {
+                    throw new ValidationError('FSSAI image is required');
+                }
             }
 
             const gstRegistered = payload.gstRegistered === true || payload.gstRegistered === 'true';
             if (gstRegistered && !files?.gstImage?.[0] && !restaurant.gstImage) {
                 throw new ValidationError('GST image is required when GST registered');
+            }
+
+            let fssaiApplicationStatus = restaurant.fssaiApplicationStatus || 'uploaded';
+            let fssaiApplicationId = restaurant.fssaiApplicationId || null;
+            if (fssaiApplyForLicense) {
+                // The owner fills the full licensing-partner form in-browser (same form as
+                // the public /consulting page — see LicensingSupportModal), which posts
+                // straight to POST /licensing-request and hands back the created request's
+                // id. We only link that id here — no file handling on this endpoint anymore.
+                const submittedApplicationId = String(payload.fssaiApplicationId || '').trim();
+                if (!submittedApplicationId || !mongoose.Types.ObjectId.isValid(submittedApplicationId)) {
+                    throw new ValidationError('Please submit the FSSAI licensing application form before continuing');
+                }
+                const licensingRequest = await LicensingRequest.findById(submittedApplicationId).select('_id').lean();
+                if (!licensingRequest) {
+                    throw new ValidationError('FSSAI application not found. Please submit the form again.');
+                }
+                fssaiApplicationStatus = 'applied';
+                fssaiApplicationId = submittedApplicationId;
             }
 
             Object.assign(restaurant, {
@@ -1155,8 +1211,10 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                 gstNumber: payload.gstNumber || '',
                 gstLegalName: payload.gstLegalName || '',
                 gstAddress: payload.gstAddress || '',
-                fssaiNumber: payload.fssaiNumber || '',
-                fssaiExpiry: payload.fssaiExpiry || undefined,
+                fssaiNumber: fssaiApplyForLicense ? '' : (payload.fssaiNumber || ''),
+                fssaiExpiry: fssaiApplyForLicense ? undefined : (payload.fssaiExpiry || undefined),
+                fssaiApplicationStatus,
+                fssaiApplicationId,
                 accountNumber: payload.accountNumber || '',
                 ifscCode: payload.ifscCode || '',
                 accountHolderName: payload.accountHolderName || '',
@@ -1196,6 +1254,7 @@ export const registerRestaurant = async (payload, files, authUserId) => {
         openingTime,
         closingTime,
         openDays,
+        shifts,
         estimatedDeliveryTime,
         panNumber,
         nameOnPan,
@@ -1215,6 +1274,21 @@ export const registerRestaurant = async (payload, files, authUserId) => {
         razorpaySignature,
         finalizeOnboarding
     } = payload;
+
+    // Optional richer multi-shift schedule (mirrors the same field on onboarding step 2 —
+    // the wizard's final "register" submit carries the merged data from every step).
+    let shiftsInput;
+    if (shifts !== undefined && shifts !== null && shifts !== '') {
+        if (Array.isArray(shifts)) {
+            shiftsInput = shifts;
+        } else if (typeof shifts === 'string') {
+            try {
+                shiftsInput = JSON.parse(shifts);
+            } catch {
+                throw new ValidationError('Invalid shifts data');
+            }
+        }
+    }
 
     const isFinalizeOnboarding =
         finalizeOnboarding === true ||
@@ -1574,7 +1648,8 @@ export const registerRestaurant = async (payload, files, authUserId) => {
             restaurant._id,
             openDays || restaurant.openDays,
             normalizedOpeningTime,
-            normalizedClosingTime
+            normalizedClosingTime,
+            shiftsInput
         );
 
         try {
