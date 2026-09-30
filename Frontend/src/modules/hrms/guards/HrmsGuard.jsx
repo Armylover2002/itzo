@@ -20,12 +20,14 @@ const HrmsGuard = ({ children }) => {
     }
 
     if (user?.role !== 'HRMS_EMPLOYEE') {
-        // If an Admin/Seller/User tries to access the HRMS employee portal
-        // Route them back to their respective dashboards.
+        // If an Admin tries to access the HRMS employee portal, send them to their
+        // own dashboard. Anyone else (a Customer/Seller/Delivery session, or a stale
+        // profile fetch) must NOT be able to leak out of the HRMS route boundary into
+        // the general site — send them back to the HRMS login instead of "/".
         if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') {
             return <Navigate to="/ecs" replace />;
         }
-        return <Navigate to="/" replace />;
+        return <Navigate to="/hrms/login" state={{ from: location }} replace />;
     }
 
     return <>{children}</>;

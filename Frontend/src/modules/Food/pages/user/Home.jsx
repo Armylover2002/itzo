@@ -451,7 +451,7 @@ export default function Home() {
       {state.isBootstrapped && activeTab === "food" && (
         <div className="relative z-10 w-full">
           <div
-            className="relative overflow-hidden shadow-sm pb-3.5 rounded-[20px] md:rounded-none mx-3 sm:mx-4 md:mx-0 mt-0"
+            className="relative overflow-hidden shadow-sm pb-1 rounded-[20px] md:rounded-none mx-3 sm:mx-4 md:mx-0 mt-0"
             style={{
               background: vegMode
                 ? "linear-gradient(135deg, #2e7d32 0%, #388e3c 100%)"
