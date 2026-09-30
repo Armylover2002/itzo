@@ -1,4 +1,4 @@
-﻿import { defineConfig } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
@@ -45,14 +45,12 @@ export default defineConfig({
     ],
   },
   build: {
-    // Warn threshold raised slightly â€” we're splitting manually below
-    // Warn threshold raised slightly â€” we're splitting manually below
+    // Warn threshold raised slightly -- we're splitting manually below
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // â”€â”€ React core â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ React core â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- React core --
           if (id.includes('node_modules/react/') ||
             id.includes('node_modules/react-dom/') ||
             id.includes('node_modules/react-router-dom/') ||
@@ -61,35 +59,30 @@ export default defineConfig({
             return 'vendor-react'
           }
 
-          // â”€â”€ Framer Motion (animation) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Framer Motion (animation) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Framer Motion (animation) --
           if (id.includes('node_modules/framer-motion/')) {
             return 'vendor-motion'
           }
 
-          // â”€â”€ GSAP + Lottie (animation) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ GSAP + Lottie (animation) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- GSAP + Lottie (animation) --
           if (id.includes('node_modules/gsap/') ||
             id.includes('node_modules/lottie-react/') ||
             id.includes('node_modules/lenis/')) {
             return 'vendor-animation'
           }
 
-          // â”€â”€ Lucide icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Lucide icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Lucide icons --
           if (id.includes('node_modules/lucide-react/') ||
             id.includes('node_modules/react-icons/')) {
             return 'vendor-icons'
           }
 
-          // â”€â”€ Radix UI primitives â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Radix UI primitives â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Radix UI primitives --
           if (id.includes('node_modules/@radix-ui/')) {
             return 'vendor-radix'
           }
 
-          // â”€â”€ Misc UI utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Misc UI utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Misc UI utilities --
           if (id.includes('node_modules/class-variance-authority/') ||
             id.includes('node_modules/clsx/') ||
             id.includes('node_modules/tailwind-merge/') ||
@@ -97,44 +90,38 @@ export default defineConfig({
             return 'vendor-ui-utils'
           }
 
-          // â”€â”€ MUI Core + Emotion + Date Pickers (must be one chunk â€” circular deps) â”€â”€â”€
-          // â”€â”€ MUI Core + Emotion + Date Pickers (must be one chunk â€” circular deps) â”€â”€â”€
+          // -- MUI Core + Emotion + Date Pickers (must be one chunk -- circular deps) --
           if (id.includes('node_modules/@mui/') ||
             id.includes('node_modules/@emotion/')) {
             return 'vendor-mui'
           }
 
-          // â”€â”€ Firebase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Firebase â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Firebase --
           if (id.includes('node_modules/firebase/') ||
             id.includes('node_modules/@firebase/')) {
             return 'vendor-firebase'
           }
 
-          // â”€â”€ Charts (Recharts + D3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Charts (Recharts + D3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Charts (Recharts + D3) --
           if (id.includes('node_modules/recharts/') ||
             id.includes('node_modules/d3') ||
             id.includes('node_modules/victory-')) {
             return 'vendor-charts'
           }
 
-          // â”€â”€ PDF generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ PDF generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- PDF generation --
           if (id.includes('node_modules/jspdf/') ||
             id.includes('node_modules/jspdf-autotable/') ||
             id.includes('node_modules/pdfkit/')) {
             return 'vendor-pdf'
           }
 
-          // â”€â”€ HTML to canvas (used by PDF + screenshot) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ HTML to canvas (used by PDF + screenshot) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- HTML to canvas (used by PDF + screenshot) --
           if (id.includes('node_modules/html2canvas/')) {
             return 'vendor-html2canvas'
           }
 
-          // â”€â”€ Maps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Maps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Maps --
           if (id.includes('node_modules/leaflet/') ||
             id.includes('node_modules/react-leaflet/') ||
             id.includes('node_modules/@googlemaps/') ||
@@ -142,16 +129,14 @@ export default defineConfig({
             return 'vendor-maps'
           }
 
-          // â”€â”€ Date / calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Date / calendar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Date / calendar --
           if (id.includes('node_modules/date-fns/') ||
             id.includes('node_modules/dayjs/') ||
             id.includes('node_modules/react-day-picker/')) {
             return 'vendor-dates'
           }
 
-          // â”€â”€ Utilities / networking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Utilities / networking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Utilities / networking --
           if (id.includes('node_modules/axios/') ||
             id.includes('node_modules/socket.io-client/') ||
             id.includes('node_modules/@reduxjs/') ||
@@ -163,8 +148,7 @@ export default defineConfig({
             return 'vendor-utils'
           }
 
-          // â”€â”€ Excel / data export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          // â”€â”€ Excel / data export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // -- Excel / data export --
           if (id.includes('node_modules/xlsx/') ||
             id.includes('node_modules/exceljs/')) {
             return 'vendor-excel'
