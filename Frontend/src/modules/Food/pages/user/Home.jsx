@@ -165,10 +165,10 @@ const defaultBannersData = [
 ];
 
 const tabs = [
-  { 
-    id: "food", 
-    title: "FOOD", 
-    subtitle: "FROM RESTAURANTS", 
+  {
+    id: "food",
+    title: "FOOD",
+    subtitle: "FROM RESTAURANTS",
     discount: "UPTO 30% OFF",
     image: "/super-app/food.png",
     icon: UtensilsCrossed
@@ -295,7 +295,7 @@ export default function Home() {
 
   // --- Core Data Hook ---
   const isFoodRoute = !routerLocation.pathname.endsWith("/quick");
-  
+
   const {
     banners,
     categories,
@@ -509,7 +509,7 @@ export default function Home() {
                 )}
                 <div className="hidden md:flex absolute inset-0 flex-col items-center justify-center text-white text-center z-10 px-4 mt-[-60px] pointer-events-none">
                   <h1 className="text-3xl lg:text-4xl font-bold mb-3 drop-shadow-md">
-                    Order food & groceries <br /> from your favourite restaurants.
+                    Order food  <br /> from your favourite restaurants.
                   </h1>
                   <p className="text-xl lg:text-2xl font-bold drop-shadow-md">ItzoFood It! 🔥</p>
                 </div>
@@ -555,215 +555,215 @@ export default function Home() {
 
       <div className={activeTab === "food" ? "relative mx-auto w-full max-w-7xl md:px-4 lg:px-8" : "hidden"}>
         <div className="bg-white dark:bg-[#0a0a0a]">
-      {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
+          {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
           switcher) so Food/Instamart/Street Food stay reachable even while on Quick. */}
-      <div className={cn(
-        "grid md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]",
-        visibleTabs.length >= 3 ? "grid-cols-3" : visibleTabs.length === 2 ? "grid-cols-2" : "grid-cols-1"
-      )}>
-        {visibleTabs.map((tab) => {
-          const isActive = tab.id === "street-food"
-            ? foodBusinessType === "Street Food Vendor"
-            : tab.id === "food"
-            ? activeTab === "food" && foodBusinessType !== "Street Food Vendor"
-            : activeTab === tab.id;
-          const handleTabIntent = () => {
-            if (tab.id === "quick") onQuickTabIntent?.();
-          };
-          const handleTabClick = () => {
-            if (tab.id === "street-food") {
-              startTransition(() => setFoodBusinessType("Street Food Vendor"));
-              if (activeTab !== "food") handleTabChange("food");
-              return;
-            }
-            if (tab.id === "food") {
-              startTransition(() => setFoodBusinessType("Fixed Restaurant"));
-            }
-            handleTabChange(tab.id);
-          };
+          <div className={cn(
+            "grid md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]",
+            visibleTabs.length >= 3 ? "grid-cols-3" : visibleTabs.length === 2 ? "grid-cols-2" : "grid-cols-1"
+          )}>
+            {visibleTabs.map((tab) => {
+              const isActive = tab.id === "street-food"
+                ? foodBusinessType === "Street Food Vendor"
+                : tab.id === "food"
+                  ? activeTab === "food" && foodBusinessType !== "Street Food Vendor"
+                  : activeTab === tab.id;
+              const handleTabIntent = () => {
+                if (tab.id === "quick") onQuickTabIntent?.();
+              };
+              const handleTabClick = () => {
+                if (tab.id === "street-food") {
+                  startTransition(() => setFoodBusinessType("Street Food Vendor"));
+                  if (activeTab !== "food") handleTabChange("food");
+                  return;
+                }
+                if (tab.id === "food") {
+                  startTransition(() => setFoodBusinessType("Fixed Restaurant"));
+                }
+                handleTabChange(tab.id);
+              };
 
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={handleTabClick}
-              onMouseEnter={handleTabIntent}
-              onTouchStart={handleTabIntent}
-              onFocus={handleTabIntent}
-              className={cn(
-                "relative border overflow-hidden shadow-sm transition-all duration-300 text-left w-full",
-                "rounded-[16px] h-[85px] min-[380px]:h-[95px] p-2 sm:p-2.5",
-                "md:rounded-[20px] md:h-[120px] md:w-[280px] md:p-0",
-                isActive 
-                  ? "bg-rose-50/80 border-rose-200 shadow-sm scale-[1.02]" 
-                  : tab.id === "quick"
-                  ? "bg-amber-50/60 border-amber-100 hover:bg-amber-50 hover:border-amber-200 hover:shadow-md hover:scale-[1.01]"
-                  : "bg-white border-gray-100 hover:border-gray-200 hover:shadow-md hover:scale-[1.01]"
-              )}
-            >
-              {/* MOBILE CONTENT (Original Layout) */}
-              <div className="flex flex-col justify-between h-full md:hidden">
-                {/* Top content */}
-                <div className="flex gap-1.5 w-full items-start z-10">
-                  <div className="bg-[#FB4F01] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-[20px] w-[20px] mt-0.5">
-                    <tab.icon className="h-3 w-3" strokeWidth={2.5} />
-                  </div>
-                  <div className="flex flex-col min-w-0 mt-0.5">
-                    <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold text-gray-900 leading-tight truncate">
-                      {tab.title}
-                    </span>
-                    <p className="text-[7px] sm:text-[8px] font-medium text-gray-500 uppercase tracking-tight mt-0.5 truncate">
-                      {tab.subtitle}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Bottom content: arrow and image */}
-                <div className="mt-1 flex items-end justify-between w-full z-10">
-                  <div className="bg-[#FB4F01] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-4 w-4 shadow-sm mb-0.5">
-                    <ArrowRight className="h-2.5 w-2.5" strokeWidth={3} />
-                  </div>
-                  <div className="absolute right-[-4px] bottom-[-4px] w-[55px] h-[55px] min-[380px]:w-[65px] min-[380px]:h-[65px] pointer-events-none">
-                    <img src={tab.image} className="w-full h-full object-contain drop-shadow-sm" alt={tab.title} />
-                  </div>
-                </div>
-              </div>
-
-              {/* DESKTOP CONTENT (New Layout) */}
-              <div className="hidden md:flex justify-between h-full w-full p-4">
-                {/* Left Content (Text and Arrow) */}
-                <div className="flex flex-col justify-between h-full z-10 w-[65%]">
-                  {/* Icon + Text */}
-                  <div className="flex items-start gap-2">
-                    <div className="bg-[#FB4F01] text-white rounded-full p-1.5 shrink-0 flex items-center justify-center md:h-[28px] md:w-[28px]">
-                      <tab.icon className="md:h-4 md:w-4" strokeWidth={2.5} />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="md:text-[15px] font-extrabold text-gray-900 leading-tight truncate tracking-tight">
-                        {tab.title}
-                      </span>
-                      <p className="md:text-[9px] font-bold text-gray-500 uppercase tracking-wider mt-0.5 truncate">
-                        {tab.subtitle}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Arrow Button */}
-                  <div className="bg-[#FB4F01] text-white rounded-full shrink-0 flex items-center justify-center md:h-6 md:w-6 shadow-sm">
-                    <ArrowRight className="md:h-3.5 md:w-3.5" strokeWidth={3} />
-                  </div>
-                </div>
-
-                {/* Right Content (Image) */}
-                <div className="absolute right-0 bottom-0 top-0 md:w-[45%] pointer-events-none flex items-end justify-end md:pr-4 md:pb-2">
-                  <img src={tab.image} className="md:h-[85%] md:w-auto object-contain drop-shadow-sm transition-transform duration-500 ease-out group-hover:scale-110" alt={tab.title} />
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-            <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
-              <CategoryRail
-                displayCategories={categories.display}
-                showCategorySkeleton={categories.loading}
-                navigate={navigate}
-                setShowAllCategoriesModal={setShowAllCategoriesModal}
-                backendOrigin={BACKEND_ORIGIN}
-                hasOffers={restaurants.loading ? true : (restaurants.visible || []).some(r => r.offer)}
-              />
-            </Suspense>
-
-            <Suspense fallback={null}>
-              <AdvertisementSection advertisements={advertisements} BACKEND_ORIGIN={BACKEND_ORIGIN} />
-            </Suspense>
-
-            <Suspense fallback={null}>
-              <RecommendedSection 
-                recommendedForYouRestaurants={meta.recommended} 
-                isFavorite={isFavorite}
-                onFavoriteToggle={handleFavoriteToggle}
-              />
-            </Suspense>
-
-            <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
-              {(banners.loading || (banners.images && banners.images.length > 0)) && (
-                <section className="content-auto px-4 py-2 sm:py-3 lg:py-6 max-w-7xl mx-auto">
-                  {/* Mobile Slider */}
-                  <div className="block md:hidden overflow-hidden rounded-[20px] h-48 sm:h-64 shadow-lg border border-gray-100">
-                    <BannerSection
-                      showBannerSkeleton={banners.loading}
-                      heroBannerImages={banners.images}
-                      heroBannersData={banners.data}
-                      currentBannerIndex={banners.images?.length ? currentBannerIndex % banners.images.length : 0}
-                      setCurrentBannerIndex={setCurrentBannerIndex}
-                      heroShellRef={heroShellRef}
-                      navigate={navigate}
-                      backendOrigin={BACKEND_ORIGIN}
-                      hideOverlay={true}
-                    />
-                  </div>
-                  {/* Desktop Banners (Side-by-side Row) */}
-                  <div className="hidden md:flex w-full overflow-x-auto snap-x gap-4 px-2 pb-4 items-center scrollbar-hide" style={{ scrollBehavior: 'smooth' }}>
-                    {(banners.images || []).map((img, i) => (
-                      <div key={i} className="min-w-[calc(33.333%-10.66px)] snap-start rounded-[20px] overflow-hidden relative shadow-sm aspect-[21/9] group hover:shadow-md transition-shadow cursor-pointer">
-                         <OptimizedImage
-                            src={img}
-                            alt={`Promo Banner ${i+1}`}
-                            className="w-full h-full group-hover:scale-105 transition-transform duration-500"
-                            objectFit="cover"
-                            backendOrigin={BACKEND_ORIGIN}
-                         />
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={handleTabClick}
+                  onMouseEnter={handleTabIntent}
+                  onTouchStart={handleTabIntent}
+                  onFocus={handleTabIntent}
+                  className={cn(
+                    "relative border overflow-hidden shadow-sm transition-all duration-300 text-left w-full",
+                    "rounded-[16px] h-[85px] min-[380px]:h-[95px] p-2 sm:p-2.5",
+                    "md:rounded-[20px] md:h-[120px] md:w-[280px] md:p-0",
+                    isActive
+                      ? "bg-rose-50/80 border-rose-200 shadow-sm scale-[1.02]"
+                      : tab.id === "quick"
+                        ? "bg-amber-50/60 border-amber-100 hover:bg-amber-50 hover:border-amber-200 hover:shadow-md hover:scale-[1.01]"
+                        : "bg-white border-gray-100 hover:border-gray-200 hover:shadow-md hover:scale-[1.01]"
+                  )}
+                >
+                  {/* MOBILE CONTENT (Original Layout) */}
+                  <div className="flex flex-col justify-between h-full md:hidden">
+                    {/* Top content */}
+                    <div className="flex gap-1.5 w-full items-start z-10">
+                      <div className="bg-[#FB4F01] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-[20px] w-[20px] mt-0.5">
+                        <tab.icon className="h-3 w-3" strokeWidth={2.5} />
                       </div>
-                    ))}
+                      <div className="flex flex-col min-w-0 mt-0.5">
+                        <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold text-gray-900 leading-tight truncate">
+                          {tab.title}
+                        </span>
+                        <p className="text-[7px] sm:text-[8px] font-medium text-gray-500 uppercase tracking-tight mt-0.5 truncate">
+                          {tab.subtitle}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Bottom content: arrow and image */}
+                    <div className="mt-1 flex items-end justify-between w-full z-10">
+                      <div className="bg-[#FB4F01] text-white rounded-full p-1 shrink-0 flex items-center justify-center h-4 w-4 shadow-sm mb-0.5">
+                        <ArrowRight className="h-2.5 w-2.5" strokeWidth={3} />
+                      </div>
+                      <div className="absolute right-[-4px] bottom-[-4px] w-[55px] h-[55px] min-[380px]:w-[65px] min-[380px]:h-[65px] pointer-events-none">
+                        <img src={tab.image} className="w-full h-full object-contain drop-shadow-sm" alt={tab.title} />
+                      </div>
+                    </div>
                   </div>
-                </section>
-              )}
-            </Suspense>
 
-            <Suspense fallback={null}>
-              <ExploreMoreSection
-                exploreMoreHeading={landing.heading}
-                showExploreSkeleton={landing.loading}
-                finalExploreItems={landing.exploreMore}
-                backendOrigin={BACKEND_ORIGIN}
-              />
-            </Suspense>
+                  {/* DESKTOP CONTENT (New Layout) */}
+                  <div className="hidden md:flex justify-between h-full w-full p-4">
+                    {/* Left Content (Text and Arrow) */}
+                    <div className="flex flex-col justify-between h-full z-10 w-[65%]">
+                      {/* Icon + Text */}
+                      <div className="flex items-start gap-2">
+                        <div className="bg-[#FB4F01] text-white rounded-full p-1.5 shrink-0 flex items-center justify-center md:h-[28px] md:w-[28px]">
+                          <tab.icon className="md:h-4 md:w-4" strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="md:text-[15px] font-extrabold text-gray-900 leading-tight truncate tracking-tight">
+                            {tab.title}
+                          </span>
+                          <p className="md:text-[9px] font-bold text-gray-500 uppercase tracking-wider mt-0.5 truncate">
+                            {tab.subtitle}
+                          </p>
+                        </div>
+                      </div>
 
-            <Suspense fallback={null}>
-              <SortFilterSection
-                activeFilters={state.activeFilters}
-                toggleFilter={actions.toggleFilter}
-                setIsFilterOpen={setIsFilterOpen}
-              />
-            </Suspense>
+                      {/* Arrow Button */}
+                      <div className="bg-[#FB4F01] text-white rounded-full shrink-0 flex items-center justify-center md:h-6 md:w-6 shadow-sm">
+                        <ArrowRight className="md:h-3.5 md:w-3.5" strokeWidth={3} />
+                      </div>
+                    </div>
 
-            <Suspense fallback={null}>
-              <HomeFilterModal 
-                isOpen={isFilterOpen} 
-                onClose={() => setIsFilterOpen(false)} 
-                activeFilters={state.activeFilters} 
-                toggleFilter={actions.toggleFilter} 
-              />
-            </Suspense>
+                    {/* Right Content (Image) */}
+                    <div className="absolute right-0 bottom-0 top-0 md:w-[45%] pointer-events-none flex items-end justify-end md:pr-4 md:pb-2">
+                      <img src={tab.image} className="md:h-[85%] md:w-auto object-contain drop-shadow-sm transition-transform duration-500 ease-out group-hover:scale-110" alt={tab.title} />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
+            <CategoryRail
+              displayCategories={categories.display}
+              showCategorySkeleton={categories.loading}
+              navigate={navigate}
+              setShowAllCategoriesModal={setShowAllCategoriesModal}
+              backendOrigin={BACKEND_ORIGIN}
+              hasOffers={restaurants.loading ? true : (restaurants.visible || []).some(r => r.offer)}
+            />
+          </Suspense>
 
-            <Suspense fallback={<RestaurantGridSkeleton count={3} />}>
-              <RestaurantGrid
-                filteredRestaurants={restaurants.visible}
-                visibleRestaurants={restaurants.visible}
-                showRestaurantSkeleton={restaurants.loading}
-                isLoadingFilterResults={restaurants.isLoadingFilterResults}
-                loadingRestaurants={restaurants.loading}
-                availabilityTick={availabilityTick}
-                isFavorite={isFavorite}
-                onFavoriteToggle={handleFavoriteToggle}
-                backendOrigin={BACKEND_ORIGIN}
-                hasMoreRestaurants={restaurants.hasMore}
-                loadMoreRestaurants={actions.loadMoreRestaurants}
-                restaurantLoadMoreRef={restaurantLoadMoreRef}
-                advertisements={advertisements}
-              />
-            </Suspense>
+          <Suspense fallback={null}>
+            <AdvertisementSection advertisements={advertisements} BACKEND_ORIGIN={BACKEND_ORIGIN} />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <RecommendedSection
+              recommendedForYouRestaurants={meta.recommended}
+              isFavorite={isFavorite}
+              onFavoriteToggle={handleFavoriteToggle}
+            />
+          </Suspense>
+
+          <Suspense fallback={<HeroBannerSkeleton className="h-full w-full px-4 mt-3" />}>
+            {(banners.loading || (banners.images && banners.images.length > 0)) && (
+              <section className="content-auto px-4 py-2 sm:py-3 lg:py-6 max-w-7xl mx-auto">
+                {/* Mobile Slider */}
+                <div className="block md:hidden overflow-hidden rounded-[20px] h-48 sm:h-64 shadow-lg border border-gray-100">
+                  <BannerSection
+                    showBannerSkeleton={banners.loading}
+                    heroBannerImages={banners.images}
+                    heroBannersData={banners.data}
+                    currentBannerIndex={banners.images?.length ? currentBannerIndex % banners.images.length : 0}
+                    setCurrentBannerIndex={setCurrentBannerIndex}
+                    heroShellRef={heroShellRef}
+                    navigate={navigate}
+                    backendOrigin={BACKEND_ORIGIN}
+                    hideOverlay={true}
+                  />
+                </div>
+                {/* Desktop Banners (Side-by-side Row) */}
+                <div className="hidden md:flex w-full overflow-x-auto snap-x gap-4 px-2 pb-4 items-center scrollbar-hide" style={{ scrollBehavior: 'smooth' }}>
+                  {(banners.images || []).map((img, i) => (
+                    <div key={i} className="min-w-[calc(33.333%-10.66px)] snap-start rounded-[20px] overflow-hidden relative shadow-sm aspect-[21/9] group hover:shadow-md transition-shadow cursor-pointer">
+                      <OptimizedImage
+                        src={img}
+                        alt={`Promo Banner ${i + 1}`}
+                        className="w-full h-full group-hover:scale-105 transition-transform duration-500"
+                        objectFit="cover"
+                        backendOrigin={BACKEND_ORIGIN}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <ExploreMoreSection
+              exploreMoreHeading={landing.heading}
+              showExploreSkeleton={landing.loading}
+              finalExploreItems={landing.exploreMore}
+              backendOrigin={BACKEND_ORIGIN}
+            />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <SortFilterSection
+              activeFilters={state.activeFilters}
+              toggleFilter={actions.toggleFilter}
+              setIsFilterOpen={setIsFilterOpen}
+            />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <HomeFilterModal
+              isOpen={isFilterOpen}
+              onClose={() => setIsFilterOpen(false)}
+              activeFilters={state.activeFilters}
+              toggleFilter={actions.toggleFilter}
+            />
+          </Suspense>
+
+          <Suspense fallback={<RestaurantGridSkeleton count={3} />}>
+            <RestaurantGrid
+              filteredRestaurants={restaurants.visible}
+              visibleRestaurants={restaurants.visible}
+              showRestaurantSkeleton={restaurants.loading}
+              isLoadingFilterResults={restaurants.isLoadingFilterResults}
+              loadingRestaurants={restaurants.loading}
+              availabilityTick={availabilityTick}
+              isFavorite={isFavorite}
+              onFavoriteToggle={handleFavoriteToggle}
+              backendOrigin={BACKEND_ORIGIN}
+              hasMoreRestaurants={restaurants.hasMore}
+              loadMoreRestaurants={actions.loadMoreRestaurants}
+              restaurantLoadMoreRef={restaurantLoadMoreRef}
+              advertisements={advertisements}
+            />
+          </Suspense>
         </div>
       </div>
 
