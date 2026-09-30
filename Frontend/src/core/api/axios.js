@@ -143,18 +143,22 @@ axiosInstance.interceptors.response.use(
                 ? 'seller'
                 : path.startsWith('/ecs')
                     ? 'admin'
-                    : (path.startsWith('/delivery') || path.startsWith('/food/delivery'))
-                        ? 'delivery'
-                        : 'customer';
+                    : path.startsWith('/hrms')
+                        ? 'hrms'
+                        : (path.startsWith('/delivery') || path.startsWith('/food/delivery'))
+                            ? 'delivery'
+                            : 'customer';
             const requestModule = requestUrl.startsWith('/seller')
                 ? 'seller'
                 : requestUrl.startsWith('/admin')
                     ? 'admin'
-                    : (requestUrl.startsWith('/delivery') || requestUrl.startsWith('/food/delivery'))
-                        ? 'delivery'
-                        : requestUrl.startsWith('/user') || requestUrl.startsWith('/customer') || requestUrl.startsWith('/auth')
-                            ? 'customer'
-                            : null;
+                    : requestUrl.startsWith('/hrms')
+                        ? 'hrms'
+                        : (requestUrl.startsWith('/delivery') || requestUrl.startsWith('/food/delivery'))
+                            ? 'delivery'
+                            : requestUrl.startsWith('/user') || requestUrl.startsWith('/customer') || requestUrl.startsWith('/auth')
+                                ? 'customer'
+                                : null;
 
             // Prevent cross-module 401s from logging out the active session
             // (e.g. seller page accidentally calling an admin endpoint).
@@ -165,6 +169,7 @@ axiosInstance.interceptors.response.use(
             const moduleStorageKeys = {
                 seller: ['auth_seller', 'seller_accessToken', 'token'],
                 admin: ['auth_admin', 'admin_accessToken', 'token'],
+                hrms: ['auth_hrms', 'token'],
                 delivery: ['auth_delivery', 'delivery_accessToken', 'token'],
                 customer: ['auth_customer', 'user_accessToken', 'accessToken', 'token'],
             };
@@ -173,6 +178,7 @@ axiosInstance.interceptors.response.use(
 
             if (currentModule === 'seller') window.location.href = '/seller/auth';
             else if (currentModule === 'admin') redirectAdminToLogin('session_expired');
+            else if (currentModule === 'hrms') window.location.href = '/hrms/login';
             else if (currentModule === 'delivery') window.location.href = '/delivery/auth';
             else window.location.href = '/user/auth/login';
         }
