@@ -79,6 +79,20 @@ const removeEdgeWhite = (src) =>
 
         ctx.putImageData(imageData, 0, 0)
 
+        // Average color of the logo's own (non-transparent) pixels — used as the
+        // circle's background so it reads as "the logo's color", not a blank white disc.
+        let rSum = 0, gSum = 0, bSum = 0, count = 0
+        for (let i = 0; i < data.length; i += 4) {
+          if (data[i + 3] < 12) continue
+          rSum += data[i]
+          gSum += data[i + 1]
+          bSum += data[i + 2]
+          count += 1
+        }
+        const avgColor = count
+          ? `rgb(${Math.round(rSum / count)}, ${Math.round(gSum / count)}, ${Math.round(bSum / count)})`
+          : null
+
         if (maxX >= minX && maxY >= minY) {
           const cropW = maxX - minX + 1
           const cropH = maxY - minY + 1
@@ -86,11 +100,11 @@ const removeEdgeWhite = (src) =>
           cropped.width = cropW
           cropped.height = cropH
           cropped.getContext("2d").drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH)
-          resolve(cropped.toDataURL("image/png"))
+          resolve({ dataUrl: cropped.toDataURL("image/png"), avgColor })
           return
         }
 
-        resolve(canvas.toDataURL("image/png"))
+        resolve({ dataUrl: canvas.toDataURL("image/png"), avgColor })
       } catch (error) {
         reject(error)
       }
@@ -107,12 +121,12 @@ export default function AuthCircleLogo({
   accentClassName = "bg-primary-orange",
 }) {
   const [logoSrc, setLogoSrc] = useState(src || "")
-  const [trimmed, setTrimmed] = useState(false)
+  const [bgColor, setBgColor] = useState(null)
 
   useEffect(() => {
     if (!src) {
       setLogoSrc("")
-      setTrimmed(false)
+      setBgColor(null)
       return undefined
     }
 
@@ -120,15 +134,15 @@ export default function AuthCircleLogo({
 
     let cancelled = false
     removeEdgeWhite(src)
-      .then((next) => {
+      .then(({ dataUrl, avgColor }) => {
         if (cancelled) return
-        setLogoSrc(next)
-        setTrimmed(true)
+        setLogoSrc(dataUrl)
+        setBgColor(avgColor)
       })
       .catch(() => {
         if (cancelled) return
         setLogoSrc(src)
-        setTrimmed(false)
+        setBgColor(null)
       })
 
     return () => {
@@ -137,10 +151,8 @@ export default function AuthCircleLogo({
   }, [src])
 
   const hasImage = Boolean(logoSrc || src)
-  // Logos are trimmed to their own artwork (removeEdgeWhite above) and can be any color,
-  // so the canvas behind them must stay neutral white — a fixed accent color here would
-  // clash with whatever the admin has actually uploaded as the app logo.
-  const effectiveBg = hasImage ? "bg-white" : (accentClassName || "bg-primary-orange")
+  // Background follows the logo's own average color instead of a fixed white/accent disc.
+  const effectiveBg = hasImage ? (bgColor ? null : "bg-white") : (accentClassName || "bg-primary-orange")
 
   return (
     <div
@@ -149,12 +161,13 @@ export default function AuthCircleLogo({
         effectiveBg,
         className,
       )}
+      style={bgColor ? { backgroundColor: bgColor } : undefined}
     >
       {hasImage ? (
         <img
           src={logoSrc || src}
           alt={alt}
-          className="max-h-[74%] max-w-[74%] w-auto h-auto object-contain select-none pointer-events-none"
+          className="max-h-[88%] max-w-[88%] w-auto h-auto object-contain select-none pointer-events-none"
         />
       ) : (
         <span className="text-2xl font-black italic text-white">

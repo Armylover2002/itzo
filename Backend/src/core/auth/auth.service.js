@@ -268,8 +268,10 @@ export const requestUserOtp = async (phone) => {
   }
 
   const otp = await createOrUpdateOtp(phone);
-  const shouldExposeOtp =
-    config.nodeEnv !== "production" || config.useDefaultOtp || isEmail;
+  // Only echo the OTP back in the response when USE_DEFAULT_OTP is on (test mode) —
+  // with real SMS/email delivery configured, leaking it here would let anyone log in
+  // as anyone else just by reading the network tab.
+  const shouldExposeOtp = config.useDefaultOtp;
   return shouldExposeOtp ? { otp } : {};
 };
 
@@ -573,8 +575,7 @@ export const requestRestaurantOtp = async (phone) => {
     throw new ValidationError("Phone is required");
   }
   const otp = await createOrUpdateOtp(phone);
-  const shouldExposeOtp =
-    config.nodeEnv !== "production" || config.useDefaultOtp;
+  const shouldExposeOtp = config.useDefaultOtp;
   return shouldExposeOtp ? { otp } : {};
 };
 
@@ -694,9 +695,7 @@ export const requestDeliveryOtp = async (phone) => {
     throw new ValidationError("Phone is required");
   }
   const otp = await createOrUpdateOtp(phone);
-  // Only expose OTP in response when in default/dev mode — never in production with real SMS
-  const shouldExposeOtp =
-    config.nodeEnv !== "production" || config.useDefaultOtp;
+  const shouldExposeOtp = config.useDefaultOtp;
   return shouldExposeOtp ? { otp } : {};
 };
 

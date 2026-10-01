@@ -13,9 +13,24 @@ import { requestIdMiddleware } from './middleware/requestId.js';
 import { healthCheck } from './config/health.js';
 import { config } from './config/env.js';
 import { corsOptions } from './config/cors.js';
+import fs from 'fs';
 import { UPLOADS_BASE_DIR } from './services/localStorage.service.js';
 
 const app = express();
+
+// Loud, one-time startup check: uploads vanishing in production almost always traces back
+// to this resolving to the wrong directory (relative path inside the deploy folder that a
+// redeploy wipes, or a typo vs. the Nginx `location /uploads` alias) rather than anything
+// in the upload code itself. Print it so `pm2 logs` makes that obvious instead of silent 404s.
+try {
+    fs.mkdirSync(UPLOADS_BASE_DIR, { recursive: true });
+    fs.accessSync(UPLOADS_BASE_DIR, fs.constants.W_OK);
+    // eslint-disable-next-line no-console
+    console.log(`[uploads] Serving from: ${UPLOADS_BASE_DIR} (writable)`);
+} catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`[uploads] ERROR: ${UPLOADS_BASE_DIR} is not writable/accessible — uploads will fail or silently vanish. ${err.message}`);
+}
 
 // Trust first proxy (essential for express-rate-limit if behind a proxy)
 app.set('trust proxy', 1);

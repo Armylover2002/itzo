@@ -7,3 +7,9 @@ build/
 branch_structure.json
 temp_auto_push.bat
 temp_interactive_push.bat
+
+# User-uploaded content (videos, images, KYC docs) must never be committed — it gets
+# written straight to disk per-environment (Backend/uploads locally, /var/www/uploades
+# on the live server) and committing it makes `git reset --hard` on deploy overwrite/
+# resurrect live uploads in a folder the server never actually serves from.
+Backend/uploads/

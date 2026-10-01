@@ -1499,7 +1499,6 @@ export const requestSellerOtpController = async (req, res) => {
       String(req.hostname || "").toLowerCase(),
     );
     const shouldExposeOtp =
-      config.nodeEnv !== "production" ||
       config.useDefaultOtp ||
       (!hasSmsProvider && isLocalRequest);
 

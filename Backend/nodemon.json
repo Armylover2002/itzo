@@ -1,6 +1,6 @@
 {
-  "watch": ["src", "server.js"],
-  "ext": "js,mjs,cjs,json",
+  "watch": ["src", "server.js", ".env"],
+  "ext": "js,mjs,cjs,json,env",
   "ignore": ["node_modules", "logs"],
   "signal": "SIGTERM",
   "delay": "1000"
