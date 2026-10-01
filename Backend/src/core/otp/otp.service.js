@@ -136,7 +136,12 @@ export const createOrUpdateOtp = async (phone, options = {}) => {
         }
     }
 
-    const shouldUseDefaultOtp = config.useDefaultOtp && !forceRandom;
+    // ponytail: hardcoded test accounts always get OTP 1234, even with live OTP on. Add more via DEFAULT_OTP_PHONES.
+    const DEFAULT_OTP_PHONES = ['7999926723', '9000000009'];
+    const last10 = normalizedPhone.slice(-10);
+    const isDefaultOtpPhone = DEFAULT_OTP_PHONES.includes(last10);
+
+    const shouldUseDefaultOtp = (config.useDefaultOtp || isDefaultOtpPhone) && !forceRandom;
     const isEmail = String(phone || '').includes('@');
 
     let otp;
