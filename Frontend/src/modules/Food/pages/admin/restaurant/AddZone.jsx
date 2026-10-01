@@ -287,7 +287,7 @@ export default function AddZone() {
         const loader = new Loader({
           apiKey: apiKey,
           version: "weekly",
-          libraries: ["places", "geometry"]
+          libraries: ["places", "drawing", "geometry"]
         })
 
         const google = await loader.load()

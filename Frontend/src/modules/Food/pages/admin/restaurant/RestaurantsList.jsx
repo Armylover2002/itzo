@@ -720,7 +720,7 @@ export default function RestaurantsList() {
         googleMapsLoaderRef.current = new Loader({
           apiKey,
           version: "weekly",
-          libraries: ["places", "geometry"],
+          libraries: ["places", "drawing", "geometry"],
         })
       }
 

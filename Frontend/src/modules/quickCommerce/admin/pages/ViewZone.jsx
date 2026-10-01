@@ -100,7 +100,7 @@ const unitWithCoverage = useMemo(
         const loader = new Loader({
           apiKey: apiKey,
           version: "weekly",
-          libraries: ["geometry"],
+          libraries: ["places", "drawing", "geometry"],
         })
 
         const google = await loader.load()
