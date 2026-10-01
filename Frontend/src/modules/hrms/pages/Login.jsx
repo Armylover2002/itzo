@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@core/context/AuthContext';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
 import { getAppLogo } from '@/modules/common/utils/businessSettings';
@@ -14,7 +14,6 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const { login } = useAuth();
     const { hrmsSettings } = useHrmsSettings();
-    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,7 +27,10 @@ export default function Login() {
                 const loginData = { ...user, token: payload?.accessToken || payload?.token };
                 login(loginData);
                 toast.success('Welcome back!');
-                navigate('/hrms/dashboard');
+                // Hard redirect (not navigate()) — forces AuthProvider to re-read
+                // localStorage fresh for this URL instead of carrying over whatever
+                // module's stale user/role state was in memory before this login.
+                window.location.href = '/hrms/dashboard';
             } else {
                 toast.error('Access denied. This portal is for employees only.');
             }
