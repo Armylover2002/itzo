@@ -211,7 +211,7 @@ export const ProfileV2 = () => {
           </div>
 
           {/* Subscription Section */}
-          <div>
+          {/* <div>
             <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3 px-1">Subscription</h3>
             <div
               onClick={() => navigate("/food/delivery/subscription")}
@@ -223,7 +223,7 @@ export const ProfileV2 = () => {
               </div>
               <ArrowRight className="w-5 h-5 text-gray-300" />
             </div>
-          </div>
+          </div> */}
 
           {/* Support Section */}
           <div>

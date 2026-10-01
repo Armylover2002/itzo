@@ -369,14 +369,14 @@ export const PocketV2 = () => {
                 </div>
              </button>
 
-             <div className="p-5">
-                <button 
+             {/* <div className="p-5">
+                <button
                    onClick={() => setShowDepositPopup(true)}
                    className="w-full py-4 bg-[#F35B1C] hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/20 active:scale-95 transition-all"
                 >
                    Deposit Cash
                 </button>
-             </div>
+             </div> */}
           </div>
 
           {/* 5. MORE SERVICES - Vertical List */}
