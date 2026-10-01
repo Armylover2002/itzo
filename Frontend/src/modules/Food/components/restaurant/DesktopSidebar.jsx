@@ -117,15 +117,15 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
         { name: "Payout", path: "/food/restaurant/hub-finance", icon: IndianRupee },
         { name: "Invoices", path: "/food/restaurant/hub-finance?tab=invoices", icon: Receipt },
         { name: "Bank details", path: "/food/restaurant/update-bank-details", icon: Building2 },
-        { name: "Subscription Wallet", path: "/food/restaurant/wallet", icon: Wallet },
+        // { name: "Subscription Wallet", path: "/food/restaurant/wallet", icon: Wallet },
       ],
     },
-    {
-      title: "SUBSCRIPTION",
-      items: [
-        { name: "Business Plan", path: "/food/restaurant/business-plan", icon: CreditCard },
-      ],
-    },
+    // {
+    //   title: "SUBSCRIPTION",
+    //   items: [
+    //     { name: "Business Plan", path: "/food/restaurant/business-plan", icon: CreditCard },
+    //   ],
+    // },
     {
       title: "DINING",
       items: [
