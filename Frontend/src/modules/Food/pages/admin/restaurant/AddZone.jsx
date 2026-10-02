@@ -170,9 +170,15 @@ export default function AddZone() {
           const location = place.geometry.location
           mapInstanceRef.current.setCenter(location)
           mapInstanceRef.current.setZoom(15) // Zoom in when location is selected
-          
+
           // Set the search input value
           setLocationSearch(place.formatted_address || place.name || "")
+
+          // In radius mode, searching a city should place/move the radius circle
+          // at that city's center too, same as clicking the map does.
+          if (radiusModeRef.current) {
+            placeOrMoveCircleCenter(window.google, mapInstanceRef.current, location)
+          }
         }
       })
       
