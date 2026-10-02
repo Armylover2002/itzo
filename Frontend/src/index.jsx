@@ -70,10 +70,14 @@ function resolveNativeInitialRoute() {
   if (pathname.startsWith('/delivery')) return `/food${pathname}`
   if (pathname.startsWith('/user')) return `/food${pathname}`
   if (pathname.startsWith('/ecs')) return pathname
-  if (storedRoute.startsWith('/food/') || storedRoute.startsWith('/ecs')) {
+  if (pathname.startsWith('/hrms')) return pathname
+  if (storedRoute.startsWith('/food/') || storedRoute.startsWith('/ecs') || storedRoute.startsWith('/hrms')) {
     return storedRoute
   }
 
+  // HRMS stores its token under 'auth_hrms' (see AuthContext ROLE_STORAGE_KEYS),
+  // not the per-module '<module>_accessToken' key isModuleAuthenticated() reads.
+  if (localStorage.getItem('auth_hrms')) return '/hrms'
   if (isModuleAuthenticated('restaurant')) return '/food/restaurant'
   if (isModuleAuthenticated('delivery')) return '/food/delivery'
   if (isModuleAuthenticated('admin')) return '/ecs'
