@@ -85,6 +85,7 @@ export default function AddZone() {
   const isDrawingRef = useRef(false)
   const circleShapeRef = useRef(null)
   const radiusModeRef = useRef(false)
+  const radiusKmRef = useRef(2)
   // Draw the loaded zone polygon once per edit session — not on every coordinates.length change
   const initialPolygonDrawnRef = useRef(false)
   
@@ -105,6 +106,7 @@ export default function AddZone() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [radiusMode, setRadiusMode] = useState(false)
   const [radiusKm, setRadiusKm] = useState(2)
+  radiusKmRef.current = radiusKm
   const [hasCircleCenter, setHasCircleCenter] = useState(false)
   const [autoGenerating, setAutoGenerating] = useState(false)
   const [autoGenerateMessage, setAutoGenerateMessage] = useState({ type: "", text: "" })
@@ -649,7 +651,7 @@ export default function AddZone() {
     }
     const circle = new google.maps.Circle({
       center: latLng,
-      radius: Math.max(0.05, Number(radiusKm) || 2) * 1000, // meters
+      radius: Math.max(0.05, Number(radiusKmRef.current) || 2) * 1000, // meters
       strokeColor: "#059669",
       strokeOpacity: 0.9,
       strokeWeight: 3,
