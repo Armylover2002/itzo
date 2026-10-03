@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '@core/api/axios';
+import { getWithDedupe } from '@core/api/dedupe';
 import { toast } from 'sonner';
 import { useAuth } from '@core/context/AuthContext';
 import { User, Loader2, Building2, Phone, Mail, MapPin, CreditCard, Heart, GraduationCap, Edit2, X, Check, AlertCircle, XCircle, Camera } from 'lucide-react';
@@ -30,9 +31,9 @@ export default function Profile() {
     const [submitting, setSubmitting] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
 
-    const fetchProfile = async () => {
+    const fetchProfile = async (forceRefresh = false) => {
         try {
-            const res = await axiosInstance.get('/hrms/employees/me');
+            const res = await getWithDedupe('/hrms/employees/me', {}, { ttl: 15000, contextModule: 'hrms', forceRefresh });
             setProfile(res.data?.data || null);
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
@@ -47,7 +48,7 @@ export default function Profile() {
     // a manual reload, and refresh the cached user so the sidebar avatar stays in sync.
     useEffect(() => {
         const onFocus = () => {
-            fetchProfile();
+            fetchProfile(true);
             refreshUser({ forceRefresh: true });
         };
         window.addEventListener('focus', onFocus);
@@ -95,7 +96,7 @@ export default function Profile() {
             await axiosInstance.post('/hrms/employees/me/edit-request', editForm);
             toast.success("Profile edit request submitted for approval");
             setIsEditing(false);
-            fetchProfile();
+            fetchProfile(true);
         } catch (e) {
             toast.error(e.response?.data?.message || 'Failed to submit edit request');
         } finally {

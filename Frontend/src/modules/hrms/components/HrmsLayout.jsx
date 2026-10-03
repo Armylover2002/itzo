@@ -4,6 +4,7 @@ import { useAuth } from '@core/context/AuthContext';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
 import { getAppLogo, getCompanyName } from '@/modules/common/utils/businessSettings';
 import axiosInstance from '@core/api/axios';
+import { getWithDedupe } from '@core/api/dedupe';
 import {
     LayoutDashboard, Clock, CalendarDays, Wallet, FileText,
     Receipt, User, LogOut, Menu, X, ChevronRight, Building2,
@@ -41,7 +42,7 @@ export default function HrmsLayout() {
     React.useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axiosInstance.get('/hrms/employees/me');
+                const res = await getWithDedupe('/hrms/employees/me', {}, { ttl: 15000, contextModule: 'hrms' });
                 setEmployeeProfile(res.data?.data?.employee || null);
             } catch(e) {}
         };

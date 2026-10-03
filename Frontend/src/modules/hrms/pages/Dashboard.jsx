@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@core/context/AuthContext';
 import axiosInstance from '@core/api/axios';
+import { getWithDedupe } from '@core/api/dedupe';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useHrmsSettings } from '../context/HrmsSettingsContext';
@@ -42,7 +43,13 @@ const WorkingTimer = ({ attendance, isCheckedIn, isDone }) => {
     );
 };
 
-const DashboardLiveMap = ({ isFieldEmployee, shouldTrack, employeeProfile, isLoaded, loadError }) => {
+const DashboardLiveMap = ({ isFieldEmployee, shouldTrack, employeeProfile }) => {
+    // Only field employees see this map — load the Google Maps SDK here, not in the
+    // parent Dashboard, so non-field employees (the majority) never pay for it.
+    const { isLoaded, loadError } = useJsApiLoader({
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+        libraries: mapLibraries
+    });
     const [trackingData, setTrackingData] = useState(null);
     const [mapInstance, setMapInstance] = useState(null);
 
@@ -146,11 +153,6 @@ export default function Dashboard() {
     const [showReportPopup, setShowReportPopup] = useState(false);
     const [pendingCheckoutAction, setPendingCheckoutAction] = useState(false); // true when checkout was intercepted
 
-    const { isLoaded, loadError } = useJsApiLoader({
-        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-        libraries: mapLibraries
-    });
-
     // Determine if we should track (field employee + checked in + not checked out)
     const isFieldEmployee = employeeProfile?.employeeType === 'Field';
     const isCheckedIn = attendance?.checkInTime && !attendance?.checkOutTime;
@@ -168,7 +170,7 @@ export default function Dashboard() {
             const [attRes, leaveRes, profileRes] = await Promise.all([
                 axiosInstance.get('/hrms/attendance/me').catch(() => ({ data: { data: [] } })),
                 axiosInstance.get('/hrms/leaves/balance').catch(() => ({ data: { data: null } })),
-                axiosInstance.get('/hrms/employees/me').catch(() => ({ data: { data: null } }))
+                getWithDedupe('/hrms/employees/me', {}, { ttl: 15000, contextModule: 'hrms' }).catch(() => ({ data: { data: null } }))
             ]);
             const records = attRes.data?.data || [];
             if (records.length > 0) {
@@ -516,15 +518,15 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
-                {/* Live Tracking Map for Field Employees */}
-                {/* Live Tracking Map for Field Employees */}
-                <DashboardLiveMap
-                    isFieldEmployee={isFieldEmployee}
-                    shouldTrack={shouldTrack}
-                    employeeProfile={employeeProfile}
-                    isLoaded={isLoaded}
-                    loadError={loadError}
-                />
+                {/* Live Tracking Map for Field Employees — not mounted at all for everyone
+                    else, so the Google Maps SDK never loads on their dashboard. */}
+                {isFieldEmployee && (
+                    <DashboardLiveMap
+                        isFieldEmployee={isFieldEmployee}
+                        shouldTrack={shouldTrack}
+                        employeeProfile={employeeProfile}
+                    />
+                )}
             </div>
         </div>
     );

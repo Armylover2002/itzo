@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import axiosInstance from '@core/api/axios';
+import { getWithDedupe } from '@core/api/dedupe';
 import { useAuth } from '@core/context/AuthContext';
 import { Loader } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const ManagerGuard = ({ children }) => {
             }
 
             try {
-                const res = await axiosInstance.get('/hrms/employees/me');
+                const res = await getWithDedupe('/hrms/employees/me', {}, { ttl: 15000, contextModule: 'hrms' });
                 const emp = res.data?.data?.employee;
                 if (isMounted) {
                     setIsManager(emp?.hrmsRole === 'Manager');
