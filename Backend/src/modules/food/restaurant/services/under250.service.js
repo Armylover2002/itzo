@@ -55,7 +55,9 @@ export async function listUnder250Restaurants(query = {}) {
     const objectIds = [];
 
     approvedRestaurants.forEach((restaurant, index) => {
-        const id = String(restaurant?.restaurantId || restaurant?._id || restaurant?.id || '').trim();
+        // `_id` first: `restaurantId` is a human-readable sequence code (e.g. "REST000006"),
+        // never a valid Mongo ObjectId, so it must never be trusted as the lookup key here.
+        const id = String(restaurant?._id || restaurant?.id || restaurant?.restaurantId || '').trim();
         if (!id || !mongoose.Types.ObjectId.isValid(id)) return;
 
         objectIds.push(new mongoose.Types.ObjectId(id));

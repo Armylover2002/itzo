@@ -11,6 +11,7 @@ import { Input } from "@food/components/ui/input"
 import { useLocation as useGeoLocation } from "@food/hooks/useLocation"
 import { useZone } from "@food/hooks/useZone"
 import { searchAPI } from "@/services/api"
+import OutOfZoneScreen from "@food/components/user/OutOfZoneScreen"
 import { motion, AnimatePresence } from "framer-motion"
 
 // Helper to resolve media URLs consistently
@@ -42,7 +43,7 @@ export default function ProfessionalSearch() {
   const location = useRouterLocation()
   const navigate = useNavigate()
   const { location: userCoords } = useGeoLocation()
-  const { zoneId } = useZone(userCoords)
+  const { zoneId, isOutOfService } = useZone(userCoords)
 
   // URL se query sync - jab bhi URL change ho, query update ho
   const urlQuery = searchParams.get("q") || location.state?.query || ""
@@ -164,6 +165,10 @@ export default function ProfessionalSearch() {
         delete p.cat
         setSearchParams(p)
     }
+  }
+
+  if (isOutOfService) {
+    return <OutOfZoneScreen />
   }
 
   return (

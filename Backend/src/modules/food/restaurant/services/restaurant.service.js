@@ -521,11 +521,22 @@ const buildZoneRestaurantFilter = async (zoneIdRaw) => {
         return null;
     }
 
-    const zoneClauses = [{ zoneId: new mongoose.Types.ObjectId(trimmedZoneId) }];
+    const zoneObjectId = new mongoose.Types.ObjectId(trimmedZoneId);
+
+    // A restaurant with an explicit zoneId belongs to exactly that zone — it must
+    // never match via geo-polygon fallback too, or neighbouring zones whose
+    // boundaries overlap (or legacy oversized radius-drawn polygons) leak each
+    // other's restaurants into the wrong zone's listing.
+    const zoneClauses = [{ zoneId: zoneObjectId }];
+
     const zoneDoc = await FoodZone.findOne({ _id: trimmedZoneId, isActive: true }).lean();
     const polygon = zoneToPolygon(zoneDoc);
     if (polygon) {
-        zoneClauses.push({ location: { $geoWithin: { $geometry: polygon } } });
+        // Geo fallback only for restaurants that have no zoneId assigned yet.
+        zoneClauses.push({
+            zoneId: null, // matches both a missing field and an explicit null
+            location: { $geoWithin: { $geometry: polygon } },
+        });
     }
 
     return { $or: zoneClauses };
@@ -2761,9 +2772,26 @@ export const listApprovedRestaurants = async (query = {}) => {
         ]);
 
         const total = totalDocs?.[0]?.count || 0;
-        await attachOutletTimingsToRestaurants(pageDocs);
-        await enrichRestaurantsWithRoadDistance(pageDocs, lat, lng, { resortNearest: sortBy === 'nearest' });
-        return { restaurants: pageDocs, total, page, limit };
+        // Normalize the same way the non-geo path below does: callers (e.g. the
+        // under-250 listing) key restaurants off `restaurantId`/`id` expecting the
+        // Mongo _id, not the human-readable "REST000006" sequence code — without
+        // this, every restaurant silently drops out of those derived listings
+        // whenever a geo-filtered (radiusKm/nearest) request is made.
+        const restaurants = pageDocs.map((r) => ({
+            ...r,
+            restaurantId: r._id,
+            id: r._id,
+            name: r.restaurantName || '',
+            rating: normalizeRatingValue(r.rating),
+            totalRatings: normalizeTotalRatingsValue(r.totalRatings),
+            profileImage: r.profileImage ? { url: r.profileImage } : null,
+            coverImages: Array.isArray(r.coverImages) ? r.coverImages : [],
+            openDays: Array.isArray(r.openDays) ? r.openDays : [],
+            menuImages: Array.isArray(r.menuImages) ? r.menuImages : [],
+        }));
+        await attachOutletTimingsToRestaurants(restaurants);
+        await enrichRestaurantsWithRoadDistance(restaurants, lat, lng, { resortNearest: sortBy === 'nearest' });
+        return { restaurants, total, page, limit };
     }
 
     // Non-geo path: normal query + sort.

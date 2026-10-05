@@ -8,6 +8,7 @@
 
 import axios from "axios";
 import { redirectAdminToLogin } from "@/shared/utils/adminSession";
+import { refreshModuleSession } from "@/shared/utils/authRefresh";
 
 // Prefer explicit env. If not set, use same-origin (works with a Vite proxy).
 // This avoids hardcoding ports like 5000 that may conflict with local setups.
@@ -96,19 +97,6 @@ function getAccessToken(config) {
   }
 }
 
-function getRefreshToken(module) {
-  try {
-    const moduleRefreshToken = localStorage.getItem(`${module}_refreshToken`);
-    if (moduleRefreshToken) return moduleRefreshToken;
-    
-    if (module === "user") return localStorage.getItem("refreshToken") || null;
-    
-    return null;
-  } catch {
-    return null;
-  }
-}
-
 function clearModuleAuth(module) {
   try {
     localStorage.removeItem(`${module}_accessToken`);
@@ -127,24 +115,8 @@ function clearModuleAuth(module) {
   } catch (_) {}
 }
 
-let isRefreshing = false;
-let refreshSubscribers = [];
-
-function subscribeToRefresh(cb) {
-  refreshSubscribers.push(cb);
-}
-
-function onRefreshed(newToken, module) {
-  refreshSubscribers.forEach((cb) => cb(newToken, module));
-  refreshSubscribers = [];
-}
-
 function onRefreshFailed(module) {
   clearModuleAuth(module);
-  // Fail any queued requests that were waiting for this refresh
-  refreshSubscribers.forEach((cb) => cb(null, module));
-  refreshSubscribers = [];
-  
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("authRefreshFailed", { detail: { module } }));
   }
@@ -194,82 +166,29 @@ apiClient.interceptors.response.use(
       requestUrl.includes("/signup") ||
       requestUrl.includes("/forgot");
 
-    const endAdminSession = () => {
-      clearModuleAuth(module);
-      if (module === "admin" && !isAuthEndpoint) {
+    // A failed login/signup/refresh is the component's to report, not a session end.
+    if (isAuthEndpoint) {
+      return Promise.reject(err);
+    }
+
+    const endSession = () => {
+      onRefreshFailed(module);
+      if (module === "admin") {
         redirectAdminToLogin("session_expired");
       }
     };
 
-    const refreshToken = getRefreshToken(module);
-    if (!refreshToken) {
-      endAdminSession();
-      return Promise.reject(err);
-    }
-
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        subscribeToRefresh((newToken) => {
-          if (newToken) {
-            original.headers.Authorization = `Bearer ${newToken}`;
-            resolve(apiClient(original));
-          } else {
-            reject(err);
-          }
-        });
-      });
-    }
-
     original._retry = true;
-    isRefreshing = true;
 
-    try {
-      // Use relative URL so this works both with an explicit baseURL and with a dev proxy.
-      // Use plain axios to avoid interceptor recursion.
-      const refreshUrl = baseURL ? `${baseURL}/food/auth/refresh-token` : "/api/v1/food/auth/refresh-token";
-      const { data } = await axios.post(refreshUrl, { refreshToken }, { timeout: 10000 });
-      const newAccessToken = data?.data?.accessToken || data?.accessToken;
-      const newRefreshToken = data?.data?.refreshToken || data?.refreshToken;
-      if (newAccessToken) {
-        try {
-          localStorage.setItem(`${module}_accessToken`, newAccessToken);
-          if (newRefreshToken) {
-            localStorage.setItem(`${module}_refreshToken`, newRefreshToken);
-            if (module === "user") {
-              localStorage.setItem("refreshToken", newRefreshToken);
-            }
-          }
-          
-          if (module === "admin") {
-            localStorage.setItem("adminToken", newAccessToken);
-          } else if (module === "user") {
-            localStorage.setItem("accessToken", newAccessToken);
-          }
-
-          // Dispatch a custom event specifically for the module that refreshed
-          window.dispatchEvent(new CustomEvent("authRefreshed", { 
-            detail: { module, token: newAccessToken } 
-          }));
-        } catch (_) {}
-        onRefreshed(newAccessToken, module);
-        original.headers.Authorization = `Bearer ${newAccessToken}`;
-        return apiClient(original);
-      }
-    } catch (_) {
-      onRefreshFailed(module);
-      if (module === "admin" && !isAuthEndpoint) {
-        redirectAdminToLogin("session_expired");
-      }
+    const newAccessToken = await refreshModuleSession(module);
+    if (!newAccessToken) {
+      endSession();
       return Promise.reject(err);
-    } finally {
-      isRefreshing = false;
     }
 
-    onRefreshFailed(module);
-    if (module === "admin" && !isAuthEndpoint) {
-      redirectAdminToLogin("session_expired");
-    }
-    return Promise.reject(err);
+    original.headers = original.headers || {};
+    original.headers.Authorization = `Bearer ${newAccessToken}`;
+    return apiClient(original);
   }
 );
 

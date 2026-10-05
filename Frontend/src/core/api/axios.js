@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { isTokenExpired } from '@food/utils/auth';
 import { redirectAdminToLogin } from '@/shared/utils/adminSession';
+import { refreshModuleSession } from '@/shared/utils/authRefresh';
 
 const pickCustomerToken = () => {
   const candidates = [
@@ -168,13 +169,25 @@ axiosInstance.interceptors.response.use(
 
             const moduleStorageKeys = {
                 seller: ['auth_seller', 'seller_accessToken', 'token'],
-                admin: ['auth_admin', 'admin_accessToken', 'token'],
+                admin: ['auth_admin', 'admin_accessToken', 'adminToken', 'token'],
                 hrms: ['auth_hrms', 'token'],
                 delivery: ['auth_delivery', 'delivery_accessToken', 'token'],
                 customer: ['auth_customer', 'user_accessToken', 'accessToken', 'token'],
             };
+            // An expired access token is recoverable: swap it for a fresh one and
+            // replay the request instead of ending the session.
+            const refreshedToken = await refreshModuleSession(currentModule);
+            if (refreshedToken) {
+                originalRequest.headers = {
+                    ...(originalRequest.headers || {}),
+                    Authorization: `Bearer ${refreshedToken}`,
+                };
+                return axiosInstance(originalRequest);
+            }
+
             const keysToClear = moduleStorageKeys[currentModule] || ['token'];
             keysToClear.forEach((key) => localStorage.removeItem(key));
+            localStorage.removeItem(`${currentModule === 'customer' ? 'user' : currentModule}_refreshToken`);
 
             if (currentModule === 'seller') window.location.href = '/seller/auth';
             else if (currentModule === 'admin') redirectAdminToLogin('session_expired');

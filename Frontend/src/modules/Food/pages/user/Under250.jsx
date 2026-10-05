@@ -7,6 +7,7 @@ import AnimatedPage from "@food/components/user/AnimatedPage"
 import { Card, CardContent } from "@food/components/ui/card"
 import { Button } from "@food/components/ui/button"
 import { useLocationSelector } from "@food/components/user/UserLayout"
+import OutOfZoneScreen from "@food/components/user/OutOfZoneScreen"
 import { useLocation } from "@food/hooks/useLocation"
 import { useZone } from "@food/hooks/useZone"
 import { useCart } from "@food/context/CartContext"
@@ -442,9 +443,17 @@ export default function Under250() {
     let cancelled = false
 
     const fetchRestaurantsUnder250 = async () => {
+      if (zoneStatus === 'loading') return;
+
       try {
         setLoadingRestaurants(true)
-        const response = await restaurantAPI.getUnder250Restaurants(zoneId ? { zoneId } : {})
+        const params = {};
+        if (zoneId) params.zoneId = zoneId;
+        if (location?.latitude) params.lat = location.latitude;
+        if (location?.longitude) params.lng = location.longitude;
+        params.radiusKm = 15; // Strict distance limit to prevent cross-zone leaks
+
+        const response = await restaurantAPI.getUnder250Restaurants(params)
         if (cancelled) return
 
         const restaurantsRaw = Array.isArray(response?.data?.data?.restaurants)
@@ -464,7 +473,7 @@ export default function Under250() {
 
     fetchRestaurantsUnder250()
     return () => { cancelled = true }
-  }, [zoneId])
+  }, [zoneId, zoneStatus, location?.latitude, location?.longitude])
 
   // Fetch categories from backend (no static fallback list)
   useEffect(() => {
@@ -835,6 +844,10 @@ export default function Under250() {
 
   // Check if should show grayscale (only when user is out of service)
   const shouldShowGrayscale = false // explicitly disabled per request
+
+  if (isOutOfService) {
+    return <OutOfZoneScreen />
+  }
 
   return (
 
