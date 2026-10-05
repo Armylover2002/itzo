@@ -20,6 +20,7 @@ import { API_BASE_URL } from "@food/api/config"
 import { useProfile } from "@food/context/ProfileContext"
 import { useLocation } from "@food/hooks/useLocation"
 import { useZone } from "@food/hooks/useZone"
+import OutOfZoneScreen from "@food/components/user/OutOfZoneScreen"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 import { getMenuFromResponse } from "@food/utils/menuItems"
 
@@ -1255,6 +1256,10 @@ export default function CategoryPage() {
   // Check if should show grayscale (user out of service)
   const shouldShowGrayscale = isOutOfService
   const isCategoryView = selectedCategory && selectedCategory !== 'all'
+
+  if (isOutOfService) {
+    return <OutOfZoneScreen />
+  }
 
   return (
     <div className={`min-h-screen bg-white dark:bg-[#0a0a0a] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>

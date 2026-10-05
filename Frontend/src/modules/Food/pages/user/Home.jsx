@@ -78,6 +78,7 @@ import {
   useSearchOverlay,
   useLocationSelector,
 } from "@food/components/user/UserLayout";
+import OutOfZoneScreen from "@food/components/user/OutOfZoneScreen";
 
 const debugLog = (...args) => { };
 const debugWarn = (...args) => { };
@@ -272,7 +273,7 @@ export default function Home() {
 
   // --- Location Logic ---
   const { location } = useLocation();
-  const { zoneId: liveZoneId, isInService: isLiveInService } = useZone(location);
+  const { zoneId: liveZoneId, isInService: isLiveInService, isOutOfService: isLiveOutOfService } = useZone(location);
   const defaultSavedAddress = useMemo(() => getDefaultAddress?.() || null, [getDefaultAddress]);
   const defaultSavedAddressLocation = useMemo(() => {
     if (!defaultSavedAddress) return null;
@@ -287,11 +288,16 @@ export default function Home() {
       postalCode: defaultSavedAddress.postalCode || defaultSavedAddress.zipCode || "",
     };
   }, [defaultSavedAddress]);
-  const { zoneId: savedZoneId, isInService: isSavedInService } = useZone(defaultSavedAddressLocation);
+  const { zoneId: savedZoneId, isInService: isSavedInService, isOutOfService: isSavedOutOfService } = useZone(defaultSavedAddressLocation);
 
   const deliveryAddressMode = getStoredDeliveryAddressMode();
   const effectiveZoneId = (deliveryAddressMode === "current" ? liveZoneId : savedZoneId) || liveZoneId;
   const effectiveLocation = (deliveryAddressMode === "current" ? location : defaultSavedAddressLocation) || location;
+  // Out of service only once the relevant zone lookup has actually resolved to
+  // OUT_OF_SERVICE (not while it's still "loading"), and only when there's no
+  // fallback zoneId to fall back on — mirrors effectiveZoneId's own fallback.
+  const effectiveIsOutOfService =
+    !effectiveZoneId && (deliveryAddressMode === "current" ? isLiveOutOfService : isSavedOutOfService || isLiveOutOfService);
 
   // --- Core Data Hook ---
   const isFoodRoute = !routerLocation.pathname.endsWith("/quick");
@@ -423,6 +429,10 @@ export default function Home() {
   }, [addFavorite, removeFavorite, navigate]);
 
   // --- Render ---
+  if (isFoodRoute && effectiveIsOutOfService) {
+    return <OutOfZoneScreen />;
+  }
+
   return (
     <div className="relative min-h-screen overflow-x-clip bg-white pb-16 dark:bg-[#0a0a0a] md:pb-8">
       <div className="sticky top-0 z-[50] overflow-x-clip md:hidden bg-white dark:bg-[#0a0a0a]">

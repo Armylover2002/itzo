@@ -30,11 +30,21 @@ const buildZoneRestaurantConstraint = async (zoneIdRaw) => {
         return null;
     }
 
-    const zoneClauses = [{ zoneId: new mongoose.Types.ObjectId(trimmedZoneId) }];
+    const zoneObjectId = new mongoose.Types.ObjectId(trimmedZoneId);
+
+    // A restaurant with an explicit zoneId belongs to exactly that zone — it must
+    // never match via geo-polygon fallback too, or neighbouring zones whose
+    // boundaries overlap (or legacy oversized radius-drawn polygons) leak each
+    // other's restaurants into the wrong zone's results.
+    const zoneClauses = [{ zoneId: zoneObjectId }];
     const zoneDoc = await FoodZone.findOne({ _id: trimmedZoneId, isActive: true }).lean();
     const polygon = zoneToPolygon(zoneDoc);
     if (polygon) {
-        zoneClauses.push({ location: { $geoWithin: { $geometry: polygon } } });
+        // Geo fallback only for restaurants that have no zoneId assigned yet.
+        zoneClauses.push({
+            zoneId: null, // matches both a missing field and an explicit null
+            location: { $geoWithin: { $geometry: polygon } },
+        });
     }
 
     return { $or: zoneClauses };

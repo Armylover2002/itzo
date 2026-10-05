@@ -5,6 +5,7 @@ import { API_BASE_URL } from "@food/api/config"
 import { toast } from "sonner"
 import { useLocation } from "@food/hooks/useLocation"
 import { useZone } from "@food/hooks/useZone"
+import OutOfZoneScreen from "@food/components/user/OutOfZoneScreen"
 import {
   ArrowLeft,
   Search,
@@ -1889,6 +1890,10 @@ function RestaurantDetailsContent() {
         </div>
       </AnimatedPage>
     )
+  }
+
+  if (isOutOfService) {
+    return <OutOfZoneScreen />
   }
 
   const availabilityStatus = getRestaurantAvailabilityStatus(restaurant, new Date(availabilityTick))
