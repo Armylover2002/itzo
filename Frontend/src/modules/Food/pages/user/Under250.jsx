@@ -19,8 +19,7 @@ import offerImage from "@food/assets/offerimage.png"
 import AddToCartAnimation from "@food/components/user/AddToCartAnimation"
 import OptimizedImage from "@food/components/OptimizedImage"
 import ItemSlotAvailabilityNote from "@food/components/user/ItemSlotAvailabilityNote"
-import api from "@food/api"
-import { restaurantAPI, adminAPI } from "@food/api"
+import { restaurantAPI } from "@food/api"
 import { isModuleAuthenticated } from "@food/utils/auth"
 import { formatDistance } from "@food/utils/common"
 import { getRoadDistancesToDestination } from "@/shared/services/roadDistance"
@@ -481,7 +480,7 @@ export default function Under250() {
 
     const fetchCategories = async () => {
       try {
-        const response = await adminAPI.getPublicCategories(zoneId ? { zoneId } : {})
+        const response = await restaurantAPI.getPublicCategories(zoneId ? { zoneId } : {})
         const categoriesRaw = Array.isArray(response?.data?.data?.categories)
           ? response.data.data.categories
           : []

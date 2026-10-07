@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Grid2x2, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
-import { adminAPI } from "@food/api";
+import { restaurantAPI } from "@food/api";
 import { foodImages } from "@food/constants/images";
 import OptimizedImage from "@food/components/OptimizedImage";
 import { useLocation } from "@food/hooks/useLocation";
@@ -46,7 +46,7 @@ export default function Categories() {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await adminAPI.getPublicCategories(zoneId ? { zoneId } : {});
+        const response = await restaurantAPI.getPublicCategories(zoneId ? { zoneId } : {});
         const list =
           response?.data?.data?.categories ||
           response?.data?.categories ||

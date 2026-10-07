@@ -22,8 +22,7 @@ import QuickSharedCart from "@food/pages/user/cart/QuickSharedCart"
 import MixedSharedCart from "@food/pages/user/cart/MixedSharedCart"
 import { useLocation as useUserLocation } from "@food/hooks/useLocation"
 import { useZone } from "@food/hooks/useZone"
-import { useLocationSelector } from "@food/components/user/UserLayout"
-import { orderAPI, restaurantAPI, adminAPI, userAPI, API_ENDPOINTS } from "@food/api"
+import { orderAPI, restaurantAPI, userAPI, API_ENDPOINTS } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { initRazorpayPayment, isFlutterWebView, handleFlutterRazorpayPayment } from "@food/utils/razorpay"
 import { sanitizeOrderImage, sanitizeOrderNotes } from "@food/utils/orderPayload"
@@ -1270,7 +1269,7 @@ useEffect(() => {
   let cancelled = false
   const fetchFeeSettings = async () => {
     try {
-      const response = await adminAPI.getPublicFeeSettings()
+      const response = await restaurantAPI.getPublicFeeSettings()
       const settings = response?.data?.data?.feeSettings
       if (!cancelled && response?.data?.success && settings) {
         setFeeSettings({

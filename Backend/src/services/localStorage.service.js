@@ -59,14 +59,13 @@ const generateFilename = (extension) => {
  * Helper to construct the final absolute path and the public URL.
  */
 const getFilePaths = (folder, filename) => {
-    // Sanitize folder path to prevent directory traversal
-    const safeFolder = String(folder || 'uploads').replace(/\.\./g, '').replace(/^\/+/, '');
-    const relativePath = path.join(safeFolder, filename).replace(/\\/g, '/');
+    // As per requirement: ignore any subfolder, store everything directly in the base directory
+    const relativePath = filename;
     const absolutePath = path.join(UPLOADS_BASE_DIR, relativePath);
 
     // The public URL always starts with /uploads/ (that is the path Express and
     // Nginx serve from); UPLOAD_PUBLIC_BASE_URL can turn it into an absolute URL.
-    const publicUrl = `${config.uploadPublicBaseUrl}/uploads/${relativePath}`;
+    const publicUrl = `${config.uploadPublicBaseUrl || ''}/uploads/${relativePath}`;
 
     return { absolutePath, publicUrl };
 };

@@ -963,6 +963,7 @@ export const adminAPI = {
   getPublicCategories: (params = {}, config = {}) =>
     apiClient.get("/food/restaurant/categories/public", {
       params: params ?? {},
+      contextModule: "user",
       ...config,
     }),
 
@@ -1157,7 +1158,11 @@ export const adminAPI = {
   /** Fee Settings (admin) */
   getFeeSettings: () =>
     apiClient.get("/food/admin/fee-settings", { contextModule: "admin" }),
-  getPublicFeeSettings: () => apiClient.get("/food/fee-settings/public"),
+  getPublicFeeSettings: (config = {}) =>
+    apiClient.get("/food/fee-settings/public", {
+      contextModule: "user",
+      ...config,
+    }),
   createOrUpdateFeeSettings: (body) =>
     apiClient.put("/food/admin/fee-settings", body ?? {}, {
       contextModule: "admin",
@@ -1914,6 +1919,19 @@ export const restaurantAPI = {
   /** Public: get single approved restaurant by id or slug */
   getRestaurantById: (id, config = {}) =>
     apiClient.get(`/food/restaurant/restaurants/${String(id)}`, { ...config }),
+  /** Public (user app): get categories (zone-aware) */
+  getPublicCategories: (params = {}, config = {}) =>
+    apiClient.get("/food/restaurant/categories/public", {
+      params: params ?? {},
+      contextModule: "user",
+      ...config,
+    }),
+  /** Public (user app): get fee settings */
+  getPublicFeeSettings: (config = {}) =>
+    apiClient.get("/food/fee-settings/public", {
+      contextModule: "user",
+      ...config,
+    }),
   /** Public: get approved menu by restaurant id or slug */
   getMenuByRestaurantId: (id, config = {}) =>
     getPublicRestaurantMenuOnce(id, config),

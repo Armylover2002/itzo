@@ -35,9 +35,13 @@ function getModuleFromUrl(url = "") {
     normalized.includes("admin/login")
   ) return "admin";
 
-  // 2. Special case: /food/restaurants (plural) is a public endpoint
-  // BUT only if it's not a restaurant owner's specific route
-  if (normalized.includes("/food/restaurants") && !normalized.includes("/food/restaurant/")) {
+  // 2. Special case: public endpoints used by user app
+  if (
+    normalized.includes("/categories/public") ||
+    normalized.includes("/menus/batch") ||
+    normalized.includes("/fee-settings/public") ||
+    (normalized.includes("/food/restaurants") && !normalized.includes("/food/restaurant/"))
+  ) {
     return "user";
   }
 

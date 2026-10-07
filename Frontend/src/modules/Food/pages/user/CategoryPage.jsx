@@ -14,8 +14,7 @@ import {
 
 // Import shared food images - prevents duplication
 import { foodImages } from "@food/constants/images"
-import api from "@food/api"
-import { restaurantAPI, adminAPI } from "@food/api"
+import { restaurantAPI } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { useProfile } from "@food/context/ProfileContext"
 import { useLocation } from "@food/hooks/useLocation"
@@ -176,53 +175,7 @@ export default function CategoryPage() {
     }
   }
 
-  const fetchApprovedFoods = async () => {
-    if (Array.isArray(approvedFoodsCacheRef.current)) {
-      return approvedFoodsCacheRef.current
-    }
-
-    if (approvedFoodsInFlightRef.current) {
-      return approvedFoodsInFlightRef.current
-    }
-
-    approvedFoodsInFlightRef.current = (async () => {
-      try {
-        const response = await adminAPI.getFoods({ limit: 1000 })
-        const list = response?.data?.data?.foods || []
-        const approvedFoods = Array.isArray(list)
-          ? list.filter((food) =>
-              String(food?.approvalStatus || "").toLowerCase() === "approved" &&
-              food?.isAvailable !== false
-            )
-          : []
-
-        approvedFoodsCacheRef.current = approvedFoods
-        return approvedFoods
-      } catch {
-        approvedFoodsCacheRef.current = []
-        return []
-      } finally {
-        approvedFoodsInFlightRef.current = null
-      }
-    })()
-
-    return approvedFoodsInFlightRef.current
-  }
-
-  useEffect(() => {
-    let cancelled = false
-
-    void (async () => {
-      const foods = await fetchApprovedFoods()
-      if (!cancelled) {
-        setApprovedFoodsData(Array.isArray(foods) ? foods : [])
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  const fetchApprovedFoods = async () => []
 
   const buildFallbackMenuFromFoods = (foods, restaurant) => {
     const restaurantIds = new Set(
@@ -605,7 +558,7 @@ export default function CategoryPage() {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true)
-        const response = await adminAPI.getPublicCategories(zoneId ? { zoneId } : {})
+        const response = await restaurantAPI.getPublicCategories(zoneId ? { zoneId } : {})
 
         if (isCancelled) return;
 
