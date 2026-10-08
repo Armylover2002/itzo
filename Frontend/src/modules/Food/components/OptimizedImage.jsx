@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
+import { toUploadUrl } from '@/shared/utils/uploadUrl'
 
 /**
  * OptimizedImage Component
@@ -55,6 +56,8 @@ const OptimizedImage = React.memo(({
 
   const resolveUrl = (url) => {
     if (!url || typeof url !== 'string') return ""
+    const uploadUrl = toUploadUrl(url)
+    if (uploadUrl !== url) return uploadUrl
     if (/^(https?:|\/\/|data:|blob:)/i.test(url.trim())) return url
     return backendOrigin ? `${backendOrigin.replace(/\/$/, "")}${url.startsWith("/") ? url : `/${url}`}` : url
   }
