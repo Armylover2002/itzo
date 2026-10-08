@@ -111,7 +111,6 @@ import { CartProvider as QuickCartProvider } from "../../../quickCommerce/user/c
 import { prefetchQuickHomeBootstrap } from "../../../quickCommerce/user/services/customerApi";
 import PromoRow from "@food/components/user/home/PromoRow";
 import { useSettings } from "@core/context/SettingsContext";
-import { optimizeCloudinaryUrl } from "../../../../shared/utils/cloudinaryUtils";
 import VegModePopups from "@food/components/user/VegModePopups";
 import AdvertisementSection from "@food/components/user/home/AdvertisementSection";
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { optimizeCloudinaryUrl } from '../../../shared/utils/cloudinaryUtils'
 
 /**
  * OptimizedImage Component
@@ -66,13 +65,6 @@ const OptimizedImage = React.memo(({
   const srcSet = useMemo(() => {
     if (!supportsOptimization(resolvedSrc)) return undefined
     const sizesArr = [400, 600, 800, 1200, 1600]
-    
-    // Check if it's Cloudinary
-    if (/res\.cloudinary\.com/i.test(resolvedSrc)) {
-      return sizesArr
-        .map(size => `${optimizeCloudinaryUrl(resolvedSrc, { width: size, quality: 80, format: 'auto' })} ${size}w`)
-        .join(', ')
-    }
 
     return sizesArr
       .map(size => `${appendImageParams(resolvedSrc, { w: size, q: 80 })} ${size}w`)
@@ -83,13 +75,6 @@ const OptimizedImage = React.memo(({
   const webPSrcSet = useMemo(() => {
     if (!supportsOptimization(resolvedSrc)) return undefined
     const sizesArr = [400, 600, 800, 1200, 1600]
-
-    // Check if it's Cloudinary
-    if (/res\.cloudinary\.com/i.test(resolvedSrc)) {
-      return sizesArr
-        .map(size => `${optimizeCloudinaryUrl(resolvedSrc, { width: size, quality: 80, format: 'webp' })} ${size}w`)
-        .join(', ')
-    }
 
     return sizesArr
       .map(size => `${appendImageParams(resolvedSrc, { w: size, q: 80, format: 'webp' })} ${size}w`)

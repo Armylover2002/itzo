@@ -70,12 +70,12 @@ export const config = {
     // Every image/file is stored on the server's own disk (no third-party CDN).
     // UPLOAD_LOCAL_DIR is where files are written:
     //   local machine (default)  -> Backend/uploads
-    //   live server (production) -> /var/www/uploades  (override with UPLOAD_LOCAL_DIR)
+    //   live server (production) -> /var/www/uploads   (override with UPLOAD_LOCAL_DIR)
     // Files are served at /uploads/<folder>/<file> (Express static, or Nginx on the VPS).
     uploadStorage: 'local',
     uploadLocalDir:
         process.env.UPLOAD_LOCAL_DIR ||
-        ((process.env.NODE_ENV || 'development') === 'production' ? '/var/www/uploades' : 'uploads'),
+        ((process.env.NODE_ENV || 'development') === 'production' ? '/var/www/uploads' : 'uploads'),
     // Absolute prefix put in front of stored file URLs. Empty by default so only a
     // relative /uploads/... path is persisted, which stays correct on every host.
     // Never default to a hostname here: whatever this holds is written into the

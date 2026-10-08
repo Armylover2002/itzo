@@ -1,6 +1,5 @@
 import React, { useState, useEffect, memo } from "react";
 import { cn } from "@/lib/utils";
-import { getCloudinarySrcSet } from "@/shared/utils/cloudinaryUtils";
 
 const AUTO_SLIDE_MS = 3500;
 
@@ -62,7 +61,6 @@ const ExperienceBannerCarousel = ({
             >
               <img
                 src={banner.imageUrl}
-                srcSet={getCloudinarySrcSet(banner.imageUrl)}
                 sizes="100vw"
                 alt={banner.title || sectionTitle || "Banner"}
                 className="w-full h-full object-cover object-center"

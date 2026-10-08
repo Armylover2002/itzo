@@ -3183,7 +3183,7 @@ export const zoneAPI = {
 };
 export const uploadAPI = {
   /**
-   * Upload a single image file to the backend (Cloudinary-backed).
+   * Upload a single image file to the backend (stored on the server disk).
    * @param {File|Blob} file
    * @param {{ folder?: string }} options
    */

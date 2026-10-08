@@ -238,7 +238,7 @@ export default function OutletInfo() {
       setUploadingImage(true)
       setImageType('profile')
 
-      // Upload image to Cloudinary
+      // Upload image to the server
       const uploadResponse = await restaurantAPI.uploadProfileImage(file)
       const uploadedImage = uploadResponse?.data?.data?.profileImage
 

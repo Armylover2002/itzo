@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { config } from '../config/env.js';
 
 // Base directory for all uploads. Relative values resolve against the project
-// root (Backend/); an absolute value such as /var/www/uploades is used as-is,
+// root (Backend/); an absolute value such as /var/www/uploads is used as-is,
 // so the live server can store files outside the deployed code folder.
 export const UPLOADS_BASE_DIR = path.resolve(process.cwd(), config.uploadLocalDir);
 
@@ -115,10 +115,6 @@ export const readLocalFile = (urlOrPath) => {
     } catch {
         return null;
     }
-};
-
-export const getOptimizedCloudinaryImageUrl = (url, _options = {}) => {
-    return url;
 };
 
 export const uploadImageBuffer = async (buffer, folder = 'uploads') => {

@@ -155,7 +155,7 @@ const normalizeModules = (modules) => {
  * the live server) were persisted with that host baked in, so they 404 for every
  * other client. Every /uploads/... path is served by this API, so hand back the
  * relative path and let the client resolve it against its own origin. Third-party
- * URLs (Cloudinary, etc.) are left untouched.
+ * URLs are left untouched.
  */
 const normalizeUploadUrl = (url) => {
     const value = String(url || '').trim();

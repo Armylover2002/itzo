@@ -6,7 +6,6 @@ import { useWishlist } from "../../context/WishlistContext";
 import { useCart } from "../../context/CartContext";
 import { useToast } from "@shared/components/ui/Toast";
 import { useCartAnimation } from "../../context/CartAnimationContext";
-import { getCloudinarySrcSet } from "@/shared/utils/cloudinaryUtils";
 import { motion, AnimatePresence } from "framer-motion";
 import { getQuickProductPath } from "../../utils/routes";
 import {
@@ -141,12 +140,6 @@ const ProductCard = React.memo(function ProductCard({
   const resolvedImage = React.useMemo(
     () => resolveProductImageSrc(displayProduct),
     [displayProduct],
-  );
-
-  // Compute srcSet once
-  const srcSet = React.useMemo(
-    () => getCloudinarySrcSet(displayProduct.image || displayProduct.mainImage),
-    [displayProduct.image, displayProduct.mainImage],
   );
 
   // Badge text — compute once
@@ -363,7 +356,6 @@ const ProductCard = React.memo(function ProductCard({
             <img
               ref={imageRef}
               src={resolvedImage || DEFAULT_PRODUCT_IMAGE}
-              srcSet={srcSet}
               sizes={IMG_SIZES}
               alt={displayProduct.name}
               className={cn(

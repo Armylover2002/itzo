@@ -1,5 +1,3 @@
-import { optimizeCloudinaryUrl } from "@/shared/utils/cloudinaryUtils";
-
 const API_BASE_URL = (import.meta.env?.VITE_API_BASE_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
 
 export const resolveQuickImageUrl = (value) => {
@@ -25,6 +23,5 @@ export const resolveQuickImageUrl = (value) => {
     resolvedUrl = `${API_BASE_URL}${path}`;
   }
 
-  // Optimize Cloudinary URLs to use webp/f_auto
-  return optimizeCloudinaryUrl(resolvedUrl);
+  return resolvedUrl;
 };

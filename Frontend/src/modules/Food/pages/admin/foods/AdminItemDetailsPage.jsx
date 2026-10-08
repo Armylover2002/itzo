@@ -1034,7 +1034,7 @@ export default function AdminItemDetailsPage() {
     try {
       setUploadingImages(true)
 
-      // Upload new images to Cloudinary
+      // Upload new images to the server
       const uploadedImageUrls = []
 
       // Separate existing URLs (already uploaded) from new files (blob URLs)
@@ -1048,7 +1048,7 @@ export default function AdminItemDetailsPage() {
       debugLog('Existing image URLs (already uploaded):', existingImageUrls)
       debugLog('Image files map:', imageFiles)
 
-      // Upload new File objects to Cloudinary (files that are blob URLs)
+      // Upload new File objects to the server (files that are blob URLs)
       const filesToUpload = []
       images.forEach(img => {
         if (img && img.startsWith('blob:') && imageFiles.has(img)) {
