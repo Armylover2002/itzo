@@ -1,3 +1,5 @@
+import { toUploadUrl } from "@/shared/utils/uploadUrl";
+
 export const normalizeImageUrl = (imageUrl, BACKEND_ORIGIN) => {
   if (typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
@@ -5,7 +7,10 @@ export const normalizeImageUrl = (imageUrl, BACKEND_ORIGIN) => {
   if (/^data:/i.test(trimmed) || /^blob:/i.test(trimmed)) {
     return trimmed;
   }
-  
+
+  const uploadUrl = toUploadUrl(trimmed);
+  if (uploadUrl !== trimmed) return uploadUrl;
+
   const appProtocol = typeof window !== "undefined" ? window.location?.protocol : "";
   const appHost = typeof window !== "undefined" ? window.location?.hostname : "";
   
