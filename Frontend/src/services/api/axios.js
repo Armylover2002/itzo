@@ -9,6 +9,7 @@
 import axios from "axios";
 import { redirectAdminToLogin } from "@/shared/utils/adminSession";
 import { refreshModuleSession } from "@/shared/utils/authRefresh";
+import { installUploadUrlInterceptors } from "@/shared/utils/uploadUrl";
 
 // Prefer explicit env. If not set, use same-origin (works with a Vite proxy).
 // This avoids hardcoding ports like 5000 that may conflict with local setups.
@@ -22,6 +23,9 @@ const apiClient = axios.create({
   timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });
+
+// "/uploads/..." paths from the API -> https://<uploads origin>/uploads/... for the UI.
+installUploadUrlInterceptors(apiClient);
 
 function getModuleFromUrl(url = "") {
   const normalized = (typeof url === "string" ? url : (url?.url || "")).toLowerCase();
