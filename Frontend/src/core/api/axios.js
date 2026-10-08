@@ -2,6 +2,7 @@ import axios from 'axios';
 import { isTokenExpired } from '@food/utils/auth';
 import { redirectAdminToLogin } from '@/shared/utils/adminSession';
 import { refreshModuleSession } from '@/shared/utils/authRefresh';
+import { installUploadUrlInterceptors } from '@/shared/utils/uploadUrl';
 
 const pickCustomerToken = () => {
   const candidates = [
@@ -46,6 +47,9 @@ const axiosInstance = axios.create({
         'Content-Type': 'application/json',
     },
 });
+
+// "/uploads/..." paths from the API -> https://<uploads origin>/uploads/... for the UI.
+installUploadUrlInterceptors(axiosInstance);
 
 // Request interceptor for API calls
 axiosInstance.interceptors.request.use(

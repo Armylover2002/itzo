@@ -1,5 +1,6 @@
 import { getCachedSettings } from "@common/utils/businessSettings"
 import { savePdfDocument } from "@shared/utils/fileDownload"
+import { toUploadUrl } from "@shared/utils/uploadUrl"
 
 const debugError = (...args) => console.error(...args)
 
@@ -179,11 +180,11 @@ const imageUrlToDataUrl = async (url) => {
   if (!url) return null
   if (url.startsWith("data:")) return url
 
-  const u = String(url).trim()
+  const u = toUploadUrl(String(url).trim())
   if (!u.startsWith("http") && !u.startsWith("/")) return null
 
   try {
-    const response = await fetch(url, { mode: 'cors', cache: "force-cache" })
+    const response = await fetch(u, { mode: 'cors', cache: "force-cache" })
     if (!response.ok) return null
     const blob = await response.blob()
     return await blobToDataUrl(blob)
