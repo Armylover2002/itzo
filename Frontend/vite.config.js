@@ -50,6 +50,18 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // -- Babel runtime helpers / tiny shared polyfills --
+          // Must be matched before the library groups below: otherwise Rollup folds
+          // these helpers into whichever vendor chunk imports them first (jspdf), and
+          // the app entry then has to download the whole 400 kB PDF chunk on first load
+          // just to get one helper.
+          if (id.includes('vite/preload-helper') ||
+            id.includes('commonjsHelpers') ||
+            id.includes('node_modules/@babel/runtime/') ||
+            id.includes('node_modules/regenerator-runtime/')) {
+            return 'vendor-runtime'
+          }
+
           // -- React core --
           if (id.includes('node_modules/react/') ||
             id.includes('node_modules/react-dom/') ||

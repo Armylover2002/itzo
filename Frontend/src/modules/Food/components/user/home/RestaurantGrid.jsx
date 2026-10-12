@@ -130,6 +130,8 @@ const RestaurantGrid = memo(({
   showRestaurantSkeleton,
   isLoadingFilterResults,
   loadingRestaurants,
+  loadingMoreRestaurants,
+  totalRestaurants,
   isOutOfService,
   availabilityTick,
   isFavorite,
@@ -144,8 +146,10 @@ const RestaurantGrid = memo(({
   // Pre-compute Date object once per tick to avoid N new Date() calls inside card renders
   const currentDate = React.useMemo(() => new Date(availabilityTick), [availabilityTick]);
 
+  // Re-created after every page lands, so if the sentinel is still on screen (short
+  // page, or client-side filters hid most of it) the next page is requested right away.
   React.useEffect(() => {
-    if (loadingRestaurants || !hasMoreRestaurants) return;
+    if (loadingRestaurants || loadingMoreRestaurants || !hasMoreRestaurants) return;
 
     if (observer.current) observer.current.disconnect();
 
@@ -153,7 +157,7 @@ const RestaurantGrid = memo(({
       if (entries[0].isIntersecting) {
         loadMoreRestaurants();
       }
-    }, { threshold: 0.1, rootMargin: '100px' });
+    }, { threshold: 0, rootMargin: '600px 0px' });
 
     if (restaurantLoadMoreRef?.current) {
       observer.current.observe(restaurantLoadMoreRef.current);
@@ -162,14 +166,14 @@ const RestaurantGrid = memo(({
     return () => {
       if (observer.current) observer.current.disconnect();
     };
-  }, [loadingRestaurants, hasMoreRestaurants, loadMoreRestaurants, restaurantLoadMoreRef]);
+  }, [loadingRestaurants, loadingMoreRestaurants, hasMoreRestaurants, loadMoreRestaurants, restaurantLoadMoreRef]);
 
   return (
     <section className="content-auto space-y-0 pb-8 pt-3 sm:pt-4 md:pb-10 lg:pt-6">
       <div className="mb-4 px-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-[12px] font-bold uppercase tracking-widest text-[#9ca3af]">
-            {filteredRestaurants.length} Restaurants Delivering to You
+            {totalRestaurants ?? filteredRestaurants.length} Restaurants Delivering to You
           </h2>
           <span className="text-[15px] font-bold text-[#1c1c1e]">Featured</span>
         </div>
@@ -194,7 +198,7 @@ const RestaurantGrid = memo(({
 
         <div
           className={`grid grid-cols-2 items-stretch gap-3 px-3 pt-1 transition-opacity duration-300 sm:gap-4 sm:pt-1.5 md:grid-cols-3 lg:gap-5 lg:pt-2 lg:grid-cols-4 xl:gap-6 ${
-            isLoadingFilterResults || loadingRestaurants ? "opacity-50" : "opacity-100"
+            isLoadingFilterResults || (loadingRestaurants && visibleRestaurants.length > 0) ? "opacity-50" : "opacity-100"
           }`}
         >
           {visibleRestaurants.map((restaurant, index) => (
@@ -213,9 +217,10 @@ const RestaurantGrid = memo(({
       </div>
 
       <div className="flex flex-col items-center gap-2 px-4 pt-4 sm:pt-6">
-        {hasMoreRestaurants && loadingRestaurants && (
-          <div className="flex items-center justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FB4F01] border-t-transparent"></div>
+        {loadingMoreRestaurants && (
+          <div className="flex items-center justify-center gap-2 py-3" role="status" aria-live="polite">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#FB4F01] border-t-transparent"></div>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Loading more restaurants…</span>
           </div>
         )}
         <div ref={restaurantLoadMoreRef} className="h-10 w-full" aria-hidden="true" />

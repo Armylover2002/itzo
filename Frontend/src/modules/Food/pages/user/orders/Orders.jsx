@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { ArrowLeft, Search, MoreVertical, ChevronRight, Star, RotateCcw, AlertCircle, Loader2, Clock, X, Share2, MessageCircle, Send, Copy, Mail, MessagesSquare, Link2, Calendar } from "lucide-react"
 import { orderAPI } from "@food/api"
@@ -20,12 +20,19 @@ const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
 const debugError = (...args) => { }
 
+const ORDERS_PAGE_SIZE = 15
 
 export default function Orders() {
   const navigate = useNavigate()
   const { replaceCart } = useCart()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [hasMoreOrders, setHasMoreOrders] = useState(false)
+  const [loadingMoreOrders, setLoadingMoreOrders] = useState(false)
+  const ordersPagingRef = useRef({ page: 0, totalPages: 1 })
+  const loadingMoreOrdersRef = useRef(false)
+  const loadMoreOrdersRef = useRef(null)
+  const loadMoreSentinelRef = useRef(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [ratingModal, setRatingModal] = useState({ open: false, order: null })
   const [activeMenuOrderId, setActiveMenuOrderId] = useState(null)
@@ -205,9 +212,9 @@ export default function Orders() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, shownRatingForOrders, ratingModal.open])
 
-  // Fetch orders from backend API
+  // Fetch orders from backend API — first page up front, older pages as the user scrolls.
   useEffect(() => {
-    const FETCH_LIMIT = 100
+    const FETCH_LIMIT = ORDERS_PAGE_SIZE
 
     const extractOrdersPage = (response) => {
       let pageOrders = []
@@ -229,28 +236,24 @@ export default function Orders() {
       return { pageOrders, totalPages }
     }
 
-    const fetchOrdersPages = async ({ firstPageOnly = false } = {}) => {
-      const firstResponse = await orderAPI.getOrders({
+    const fetchOrdersPage = async (page) => {
+      const response = await orderAPI.getOrders({
         limit: FETCH_LIMIT,
-        page: 1,
+        page,
       })
-      const { pageOrders: firstPageOrders, totalPages } = extractOrdersPage(firstResponse)
+      return extractOrdersPage(response)
+    }
 
-      if (firstPageOnly || totalPages <= 1) {
-        return firstPageOrders
+    const mergeOrders = (prev, incoming) => {
+      const byKey = new Map(
+        (prev || []).map((o) => [String(o.mongoId || o.id || o.orderId), o]),
+      )
+      for (const order of incoming) {
+        byKey.set(String(order.mongoId || order.id || order.orderId), order)
       }
-
-      const pagePromises = []
-      for (let p = 2; p <= totalPages; p += 1) {
-        pagePromises.push(orderAPI.getOrders({ limit: FETCH_LIMIT, page: p }))
-      }
-
-      const pageResponses = await Promise.all(pagePromises)
-      const remainingOrders = pageResponses.flatMap((resp) => {
-        return extractOrdersPage(resp).pageOrders
-      })
-
-      return [...firstPageOrders, ...remainingOrders]
+      return Array.from(byKey.values()).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      )
     }
 
     const transformOrders = (rawOrdersData) => {
@@ -349,28 +352,18 @@ export default function Orders() {
     const fetchOrders = async ({ silent = false, firstPageOnly = false } = {}) => {
       try {
         if (!silent) setLoading(true)
-        const rawOrdersData = await fetchOrdersPages({ firstPageOnly })
-        const transformedOrders = transformOrders(rawOrdersData)
+        const { pageOrders, totalPages } = await fetchOrdersPage(1)
+        const transformedOrders = transformOrders(pageOrders)
 
-        if (transformedOrders.length > 0) {
-          if (firstPageOnly) {
-            // Poll: refresh recent page only; keep older rows already loaded.
-            setOrders((prev) => {
-              const byKey = new Map(
-                (prev || []).map((o) => [String(o.mongoId || o.id || o.orderId), o]),
-              )
-              for (const order of transformedOrders) {
-                byKey.set(String(order.mongoId || order.id || order.orderId), order)
-              }
-              return Array.from(byKey.values()).sort(
-                (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
-              )
-            })
-          } else {
-            setOrders(transformedOrders)
+        if (firstPageOnly) {
+          // Poll: refresh recent page only; keep older rows already loaded.
+          if (transformedOrders.length > 0) {
+            setOrders((prev) => mergeOrders(prev, transformedOrders))
           }
-        } else if (!firstPageOnly) {
-          setOrders([])
+        } else {
+          ordersPagingRef.current = { page: 1, totalPages }
+          setHasMoreOrders(totalPages > 1)
+          setOrders(transformedOrders)
         }
       } catch (error) {
         debugError('Error fetching user orders:', error)
@@ -385,6 +378,28 @@ export default function Orders() {
         setOrders([])
       } finally {
         if (!silent) setLoading(false)
+      }
+    }
+
+    loadMoreOrdersRef.current = async () => {
+      const { page, totalPages } = ordersPagingRef.current
+      if (loadingMoreOrdersRef.current || page >= totalPages) return
+      loadingMoreOrdersRef.current = true
+      setLoadingMoreOrders(true)
+      try {
+        const nextPage = page + 1
+        const { pageOrders, totalPages: latestTotalPages } = await fetchOrdersPage(nextPage)
+        ordersPagingRef.current = { page: nextPage, totalPages: latestTotalPages }
+        setHasMoreOrders(nextPage < latestTotalPages)
+        const transformedOrders = transformOrders(pageOrders)
+        if (transformedOrders.length > 0) {
+          setOrders((prev) => mergeOrders(prev, transformedOrders))
+        }
+      } catch (error) {
+        debugError('Error loading more orders:', error)
+      } finally {
+        loadingMoreOrdersRef.current = false
+        setLoadingMoreOrders(false)
       }
     }
 
@@ -426,6 +441,22 @@ export default function Orders() {
       window.removeEventListener("orderStatusNotification", onStatus)
     }
   }, [])
+
+  // Infinite scroll: request the next page when the sentinel below the list nears
+  // the viewport. Re-attached after each page so a still-visible sentinel keeps loading.
+  useEffect(() => {
+    if (loading || loadingMoreOrders || !hasMoreOrders) return
+    const node = loadMoreSentinelRef.current
+    if (!node) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMoreOrdersRef.current?.()
+      },
+      { rootMargin: "400px 0px" },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [loading, loadingMoreOrders, hasMoreOrders, orders.length])
 
   // Format date helper
   const formatDate = (dateString) => {
@@ -718,7 +749,9 @@ Order again from this restaurant in the ${companyName} app.`
     )
   }
 
-  if (orders.length === 0) {
+  // Page 1 can hold only Quick orders (filtered out here) while older pages still
+  // have food orders — keep the list view so the sentinel can fetch them.
+  if (orders.length === 0 && !hasMoreOrders) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0a] pb-10">
         <div className="bg-white dark:bg-[#111111] p-4 flex items-center shadow-sm sticky top-0 z-10 border-b border-transparent dark:border-gray-800">
@@ -763,7 +796,7 @@ Order again from this restaurant in the ${companyName} app.`
 
       {/* Orders List */}
       <div className="px-4 py-2 space-y-4">
-        {filteredOrders.length === 0 ? (
+        {filteredOrders.length === 0 && hasMoreOrders && !searchQuery.trim() ? null : filteredOrders.length === 0 ? (
           <div className="bg-white dark:bg-[#111111] rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 text-center">
             <p className="text-gray-600 dark:text-gray-300">No orders found matching your search</p>
           </div>
@@ -1157,6 +1190,17 @@ Order again from this restaurant in the ${companyName} app.`
               </div>
             )
           })
+        )}
+
+        {hasMoreOrders && (
+          <div ref={loadMoreSentinelRef} className="flex items-center justify-center gap-2 py-4" role="status" aria-live="polite">
+            {loadingMoreOrders && (
+              <>
+                <Loader2 className="w-5 h-5 text-[#FB4F01] animate-spin" />
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Loading more orders…</span>
+              </>
+            )}
+          </div>
         )}
       </div>
 

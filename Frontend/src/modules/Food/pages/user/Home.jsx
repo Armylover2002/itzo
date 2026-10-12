@@ -406,6 +406,16 @@ export default function Home() {
     }
   };
 
+  // Warm the Quick home's requests (and its lazy chunk) on hover/touch so switching
+  // to Instamart feels instant. Fires once per Home mount.
+  const quickPrefetchedRef = useRef(false);
+  const onQuickTabIntent = useCallback(() => {
+    if (quickPrefetchedRef.current) return;
+    quickPrefetchedRef.current = true;
+    import("../../../quickCommerce/user/pages/Home").catch(() => {});
+    prefetchQuickHomeBootstrap(location).catch(() => {});
+  }, [location]);
+
   const handleSearchFocus = useCallback(() => {
     if (activeTab === "quick") navigate("/quick/search");
     else {
@@ -772,6 +782,8 @@ export default function Home() {
               showRestaurantSkeleton={restaurants.loading}
               isLoadingFilterResults={restaurants.isLoadingFilterResults}
               loadingRestaurants={restaurants.loading}
+              loadingMoreRestaurants={restaurants.loadingMore}
+              totalRestaurants={restaurants.total}
               availabilityTick={availabilityTick}
               isFavorite={isFavorite}
               onFavoriteToggle={handleFavoriteToggle}

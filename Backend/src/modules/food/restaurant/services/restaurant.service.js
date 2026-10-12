@@ -2648,6 +2648,9 @@ export const listApprovedRestaurants = async (query = {}) => {
         }
         if (!filter.businessType) filter.businessType = { $ne: 'Street Food Vendor' };
     }
+    if (query.pureVeg === 'true') {
+        filter.pureVegRestaurant = true;
+    }
     const minRating = toFiniteNumber(query.minRating);
     if (minRating !== null) {
         filter.rating = { $gte: Math.max(0, Math.min(5, minRating)) };
