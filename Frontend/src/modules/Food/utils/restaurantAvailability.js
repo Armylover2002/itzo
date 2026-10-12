@@ -208,10 +208,10 @@ export const getRestaurantAvailabilityStatus = (restaurant, now = new Date(), op
     }
   }
 
-  // Multi-shift path: when today's timing carries a `shifts` array (2+ windows/day), a
+  // Multi-shift path: when today's timing carries a `shifts` array (1+ windows/day), a
   // restaurant is open if `now` falls within ANY shift. "Closes in Xm" reflects the active
   // shift's end; between shifts, we surface the next upcoming shift's start instead.
-  const todayShifts = Array.isArray(todayTiming?.shifts) && todayTiming.shifts.length > 1
+  const todayShifts = Array.isArray(todayTiming?.shifts) && todayTiming.shifts.length > 0
     ? todayTiming.shifts
     : null
 

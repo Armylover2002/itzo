@@ -1,5 +1,6 @@
 import { sendResponse } from '../../../../utils/response.js';
 import { getOutletTimingsForRestaurant, upsertOutletTimingsForRestaurant } from '../services/outletTimings.service.js';
+import { invalidateCache } from '../../../../middleware/cache.js';
 
 export const getOutletTimingsByRestaurantIdController = async (req, res, next) => {
     try {
@@ -24,9 +25,17 @@ export const upsertCurrentRestaurantOutletTimingsController = async (req, res, n
     try {
         const restaurantId = req.user?.userId;
         const data = await upsertOutletTimingsForRestaurant(restaurantId, req.body?.outletTimings);
+        
+        // Invalidate Redis caches
+        await invalidateCache('*restaurant_timings*');
+        await invalidateCache('*restaurants*');
+        await invalidateCache('*restaurant_detail*');
+        await invalidateCache('*restaurants_under_250*');
+
         return sendResponse(res, 200, 'Outlet timings saved successfully', data);
     } catch (error) {
         next(error);
     }
 };
+
 
