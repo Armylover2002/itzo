@@ -39,6 +39,22 @@ const foodLandingSettingsSchema = new mongoose.Schema(
         showGourmet: {
             type: Boolean,
             default: true
+        },
+        // Home page "Meals under ₹X" item rail (single admin-controlled section)
+        homePriceFilter: {
+            title: {
+                type: String,
+                default: 'Meals under'
+            },
+            maxPrice: {
+                type: Number,
+                default: 250,
+                min: 1
+            },
+            isActive: {
+                type: Boolean,
+                default: true
+            }
         }
     },
     {

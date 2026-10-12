@@ -126,6 +126,7 @@ const CategoryRail = lazy(() => import("@food/components/user/home/CategoryRail"
 const RecommendedSection = lazy(() => import("@food/components/user/home/RecommendedSection"));
 const RestaurantGrid = lazy(() => import("@food/components/user/home/RestaurantGrid"));
 const SortFilterSection = lazy(() => import("@food/components/user/home/SortFilterSection"));
+const MealsUnderSection = lazy(() => import("@food/components/user/home/MealsUnderSection"));
 const ExploreMoreSection = lazy(() => import("@food/components/user/home/ExploreMoreSection"));
 const HomeDesktopHero = lazy(() => import("@food/components/user/home/HomeDesktopHero"));
 const HomeFilterModal = lazy(() => import("@food/components/user/home/HomeFilterModal"));
@@ -749,6 +750,10 @@ export default function Home() {
               toggleFilter={actions.toggleFilter}
               setIsFilterOpen={setIsFilterOpen}
             />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <MealsUnderSection zoneId={effectiveZoneId} location={effectiveLocation} />
           </Suspense>
 
           <Suspense fallback={null}>

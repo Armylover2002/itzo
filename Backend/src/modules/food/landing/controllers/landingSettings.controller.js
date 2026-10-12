@@ -22,6 +22,18 @@ export const updateAdminLandingSettingsController = async (req, res, next) => {
         if (typeof payload !== 'object') {
             throw new ValidationError('Invalid settings payload');
         }
+        if (payload.homePriceFilter !== undefined) {
+            const filter = payload.homePriceFilter || {};
+            const maxPrice = Number(filter.maxPrice);
+            if (!Number.isFinite(maxPrice) || maxPrice <= 0) {
+                throw new ValidationError('Price limit must be a number greater than 0');
+            }
+            payload.homePriceFilter = {
+                title: String(filter.title || '').trim() || 'Meals under',
+                maxPrice: Math.round(maxPrice),
+                isActive: filter.isActive !== false
+            };
+        }
         const updated = await updateLandingSettings(payload);
         return sendResponse(res, 200, 'Landing settings updated successfully', { settings: updated });
     } catch (error) {

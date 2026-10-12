@@ -1910,6 +1910,12 @@ export const restaurantAPI = {
   /** Public: restaurants with dishes priced at or below ₹250 (single batched query) */
   getUnder250Restaurants: (params = {}, config = {}) =>
     getPublicUnder250RestaurantsOnce(params, config),
+  /** Public: home "Meals under ₹X" section — admin-set price limit + matching restaurants/items */
+  getHomePriceFilterRestaurants: (params = {}, config = {}) =>
+    apiClient.get("/food/restaurant/restaurants/price-filter", {
+      params,
+      ...config,
+    }),
   /** @deprecated use getUnder250Restaurants */
   getRestaurantsUnder250: (zoneId, config = {}) =>
     getPublicUnder250RestaurantsOnce(
