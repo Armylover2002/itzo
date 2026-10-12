@@ -121,6 +121,7 @@ import { parseGeoPoint } from "@food/utils/geo";
 
 // Extracted Sub-components
 const BannerSection = lazy(() => import("@food/components/user/home/BannerSection"));
+const PerksBanner = lazy(() => import("@food/components/user/home/PerksBanner"));
 const CategoryRail = lazy(() => import("@food/components/user/home/CategoryRail"));
 const RecommendedSection = lazy(() => import("@food/components/user/home/RecommendedSection"));
 const RestaurantGrid = lazy(() => import("@food/components/user/home/RestaurantGrid"));
@@ -736,6 +737,10 @@ export default function Home() {
               finalExploreItems={landing.exploreMore}
               backendOrigin={BACKEND_ORIGIN}
             />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <PerksBanner />
           </Suspense>
 
           <Suspense fallback={null}>

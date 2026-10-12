@@ -8,6 +8,7 @@ import { deliveryAPI } from "@food/api"
 import { setAuthData as storeAuthData } from "@food/utils/auth"
 import { useCompanyName } from "@food/hooks/useCompanyName"
 import AuthCircleLogo from "@shared/components/AuthCircleLogo"
+import { useSmsOtpAutofill, extractOtpDigits } from "@shared/hooks/useSmsOtpAutofill"
 import {
   getCachedSettings,
   subscribeBusinessSettings,
@@ -136,7 +137,32 @@ export default function DeliveryOTP() {
     }
   }, [otp])
 
+  // Fills all boxes from a full code (SMS autofill / keyboard suggestion) and submits.
+  const fillOtp = (rawCode) => {
+    const digits = extractOtpDigits(rawCode, 4).split("")
+    if (digits.length === 0) return
+    const newOtp = ["", "", "", ""]
+    digits.forEach((digit, i) => {
+      newOtp[i] = digit
+    })
+    setOtp(newOtp)
+    setError("")
+    if (digits.length === 4) {
+      handleVerify(digits.join(""))
+    } else {
+      inputRefs.current[digits.length]?.focus()
+    }
+  }
+
+  useSmsOtpAutofill(fillOtp, { enabled: !showNameInput && !pendingMessage })
+
   const handleChange = (index, value) => {
+    // Keyboard "one-time-code" suggestion drops the whole code into one box
+    if (value && value.length > 1) {
+      if (extractOtpDigits(value, 4).length === 4) fillOtp(value)
+      return
+    }
+
     // Only allow digits
     if (value && !/^\d$/.test(value)) {
       return
@@ -749,13 +775,13 @@ export default function DeliveryOTP() {
                       ref={(el) => (inputRefs.current[index] = el)}
                       type="text"
                       inputMode="numeric"
-                      maxLength={1}
+                      maxLength={index === 0 ? 4 : 1}
                       value={digit}
                       onChange={(e) => handleChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
                       onPaste={index === 0 ? handlePaste : undefined}
                       disabled={isLoading}
-                      autoComplete="off"
+                      autoComplete={index === 0 ? "one-time-code" : "off"}
                       autoFocus={false}
                       className="w-14 h-14 md:w-16 md:h-16 text-center text-2xl font-bold p-0 border border-gray-200 rounded-xl focus:border-[#F35B1C] focus:ring-1 focus:ring-[#F35B1C] focus:bg-white transition-all bg-gray-50 shadow-inner text-[#1a1a1a]"
                     />
