@@ -357,73 +357,26 @@ export async function upsertOutletTimingsForRestaurant(restaurantId, outletTimin
             { $set: { timings } },
             { upsert: true, new: true, setDefaultsOnInsert: true, projection: 'timings updatedAt' }
         ).lean();
+
+        const openDays = openDaysShortNames(timings);
+        const firstShift = (timings || []).find((t) => t.isOpen && Array.isArray(t.shifts) && t.shifts.length)?.shifts?.[0];
+
+        await FoodRestaurant.updateOne(
+            { _id: restaurantId },
+            {
+                $set: {
+                    openDays,
+                    ...(firstShift?.openingTime ? { openingTime: firstShift.openingTime } : {}),
+                    ...(firstShift?.closingTime ? { closingTime: firstShift.closingTime } : {})
+                },
+                $unset: { pendingOpenDays: '' }
+            }
+        );
+
         return { outletTimings: toClientShape(doc), pendingApproval: false };
     };
 
-    // Only already-approved restaurants route opening-days changes through re-approval.
-    // Onboarding / pending / rejected restaurants save directly (no live schedule to protect yet).
-    if (restaurant?.status !== 'approved') {
-        return saveLive();
-    }
-
-    // Determine the currently live schedule so we can detect a real opening-days change.
-    const currentDoc = await FoodRestaurantOutletTimings.findOne({ restaurantId }).select('timings').lean();
-    const currentTimings = currentDoc?.timings?.length
-        ? canonicalTimingsArray(currentDoc.timings)
-        : buildOutletTimingsArrayFromSchedule(restaurant.openDays, restaurant.openingTime, restaurant.closingTime);
-
-    const currentOpenKey = openDaysSignature(currentTimings);
-    const proposedOpenKey = openDaysSignature(timings);
-
-    // No change in *which* days are open (e.g. only opening/closing times edited).
-    if (proposedOpenKey === currentOpenKey) {
-        const result = await saveLive();
-        // If a stale opening-days request now matches the live schedule, clear it.
-        if (restaurant?.pendingOpenDays?.hasPendingUpdate) {
-            await FoodRestaurant.updateOne({ _id: restaurantId }, { $unset: { pendingOpenDays: '' } });
-        }
-        return result;
-    }
-
-    // Opening days changed → stage the request for admin re-approval WITHOUT touching
-    // the live schedule. The restaurant stays approved & online with its current days.
-    const existingPending = restaurant?.pendingOpenDays;
-    const alreadyPendingKey = existingPending?.hasPendingUpdate
-        ? openDaysSignature(canonicalTimingsArray(existingPending.proposedTimings))
-        : null;
-    const isDuplicate = alreadyPendingKey !== null && alreadyPendingKey === proposedOpenKey;
-
-    await FoodRestaurant.updateOne(
-        { _id: restaurantId },
-        {
-            $set: {
-                pendingOpenDays: {
-                    hasPendingUpdate: true,
-                    proposedOpenDays: openDaysShortNames(timings),
-                    proposedTimings: timings,
-                    previousOpenDays: openDaysShortNames(currentTimings),
-                    previousTimings: currentTimings,
-                    requestedAt: isDuplicate && existingPending?.requestedAt ? existingPending.requestedAt : new Date()
-                }
-            }
-        }
-    );
-
-    // Avoid duplicate notifications when the same request is re-submitted unchanged.
-    if (!isDuplicate) {
-        notifyAdminsAboutOpeningDaysReview(restaurantId, restaurant.restaurantName);
-    }
-
-    return {
-        outletTimings: toClientShape({ timings }),
-        liveOutletTimings: toClientShape({ timings: currentTimings }),
-        pendingApproval: true,
-        pendingOpenDays: {
-            proposedOpenDays: openDaysShortNames(timings),
-            previousOpenDays: openDaysShortNames(currentTimings),
-            requestedAt: new Date()
-        }
-    };
+    return saveLive();
 }
 
 /**

@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@food/components/ui/ca
 import { Button } from "@food/components/ui/button"
 import { useLocation } from "@food/hooks/useLocation"
 import {
+  USER_LOCATION_STORAGE_KEY,
   hasValidCoordinates,
   queryGeolocationPermission,
   isLocationPromptDismissed,
@@ -13,6 +14,7 @@ import {
   clearLocationPromptAfterLogin,
 } from "@food/utils/locationStorage"
 
+const AUTO_LOCATION_SESSION_KEY = "food_auto_location_detected"
 const PROMPT_DELAY_MS = 600
 const PROMPT_DELAY_AFTER_LOGIN_MS = 400
 
@@ -57,24 +59,83 @@ export default function LocationPrompt() {
     [animateIn],
   )
 
+  // Fetches the device's current position and makes it the active location.
+  // requestLocation() wipes the cached location up front, so if GPS fails
+  // (timeout / denied) the previous one is put back instead of leaving the
+  // user with nothing. Resolves true only when real coordinates came back.
+  const autoDetectLocation = useCallback(async () => {
+    let previous = null
+    try {
+      previous = localStorage.getItem(USER_LOCATION_STORAGE_KEY)
+    } catch {
+      // storage unavailable - nothing to restore
+    }
+    try {
+      const loc = await requestLocationRef.current?.()
+      return hasValidCoordinates(loc)
+    } catch {
+      try {
+        if (previous && !localStorage.getItem(USER_LOCATION_STORAGE_KEY)) {
+          localStorage.setItem(USER_LOCATION_STORAGE_KEY, previous)
+        }
+      } catch {
+        // ignore
+      }
+      return false
+    }
+  }, [])
+
   // Run once on mount — avoids timer cancellation when geolocationPermission updates.
   useEffect(() => {
     let cancelled = false
 
     const tryShowPrompt = async () => {
       const afterLogin = peekLocationPromptAfterLogin()
-      const permissionState = await queryGeolocationPermission()
+      let permissionState = await queryGeolocationPermission()
 
       if (cancelled) return
 
       clearLocationPromptAfterLogin()
 
-      // Browser already allowed: skip modal, refresh GPS silently (no popup needed).
+      // Once per app session, pick up the user's current GPS location on their
+      // own (a manual address chosen later in the session is left alone; the
+      // next app open starts from the current location again).
+      let autoDetectDone = false
+      try {
+        autoDetectDone = sessionStorage.getItem(AUTO_LOCATION_SESSION_KEY) === "1"
+      } catch {
+        // sessionStorage unavailable - fall back to detecting every mount
+      }
+
       if (permissionState === "granted") {
-        if (afterLogin) {
-          requestLocationRef.current?.().catch(() => {})
+        if (afterLogin || !autoDetectDone) {
+          try {
+            sessionStorage.setItem(AUTO_LOCATION_SESSION_KEY, "1")
+          } catch {
+            // ignore
+          }
+          autoDetectLocation()
         }
         return
+      }
+
+      // Permission not asked yet: trigger the browser's own location popup right
+      // away instead of showing our "Allow Location" card first.
+      if (permissionState === "prompt" && !autoDetectDone) {
+        try {
+          sessionStorage.setItem(AUTO_LOCATION_SESSION_KEY, "1")
+        } catch {
+          // ignore
+        }
+        const detected = await autoDetectLocation()
+        if (cancelled) return
+        if (detected) {
+          dismissLocationPromptPermanently()
+          return
+        }
+        // Declined or failed: re-read the state so the card below can explain a block.
+        permissionState = await queryGeolocationPermission()
+        if (cancelled) return
       }
 
       const dismissed = isLocationPromptDismissed(permissionState)
@@ -101,7 +162,7 @@ export default function LocationPrompt() {
       window.clearTimeout(timer)
       document.body.style.overflow = ""
     }
-  }, [openPrompt])
+  }, [openPrompt, autoDetectLocation])
 
   const handleAllow = async () => {
     if (permissionBlocked) {
