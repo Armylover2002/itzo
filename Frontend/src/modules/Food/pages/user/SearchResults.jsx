@@ -9,7 +9,7 @@ import MiniCart from "@food/components/user/MiniCart"
 import { useProfile } from "@food/context/ProfileContext"
 import { useLocation } from "@food/hooks/useLocation"
 import { useZone } from "@food/hooks/useZone"
-import { restaurantAPI, adminAPI } from "@food/api"
+import { restaurantAPI } from "@food/api"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 
 const debugLog = (...args) => {}
@@ -65,7 +65,7 @@ export default function SearchResults() {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true)
-        const response = await adminAPI.getPublicCategories(zoneId ? { zoneId } : {})
+        const response = await restaurantAPI.getPublicCategories(zoneId ? { zoneId } : {})
 
         if (response.data && response.data.success && response.data.data && response.data.data.categories) {
           const categoriesArray = response.data.data.categories

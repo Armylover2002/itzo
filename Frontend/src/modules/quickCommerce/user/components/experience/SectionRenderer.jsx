@@ -4,7 +4,6 @@ import ProductCard from "../shared/ProductCard";
 import { cn } from "@/lib/utils";
 import ExperienceBannerCarousel from "./ExperienceBannerCarousel";
 import { resolveQuickImageUrl } from "../../utils/image";
-import { getCloudinarySrcSet } from "@/shared/utils/cloudinaryUtils";
 import { motion } from "framer-motion";
 import { CheckCircle2, ShoppingBag } from "lucide-react";
 import { getQuickCategoryPath } from "../../utils/routes";
@@ -88,7 +87,6 @@ const CategoryItem = memo(({ cat, idx, onClick }) => {
         {cat.image ? (
           <img
             src={cat.image}
-            srcSet={getCloudinarySrcSet(cat.image)}
             sizes="(max-width: 768px) 40vw, 180px"
             alt={cat.name}
             className="w-full h-full object-cover transition-transform duration-500"
@@ -252,7 +250,6 @@ const SubcategoryItem = memo(({ cat, onClick }) => (
       {cat.image ? (
         <img
           src={resolveQuickImageUrl(cat.image)}
-          srcSet={getCloudinarySrcSet(cat.image)}
           sizes="80px"
           alt={cat.name}
           className="w-full h-full object-contain object-center mix-blend-multiply transition-transform duration-200 group-hover:scale-105"

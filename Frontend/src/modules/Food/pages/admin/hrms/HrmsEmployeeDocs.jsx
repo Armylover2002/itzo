@@ -92,7 +92,7 @@ export default function HrmsEmployeeDocs() {
                 }
             }
 
-            // Upload image to Cloudinary via backend proxy
+            // Upload image to the server
             const formData = new FormData();
             formData.append('file', file);
             formData.append('folder', uploadType === 'Offer Letter' ? 'hrms/offer-letters' : 'hrms/other-docs');

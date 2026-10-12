@@ -548,7 +548,7 @@ export default function HubMenu() {
     try {
       setUploadingAddonImages(true)
 
-      // Upload new images to Cloudinary
+      // Upload new images to the server
       const uploadedImageUrls = []
       
       const existingImageUrls = addonImages.filter(img => 

@@ -98,8 +98,7 @@ import { useLocation } from "@food/hooks/useLocation";
 import { useZone } from "@food/hooks/useZone";
 
 import offerImage from "@food/assets/offerimage.png";
-import bannerEatingFood from "../../../../assets/eading_food_2_image-removebg-preview.png";
-import api, { publicGetOnce, restaurantAPI, adminAPI } from "@food/api";
+import api, { publicGetOnce, restaurantAPI } from "@food/api";
 import { API_BASE_URL } from "@food/api/config";
 import OptimizedImage from "@food/components/OptimizedImage";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
@@ -112,7 +111,6 @@ import { CartProvider as QuickCartProvider } from "../../../quickCommerce/user/c
 import { prefetchQuickHomeBootstrap } from "../../../quickCommerce/user/services/customerApi";
 import PromoRow from "@food/components/user/home/PromoRow";
 import { useSettings } from "@core/context/SettingsContext";
-import { optimizeCloudinaryUrl } from "../../../../shared/utils/cloudinaryUtils";
 import VegModePopups from "@food/components/user/VegModePopups";
 import AdvertisementSection from "@food/components/user/home/AdvertisementSection";
 
@@ -123,6 +121,7 @@ import { parseGeoPoint } from "@food/utils/geo";
 
 // Extracted Sub-components
 const BannerSection = lazy(() => import("@food/components/user/home/BannerSection"));
+const PerksBanner = lazy(() => import("@food/components/user/home/PerksBanner"));
 const CategoryRail = lazy(() => import("@food/components/user/home/CategoryRail"));
 const RecommendedSection = lazy(() => import("@food/components/user/home/RecommendedSection"));
 const RestaurantGrid = lazy(() => import("@food/components/user/home/RestaurantGrid"));
@@ -194,7 +193,7 @@ const tabs = [
 
 export default function Home() {
   const HERO_BANNER_AUTO_SLIDE_MS = 3500;
-  const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+  const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api(?:\/v\d+)?\/?$/, "");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { settings: appSettings } = useSettings();
@@ -738,6 +737,10 @@ export default function Home() {
               finalExploreItems={landing.exploreMore}
               backendOrigin={BACKEND_ORIGIN}
             />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <PerksBanner />
           </Suspense>
 
           <Suspense fallback={null}>

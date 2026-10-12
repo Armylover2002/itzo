@@ -2,6 +2,8 @@
  * Common utility functions for the Food module
  */
 
+import { toUploadUrl } from "@/shared/utils/uploadUrl";
+
 /**
  * Normalizes an image URL to handle relative paths and backend origins
  */
@@ -9,6 +11,9 @@ export const normalizeImageUrl = (imageUrl, backendOrigin = "") => {
   if (typeof imageUrl !== "string") return "";
   const trimmed = imageUrl.trim();
   if (!trimmed || /^data:/i.test(trimmed) || /^blob:/i.test(trimmed)) return trimmed;
+
+  const uploadUrl = toUploadUrl(trimmed);
+  if (uploadUrl !== trimmed) return uploadUrl;
 
   const appProtocol = typeof window !== "undefined" ? window.location?.protocol : "";
   const appHost = typeof window !== "undefined" ? window.location?.hostname : "";

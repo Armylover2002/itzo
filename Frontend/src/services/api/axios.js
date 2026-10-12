@@ -9,6 +9,7 @@
 import axios from "axios";
 import { redirectAdminToLogin } from "@/shared/utils/adminSession";
 import { refreshModuleSession } from "@/shared/utils/authRefresh";
+import { installUploadUrlInterceptors } from "@/shared/utils/uploadUrl";
 
 // Prefer explicit env. If not set, use same-origin (works with a Vite proxy).
 // This avoids hardcoding ports like 5000 that may conflict with local setups.
@@ -23,6 +24,9 @@ const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// "/uploads/..." paths from the API -> https://<uploads origin>/uploads/... for the UI.
+installUploadUrlInterceptors(apiClient);
+
 function getModuleFromUrl(url = "") {
   const normalized = (typeof url === "string" ? url : (url?.url || "")).toLowerCase();
   
@@ -35,9 +39,13 @@ function getModuleFromUrl(url = "") {
     normalized.includes("admin/login")
   ) return "admin";
 
-  // 2. Special case: /food/restaurants (plural) is a public endpoint
-  // BUT only if it's not a restaurant owner's specific route
-  if (normalized.includes("/food/restaurants") && !normalized.includes("/food/restaurant/")) {
+  // 2. Special case: public endpoints used by user app
+  if (
+    normalized.includes("/categories/public") ||
+    normalized.includes("/menus/batch") ||
+    normalized.includes("/fee-settings/public") ||
+    (normalized.includes("/food/restaurants") && !normalized.includes("/food/restaurant/"))
+  ) {
     return "user";
   }
 

@@ -7,6 +7,7 @@ import { Button } from "@food/components/ui/button"
 import { authAPI, userAPI } from "@food/api"
 import { setAuthData as setUserAuthData } from "@food/utils/auth"
 import { markLocationPromptAfterLogin } from "@food/utils/locationStorage"
+import { useSmsOtpAutofill, extractOtpDigits } from "@shared/hooks/useSmsOtpAutofill"
 import loginBanner from "@food/assets/loginbanner.png"
 import {
   isNativeContactsBridgeAvailable,
@@ -156,7 +157,32 @@ export default function OTP() {
     }
   }, [showNameInput, showContactsPrompt])
 
+  // Fills all boxes from a full code (SMS autofill / keyboard suggestion) and submits.
+  const fillOtp = (rawCode) => {
+    const digits = extractOtpDigits(rawCode, 4).split("")
+    if (digits.length === 0) return
+    const newOtp = ["", "", "", ""]
+    digits.forEach((digit, i) => {
+      newOtp[i] = digit
+    })
+    setOtp(newOtp)
+    setError("")
+    if (digits.length === 4) {
+      handleVerify(digits.join(""))
+    } else {
+      inputRefs.current[digits.length]?.focus()
+    }
+  }
+
+  useSmsOtpAutofill(fillOtp, { enabled: !showNameInput && !showContactsPrompt })
+
   const handleChange = (index, value) => {
+    // Keyboard "one-time-code" suggestion drops the whole code into one box
+    if (value && value.length > 1) {
+      if (extractOtpDigits(value, 4).length === 4) fillOtp(value)
+      return
+    }
+
     // Only allow digits; OTP is exactly 4 digits
     if (value && !/^\d$/.test(value)) {
       return
@@ -520,7 +546,8 @@ export default function OTP() {
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    maxLength={1}
+                    maxLength={index === 0 ? 4 : 1}
+                    autoComplete={index === 0 ? "one-time-code" : "off"}
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}

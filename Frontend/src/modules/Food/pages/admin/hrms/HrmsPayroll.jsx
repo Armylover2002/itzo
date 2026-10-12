@@ -234,7 +234,7 @@ export default function HrmsPayroll({ defaultTab = 'payroll', hidePayroll = fals
 
         setUploading(true);
         try {
-            // Upload image to Cloudinary via backend proxy
+            // Upload image to the server
             const formData = new FormData();
             formData.append('file', file);
             formData.append('folder', 'hrms/payslips');

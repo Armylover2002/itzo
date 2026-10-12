@@ -2,12 +2,11 @@
  * Single entry point for every image/file upload in the backend.
  *
  * All files are written to the server's own disk (Backend/uploads locally,
- * /var/www/uploades on the live server — see config.uploadLocalDir) and served
+ * /var/www/uploads on the live server — see config.uploadLocalDir) and served
  * from /uploads/... . Nothing is sent to a third-party storage service.
  */
 export {
     UPLOADS_BASE_DIR,
-    getOptimizedCloudinaryImageUrl,
     uploadImageBuffer,
     uploadImageBufferDetailed,
     uploadBufferDetailed,

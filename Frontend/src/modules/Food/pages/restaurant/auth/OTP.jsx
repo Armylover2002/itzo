@@ -14,6 +14,7 @@ import { isRestaurantInitialPendingApproval } from "@food/utils/restaurantApprov
 import { useCompanyName } from "@food/hooks/useCompanyName"
 import { getAppLogo, getRestaurantLoginBanner, subscribeBusinessSettings } from "@common/utils/businessSettings"
 import AuthCircleLogo from "@shared/components/AuthCircleLogo"
+import { useSmsOtpAutofill, extractOtpDigits } from "@shared/hooks/useSmsOtpAutofill"
 
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
@@ -165,7 +166,32 @@ export default function RestaurantOTP() {
     return () => window.clearTimeout(id)
   }, [focusedIndex, keyboardOffset])
 
+  // Fills all boxes from a full code (SMS autofill / keyboard suggestion) and submits.
+  const fillOtp = (rawCode) => {
+    const digits = extractOtpDigits(rawCode, 4).split("")
+    if (digits.length === 0) return
+    const newOtp = ["", "", "", ""]
+    digits.forEach((digit, i) => {
+      newOtp[i] = digit
+    })
+    setOtp(newOtp)
+    setError("")
+    if (digits.length === 4) {
+      handleVerify(digits.join(""))
+    } else {
+      inputRefs.current[digits.length]?.focus()
+    }
+  }
+
+  useSmsOtpAutofill(fillOtp)
+
   const handleChange = (index, value) => {
+    // Keyboard "one-time-code" suggestion drops the whole code into one box
+    if (value && value.length > 1) {
+      if (extractOtpDigits(value, 4).length === 4) fillOtp(value)
+      return
+    }
+
     if (value && !/^\d$/.test(value)) {
       return
     }
@@ -514,7 +540,8 @@ export default function RestaurantOTP() {
                     ref={(el) => (inputRefs.current[index] = el)}
                     type="text"
                     inputMode="numeric"
-                    maxLength={1}
+                    maxLength={index === 0 ? 4 : 1}
+                    autoComplete={index === 0 ? "one-time-code" : "off"}
                     value={digit}
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}

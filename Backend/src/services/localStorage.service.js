@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import { config } from '../config/env.js';
 
 // Base directory for all uploads. Relative values resolve against the project
-// root (Backend/); an absolute value such as /var/www/uploades is used as-is,
+// root (Backend/); an absolute value such as /var/www/uploads is used as-is,
 // so the live server can store files outside the deployed code folder.
 export const UPLOADS_BASE_DIR = path.resolve(process.cwd(), config.uploadLocalDir);
 
@@ -59,14 +59,13 @@ const generateFilename = (extension) => {
  * Helper to construct the final absolute path and the public URL.
  */
 const getFilePaths = (folder, filename) => {
-    // Sanitize folder path to prevent directory traversal
-    const safeFolder = String(folder || 'uploads').replace(/\.\./g, '').replace(/^\/+/, '');
-    const relativePath = path.join(safeFolder, filename).replace(/\\/g, '/');
+    // As per requirement: ignore any subfolder, store everything directly in the base directory
+    const relativePath = filename;
     const absolutePath = path.join(UPLOADS_BASE_DIR, relativePath);
 
     // The public URL always starts with /uploads/ (that is the path Express and
     // Nginx serve from); UPLOAD_PUBLIC_BASE_URL can turn it into an absolute URL.
-    const publicUrl = `${config.uploadPublicBaseUrl}/uploads/${relativePath}`;
+    const publicUrl = `${config.uploadPublicBaseUrl || ''}/uploads/${relativePath}`;
 
     return { absolutePath, publicUrl };
 };
@@ -116,10 +115,6 @@ export const readLocalFile = (urlOrPath) => {
     } catch {
         return null;
     }
-};
-
-export const getOptimizedCloudinaryImageUrl = (url, _options = {}) => {
-    return url;
 };
 
 export const uploadImageBuffer = async (buffer, folder = 'uploads') => {
