@@ -8,6 +8,7 @@ import { findCartLineForProduct, applyVariantToProduct, getVariantKey } from '..
 import { getFirstSellableVariant, getSelectableVariants, hasVariantPicker } from '../../utils/firstVariantDisplay';
 import { resolveWishlistVariant } from '../../utils/wishlistVariant';
 import VariantPickerSheet from './VariantPickerSheet';
+import CartCheckoutBar from '@shared/components/CartCheckoutBar';
 import { useWishlist } from '../../context/WishlistContext';
 import { useToast } from '@shared/components/ui/Toast';
 import { useSettings } from '@core/context/SettingsContext';
@@ -139,7 +140,7 @@ const MobileReviewCard = React.memo(({ r }) => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 const ProductDetailSheet = () => {
     const { selectedProduct, isOpen, closeProduct } = useProductDetail();
-    const { cart, cartCount, addToCart, updateQuantity, removeFromCart } = useCart();
+    const { cart, cartCount, clearCart, addToCart, updateQuantity, removeFromCart } = useCart();
     const { toggleWishlist: toggleWishlistGlobal, isVariantWishlisted, getSavedWishlistVariant } = useWishlist();
     const { showToast } = useToast();
     const { settings } = useSettings();
@@ -697,20 +698,15 @@ const ProductDetailSheet = () => {
                                             animate={{ opacity: 1, scale: 1 }}
                                             className="flex justify-center -mt-1"
                                         >
-                                            <Link
-                                                to={cartPath}
-                                                onClick={closeProduct}
-                                                className="w-[80%] bg-gradient-to-r from-[#0c831f] to-[#0a7519] text-white h-[40px] rounded-xl flex items-center justify-between px-4 shadow-md shadow-green-200/40 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-[0.98]"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <ShoppingBag size={14} strokeWidth={2.0} />
-                                                    <span className="text-[12px] font-[700] uppercase tracking-wider">View Cart</span>
-                                                </div>
-                                                <div className="flex items-center justify-center gap-1.5 bg-white/10 px-2 py-1 rounded-lg">
-                                                    <span className="text-[13px] font-[800] tracking-tight">₹{cartTotal}</span>
-                                                    <ChevronRight size={14} strokeWidth={2.5} />
-                                                </div>
-                                            </Link>
+                                            <CartCheckoutBar
+                                                items={cart}
+                                                count={cartCount}
+                                                total={cartTotal}
+                                                checkoutTo={cartPath}
+                                                onCheckoutClick={closeProduct}
+                                                onClear={clearCart}
+                                                className="w-full shadow-md"
+                                            />
                                         </motion.div>
                                     )}
 
@@ -1179,22 +1175,15 @@ const ProductDetailSheet = () => {
                                         animate={{ opacity: 1, scale: 1 }}
                                         className="mt-2"
                                     >
-                                        <Link
-                                            to={cartPath}
-                                            onClick={closeProduct}
-                                            className="w-full bg-[#0c831f] text-white h-[56px] rounded-xl flex items-center justify-between px-5 shadow-lg shadow-green-100/50 hover:bg-[#0b721b] transition-all active:scale-[0.98]"
-                                        >
-                                            <div className="flex flex-col items-start leading-none">
-                                                <span className="text-[13px] font-[1000] uppercase tracking-wide">View cart</span>
-                                                <span className="text-[11px] font-bold opacity-90 mt-1">
-                                                    {cartCount} {cartCount === 1 ? 'item' : 'items'} in cart
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[16px] font-[1000] tracking-tight">₹{cartTotal}</span>
-                                                <ChevronRight size={18} strokeWidth={4} />
-                                            </div>
-                                        </Link>
+                                        <CartCheckoutBar
+                                            items={cart}
+                                            count={cartCount}
+                                            total={cartTotal}
+                                            checkoutTo={cartPath}
+                                            onCheckoutClick={closeProduct}
+                                            onClear={clearCart}
+                                            className="w-full shadow-md"
+                                        />
                                     </motion.div>
                                 )}
                             </div>

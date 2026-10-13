@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from "@food/context/CartContext";
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import CartCheckoutBar from '@shared/components/CartCheckoutBar';
+import { getFoodCartMenuPath } from '@food/components/user/MiniCart';
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -28,7 +30,7 @@ export default function AddToCartAnimation({
   linkTo = '/food/user/cart',
   dynamicBottom = null,
 }) {
-  const { items, itemCount, total, lastAddEvent, lastRemoveEvent } = useCart();
+  const { cart, items, itemCount, total, lastAddEvent, lastRemoveEvent, clearCart } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const linkRef = useRef(null);
@@ -365,13 +367,6 @@ export default function AddToCartAnimation({
     }
   }, [itemCount, total, removedProduct, flyingProduct, lastRemoveEvent]);
 
-  // Get up to 3 most recently added items for thumbnails
-  // Since items are added to the end of the array, we take the last 3
-  const safeItems = Array.isArray(items) ? items : [];
-  const thumbnailItems = safeItems
-    .slice(-3)
-    .reverse()
-    .filter((item) => item && typeof item === 'object');
 
   return (
     <>
@@ -446,85 +441,20 @@ export default function AddToCartAnimation({
             }}
             className={`left-0 right-0 z-[9999] flex justify-center px-4 pb-4 md:pb-6 transition-all duration-300 ease-in-out bg-transparent ${dynamicBottom || ''}`}
           >
-            <button
+            <CartCheckoutBar
               ref={linkRef}
-              onClick={(e) => {
+              items={cart}
+              count={itemCount}
+              onCheckoutClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                debugLog('View cart clicked, navigating to:', linkTo);
+                debugLog('Checkout clicked, navigating to:', linkTo);
                 navigate(linkTo);
               }}
-              className={`bg-[#FB4F01] text-white rounded-full shadow-xl shadow-red-900/30 px-3 py-2 flex items-center gap-2 hover:bg-[#C83C00] transition-all duration-300 pointer-events-auto border border-red-800/30 backdrop-blur-sm cursor-pointer ${pillClassName}`}
-            >
-              {/* Left: Product thumbnails */}
-              <div className="flex items-center -space-x-4">
-                {thumbnailItems.map((item, idx) => (
-                  <motion.div
-                    key={item?.product?.id || item?.id || `thumb-${idx}`}
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      delay: idx * 0.1,
-                      type: 'spring',
-                      stiffness: 500,
-                      damping: 25,
-                    }}
-                    className="w-7 h-7 rounded-full border-2 border-white/90 overflow-hidden bg-white flex-shrink-0 shadow-md"
-                  >
-                    {item?.product?.imageUrl ? (
-                      <img
-                        src={item.product.imageUrl}
-                        alt={item?.product?.name || 'Item'}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-neutral-200 text-neutral-400 text-xs font-semibold">
-                        {item?.product?.name?.charAt(0)?.toUpperCase() || '?'}
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Middle: Text */}
-              <motion.div
-                className="flex flex-col"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1, duration: 0.3 }}
-              >
-                <span className="text-xs font-bold leading-tight drop-shadow-sm">View cart</span>
-                <span className="text-[10px] opacity-95 leading-tight font-medium">
-                  {itemCount} {itemCount === 1 ? 'item' : 'items'}
-                </span>
-              </motion.div>
-
-              {/* Right: Arrow icon */}
-              <motion.div
-                className="ml-auto bg-white/25 rounded-full p-1 backdrop-blur-sm"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15, duration: 0.3 }}
-                whileHover={{ scale: 1.1, rotate: -5 }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 16 16"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-white"
-                >
-                  <path
-                    d="M6 12L10 8L6 4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </motion.div>
-            </button>
+              menuPath={getFoodCartMenuPath(cart)}
+              onClear={clearCart}
+              className={`pointer-events-auto w-full max-w-md ${pillClassName}`}
+            />
           </motion.div>
         )}
       </AnimatePresence>
