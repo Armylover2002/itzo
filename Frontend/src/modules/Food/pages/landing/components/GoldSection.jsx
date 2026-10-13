@@ -1,19 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Star, Sparkles, ArrowRight, Crown } from 'lucide-react';
+import { Star, ArrowRight, Crown } from 'lucide-react';
 
 const BENEFITS = [
   { emoji: '🎟️', title: 'Free delivery', desc: 'On eligible nearby orders' },
   { emoji: '🛵', title: 'Extra discounts', desc: 'At partner restaurants' },
   { emoji: '⚡', title: 'Priority support', desc: 'Jump the queue, always' },
-];
-
-const SPARKLE_POSITIONS = [
-  { className: 'top-[6%] left-[10%] md:left-[22%]', size: 16, delay: 0 },
-  { className: 'top-[14%] right-[8%] md:right-[22%]', size: 12, delay: 0.9 },
-  { className: 'bottom-[10%] left-[6%] md:left-[18%]', size: 14, delay: 1.6 },
-  { className: 'bottom-[18%] right-[6%] md:right-[18%]', size: 18, delay: 0.4 },
 ];
 
 const GoldSection = React.memo(function GoldSection() {
@@ -39,20 +32,6 @@ const GoldSection = React.memo(function GoldSection() {
         >
           itzofood
         </motion.h2>
-
-        {/* Ambient sparkles around the membership card */}
-        <div className="absolute inset-0 pointer-events-none hidden md:block">
-          {SPARKLE_POSITIONS.map((s, i) => (
-            <motion.div
-              key={i}
-              animate={{ opacity: [0, 1, 0], scale: [0.6, 1, 0.6] }}
-              transition={{ duration: 2.8, repeat: Infinity, delay: s.delay, ease: 'easeInOut' }}
-              className={`absolute ${s.className}`}
-            >
-              <Sparkles size={s.size} className="text-[#ffb37a]" />
-            </motion.div>
-          ))}
-        </div>
 
         {/* Membership "ticket" card — the centrepiece, replacing the old plain
             text + icon-grid layout with a single distinctive product visual. */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Star, Bike, MapPin } from 'lucide-react';
+import { Star, Bike, MapPin } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
 import { useVideoPlaylist } from '@common/hooks/useVideoPlaylist';
 import { ITZOFOOD_PLAY_STORE_URL, ITZOFOOD_APP_STORE_URL } from "@shared/constants/appStoreLinks";
@@ -188,7 +188,6 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
             variants={itemVariants}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-1.5 text-white/90 text-sm font-semibold tracking-wide"
           >
-            <Sparkles className="w-4 h-4 text-[#FB4F01]" />
             India&apos;s favourite way to order food
           </motion.div>
 

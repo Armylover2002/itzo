@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Sparkles } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { EYEBROW, HEADING, BODY } from './typography';
 
 const FeatureCard = ({ icon, title, className, delay }) => (
@@ -30,7 +30,6 @@ const AppFeaturesSection = React.memo(function AppFeaturesSection() {
           viewport={{ once: true }}
           className={`mb-5 ${EYEBROW}`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
           Made for you
         </motion.div>
 

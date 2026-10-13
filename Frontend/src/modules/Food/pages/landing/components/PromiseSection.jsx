@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, ShieldCheck, Zap, Receipt } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Zap, Receipt } from 'lucide-react';
 import { EYEBROW, HEADING } from './typography';
 
 const PROMISES = [
@@ -53,7 +53,6 @@ const PromiseCard = React.memo(function PromiseCard({
     >
       {/* Decorative background shapes */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
-        <Sparkles className="absolute -top-4 -right-4 w-32 h-32 text-white rotate-12" strokeWidth={1} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_100%,white_1px,transparent_1px)] bg-[length:14px_14px]" />
       </div>
 
@@ -118,7 +117,6 @@ const PromiseSection = React.memo(function PromiseSection() {
           viewport={{ once: true }}
           className={`mb-5 ${EYEBROW}`}
         >
-          <Sparkles className="w-3.5 h-3.5" />
           Our promise
         </motion.div>
 
