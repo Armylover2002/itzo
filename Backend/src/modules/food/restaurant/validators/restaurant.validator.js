@@ -106,7 +106,16 @@ const restaurantRegisterSchema = z.object({
     razorpayOrderId: z.string().optional(),
     razorpayPaymentId: z.string().optional(),
     razorpaySignature: z.string().optional(),
-    finalizeOnboarding: z.string().optional()
+    finalizeOnboarding: z.string().optional(),
+    // Multi-shift schedule (JSON string) — without it the final submit rebuilt outlet
+    // timings from the flat first-shift window and dropped every other shift.
+    shifts: z.string().optional(),
+    ref: z.string().optional(),
+    fssaiApplyForLicense: z
+        .string()
+        .optional()
+        .transform((val) => val === 'true' || val === '1'),
+    fssaiApplicationId: z.string().optional()
 });
 
 export const validateRestaurantRegisterDto = (body) => {
@@ -122,9 +131,7 @@ export const validateRestaurantRegisterDto = (body) => {
         if (openingMinutes === closingMinutes) {
             throw new ValidationError('Opening time and closing time cannot be same');
         }
-        if (closingMinutes < openingMinutes) {
-            throw new ValidationError('Closing time cannot be less than opening time');
-        }
+        // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
     }
     const isFinalizeOnboarding =
         data.finalizeOnboarding === true ||
@@ -231,9 +238,7 @@ export const validateOnboardingStepDto = (stepNum, body) => {
             if (openingMinutes === closingMinutes) {
                 throw new ValidationError('Opening time and closing time cannot be same');
             }
-            if (closingMinutes < openingMinutes) {
-                throw new ValidationError('Closing time cannot be less than opening time');
-            }
+            // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
         }
     }
     return {

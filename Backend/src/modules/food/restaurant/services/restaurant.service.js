@@ -1097,9 +1097,7 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                 if (openingMinutes === closingMinutes) {
                     throw new ValidationError('Opening time and closing time cannot be same');
                 }
-                if (closingMinutes < openingMinutes) {
-                    throw new ValidationError('Closing time cannot be less than opening time');
-                }
+                // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
             }
 
             const images = {};
@@ -1283,7 +1281,8 @@ export const registerRestaurant = async (payload, files, authUserId) => {
         razorpayOrderId,
         razorpayPaymentId,
         razorpaySignature,
-        finalizeOnboarding
+        finalizeOnboarding,
+        fssaiApplyForLicense
     } = payload;
 
     // Optional richer multi-shift schedule (mirrors the same field on onboarding step 2 —
@@ -1387,9 +1386,7 @@ export const registerRestaurant = async (payload, files, authUserId) => {
         if (openingMinutes === closingMinutes) {
             throw new ValidationError('Opening time and closing time cannot be same');
         }
-        if (closingMinutes < openingMinutes) {
-            throw new ValidationError('Closing time cannot be less than opening time');
-        }
+        // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
     }
     const estimatedDeliveryTimeText = String(estimatedDeliveryTime || '').trim();
     const estimatedDeliveryTimeMinutes = parseEstimatedDeliveryMinutes(estimatedDeliveryTimeText);
@@ -1540,7 +1537,10 @@ export const registerRestaurant = async (payload, files, authUserId) => {
                     if (!images.panImage && !existingRestaurant.panImage) {
                         throw new ValidationError('PAN image is required');
                     }
-                    if (!images.fssaiImage && !existingRestaurant.fssaiImage) {
+                    // Owners who chose "Apply for FSSAI" in step 3 have no license image yet.
+                    const appliedForFssai =
+                        fssaiApplyForLicense === true || existingRestaurant.fssaiApplicationStatus === 'applied';
+                    if (!appliedForFssai && !images.fssaiImage && !existingRestaurant.fssaiImage) {
                         throw new ValidationError('FSSAI image is required');
                     }
                     if (gstRegistered && !images.gstImage && !existingRestaurant.gstImage) {
@@ -2184,9 +2184,7 @@ export const updateRestaurantProfile = async (restaurantId, body = {}) => {
         if (openingMinutes === closingMinutes) {
             throw new ValidationError('Opening time and closing time cannot be same');
         }
-        if (closingMinutes < openingMinutes) {
-            throw new ValidationError('Closing time cannot be less than opening time');
-        }
+        // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
     }
 
     if (body.menuImages !== undefined) {

@@ -272,9 +272,7 @@ const validateOpeningClosingTimes = (openingTime, closingTime) => {
     if (open === close) {
         throw new ValidationError('Opening time and closing time cannot be same');
     }
-    if (close < open) {
-        throw new ValidationError('Closing time cannot be less than opening time');
-    }
+    // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
 };
 
 export async function getRestaurantComplaints(query = {}) {
