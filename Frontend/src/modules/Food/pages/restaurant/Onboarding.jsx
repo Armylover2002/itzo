@@ -1364,9 +1364,6 @@ export default function RestaurantOnboarding() {
 
         const menuFiles = (mergedStep2.menuImages || []).filter((f) => isUploadableFile(f))
         const hasExistingMenuImages = (mergedStep2.menuImages || []).some(hasValidMenuImageAsset)
-        if (menuFiles.length === 0 && !hasExistingMenuImages) {
-          throw new Error("At least one menu image must be uploaded")
-        }
         menuFiles.forEach((file) => formData.append("menuImages", file))
 
         if (isUploadableFile(mergedStep2.profileImage)) {
@@ -1998,7 +1995,7 @@ export default function RestaurantOnboarding() {
         </p>
 
         <div className="space-y-2">
-          <Label className={ONBOARDING_LABEL}>Menu images</Label>
+          <Label className={ONBOARDING_LABEL}>Menu images (optional)</Label>
           <div className={`mt-1 flex flex-col items-center justify-between gap-4 rounded-xl border-2 border-dashed px-4 py-5 sm:flex-row ${
             fieldErrors.menuImages
               ? "border-red-300 bg-red-50/40"

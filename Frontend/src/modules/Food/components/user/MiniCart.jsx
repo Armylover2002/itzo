@@ -1,20 +1,43 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Trash2 } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { useCart } from '@food/context/CartContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import shoppingCartAnimation from "@/assets/lottie/shopping-cart.json";
 
+const RUPEE_SYMBOL = "₹";
+
 const MiniCart = ({
     className = "",
 }) => {
-    const { cart, getCartCount } = useCart();
+    const { cart, getCartCount, clearCart } = useCart();
     const cartCount = getCartCount();
 
-    // Hide MiniCart on specific pages if needed
-    // In Food module, we can just show it when cart has items
+    const summary = useMemo(() => {
+        const items = Array.isArray(cart) ? cart : [];
+        const first = items[0] || {};
+        const sources = new Set(items.map((item) => item.sourceId || item.restaurantId || item.restaurant).filter(Boolean));
+        const total = items.reduce(
+            (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
+            0,
+        );
+        const name = first.restaurant || first.sourceName || "Your cart";
+        const menuTarget = first.orderType !== "quick" ? (first.restaurantSlug || first.restaurantId) : null;
+        return {
+            name: sources.size > 1 ? `${name} +${sources.size - 1} more` : name,
+            image: first.restaurantImage || first.image || first.imageUrl || "",
+            menuPath: menuTarget ? `/user/restaurants/${menuTarget}` : null,
+            total: Math.round(total),
+        };
+    }, [cart]);
+
+    const handleClearCart = () => {
+        if (window.confirm("Remove all items from your cart?")) {
+            clearCart();
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -27,67 +50,66 @@ const MiniCart = ({
                     )}
                 >
                     <motion.div
-                        initial={{ y: 50, opacity: 0, scale: 0.9 }}
+                        initial={{ y: 50, opacity: 0, scale: 0.95 }}
                         animate={{ y: 0, opacity: 1, scale: 1 }}
-                        exit={{ y: 50, opacity: 0, scale: 0.9 }}
+                        exit={{ y: 50, opacity: 0, scale: 0.95 }}
                         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        className="pointer-events-auto w-full max-w-[170px]"
+                        className="pointer-events-auto w-full max-w-md"
                     >
-                        <Link
-                            to="/cart"
-                            className={cn(
-                                "flex items-center gap-2 text-white rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.05] active:scale-95 transition-all group border border-white/20 relative overflow-hidden py-1.5 px-2 bg-[#FB4F01]",
-                            )}
-                        >
-                            <div className="absolute inset-0 overflow-hidden rounded-full pointer-events-none">
-                                <div className="mini-cart-shimmer absolute inset-y-0 left-[-40%] w-[40%] bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg]" />
-                            </div>
-
-                            {/* Item Image */}
-                            <div className={cn(
-                                "h-8 w-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden border border-gray-100",
-                            )}>
-                                {cart[0]?.image || cart[0]?.imageUrl ? (
-                                    <img 
-                                        src={cart[0].image || cart[0].imageUrl} 
-                                        alt={cart[0].name} 
-                                        className="h-full w-full object-cover"
-                                    />
+                        <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-2.5 pl-3 shadow-[0_12px_40px_rgba(0,0,0,0.18)] dark:border-gray-800 dark:bg-zinc-900">
+                            {/* Restaurant logo */}
+                            <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full border border-gray-100 bg-white dark:border-gray-700">
+                                {summary.image ? (
+                                    <img src={summary.image} alt={summary.name} className="h-full w-full object-cover" />
                                 ) : (
                                     <Lottie
                                         animationData={shoppingCartAnimation}
                                         loop
-                                        className="pointer-events-none scale-[1.4] h-8 w-8"
+                                        className="pointer-events-none h-11 w-11 scale-[1.4]"
                                     />
                                 )}
                             </div>
 
-                            {/* Text Section */}
-                            <div className="flex-1 flex flex-col justify-center min-w-0">
-                                <h4 className="font-bold leading-tight text-[13px] truncate text-white uppercase tracking-tighter">View cart</h4>
-                                <p className="opacity-90 font-bold leading-tight text-[9px] text-white/95">
-                                  {cartCount} {cartCount === 1 ? 'item' : 'items'}
-                                </p>
+                            {/* Restaurant name + Menu link */}
+                            <div className="min-w-0 flex-1">
+                                <h4 className="truncate text-[15px] font-bold leading-tight text-gray-900 dark:text-white">
+                                    {summary.name}
+                                </h4>
+                                {summary.menuPath && (
+                                    <Link
+                                        to={summary.menuPath}
+                                        className="mt-1 inline-flex items-center gap-0.5 rounded-md bg-orange-50 px-2 py-0.5 text-xs font-semibold text-[#FB4F01] dark:bg-orange-500/15"
+                                    >
+                                        Menu
+                                        <ChevronRight size={14} strokeWidth={2.5} />
+                                    </Link>
+                                )}
                             </div>
 
-                            {/* Arrow Icon in circle */}
-                            <div className="h-6 w-6 rounded-full bg-white/25 flex items-center justify-center flex-shrink-0 group-hover:bg-white/35 transition-colors">
-                                <ChevronRight size={16} strokeWidth={3} className="text-white" />
-                            </div>
-                        </Link>
+                            {/* Checkout */}
+                            <Link
+                                to="/cart"
+                                className="flex-shrink-0 rounded-xl bg-green-600 px-4 py-1.5 text-center text-white shadow-sm transition-colors hover:bg-green-700 active:scale-95"
+                            >
+                                <span className="block text-[11px] font-medium leading-tight opacity-95">
+                                    {cartCount} {cartCount === 1 ? 'item' : 'items'} | {RUPEE_SYMBOL}{summary.total}
+                                </span>
+                                <span className="block text-base font-bold leading-tight">Checkout</span>
+                            </Link>
+
+                            {/* Clear cart */}
+                            <button
+                                type="button"
+                                onClick={handleClearCart}
+                                aria-label="Clear cart"
+                                className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500 transition-colors hover:bg-red-100 active:scale-95 dark:bg-red-500/15"
+                            >
+                                <Trash2 size={18} />
+                            </button>
+                        </div>
                     </motion.div>
                 </div>
             )}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                @keyframes mini-cart-shimmer {
-                    0% { transform: translateX(-140%); }
-                    100% { transform: translateX(320%); }
-                }
-                .mini-cart-shimmer {
-                    animation: mini-cart-shimmer 2.8s ease-in-out infinite;
-                }
-            `}} />
         </AnimatePresence>
     );
 };

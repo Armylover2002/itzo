@@ -1113,9 +1113,6 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                     files.menuImages.map((file) => uploadImageBuffer(file.buffer, 'food/restaurants/menu'))
                 );
             }
-            if (menuImages.length === 0 && (!restaurant.menuImages || restaurant.menuImages.length === 0)) {
-                throw new ValidationError('At least one menu image is required');
-            }
 
             const cuisines = Array.isArray(payload.cuisines)
                 ? payload.cuisines
@@ -1528,9 +1525,6 @@ export const registerRestaurant = async (payload, files, authUserId) => {
                 });
 
                 if (isFinalizeOnboarding || !files?.menuImages?.length) {
-                    if (!menuImages.length && (!existingRestaurant.menuImages || existingRestaurant.menuImages.length === 0)) {
-                        throw new ValidationError('At least one menu image is required');
-                    }
                     if (!images.profileImage && !existingRestaurant.profileImage) {
                         throw new ValidationError('Restaurant profile image is required');
                     }

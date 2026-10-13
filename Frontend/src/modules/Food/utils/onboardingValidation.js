@@ -125,11 +125,10 @@ const timeStringToMinutes = (value) => {
 
 export const validateOnboardingStep2 = (step2) => {
   const errors = {}
+  // Menu images are optional; only reject a selection that contains no usable image.
   const hasMenuImages = step2.menuImages && step2.menuImages.length > 0
 
-  if (!hasMenuImages) {
-    errors.menuImages = "At least one menu image is required"
-  } else {
+  if (hasMenuImages) {
     const validMenuImages = step2.menuImages.filter((img) => hasValidImageAsset(img))
     if (validMenuImages.length === 0) {
       errors.menuImages = "Please upload at least one valid menu image"
