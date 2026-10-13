@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Smartphone } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
 import { EYEBROW, HEADING, BODY } from './typography';
+import { ITZOFOOD_PLAY_STORE_URL, ITZOFOOD_APP_STORE_URL } from "@shared/constants/appStoreLinks";
 
 const CTASection = React.memo(function CTASection() {
   const [settings, setSettings] = React.useState(null);
@@ -35,8 +36,8 @@ const CTASection = React.memo(function CTASection() {
   const qrCodeImg = settings?.landingQrCodeImage?.url || "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://itzofood.com/app&color=000000&bgcolor=ffffff";
   const appStoreImg = settings?.landingAppStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg";
   const playStoreImg = settings?.landingPlayStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg";
-  const playStoreUrl = settings?.playStoreLink || "#!";
-  const appStoreUrl = settings?.appStoreLink || "#!";
+  const playStoreUrl = settings?.playStoreLink?.trim() || ITZOFOOD_PLAY_STORE_URL;
+  const appStoreUrl = settings?.appStoreLink?.trim() || ITZOFOOD_APP_STORE_URL;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

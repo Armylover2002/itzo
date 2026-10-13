@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Store, Bike } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
+import { ITZOFOOD_PLAY_STORE_URL, ITZOFOOD_APP_STORE_URL } from "@shared/constants/appStoreLinks";
 
 const FOOTER_COLUMNS = [
   {
@@ -136,8 +137,8 @@ const FooterSection = React.memo(function FooterSection() {
   }, []);
   const appStoreImg = settings?.landingAppStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg";
   const playStoreImg = settings?.landingPlayStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg";
-  const playStoreUrl = settings?.playStoreLink || "#!";
-  const appStoreUrl = settings?.appStoreLink || "#!";
+  const playStoreUrl = settings?.playStoreLink?.trim() || ITZOFOOD_PLAY_STORE_URL;
+  const appStoreUrl = settings?.appStoreLink?.trim() || ITZOFOOD_APP_STORE_URL;
 
   return (
     <footer className="bg-white pt-16 pb-8 border-t border-gray-200 font-sans">
