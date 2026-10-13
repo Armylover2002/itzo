@@ -24,7 +24,7 @@ export default function TeamAttendance() {
             });
             if (dateFilter) params.append('date', dateFilter);
             
-            const res = await axiosInstance.get(`/hrms/attendance/admin?${params}`);
+            const res = await axiosInstance.get(`/hrms/attendance?${params}`);
             setRecords(res.data?.data?.records || []);
             setPagination(res.data?.data?.pagination || { page: 1, limit: 50, total: 0, totalPages: 0 });
         } catch (error) {
@@ -46,7 +46,7 @@ export default function TeamAttendance() {
             
             setActionLoading(true);
             try {
-                await axiosInstance.post(`/hrms/attendance/admin/regularize/${id}`, { action: 'Rejected', rejectionReason: reason });
+                await axiosInstance.post(`/hrms/attendance/regularize/${id}/action`, { action: 'Rejected', rejectionReason: reason });
                 toast.success('Regularization rejected');
                 fetchAttendance(pagination.page);
             } catch (e) {
@@ -58,7 +58,7 @@ export default function TeamAttendance() {
             if (!window.confirm("Approve this regularization request?")) return;
             setActionLoading(true);
             try {
-                await axiosInstance.post(`/hrms/attendance/admin/regularize/${id}`, { action: 'Approved' });
+                await axiosInstance.post(`/hrms/attendance/regularize/${id}/action`, { action: 'Approved' });
                 toast.success('Regularization approved');
                 fetchAttendance(pagination.page);
             } catch (e) {

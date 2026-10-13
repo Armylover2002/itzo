@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { formatTimeAMPM } from "@shared/utils/timeFormat"
 import { useNavigate } from "react-router-dom"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -696,7 +697,7 @@ export default function OutletInfo() {
                   </div>
                   <p className="text-sm font-semibold text-gray-800">
                     {restaurantData?.openingTime && restaurantData?.closingTime 
-                      ? `${restaurantData.openingTime} - ${restaurantData.closingTime}` 
+                      ? `${formatTimeAMPM(restaurantData.openingTime)} - ${formatTimeAMPM(restaurantData.closingTime)}` 
                       : "Timings not set"}
                   </p>
                 </div>

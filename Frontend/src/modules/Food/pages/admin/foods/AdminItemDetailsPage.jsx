@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react"
+import { formatTimeAMPM } from "@shared/utils/timeFormat"
 import { useNavigate, useParams, useLocation } from "react-router-dom"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import { motion, AnimatePresence } from "framer-motion"
@@ -1981,7 +1982,7 @@ export default function AdminItemDetailsPage() {
                             <option value="">None (Always available)</option>
                             {slotTimings.map((slot) => (
                               <option key={slot.id} value={slot.id}>
-                                {slot.name} ({slot.startTime} - {slot.endTime})
+                                {slot.name} ({formatTimeAMPM(slot.startTime)} - {formatTimeAMPM(slot.endTime)})
                               </option>
                             ))}
                           </select>
@@ -1993,8 +1994,8 @@ export default function AdminItemDetailsPage() {
                               This item will only be visible to customers during the selected slot.
                               {selectedAvailabilitySlot ? (
                                 <span className="block mt-0.5 font-medium text-gray-600">
-                                  {selectedAvailabilitySlot.name} ({selectedAvailabilitySlot.startTime} -{" "}
-                                  {selectedAvailabilitySlot.endTime})
+                                  {selectedAvailabilitySlot.name} ({formatTimeAMPM(selectedAvailabilitySlot.startTime)} -{" "}
+                                  {formatTimeAMPM(selectedAvailabilitySlot.endTime)})
                                 </span>
                               ) : null}
                             </>

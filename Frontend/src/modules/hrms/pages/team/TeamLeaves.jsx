@@ -21,7 +21,7 @@ export default function TeamLeaves() {
                 status: statusFilter
             });
             
-            const res = await axiosInstance.get(`/hrms/leaves/admin?${params}`);
+            const res = await axiosInstance.get(`/hrms/leaves?${params}`);
             setLeaves(res.data?.data?.leaves || []);
             setPagination(res.data?.data?.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
         } catch (error) {
@@ -47,7 +47,7 @@ export default function TeamLeaves() {
 
         setActionLoading(true);
         try {
-            await axiosInstance.post(`/hrms/leaves/admin/${id}/approve`, { action, rejectionReason });
+            await axiosInstance.post(`/hrms/leaves/${id}/action`, { action, rejectionReason });
             toast.success(`Leave ${action.toLowerCase()}`);
             fetchLeaves(pagination.page);
         } catch (e) {

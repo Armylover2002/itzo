@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import TimePicker12h from "@shared/components/TimePicker12h"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import { AnimatePresence, motion } from "framer-motion"
 import { ArrowLeft, Clock3, Edit2, Loader2, Plus, Trash2, X } from "lucide-react"
@@ -286,19 +287,19 @@ export default function ItemSlotTimingsPage() {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-slate-700">Start time</label>
-                    <input
-                      type="time"
+                    <TimePicker12h
                       value={formData.startTime}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value }))}
+                      ariaLabel="Start time"
+                      onChange={(v) => setFormData((prev) => ({ ...prev, startTime: v }))}
                       className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm"
                     />
                   </div>
                   <div>
                     <label className="mb-1.5 block text-sm font-medium text-slate-700">End time</label>
-                    <input
-                      type="time"
+                    <TimePicker12h
                       value={formData.endTime}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))}
+                      ariaLabel="End time"
+                      onChange={(v) => setFormData((prev) => ({ ...prev, endTime: v }))}
                       className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm"
                     />
                   </div>

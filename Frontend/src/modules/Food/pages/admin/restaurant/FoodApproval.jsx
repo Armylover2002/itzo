@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react"
+import { formatTimeAMPM } from "@shared/utils/timeFormat"
 import { Search, CheckCircle2, XCircle, Eye, Clock, Loader2 } from "lucide-react"
 import { Card } from "@food/components/ui/card"
 import {
@@ -478,7 +479,7 @@ export default function FoodApproval() {
                         <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Availability Slot</label>
                             <p className="text-sm text-gray-700">
-                              {selectedRequest.itemSlotTiming.name} ({selectedRequest.itemSlotTiming.startTime} - {selectedRequest.itemSlotTiming.endTime})
+                              {selectedRequest.itemSlotTiming.name} ({formatTimeAMPM(selectedRequest.itemSlotTiming.startTime)} - {formatTimeAMPM(selectedRequest.itemSlotTiming.endTime)})
                             </p>
                         </div>
                     )}

@@ -322,6 +322,23 @@ export const checkOut = async (req, res, next) => {
     }
 };
 
+/**
+ * Parse a regularization time. Accepts "HH:mm" (combined with `date`) or a datetime string.
+ * Times without an explicit zone are the employee's wall-clock time in IST, so they are
+ * pinned to +05:30 instead of being read in the server's (possibly UTC) local zone.
+ */
+const parseRegularizationTime = (date, value) => {
+    let text = String(value || '').trim();
+    if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(text)) {
+        text = `${String(date).split('T')[0]}T${text.padStart(5, '0')}`;
+    }
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(text)) {
+        text += '+05:30';
+    }
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
 export const requestRegularization = async (req, res, next) => {
     try {
         const { date, requestedCheckInTime, requestedCheckOutTime, reason } = req.body;
@@ -353,10 +370,19 @@ export const requestRegularization = async (req, res, next) => {
             }
         }
 
+        const checkInAt = parseRegularizationTime(date, requestedCheckInTime);
+        const checkOutAt = parseRegularizationTime(date, requestedCheckOutTime);
+        if (!checkInAt || !checkOutAt) {
+            return sendError(res, 400, 'Invalid check-in or check-out time');
+        }
+        if (checkOutAt <= checkInAt) {
+            return sendError(res, 400, 'Check-out time must be after check-in time');
+        }
+
         attendance.regularization = {
             isRequested: true,
-            requestedCheckInTime: new Date(requestedCheckInTime),
-            requestedCheckOutTime: new Date(requestedCheckOutTime),
+            requestedCheckInTime: checkInAt,
+            requestedCheckOutTime: checkOutAt,
             reason,
             status: 'Pending'
         };
