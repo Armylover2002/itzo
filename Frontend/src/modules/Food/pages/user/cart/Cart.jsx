@@ -2692,7 +2692,7 @@ return (
                             {RUPEE_SYMBOL}{(Number(item.otherPrice || 0) * (item.quantity || 1)).toFixed(0)}
                           </p>
                         ) : null}
-                        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200">
+                        <p className="text-sm md:text-base font-semibold text-green-600 dark:text-green-500">
                           {RUPEE_SYMBOL}{((item.price || 0) * (item.quantity || 1)).toFixed(0)}
                         </p>
                       </div>
