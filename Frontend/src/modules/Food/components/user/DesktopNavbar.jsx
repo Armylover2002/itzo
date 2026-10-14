@@ -83,12 +83,23 @@ export default function DesktopNavbar({ showLogo = true }) {
         return subscribeBusinessSettings(apply)
     }, [])
 
-    const handleSearchSubmit = () => {
-        if (!heroSearch.trim()) return
+    useEffect(() => {
+        if (location.pathname.startsWith('/food/user/search') || location.pathname.startsWith('/food/search') || location.pathname.startsWith('/quick/search')) {
+            const queryParam = new URLSearchParams(location.search).get("q") || ""
+            setHeroSearch(queryParam)
+        }
+    }, [location.pathname, location.search])
+
+    const handleSearchSubmit = (e) => {
+        if (e && typeof e.preventDefault === "function") {
+            e.preventDefault()
+        }
+        const query = (heroSearch || "").trim()
+        if (!query) return
         navigate(
             isQuick
-                ? `/quick/search?q=${encodeURIComponent(heroSearch.trim())}`
-                : `/food/search?q=${encodeURIComponent(heroSearch.trim())}`,
+                ? `/quick/search?q=${encodeURIComponent(query)}`
+                : `/food/user/search?q=${encodeURIComponent(query)}`,
         )
     }
 
@@ -142,33 +153,40 @@ export default function DesktopNavbar({ showLogo = true }) {
                         </Button>
 
                         {/* Search Bar */}
-                        <div className="flex-1 mx-2 lg:mx-4 max-w-3xl min-w-0">
-                            <div className="flex items-center h-10 lg:h-12 w-full rounded-lg border border-gray-200 bg-white px-2 lg:px-4 focus-within:border-gray-400 focus-within:shadow-sm transition-all shadow-sm min-w-0">
-                                <Search className="h-4 w-4 lg:h-5 lg:w-5 text-gray-400 mr-2 lg:mr-3 flex-shrink-0" />
+                        <form onSubmit={handleSearchSubmit} className="flex-1 mx-2 lg:mx-4 max-w-3xl min-w-0">
+                            <div className="flex items-center h-10 lg:h-12 w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-zinc-900/60 px-2 lg:px-4 focus-within:border-[#FB4F01] focus-within:shadow-sm transition-all shadow-sm min-w-0">
+                                <button
+                                    type="submit"
+                                    className="flex items-center justify-center p-0 mr-2 lg:mr-3 flex-shrink-0 text-gray-400 hover:text-[#FB4F01] transition-colors focus:outline-none"
+                                    aria-label="Search"
+                                >
+                                    <Search className="h-4 w-4 lg:h-5 lg:w-5" />
+                                </button>
                                 <Input
                                     value={heroSearch}
                                     onChange={(e) => {
                                         setHeroSearch(e.target.value)
                                         setSearchValue(e.target.value)
                                     }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") handleSearchSubmit()
-                                    }}
-                                    className="h-full border-0 bg-transparent p-0 text-xs lg:text-sm font-medium placeholder:text-gray-400 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 min-w-0"
+                                    className="h-full border-0 bg-transparent p-0 text-xs lg:text-sm font-medium placeholder:text-gray-400 dark:placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 flex-1 min-w-0 text-gray-900 dark:text-gray-100"
                                     placeholder={searchPlaceholder}
                                 />
                                 {heroSearch && (
                                     <Button
+                                        type="button"
                                         variant="ghost"
                                         size="sm"
-                                        className="h-8 w-8 rounded-full p-0 hover:bg-gray-100"
-                                        onClick={() => setHeroSearch("")}
+                                        className="h-8 w-8 rounded-full p-0 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                                        onClick={() => {
+                                            setHeroSearch("")
+                                            setSearchValue("")
+                                        }}
                                     >
                                         <X className="h-4 w-4 text-gray-500" />
                                     </Button>
                                 )}
                             </div>
-                        </div>
+                        </form>
 
                         {/* Navigation Tabs */}
                         {!isQuick && (

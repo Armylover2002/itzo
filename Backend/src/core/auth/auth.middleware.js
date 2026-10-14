@@ -97,6 +97,7 @@ const createAuthMiddleware = ({ allowRejectedRestaurant = false } = {}) => (req,
     const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
     if (!token) {
+        console.log(`[AUTH DEBUG] 401 - No token provided for ${req.method} ${req.originalUrl}`);
         return sendError(res, 401, 'Authentication token missing');
     }
 
@@ -106,6 +107,7 @@ const createAuthMiddleware = ({ allowRejectedRestaurant = false } = {}) => (req,
             decoded?.purpose === 'restaurant_onboarding' ||
             decoded?.purpose === 'seller_onboarding'
         ) {
+            console.log(`[AUTH DEBUG] 401 - Onboarding token used for ${req.method} ${req.originalUrl}, purpose=${decoded.purpose}`);
             return sendError(res, 401, 'Invalid or expired token');
         }
         req.user = {
@@ -146,29 +148,37 @@ const createAuthMiddleware = ({ allowRejectedRestaurant = false } = {}) => (req,
                 .lean()
                 .then((doc) => {
                     if (!doc) {
+                        console.log(`[AUTH DEBUG] 401 - Restaurant not found in DB. userId=${decoded.userId}, url=${req.originalUrl}`);
                         return sendError(res, 401, 'Restaurant account not found');
                     }
 
                     if (doc.isDeleted === true || doc.accountStatus === 'deleted') {
+                        console.log(`[AUTH DEBUG] 401 - Restaurant deleted/deactivated. userId=${decoded.userId}, isDeleted=${doc.isDeleted}, accountStatus=${doc.accountStatus}`);
                         return sendError(res, 401, 'Your account has been deleted/deactivated. Please contact support.');
                     }
 
                     const isRejected = String(doc.status || '').toLowerCase() === 'rejected';
                     if (isRejected && !allowRejectedRestaurant) {
+                        console.log(`[AUTH DEBUG] 401 - Restaurant rejected. userId=${decoded.userId}, status=${doc.status}`);
                         return sendError(res, 401, 'Your account has been rejected. Please contact support.');
                     }
 
                     if (!isRejected && doc.isActive === false && String(doc.status || '').toLowerCase() !== 'pending') {
+                        console.log(`[AUTH DEBUG] 401 - Restaurant inactive. userId=${decoded.userId}, isActive=${doc.isActive}, status=${doc.status}`);
                         return sendError(res, 401, 'Your account has been deleted/deactivated. Please contact support.');
                     }
 
                     next();
                 })
-                .catch(() => sendError(res, 401, 'Authentication failed'));
+                .catch((err) => {
+                    console.log(`[AUTH DEBUG] 401 - DB error for restaurant. userId=${decoded.userId}, error=${err.message}`);
+                    sendError(res, 401, 'Authentication failed');
+                });
             return;
         }
         return next();
     } catch (error) {
+        console.log(`[AUTH DEBUG] 401 - Token verification failed for ${req.method} ${req.originalUrl}: ${error.message}`);
         return sendError(res, 401, 'Invalid or expired token');
     }
 };

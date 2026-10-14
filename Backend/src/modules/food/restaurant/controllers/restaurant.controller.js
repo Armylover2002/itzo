@@ -162,6 +162,15 @@ export const updateRestaurantAcceptingOrdersController = async (req, res, next) 
 export const checkSubscriptionEligibilityController = async (req, res, next) => {
     try {
         const restaurantId = req.user?.userId;
+        const { isSubscriptionEnforced } = await import('../../../common/services/subscriptionEnforcement.service.js');
+        // Plan Mode OFF (admin) — no plan/balance needed to go online.
+        if (!(await isSubscriptionEnforced('RESTAURANT'))) {
+            return sendResponse(res, 200, 'Eligibility checked', {
+                eligible: true,
+                reason: 'NOT_ENFORCED',
+                shouldDeduct: false
+            });
+        }
         const { ensureDailyPassEligibility } = await import('../../subscriptions/services/wallet.service.js');
         const eligibility = await ensureDailyPassEligibility(restaurantId, 'RESTAURANT');
         return sendResponse(res, 200, 'Eligibility checked', eligibility);

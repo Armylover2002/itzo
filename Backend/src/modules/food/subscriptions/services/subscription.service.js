@@ -27,7 +27,7 @@ export async function initiatePurchase(userId, userType, { planId }) {
     if (existing) throw new ValidationError('You already have an active subscription');
 
     const PENDING_REUSE_MS = 30 * 60 * 1000;
-    const lockWindowMs = 2 * 60 * 1000;
+    const lockWindowMs = 30 * 1000;           // 30s — Razorpay calls complete in seconds
     const lockWaitMs = 5 * 1000;
     const lockPollMs = 250;
     const nowMs = Date.now();
@@ -37,6 +37,17 @@ export async function initiatePurchase(userId, userType, { planId }) {
             .sort({ createdAt: -1 })
             .exec();
     };
+
+    // Force-clear stale locks left behind by crashed previous attempts
+    await UserSubscription.updateMany(
+        {
+            ...ownerFilter,
+            planId: plan._id,
+            status: 'pending',
+            'metadata.purchaseLockUntil': { $lt: new Date() }
+        },
+        { $unset: { 'metadata.purchaseLockId': 1, 'metadata.purchaseLockUntil': 1 } }
+    );
 
     let pendingDoc = await getPendingForPlan();
     if (pendingDoc?.createdAt) {
@@ -89,26 +100,39 @@ export async function initiatePurchase(userId, userType, { planId }) {
     const lockId = crypto.randomBytes(16).toString('hex');
     const lockUntil = new Date(Date.now() + lockWindowMs);
 
-    const lockResult = await UserSubscription.updateOne(
-        {
-            _id: pendingDoc._id,
-            status: 'pending',
-            planId: plan._id,
-            $or: [
-                { 'metadata.purchaseLockUntil': { $exists: false } },
-                { 'metadata.purchaseLockUntil': null },
-                { 'metadata.purchaseLockUntil': { $lt: new Date() } }
-            ]
-        },
-        {
-            $set: {
-                'metadata.purchaseLockId': lockId,
-                'metadata.purchaseLockUntil': lockUntil
+    const tryAcquireLock = async () => {
+        const result = await UserSubscription.updateOne(
+            {
+                _id: pendingDoc._id,
+                status: 'pending',
+                planId: plan._id,
+                $or: [
+                    { 'metadata.purchaseLockUntil': { $exists: false } },
+                    { 'metadata.purchaseLockUntil': null },
+                    { 'metadata.purchaseLockUntil': { $lt: new Date() } }
+                ]
+            },
+            {
+                $set: {
+                    'metadata.purchaseLockId': lockId,
+                    'metadata.purchaseLockUntil': lockUntil
+                }
             }
-        }
-    );
+        );
+        return result.modifiedCount > 0;
+    };
 
-    if (lockResult.modifiedCount === 0) {
+    const releaseLock = async () => {
+        await UserSubscription.updateOne(
+            { _id: pendingDoc._id, 'metadata.purchaseLockId': lockId },
+            { $unset: { 'metadata.purchaseLockId': 1, 'metadata.purchaseLockUntil': 1 } }
+        );
+    };
+
+    let lockAcquired = await tryAcquireLock();
+
+    if (!lockAcquired) {
+        // Wait for the other attempt to finish, checking if it produced a usable result
         const startedAt = Date.now();
         while (Date.now() - startedAt < lockWaitMs) {
             const fresh = await getPendingForPlan();
@@ -134,70 +158,93 @@ export async function initiatePurchase(userId, userType, { planId }) {
             }
             await new Promise((r) => setTimeout(r, lockPollMs));
         }
-        throw new ValidationError('Purchase is already in progress. Please retry.');
+
+        // The other attempt may have finished/crashed — retry lock acquisition once more
+        lockAcquired = await tryAcquireLock();
+        if (!lockAcquired) {
+            // Force-clear if the lock is expired and retry
+            await UserSubscription.updateOne(
+                {
+                    _id: pendingDoc._id,
+                    status: 'pending',
+                    'metadata.purchaseLockUntil': { $lt: new Date() }
+                },
+                { $unset: { 'metadata.purchaseLockId': 1, 'metadata.purchaseLockUntil': 1 } }
+            );
+            lockAcquired = await tryAcquireLock();
+        }
+        if (!lockAcquired) {
+            throw new ValidationError('Purchase is already in progress. Please retry.');
+        }
     }
 
     let razorpayData = {};
 
-    // 2. Handle One-Time vs Recurring
-    if (plan.paymentType === 'ONE_TIME') {
-        const order = await razorpayHelper.createRazorpayOrder(
-            plan.price * 100,
-            'INR',
-            String(pendingDoc._id)
-        );
+    // 2. Handle One-Time vs Recurring — wrapped in try/catch to release lock on failure
+    try {
+        if (plan.paymentType === 'ONE_TIME') {
+            const order = await razorpayHelper.createRazorpayOrder(
+                plan.price * 100,
+                'INR',
+                String(pendingDoc._id)
+            );
 
-        // 📂 CRITICAL: Create PENDING subscription record for One-Time too (idempotency)
-        await UserSubscription.updateOne(
-            { _id: pendingDoc._id, status: 'pending', planId: plan._id, 'metadata.purchaseLockId': lockId },
-            {
-                $set: {
-                    razorpayPaymentId: null,
-                    'metadata.razorpayOrderId': order.id,
-                    'metadata.razorpayOrderAmount': order.amount
-                },
-                $unset: {
-                    'metadata.purchaseLockId': 1,
-                    'metadata.purchaseLockUntil': 1
+            // 📂 CRITICAL: Create PENDING subscription record for One-Time too (idempotency)
+            await UserSubscription.updateOne(
+                { _id: pendingDoc._id, status: 'pending', planId: plan._id, 'metadata.purchaseLockId': lockId },
+                {
+                    $set: {
+                        razorpayPaymentId: null,
+                        'metadata.razorpayOrderId': order.id,
+                        'metadata.razorpayOrderAmount': order.amount
+                    },
+                    $unset: {
+                        'metadata.purchaseLockId': 1,
+                        'metadata.purchaseLockUntil': 1
+                    }
                 }
-            }
-        );
+            );
 
-        razorpayData = {
-            orderId: order.id,
-            amount: order.amount,
-            key: razorpayHelper.getRazorpayKeyId()
-        };
-    } else {
-        const sub = await razorpayHelper.createRazorpaySubscription({
-            planId: plan.razorpayPlanId,
-            customerNotes: {
-                planId: String(plan._id),
-                restaurantId: restaurantId ? String(restaurantId) : undefined,
-                deliveryBoyId: deliveryBoyId ? String(deliveryBoyId) : undefined,
-                userType
-            }
-        });
-
-        // 📂 CRITICAL: Create PENDING subscription record for Recurring
-        await UserSubscription.updateOne(
-            { _id: pendingDoc._id, status: 'pending', planId: plan._id, 'metadata.purchaseLockId': lockId },
-            {
-                $set: {
-                    razorpaySubscriptionId: sub.id,
-                    'metadata.razorpaySubscriptionId': sub.id
-                },
-                $unset: {
-                    'metadata.purchaseLockId': 1,
-                    'metadata.purchaseLockUntil': 1
+            razorpayData = {
+                orderId: order.id,
+                amount: order.amount,
+                key: razorpayHelper.getRazorpayKeyId()
+            };
+        } else {
+            const sub = await razorpayHelper.createRazorpaySubscription({
+                planId: plan.razorpayPlanId,
+                customerNotes: {
+                    planId: String(plan._id),
+                    restaurantId: restaurantId ? String(restaurantId) : undefined,
+                    deliveryBoyId: deliveryBoyId ? String(deliveryBoyId) : undefined,
+                    userType
                 }
-            }
-        );
+            });
 
-        razorpayData = {
-            subscriptionId: sub.id,
-            key: razorpayHelper.getRazorpayKeyId()
-        };
+            // 📂 CRITICAL: Create PENDING subscription record for Recurring
+            await UserSubscription.updateOne(
+                { _id: pendingDoc._id, status: 'pending', planId: plan._id, 'metadata.purchaseLockId': lockId },
+                {
+                    $set: {
+                        razorpaySubscriptionId: sub.id,
+                        'metadata.razorpaySubscriptionId': sub.id
+                    },
+                    $unset: {
+                        'metadata.purchaseLockId': 1,
+                        'metadata.purchaseLockUntil': 1
+                    }
+                }
+            );
+
+            razorpayData = {
+                subscriptionId: sub.id,
+                key: razorpayHelper.getRazorpayKeyId()
+            };
+        }
+    } catch (err) {
+        // Release the lock so the next attempt isn't blocked
+        await releaseLock();
+        throw err;
     }
 
     return razorpayData;

@@ -11,15 +11,8 @@ const toImageUrl = (value) => {
 export const buildRestaurantGallery = (restaurant) => {
   if (!restaurant) return [];
 
-  const covers = (Array.isArray(restaurant.coverImages) ? restaurant.coverImages : [])
-    .map(toImageUrl)
-    .filter(Boolean);
-  const menus = (Array.isArray(restaurant.menuImages) ? restaurant.menuImages : [])
-    .map(toImageUrl)
-    .filter(Boolean);
+  // Banner shows only the restaurant's profile picture (no cover/menu images).
+  // Empty result lets the hero fall back to FOOD_IMAGE_FALLBACK.
   const profile = toImageUrl(restaurant.profileImage);
-  const primary = toImageUrl(restaurant.image);
-
-  const combined = [...covers, ...menus, profile, primary].filter(Boolean);
-  return combined.filter((url, index) => combined.indexOf(url) === index);
+  return profile ? [profile] : [];
 };

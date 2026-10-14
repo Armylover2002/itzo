@@ -128,7 +128,7 @@ export default function SubscriptionManagement() {
         setEnforcementSaving(key);
         try {
             await adminAPI.updateBusinessSettings({ subscriptionEnforcement: updated });
-            toast.success(`Subscription enforcement ${updated[key] ? "enabled" : "disabled"} for ${key === "restaurant" ? "restaurants" : "delivery partners"}`);
+            toast.success(`Plan Mode ${updated[key] ? "ON" : "OFF"} for ${key === "restaurant" ? "restaurants" : "delivery partners"}`);
         } catch (err) {
             setEnforcement(previous);
             toast.error(err?.response?.data?.message || "Failed to update enforcement setting");
@@ -406,20 +406,25 @@ export default function SubscriptionManagement() {
                 )}
             </div>
 
-            {/* Enforcement master switch */}
+            {/* Plan Mode master switch (subscriptionEnforcement) */}
             <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
                 <div className="flex items-center justify-between mb-3">
                     <div>
-                        <h3 className="text-sm font-bold text-slate-900">Subscription Enforcement</h3>
+                        <h3 className="text-sm font-bold text-slate-900">Plan Mode</h3>
                         <p className="text-xs text-slate-500 mt-0.5">
-                            When ON, restaurants/delivery partners must have an active plan or day pass to go online / accept orders.
-                            When OFF, plans can still be sold but nobody is blocked from operating.
+                            ON: restaurants/delivery partners must have an active plan or day pass to go online / accept orders.
+                            OFF: anyone can go online without purchasing a plan (plans can still be sold).
                         </p>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                        <span className="text-sm font-semibold text-slate-700">Restaurants</span>
+                        <span className="text-sm font-semibold text-slate-700">
+                            Restaurants
+                            <span className={`ml-2 text-xs font-bold ${enforcement.restaurant ? "text-[#6413C7]" : "text-slate-400"}`}>
+                                {enforcement.restaurant ? "ON" : "OFF"}
+                            </span>
+                        </span>
                         <button
                             type="button"
                             disabled={!canEditPlan || enforcementLoading || enforcementSaving === "restaurant"}
@@ -430,7 +435,12 @@ export default function SubscriptionManagement() {
                         </button>
                     </div>
                     <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-                        <span className="text-sm font-semibold text-slate-700">Delivery Partners</span>
+                        <span className="text-sm font-semibold text-slate-700">
+                            Delivery Partners
+                            <span className={`ml-2 text-xs font-bold ${enforcement.deliveryPartner ? "text-[#6413C7]" : "text-slate-400"}`}>
+                                {enforcement.deliveryPartner ? "ON" : "OFF"}
+                            </span>
+                        </span>
                         <button
                             type="button"
                             disabled={!canEditPlan || enforcementLoading || enforcementSaving === "deliveryPartner"}
