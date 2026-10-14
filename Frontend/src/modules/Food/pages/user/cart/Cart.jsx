@@ -3077,7 +3077,8 @@ return (
               )}
             </div>
 
-            {/* Delivery Type */}
+            {/* Delivery Type (Commented out) */}
+            {/*
             <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col p-4 md:p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -3088,7 +3089,7 @@ return (
               </div>
 
               <div className="flex flex-col gap-0">
-                {/* Food Quick Delivery — mutually exclusive with Schedule */}
+                -- Food Quick Delivery — mutually exclusive with Schedule --
                 {showQuickOption && (
                   <div
                     onClick={() => {
@@ -3148,7 +3149,7 @@ return (
                   </div>
                 )}
 
-                {/* Basic Delivery */}
+                -- Basic Delivery --
                 <div
                   onClick={() => {
                     clearQuickDeliveryToast()
@@ -3175,6 +3176,7 @@ return (
                 </div>
               </div>
             </div>
+            */}
 
             {/* Delivery Address */}
             <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
