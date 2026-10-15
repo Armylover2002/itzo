@@ -366,6 +366,7 @@ export default function Cart() {
   const [sendCutlery, setSendCutlery] = useState(true)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
   const [showBillDetails, setShowBillDetails] = useState(true)
+  const [showTaxBreakdown, setShowTaxBreakdown] = useState(false)
   const [showPlacingOrder, setShowPlacingOrder] = useState(false)
   /** Food Instant delivery mode: "standard" (Basic) | "quick". Never confuse with QC. */
   const [deliveryType, setDeliveryType] = useState("standard")
@@ -448,6 +449,7 @@ export default function Cart() {
     platformFee: 0,
     packagingFee: 0,
     gstRate: 0,
+    deliveryFeeTaxRate: 0,
   })
 
 
@@ -1284,6 +1286,7 @@ useEffect(() => {
           platformFee: Number(settings.platformFee ?? 0),
           packagingFee: Number(settings.packagingFee ?? 0),
           gstRate: Number(settings.gstRate ?? 0),
+          deliveryFeeTaxRate: Number(settings.deliveryFeeTaxRate ?? 0),
         })
       }
     } catch (error) {
@@ -1373,7 +1376,17 @@ const deliveryFeeBreakdownText = hasDistanceDeliveryBreakdown
   : null
 const platformFee = pricing?.platformFee ?? Number(feeSettings.platformFee || 0)
 const packagingFee = pricing?.packagingFee ?? Number(feeSettings.packagingFee || 0)
-const gstCharges = pricing?.tax ?? Number((subtotal * (Number(feeSettings.gstRate || 0) / 100)).toFixed(2))
+const fallbackItemTax = Number((subtotal * (Number(feeSettings.gstRate || 0) / 100)).toFixed(2))
+const fallbackDeliveryFeeTax = Number((deliveryFee * (Number(feeSettings.deliveryFeeTaxRate || 0) / 100)).toFixed(2))
+const gstCharges = pricing?.tax ?? Number((fallbackItemTax + fallbackDeliveryFeeTax).toFixed(2))
+// Server sends per-component lines; fall back to locally computed ones.
+const taxBreakdown =
+  Array.isArray(pricing?.taxBreakdown) && pricing.taxBreakdown.length > 0
+    ? pricing.taxBreakdown
+    : [
+        { key: "food_gst", label: "GST on food items", rate: Number(feeSettings.gstRate || 0), amount: fallbackItemTax },
+        { key: "delivery_fee_tax", label: "GST on delivery fee", rate: Number(feeSettings.deliveryFeeTaxRate || 0), amount: fallbackDeliveryFeeTax },
+      ].filter((line) => line.amount > 0)
 // Never invent coupon caps — wait for server pricing for actual discount.
 const discount = pricing?.discount ?? 0
 const totalBeforeDiscount =
@@ -3449,9 +3462,35 @@ return (
                       </div>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400 border-b border-dashed border-gray-400 pb-[1px]">Government Taxes</span>
-                    <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setShowTaxBreakdown((v) => !v)}
+                      disabled={taxBreakdown.length === 0}
+                      className="w-full flex justify-between items-center text-sm text-left"
+                    >
+                      <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                        <span className="border-b border-dashed border-gray-400 pb-[1px]">Government Taxes</span>
+                        {taxBreakdown.length > 0 && (
+                          <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${showTaxBreakdown ? 'rotate-180' : ''}`} />
+                        )}
+                      </span>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
+                    </button>
+                    {showTaxBreakdown && taxBreakdown.length > 0 && (
+                      <div className="mt-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-3 py-2 space-y-1.5">
+                        {taxBreakdown.map((line) => (
+                          <div key={line.key} className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>
+                              {line.label}
+                              {Number(line.rate) > 0 ? ` (${Number(line.rate)}%)` : ""}
+                              {Number(line.taxableAmount) > 0 ? ` on ${RUPEE_SYMBOL}${Number(line.taxableAmount).toFixed(2)}` : ""}
+                            </span>
+                            <span>{RUPEE_SYMBOL}{Number(line.amount || 0).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm text-[#FB4F01] font-medium">
