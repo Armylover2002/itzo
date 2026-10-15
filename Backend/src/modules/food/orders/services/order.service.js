@@ -3210,13 +3210,13 @@ export async function calculateOrder(userId, dto, options = {}) {
     const gstRate = feeSettings.gstRate;
     const tax =
       Number.isFinite(gstRate) && gstRate > 0
-        ? Math.round(subtotal * (gstRate / 100))
+        ? roundCurrency(subtotal * (gstRate / 100))
         : 0;
     const discount = 0;
-    const total = Math.max(
+    const total = Math.round(Math.max(
       0,
       subtotal + packagingFee + deliveryFee + platformFee + tax - discount,
-    );
+    ));
     const codOrderLimit = await resolveCodOrderLimit();
     const codEligibility = buildCodEligibility(total, codOrderLimit);
 
@@ -3385,15 +3385,15 @@ export async function calculateOrder(userId, dto, options = {}) {
   let tax = 0;
   if (orderType === "mixed") {
     const discountedFoodSubtotal = Math.max(0, foodItemSubtotal - discount);
-    const foodTax = Math.round(discountedFoodSubtotal * (feeSettings.gstRate / 100));
+    const foodTax = roundCurrency(discountedFoodSubtotal * (feeSettings.gstRate / 100));
     const quickGstRate = quickFeeDoc?.gstRate ?? 0;
-    const quickTax = Math.round(quickSubtotal * (quickGstRate / 100));
-    tax = foodTax + quickTax;
+    const quickTax = roundCurrency(quickSubtotal * (quickGstRate / 100));
+    tax = roundCurrency(foodTax + quickTax);
   } else {
     const gstRate = feeSettings.gstRate;
     const discountedSubtotal = Math.max(0, subtotal - discount);
     tax = Number.isFinite(gstRate) && gstRate > 0
-      ? Math.round(discountedSubtotal * (gstRate / 100))
+      ? roundCurrency(discountedSubtotal * (gstRate / 100))
       : 0;
   }
   // ----- Mixed cart: QC store delivery fee (Quick Commerce) — NEVER Food Quick surcharge -----
@@ -3411,10 +3411,10 @@ export async function calculateOrder(userId, dto, options = {}) {
         ? expressDeliveryFee
         : normalDeliveryFee
       : deliveryFee;
-  let total = Math.max(
+  let total = Math.round(Math.max(
     0,
     subtotal + packagingFee + selectedDeliveryFee + platformFee + tax - discount,
-  );
+  ));
   const deliveryOptions =
     orderType === "mixed" && eligibility.eligible
       ? [
@@ -3422,7 +3422,7 @@ export async function calculateOrder(userId, dto, options = {}) {
             code: "normal",
             label: "Normal delivery",
             deliveryFee: normalDeliveryFee,
-            total: Math.max(
+            total: Math.round(Math.max(
               0,
               subtotal +
                 packagingFee +
@@ -3430,14 +3430,14 @@ export async function calculateOrder(userId, dto, options = {}) {
                 platformFee +
                 tax -
                 discount,
-            ),
+            )),
             riderCount: 1,
           },
           {
             code: "express",
             label: "Express delivery",
             deliveryFee: expressDeliveryFee,
-            total: Math.max(
+            total: Math.round(Math.max(
               0,
               subtotal +
                 packagingFee +
@@ -3445,7 +3445,7 @@ export async function calculateOrder(userId, dto, options = {}) {
                 platformFee +
                 tax -
                 discount,
-            ),
+            )),
             riderCount: 2,
           },
         ]
@@ -3525,7 +3525,7 @@ export async function calculateOrder(userId, dto, options = {}) {
         foodQuickSharePcts = split.quickSharePcts;
         foodQuickFinanceVersion = split.quickFinanceVersion;
         foodDeliveryMode = "quick";
-        total = Math.max(0, total + foodQuickDeliveryFee);
+        total = Math.round(Math.max(0, total + foodQuickDeliveryFee));
         etaPromise = eta.etaPromise;
         foodQuickDeliveryMeta.etaPromise = {
           min: etaPromise.min,
@@ -3885,7 +3885,7 @@ export async function createOrder(userId, dto) {
   normalizedPricing.sponsoredDelivery =
     Boolean(normalizedPricing.sponsoredDelivery) ||
     normalizedPricing.restaurantDeliveryFee > 0;
-  const recomputedTotal = Math.max(
+  const recomputedTotal = Math.round(Math.max(
     0,
     normalizedPricing.subtotal +
       normalizedPricing.tax +
@@ -3894,7 +3894,7 @@ export async function createOrder(userId, dto) {
       normalizedPricing.platformFee +
       normalizedPricing.quickDeliveryFee -
       normalizedPricing.discount,
-  );
+  ));
   normalizedPricing.total = recomputedTotal;
 
   if (isCash) {

@@ -1373,12 +1373,12 @@ const deliveryFeeBreakdownText = hasDistanceDeliveryBreakdown
   : null
 const platformFee = pricing?.platformFee ?? Number(feeSettings.platformFee || 0)
 const packagingFee = pricing?.packagingFee ?? Number(feeSettings.packagingFee || 0)
-const gstCharges = pricing?.tax ?? Math.round(subtotal * (Number(feeSettings.gstRate || 0) / 100))
+const gstCharges = pricing?.tax ?? Number((subtotal * (Number(feeSettings.gstRate || 0) / 100)).toFixed(2))
 // Never invent coupon caps — wait for server pricing for actual discount.
 const discount = pricing?.discount ?? 0
 const totalBeforeDiscount =
   subtotal + deliveryFee + platformFee + packagingFee + gstCharges + quickDeliveryFee
-const total = pricing?.total ?? (totalBeforeDiscount - discount)
+const total = pricing?.total ?? Math.round(totalBeforeDiscount - discount)
 
 // Calculate other platform total for comparison
 const otherPlatformSubtotal = cart.reduce((sum, item) => {
