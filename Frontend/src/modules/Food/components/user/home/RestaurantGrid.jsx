@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Star, BadgePercent, Bookmark, Plus, Minus } from "lucide-react";
+import { Star, BadgePercent, Bookmark, Plus, Minus, UtensilsCrossed } from "lucide-react";
 import { Button } from "@food/components/ui/button";
 import { RestaurantGridSkeleton, LoadingSkeletonRegion } from "@food/components/ui/loading-skeletons";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
@@ -34,6 +34,7 @@ const DishPreviewCard = memo(({ dish, quantity, disabled, onOpen, onChangeQuanti
   const price = getFoodDisplayPrice(dish);
   const savings = getSavingsPercent(price, dish.otherPrice);
   const isVeg = dish.isVeg === true || dish.foodType === "Veg";
+  const [imageFailed, setImageFailed] = React.useState(false);
 
   return (
     <div
@@ -42,10 +43,18 @@ const DishPreviewCard = memo(({ dish, quantity, disabled, onOpen, onChangeQuanti
       data-purpose="restaurant-dish-preview"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-gray-100 dark:bg-gray-800">
-        {dish.image ? (
-          <img src={dish.image} alt={dish.name} loading="lazy" className="h-full w-full object-cover" />
+        {dish.image && !imageFailed ? (
+          <img
+            src={dish.image}
+            alt={dish.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-[11px] text-gray-400">No image</div>
+          <div className="flex h-full w-full items-center justify-center text-gray-300 dark:text-gray-600">
+            <UtensilsCrossed className="h-7 w-7" />
+          </div>
         )}
 
         {dish.isRecommended && (
@@ -276,7 +285,7 @@ const FoodRestaurantCard = memo(({
         </Link>
 
         {dishes.length > 0 ? (
-          <div className="scrollbar-hide mt-3 flex snap-x gap-3 overflow-x-auto px-4 pb-4">
+          <div className="scrollbar-hide mt-3 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-4">
             {dishes.map((dish) => (
               <DishPreviewCard
                 key={dish.id || dish._id}
@@ -287,6 +296,8 @@ const FoodRestaurantCard = memo(({
                 onChangeQuantity={handleQuantityChange(dish)}
               />
             ))}
+            {/* Flex scrollers drop trailing padding; keep a gap after the last dish. */}
+            <div className="w-1 shrink-0" aria-hidden="true" />
           </div>
         ) : !restaurant.images?.length && !restaurant.image ? (
           <p className="px-4 pb-4 pt-2 text-[12px] text-gray-400">Menu coming soon</p>
