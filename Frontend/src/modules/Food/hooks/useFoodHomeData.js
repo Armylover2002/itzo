@@ -67,6 +67,7 @@ const transformRestaurant = (restaurant, backendOrigin, page) => {
     mongoId: restaurant._id,
     name: restaurant.restaurantName || restaurant.name || "Restaurant",
     cuisine: restaurant.cuisines?.[0] || "Multi-cuisine",
+    cuisines: Array.isArray(restaurant.cuisines) ? restaurant.cuisines : [],
     rating: Number(restaurant.rating) || 0,
     deliveryTime: restaurant.estimatedDeliveryTime || "25-30 mins",
     distance: restaurant.distanceInKm != null && Number.isFinite(Number(restaurant.distanceInKm))
@@ -88,6 +89,12 @@ const transformRestaurant = (restaurant, backendOrigin, page) => {
     openDays: restaurant.openDays,
     isActive: restaurant.isActive,
     isAcceptingOrders: restaurant.isAcceptingOrders,
+    menuPreview: Array.isArray(restaurant.menuPreview)
+      ? restaurant.menuPreview.map((item) => ({
+          ...item,
+          image: imgUtils.normalizeImageUrl(item.image, backendOrigin) || "",
+        }))
+      : [],
     // Which server page this came from: open-first sorting happens within a page,
     // so appending a page never reshuffles cards the user already scrolled past.
     _page: page,
@@ -329,7 +336,7 @@ export const useFoodHomeData = ({
   }, [location?.latitude, location?.lat, location?.longitude, location?.lng]);
 
   const buildRestaurantParams = useCallback((filters = {}, page = 1) => {
-    const params = { page, limit: RESTAURANT_PAGE_SIZE };
+    const params = { page, limit: RESTAURANT_PAGE_SIZE, includeMenuPreview: "true" };
     const currentLocation = locationRef.current;
     const origin = parseGeoPoint(currentLocation) || (
       Number.isFinite(Number(currentLocation?.latitude ?? currentLocation?.lat)) &&

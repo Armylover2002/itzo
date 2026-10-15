@@ -25,6 +25,10 @@ import {
 } from '../../shared/pendingProfileChanges.js';
 import { invalidateCache } from '../../../../middleware/cache.js';
 import { isModuleEnabled } from '../../../../middleware/moduleAccess.js';
+import { FoodItem } from '../../admin/models/food.model.js';
+import { getFoodDisplayPrice, getFoodDisplayOtherPrice, serializeFoodVariants } from '../../admin/services/foodVariant.service.js';
+import { ItemSlotTiming } from '../models/itemSlotTiming.model.js';
+import { buildSlotTimingMap, isFoodVisibleForSlotTiming, loadSlotTimingsForRestaurants } from './itemSlotTiming.util.js';
 import {
     buildActivePublicOfferFilter,
     buildActiveRestaurantCouponFilter,
@@ -2601,6 +2605,103 @@ export const uploadRestaurantMenuImages = async (restaurantId, files = []) => {
     };
 };
 
+const MENU_PREVIEW_ITEMS_PER_RESTAURANT = 8;
+
+/**
+ * Attaches a short `menuPreview` (recommended dishes first) to each restaurant for the
+ * home-page cards. One aggregate for the whole page instead of N menu calls.
+ */
+const attachMenuPreviewToRestaurants = async (restaurants = [], { pureVeg = false } = {}) => {
+    const ids = restaurants
+        .map((r) => String(r?._id || ''))
+        .filter((id) => mongoose.Types.ObjectId.isValid(id))
+        .map((id) => new mongoose.Types.ObjectId(id));
+    restaurants.forEach((r) => { r.menuPreview = []; });
+    if (!ids.length) return;
+
+    const match = {
+        restaurantId: { $in: ids },
+        approvalStatus: 'approved',
+        isAvailable: { $ne: false },
+    };
+    if (pureVeg) match.foodType = 'Veg';
+
+    const [groups, slotTimings] = await Promise.all([
+        FoodItem.aggregate([
+            { $match: match },
+            { $sort: { isRecommended: -1, createdAt: -1, _id: -1 } },
+            {
+                $group: {
+                    _id: '$restaurantId',
+                    // Over-fetch so slot-timing filtering below still leaves a full row.
+                    items: {
+                        $push: {
+                            _id: '$_id',
+                            name: '$name',
+                            description: '$description',
+                            price: '$price',
+                            otherPrice: '$otherPrice',
+                            variants: '$variants',
+                            image: '$image',
+                            images: '$images',
+                            foodType: '$foodType',
+                            isRecommended: '$isRecommended',
+                            itemSlotTimingId: '$itemSlotTimingId',
+                            preparationTime: '$preparationTime',
+                        }
+                    }
+                }
+            },
+            { $project: { items: { $slice: ['$items', MENU_PREVIEW_ITEMS_PER_RESTAURANT * 3] } } }
+        ]),
+        loadSlotTimingsForRestaurants(ids, ItemSlotTiming),
+    ]);
+
+    const slotMapByRestaurant = new Map();
+    slotTimings.forEach((slot) => {
+        const key = String(slot.restaurantId);
+        if (!slotMapByRestaurant.has(key)) slotMapByRestaurant.set(key, []);
+        slotMapByRestaurant.get(key).push(slot);
+    });
+    const referenceDate = new Date();
+    const itemsByRestaurant = new Map();
+
+    groups.forEach((group) => {
+        const key = String(group._id);
+        const slotMap = buildSlotTimingMap(slotMapByRestaurant.get(key) || []);
+        const items = [];
+        for (const food of group.items || []) {
+            if (items.length >= MENU_PREVIEW_ITEMS_PER_RESTAURANT) break;
+            if (!isFoodVisibleForSlotTiming(food, slotMap, referenceDate)) continue;
+            const price = getFoodDisplayPrice(food);
+            if (!Number.isFinite(price) || price <= 0) continue;
+            const image =
+                (typeof food.image === 'string' && food.image.trim()) ||
+                (Array.isArray(food.images) ? food.images.find((img) => typeof img === 'string' && img.trim()) : '') ||
+                '';
+            items.push({
+                id: String(food._id),
+                _id: food._id,
+                name: food.name,
+                description: food.description || '',
+                price,
+                otherPrice: getFoodDisplayOtherPrice(food),
+                image,
+                foodType: food.foodType || 'Non-Veg',
+                isVeg: food.foodType === 'Veg',
+                isRecommended: food.isRecommended === true,
+                preparationTime: food.preparationTime || '',
+                variants: serializeFoodVariants(food.variants),
+            });
+        }
+        itemsByRestaurant.set(key, items);
+    });
+
+    restaurants.forEach((r) => {
+        r.menuPreview = itemsByRestaurant.get(String(r._id)) || [];
+    });
+};
+
 export const listApprovedRestaurants = async (query = {}) => {
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 100, 1), 1000);
     const page = Math.max(parseInt(query.page, 10) || 1, 1);
@@ -2687,6 +2788,7 @@ export const listApprovedRestaurants = async (query = {}) => {
     // Accept both radiusKm (preferred) and maxDistance (legacy frontend param).
     const radiusKm = toFiniteNumber(query.radiusKm) ?? toFiniteNumber(query.maxDistance);
     const sortBy = parseSortBy(query.sortBy);
+    const wantsMenuPreview = query.includeMenuPreview === 'true';
 
     const projection = {
         restaurantId: 1,
@@ -2786,6 +2888,7 @@ export const listApprovedRestaurants = async (query = {}) => {
         }));
         await attachOutletTimingsToRestaurants(restaurants);
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng, { resortNearest: sortBy === 'nearest' });
+        if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true' });
         return { restaurants, total, page, limit };
     }
 
@@ -2832,6 +2935,7 @@ export const listApprovedRestaurants = async (query = {}) => {
     if (lat !== null && lng !== null) {
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng);
     }
+    if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true' });
 
     return { restaurants, total, page, limit };
 };
