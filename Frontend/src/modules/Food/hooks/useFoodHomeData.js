@@ -432,12 +432,14 @@ export const useFoodHomeData = ({
       if (!result) return;
 
       const seen = new Set(restaurantsData.map((r) => String(r.mongoId || r.id)));
-      const merged = [
-        ...restaurantsData,
-        ...result.items.filter((r) => !seen.has(String(r.mongoId || r.id))),
-      ];
-      // A short page means we reached the end even if the server sent no total.
-      const nextTotal = result.total ?? (result.items.length < RESTAURANT_PAGE_SIZE ? merged.length : null);
+      const newItems = result.items.filter((r) => !seen.has(String(r.mongoId || r.id)));
+      const merged = [...restaurantsData, ...newItems];
+      // A short page, or a page that adds nothing new (empty / all duplicates), means
+      // we reached the end. Pin total to what we have so `hasMore` turns false —
+      // otherwise a server total that the deduped list can never reach keeps the
+      // observer requesting page after page forever.
+      const reachedEnd = result.items.length < RESTAURANT_PAGE_SIZE || newItems.length === 0;
+      const nextTotal = reachedEnd ? merged.length : (result.total ?? null);
 
       const cached = globalHomeCache.restaurantsByKey[listKey];
       if (cached) {

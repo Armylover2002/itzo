@@ -2736,14 +2736,14 @@ export const listApprovedRestaurants = async (query = {}) => {
         }
 
         const sortStage = (() => {
-            if (sortBy === 'rating' || sortBy === 'rating-high') return { $sort: { rating: -1, distanceMeters: 1 } };
-            if (sortBy === 'rating-low') return { $sort: { rating: 1, distanceMeters: 1 } };
-            if (sortBy === 'price-low') return { $sort: { featuredPrice: 1, distanceMeters: 1 } };
-            if (sortBy === 'price-high') return { $sort: { featuredPrice: -1, distanceMeters: 1 } };
-            if (sortBy === 'newest') return { $sort: { createdAt: -1 } };
-            if (sortBy === 'deliveryTime') return { $sort: { estimatedDeliveryTimeMinutes: 1, distanceMeters: 1 } };
+            if (sortBy === 'rating' || sortBy === 'rating-high') return { $sort: { rating: -1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'rating-low') return { $sort: { rating: 1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'price-low') return { $sort: { featuredPrice: 1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'price-high') return { $sort: { featuredPrice: -1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'newest') return { $sort: { createdAt: -1, _id: -1 } };
+            if (sortBy === 'deliveryTime') return { $sort: { estimatedDeliveryTimeMinutes: 1, distanceMeters: 1, _id: 1 } };
             // nearest (default)
-            return { $sort: { distanceMeters: 1 } };
+            return { $sort: { distanceMeters: 1, _id: 1 } };
         })();
 
         const basePipeline = [
@@ -2791,12 +2791,14 @@ export const listApprovedRestaurants = async (query = {}) => {
 
     // Non-geo path: normal query + sort.
     const sort = (() => {
-        if (sortBy === 'rating' || sortBy === 'rating-high') return { rating: -1, createdAt: -1 };
-        if (sortBy === 'rating-low') return { rating: 1, createdAt: -1 };
-        if (sortBy === 'price-low') return { featuredPrice: 1, createdAt: -1 };
-        if (sortBy === 'price-high') return { featuredPrice: -1, createdAt: -1 };
-        if (sortBy === 'deliveryTime') return { estimatedDeliveryTimeMinutes: 1, createdAt: -1 };
-        return { createdAt: -1 };
+        // `_id` tiebreaker keeps skip/limit pagination stable: without it, docs with equal
+        // sort keys can shift between pages, so some repeat and others are never returned.
+        if (sortBy === 'rating' || sortBy === 'rating-high') return { rating: -1, createdAt: -1, _id: -1 };
+        if (sortBy === 'rating-low') return { rating: 1, createdAt: -1, _id: -1 };
+        if (sortBy === 'price-low') return { featuredPrice: 1, createdAt: -1, _id: -1 };
+        if (sortBy === 'price-high') return { featuredPrice: -1, createdAt: -1, _id: -1 };
+        if (sortBy === 'deliveryTime') return { estimatedDeliveryTimeMinutes: 1, createdAt: -1, _id: -1 };
+        return { createdAt: -1, _id: -1 };
     })();
 
     const [restaurantsRaw, total] = await Promise.all([
