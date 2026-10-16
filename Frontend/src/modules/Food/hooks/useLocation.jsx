@@ -49,6 +49,47 @@ const AUTO_START_LIVE_WATCH = false
 let didStartAppOpenLocationFetch = false
 let appOpenLocationFetch = null
 
+const GPS_TARGET_ACCURACY_METERS = 30
+const GPS_SETTLE_WAIT_MS = 6000
+
+// A one-shot getCurrentPosition often resolves with the first coarse (Wi-Fi/cell)
+// fix. Watch briefly instead and keep the most accurate reading until it's good enough.
+const getAccuratePosition = (onSuccess, onError, options = {}) => {
+  if (!options.enableHighAccuracy) {
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, options)
+    return
+  }
+
+  let best = null
+  let done = false
+  let watchId = null
+  let settleTimer = null
+
+  const finish = (callback, value) => {
+    if (done) return
+    done = true
+    if (watchId !== null) navigator.geolocation.clearWatch(watchId)
+    clearTimeout(settleTimer)
+    callback(value)
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos
+      if (best.coords.accuracy <= GPS_TARGET_ACCURACY_METERS) {
+        finish(onSuccess, best)
+      } else if (!settleTimer) {
+        settleTimer = setTimeout(() => finish(onSuccess, best), GPS_SETTLE_WAIT_MS)
+      }
+    },
+    (err) => {
+      if (best) finish(onSuccess, best)
+      else finish(onError, err)
+    },
+    options
+  )
+}
+
 const isMeaningfulAddressValue = (value) => {
   const normalized = String(value || "").trim().toLowerCase()
   return Boolean(
@@ -1121,7 +1162,7 @@ function useLocationInternal() {
           maximumAge: forceFresh ? 0 : (options.maximumAge || 60000), // If forceFresh, get fresh location
         }
 
-        navigator.geolocation.getCurrentPosition(
+        getAccuratePosition(
           async (pos) => {
             try {
               const { latitude, longitude, accuracy } = pos.coords
