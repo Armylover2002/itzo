@@ -10,6 +10,8 @@ export const createRestaurantFoodController = async (req, res, next) => {
             invalidateCache('restaurants*'),
             invalidateCache('food_search*'),
             invalidateCache(`restaurant_detail*`),
+            invalidateCache('restaurant_menu:*'),
+            invalidateCache('restaurant_menus_batch:*'),
         ]).catch(console.error);
         return sendResponse(res, 201, 'Food created successfully', { food });
     } catch (error) {
@@ -22,6 +24,13 @@ export const updateRestaurantFoodController = async (req, res, next) => {
         const restaurantId = req.user?.userId;
         const food = await updateRestaurantFood(restaurantId, req.params.id, req.body || {});
         if (!food) return sendError(res, 404, 'Food not found');
+        await Promise.all([
+            invalidateCache('restaurants*'),
+            invalidateCache('food_search*'),
+            invalidateCache(`restaurant_detail*`),
+            invalidateCache('restaurant_menu:*'),
+            invalidateCache('restaurant_menus_batch:*'),
+        ]).catch(console.error);
         return sendResponse(res, 200, 'Food updated successfully', { food });
     } catch (error) {
         next(error);

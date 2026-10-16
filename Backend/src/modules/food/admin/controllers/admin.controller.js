@@ -660,11 +660,13 @@ export async function getFoodById(req, res, next) {
 export async function createFood(req, res, next) {
     try {
         const created = await adminService.createFood(req.body || {});
-        
+
         await Promise.all([
             invalidateCache('restaurants*'),
             invalidateCache('food_search*'),
             invalidateCache(`restaurant_detail*`),
+            invalidateCache('restaurant_menu:*'),
+            invalidateCache('restaurant_menus_batch:*'),
         ]).catch(console.error);
 
         res.status(201).json({ success: true, message: 'Food created successfully', data: { food: created } });
@@ -683,6 +685,13 @@ export async function updateFood(req, res, next) {
         if (!updated) {
             return res.status(404).json({ success: false, message: 'Food not found' });
         }
+        await Promise.all([
+            invalidateCache('restaurants*'),
+            invalidateCache('food_search*'),
+            invalidateCache(`restaurant_detail*`),
+            invalidateCache('restaurant_menu:*'),
+            invalidateCache('restaurant_menus_batch:*'),
+        ]).catch(console.error);
         res.status(200).json({ success: true, message: 'Food updated successfully', data: { food: updated } });
     } catch (error) {
         next(error);
@@ -703,6 +712,8 @@ export async function deleteFood(req, res, next) {
             invalidateCache('restaurants*'),
             invalidateCache('food_search*'),
             invalidateCache(`restaurant_detail*`),
+            invalidateCache('restaurant_menu:*'),
+            invalidateCache('restaurant_menus_batch:*'),
         ]).catch(console.error);
         res.status(200).json({ success: true, message: 'Food deleted successfully', data: result });
     } catch (error) {

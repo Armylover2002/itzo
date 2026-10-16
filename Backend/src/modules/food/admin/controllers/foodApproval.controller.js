@@ -26,6 +26,8 @@ export async function approveFoodItemController(req, res, next) {
             invalidateCache('restaurants*'),
             invalidateCache('food_search*'),
             invalidateCache(`restaurant_detail*`),
+            invalidateCache('restaurant_menu:*'),
+            invalidateCache('restaurant_menus_batch:*'),
             // A category reaches the storefront only once it holds an approved item.
             invalidateCache('categories:*'),
         ]).catch(console.error);
