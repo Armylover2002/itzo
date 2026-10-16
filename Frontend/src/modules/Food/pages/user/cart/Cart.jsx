@@ -3481,11 +3481,7 @@ return (
                       <div className="mt-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-3 py-2 space-y-1.5">
                         {taxBreakdown.map((line) => (
                           <div key={line.key} className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                            <span>
-                              {line.label}
-                              {Number(line.rate) > 0 ? ` (${Number(line.rate)}%)` : ""}
-                              {Number(line.taxableAmount) > 0 ? ` on ${RUPEE_SYMBOL}${Number(line.taxableAmount).toFixed(2)}` : ""}
-                            </span>
+                            <span>{line.label}</span>
                             <span>{RUPEE_SYMBOL}{Number(line.amount || 0).toFixed(2)}</span>
                           </div>
                         ))}
