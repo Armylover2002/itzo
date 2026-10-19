@@ -9,6 +9,7 @@ import RestaurantLayout from "./RestaurantLayout"
 import RestaurantApprovalGuard from "./RestaurantApprovalGuard"
 import { Outlet } from "react-router-dom"
 import { LiveLocationProvider } from "@food/contexts/LiveLocationContext"
+import "./restaurantTheme.css"
 
 const LayoutWrapper = () => (
   <RestaurantApprovalGuard>

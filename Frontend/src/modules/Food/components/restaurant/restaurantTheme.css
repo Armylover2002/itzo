@@ -1,0 +1,464 @@
+:root {
+  --rt-primary: #B80B3D;
+  --rt-primary-strong: #66001D;
+  --rt-primary-soft: #fdf2f5;
+  --rt-surface: #ffffff;
+  --rt-border: #f0ccd5;
+  --rt-text: #1f1f24;
+  --rt-muted: #6d6470;
+  --rt-modal-z: 200;
+  --rt-sidebar-z: 50;
+  --rt-header-z: 30;
+  --rt-bottom-nav-z: 60;
+}
+
+.restaurant-theme {
+  color: var(--rt-text);
+}
+
+.restaurant-theme [class~="text-primary"],
+.restaurant-theme [class~="text-[#EB590E]"] {
+  color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="bg-primary"],
+.restaurant-theme [class~="bg-[#EB590E]"] {
+  background-color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="hover:bg-secondary"]:hover,
+.restaurant-theme [class~="hover:bg-[#d84f0a]"]:hover,
+.restaurant-theme [class~="hover:bg-[#00A055]"]:hover {
+  background-color: var(--rt-primary-strong) !important;
+}
+
+.restaurant-theme [class~="border-primary"],
+.restaurant-theme [class~="border-[#EB590E]"] {
+  border-color: color-mix(in srgb, var(--rt-primary) 30%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="bg-primary/5"],
+.restaurant-theme [class~="bg-primary/10"] {
+  background-color: var(--rt-primary-soft) !important;
+}
+
+.restaurant-theme button[class~="bg-black"],
+.restaurant-theme button[class~="bg-gray-900"],
+.restaurant-theme [role="button"][class~="bg-black"],
+.restaurant-theme [role="button"][class~="bg-gray-900"] {
+  background-color: var(--rt-primary) !important;
+  color: #ffffff !important;
+}
+
+.restaurant-theme button[class~="hover:bg-black"]:hover,
+.restaurant-theme button[class~="hover:bg-gray-900"]:hover,
+.restaurant-theme [role="button"][class~="hover:bg-black"]:hover,
+.restaurant-theme [role="button"][class~="hover:bg-gray-900"]:hover {
+  background-color: var(--rt-primary-strong) !important;
+}
+
+
+
+
+
+.restaurant-theme button,
+.restaurant-theme [role="button"],
+.restaurant-theme .rounded-xl,
+.restaurant-theme .rounded-2xl,
+.restaurant-theme .rounded-3xl {
+  transition: all 0.2s ease;
+}
+
+.restaurant-theme input:focus,
+.restaurant-theme textarea:focus,
+.restaurant-theme select:focus {
+  border-color: color-mix(in srgb, var(--rt-primary) 55%, #ffffff) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rt-primary) 15%, transparent) !important;
+}
+
+/* Dynamic overrides for hardcoded restaurant hex colors found in pages */
+.restaurant-theme [class~="bg-[#6a2f56]"] {
+  background-color: var(--rt-primary-strong) !important;
+}
+
+.restaurant-theme [class~="hover:bg-[#6a2f56]"]:hover {
+  background-color: var(--rt-primary-strong) !important;
+}
+
+.restaurant-theme [class~="bg-[#f6e9dc]"] {
+  background-color: color-mix(in srgb, var(--rt-primary) 8%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="bg-[#fcf7fb]"] {
+  background-color: color-mix(in srgb, var(--rt-primary) 3%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="bg-[#f9f0f7]"],
+.restaurant-theme [class~="hover:bg-[#f9f0f7]"]:hover {
+  background-color: color-mix(in srgb, var(--rt-primary) 6%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="border-[#e7d5e0]"] {
+  border-color: color-mix(in srgb, var(--rt-primary) 15%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="border-[#d5bdd0]"],
+.restaurant-theme [class~="hover:border-[#d5bdd0]"]:hover {
+  border-color: color-mix(in srgb, var(--rt-primary) 25%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="text-[#6d6470]"] {
+  color: var(--rt-muted) !important;
+}
+
+.restaurant-theme [class~="text-[#6b4d62]"] {
+  color: color-mix(in srgb, var(--rt-primary-strong) 40%, var(--rt-muted)) !important;
+}
+
+/* Override inline accent colors */
+.restaurant-theme [style*="accent-color"] {
+  accent-color: var(--rt-primary-strong) !important;
+}
+
+/* Shared layout shell */
+.restaurant-layout {
+  --restaurant-content-max: 1400px;
+  --restaurant-header-height: 0px;
+}
+
+.restaurant-layout-header {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.restaurant-main-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Page root inside scroll area — never use min-h-screen / h-screen on layout pages */
+.restaurant-page {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Premium card surface */
+.restaurant-surface-card {
+  background: var(--rt-surface);
+  border: 1px solid color-mix(in srgb, var(--rt-border) 80%, #ffffff);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px rgba(15, 23, 42, 0.03);
+}
+
+/* Bento grid — mobile stacks, desktop uses asymmetric premium grid */
+.restaurant-bento-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.restaurant-bento-card {
+  background: var(--rt-surface);
+  border: 1px solid color-mix(in srgb, var(--rt-border) 65%, #ffffff);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 8px 24px -10px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+  .restaurant-bento-card {
+    border-radius: 1.5rem;
+  }
+
+  .restaurant-bento-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--rt-primary) 18%, #ffffff);
+    box-shadow:
+      0 4px 8px rgba(15, 23, 42, 0.04),
+      0 16px 40px -12px rgba(184, 11, 61, 0.12);
+  }
+}
+
+/* Orders page ??? structured single-column list on desktop */
+@media (min-width: 1024px) {
+  .restaurant-bento-grid--orders {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.875rem;
+  }
+
+  .restaurant-bento-grid--orders > * {
+    margin-bottom: 0 !important;
+    height: 100%;
+  }
+
+  .restaurant-order-list-card {
+    border-radius: 1.25rem;
+  }
+
+  .restaurant-order-list-card:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Explore — 4-column bento tiles */
+.restaurant-bento-grid--explore {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .restaurant-bento-grid--explore {
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .restaurant-bento-grid--explore {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .restaurant-bento-grid--explore > *:nth-child(6n + 1),
+  .restaurant-bento-grid--explore > *:nth-child(6n + 4) {
+    grid-column: span 2;
+  }
+}
+
+/* Inventory — item / add-on cards */
+@media (min-width: 1024px) {
+  .restaurant-bento-grid--inventory {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .restaurant-bento-grid--inventory {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+/* Dashboard KPI row */
+@media (min-width: 640px) {
+  .restaurant-bento-grid--dashboard-kpi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .restaurant-bento-grid--dashboard-kpi {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+/* Dashboard charts — 12-col bento */
+@media (min-width: 1024px) {
+  .restaurant-bento-grid--dashboard-charts {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: stretch;
+  }
+
+  .restaurant-bento-span-8 {
+    grid-column: span 8;
+  }
+
+  .restaurant-bento-span-4 {
+    grid-column: span 4;
+  }
+
+  .restaurant-bento-span-6 {
+    grid-column: span 6;
+  }
+
+  .restaurant-bento-span-12 {
+    grid-column: span 12;
+  }
+}
+
+/* Responsive card grids for dashboard / listing pages */
+.restaurant-card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+  .restaurant-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .restaurant-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .restaurant-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.restaurant-card-grid-2 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .restaurant-card-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.restaurant-card-grid-3 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+  .restaurant-card-grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .restaurant-card-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.restaurant-card-grid-4 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .restaurant-card-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.restaurant-sidebar {
+  z-index: var(--rt-sidebar-z);
+  height: 100vh;
+  max-height: 100dvh;
+}
+
+/* Centered content-sized modals — prevents w-full children from stretching to viewport */
+.restaurant-modal-panel {
+  box-sizing: border-box;
+  display: inline-block;
+  width: auto !important;
+  max-width: min(calc(100vw - 2rem), 28rem);
+}
+
+.restaurant-modal-panel > * {
+  max-width: 100%;
+}
+
+/* Converts full-width bottom sheets into centered content-sized dialogs */
+.restaurant-theme .restaurant-modal-sheet {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  width: auto !important;
+  min-width: min(280px, calc(100vw - 2rem));
+  max-width: min(calc(100vw - 2rem), 28rem) !important;
+  margin: 0 !important;
+  border-radius: 1.5rem !important;
+}
+
+.restaurant-theme .restaurant-modal-inline {
+  display: inline-block;
+  width: auto !important;
+  max-width: min(calc(100vw - 2rem), 28rem) !important;
+}
+
+
+/* itzo: map hardcoded navy (#10335D) classes to the restaurant theme */
+.restaurant-theme [class~="bg-[#10335D]"],
+.restaurant-theme [class~="data-[state=checked]:bg-[#10335D]"][data-state="checked"] {
+  background-color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="bg-[#10335D]/80"],
+.restaurant-theme [class~="hover:bg-[#10335D]/90"]:hover,
+.restaurant-theme [class~="hover:bg-[#0c2747]"]:hover,
+.restaurant-theme [class~="hover:bg-[#0C2747]"]:hover {
+  background-color: var(--rt-primary-strong) !important;
+}
+
+.restaurant-theme [class~="bg-[#10335D]/5"],
+.restaurant-theme [class~="bg-[#10335D]/10"],
+.restaurant-theme [class~="hover:bg-[#10335D]/5"]:hover,
+.restaurant-theme [class~="hover:bg-[#10335D]/10"]:hover {
+  background-color: var(--rt-primary-soft) !important;
+}
+
+.restaurant-theme [class~="text-[#10335D]"],
+.restaurant-theme [class~="lg:text-[#10335D]"],
+.restaurant-theme [class~="hover:text-[#10335D]"]:hover,
+.restaurant-theme [class~="hover:text-[#10335D]/80"]:hover {
+  color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="border-[#10335D]"],
+.restaurant-theme [class~="border-t-[#10335D]"],
+.restaurant-theme [class~="hover:border-[#10335D]"]:hover,
+.restaurant-theme [class~="focus:border-[#10335D]"]:focus,
+.restaurant-theme [class~="focus-within:border-[#10335D]"]:focus-within {
+  border-color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="border-t-[#10335D]"] {
+  border-top-color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="border-[#10335D]/20"],
+.restaurant-theme [class~="border-[#10335D]/30"],
+.restaurant-theme [class~="border-[#10335D]/40"],
+.restaurant-theme [class~="hover:border-[#10335D]/30"]:hover {
+  border-color: color-mix(in srgb, var(--rt-primary) 30%, #ffffff) !important;
+}
+
+.restaurant-theme [class~="fill-[#10335D]"] {
+  fill: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="caret-[#10335D]"] {
+  caret-color: var(--rt-primary) !important;
+}
+
+.restaurant-theme [class~="focus:ring-[#10335D]"],
+.restaurant-theme [class~="focus-visible:ring-[#10335D]"],
+.restaurant-theme [class~="focus-visible:ring-[#10335D]/20"],
+.restaurant-theme [class~="focus-visible:ring-[#10335D]/30"],
+.restaurant-theme [class~="focus-within:ring-[#10335D]/10"],
+.restaurant-theme [class~="ring-[#10335D]/10"] {
+  --tw-ring-color: color-mix(in srgb, var(--rt-primary) 35%, transparent) !important;
+}
+
+.restaurant-theme [class~="shadow-[#10335D]/15"],
+.restaurant-theme [class~="shadow-[#10335D]/20"],
+.restaurant-theme [class~="shadow-[#10335D]/25"] {
+  --tw-shadow-color: color-mix(in srgb, var(--rt-primary) 22%, transparent) !important;
+}
+
+.restaurant-theme [class~="from-[#10335D]"] {
+  --tw-gradient-from: var(--rt-primary) var(--tw-gradient-from-position) !important;
+}
+
+.restaurant-theme [class~="from-[#10335D]/5"],
+.restaurant-theme [class~="from-[#10335D]/10"] {
+  --tw-gradient-from: var(--rt-primary-soft) var(--tw-gradient-from-position) !important;
+}
