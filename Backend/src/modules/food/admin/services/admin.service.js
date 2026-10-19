@@ -90,6 +90,7 @@ import {
 import {
     extractRawFoodVariants,
     getFoodDisplayPrice,
+    getFoodDisplayOtherPrice,
     hasFoodVariants,
     normalizeFoodVariantsInput,
     serializeFoodVariants
@@ -272,9 +273,7 @@ const validateOpeningClosingTimes = (openingTime, closingTime) => {
     if (open === close) {
         throw new ValidationError('Opening time and closing time cannot be same');
     }
-    if (close < open) {
-        throw new ValidationError('Closing time cannot be less than opening time');
-    }
+    // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
 };
 
 export async function getRestaurantComplaints(query = {}) {
@@ -3069,6 +3068,9 @@ export async function upsertFeeSettings(body) {
 
         if (body.gstRate === null) $unset.gstRate = 1;
         else if (body.gstRate !== undefined) $set.gstRate = body.gstRate;
+
+        if (body.deliveryFeeTaxRate === null) $unset.deliveryFeeTaxRate = 1;
+        else if (body.deliveryFeeTaxRate !== undefined) $set.deliveryFeeTaxRate = body.deliveryFeeTaxRate;
         if (body.mixedOrderDistanceLimit !== undefined) $set.mixedOrderDistanceLimit = body.mixedOrderDistanceLimit;
         if (body.mixedOrderAngleLimit !== undefined) $set.mixedOrderAngleLimit = body.mixedOrderAngleLimit;
         if (body.quickDelivery !== undefined) {
@@ -3110,6 +3112,7 @@ export async function upsertFeeSettings(body) {
     if (body.platformFee !== undefined && body.platformFee !== null) payload.platformFee = body.platformFee;
     if (body.packagingFee !== undefined && body.packagingFee !== null) payload.packagingFee = body.packagingFee;
     if (body.gstRate !== undefined && body.gstRate !== null) payload.gstRate = body.gstRate;
+    if (body.deliveryFeeTaxRate !== undefined && body.deliveryFeeTaxRate !== null) payload.deliveryFeeTaxRate = body.deliveryFeeTaxRate;
     if (body.mixedOrderDistanceLimit !== undefined) payload.mixedOrderDistanceLimit = body.mixedOrderDistanceLimit;
     if (body.mixedOrderAngleLimit !== undefined) payload.mixedOrderAngleLimit = body.mixedOrderAngleLimit;
     if (body.quickDelivery !== undefined) {
@@ -5134,14 +5137,17 @@ const getAdminFoodCreatePricing = (body = {}) => {
     if (variants.length > 0) {
         return {
             price: getFoodDisplayPrice({ variants }),
+            otherPrice: getFoodDisplayOtherPrice({ variants }),
             variants
         };
     }
 
     const price = Number(body.price);
     if (!Number.isFinite(price) || price <= 0) throw new ValidationError('Price must be greater than 0');
+    const otherPrice = Number(body.otherPrice);
     return {
         price,
+        otherPrice: Number.isFinite(otherPrice) && otherPrice > 0 ? otherPrice : 0,
         variants: []
     };
 };
@@ -5157,6 +5163,7 @@ const getAdminFoodUpdatedPricing = (existing = {}, body = {}) => {
 
         if (variants.length > 0) {
             update.price = getFoodDisplayPrice({ variants });
+            update.otherPrice = getFoodDisplayOtherPrice({ variants });
             return update;
         }
 
@@ -5165,6 +5172,12 @@ const getAdminFoodUpdatedPricing = (existing = {}, body = {}) => {
             throw new ValidationError('Base price must be greater than 0 when variants are removed');
         }
         update.price = nextBasePrice;
+        if (body.otherPrice !== undefined) {
+            const otherPrice = Number(body.otherPrice);
+            update.otherPrice = Number.isFinite(otherPrice) && otherPrice > 0 ? otherPrice : 0;
+        } else if (existingHasVariants) {
+            update.otherPrice = 0;
+        }
         return update;
     }
 
@@ -5175,6 +5188,11 @@ const getAdminFoodUpdatedPricing = (existing = {}, body = {}) => {
         const price = Number(body.price);
         if (!Number.isFinite(price) || price <= 0) throw new ValidationError('Price must be greater than 0');
         update.price = price;
+    }
+
+    if (body.otherPrice !== undefined && !existingHasVariants) {
+        const otherPrice = Number(body.otherPrice);
+        update.otherPrice = Number.isFinite(otherPrice) && otherPrice > 0 ? otherPrice : 0;
     }
 
     return update;
@@ -5197,7 +5215,7 @@ export async function createFood(body) {
     if (restaurant.pureVegRestaurant === true && foodType !== 'Veg') {
         throw new ValidationError('Pure veg restaurants can only use veg foods');
     }
-    const { price, variants } = getAdminFoodCreatePricing(body);
+    const { price, otherPrice, variants } = getAdminFoodCreatePricing(body);
 
     let categoryName = typeof body.categoryName === 'string' ? body.categoryName.trim() : '';
     if (!categoryName && typeof body.category === 'string') categoryName = body.category.trim();
@@ -5215,6 +5233,7 @@ export async function createFood(body) {
         name,
         description: typeof body.description === 'string' ? body.description.trim() : '',
         price,
+        otherPrice,
         variants,
         image: typeof body.image === 'string' ? body.image.trim() : '',
         foodType,
@@ -5265,6 +5284,7 @@ export async function updateFood(id, body) {
     }
     const pricingUpdate = getAdminFoodUpdatedPricing(doc.toObject(), body);
     if (pricingUpdate.price !== undefined) doc.price = pricingUpdate.price;
+    if (pricingUpdate.otherPrice !== undefined) doc.otherPrice = pricingUpdate.otherPrice;
     if (pricingUpdate.variants !== undefined) doc.variants = pricingUpdate.variants;
     if (body.image !== undefined) doc.image = String(body.image || '').trim();
     if (body.foodType !== undefined) doc.foodType = targetFoodType;

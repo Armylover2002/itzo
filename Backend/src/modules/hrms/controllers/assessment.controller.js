@@ -25,8 +25,10 @@ export const startAssessment = async (req, res, next) => {
         }
 
         const settings = await AssessmentSettings.findOne() || await AssessmentSettings.create({});
+        // Disabled assessment is not an error for the applicant: the signup flow skips
+        // this step and submits the joining request directly.
         if (!settings.isAssessmentEnabled) {
-            return sendError(res, 403, 'Assessment is currently disabled by admin.');
+            return sendResponse(res, 200, 'Assessment is disabled; skipping.', { skipped: true });
         }
 
         // Check if an attempt already exists
@@ -129,8 +131,9 @@ export const startAssessment = async (req, res, next) => {
             remainingNeeded -= extraQList.length;
         }
 
+        // An empty question bank must not block every signup — skip the step instead.
         if (selectedQuestions.length === 0) {
-            return sendError(res, 500, 'No questions available in the question bank.');
+            return sendResponse(res, 200, 'No assessment questions configured; skipping.', { skipped: true });
         }
 
         // Shuffle questions

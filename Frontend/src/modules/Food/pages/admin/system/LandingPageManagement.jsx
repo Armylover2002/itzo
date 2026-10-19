@@ -128,6 +128,10 @@ export default function LandingPageManagement() {
   const [activeTab, setActiveTab] = useState('banners')
   const [exploreMoreSubTab, setExploreMoreSubTab] = useState('icons')
 
+  // Home "Meals under ₹X" section
+  const [homePriceFilter, setHomePriceFilter] = useState({ title: 'Meals under', maxPrice: 250, isActive: true })
+  const [homePriceFilterSaving, setHomePriceFilterSaving] = useState(false)
+
   // Hero Banners
   const [banners, setBanners] = useState([])
   const [bannersLoading, setBannersLoading] = useState(true)
@@ -1082,6 +1086,13 @@ export default function LandingPageManagement() {
           recommendedRestaurantIds: Array.isArray(nextSettings.recommendedRestaurantIds) ? nextSettings.recommendedRestaurantIds : [],
           headerVideoUrl: nextSettings.headerVideoUrl || ""
         })
+        if (nextSettings.homePriceFilter) {
+          setHomePriceFilter({
+            title: nextSettings.homePriceFilter.title || 'Meals under',
+            maxPrice: Number(nextSettings.homePriceFilter.maxPrice) || 250,
+            isActive: nextSettings.homePriceFilter.isActive !== false,
+          })
+        }
       }
     } catch (err) {
       // Silently handle 401/404 errors - endpoints may not exist yet, use default settings
@@ -1123,6 +1134,42 @@ export default function LandingPageManagement() {
       setErrorSafely(err.response?.data?.message || 'Failed to save settings.')
     } finally {
       setSettingsSaving(false)
+    }
+  }
+
+  const handleSaveHomePriceFilter = async () => {
+    const maxPrice = Number(homePriceFilter.maxPrice)
+    if (!Number.isFinite(maxPrice) || maxPrice <= 0) {
+      setErrorSafely('Price limit must be a number greater than 0.')
+      return
+    }
+    try {
+      setHomePriceFilterSaving(true)
+      setError(null)
+      setSuccess(null)
+      const response = await api.patch('/food/hero-banners/landing/settings', {
+        homePriceFilter: {
+          title: String(homePriceFilter.title || '').trim() || 'Meals under',
+          maxPrice,
+          isActive: homePriceFilter.isActive,
+        }
+      }, getAuthConfig())
+      if (response.data.success) {
+        const saved = (response.data.data?.settings || response.data.data || {}).homePriceFilter
+        if (saved) {
+          setHomePriceFilter({
+            title: saved.title || 'Meals under',
+            maxPrice: Number(saved.maxPrice) || maxPrice,
+            isActive: saved.isActive !== false,
+          })
+        }
+        setSuccess('Home filter saved successfully!')
+        setTimeout(() => setSuccess(null), 3000)
+      }
+    } catch (err) {
+      setErrorSafely(err.response?.data?.message || 'Failed to save home filter.')
+    } finally {
+      setHomePriceFilterSaving(false)
     }
   }
 
@@ -1328,6 +1375,7 @@ export default function LandingPageManagement() {
     { id: 'banners', label: 'Hero Banners', icon: ImageIcon },
     { id: 'under-250', label: '250 Banner', icon: Tag },
     { id: 'homepage-video', label: 'Homepage Video', icon: Layout },
+    { id: 'home-filter', label: 'Home Filter', icon: Tag },
     { id: 'explore-more', label: 'Explore More', icon: Layout },
   ]
 
@@ -2096,6 +2144,71 @@ export default function LandingPageManagement() {
               )}
             </div>
           </>
+        )}
+
+        {/* Home Filter Tab ("Meals under ₹X" section on user home) */}
+        {activeTab === 'home-filter' && (
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div className="mb-5">
+              <h2 className="text-lg font-bold text-slate-900">Home Filter</h2>
+              <p className="text-sm text-slate-500 mt-1">
+                Food items priced at or below this limit (from all restaurants) are shown in a section on the user home page, below the filter chips.
+              </p>
+            </div>
+
+            {settingsLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <Loader2 className="w-6 h-6 text-[#6413C7] animate-spin" />
+              </div>
+            ) : (
+              <div className="space-y-5 max-w-md">
+                <div className="space-y-1.5">
+                  <Label htmlFor="home-filter-title">Section title</Label>
+                  <Input
+                    id="home-filter-title"
+                    value={homePriceFilter.title}
+                    onChange={(e) => setHomePriceFilter((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="Meals under"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="home-filter-price">Price limit (₹)</Label>
+                  <Input
+                    id="home-filter-price"
+                    type="number"
+                    min="1"
+                    value={homePriceFilter.maxPrice}
+                    onChange={(e) => setHomePriceFilter((prev) => ({ ...prev, maxPrice: e.target.value }))}
+                    placeholder="90"
+                  />
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={homePriceFilter.isActive}
+                    onCheckedChange={(checked) => setHomePriceFilter((prev) => ({ ...prev, isActive: checked === true }))}
+                  />
+                  <span className="text-sm text-slate-700">Show this section on the home page</span>
+                </label>
+
+                <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  Preview: <span className="font-semibold text-slate-900">{homePriceFilter.title || 'Meals under'}</span>{' '}
+                  <span className="inline-flex rounded-full border-2 border-slate-900 px-2 font-bold text-slate-900">₹{homePriceFilter.maxPrice || 0}</span>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleSaveHomePriceFilter}
+                  disabled={homePriceFilterSaving}
+                  className="bg-[#6413C7] hover:bg-[#6413C7] text-white"
+                >
+                  {homePriceFilterSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Save
+                </Button>
+              </div>
+            )}
+          </div>
         )}
 
       </div >

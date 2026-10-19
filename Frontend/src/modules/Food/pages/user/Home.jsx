@@ -126,6 +126,7 @@ const CategoryRail = lazy(() => import("@food/components/user/home/CategoryRail"
 const RecommendedSection = lazy(() => import("@food/components/user/home/RecommendedSection"));
 const RestaurantGrid = lazy(() => import("@food/components/user/home/RestaurantGrid"));
 const SortFilterSection = lazy(() => import("@food/components/user/home/SortFilterSection"));
+const MealsUnderSection = lazy(() => import("@food/components/user/home/MealsUnderSection"));
 const ExploreMoreSection = lazy(() => import("@food/components/user/home/ExploreMoreSection"));
 const HomeDesktopHero = lazy(() => import("@food/components/user/home/HomeDesktopHero"));
 const HomeFilterModal = lazy(() => import("@food/components/user/home/HomeFilterModal"));
@@ -404,6 +405,16 @@ export default function Home() {
       setVegModeContext(newValue);
     }
   };
+
+  // Warm the Quick home's requests (and its lazy chunk) on hover/touch so switching
+  // to Instamart feels instant. Fires once per Home mount.
+  const quickPrefetchedRef = useRef(false);
+  const onQuickTabIntent = useCallback(() => {
+    if (quickPrefetchedRef.current) return;
+    quickPrefetchedRef.current = true;
+    import("../../../quickCommerce/user/pages/Home").catch(() => {});
+    prefetchQuickHomeBootstrap(location).catch(() => {});
+  }, [location]);
 
   const handleSearchFocus = useCallback(() => {
     if (activeTab === "quick") navigate("/quick/search");
@@ -752,6 +763,10 @@ export default function Home() {
           </Suspense>
 
           <Suspense fallback={null}>
+            <MealsUnderSection zoneId={effectiveZoneId} location={effectiveLocation} />
+          </Suspense>
+
+          <Suspense fallback={null}>
             <HomeFilterModal
               isOpen={isFilterOpen}
               onClose={() => setIsFilterOpen(false)}
@@ -767,6 +782,8 @@ export default function Home() {
               showRestaurantSkeleton={restaurants.loading}
               isLoadingFilterResults={restaurants.isLoadingFilterResults}
               loadingRestaurants={restaurants.loading}
+              loadingMoreRestaurants={restaurants.loadingMore}
+              totalRestaurants={restaurants.total}
               availabilityTick={availabilityTick}
               isFavorite={isFavorite}
               onFavoriteToggle={handleFavoriteToggle}

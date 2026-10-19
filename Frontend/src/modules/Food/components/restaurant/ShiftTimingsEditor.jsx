@@ -1,4 +1,5 @@
 import { Clock, Plus, X } from "lucide-react"
+import TimePicker12h from "@shared/components/TimePicker12h"
 
 // Shared multi-shift timing picker used by owner onboarding, admin's direct-add-restaurant
 // flow, and the restaurant dashboard's own outlet-timings page. Keep it simple: a list of
@@ -68,22 +69,22 @@ export default function ShiftTimingsEditor({ shifts, onChange, errors = {}, disa
           <div className="grid grid-cols-2 gap-3">
             <label className="block text-xs">
               <span className="mb-1 block text-slate-600">Opening time</span>
-              <input
-                type="time"
+              <TimePicker12h
                 value={shift.openingTime || ""}
                 disabled={disabled}
-                onChange={(e) => updateShift(index, { openingTime: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-[#10335D]/40 focus:outline-none focus:ring-2 focus:ring-[#10335D]/10"
+                ariaLabel="Opening time"
+                onChange={(v) => updateShift(index, { openingTime: v })}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus-within:border-[#10335D]/40 focus-within:ring-2 focus-within:ring-[#10335D]/10"
               />
             </label>
             <label className="block text-xs">
               <span className="mb-1 block text-slate-600">Closing time</span>
-              <input
-                type="time"
+              <TimePicker12h
                 value={shift.closingTime || ""}
                 disabled={disabled}
-                onChange={(e) => updateShift(index, { closingTime: e.target.value })}
-                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-[#10335D]/40 focus:outline-none focus:ring-2 focus:ring-[#10335D]/10"
+                ariaLabel="Closing time"
+                onChange={(v) => updateShift(index, { closingTime: v })}
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus-within:border-[#10335D]/40 focus-within:ring-2 focus-within:ring-[#10335D]/10"
               />
             </label>
           </div>

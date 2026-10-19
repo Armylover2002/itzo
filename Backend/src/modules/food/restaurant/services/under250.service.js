@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { FoodItem } from '../../admin/models/food.model.js';
 import { getFoodDisplayPrice, serializeFoodVariants } from '../../admin/services/foodVariant.service.js';
 import { listApprovedRestaurants } from './restaurant.service.js';
+import { getLandingSettings } from '../../landing/services/landingSettings.service.js';
 import { ItemSlotTiming } from '../models/itemSlotTiming.model.js';
 import {
     buildSlotTimingMap,
@@ -38,10 +39,10 @@ const pickRestaurantImage = (restaurant = {}) => {
 };
 
 /**
- * Returns approved restaurants that have at least one dish priced at or below ₹250.
+ * Returns approved restaurants that have at least one dish priced at or below `maxPrice` (default ₹250).
  * Uses two DB round-trips (restaurant list + batched food items) instead of N menu calls.
  */
-export async function listUnder250Restaurants(query = {}) {
+export async function listUnder250Restaurants(query = {}, { maxPrice = MAX_UNDER_250_PRICE } = {}) {
     const { restaurants: approvedRestaurants = [] } = await listApprovedRestaurants({
         ...query,
         limit: MAX_RESTAURANTS,
@@ -125,7 +126,7 @@ export async function listUnder250Restaurants(query = {}) {
         }
 
         const displayPrice = getFoodDisplayPrice(food);
-        if (!Number.isFinite(displayPrice) || displayPrice <= 0 || displayPrice > MAX_UNDER_250_PRICE) {
+        if (!Number.isFinite(displayPrice) || displayPrice <= 0 || displayPrice > maxPrice) {
             continue;
         }
 
@@ -169,4 +170,25 @@ export async function listUnder250Restaurants(query = {}) {
         .map(({ fallbackImage, ...restaurant }) => restaurant);
 
     return { restaurants };
+}
+
+/**
+ * Home page "Meals under ₹X" section: price limit and title come from admin landing settings.
+ */
+export async function listHomePriceFilterRestaurants(query = {}) {
+    const settings = await getLandingSettings();
+    const config = settings?.homePriceFilter || {};
+    const maxPrice = Number(config.maxPrice);
+    const section = {
+        title: String(config.title || 'Meals under').trim() || 'Meals under',
+        maxPrice: Number.isFinite(maxPrice) && maxPrice > 0 ? maxPrice : MAX_UNDER_250_PRICE,
+        isActive: config.isActive !== false,
+    };
+
+    if (!section.isActive) {
+        return { section, restaurants: [] };
+    }
+
+    const { restaurants } = await listUnder250Restaurants(query, { maxPrice: section.maxPrice });
+    return { section, restaurants };
 }

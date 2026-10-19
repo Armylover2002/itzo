@@ -21,6 +21,7 @@ import {
 import QuickSharedCart from "@food/pages/user/cart/QuickSharedCart"
 import MixedSharedCart from "@food/pages/user/cart/MixedSharedCart"
 import { useLocation as useUserLocation } from "@food/hooks/useLocation"
+import { useLocationSelector } from "@food/components/user/UserLayout"
 import { useZone } from "@food/hooks/useZone"
 import { orderAPI, restaurantAPI, userAPI, API_ENDPOINTS } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
@@ -304,7 +305,7 @@ export default function Cart() {
   const [appliedCoupon, setAppliedCoupon] = useState(null)
   const [couponCode, setCouponCode] = useState("")
   const [manualCouponCode, setManualCouponCode] = useState("")
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash")
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("razorpay")
   const [showPaymentSheet, setShowPaymentSheet] = useState(false)
   const [walletBalance, setWalletBalance] = useState(0)
   const [isLoadingWallet, setIsLoadingWallet] = useState(false)
@@ -365,6 +366,7 @@ export default function Cart() {
   const [sendCutlery, setSendCutlery] = useState(true)
   const [isPlacingOrder, setIsPlacingOrder] = useState(false)
   const [showBillDetails, setShowBillDetails] = useState(true)
+  const [showTaxBreakdown, setShowTaxBreakdown] = useState(false)
   const [showPlacingOrder, setShowPlacingOrder] = useState(false)
   /** Food Instant delivery mode: "standard" (Basic) | "quick". Never confuse with QC. */
   const [deliveryType, setDeliveryType] = useState("standard")
@@ -447,6 +449,7 @@ export default function Cart() {
     platformFee: 0,
     packagingFee: 0,
     gstRate: 0,
+    deliveryFeeTaxRate: 0,
   })
 
 
@@ -1283,6 +1286,7 @@ useEffect(() => {
           platformFee: Number(settings.platformFee ?? 0),
           packagingFee: Number(settings.packagingFee ?? 0),
           gstRate: Number(settings.gstRate ?? 0),
+          deliveryFeeTaxRate: Number(settings.deliveryFeeTaxRate ?? 0),
         })
       }
     } catch (error) {
@@ -1372,12 +1376,22 @@ const deliveryFeeBreakdownText = hasDistanceDeliveryBreakdown
   : null
 const platformFee = pricing?.platformFee ?? Number(feeSettings.platformFee || 0)
 const packagingFee = pricing?.packagingFee ?? Number(feeSettings.packagingFee || 0)
-const gstCharges = pricing?.tax ?? Math.round(subtotal * (Number(feeSettings.gstRate || 0) / 100))
+const fallbackItemTax = Number((subtotal * (Number(feeSettings.gstRate || 0) / 100)).toFixed(2))
+const fallbackDeliveryFeeTax = Number((deliveryFee * (Number(feeSettings.deliveryFeeTaxRate || 0) / 100)).toFixed(2))
+const gstCharges = pricing?.tax ?? Number((fallbackItemTax + fallbackDeliveryFeeTax).toFixed(2))
+// Server sends per-component lines; fall back to locally computed ones.
+const taxBreakdown =
+  Array.isArray(pricing?.taxBreakdown) && pricing.taxBreakdown.length > 0
+    ? pricing.taxBreakdown
+    : [
+        { key: "food_gst", label: "GST on food items", rate: Number(feeSettings.gstRate || 0), amount: fallbackItemTax },
+        { key: "delivery_fee_tax", label: "GST on delivery fee", rate: Number(feeSettings.deliveryFeeTaxRate || 0), amount: fallbackDeliveryFeeTax },
+      ].filter((line) => line.amount > 0)
 // Never invent coupon caps — wait for server pricing for actual discount.
 const discount = pricing?.discount ?? 0
 const totalBeforeDiscount =
   subtotal + deliveryFee + platformFee + packagingFee + gstCharges + quickDeliveryFee
-const total = pricing?.total ?? (totalBeforeDiscount - discount)
+const total = pricing?.total ?? Math.round(totalBeforeDiscount - discount)
 
 // Calculate other platform total for comparison
 const otherPlatformSubtotal = cart.reduce((sum, item) => {
@@ -2691,7 +2705,7 @@ return (
                             {RUPEE_SYMBOL}{(Number(item.otherPrice || 0) * (item.quantity || 1)).toFixed(0)}
                           </p>
                         ) : null}
-                        <p className="text-sm md:text-base font-medium text-gray-800 dark:text-gray-200">
+                        <p className="text-sm md:text-base font-semibold text-green-600 dark:text-green-500">
                           {RUPEE_SYMBOL}{((item.price || 0) * (item.quantity || 1)).toFixed(0)}
                         </p>
                       </div>
@@ -3076,7 +3090,8 @@ return (
               )}
             </div>
 
-            {/* Delivery Type */}
+            {/* Delivery Type (Commented out) */}
+            {/*
             <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col p-4 md:p-5">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
@@ -3087,7 +3102,7 @@ return (
               </div>
 
               <div className="flex flex-col gap-0">
-                {/* Food Quick Delivery — mutually exclusive with Schedule */}
+                -- Food Quick Delivery — mutually exclusive with Schedule --
                 {showQuickOption && (
                   <div
                     onClick={() => {
@@ -3147,7 +3162,7 @@ return (
                   </div>
                 )}
 
-                {/* Basic Delivery */}
+                -- Basic Delivery --
                 <div
                   onClick={() => {
                     clearQuickDeliveryToast()
@@ -3174,6 +3189,7 @@ return (
                 </div>
               </div>
             </div>
+            */}
 
             {/* Delivery Address */}
             <div className="bg-white dark:bg-[#1a1a1a] px-4 md:px-6 py-5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
@@ -3446,9 +3462,31 @@ return (
                       </div>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-400 border-b border-dashed border-gray-400 pb-[1px]">Government Taxes</span>
-                    <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setShowTaxBreakdown((v) => !v)}
+                      disabled={taxBreakdown.length === 0}
+                      className="w-full flex justify-between items-center text-sm text-left"
+                    >
+                      <span className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
+                        <span className="border-b border-dashed border-gray-400 pb-[1px]">Government Taxes</span>
+                        {taxBreakdown.length > 0 && (
+                          <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${showTaxBreakdown ? 'rotate-180' : ''}`} />
+                        )}
+                      </span>
+                      <span className="text-gray-800 dark:text-gray-200 font-medium">{RUPEE_SYMBOL}{gstCharges.toFixed(2)}</span>
+                    </button>
+                    {showTaxBreakdown && taxBreakdown.length > 0 && (
+                      <div className="mt-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-3 py-2 space-y-1.5">
+                        {taxBreakdown.map((line) => (
+                          <div key={line.key} className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>{line.label}</span>
+                            <span>{RUPEE_SYMBOL}{Number(line.amount || 0).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm text-[#FB4F01] font-medium">

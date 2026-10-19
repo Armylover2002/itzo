@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import TimePicker12h from "@shared/components/TimePicker12h";
 import { Link, useLocation as useRouterLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -2084,11 +2085,11 @@ export default function Profile() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Opening Time <span className="text-red-500">*</span></label>
-                <input required type="time" className="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm bg-white dark:bg-zinc-900 text-gray-950 dark:text-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange transition-all" value={sellerForm.openingTime} onChange={e => setSellerForm({...sellerForm, openingTime: e.target.value})} />
+                <TimePicker12h required ariaLabel="Opening time" className="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm bg-white dark:bg-zinc-900 text-gray-950 dark:text-gray-50 focus-within:ring-1 focus-within:ring-primary-orange focus-within:border-primary-orange transition-all" value={sellerForm.openingTime} onChange={v => setSellerForm(prev => ({...prev, openingTime: v}))} />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Closing Time <span className="text-red-500">*</span></label>
-                <input required type="time" className="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm bg-white dark:bg-zinc-900 text-gray-950 dark:text-gray-50 focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange transition-all" value={sellerForm.closingTime} onChange={e => setSellerForm({...sellerForm, closingTime: e.target.value})} />
+                <TimePicker12h required ariaLabel="Closing time" className="w-full px-3 py-2 border border-gray-200 dark:border-gray-800 rounded-lg text-sm bg-white dark:bg-zinc-900 text-gray-950 dark:text-gray-50 focus-within:ring-1 focus-within:ring-primary-orange focus-within:border-primary-orange transition-all" value={sellerForm.closingTime} onChange={v => setSellerForm(prev => ({...prev, closingTime: v}))} />
               </div>
             </div>
 

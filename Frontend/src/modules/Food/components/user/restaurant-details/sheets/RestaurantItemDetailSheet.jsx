@@ -33,11 +33,11 @@ function PriceTag({ price, otherPrice, label }) {
       {label ? <span className="text-[10px] font-medium uppercase tracking-wide text-gray-400">{label}</span> : null}
       <div className="flex items-center gap-2">
         {showStrike && (
-          <span className="text-xs text-gray-400 line-through">
-            {RUPEE_SYMBOL}{Math.round(numericOther)}
+          <span className="text-xs text-gray-500">
+            Others <span className="line-through">{RUPEE_SYMBOL}{Math.round(numericOther)}</span>
           </span>
         )}
-        <span className="text-base font-bold text-gray-900 dark:text-white">
+        <span className="text-base font-bold text-green-600 dark:text-green-500">
           {RUPEE_SYMBOL}{Math.round(numericPrice)}
         </span>
       </div>
@@ -343,8 +343,8 @@ export default function RestaurantItemDetailSheet({
                         </p>
                         {showSave && (
                           <>
-                            <p className="text-xs text-gray-400 line-through">
-                              {RUPEE_SYMBOL}{Math.round(variantOther)}
+                            <p className="text-xs text-gray-500">
+                              Others <span className="line-through">{RUPEE_SYMBOL}{Math.round(variantOther)}</span>
                             </p>
                             <p className="text-[10px] font-semibold text-emerald-600">
                               Save {RUPEE_SYMBOL}{Math.round(variantOther - variantPrice)}

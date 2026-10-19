@@ -322,7 +322,7 @@ const RecommendedSection = memo(({ recommendedForYouRestaurants, isFavorite, onF
                 <ItemSlotAvailabilityNote item={product} className="mt-1 mb-auto" />
                 <div className="flex justify-between items-center mt-3 shrink-0">
                   <div className="flex items-center">
-                     <span className="text-[14px] font-bold text-[#FB4F01] leading-none">
+                     <span className="text-[14px] font-bold text-green-600 dark:text-green-500 leading-none">
                        {getFoodPriceLabel(product).replace(/starting from/i, "").trim()}
                      </span>
                   </div>

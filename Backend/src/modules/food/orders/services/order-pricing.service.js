@@ -194,7 +194,7 @@ export async function calculateOrderPricing(userId, dto) {
   const gstRate = Number(feeSettings.gstRate || 0);
   const tax =
     Number.isFinite(gstRate) && gstRate > 0
-      ? Math.round(subtotal * (gstRate / 100))
+      ? roundCurrency(subtotal * (gstRate / 100))
       : 0;
 
   let discount = 0;
@@ -311,10 +311,10 @@ export async function calculateOrderPricing(userId, dto) {
     }
   }
 
-  const total = Math.max(
+  const total = Math.round(Math.max(
     0,
     subtotal + packagingFee + deliveryFee + platformFee + tax - discount,
-  );
+  ));
 
   const commissionPercentage = resolveRestaurantCommissionPercentage(
     restaurant?.commissionPercentage,

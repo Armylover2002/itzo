@@ -35,6 +35,11 @@ function UserPathRedirect() {
   return <Navigate to={newPath} replace />
 }
 
+function SearchPathRedirect() {
+  const location = useLocation()
+  return <Navigate to={`/food/user/search${location.search}`} replace />
+}
+
 // Scroll to top on route change
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -124,6 +129,10 @@ export default function App() {
           {/* Public Careers Pages */}
           <Route path="careers" element={<Careers />} />
           <Route path="careers/:id" element={<JobDetails />} />
+
+          {/* Search Redirects - preserve query string when navigating to /food/search */}
+          <Route path="search" element={<SearchPathRedirect />} />
+          <Route path="search/*" element={<SearchPathRedirect />} />
 
           {/* Legacy Redirects & Fallbacks - use absolute path to avoid /user appended in a loop */}
           <Route path="/" element={<Navigate to="/food/user" replace />} />

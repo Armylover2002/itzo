@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { formatTimeAMPM } from "@shared/utils/timeFormat"
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import { Input } from "@food/components/ui/input"
 import { Button } from "@food/components/ui/button"
@@ -1363,9 +1364,6 @@ export default function RestaurantOnboarding() {
 
         const menuFiles = (mergedStep2.menuImages || []).filter((f) => isUploadableFile(f))
         const hasExistingMenuImages = (mergedStep2.menuImages || []).some(hasValidMenuImageAsset)
-        if (menuFiles.length === 0 && !hasExistingMenuImages) {
-          throw new Error("At least one menu image must be uploaded")
-        }
         menuFiles.forEach((file) => formData.append("menuImages", file))
 
         if (isUploadableFile(mergedStep2.profileImage)) {
@@ -1997,7 +1995,7 @@ export default function RestaurantOnboarding() {
         </p>
 
         <div className="space-y-2">
-          <Label className={ONBOARDING_LABEL}>Menu images</Label>
+          <Label className={ONBOARDING_LABEL}>Menu images (optional)</Label>
           <div className={`mt-1 flex flex-col items-center justify-between gap-4 rounded-xl border-2 border-dashed px-4 py-5 sm:flex-row ${
             fieldErrors.menuImages
               ? "border-red-300 bg-red-50/40"
@@ -2797,16 +2795,22 @@ export default function RestaurantOnboarding() {
               <Clock className="h-4 w-4" />
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Delivery hours</span>
             </div>
-            <p className="font-bold text-slate-900">
-              {step2.openingTime && step2.closingTime
-                ? `${step2.openingTime} – ${step2.closingTime}`
-                : "—"}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">
-              {(step2.openDays || []).length
-                ? `${step2.openDays.join(", ")} open`
-                : "No days selected"}
-            </p>
+            {(step2.shifts || []).some((s) => s.openingTime && s.closingTime) ? (
+              (step2.shifts || [])
+                .filter((s) => s.openingTime && s.closingTime)
+                .map((s, i) => (
+                  <div key={i} className={i > 0 ? "mt-2" : ""}>
+                    <p className="font-bold text-slate-900">
+                      {`${formatTimeAMPM(s.openingTime)} – ${formatTimeAMPM(s.closingTime)}`}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500">
+                      {(s.days || []).length ? `${s.days.join(", ")} open` : "No days selected"}
+                    </p>
+                  </div>
+                ))
+            ) : (
+              <p className="font-bold text-slate-900">—</p>
+            )}
           </div>
           <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
             <div className="mb-2 flex items-center gap-2 text-[#10335D]">

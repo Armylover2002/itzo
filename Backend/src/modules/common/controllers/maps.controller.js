@@ -103,7 +103,9 @@ export const reverseGeocode = async (req, res) => {
       });
     }
 
-    const first = data.results[0];
+    // Google often returns a bare plus code ("7JR8+4X City") first; prefer the most
+    // specific real address, which comes next in its specificity-ordered list.
+    const first = data.results.find((r) => !(r.types || []).includes('plus_code')) || data.results[0];
     const components = mapAddressComponents(first.address_components || []);
 
     return res.json({

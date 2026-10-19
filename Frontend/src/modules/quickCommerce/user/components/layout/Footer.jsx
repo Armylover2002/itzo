@@ -75,7 +75,7 @@ const Footer = ({ themeColor: themeColorProp }) => {
                     // Deduped/cached (60s TTL): UserLayout (and this Footer) remounts on
                     // every /food/user <-> /quick tab switch, which was
                     // re-firing this request on each switch with no caching at all.
-                    const res = await getWithDedupe('/food/admin/categories/public', {}, { ttl: 60 * 1000 });
+                    const res = await getWithDedupe('/food/restaurant/categories/public', {}, { ttl: 60 * 1000 });
                     const cats = res?.data?.data?.categories || [];
                     const allCategories = Array.isArray(cats) ? cats : [];
                     if (allCategories.length > 0) {

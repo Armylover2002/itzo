@@ -996,6 +996,26 @@ function roundCurrency(value) {
   return Number(num.toFixed(2));
 }
 
+/** Tax charged on the customer-paid delivery fee (admin "Tax on Delivery Fee %"). */
+function calculateDeliveryFeeTax(deliveryFee, feeSettings) {
+  const rate = Number(feeSettings?.deliveryFeeTaxRate || 0);
+  const fee = Number(deliveryFee || 0);
+  if (!Number.isFinite(rate) || rate <= 0 || !Number.isFinite(fee) || fee <= 0) return 0;
+  return roundCurrency(fee * (rate / 100));
+}
+
+function buildDeliveryFeeTaxLine(deliveryFee, feeSettings) {
+  const amount = calculateDeliveryFeeTax(deliveryFee, feeSettings);
+  if (amount <= 0) return null;
+  return {
+    key: "delivery_fee_tax",
+    label: "GST on delivery fee",
+    rate: Number(feeSettings.deliveryFeeTaxRate),
+    taxableAmount: roundCurrency(deliveryFee),
+    amount,
+  };
+}
+
 function normalizeFoodFeeSettings(feeDoc = null) {
   const defaultFeeSettings = {
     deliveryFee: 25,
@@ -3208,15 +3228,22 @@ export async function calculateOrder(userId, dto, options = {}) {
     }
 
     const gstRate = feeSettings.gstRate;
-    const tax =
+    const itemTax =
       Number.isFinite(gstRate) && gstRate > 0
-        ? Math.round(subtotal * (gstRate / 100))
+        ? roundCurrency(subtotal * (gstRate / 100))
         : 0;
+    const taxBreakdown = [];
+    if (itemTax > 0) {
+      taxBreakdown.push({ key: "food_gst", label: "GST on food items", rate: Number(gstRate), taxableAmount: roundCurrency(subtotal), amount: itemTax });
+    }
+    const deliveryFeeTaxLine = buildDeliveryFeeTaxLine(deliveryFee, feeSettings);
+    if (deliveryFeeTaxLine) taxBreakdown.push(deliveryFeeTaxLine);
+    const tax = roundCurrency(itemTax + (deliveryFeeTaxLine?.amount || 0));
     const discount = 0;
-    const total = Math.max(
+    const total = Math.round(Math.max(
       0,
       subtotal + packagingFee + deliveryFee + platformFee + tax - discount,
-    );
+    ));
     const codOrderLimit = await resolveCodOrderLimit();
     const codEligibility = buildCodEligibility(total, codOrderLimit);
 
@@ -3224,6 +3251,7 @@ export async function calculateOrder(userId, dto, options = {}) {
       pricing: {
         subtotal,
         tax,
+        taxBreakdown,
         packagingFee,
         deliveryFee,
         deliveryDistanceKm,
@@ -3383,18 +3411,29 @@ export async function calculateOrder(userId, dto, options = {}) {
   }
 
   let tax = 0;
+  // Per-component tax lines for the customer bill "Government Taxes" breakdown.
+  const taxBreakdown = [];
   if (orderType === "mixed") {
     const discountedFoodSubtotal = Math.max(0, foodItemSubtotal - discount);
-    const foodTax = Math.round(discountedFoodSubtotal * (feeSettings.gstRate / 100));
+    const foodTax = roundCurrency(discountedFoodSubtotal * (feeSettings.gstRate / 100));
     const quickGstRate = quickFeeDoc?.gstRate ?? 0;
-    const quickTax = Math.round(quickSubtotal * (quickGstRate / 100));
-    tax = foodTax + quickTax;
+    const quickTax = roundCurrency(quickSubtotal * (quickGstRate / 100));
+    tax = roundCurrency(foodTax + quickTax);
+    if (foodTax > 0) {
+      taxBreakdown.push({ key: "food_gst", label: "GST on food items", rate: Number(feeSettings.gstRate), taxableAmount: roundCurrency(discountedFoodSubtotal), amount: foodTax });
+    }
+    if (quickTax > 0) {
+      taxBreakdown.push({ key: "grocery_gst", label: "GST on grocery items", rate: Number(quickGstRate), taxableAmount: roundCurrency(quickSubtotal), amount: quickTax });
+    }
   } else {
     const gstRate = feeSettings.gstRate;
     const discountedSubtotal = Math.max(0, subtotal - discount);
     tax = Number.isFinite(gstRate) && gstRate > 0
-      ? Math.round(discountedSubtotal * (gstRate / 100))
+      ? roundCurrency(discountedSubtotal * (gstRate / 100))
       : 0;
+    if (tax > 0) {
+      taxBreakdown.push({ key: "food_gst", label: "GST on food items", rate: Number(gstRate), taxableAmount: roundCurrency(discountedSubtotal), amount: tax });
+    }
   }
   // ----- Mixed cart: QC store delivery fee (Quick Commerce) — NEVER Food Quick surcharge -----
   // Food Quick surcharge uses foodQuickDeliveryFee / pricing.quickDeliveryFee (food Instant only).
@@ -3411,10 +3450,17 @@ export async function calculateOrder(userId, dto, options = {}) {
         ? expressDeliveryFee
         : normalDeliveryFee
       : deliveryFee;
-  let total = Math.max(
+  // Item tax only; delivery-fee tax depends on which delivery option is chosen.
+  const itemTax = tax;
+  const deliveryFeeTaxLine = buildDeliveryFeeTaxLine(selectedDeliveryFee, feeSettings);
+  if (deliveryFeeTaxLine) {
+    tax = roundCurrency(itemTax + deliveryFeeTaxLine.amount);
+    taxBreakdown.push(deliveryFeeTaxLine);
+  }
+  let total = Math.round(Math.max(
     0,
     subtotal + packagingFee + selectedDeliveryFee + platformFee + tax - discount,
-  );
+  ));
   const deliveryOptions =
     orderType === "mixed" && eligibility.eligible
       ? [
@@ -3422,30 +3468,32 @@ export async function calculateOrder(userId, dto, options = {}) {
             code: "normal",
             label: "Normal delivery",
             deliveryFee: normalDeliveryFee,
-            total: Math.max(
+            total: Math.round(Math.max(
               0,
               subtotal +
                 packagingFee +
                 normalDeliveryFee +
                 platformFee +
-                tax -
+                itemTax +
+                calculateDeliveryFeeTax(normalDeliveryFee, feeSettings) -
                 discount,
-            ),
+            )),
             riderCount: 1,
           },
           {
             code: "express",
             label: "Express delivery",
             deliveryFee: expressDeliveryFee,
-            total: Math.max(
+            total: Math.round(Math.max(
               0,
               subtotal +
                 packagingFee +
                 expressDeliveryFee +
                 platformFee +
-                tax -
+                itemTax +
+                calculateDeliveryFeeTax(expressDeliveryFee, feeSettings) -
                 discount,
-            ),
+            )),
             riderCount: 2,
           },
         ]
@@ -3525,7 +3573,7 @@ export async function calculateOrder(userId, dto, options = {}) {
         foodQuickSharePcts = split.quickSharePcts;
         foodQuickFinanceVersion = split.quickFinanceVersion;
         foodDeliveryMode = "quick";
-        total = Math.max(0, total + foodQuickDeliveryFee);
+        total = Math.round(Math.max(0, total + foodQuickDeliveryFee));
         etaPromise = eta.etaPromise;
         foodQuickDeliveryMeta.etaPromise = {
           min: etaPromise.min,
@@ -3552,6 +3600,7 @@ export async function calculateOrder(userId, dto, options = {}) {
     pricing: {
       subtotal,
       tax,
+      taxBreakdown,
       packagingFee,
       deliveryFee: selectedDeliveryFee,
       totalDeliveryFee:
@@ -3885,7 +3934,7 @@ export async function createOrder(userId, dto) {
   normalizedPricing.sponsoredDelivery =
     Boolean(normalizedPricing.sponsoredDelivery) ||
     normalizedPricing.restaurantDeliveryFee > 0;
-  const recomputedTotal = Math.max(
+  const recomputedTotal = Math.round(Math.max(
     0,
     normalizedPricing.subtotal +
       normalizedPricing.tax +
@@ -3894,7 +3943,7 @@ export async function createOrder(userId, dto) {
       normalizedPricing.platformFee +
       normalizedPricing.quickDeliveryFee -
       normalizedPricing.discount,
-  );
+  ));
   normalizedPricing.total = recomputedTotal;
 
   if (isCash) {

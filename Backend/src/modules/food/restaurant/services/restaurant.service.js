@@ -25,6 +25,10 @@ import {
 } from '../../shared/pendingProfileChanges.js';
 import { invalidateCache } from '../../../../middleware/cache.js';
 import { isModuleEnabled } from '../../../../middleware/moduleAccess.js';
+import { FoodItem } from '../../admin/models/food.model.js';
+import { getFoodDisplayPrice, getFoodDisplayOtherPrice, serializeFoodVariants } from '../../admin/services/foodVariant.service.js';
+import { ItemSlotTiming } from '../models/itemSlotTiming.model.js';
+import { buildSlotTimingMap, isFoodVisibleForSlotTiming, loadSlotTimingsForRestaurants } from './itemSlotTiming.util.js';
 import {
     buildActivePublicOfferFilter,
     buildActiveRestaurantCouponFilter,
@@ -1097,9 +1101,7 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                 if (openingMinutes === closingMinutes) {
                     throw new ValidationError('Opening time and closing time cannot be same');
                 }
-                if (closingMinutes < openingMinutes) {
-                    throw new ValidationError('Closing time cannot be less than opening time');
-                }
+                // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
             }
 
             const images = {};
@@ -1114,9 +1116,6 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                 menuImages = await Promise.all(
                     files.menuImages.map((file) => uploadImageBuffer(file.buffer, 'food/restaurants/menu'))
                 );
-            }
-            if (menuImages.length === 0 && (!restaurant.menuImages || restaurant.menuImages.length === 0)) {
-                throw new ValidationError('At least one menu image is required');
             }
 
             const cuisines = Array.isArray(payload.cuisines)
@@ -1283,7 +1282,8 @@ export const registerRestaurant = async (payload, files, authUserId) => {
         razorpayOrderId,
         razorpayPaymentId,
         razorpaySignature,
-        finalizeOnboarding
+        finalizeOnboarding,
+        fssaiApplyForLicense
     } = payload;
 
     // Optional richer multi-shift schedule (mirrors the same field on onboarding step 2 —
@@ -1387,9 +1387,7 @@ export const registerRestaurant = async (payload, files, authUserId) => {
         if (openingMinutes === closingMinutes) {
             throw new ValidationError('Opening time and closing time cannot be same');
         }
-        if (closingMinutes < openingMinutes) {
-            throw new ValidationError('Closing time cannot be less than opening time');
-        }
+        // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
     }
     const estimatedDeliveryTimeText = String(estimatedDeliveryTime || '').trim();
     const estimatedDeliveryTimeMinutes = parseEstimatedDeliveryMinutes(estimatedDeliveryTimeText);
@@ -1531,16 +1529,16 @@ export const registerRestaurant = async (payload, files, authUserId) => {
                 });
 
                 if (isFinalizeOnboarding || !files?.menuImages?.length) {
-                    if (!menuImages.length && (!existingRestaurant.menuImages || existingRestaurant.menuImages.length === 0)) {
-                        throw new ValidationError('At least one menu image is required');
-                    }
                     if (!images.profileImage && !existingRestaurant.profileImage) {
                         throw new ValidationError('Restaurant profile image is required');
                     }
                     if (!images.panImage && !existingRestaurant.panImage) {
                         throw new ValidationError('PAN image is required');
                     }
-                    if (!images.fssaiImage && !existingRestaurant.fssaiImage) {
+                    // Owners who chose "Apply for FSSAI" in step 3 have no license image yet.
+                    const appliedForFssai =
+                        fssaiApplyForLicense === true || existingRestaurant.fssaiApplicationStatus === 'applied';
+                    if (!appliedForFssai && !images.fssaiImage && !existingRestaurant.fssaiImage) {
                         throw new ValidationError('FSSAI image is required');
                     }
                     if (gstRegistered && !images.gstImage && !existingRestaurant.gstImage) {
@@ -2184,9 +2182,7 @@ export const updateRestaurantProfile = async (restaurantId, body = {}) => {
         if (openingMinutes === closingMinutes) {
             throw new ValidationError('Opening time and closing time cannot be same');
         }
-        if (closingMinutes < openingMinutes) {
-            throw new ValidationError('Closing time cannot be less than opening time');
-        }
+        // closing < opening is an overnight window (e.g. 18:00-02:00) and is allowed.
     }
 
     if (body.menuImages !== undefined) {
@@ -2609,6 +2605,103 @@ export const uploadRestaurantMenuImages = async (restaurantId, files = []) => {
     };
 };
 
+const MENU_PREVIEW_ITEMS_PER_RESTAURANT = 8;
+
+/**
+ * Attaches a short `menuPreview` (recommended dishes first) to each restaurant for the
+ * home-page cards. One aggregate for the whole page instead of N menu calls.
+ */
+const attachMenuPreviewToRestaurants = async (restaurants = [], { pureVeg = false } = {}) => {
+    const ids = restaurants
+        .map((r) => String(r?._id || ''))
+        .filter((id) => mongoose.Types.ObjectId.isValid(id))
+        .map((id) => new mongoose.Types.ObjectId(id));
+    restaurants.forEach((r) => { r.menuPreview = []; });
+    if (!ids.length) return;
+
+    const match = {
+        restaurantId: { $in: ids },
+        approvalStatus: 'approved',
+        isAvailable: { $ne: false },
+    };
+    if (pureVeg) match.foodType = 'Veg';
+
+    const [groups, slotTimings] = await Promise.all([
+        FoodItem.aggregate([
+            { $match: match },
+            { $sort: { isRecommended: -1, createdAt: -1, _id: -1 } },
+            {
+                $group: {
+                    _id: '$restaurantId',
+                    // Over-fetch so slot-timing filtering below still leaves a full row.
+                    items: {
+                        $push: {
+                            _id: '$_id',
+                            name: '$name',
+                            description: '$description',
+                            price: '$price',
+                            otherPrice: '$otherPrice',
+                            variants: '$variants',
+                            image: '$image',
+                            images: '$images',
+                            foodType: '$foodType',
+                            isRecommended: '$isRecommended',
+                            itemSlotTimingId: '$itemSlotTimingId',
+                            preparationTime: '$preparationTime',
+                        }
+                    }
+                }
+            },
+            { $project: { items: { $slice: ['$items', MENU_PREVIEW_ITEMS_PER_RESTAURANT * 3] } } }
+        ]),
+        loadSlotTimingsForRestaurants(ids, ItemSlotTiming),
+    ]);
+
+    const slotMapByRestaurant = new Map();
+    slotTimings.forEach((slot) => {
+        const key = String(slot.restaurantId);
+        if (!slotMapByRestaurant.has(key)) slotMapByRestaurant.set(key, []);
+        slotMapByRestaurant.get(key).push(slot);
+    });
+    const referenceDate = new Date();
+    const itemsByRestaurant = new Map();
+
+    groups.forEach((group) => {
+        const key = String(group._id);
+        const slotMap = buildSlotTimingMap(slotMapByRestaurant.get(key) || []);
+        const items = [];
+        for (const food of group.items || []) {
+            if (items.length >= MENU_PREVIEW_ITEMS_PER_RESTAURANT) break;
+            if (!isFoodVisibleForSlotTiming(food, slotMap, referenceDate)) continue;
+            const price = getFoodDisplayPrice(food);
+            if (!Number.isFinite(price) || price <= 0) continue;
+            const image =
+                (typeof food.image === 'string' && food.image.trim()) ||
+                (Array.isArray(food.images) ? food.images.find((img) => typeof img === 'string' && img.trim()) : '') ||
+                '';
+            items.push({
+                id: String(food._id),
+                _id: food._id,
+                name: food.name,
+                description: food.description || '',
+                price,
+                otherPrice: getFoodDisplayOtherPrice(food),
+                image,
+                foodType: food.foodType || 'Non-Veg',
+                isVeg: food.foodType === 'Veg',
+                isRecommended: food.isRecommended === true,
+                preparationTime: food.preparationTime || '',
+                variants: serializeFoodVariants(food.variants),
+            });
+        }
+        itemsByRestaurant.set(key, items);
+    });
+
+    restaurants.forEach((r) => {
+        r.menuPreview = itemsByRestaurant.get(String(r._id)) || [];
+    });
+};
+
 export const listApprovedRestaurants = async (query = {}) => {
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 100, 1), 1000);
     const page = Math.max(parseInt(query.page, 10) || 1, 1);
@@ -2647,6 +2740,9 @@ export const listApprovedRestaurants = async (query = {}) => {
             return { restaurants: [], total: 0, page, limit };
         }
         if (!filter.businessType) filter.businessType = { $ne: 'Street Food Vendor' };
+    }
+    if (query.pureVeg === 'true') {
+        filter.pureVegRestaurant = true;
     }
     const minRating = toFiniteNumber(query.minRating);
     if (minRating !== null) {
@@ -2692,6 +2788,7 @@ export const listApprovedRestaurants = async (query = {}) => {
     // Accept both radiusKm (preferred) and maxDistance (legacy frontend param).
     const radiusKm = toFiniteNumber(query.radiusKm) ?? toFiniteNumber(query.maxDistance);
     const sortBy = parseSortBy(query.sortBy);
+    const wantsMenuPreview = query.includeMenuPreview === 'true';
 
     const projection = {
         restaurantId: 1,
@@ -2741,14 +2838,14 @@ export const listApprovedRestaurants = async (query = {}) => {
         }
 
         const sortStage = (() => {
-            if (sortBy === 'rating' || sortBy === 'rating-high') return { $sort: { rating: -1, distanceMeters: 1 } };
-            if (sortBy === 'rating-low') return { $sort: { rating: 1, distanceMeters: 1 } };
-            if (sortBy === 'price-low') return { $sort: { featuredPrice: 1, distanceMeters: 1 } };
-            if (sortBy === 'price-high') return { $sort: { featuredPrice: -1, distanceMeters: 1 } };
-            if (sortBy === 'newest') return { $sort: { createdAt: -1 } };
-            if (sortBy === 'deliveryTime') return { $sort: { estimatedDeliveryTimeMinutes: 1, distanceMeters: 1 } };
+            if (sortBy === 'rating' || sortBy === 'rating-high') return { $sort: { rating: -1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'rating-low') return { $sort: { rating: 1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'price-low') return { $sort: { featuredPrice: 1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'price-high') return { $sort: { featuredPrice: -1, distanceMeters: 1, _id: 1 } };
+            if (sortBy === 'newest') return { $sort: { createdAt: -1, _id: -1 } };
+            if (sortBy === 'deliveryTime') return { $sort: { estimatedDeliveryTimeMinutes: 1, distanceMeters: 1, _id: 1 } };
             // nearest (default)
-            return { $sort: { distanceMeters: 1 } };
+            return { $sort: { distanceMeters: 1, _id: 1 } };
         })();
 
         const basePipeline = [
@@ -2791,17 +2888,20 @@ export const listApprovedRestaurants = async (query = {}) => {
         }));
         await attachOutletTimingsToRestaurants(restaurants);
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng, { resortNearest: sortBy === 'nearest' });
+        if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true' });
         return { restaurants, total, page, limit };
     }
 
     // Non-geo path: normal query + sort.
     const sort = (() => {
-        if (sortBy === 'rating' || sortBy === 'rating-high') return { rating: -1, createdAt: -1 };
-        if (sortBy === 'rating-low') return { rating: 1, createdAt: -1 };
-        if (sortBy === 'price-low') return { featuredPrice: 1, createdAt: -1 };
-        if (sortBy === 'price-high') return { featuredPrice: -1, createdAt: -1 };
-        if (sortBy === 'deliveryTime') return { estimatedDeliveryTimeMinutes: 1, createdAt: -1 };
-        return { createdAt: -1 };
+        // `_id` tiebreaker keeps skip/limit pagination stable: without it, docs with equal
+        // sort keys can shift between pages, so some repeat and others are never returned.
+        if (sortBy === 'rating' || sortBy === 'rating-high') return { rating: -1, createdAt: -1, _id: -1 };
+        if (sortBy === 'rating-low') return { rating: 1, createdAt: -1, _id: -1 };
+        if (sortBy === 'price-low') return { featuredPrice: 1, createdAt: -1, _id: -1 };
+        if (sortBy === 'price-high') return { featuredPrice: -1, createdAt: -1, _id: -1 };
+        if (sortBy === 'deliveryTime') return { estimatedDeliveryTimeMinutes: 1, createdAt: -1, _id: -1 };
+        return { createdAt: -1, _id: -1 };
     })();
 
     const [restaurantsRaw, total] = await Promise.all([
@@ -2835,6 +2935,7 @@ export const listApprovedRestaurants = async (query = {}) => {
     if (lat !== null && lng !== null) {
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng);
     }
+    if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true' });
 
     return { restaurants, total, page, limit };
 };

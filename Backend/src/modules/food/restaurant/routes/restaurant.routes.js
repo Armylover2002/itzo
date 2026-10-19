@@ -6,6 +6,7 @@ import {
     getOnboardingDraftController,
     listApprovedRestaurantsController,
     listUnder250RestaurantsController,
+    listHomePriceFilterRestaurantsController,
     getApprovedRestaurantController,
     listPublicOffersController,
     getCurrentRestaurantController,
@@ -171,6 +172,11 @@ router.get('/restaurants/under-250', (req, res, next) => {
     if (req.query?.lat != null && req.query?.lng != null) return next();
     return cacheResponse(300, 'restaurants_under_250')(req, res, next);
 }, listUnder250RestaurantsController);
+// Cache prefix starts with `landing_settings` so admin settings updates invalidate it.
+router.get('/restaurants/price-filter', (req, res, next) => {
+    if (req.query?.lat != null && req.query?.lng != null) return next();
+    return cacheResponse(300, 'landing_settings_price_filter')(req, res, next);
+}, listHomePriceFilterRestaurantsController);
 router.get('/restaurants/:id', cacheResponse(600, 'restaurant_detail'), getApprovedRestaurantController);
 router.get('/restaurants/:id/menu', cacheResponse(600, 'restaurant_menu'), getPublicRestaurantMenuController);
 router.get('/restaurants/:id/outlet-timings', cacheResponse(600, 'restaurant_timings'), getOutletTimingsByRestaurantIdController);

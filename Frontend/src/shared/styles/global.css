@@ -474,26 +474,26 @@
 
 /* 5. ITZO RESTAURANT SCOPE */
 .restaurant-theme {
-  --color-blue-50: #EBF1F7;
-  --color-blue-100: #D3E0EE;
-  --color-blue-200: #A8C2DE;
-  --color-blue-300: #7AA2CD;
-  --color-blue-400: #4B83BD;
-  --color-blue-500: #10335D;
-  --color-blue-600: #0C2747;
-  --color-blue-700: #091C33;
-  --color-blue-800: #061221;
-  --color-blue-900: #030910;
+  --color-blue-50: #FDF2F5;
+  --color-blue-100: #FBE3EA;
+  --color-blue-200: #F6C3D1;
+  --color-blue-300: #EC8FA9;
+  --color-blue-400: #D84A73;
+  --color-blue-500: #B80B3D;
+  --color-blue-600: #930931;
+  --color-blue-700: #66001D;
+  --color-blue-800: #4A0015;
+  --color-blue-900: #2E000D;
 
-  --color-primary: #10335D;
-  --primary: #10335D;
-  --secondary: #EBF1F7;
-  --secondary-foreground: #10335D;
-  --ring: #10335D;
-  --sidebar-primary: #10335D;
-  --sidebar-accent: #EBF1F7;
-  --sidebar-accent-foreground: #10335D;
-  --sidebar-ring: #10335D;
+  --color-primary: #B80B3D;
+  --primary: #B80B3D;
+  --secondary: #FDF2F5;
+  --secondary-foreground: #B80B3D;
+  --ring: #B80B3D;
+  --sidebar-primary: #B80B3D;
+  --sidebar-accent: #FDF2F5;
+  --sidebar-accent-foreground: #B80B3D;
+  --sidebar-ring: #B80B3D;
 }
 
 /* ==========================================================================

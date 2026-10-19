@@ -1035,6 +1035,9 @@ function RestaurantDetailsContent() {
       image: item.image,
       restaurant: restaurant.name, // Use restaurant.name directly (already validated)
       restaurantId: validRestaurantId, // Use validated restaurantId
+      // Used by the floating cart bar (logo + "Menu" link back to this restaurant)
+      restaurantSlug: restaurant.slug || slug || "",
+      restaurantImage: restaurant.profileImage?.url || (typeof restaurant.profileImage === "string" ? restaurant.profileImage : "") || "",
       description: item.description,
       originalPrice: item.originalPrice,
       isVeg: item.isVeg !== false, // Add isVeg property

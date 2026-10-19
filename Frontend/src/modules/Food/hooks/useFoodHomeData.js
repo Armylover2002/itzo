@@ -5,29 +5,101 @@ import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailabil
 import { filterCategoriesForVegMode } from "@food/utils/categoryVegFilter";
 import * as imgUtils from "@food/utils/imageUtils";
 import { parseGeoPoint } from "@food/utils/geo";
+import { readPersistentCache, writePersistentCache, clearPersistentCache } from "@/shared/utils/persistentCache";
 
 /**
  * Custom hook to manage all data fetching and filtering for the Food Module Home Page.
  * Encapsulates banners, categories, settings, and restaurant filtering logic.
  */
-let globalHomeCache = {
-  bootstrap: null,
-  // Keyed by businessType so switching the Food-tab's restaurant list between
-  // "Fixed Restaurant" (default) and "Street Food Vendor" never overwrites the
-  // other's cached results — each businessType gets its own isolated slot.
-  restaurantsByType: {},
-  advertisements: null,
-  lastFetched: Date.now(),
-};
-
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+// How old a localStorage snapshot may be and still be painted while the fresh
+// request is in flight (stale-while-revalidate on app reopen).
+const PERSISTED_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const BOOTSTRAP_STORAGE_KEY = "food-home-bootstrap";
+const RESTAURANTS_STORAGE_PREFIX = "food-home-restaurants:";
 const DEFAULT_BUSINESS_TYPE = "Fixed Restaurant";
+// Restaurants are fetched page by page as the user scrolls. Each page also costs
+// the backend one road-distance matrix lookup, so keep it small.
+const RESTAURANT_PAGE_SIZE = 12;
+
+const persistedBootstrap = readPersistentCache(BOOTSTRAP_STORAGE_KEY, PERSISTED_MAX_AGE_MS);
+
+let globalHomeCache = {
+  bootstrap: persistedBootstrap?.value || null,
+  bootstrapZoneKey: persistedBootstrap?.value?.zoneKey || null,
+  // A persisted snapshot is painted immediately but always counts as stale, so the
+  // first mount still revalidates it against the network.
+  bootstrapFetchedAt: 0,
+  // Keyed by list key (businessType + zone + veg) so switching the Food tab's
+  // restaurant list between "Fixed Restaurant" and "Street Food Vendor" never
+  // overwrites the other's cached first pages.
+  restaurantsByKey: {},
+};
 
 /** Bust in-memory home restaurant cache after distance fixes. */
 export function invalidateFoodHomeRestaurantCache() {
-  globalHomeCache.restaurantsByType = {};
-  globalHomeCache.lastFetched = 0;
+  globalHomeCache.restaurantsByKey = {};
+  clearPersistentCache(RESTAURANTS_STORAGE_PREFIX);
 }
+
+const buildRestaurantListKey = (businessType, zoneId, pureVeg) =>
+  `${businessType || DEFAULT_BUSINESS_TYPE}|${zoneId || "global"}|${pureVeg ? "pure" : "all"}`;
+
+const getCachedRestaurantList = (listKey) => {
+  if (globalHomeCache.restaurantsByKey[listKey]) return globalHomeCache.restaurantsByKey[listKey];
+  const persisted = readPersistentCache(RESTAURANTS_STORAGE_PREFIX + listKey, PERSISTED_MAX_AGE_MS);
+  if (!persisted?.value?.items) return null;
+  const entry = { ...persisted.value, fetchedAt: 0 };
+  globalHomeCache.restaurantsByKey[listKey] = entry;
+  return entry;
+};
+
+const transformRestaurant = (restaurant, backendOrigin, page) => {
+  const profileImageCandidates = imgUtils.buildRestaurantImageCandidates(
+    restaurant.profileImage || restaurant.image || restaurant.imageUrl || restaurant.logo,
+    backendOrigin,
+  );
+  const coverImages = imgUtils.extractImages(restaurant.coverImages || restaurant.coverImage, backendOrigin);
+  const allImages = Array.from(new Set([...profileImageCandidates, ...coverImages].filter(Boolean)));
+
+  return {
+    id: restaurant.restaurantId || restaurant._id,
+    mongoId: restaurant._id,
+    name: restaurant.restaurantName || restaurant.name || "Restaurant",
+    cuisine: restaurant.cuisines?.[0] || "Multi-cuisine",
+    cuisines: Array.isArray(restaurant.cuisines) ? restaurant.cuisines : [],
+    rating: Number(restaurant.rating) || 0,
+    deliveryTime: restaurant.estimatedDeliveryTime || "25-30 mins",
+    distance: restaurant.distanceInKm != null && Number.isFinite(Number(restaurant.distanceInKm))
+      ? `${Number(restaurant.distanceInKm).toFixed(1)} km`
+      : (restaurant.distance ? String(restaurant.distance).includes("km") ? restaurant.distance : `${restaurant.distance} km` : null),
+    featuredDish: restaurant.featuredDish,
+    featuredPrice: restaurant.featuredPrice,
+    image: allImages[0] || "",
+    images: allImages,
+    pureVegRestaurant: restaurant.pureVegRestaurant === true,
+    location: restaurant.location,
+    offer: restaurant.offer,
+    slug: restaurant.slug,
+    // Timing fields for availability status
+    openingTime: restaurant.openingTime,
+    closingTime: restaurant.closingTime,
+    outletTimings: restaurant.outletTimings,
+    deliveryTimings: restaurant.deliveryTimings,
+    openDays: restaurant.openDays,
+    isActive: restaurant.isActive,
+    isAcceptingOrders: restaurant.isAcceptingOrders,
+    menuPreview: Array.isArray(restaurant.menuPreview)
+      ? restaurant.menuPreview.map((item) => ({
+          ...item,
+          image: imgUtils.normalizeImageUrl(item.image, backendOrigin) || "",
+        }))
+      : [],
+    // Which server page this came from: open-first sorting happens within a page,
+    // so appending a page never reshuffles cards the user already scrolled past.
+    _page: page,
+  };
+};
 
 export const useFoodHomeData = ({
   zoneId,
@@ -43,10 +115,9 @@ export const useFoodHomeData = ({
   const cacheHasLiveItemCounts = cachedCategories.every(
     (cat) => cat && typeof cat.itemCount === "number" && typeof cat.nonVegItemCount === "number"
   );
-  const hasValidCache =
-    globalHomeCache.bootstrap &&
-    cacheHasLiveItemCounts &&
-    (Date.now() - globalHomeCache.lastFetched < CACHE_EXPIRY_MS);
+  // Any cached bootstrap (fresh in-memory, or a persisted snapshot from the last
+  // session) is painted right away; the effect below revalidates it when stale.
+  const hasValidCache = Boolean(globalHomeCache.bootstrap && cacheHasLiveItemCounts);
   
   // --- Bootstrap State ---
   const [isBootstrapped, setIsBootstrapped] = useState(hasValidCache);
@@ -75,9 +146,14 @@ export const useFoodHomeData = ({
   const [loadingLandingConfig, setLoadingLandingConfig] = useState(!hasValidCache);
 
   // --- Restaurants State ---
-  const [restaurantsData, setRestaurantsData] = useState(globalHomeCache.restaurantsByType[businessType] || []);
-  const [loadingRestaurants, setLoadingRestaurants] = useState(!globalHomeCache.restaurantsByType[businessType]);
-  const [visibleRestaurantCount, setVisibleRestaurantCount] = useState(6);
+  const pureVegOnly = vegMode === "pure";
+  const restaurantListKey = buildRestaurantListKey(businessType, zoneId, pureVegOnly);
+  const initialRestaurantList = getCachedRestaurantList(restaurantListKey);
+  const [restaurantsData, setRestaurantsData] = useState(initialRestaurantList?.items || []);
+  const [loadingRestaurants, setLoadingRestaurants] = useState(!initialRestaurantList);
+  const [loadingMoreRestaurants, setLoadingMoreRestaurants] = useState(false);
+  const [restaurantsPage, setRestaurantsPage] = useState(initialRestaurantList?.page || 0);
+  const [restaurantsTotal, setRestaurantsTotal] = useState(initialRestaurantList?.total ?? null);
   const [isLoadingFilterResults, setIsLoadingFilterResults] = useState(false);
   
   // ... existing filter state ...
@@ -92,6 +168,7 @@ export const useFoodHomeData = ({
 
   // --- Internal Refs ---
   const restaurantsRequestSeqRef = useRef(0);
+  const loadingMoreRef = useRef(false);
   const menuUnionRequestSeqRef = useRef(0);
   const menuUnionCacheRef = useRef(new Map());
   const publicCategoriesCacheRef = useRef(new Map());
@@ -100,12 +177,6 @@ export const useFoodHomeData = ({
   const normalizeImageUrl = useCallback((imageUrl) => 
     imgUtils.normalizeImageUrl(imageUrl, backendOrigin), [backendOrigin]);
   
-  const extractImages = useCallback((source) => 
-    imgUtils.extractImages(source, backendOrigin), [backendOrigin]);
-
-  const buildRestaurantImageCandidates = useCallback((value) => 
-    imgUtils.buildRestaurantImageCandidates(value, backendOrigin), [backendOrigin]);
-
   const slugifyCategory = imgUtils.slugifyCategory;
 
   // --- Consolidated Bootstrap Fetch ---
@@ -115,8 +186,12 @@ export const useFoodHomeData = ({
     const zoneKey = String(zoneId || "global");
 
     const fetchBootstrap = async () => {
-      // Re-use cache if strictly valid
-      if (globalHomeCache.bootstrap && (Date.now() - globalHomeCache.lastFetched < CACHE_EXPIRY_MS)) {
+      // Re-use cache if it was fetched from the network recently for this same zone
+      if (
+        globalHomeCache.bootstrap &&
+        globalHomeCache.bootstrapZoneKey === zoneKey &&
+        (Date.now() - globalHomeCache.bootstrapFetchedAt < CACHE_EXPIRY_MS)
+      ) {
         return;
       }
 
@@ -154,7 +229,17 @@ export const useFoodHomeData = ({
 
       if (cancelled) return;
 
-      const newBootstrapCache = { banners: {}, categories: [], exploreMore: [], settings: {}, advertisements: [] };
+      // Start from the previous snapshot so a single failed request keeps showing the
+      // last good data for that section instead of blanking it.
+      const prev = globalHomeCache.bootstrap || {};
+      const newBootstrapCache = {
+        zoneKey,
+        banners: prev.banners || {},
+        categories: prev.categories || [],
+        exploreMore: prev.exploreMore || [],
+        settings: prev.settings || {},
+        advertisements: prev.advertisements || [],
+      };
 
       // Process Banners
       if (results[0].status === "fulfilled") {
@@ -221,7 +306,9 @@ export const useFoodHomeData = ({
 
       // Update global cache
       globalHomeCache.bootstrap = newBootstrapCache;
-      globalHomeCache.lastFetched = Date.now();
+      globalHomeCache.bootstrapZoneKey = zoneKey;
+      globalHomeCache.bootstrapFetchedAt = Date.now();
+      writePersistentCache(BOOTSTRAP_STORAGE_KEY, newBootstrapCache);
 
       setLoadingBanners(false);
       setLoadingRealCategories(false);
@@ -233,14 +320,12 @@ export const useFoodHomeData = ({
     return () => { cancelled = true; };
   }, [zoneId, normalizeImageUrl, enabled]);
 
-  // --- Fetch Restaurants ---
+  // --- Fetch Restaurants (paginated) ---
   // `location` is read via a ref (kept in sync below) rather than as a useCallback
   // dependency: Home resolves location progressively (cached -> saved address -> live
   // GPS), producing several new object references for coordinates that often round to
-  // the same value. Depending on the object directly gave fetchRestaurants a new
-  // identity on every one of those updates, re-firing the limit=1000 restaurants
-  // request each time. Depending on the rounded lat/lng string instead means the
-  // identity — and the effect below — only changes when coordinates actually move.
+  // the same value. Depending on the rounded lat/lng string instead means the
+  // callback identity — and the effect below — only changes when coordinates move.
   const locationRef = useRef(location);
   locationRef.current = location;
   const roundedOriginKey = useMemo(() => {
@@ -250,111 +335,186 @@ export const useFoodHomeData = ({
     return `${lat.toFixed(5)},${lng.toFixed(5)}`;
   }, [location?.latitude, location?.lat, location?.longitude, location?.lng]);
 
+  const buildRestaurantParams = useCallback((filters = {}, page = 1) => {
+    const params = { page, limit: RESTAURANT_PAGE_SIZE, includeMenuPreview: "true" };
+    const currentLocation = locationRef.current;
+    const origin = parseGeoPoint(currentLocation) || (
+      Number.isFinite(Number(currentLocation?.latitude ?? currentLocation?.lat)) &&
+      Number.isFinite(Number(currentLocation?.longitude ?? currentLocation?.lng))
+        ? {
+            lat: Number(currentLocation.latitude ?? currentLocation.lat),
+            lng: Number(currentLocation.longitude ?? currentLocation.lng),
+          }
+        : null
+    );
+    if (origin) {
+      params.lat = origin.lat;
+      params.lng = origin.lng;
+    }
+    if (filters.sortBy) params.sortBy = filters.sortBy;
+    if (filters.selectedCuisine) params.cuisine = filters.selectedCuisine;
+    if (zoneId) params.zoneId = zoneId;
+    // Always send businessType (even the default) so Street Food Vendor listings
+    // never leak into the main Food restaurant list, and vice versa.
+    params.businessType = businessType || DEFAULT_BUSINESS_TYPE;
+    // Pure-veg mode is filtered server-side so every page is full of usable results.
+    if (pureVegOnly) params.pureVeg = "true";
+
+    // Map local active filters to API params
+    if (filters.activeFilters?.has("rating-45-plus")) params.minRating = 4.5;
+    else if (filters.activeFilters?.has("rating-4-plus")) params.minRating = 4.0;
+    return params;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundedOriginKey, zoneId, businessType, pureVegOnly]);
+
+  const extractRestaurantPage = useCallback((response, page) => {
+    const payload = response?.data?.data;
+    if (!response?.data?.success || !Array.isArray(payload?.restaurants)) return null;
+    return {
+      items: payload.restaurants.map((r) => transformRestaurant(r, backendOrigin, page)),
+      total: Number.isFinite(Number(payload.total)) ? Number(payload.total) : null,
+    };
+  }, [backendOrigin]);
+
+  // Loads page 1 and replaces the list (initial load, location/zone/filter change).
   const fetchRestaurants = useCallback(async (filters = {}) => {
     const requestSeq = ++restaurantsRequestSeqRef.current;
+    loadingMoreRef.current = false;
+    setLoadingMoreRestaurants(false);
+    const listKey = restaurantListKey;
+    // Only show the skeleton when there is nothing cached to show meanwhile.
+    if (!globalHomeCache.restaurantsByKey[listKey]?.items?.length) setLoadingRestaurants(true);
     try {
-      setLoadingRestaurants(true);
-      const params = {};
-      const currentLocation = locationRef.current;
-      const origin = parseGeoPoint(currentLocation) || (
-        Number.isFinite(Number(currentLocation?.latitude ?? currentLocation?.lat)) &&
-        Number.isFinite(Number(currentLocation?.longitude ?? currentLocation?.lng))
-          ? {
-              lat: Number(currentLocation.latitude ?? currentLocation.lat),
-              lng: Number(currentLocation.longitude ?? currentLocation.lng),
-            }
-          : null
-      );
-      if (origin) {
-        params.lat = origin.lat;
-        params.lng = origin.lng;
-      }
-      if (filters.sortBy) params.sortBy = filters.sortBy;
-      if (filters.selectedCuisine) params.cuisine = filters.selectedCuisine;
-      if (zoneId) params.zoneId = zoneId;
-      // Always send businessType (even the default) so Street Food Vendor listings
-      // never leak into the main Food restaurant list, and vice versa.
-      params.businessType = businessType || DEFAULT_BUSINESS_TYPE;
-
-      // Map local active filters to API params
-      if (filters.activeFilters?.has("rating-45-plus")) params.minRating = 4.5;
-      else if (filters.activeFilters?.has("rating-4-plus")) params.minRating = 4.0;
-      
-      const response = await restaurantAPI.getRestaurants(params);
+      const response = await restaurantAPI.getRestaurants(buildRestaurantParams(filters, 1));
       if (requestSeq !== restaurantsRequestSeqRef.current) return;
 
-      if (response.data?.success && response.data?.data?.restaurants) {
-        const transformed = response.data.data.restaurants.map(restaurant => {
-          const profileImageCandidates = buildRestaurantImageCandidates(restaurant.profileImage || restaurant.image || restaurant.imageUrl || restaurant.logo);
-          const coverImages = extractImages(restaurant.coverImages || restaurant.coverImage);
-          const allImages = Array.from(new Set([...profileImageCandidates, ...coverImages].filter(Boolean)));
-          
-          return {
-            id: restaurant.restaurantId || restaurant._id,
-            mongoId: restaurant._id,
-            name: restaurant.restaurantName || restaurant.name || "Restaurant",
-            cuisine: restaurant.cuisines?.[0] || "Multi-cuisine",
-            rating: Number(restaurant.rating) || 0,
-            deliveryTime: restaurant.estimatedDeliveryTime || "25-30 mins",
-            distance: restaurant.distanceInKm != null && Number.isFinite(Number(restaurant.distanceInKm))
-              ? `${Number(restaurant.distanceInKm).toFixed(1)} km`
-              : (restaurant.distance ? String(restaurant.distance).includes("km") ? restaurant.distance : `${restaurant.distance} km` : null),
-            featuredDish: restaurant.featuredDish,
-            featuredPrice: restaurant.featuredPrice,
-            image: allImages[0] || "",
-            images: allImages,
-            pureVegRestaurant: restaurant.pureVegRestaurant === true,
-            location: restaurant.location,
-            offer: restaurant.offer,
-            slug: restaurant.slug,
-            // Timing fields for availability status
-            openingTime: restaurant.openingTime,
-            closingTime: restaurant.closingTime,
-            outletTimings: restaurant.outletTimings,
-            deliveryTimings: restaurant.deliveryTimings,
-            openDays: restaurant.openDays,
-            isActive: restaurant.isActive,
-            isAcceptingOrders: restaurant.isAcceptingOrders,
-          };
+      const result = extractRestaurantPage(response, 1);
+      if (result) {
+        globalHomeCache.restaurantsByKey[listKey] = {
+          items: result.items,
+          page: 1,
+          total: result.total,
+          fetchedAt: Date.now(),
+          originKey: roundedOriginKey,
+        };
+        // Only the first page is persisted: it is what the next app open paints.
+        writePersistentCache(RESTAURANTS_STORAGE_PREFIX + listKey, {
+          items: result.items,
+          page: 1,
+          total: result.total,
         });
-
         startTransition(() => {
-          setRestaurantsData(transformed);
-          globalHomeCache.restaurantsByType[businessType] = transformed;
+          setRestaurantsData(result.items);
+          setRestaurantsPage(1);
+          setRestaurantsTotal(result.total);
         });
       }
     } catch (err) {
-      setRestaurantsData([]);
+      if (requestSeq !== restaurantsRequestSeqRef.current) return;
+      // Keep whatever cached list is on screen; only blank out when there is none.
+      if (!globalHomeCache.restaurantsByKey[listKey]?.items?.length) setRestaurantsData([]);
     } finally {
       if (requestSeq === restaurantsRequestSeqRef.current) setLoadingRestaurants(false);
     }
-  }, [roundedOriginKey, zoneId, businessType, buildRestaurantImageCandidates, extractImages]);
+  }, [buildRestaurantParams, extractRestaurantPage, restaurantListKey, roundedOriginKey]);
 
-  // Hydrate instantly from the businessType's own cache slot when switching
-  // tabs (e.g. Food <-> Street Food), so the list doesn't flash the other
-  // tab's stale data while the fresh fetch below is in flight.
+  const hasMoreServerRestaurants =
+    restaurantsTotal == null
+      ? restaurantsPage > 0 && restaurantsData.length >= restaurantsPage * RESTAURANT_PAGE_SIZE
+      : restaurantsData.length < restaurantsTotal;
+
+  // Appends the next page when the user scrolls near the end of the list.
+  const loadMoreRestaurants = useCallback(async () => {
+    if (loadingMoreRef.current || loadingRestaurants || !hasMoreServerRestaurants) return;
+    loadingMoreRef.current = true;
+    setLoadingMoreRestaurants(true);
+    const requestSeq = restaurantsRequestSeqRef.current;
+    const nextPage = restaurantsPage + 1;
+    const listKey = restaurantListKey;
+    try {
+      const response = await restaurantAPI.getRestaurants(buildRestaurantParams(appliedFilters, nextPage));
+      // A newer page-1 load replaced the list meanwhile — drop this stale page.
+      if (requestSeq !== restaurantsRequestSeqRef.current) return;
+      const result = extractRestaurantPage(response, nextPage);
+      if (!result) return;
+
+      const seen = new Set(restaurantsData.map((r) => String(r.mongoId || r.id)));
+      const newItems = result.items.filter((r) => !seen.has(String(r.mongoId || r.id)));
+      const merged = [...restaurantsData, ...newItems];
+      // A short page, or a page that adds nothing new (empty / all duplicates), means
+      // we reached the end. Pin total to what we have so `hasMore` turns false —
+      // otherwise a server total that the deduped list can never reach keeps the
+      // observer requesting page after page forever.
+      const reachedEnd = result.items.length < RESTAURANT_PAGE_SIZE || newItems.length === 0;
+      const nextTotal = reachedEnd ? merged.length : (result.total ?? null);
+
+      const cached = globalHomeCache.restaurantsByKey[listKey];
+      if (cached) {
+        globalHomeCache.restaurantsByKey[listKey] = { ...cached, items: merged, page: nextPage, total: nextTotal };
+      }
+      setRestaurantsData(merged);
+      setRestaurantsPage(nextPage);
+      setRestaurantsTotal(nextTotal);
+    } catch {
+      // Leave the list as is; the next scroll retries.
+    } finally {
+      if (requestSeq === restaurantsRequestSeqRef.current) {
+        loadingMoreRef.current = false;
+        setLoadingMoreRestaurants(false);
+      }
+    }
+  }, [
+    loadingRestaurants,
+    hasMoreServerRestaurants,
+    restaurantsPage,
+    restaurantsData,
+    restaurantListKey,
+    buildRestaurantParams,
+    extractRestaurantPage,
+    appliedFilters,
+  ]);
+
+  // Hydrate instantly from this list's own cache slot when switching Food <->
+  // Street Food or veg mode, so the list never flashes another list's data while
+  // the fresh fetch below is in flight.
   useEffect(() => {
-    const cached = globalHomeCache.restaurantsByType[businessType];
+    const cached = getCachedRestaurantList(restaurantListKey);
     if (cached) {
-      setRestaurantsData(cached);
+      setRestaurantsData(cached.items);
+      setRestaurantsPage(cached.page || 1);
+      setRestaurantsTotal(cached.total ?? null);
       setLoadingRestaurants(false);
     } else {
       setRestaurantsData([]);
+      setRestaurantsPage(0);
+      setRestaurantsTotal(null);
       setLoadingRestaurants(true);
     }
-  }, [businessType]);
+  }, [restaurantListKey]);
 
   useEffect(() => {
     if (!enabled) return;
+    // A list loaded from the network moments ago (e.g. navigating back to Home)
+    // is reused as-is, keeping the pages the user already scrolled through.
+    const cached = globalHomeCache.restaurantsByKey[restaurantListKey];
+    const isDefaultFilters =
+      !appliedFilters.sortBy && !appliedFilters.selectedCuisine && appliedFilters.activeFilters.size === 0;
+    if (
+      isDefaultFilters &&
+      cached?.fetchedAt &&
+      cached.originKey === roundedOriginKey &&
+      Date.now() - cached.fetchedAt < CACHE_EXPIRY_MS
+    ) {
+      return;
+    }
     // Debounced so several location updates arriving in quick succession during
-    // progressive GPS resolution collapse into a single limit=1000 restaurants
-    // request instead of one per intermediate coordinate update (mirrors the
-    // debounce useZone.jsx already uses for the same resolution sequence).
+    // progressive GPS resolution collapse into a single request.
     const timer = setTimeout(() => {
       fetchRestaurants(appliedFilters);
     }, 300);
     return () => clearTimeout(timer);
-  }, [appliedFilters, fetchRestaurants, enabled, businessType]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appliedFilters, fetchRestaurants, enabled]);
 
   // Memoized stable string key — prevents .join() re-computation on every render
   const menuUnionRestaurantIdsKey = useMemo(
@@ -462,8 +622,12 @@ export const useFoodHomeData = ({
       return { ...r, _isOpen: status.isOpen };
     });
 
-    // Apply sorting: Open restaurants first, then by rating
+    // Apply sorting: Open restaurants first, then by rating — within each server
+    // page, so a newly appended page never reorders cards already on screen.
     filtered.sort((a, b) => {
+      if ((a._page || 0) !== (b._page || 0)) {
+        return (a._page || 0) - (b._page || 0);
+      }
       if (a._isOpen !== b._isOpen) {
         return a._isOpen ? -1 : 1;
       }
@@ -483,8 +647,6 @@ export const useFoodHomeData = ({
     return filtered;
   }, [deferredRestaurants, vegMode, sortBy, availabilityTick, activeFilters]);
 
-  const visibleRestaurants = useMemo(() => 
-    filteredRestaurants.slice(0, visibleRestaurantCount), [filteredRestaurants, visibleRestaurantCount]);
 
   const displayCategories = useMemo(() => {
     const base = realCategories.length > 0
@@ -501,12 +663,15 @@ export const useFoodHomeData = ({
   }, [realCategories, menuCategories, landingCategories, normalizeImageUrl, vegMode]);
 
   const recommendedForYouRestaurants = useMemo(() => {
+    // Restaurants are paged now, so a recommended one may not be loaded yet — fall
+    // back to the summary the landing settings already returned for it.
     const fetchedByMongoId = new Map(restaurantsData.map(r => [String(r.mongoId || r.id), r]));
     return recommendedRestaurantsFromSettings
-      .map(r => fetchedByMongoId.get(String(r._id || r.restaurantId)))
+      .map(r => fetchedByMongoId.get(String(r._id || r.restaurantId)) || (r?._id ? transformRestaurant(r, backendOrigin, 0) : null))
       .filter(Boolean)
+      .filter(r => vegMode !== "pure" || r.pureVegRestaurant)
       .slice(0, 12);
-  }, [restaurantsData, recommendedRestaurantsFromSettings]);
+  }, [restaurantsData, recommendedRestaurantsFromSettings, backendOrigin, vegMode]);
 
   // --- Actions ---
   const toggleFilter = useCallback((filterId) => {
@@ -526,18 +691,17 @@ export const useFoodHomeData = ({
     setIsLoadingFilterResults(false);
   }, [fetchRestaurants]);
 
-  const loadMoreRestaurants = useCallback(() => {
-    setVisibleRestaurantCount(prev => Math.min(prev + 6, filteredRestaurants.length));
-  }, [filteredRestaurants.length]);
-
   return {
     banners: { images: heroBannerImages, data: heroBannersData, loading: loadingBanners },
     categories: { display: displayCategories, loading: loadingRealCategories || loadingMenuCategories },
-    restaurants: { 
-      visible: visibleRestaurants, 
-      loading: loadingRestaurants, 
+    restaurants: {
+      visible: filteredRestaurants,
+      loading: loadingRestaurants,
+      loadingMore: loadingMoreRestaurants,
       isLoadingFilterResults,
-      hasMore: visibleRestaurantCount < filteredRestaurants.length 
+      hasMore: hasMoreServerRestaurants,
+      // Server total is exact unless client-only filters (delivery time / distance) trim the list.
+      total: activeFilters.size === 0 && restaurantsTotal != null ? restaurantsTotal : filteredRestaurants.length,
     },
     landing: { exploreMore: landingExploreMore, heading: exploreMoreHeading, loading: loadingLandingConfig, videoUrl: headerVideoUrl },
     meta: { recommended: recommendedForYouRestaurants },

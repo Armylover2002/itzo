@@ -37,6 +37,13 @@ export default function AssessmentRunner({ applicantInfo, onComplete, onBack }) 
                 
                 const res = await axiosInstance.post('/hrms/assessments/start', payload);
                 const data = res.data?.data || res.data;
+
+                // Assessment disabled or no questions configured: skip straight to submission.
+                if (data?.skipped) {
+                    localStorage.removeItem('hrms_assessment_token');
+                    onComplete(null);
+                    return;
+                }
                 
                 // If it was already completed (maybe they refreshed after finishing)
                 if (data.status === 'Completed' || data.status === 'Timeout') {

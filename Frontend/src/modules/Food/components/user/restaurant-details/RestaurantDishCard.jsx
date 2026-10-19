@@ -26,11 +26,13 @@ export default function RestaurantDishCard({
   const price = getFoodDisplayPrice(item);
   const variants = getFoodVariants(item);
 
+  // Other-platform price must belong to the same variant as the displayed (lowest) price.
   let otherPrice = Number(item.otherPrice) || 0;
   if (variants.length > 0) {
-    const validOtherPrices = variants.map((v) => Number(v.otherPrice) || 0).filter((p) => p > 0);
-    if (validOtherPrices.length > 0) otherPrice = Math.min(...validOtherPrices);
+    const cheapest = variants.reduce((min, v) => ((Number(v.price) || 0) < (Number(min.price) || 0) ? v : min), variants[0]);
+    otherPrice = Number(cheapest.otherPrice) || otherPrice;
   }
+  const showOtherPrice = otherPrice > price;
 
   return (
     <div
@@ -99,17 +101,15 @@ export default function RestaurantDishCard({
         <ItemSlotAvailabilityNote item={item} className="mt-1" />
         
         <div className="flex justify-between items-center mt-auto pt-3 shrink-0">
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[14px] font-bold text-[#FB4F01] leading-none">
-                {RUPEE_SYMBOL}{Math.round(price)}
+          <div className="flex flex-col gap-1">
+            {showOtherPrice && (
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium leading-none">
+                Others <span className="line-through">{RUPEE_SYMBOL}{Math.round(otherPrice)}</span>
               </span>
-              {otherPrice > 0 && otherPrice > price && (
-                <span className="text-[10px] text-gray-400 line-through font-medium leading-none">
-                  {RUPEE_SYMBOL}{Math.round(otherPrice)}
-                </span>
-              )}
-            </div>
+            )}
+            <span className="text-[14px] font-bold text-green-600 dark:text-green-500 leading-none">
+              {RUPEE_SYMBOL}{Math.round(price)}
+            </span>
           </div>
           
           <div className="relative z-10 flex flex-col items-center">

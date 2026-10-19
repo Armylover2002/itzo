@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Star, Bike, MapPin } from 'lucide-react';
+import { Star, Bike, MapPin } from 'lucide-react';
 import { getCachedSettings, loadBusinessSettings } from '@common/utils/businessSettings';
 import { useVideoPlaylist } from '@common/hooks/useVideoPlaylist';
+import { ITZOFOOD_PLAY_STORE_URL, ITZOFOOD_APP_STORE_URL } from "@shared/constants/appStoreLinks";
 
 const containerVariants = {
   hidden: {},
@@ -76,8 +77,8 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
   const appSubtitle = settings?.landingHeroSubtitle || "Great food,\ndelivered to your door";
   const appStoreImg = settings?.landingAppStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg";
   const playStoreImg = settings?.landingPlayStoreBadge?.url || "https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg";
-  const playStoreUrl = settings?.playStoreLink || "#!";
-  const appStoreUrl = settings?.appStoreLink || "#!";
+  const playStoreUrl = settings?.playStoreLink?.trim() || ITZOFOOD_PLAY_STORE_URL;
+  const appStoreUrl = settings?.appStoreLink?.trim() || ITZOFOOD_APP_STORE_URL;
 
   return (
     <div className="relative h-screen min-h-[640px] w-full flex flex-col overflow-hidden bg-gradient-to-br from-[#2a1206] via-[#1a0e08] to-[#0d0704]">
@@ -187,7 +188,6 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
             variants={itemVariants}
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-1.5 text-white/90 text-sm font-semibold tracking-wide"
           >
-            <Sparkles className="w-4 h-4 text-[#FB4F01]" />
             India&apos;s favourite way to order food
           </motion.div>
 

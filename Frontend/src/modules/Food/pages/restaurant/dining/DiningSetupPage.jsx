@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TimePicker12h from "@shared/components/TimePicker12h";
 import { Loader2, Save, Send, X, ImagePlus, UtensilsCrossed, Clock, Tag, IndianRupee, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { restaurantAPI, diningAPI, uploadAPI } from "@food/api";
@@ -290,22 +291,22 @@ export default function DiningSetupPage() {
                 </label>
                 <div>
                   <span className="mb-0.5 block text-[10px] font-medium text-gray-400 sm:hidden">Opens</span>
-                  <input
-                    type="time"
+                  <TimePicker12h
                     value={slot.openingTime}
                     disabled={!slot.isOpen}
-                    onChange={(e) => updateSlot(idx, "openingTime", e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs disabled:opacity-40"
+                    ariaLabel="Opens"
+                    onChange={(v) => updateSlot(idx, "openingTime", v)}
+                    className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs"
                   />
                 </div>
                 <div>
                   <span className="mb-0.5 block text-[10px] font-medium text-gray-400 sm:hidden">Closes</span>
-                  <input
-                    type="time"
+                  <TimePicker12h
                     value={slot.closingTime}
                     disabled={!slot.isOpen}
-                    onChange={(e) => updateSlot(idx, "closingTime", e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs disabled:opacity-40"
+                    ariaLabel="Closes"
+                    onChange={(v) => updateSlot(idx, "closingTime", v)}
+                    className="w-full rounded-lg border border-gray-300 px-2 py-1.5 text-xs"
                   />
                 </div>
                 <div>

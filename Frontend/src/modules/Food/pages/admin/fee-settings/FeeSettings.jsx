@@ -16,6 +16,7 @@ export default function FeeSettings() {
     platformFee: "",
     packagingFee: "",
     gstRate: "",
+    deliveryFeeTaxRate: "",
     quickDelivery: {
       enabled: false,
       charge: 30,
@@ -48,6 +49,7 @@ export default function FeeSettings() {
       platformFee: src?.platformFee ?? "",
       packagingFee: src?.packagingFee ?? "",
       gstRate: src?.gstRate ?? "",
+      deliveryFeeTaxRate: src?.deliveryFeeTaxRate ?? "",
       quickDelivery: {
         ...defaultQuickDeliveryBusiness(),
         enabled: qd.enabled === true,
@@ -171,6 +173,7 @@ export default function FeeSettings() {
           platformFee: "",
           packagingFee: "",
           gstRate: "",
+          deliveryFeeTaxRate: "",
           quickDelivery: defaultQuickDeliveryBusiness(),
         })
       }
@@ -214,6 +217,7 @@ export default function FeeSettings() {
         platformFee: settingsToSave.platformFee === "" ? undefined : Number(settingsToSave.platformFee),
         packagingFee: settingsToSave.packagingFee === "" ? undefined : Number(settingsToSave.packagingFee),
         gstRate: settingsToSave.gstRate === "" ? undefined : Number(settingsToSave.gstRate),
+        deliveryFeeTaxRate: settingsToSave.deliveryFeeTaxRate === "" ? undefined : Number(settingsToSave.deliveryFeeTaxRate),
         // Business fields only — server preserves / defaults engineering internals
         quickDelivery: {
           enabled: qd.enabled === true,
@@ -755,7 +759,7 @@ export default function FeeSettings() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-200 pt-6 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 border-t border-slate-200 pt-6 mt-6">
 
                 {/* Platform Fee */}
                 <div className="space-y-2">
@@ -812,6 +816,26 @@ export default function FeeSettings() {
                   />
                   <p className="text-xs text-slate-500">
                     GST percentage applied on order subtotal
+                  </p>
+                </div>
+
+                {/* Tax on Delivery Fee */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-semibold text-slate-700">
+                    Tax on Delivery Fee (%)
+                  </label>
+                  <input
+                    type="number"
+                    value={feeSettings.deliveryFeeTaxRate}
+                    onChange={(e) => setFeeSettings({ ...feeSettings, deliveryFeeTaxRate: e.target.value })}
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                    placeholder="18"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Tax percentage applied on delivery fee
                   </p>
                 </div>
               </div>

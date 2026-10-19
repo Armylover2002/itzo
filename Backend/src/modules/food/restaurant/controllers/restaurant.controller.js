@@ -107,6 +107,16 @@ export const listUnder250RestaurantsController = async (req, res, next) => {
     }
 };
 
+export const listHomePriceFilterRestaurantsController = async (req, res, next) => {
+    try {
+        const { listHomePriceFilterRestaurants } = await import('../services/under250.service.js');
+        const data = await listHomePriceFilterRestaurants(req.query);
+        return sendResponse(res, 200, 'Home price filter items fetched successfully', data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getApprovedRestaurantController = async (req, res, next) => {
     try {
         const restaurant = await getApprovedRestaurantByIdOrSlug(req.params.id);
@@ -152,6 +162,15 @@ export const updateRestaurantAcceptingOrdersController = async (req, res, next) 
 export const checkSubscriptionEligibilityController = async (req, res, next) => {
     try {
         const restaurantId = req.user?.userId;
+        const { isSubscriptionEnforced } = await import('../../../common/services/subscriptionEnforcement.service.js');
+        // Plan Mode OFF (admin) — no plan/balance needed to go online.
+        if (!(await isSubscriptionEnforced('RESTAURANT'))) {
+            return sendResponse(res, 200, 'Eligibility checked', {
+                eligible: true,
+                reason: 'NOT_ENFORCED',
+                shouldDeduct: false
+            });
+        }
         const { ensureDailyPassEligibility } = await import('../../subscriptions/services/wallet.service.js');
         const eligibility = await ensureDailyPassEligibility(restaurantId, 'RESTAURANT');
         return sendResponse(res, 200, 'Eligibility checked', eligibility);

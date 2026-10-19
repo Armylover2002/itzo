@@ -1,22 +1,147 @@
 import React, { memo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Clock, Heart, BadgePercent, Timer, Bookmark } from "lucide-react";
-import { Card, CardContent } from "@food/components/ui/card";
+import { toast } from "sonner";
+import { Star, BadgePercent, Bookmark, Plus, Minus, UtensilsCrossed } from "lucide-react";
 import { Button } from "@food/components/ui/button";
 import { RestaurantGridSkeleton, LoadingSkeletonRegion } from "@food/components/ui/loading-skeletons";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
+import { useCart } from "@food/context/CartContext";
+import { buildCartLineId, getDefaultFoodVariant, getFoodDisplayPrice, hasFoodVariants } from "@food/utils/foodVariants";
 import RestaurantImageCarousel from "./RestaurantImageCarousel";
 
-const FoodRestaurantCard = memo(({ 
-  restaurant, 
-  index, 
-  isOutOfService, 
+const ACCENT = "#FB4F01";
+
+const getSavingsPercent = (price, otherPrice) => {
+  const p = Number(price) || 0;
+  const o = Number(otherPrice) || 0;
+  if (p <= 0 || o <= p) return 0;
+  return Math.round(((o - p) / o) * 100);
+};
+
+const VegIcon = ({ isVeg }) => (
+  <span
+    className={`mt-[3px] flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border-[1.5px] ${
+      isVeg ? "border-green-600" : "border-red-600"
+    }`}
+    aria-label={isVeg ? "Veg" : "Non-veg"}
+  >
+    <span className={`h-1.5 w-1.5 rounded-full ${isVeg ? "bg-green-600" : "bg-red-600"}`} />
+  </span>
+);
+
+const DishPreviewCard = memo(({ dish, quantity, disabled, onOpen, onChangeQuantity }) => {
+  const price = getFoodDisplayPrice(dish);
+  const savings = getSavingsPercent(price, dish.otherPrice);
+  const isVeg = dish.isVeg === true || dish.foodType === "Veg";
+  const [imageFailed, setImageFailed] = React.useState(false);
+
+  return (
+    <div
+      onClick={onOpen}
+      className="w-[136px] shrink-0 cursor-pointer snap-start sm:w-[150px]"
+      data-purpose="restaurant-dish-preview"
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] bg-gray-100 dark:bg-gray-800">
+        {dish.image && !imageFailed ? (
+          <img
+            src={dish.image}
+            alt={dish.name}
+            loading="lazy"
+            className="h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-gray-300 dark:text-gray-600">
+            <UtensilsCrossed className="h-7 w-7" />
+          </div>
+        )}
+
+        {dish.isRecommended && (
+          <span className="absolute left-2 top-2 rounded-full bg-white px-2 py-0.5 text-[11px] font-semibold text-green-700 shadow-sm">
+            Popular
+          </span>
+        )}
+
+        {!disabled &&
+          (quantity > 0 ? (
+            <div
+              className="absolute bottom-2 right-2 flex h-8 items-center overflow-hidden rounded-full shadow-md"
+              style={{ backgroundColor: ACCENT }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <button
+                type="button"
+                aria-label="Decrease quantity"
+                className="flex h-full w-7 items-center justify-center"
+                style={{ color: "#fff" }}
+                onClick={(event) => onChangeQuantity(event, quantity - 1)}
+              >
+                <Minus className="h-3.5 w-3.5" strokeWidth={3} />
+              </button>
+              <span className="min-w-[14px] text-center text-[12px] font-bold text-white">
+                {quantity}
+              </span>
+              <button
+                type="button"
+                aria-label="Increase quantity"
+                className="flex h-full w-7 items-center justify-center"
+                style={{ color: "#fff" }}
+                onClick={(event) => onChangeQuantity(event, quantity + 1)}
+              >
+                <Plus className="h-3.5 w-3.5" strokeWidth={3} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label={`Add ${dish.name}`}
+              className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-full shadow-md transition-transform active:scale-90"
+              style={{ backgroundColor: ACCENT, color: "#fff" }}
+              onClick={(event) => onChangeQuantity(event, 1)}
+            >
+              <Plus className="h-5 w-5" strokeWidth={2.5} />
+            </button>
+          ))}
+      </div>
+
+      <div className="mt-2 flex items-start gap-1.5">
+        <VegIcon isVeg={isVeg} />
+        <h4 className="line-clamp-2 text-[13px] font-medium leading-snug text-gray-900 dark:text-white">{dish.name}</h4>
+      </div>
+
+      <div className="mt-1 flex items-center gap-1.5">
+        {savings > 0 && (
+          <span className="text-[12px] text-gray-400 line-through">₹{Math.round(Number(dish.otherPrice))}</span>
+        )}
+        <span
+          className={`text-[13px] font-semibold text-green-700 dark:text-green-500 ${savings > 0 ? "rounded-md bg-green-50 px-1.5 py-0.5 dark:bg-green-900/30" : ""}`}
+        >
+          ₹{Math.round(price)}
+        </span>
+      </div>
+
+      {savings > 0 && (
+        <p className="mt-1 text-[11px] font-semibold" style={{ color: ACCENT }}>
+          Our app: {savings}% lower
+        </p>
+      )}
+    </div>
+  );
+});
+
+const FoodRestaurantCard = memo(({
+  restaurant,
+  index,
+  isOutOfService,
   currentDate,
-  isFavorite, 
-  onFavoriteToggle, 
-  backendOrigin 
+  isFavorite,
+  onFavoriteToggle,
+  backendOrigin
 }) => {
+  const navigate = useNavigate();
+  const { addToCart, updateQuantity, removeFromCart, getCartItem, cart } = useCart();
+
   const nameStr = typeof restaurant?.name === "string" ? restaurant.name.trim() : "";
   const fallbackSlugSource =
     nameStr ||
@@ -27,98 +152,168 @@ const FoodRestaurantCard = memo(({
     typeof restaurant?.slug === "string" && restaurant.slug.trim()
       ? restaurant.slug.trim()
       : fallbackSlugSource.toLowerCase().replace(/\s+/g, "-");
+  const restaurantPath = `/user/restaurants/${restaurantSlug}`;
 
   const availability = getRestaurantAvailabilityStatus(restaurant, currentDate, {
     ignoreOperationalStatus: false,
   });
+  const isUnavailable = isOutOfService || !availability.isOpen;
   const favorite = isFavorite(restaurantSlug);
+
+  const dishes = Array.isArray(restaurant.menuPreview) ? restaurant.menuPreview : [];
+  const maxSavings = dishes.reduce((max, dish) => Math.max(max, getSavingsPercent(getFoodDisplayPrice(dish), dish.otherPrice)), 0);
+  const lowestPrice = dishes.reduce((min, dish) => {
+    const price = getFoodDisplayPrice(dish);
+    return price > 0 && (min === 0 || price < min) ? price : min;
+  }, 0);
+  const rating = Number(restaurant.rating) || 0;
+  const cuisineLabel = (restaurant.cuisines?.length ? restaurant.cuisines.slice(0, 2).join(", ") : restaurant.cuisine) || "";
+  const metaParts = [restaurant.offer, lowestPrice > 0 ? `Items at ₹${Math.round(lowestPrice)}` : null, restaurant.distance].filter(Boolean);
+
+  const getLineItemId = (dish) => {
+    const variant = getDefaultFoodVariant(dish);
+    return buildCartLineId(dish?.id || dish?._id || "", variant?.id || variant?._id || "");
+  };
+
+  const getDishQuantity = (dish) => cart.find((entry) => entry.id === getLineItemId(dish))?.quantity || 0;
+
+  const handleQuantityChange = (dish) => (event, nextQuantity) => {
+    event.preventDefault();
+    event.stopPropagation();
+    // Dishes with variants need a size/option choice, which lives on the restaurant page.
+    if (hasFoodVariants(dish)) {
+      navigate(restaurantPath);
+      return;
+    }
+
+    const lineItemId = getLineItemId(dish);
+    if (nextQuantity <= 0) {
+      removeFromCart(lineItemId);
+      return;
+    }
+    if (getCartItem(lineItemId)) {
+      updateQuantity(lineItemId, nextQuantity);
+      return;
+    }
+
+    const price = getFoodDisplayPrice(dish);
+    const result = addToCart({
+      ...dish,
+      id: lineItemId,
+      lineItemId,
+      itemId: String(dish.id || dish._id || ""),
+      name: dish.name,
+      price,
+      otherPrice: dish.otherPrice || 0,
+      variantId: "",
+      variantName: "",
+      variantPrice: price,
+      image: dish.image,
+      restaurant: restaurant.name,
+      restaurantId: restaurant.mongoId || restaurant.id,
+      description: dish.description,
+      isVeg: dish.foodType === "Veg" || dish.isVeg === true,
+      preparationTime: dish.preparationTime,
+    });
+    if (result?.ok === false) {
+      toast.error(result.error || "Cannot add item to cart.");
+    }
+  };
 
   return (
     <div
-      key={restaurant?.id || restaurant?._id || restaurantSlug || index}
-      className={`h-full transform transition-all duration-300 ${isOutOfService || !availability.isOpen ? "grayscale opacity-75" : ""}`}
+      className={`h-full transition-all duration-300 ${isUnavailable ? "grayscale opacity-75" : ""}`}
       style={{
         animation: index < 10 ? `fade-in-up 0.5s ease-out ${index * 0.05}s backwards` : "none",
       }}
     >
-      <div className="h-full group flex flex-col cursor-pointer bg-white dark:bg-[#1a1a1a] rounded-[16px] border border-gray-200/80 dark:border-gray-800 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-        <Link to={`/user/restaurants/${restaurantSlug}`} className="flex flex-col h-full relative">
-          
-          <div className="relative w-full aspect-[4/3] bg-gray-50 dark:bg-gray-900 overflow-hidden group/img">
-            <div className="absolute inset-0 w-full h-full transition-transform duration-500 group-hover/img:scale-105">
+      <div className="h-full overflow-hidden rounded-[20px] border border-gray-200/80 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-shadow duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] dark:border-gray-800 dark:bg-[#1a1a1a]">
+        <Link to={restaurantPath} className="relative block px-4 pt-4">
+          <div className="pr-10">
+            {maxSavings > 0 && (
+              <p className="mb-0.5 text-[12px] font-extrabold uppercase tracking-wide" style={{ color: ACCENT }}>
+                {maxSavings}% lower prices
+              </p>
+            )}
+            <h3 className="line-clamp-1 text-[17px] font-extrabold leading-tight text-gray-900 dark:text-white">
+              {restaurant.name}
+            </h3>
+            <div className="mt-1 flex items-center gap-1 text-[13px] text-gray-600 dark:text-gray-400">
+              {rating > 0 ? (
+                <>
+                  <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-green-700">
+                    <Star className="h-2.5 w-2.5 fill-white text-white" strokeWidth={0} />
+                  </span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-200">{rating.toFixed(1)}</span>
+                </>
+              ) : (
+                <span className="rounded bg-green-700 px-1.5 py-px text-[10px] font-bold text-white">NEW</span>
+              )}
+              <span className="shrink-0">• {restaurant.deliveryTime}</span>
+              {cuisineLabel && <span className="line-clamp-1">• {cuisineLabel}</span>}
+            </div>
+            {metaParts.length > 0 && (
+              <div className="mt-1 flex items-center gap-1.5 text-[12px] text-gray-600 dark:text-gray-400">
+                <BadgePercent className="h-3.5 w-3.5 shrink-0 text-green-700" />
+                <span className="line-clamp-1">{metaParts.join(" • ")}</span>
+              </div>
+            )}
+            {isUnavailable && (
+              <p className="mt-1 text-[12px] font-semibold text-red-600">
+                {isOutOfService ? "Not delivering to your location" : "Currently closed"}
+              </p>
+            )}
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onFavoriteToggle(event, restaurant, restaurantSlug, favorite);
+            }}
+            aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+            className={`absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 ${
+              favorite
+                ? "border-red-500 bg-red-500 text-white hover:bg-red-600"
+                : "border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
+            }`}
+          >
+            <Bookmark className={`h-4 w-4 ${favorite ? "fill-white" : ""}`} />
+          </Button>
+        </Link>
+
+        {dishes.length > 0 ? (
+          <div className="scrollbar-hide mt-3 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-4">
+            {dishes.map((dish) => (
+              <DishPreviewCard
+                key={dish.id || dish._id}
+                dish={dish}
+                quantity={getDishQuantity(dish)}
+                disabled={isUnavailable}
+                onOpen={() => navigate(restaurantPath)}
+                onChangeQuantity={handleQuantityChange(dish)}
+              />
+            ))}
+            {/* Flex scrollers drop trailing padding; keep a gap after the last dish. */}
+            <div className="w-1 shrink-0" aria-hidden="true" />
+          </div>
+        ) : !restaurant.images?.length && !restaurant.image ? (
+          <p className="px-4 pb-4 pt-2 text-[12px] text-gray-400">Menu coming soon</p>
+        ) : (
+          // No dishes to preview yet (empty menu or stale cached list): show the restaurant photos.
+          <Link to={restaurantPath} className="block px-4 pb-4 pt-3">
+            <div className="relative aspect-[16/7] w-full overflow-hidden rounded-[14px] bg-gray-50 dark:bg-gray-900">
               <RestaurantImageCarousel
                 restaurant={restaurant}
                 priority={index < 3}
                 backendOrigin={backendOrigin}
-                className="relative w-full h-full overflow-hidden"
+                className="relative h-full w-full overflow-hidden"
               />
             </div>
-
-            {restaurant.featuredDish && (
-              <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded z-10">
-                <span className="text-[10px] sm:text-[11px] text-white/95 font-medium tracking-wide">Promoted</span>
-              </div>
-            )}
-
-            <div className="absolute right-2 top-2 z-10">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onFavoriteToggle(event, restaurant, restaurantSlug, favorite);
-                }}
-                aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
-                className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full shadow-md transition-all duration-300 ${
-                  favorite
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : "bg-white/95 text-gray-800 backdrop-blur-sm hover:bg-white"
-                }`}
-              >
-                <Bookmark className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-all duration-300 ${favorite ? "fill-white" : ""}`} />
-              </Button>
-            </div>
-
-            {restaurant.offer && (
-              <div className="absolute bottom-0 left-0 bg-blue-600 px-2 py-1 z-10 rounded-tr-[12px]">
-                <span className="text-[10px] sm:text-[11px] font-bold text-white flex items-center gap-1">
-                  <BadgePercent className="h-3 w-3" />
-                  {restaurant.offer}
-                </span>
-              </div>
-            )}
-            
-            <div className="pointer-events-none absolute inset-0 z-0 border-b border-black/5" />
-          </div>
-
-          <div className="flex flex-col flex-grow p-2.5 sm:p-3">
-            <div className="flex justify-between items-start mb-1 sm:mb-1.5 gap-2">
-              <h3 className="line-clamp-1 text-[13px] sm:text-[15px] font-bold text-gray-900 dark:text-white leading-tight group-hover:text-[#FB4F01] transition-colors duration-300">
-                {restaurant.name}
-              </h3>
-              <div className="flex items-center justify-center gap-0.5 bg-green-700 text-white px-1.5 py-0.5 rounded-[6px] shrink-0 shadow-sm">
-                <span className="text-[10px] sm:text-[11px] font-bold tracking-tight">
-                  {Number(restaurant.rating) > 0 ? Number(restaurant.rating).toFixed(1) : "NEW"}
-                </span>
-                {Number(restaurant.rating) > 0 && <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-white text-white" strokeWidth={0} />}
-              </div>
-            </div>
-
-            <div className="flex justify-between items-center text-[11px] sm:text-xs text-gray-500 dark:text-gray-400">
-              <span className="line-clamp-1 mr-2">{restaurant.cuisine}</span>
-              <span className="shrink-0 font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded-[4px]">{restaurant.deliveryTime}</span>
-            </div>
-
-            <div className="flex justify-between items-center text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-1 sm:mt-1.5">
-              <span className="line-clamp-1 mr-2 flex items-center gap-0.5">
-                {typeof restaurant.location === "string" ? restaurant.location : (restaurant.location?.area || restaurant.location?.city || "Indore")}
-              </span>
-              <span className="shrink-0">{restaurant.distance}</span>
-            </div>
-          </div>
-
-        </Link>
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -130,6 +325,8 @@ const RestaurantGrid = memo(({
   showRestaurantSkeleton,
   isLoadingFilterResults,
   loadingRestaurants,
+  loadingMoreRestaurants,
+  totalRestaurants,
   isOutOfService,
   availabilityTick,
   isFavorite,
@@ -144,8 +341,10 @@ const RestaurantGrid = memo(({
   // Pre-compute Date object once per tick to avoid N new Date() calls inside card renders
   const currentDate = React.useMemo(() => new Date(availabilityTick), [availabilityTick]);
 
+  // Re-created after every page lands, so if the sentinel is still on screen (short
+  // page, or client-side filters hid most of it) the next page is requested right away.
   React.useEffect(() => {
-    if (loadingRestaurants || !hasMoreRestaurants) return;
+    if (loadingRestaurants || loadingMoreRestaurants || !hasMoreRestaurants) return;
 
     if (observer.current) observer.current.disconnect();
 
@@ -153,7 +352,7 @@ const RestaurantGrid = memo(({
       if (entries[0].isIntersecting) {
         loadMoreRestaurants();
       }
-    }, { threshold: 0.1, rootMargin: '100px' });
+    }, { threshold: 0, rootMargin: '600px 0px' });
 
     if (restaurantLoadMoreRef?.current) {
       observer.current.observe(restaurantLoadMoreRef.current);
@@ -162,19 +361,19 @@ const RestaurantGrid = memo(({
     return () => {
       if (observer.current) observer.current.disconnect();
     };
-  }, [loadingRestaurants, hasMoreRestaurants, loadMoreRestaurants, restaurantLoadMoreRef]);
+  }, [loadingRestaurants, loadingMoreRestaurants, hasMoreRestaurants, loadMoreRestaurants, restaurantLoadMoreRef]);
 
   return (
     <section className="content-auto space-y-0 pb-8 pt-3 sm:pt-4 md:pb-10 lg:pt-6">
       <div className="mb-4 px-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-[12px] font-bold uppercase tracking-widest text-[#9ca3af]">
-            {filteredRestaurants.length} Restaurants Delivering to You
+            {totalRestaurants ?? filteredRestaurants.length} Restaurants Delivering to You
           </h2>
           <span className="text-[15px] font-bold text-[#1c1c1e]">Featured</span>
         </div>
       </div>
-      
+
       <div className={`relative ${showRestaurantSkeleton ? "min-h-[360px] sm:min-h-[420px]" : ""}`}>
         <AnimatePresence>
           {showRestaurantSkeleton && (
@@ -193,8 +392,8 @@ const RestaurantGrid = memo(({
         </AnimatePresence>
 
         <div
-          className={`grid grid-cols-2 items-stretch gap-3 px-3 pt-1 transition-opacity duration-300 sm:gap-4 sm:pt-1.5 md:grid-cols-3 lg:gap-5 lg:pt-2 lg:grid-cols-4 xl:gap-6 ${
-            isLoadingFilterResults || loadingRestaurants ? "opacity-50" : "opacity-100"
+          className={`grid grid-cols-1 items-stretch gap-4 px-3 pt-1 transition-opacity duration-300 sm:pt-1.5 md:grid-cols-2 lg:gap-5 lg:pt-2 xl:grid-cols-3 xl:gap-6 ${
+            isLoadingFilterResults || (loadingRestaurants && visibleRestaurants.length > 0) ? "opacity-50" : "opacity-100"
           }`}
         >
           {visibleRestaurants.map((restaurant, index) => (
@@ -213,9 +412,10 @@ const RestaurantGrid = memo(({
       </div>
 
       <div className="flex flex-col items-center gap-2 px-4 pt-4 sm:pt-6">
-        {hasMoreRestaurants && loadingRestaurants && (
-          <div className="flex items-center justify-center py-4">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#FB4F01] border-t-transparent"></div>
+        {loadingMoreRestaurants && (
+          <div className="flex items-center justify-center gap-2 py-3" role="status" aria-live="polite">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#FB4F01] border-t-transparent"></div>
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Loading more restaurants…</span>
           </div>
         )}
         <div ref={restaurantLoadMoreRef} className="h-10 w-full" aria-hidden="true" />
