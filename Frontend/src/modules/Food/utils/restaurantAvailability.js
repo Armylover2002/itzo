@@ -128,6 +128,69 @@ const formatClosingCountdown = (minutesUntilClose, closingTime) => {
   return `Closes in ${hours}h ${minutes}m`
 }
 
+const toIstDate = (now) => {
+  try {
+    const parsed = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }))
+    if (!isNaN(parsed.getTime())) return parsed
+  } catch {
+    // fall through to manual offset
+  }
+  const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000)
+  return new Date(utcMs + (330 * 60000))
+}
+
+// Opening times (in minutes) scheduled for a given day, or [] when the restaurant is closed that day.
+const getOpeningMinutesForDay = (restaurant, dayName) => {
+  const timing = getTodayTiming(restaurant, dayName)
+  if (timing?.isOpen === false) return []
+
+  if (!timing) {
+    const openDays = Array.isArray(restaurant?.openDays) ? restaurant.openDays : []
+    const normalizedOpenDays = new Set(openDays.map((day) => normalizeDay(day)).filter(Boolean))
+    if (normalizedOpenDays.size > 0 && !normalizedOpenDays.has(dayName)) return []
+  }
+
+  const shifts = Array.isArray(timing?.shifts) && timing.shifts.length > 0
+    ? timing.shifts
+    : [{
+      openingTime:
+        timing?.openingTime ||
+        restaurant?.deliveryTimings?.openingTime ||
+        restaurant?.openingTime ||
+        null,
+    }]
+
+  return shifts
+    .map((shift) => parseTimeToMinutes(shift?.openingTime))
+    .filter((minutes) => minutes !== null)
+}
+
+/**
+ * Label for when a closed restaurant next opens per its schedule, e.g. "Opens today at 5:00 PM",
+ * "Opens tomorrow at 9:00 AM" or "Opens Monday at 9:00 AM". Returns null when unknown.
+ */
+export const getNextOpeningLabel = (restaurant, now = new Date()) => {
+  if (!restaurant) return null
+
+  const istNow = toIstDate(now)
+  const nowMinutes = istNow.getHours() * 60 + istNow.getMinutes()
+
+  for (let offset = 0; offset <= 7; offset += 1) {
+    const dayName = DAY_NAMES[(istNow.getDay() + offset) % 7]
+    const candidates = getOpeningMinutesForDay(restaurant, dayName)
+      .filter((minutes) => offset > 0 || minutes > nowMinutes)
+    if (candidates.length === 0) continue
+
+    const nextMinutes = Math.min(...candidates)
+    const hours24 = Math.floor(nextMinutes / 60)
+    const timeLabel = formatTimeLabel(`${hours24}:${String(nextMinutes % 60).padStart(2, "0")}`)
+    const dayLabel = offset === 0 ? "today" : offset === 1 ? "tomorrow" : dayName
+    return `Opens ${dayLabel} at ${timeLabel}`
+  }
+
+  return null
+}
+
 export const getRestaurantAvailabilityStatus = (restaurant, now = new Date(), options = {}) => {
   if (!restaurant) {
     return {
