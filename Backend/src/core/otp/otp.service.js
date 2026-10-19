@@ -35,6 +35,8 @@ const getPhoneCandidates = (phone) => {
         last10 ? `+91${last10}` : '',
         last10 ? `91${last10}` : '',
     ].filter(Boolean)));
+};
+
 export const DEFAULT_OTP_PHONES = ['7999926723', '9000000009', '9876543211'];
 
 export const isDefaultOtpPhone = (phone) => {
