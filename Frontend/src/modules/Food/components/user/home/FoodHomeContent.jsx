@@ -73,9 +73,7 @@ const FoodRestaurantCard = memo(function FoodRestaurantCard({
       <div className="h-full group">
         <Link to={`/user/restaurants/${restaurantSlug}`} className="flex h-full">
           <Card
-            className={`relative flex h-full w-full flex-col gap-0 overflow-hidden rounded-[28px] border-0 border-background bg-white py-0 shadow-sm transition-all duration-500 hover:shadow-xl dark:border-gray-800 dark:bg-[#1a1a1a] ${
-              isOutOfService || !availability.isOpen ? "grayscale opacity-75" : ""
-            }`}
+            className={`relative flex h-full w-full flex-col gap-0 overflow-hidden rounded-[28px] border-0 border-background bg-white py-0 shadow-sm transition-all duration-500 hover:shadow-xl dark:border-gray-800 dark:bg-[#1a1a1a]`}
           >
             <div className="relative">
               <RestaurantImageCarousel

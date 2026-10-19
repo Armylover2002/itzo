@@ -222,7 +222,7 @@ const FoodRestaurantCard = memo(({
 
   return (
     <div
-      className={`h-full transition-all duration-300 ${isUnavailable ? "grayscale opacity-75" : ""}`}
+      className="h-full transition-all duration-300"
       style={{
         animation: index < 10 ? `fade-in-up 0.5s ease-out ${index * 0.05}s backwards` : "none",
       }}
@@ -260,7 +260,7 @@ const FoodRestaurantCard = memo(({
             )}
             {isUnavailable && (
               <p className="mt-1 text-[12px] font-semibold text-red-600">
-                {isOutOfService ? "Not delivering to your location" : "Currently closed"}
+                {isOutOfService ? "Not delivering to your location" : "Offline"}
               </p>
             )}
           </div>

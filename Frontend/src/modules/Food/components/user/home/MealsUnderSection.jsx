@@ -109,7 +109,7 @@ export const MealItemCard = memo(function MealItemCard({ item, quantity, onAdd, 
 
   return (
     <Link to={getRestaurantPath(restaurant)} className={`group block ${className}`}>
-      <div className={`relative aspect-square w-full overflow-hidden rounded-[22px] bg-gray-100 ${isOpen ? "" : "grayscale opacity-70"}`}>
+      <div className={`relative aspect-square w-full overflow-hidden rounded-[22px] bg-gray-100`}>
         {item.image ? (
           <OptimizedImage
             src={item.image}
@@ -151,7 +151,7 @@ export const MealItemCard = memo(function MealItemCard({ item, quantity, onAdd, 
           )
         ) : (
           <span className="absolute bottom-2 left-2 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white">
-            Closed
+            Offline
           </span>
         )}
       </div>
