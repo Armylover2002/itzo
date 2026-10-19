@@ -191,6 +191,31 @@ export const getNextOpeningLabel = (restaurant, now = new Date()) => {
   return null
 }
 
+/**
+ * Today's scheduled hours, e.g. "10:00 AM – 10:00 PM" or "9:00 AM – 12:00 PM, 5:00 PM – 11:00 PM".
+ * Returns null when no usable timing exists or the restaurant is scheduled closed today.
+ */
+export const getTodayTimingsLabel = (restaurant, now = new Date()) => {
+  if (!restaurant) return null
+
+  const dayName = DAY_NAMES[toIstDate(now).getDay()]
+  const timing = getTodayTiming(restaurant, dayName)
+  if (timing?.isOpen === false) return null
+
+  const shifts = Array.isArray(timing?.shifts) && timing.shifts.length > 0
+    ? timing.shifts
+    : [{
+      openingTime: timing?.openingTime || restaurant?.deliveryTimings?.openingTime || restaurant?.openingTime,
+      closingTime: timing?.closingTime || restaurant?.deliveryTimings?.closingTime || restaurant?.closingTime,
+    }]
+
+  const labels = shifts
+    .filter((shift) => parseTimeToMinutes(shift?.openingTime) !== null && parseTimeToMinutes(shift?.closingTime) !== null)
+    .map((shift) => `${formatTimeLabel(shift.openingTime)} – ${formatTimeLabel(shift.closingTime)}`)
+
+  return labels.length > 0 ? labels.join(", ") : null
+}
+
 export const getRestaurantAvailabilityStatus = (restaurant, now = new Date(), options = {}) => {
   if (!restaurant) {
     return {
