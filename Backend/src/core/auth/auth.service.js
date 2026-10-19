@@ -10,7 +10,7 @@ import { Seller } from "../../modules/quick-commerce/seller/models/seller.model.
 import { FoodReferralSettings } from "../../modules/food/admin/models/referralSettings.model.js";
 import { FoodReferralLog } from "../../modules/food/admin/models/referralLog.model.js";
 import { FoodUserWallet } from "../../modules/food/user/models/userWallet.model.js";
-import { createOrUpdateOtp, verifyOtp } from "../otp/otp.service.js";
+import { createOrUpdateOtp, verifyOtp, isDefaultOtpPhone } from "../otp/otp.service.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken, signRestaurantRegistrationToken } from "./token.util.js";
 import { FoodRefreshToken } from "../refreshTokens/refreshToken.model.js";
 import { ValidationError, AuthError, ForbiddenError, NotFoundError } from "./errors.js";
@@ -268,10 +268,10 @@ export const requestUserOtp = async (phone) => {
   }
 
   const otp = await createOrUpdateOtp(phone);
-  // Only echo the OTP back in the response when USE_DEFAULT_OTP is on (test mode) —
+  // Echo the OTP back in the response when USE_DEFAULT_OTP is on or for test phones —
   // with real SMS/email delivery configured, leaking it here would let anyone log in
   // as anyone else just by reading the network tab.
-  const shouldExposeOtp = config.useDefaultOtp;
+  const shouldExposeOtp = config.useDefaultOtp || isDefaultOtpPhone(phone);
   return shouldExposeOtp ? { otp } : {};
 };
 
@@ -575,7 +575,7 @@ export const requestRestaurantOtp = async (phone) => {
     throw new ValidationError("Phone is required");
   }
   const otp = await createOrUpdateOtp(phone);
-  const shouldExposeOtp = config.useDefaultOtp;
+  const shouldExposeOtp = config.useDefaultOtp || isDefaultOtpPhone(phone);
   return shouldExposeOtp ? { otp } : {};
 };
 
@@ -695,7 +695,7 @@ export const requestDeliveryOtp = async (phone) => {
     throw new ValidationError("Phone is required");
   }
   const otp = await createOrUpdateOtp(phone);
-  const shouldExposeOtp = config.useDefaultOtp;
+  const shouldExposeOtp = config.useDefaultOtp || isDefaultOtpPhone(phone);
   return shouldExposeOtp ? { otp } : {};
 };
 

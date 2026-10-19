@@ -35,6 +35,13 @@ const getPhoneCandidates = (phone) => {
         last10 ? `+91${last10}` : '',
         last10 ? `91${last10}` : '',
     ].filter(Boolean)));
+export const DEFAULT_OTP_PHONES = ['7999926723', '9000000009', '9876543211'];
+
+export const isDefaultOtpPhone = (phone) => {
+    const raw = String(phone || '').trim();
+    const digits = raw.replace(/\D/g, '');
+    const last10 = digits.slice(-10);
+    return DEFAULT_OTP_PHONES.includes(last10);
 };
 
 /**
@@ -136,12 +143,10 @@ export const createOrUpdateOtp = async (phone, options = {}) => {
         }
     }
 
-    // ponytail: hardcoded test accounts always get OTP 1234, even with live OTP on. Add more via DEFAULT_OTP_PHONES.
-    const DEFAULT_OTP_PHONES = ['7999926723', '9000000009'];
-    const last10 = normalizedPhone.slice(-10);
-    const isDefaultOtpPhone = DEFAULT_OTP_PHONES.includes(last10);
+    // hardcoded test accounts always get OTP 1234, even with live OTP on.
+    const isTestPhone = isDefaultOtpPhone(normalizedPhone);
 
-    const shouldUseDefaultOtp = (config.useDefaultOtp || isDefaultOtpPhone) && !forceRandom;
+    const shouldUseDefaultOtp = (config.useDefaultOtp || isTestPhone) && !forceRandom;
     const isEmail = String(phone || '').includes('@');
 
     let otp;
