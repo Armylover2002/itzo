@@ -1,6 +1,6 @@
 import { Clock, MapPin, Star, Utensils, Leaf, Info } from "lucide-react";
 import { Badge } from "@food/components/ui/badge";
-import { getNextOpeningLabel, getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
+import { getNextOpeningLabel, getRestaurantAvailabilityStatus, getTodayTimingsLabel } from "@food/utils/restaurantAvailability";
 
 export default function RestaurantDetailsSummary({
   restaurant,
@@ -24,6 +24,10 @@ export default function RestaurantDetailsSummary({
     isRestaurantOffline &&
     !getRestaurantAvailabilityStatus(restaurant, now, { ignoreOperationalStatus: true }).isOpen;
   const nextOpeningLabel = isClosedBySchedule ? getNextOpeningLabel(restaurant, now) : null;
+  // Manually offline within working hours: show today's hours instead of a guessed reopening time.
+  const todayTimingsLabel =
+    isRestaurantOffline && !isClosedBySchedule ? getTodayTimingsLabel(restaurant, now) : null;
+  const offlineTimeLabel = nextOpeningLabel || (todayTimingsLabel ? `Timings: ${todayTimingsLabel}` : null);
 
   const reviewsCount = restaurant?.reviews > 0 ? `${restaurant.reviews.toLocaleString()}+ ratings` : "No ratings";
 
@@ -76,10 +80,10 @@ export default function RestaurantDetailsSummary({
               {isOutOfService ? "Out of zone" : isRestaurantOffline ? "Offline" : "Open now"}
             </span>
 
-            {!isOutOfService && nextOpeningLabel && (
+            {!isOutOfService && offlineTimeLabel && (
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">
                 <Clock className="h-3 w-3" />
-                {nextOpeningLabel}
+                {offlineTimeLabel}
               </span>
             )}
           </div>
@@ -121,7 +125,9 @@ export default function RestaurantDetailsSummary({
               <p className="text-[13px] font-medium text-rose-700 leading-tight">
                 {isOutOfService
                   ? "You are outside the delivery zone. Change your location to order."
-                  : `This restaurant is currently offline.${nextOpeningLabel ? ` ${nextOpeningLabel}.` : ""} You can browse the menu but cannot place orders.`}
+                  : isClosedBySchedule
+                    ? `This restaurant is currently closed.${nextOpeningLabel ? ` ${nextOpeningLabel}.` : ""} You can browse the menu but cannot place orders.`
+                    : "This restaurant is temporarily offline and will be back soon. You can browse the menu but cannot place orders."}
               </p>
             </div>
           )}
