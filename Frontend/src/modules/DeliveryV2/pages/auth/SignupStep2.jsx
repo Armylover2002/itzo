@@ -597,21 +597,8 @@ export default function SignupStep2() {
     if (!hasDocumentValue(documents.panPhoto, uploadedDocs.panPhoto)) return false;
     if (!hasDocumentValue(documents.drivingLicensePhoto, uploadedDocs.drivingLicensePhoto)) return false;
 
-    let hasAllVehicleDocs = true;
-    (signupDetails.vehicles || []).forEach(v => {
-      const category = v.category || v.name || "";
-      const isBicycle = category.toLowerCase() === "bicycle";
-      if (!hasDocumentValue(documents[`vehiclePhoto_${v.id}`], uploadedDocs[`vehiclePhoto_${v.id}`])) hasAllVehicleDocs = false;
-      if (isBicycle) return;
-      if (!hasDocumentValue(documents[`rc_${v.id}`], uploadedDocs[`rc_${v.id}`])) hasAllVehicleDocs = false;
-      if (!hasDocumentValue(documents[`insurance_${v.id}`], uploadedDocs[`insurance_${v.id}`])) hasAllVehicleDocs = false;
-
-      const reqDocs = getRequiredDocuments(category);
-      if (reqDocs.includes('fitness') && !hasDocumentValue(documents[`fitness_${v.id}`], uploadedDocs[`fitness_${v.id}`])) hasAllVehicleDocs = false;
-      if (reqDocs.includes('pollution') && !hasDocumentValue(documents[`pollution_${v.id}`], uploadedDocs[`pollution_${v.id}`])) hasAllVehicleDocs = false;
-      if (reqDocs.includes('permit') && !hasDocumentValue(documents[`permit_${v.id}`], uploadedDocs[`permit_${v.id}`])) hasAllVehicleDocs = false;
-    });
-    return hasAllVehicleDocs;
+    // Vehicle documents are optional
+    return true;
   }
 
   const handleSubmit = async (e) => {
@@ -868,8 +855,8 @@ export default function SignupStep2() {
 
           {signupDetails.vehicles && signupDetails.vehicles.length > 0 && (
              <div className="pt-6 mt-6 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Vehicle Documents</h3>
-                <p className="text-sm text-gray-600 mb-4">Please upload documents for each of your selected vehicles.</p>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Vehicle Documents <span className="text-sm font-medium text-gray-400">(Optional)</span></h3>
+                <p className="text-sm text-gray-600 mb-4">Optional: upload documents for your vehicles.</p>
                 <div className="space-y-6">
                   {signupDetails.vehicles.map(v => {
                     const displayName = v.name || v.category || "Vehicle"
@@ -889,21 +876,21 @@ export default function SignupStep2() {
                           </div>
                         </div>
 
-                        <DocumentUpload docType={`vehiclePhoto_${v.id}`} label={`${displayName} Photo`} required={true} />
+                        <DocumentUpload docType={`vehiclePhoto_${v.id}`} label={`${displayName} Photo`} required={false} />
                         {!isBicycle && (
                           <>
-                            <DocumentUpload docType={`rc_${v.id}`} label="RC (Registration Certificate)" required={true} />
-                            <DocumentUpload docType={`insurance_${v.id}`} label="Vehicle Insurance" required={true} />
+                            <DocumentUpload docType={`rc_${v.id}`} label="RC (Registration Certificate)" required={false} />
+                            <DocumentUpload docType={`insurance_${v.id}`} label="Vehicle Insurance" required={false} />
                           </>
                         )}
                         {reqDocs.includes('fitness') && (
-                           <DocumentUpload docType={`fitness_${v.id}`} label="Fitness Certificate" required={true} />
+                           <DocumentUpload docType={`fitness_${v.id}`} label="Fitness Certificate" required={false} />
                         )}
                         {reqDocs.includes('pollution') && (
-                           <DocumentUpload docType={`pollution_${v.id}`} label="Pollution Certificate" required={true} />
+                           <DocumentUpload docType={`pollution_${v.id}`} label="Pollution Certificate" required={false} />
                         )}
                         {reqDocs.includes('permit') && (
-                           <DocumentUpload docType={`permit_${v.id}`} label="Vehicle Permit" required={true} />
+                           <DocumentUpload docType={`permit_${v.id}`} label="Vehicle Permit" required={false} />
                         )}
                       </div>
                     )

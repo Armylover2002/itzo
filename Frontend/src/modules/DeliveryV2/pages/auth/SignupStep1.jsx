@@ -147,17 +147,9 @@ export default function SignupStep1() {
       return;
     }
 
-    const isBicycle = newVehicle.vehicleType.toLowerCase() === "bicycle";
-    // Future ready registration requirement
-    const registrationRequired = !isBicycle;
-
-    if (registrationRequired) {
-      const normalizedReg = newVehicle.registrationNumber.trim().toUpperCase();
-      if (!normalizedReg) {
-        toast.error("Vehicle Number is required for this vehicle");
-        return;
-      }
-
+    // Vehicle number is optional; validate only when entered
+    const normalizedReg = newVehicle.registrationNumber.trim().toUpperCase();
+    if (normalizedReg) {
       if (!/^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/.test(normalizedReg)) {
         toast.error("Invalid Indian vehicle number format (e.g., MH12AB1234)");
         return;
@@ -296,43 +288,18 @@ export default function SignupStep1() {
       newErrors.email = "Enter a valid email address. Gmail must be gmail.com"
     }
 
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required"
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = "City is required"
-    } else if (!isValidLocationValue(formData.city)) {
+    if (formData.city.trim() && !isValidLocationValue(formData.city)) {
       newErrors.city = "City can contain letters only"
     }
 
-    if (!formData.state.trim()) {
-      newErrors.state = "State is required"
-    } else if (!isValidLocationValue(formData.state)) {
+    if (formData.state.trim() && !isValidLocationValue(formData.state)) {
       newErrors.state = "State can contain letters only"
     }
 
-    if (formData.vehicles.length === 0) {
-      newErrors.vehicles = "Please add at least one vehicle"
-    }
-
-    const requiresDl = formData.vehicles.some(v => {
-      const cat = (v.category || v.name || "").toLowerCase();
-      return cat !== "bicycle" && cat !== "electric bike" && cat !== "electric_bike";
-    });
-
-    if (requiresDl) {
-      if (!formData.drivingLicenseNumber.trim()) {
-        newErrors.drivingLicenseNumber = "Driving license number is required"
-      } else if (!/^[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}$/.test(formData.drivingLicenseNumber)) {
-        newErrors.drivingLicenseNumber = "Invalid DL format (e.g., MH1220110012345)"
-      }
-    } else {
-      if (formData.drivingLicenseNumber.trim()) {
-        if (!/^[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}$/.test(formData.drivingLicenseNumber)) {
-          newErrors.drivingLicenseNumber = "Invalid DL format (e.g., MH1220110012345)"
-        }
-      }
+    if (!formData.drivingLicenseNumber.trim()) {
+      newErrors.drivingLicenseNumber = "Driving license number is required"
+    } else if (!/^[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}$/.test(formData.drivingLicenseNumber)) {
+      newErrors.drivingLicenseNumber = "Invalid DL format (e.g., MH1220110012345)"
     }
 
     if (!formData.panNumber.trim()) {
@@ -423,11 +390,6 @@ export default function SignupStep1() {
       setIsSubmitting(false)
     }
   }
-
-  const requiresDl = formData.vehicles.some(v => {
-    const cat = (v.category || v.name || "").toLowerCase();
-    return cat !== "bicycle" && cat !== "electric bike" && cat !== "electric_bike";
-  });
 
   return (
     <div className="app-shell-page fixed inset-0 z-20 flex !min-h-0 flex-col overflow-hidden bg-[#fafafa] font-sans">
@@ -556,7 +518,7 @@ export default function SignupStep1() {
             {/* Address */}
             <div>
               <label className="block text-[13px] font-bold text-gray-700 mb-1.5 ml-1">
-                Address <span className="text-red-500">*</span>
+                Address
               </label>
               <div className="relative">
                 <div className="absolute top-3.5 left-0 pl-4 flex items-center pointer-events-none">
@@ -580,7 +542,7 @@ export default function SignupStep1() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[13px] font-bold text-gray-700 mb-1.5 ml-1">
-                  City <span className="text-red-500">*</span>
+                  City
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -601,7 +563,7 @@ export default function SignupStep1() {
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-gray-700 mb-1.5 ml-1">
-                  State <span className="text-red-500">*</span>
+                  State
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -629,7 +591,7 @@ export default function SignupStep1() {
                   <Truck className="w-4 h-4 text-[#F35B1C]" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">My Vehicles</h3>
+                  <h3 className="text-sm font-bold text-gray-900">My Vehicles <span className="text-xs font-medium text-gray-400">(Optional)</span></h3>
                 </div>
               </div>
               
@@ -762,7 +724,7 @@ export default function SignupStep1() {
             {/* Driving License Number */}
             <div className="pt-2">
               <label className="block text-[13px] font-bold text-gray-700 mb-1.5 ml-1">
-                Driving License Number {requiresDl && <span className="text-red-500">*</span>}
+                Driving License Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"

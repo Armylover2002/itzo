@@ -22,17 +22,21 @@ const deliveryRegisterSchema = z.object({
     vehicleName: z.string().optional(),
     vehicleNumber: z.string().optional(),
     vehicles: z.string().optional(),
-    drivingLicenseNumber: z.string().optional().or(z.literal('')),
+    drivingLicenseNumber: z
+        .string({ required_error: 'Driving license number is required' })
+        .trim()
+        .min(1, 'Driving license number is required')
+        .regex(drivingLicenseRegex, 'Invalid driving license format'),
     panNumber: z
-        .string()
-        .regex(panRegex, 'Invalid PAN format')
-        .optional()
-        .or(z.literal('')),
+        .string({ required_error: 'PAN number is required' })
+        .trim()
+        .min(1, 'PAN number is required')
+        .regex(panRegex, 'Invalid PAN format'),
     aadharNumber: z
-        .string()
-        .regex(aadharRegex, 'Invalid Aadhar format')
-        .optional()
-        .or(z.literal('')),
+        .string({ required_error: 'Aadhar number is required' })
+        .trim()
+        .min(1, 'Aadhar number is required')
+        .regex(aadharRegex, 'Invalid Aadhar format'),
     fcmToken: z.string().optional().nullable(),
     platform: z.enum(['web', 'mobile']).optional().default('web'),
     razorpayOrderId: z.string().optional(),
@@ -42,71 +46,8 @@ const deliveryRegisterSchema = z.object({
         .enum(['initial', 'edit_existing', 'new_onboarding'])
         .optional()
 }).superRefine((data, ctx) => {
-    let hasVehicles = false;
-    let vehiclesRequireDl = true;
-    if (data.vehicles) {
-        try {
-            const parsed = JSON.parse(data.vehicles);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                hasVehicles = true;
-                vehiclesRequireDl = parsed.some((v) => {
-                    const cat = String(v?.category || '').toLowerCase();
-                    return cat !== 'bicycle' && cat !== 'electric bike' && cat !== 'electric_bike';
-                });
-            }
-        } catch (e) { /* ignore parse errors; vehicleNumber checks still apply */ }
-    }
-
-    const isBicycle = data.vehicleType === 'bicycle';
-    const isElectricBike = data.vehicleType === 'electric_bike';
-    const requiresDl = hasVehicles
-        ? vehiclesRequireDl
-        : !(isBicycle || isElectricBike);
-
-    // Driving license validation (aligned with driver app onboarding)
-    if (requiresDl) {
-        if (!data.drivingLicenseNumber || !data.drivingLicenseNumber.trim()) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Driving license number is required',
-                path: ['drivingLicenseNumber']
-            });
-        } else if (!drivingLicenseRegex.test(data.drivingLicenseNumber)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Invalid driving license format',
-                path: ['drivingLicenseNumber']
-            });
-        }
-    } else if (data.drivingLicenseNumber && data.drivingLicenseNumber.trim()) {
-        if (!drivingLicenseRegex.test(data.drivingLicenseNumber)) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Invalid driving license format',
-                path: ['drivingLicenseNumber']
-            });
-        }
-    }
-
-    // Vehicle number validation
-    if (!isBicycle && !hasVehicles) {
-        if (!data.vehicleNumber || !data.vehicleNumber.trim()) {
-            ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: 'Vehicle number is required',
-                path: ['vehicleNumber']
-            });
-        } else {
-            const vehicleNumberRegex = /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/;
-            if (!vehicleNumberRegex.test(data.vehicleNumber.trim())) {
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: 'Invalid Indian vehicle number format (e.g., MH12AB1234)',
-                    path: ['vehicleNumber']
-                });
-            }
-        }
-    } else if (data.vehicleNumber && data.vehicleNumber.trim()) {
+    // Vehicle details are optional; only validate the format when provided.
+    if (data.vehicleNumber && data.vehicleNumber.trim()) {
         const vehicleNumberRegex = /^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{4}$/;
         if (!vehicleNumberRegex.test(data.vehicleNumber.trim())) {
             ctx.addIssue({
