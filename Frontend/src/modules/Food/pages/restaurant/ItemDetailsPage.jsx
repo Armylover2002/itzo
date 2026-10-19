@@ -881,10 +881,6 @@ export default function ItemDetailsPage() {
       return { message: "Please choose whether this item has variants" }
     }
 
-    if (images.length === 0) {
-      return { message: "Please add at least one image" }
-    }
-
     if (!itemName.trim()) {
       return { message: "Please enter an item name" }
     }
@@ -1138,8 +1134,8 @@ export default function ItemDetailsPage() {
       const imageCount = allImageUrls.length
       toast.success(
         isNewItem
-          ? `Item created successfully with ${imageCount} image(s)`
-          : `Item updated and sent for approval again with ${imageCount} image(s)`
+          ? `Item created successfully${imageCount ? ` with ${imageCount} image(s)` : ""}`
+          : `Item updated and sent for approval again${imageCount ? ` with ${imageCount} image(s)` : ""}`
       )
       await new Promise((resolve) => setTimeout(resolve, 200))
       navigate("/food/restaurant/inventory", { replace: true })
