@@ -1947,8 +1947,7 @@ function RestaurantDetailsContent() {
   return (
     <AnimatedPage
       id="scrollingelement"
-      className={`min-h-screen bg-[#f6f7fb] dark:bg-[#0a0a0a] flex flex-col transition-all duration-300 ${shouldShowGrayscale ? 'grayscale opacity-80' : ''
-        }`}
+      className="min-h-screen bg-[#f6f7fb] dark:bg-[#0a0a0a] flex flex-col transition-all duration-300"
     >
       <RestaurantDetailsHero
         images={galleryImages}
