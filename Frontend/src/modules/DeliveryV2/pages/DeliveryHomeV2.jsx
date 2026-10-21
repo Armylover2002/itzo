@@ -259,7 +259,6 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
   useDeliveryPartnerHydration();
   const getActiveVehicle = useDeliveryStore(state => state.getActiveVehicle);
   const activeVehicle = getActiveVehicle();
-  const [isVehicleDetailsExpanded, setIsVehicleDetailsExpanded] = useState(false);
   const [showVehicleSwitcher, setShowVehicleSwitcher] = useState(false);
   const [vehicleSelectMode, setVehicleSelectMode] = useState('switch');
   const { isWithinRange, distanceToTarget, displayDistanceToTarget } = useProximityCheck();
@@ -1036,21 +1035,21 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
 
   return (
     <div className="relative h-screen w-full bg-white text-gray-900 overflow-hidden flex flex-col">
-      {/* ─── 1. TOP HEADER (Premium Dark Gray) ─── */}
+      {/* ─── 1. TOP HEADER (Brand Orange) ─── */}
       {currentTab === 'feed' && (
-      <div className="absolute top-0 inset-x-0 bg-[#121212]/95 backdrop-blur-2xl shadow-2xl z-[200] safe-top pb-2 border-b border-white/10">
+      <div className="absolute top-0 inset-x-0 bg-[#F35B1C] shadow-lg shadow-black/10 z-[200] safe-top pb-3 rounded-b-[28px]">
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-4">
              <div 
                 onClick={() => navigate('/food/delivery/profile')}
-                className="w-10 h-10 rounded-full border border-white/20 p-0.5 shadow-xl overflow-hidden bg-white/5 cursor-pointer active:scale-95 transition-all"
+                className="w-10 h-10 rounded-full border-2 border-white/70 overflow-hidden bg-white/20 cursor-pointer active:scale-95 transition-all"
              >
                 <img src={profileImage || "https://i.ibb.co/3m2Yh7r/Appzeto-Brand-Image.png"} alt="Profile" className="w-full h-full object-cover rounded-full" />
              </div>
              <button 
                 onClick={handleOnlineToggle}
                 disabled={isProcessingToggle}
-                className={`delivery-online-toggle relative w-[92px] h-8 rounded-full p-1 transition-all duration-500 flex items-center ${isOnline ? 'is-online bg-green-500 shadow-lg shadow-green-500/20' : 'is-offline bg-gray-400'}`}
+                className={`delivery-online-toggle relative w-[92px] h-8 rounded-full p-1 transition-all duration-500 flex items-center ${isOnline ? 'is-online bg-green-500 shadow-lg shadow-green-500/20' : 'is-offline bg-black/25'}`}
              >
                 <div className={`flex items-center justify-between w-full px-2 text-[8.5px] font-black uppercase tracking-widest text-white`}>
                   {isProcessingToggle ? (
@@ -1070,9 +1069,9 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
               </button>
           </div>
           <div className="flex items-center gap-3">
-             <button onClick={() => setShowEmergencyPopup(true)} className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 active:scale-95 transition-all shadow-lg"><AlertTriangle className="w-4 h-4" /></button>
-             <button onClick={() => navigate('/food/delivery/help/id-card')} className="w-9 h-9 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20 active:scale-95 transition-all shadow-lg"><Contact className="w-4 h-4" /></button>
-             <button onClick={() => navigate('/food/delivery/notifications')} className="relative w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white border border-white/10 active:scale-95 transition-all shadow-lg"><Bell className="w-4 h-4" />{totalNotificationUnreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-400 border border-[#1f1f1f]" />}</button>
+             <button onClick={() => setShowEmergencyPopup(true)} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-red-600 border border-white/40 active:scale-95 transition-all shadow-lg"><AlertTriangle className="w-4 h-4" /></button>
+             <button onClick={() => navigate('/food/delivery/help/id-card')} className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white border border-white/30 active:scale-95 transition-all shadow-lg"><Contact className="w-4 h-4" /></button>
+             <button onClick={() => navigate('/food/delivery/notifications')} className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white border border-white/30 active:scale-95 transition-all shadow-lg"><Bell className="w-4 h-4" />{totalNotificationUnreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-white border border-[#F35B1C]" />}</button>
           </div>
         </div>
 
@@ -1087,102 +1086,74 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
             >
               {activeOrder ? (
                 <div className="grid grid-cols-2 gap-3 w-full">
-                  {/* LEFT: DISTANCE (Vibrant Orange Card) */}
-                  <div className="bg-[#F35B1C] rounded-2xl p-3.5 shadow-xl shadow-red-500/20 border border-red-400/50 flex items-center justify-between overflow-hidden relative">
-                    <div className="flex flex-col z-10">
-                      <span className="text-[9px] text-white/70 font-black uppercase tracking-[0.15em] mb-1">Distance</span>
+                  {/* Distance to current stop */}
+                  <div className="bg-white rounded-[18px] p-3.5 shadow-lg shadow-black/10 flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] text-gray-500 font-semibold mb-1">Distance</span>
                       <div className="flex items-end gap-1">
-                        <span className="text-2xl font-black text-white leading-none tracking-tighter">
+                        <span className="text-2xl font-extrabold text-gray-900 leading-none tracking-tight">
                           {displayDistanceToTarget != null && displayDistanceToTarget !== Infinity ? (displayDistanceToTarget / 1000).toFixed(1) : '--'}
                         </span>
-                        <span className="text-[11px] text-white/80 font-bold mb-0.5">KM</span>
+                        <span className="text-[11px] text-gray-500 font-bold mb-0.5">km</span>
                       </div>
                     </div>
-                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center z-10 shadow-lg">
-                      <Navigation2 className="w-4 h-4 text-[#F35B1C] rotate-45" />
+                    <div className="w-10 h-10 bg-[#FFF4ED] rounded-xl flex items-center justify-center">
+                      <Navigation2 className="w-[18px] h-[18px] text-[#F35B1C] rotate-45" />
                     </div>
                   </div>
 
-                  {/* RIGHT: TIME (Emerald PRO Content) */}
-                  <div className="bg-[#10B981] rounded-2xl p-3.5 shadow-xl shadow-green-500/20 border border-green-400/50 flex items-center justify-between relative overflow-hidden group">
-                    <div className="flex flex-col z-10">
-                      <span className="text-[9px] text-white/70 font-black uppercase tracking-[0.15em] mb-1">Arrival</span>
+                  {/* ETA */}
+                  <div className="bg-white rounded-[18px] p-3.5 shadow-lg shadow-black/10 flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] text-gray-500 font-semibold mb-1">Arrival</span>
                       <div className="flex items-end gap-1">
-                        <span className="text-2xl font-black text-white leading-none tracking-tighter">
+                        <span className="text-2xl font-extrabold text-gray-900 leading-none tracking-tight">
                           {eta ? String(eta) : '--'}
                         </span>
-                        <span className="text-[11px] text-white/80 font-bold mb-0.5">MIN</span>
+                        <span className="text-[11px] text-gray-500 font-bold mb-0.5">min</span>
                       </div>
                     </div>
-                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center z-10 shadow-lg">
-                       <Clock className="w-4 h-4 text-[#10B981]" />
+                    <div className="w-10 h-10 bg-[#ECFDF5] rounded-xl flex items-center justify-center">
+                       <Clock className="w-[18px] h-[18px] text-[#16A34A]" />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
-                  <div className="bg-white/5 rounded-2xl p-4 flex items-center border border-white/5 shadow-sm backdrop-blur-md">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-green-500/10 rounded-full flex items-center justify-center">
-                        <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`} />
-                      </div>
-                      <div>
-                        <h3 className="text-white font-black text-[11px] uppercase tracking-widest leading-none mb-1">{isOnline ? 'System Online' : 'System Offline'}</h3>
-                        <p className="text-gray-400 text-[10px] font-bold uppercase tracking-tight">{isOnline ? 'Waiting for order requests' : 'Go online to receive jobs'}</p>
-                      </div>
+                // Status + current vehicle in one compact card so more of the map stays visible.
+                <div className="bg-white rounded-[18px] shadow-lg shadow-black/10 divide-y divide-gray-100">
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <span className="relative flex h-3 w-3 shrink-0">
+                      {isOnline && <span className="absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-60 animate-ping" />}
+                      <span className={`relative inline-flex h-3 w-3 rounded-full ${isOnline ? 'bg-[#22C55E]' : 'bg-gray-400'}`} />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-gray-900 leading-tight">{isOnline ? 'You are online' : 'You are offline'}</h3>
+                      <p className="text-xs text-gray-500">{isOnline ? 'Waiting for order requests' : 'Go online to receive orders'}</p>
                     </div>
                   </div>
-                  
-                  {activeVehicle && (
-                    <div className="bg-white/5 rounded-2xl flex flex-col border border-white/10 shadow-sm backdrop-blur-md relative overflow-hidden group transition-all">
-                      <div 
-                        onClick={() => setIsVehicleDetailsExpanded(!isVehicleDetailsExpanded)}
-                        className="flex items-center justify-between p-4 cursor-pointer hover:bg-white/10 active:bg-white/5 transition-colors"
-                      >
-                        <span className="text-[9px] text-white/50 font-black uppercase tracking-[0.15em]">Current Vehicle</span>
-                        <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                          <span>{isVehicleDetailsExpanded ? 'Hide' : 'Show'}</span>
-                          <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isVehicleDetailsExpanded ? 'rotate-180' : ''}`} />
-                        </div>
-                      </div>
 
-                      <AnimatePresence>
-                        {isVehicleDetailsExpanded && (
-                          <motion.div 
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="px-4 pb-4 overflow-hidden"
-                          >
-                             <div 
-                               onClick={() => { setVehicleSelectMode('switch'); setShowVehicleSwitcher(true); }}
-                               className="bg-black/20 border border-white/5 rounded-xl p-3 flex flex-col relative overflow-hidden cursor-pointer hover:bg-black/30 active:scale-[0.98] transition-all"
-                             >
-                                <div className="absolute top-3 right-3 text-[9px] text-blue-400 font-bold uppercase tracking-widest flex items-center bg-blue-500/10 px-2 py-1 rounded-full">
-                                  Change <ChevronRight className="w-3 h-3 ml-0.5" />
-                                </div>
-                                
-                                <div className="flex items-center gap-3">
-                                  <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center shrink-0 shadow-inner p-1">
-                                    <img src={getVehicleIconUrl(activeVehicle) || "https://i.ibb.co/68zRzVv/Auto.png"} alt={getVehicleDisplayName(activeVehicle)} className="w-full h-full object-contain drop-shadow-md" />
-                                  </div>
-                                  <div className="flex-1 min-w-0 pr-16">
-                                    <h3 className="text-white font-bold text-sm truncate capitalize">{getVehicleDisplayName(activeVehicle)}</h3>
-                                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-semibold flex items-center gap-1.5 mt-1 truncate">
-                                      <span className="text-gray-300">{activeVehicle.registrationNumber || activeVehicle.vehicleNumber || 'No Reg'}</span>
-                                      <span>•</span>
-                                      <span className={activeVehicle.isDispatchEligible || ['active', 'approved'].includes(String(activeVehicle.status || '').toLowerCase()) ? 'text-green-400' : 'text-orange-400'}>
-                                        {activeVehicle.verificationStatus || activeVehicle.status || 'Unknown'}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                             </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                  {activeVehicle && (
+                    <button
+                      onClick={() => { setVehicleSelectMode('switch'); setShowVehicleSwitcher(true); }}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-left active:bg-gray-50 rounded-b-[18px]"
+                    >
+                      <div className="w-9 h-9 bg-gray-50 rounded-lg flex items-center justify-center shrink-0 p-1">
+                        <img src={getVehicleIconUrl(activeVehicle) || "https://i.ibb.co/68zRzVv/Auto.png"} alt={getVehicleDisplayName(activeVehicle)} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-bold text-gray-900 truncate capitalize">{getVehicleDisplayName(activeVehicle)}</p>
+                        <p className="text-[11px] text-gray-500 truncate">
+                          {activeVehicle.registrationNumber || activeVehicle.vehicleNumber || 'No reg. number'}
+                          <span className="mx-1">·</span>
+                          <span className={`capitalize font-semibold ${activeVehicle.isDispatchEligible || ['active', 'approved'].includes(String(activeVehicle.status || '').toLowerCase()) ? 'text-[#16A34A]' : 'text-[#B45309]'}`}>
+                            {activeVehicle.verificationStatus || activeVehicle.status || 'Unknown'}
+                          </span>
+                        </p>
+                      </div>
+                      <span className="flex items-center text-[11px] font-bold text-[#F35B1C] shrink-0">
+                        Change <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </button>
                   )}
                 </div>
               )}
@@ -1225,7 +1196,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       {/* ─── 2. MAIN CONTENT ─── */}
       <div 
         ref={scrollContainerRef}
-        className={`flex-1 min-h-0 relative overflow-y-auto ${currentTab === 'feed' ? 'pt-[120px]' : 'pt-0'} no-scrollbar`}
+        className={`flex-1 min-h-0 relative overflow-y-auto ${currentTab === 'feed' ? 'pt-[120px]' : 'pt-0 pb-28'} no-scrollbar`}
       >
          {currentTab === 'feed' ? (
            <div className="absolute inset-0 top-[-120px]">
@@ -1257,48 +1228,48 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                </div>
              )}
 
-             <div className="absolute right-4 bottom-28 md:bottom-32 flex flex-col gap-4 z-[120]">
-                <div className="flex flex-col bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-                   <button onClick={() => setZoom(z => Math.min(22, z + 1))} className="p-3 hover:bg-gray-50 border-b border-gray-100 text-gray-900 active:scale-90 transition-all" aria-label="Zoom in"><Plus className="w-5 h-5 stroke-[2.75]" /></button>
-                   <button onClick={() => setZoom(z => Math.max(8, z - 1))} className="p-3 hover:bg-gray-50 text-gray-900 active:scale-90 transition-all" aria-label="Zoom out"><Minus className="w-5 h-5 stroke-[2.75]" /></button>
-                </div>
-                <button 
+             <div className="absolute right-4 bottom-28 md:bottom-32 z-[120] flex items-center gap-1 rounded-2xl bg-white p-1.5 shadow-xl shadow-black/15 border border-gray-100">
+                <button onClick={() => setZoom(z => Math.min(22, z + 1))} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-800 active:bg-gray-100 transition-all" aria-label="Zoom in"><Plus className="w-5 h-5 stroke-[2.5]" /></button>
+                <button onClick={() => setZoom(z => Math.max(8, z - 1))} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-800 active:bg-gray-100 transition-all" aria-label="Zoom out"><Minus className="w-5 h-5 stroke-[2.5]" /></button>
+                <div className="w-px h-6 bg-gray-200 mx-0.5" />
+                <button
                   onClick={() => {
                     const nextSimState = !isSimMode;
                     setIsSimMode(nextSimState);
-                    
+
                     if (nextSimState) {
                       toast.warning('Simulation Mode Active');
                       // Initialize position if null
                       if (!useDeliveryStore.getState().riderLocation && activeOrder) {
                         const target = activeOrder.restaurantLocation || activeOrder.customerLocation;
                         if (target) {
-                          setRiderLocation({ 
-                            lat: parseFloat(target.lat || target.latitude) + 0.001, 
-                            lng: parseFloat(target.lng || target.longitude) + 0.001, 
-                            heading: 0 
+                          setRiderLocation({
+                            lat: parseFloat(target.lat || target.latitude) + 0.001,
+                            lng: parseFloat(target.lng || target.longitude) + 0.001,
+                            heading: 0
                           });
                         }
                       }
                     }
                   }}
-                  className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center border border-gray-100 transition-all ${isSimMode ? 'bg-red-500 text-white' : 'bg-white text-green-500'}`}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${isSimMode ? 'bg-[#EF4444] text-white' : 'text-[#16A34A] active:bg-gray-100'}`}
+                  aria-label="Simulation"
                 >
-                  <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center ${isSimMode ? 'border-white' : 'border-green-500'}`}>
-                    <Play className={`w-4 h-4 fill-current ml-0.5 ${isSimMode ? 'animate-pulse' : ''}`} />
-                  </div>
+                  <Play className={`w-[18px] h-[18px] fill-current ml-0.5 ${isSimMode ? 'animate-pulse' : ''}`} />
                 </button>
-                <button 
-                   onClick={() => mapRef.current?.setOptions({ gestureHandling: 'greedy' })} 
-                   className="w-14 h-14 bg-white rounded-full shadow-2xl flex items-center justify-center text-blue-600 border border-gray-100 active:scale-90 transition-all"
+                <button
+                   onClick={() => mapRef.current?.setOptions({ gestureHandling: 'greedy' })}
+                   className="w-10 h-10 rounded-xl flex items-center justify-center text-[#2563EB] active:bg-gray-100 transition-all"
+                   aria-label="Navigation mode"
                 >
-                  <div className="w-8 h-8 rounded-full border-2 border-blue-600 flex items-center justify-center"><Navigation2 className="w-4 h-4" /></div>
+                  <Navigation2 className="w-[18px] h-[18px]" />
                 </button>
-                <button 
+                <button
                   onClick={handleCenterMap}
-                  className="w-14 h-14 bg-white rounded-full shadow-2xl flex items-center justify-center text-gray-900 border border-gray-100 group active:scale-90 transition-all"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-800 active:bg-gray-100 transition-all"
+                  aria-label="Center map"
                 >
-                  <Target className="w-7 h-7" />
+                  <Target className="w-5 h-5" />
                 </button>
              </div>
            </div>
@@ -1551,7 +1522,9 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       )}
 
       {/* ─── 3. BOTTOM NAV (Fixed - Compact Pro) ─── */}
-      <div className="bg-white border-t border-gray-100 px-8 py-3 pb-6 flex justify-between items-center z-[200] shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+      {/* Floats over the content so no background strip shows behind the rounded bar */}
+      <div className="absolute bottom-0 inset-x-0 px-3 pb-4 z-[200] pointer-events-none">
+      <div className="pointer-events-auto bg-white border border-gray-100 rounded-[28px] px-8 py-3 flex justify-between items-center shadow-[0_4px_24px_rgba(0,0,0,0.10)]">
          <button onClick={() => navigate('/food/delivery/feed')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'feed' ? 'text-[#F35B1C] font-semibold scale-110' : 'text-gray-400 opacity-70'}`}>
             <LayoutGrid className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Feed</span>
          </button>
@@ -1564,6 +1537,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
          <button onClick={() => navigate('/food/delivery/profile')} className={`flex flex-col items-center gap-1 transition-all ${currentTab === 'profile' ? 'text-[#F35B1C] font-semibold scale-110' : 'text-gray-400 opacity-70'}`}>
             <UserIcon className="w-6 h-6" /><span className="text-[11px] font-medium font-sans">Profile</span>
          </button>
+      </div>
       </div>
       <SubscriptionConfirmationModal 
         isOpen={showSubModal}

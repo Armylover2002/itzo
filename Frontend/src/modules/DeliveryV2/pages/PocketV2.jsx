@@ -14,9 +14,7 @@ import { formatCurrency } from '@food/utils/currency';
 import DepositPopup from '../components/DepositPopup';
 
 /**
- * PocketV2 - 1:1 Match with Old PocketPage UI.
- * Background: #f6e9dc
- * Font: Poppins
+ * PocketV2 - delivery partner earnings & wallet hub (rendered inside DeliveryHomeV2).
  */
 export const PocketV2 = () => {
   const navigate = useNavigate();
@@ -177,271 +175,278 @@ export const PocketV2 = () => {
     return `${formatDate(start)} - ${formatDate(end)}`;
   };
 
+  const goToPocketDetails = () => {
+    const normalizedModule = normalizeModuleFilter(activeModuleFilter);
+    navigate(
+      normalizedModule !== "all"
+        ? `/food/delivery/pocket/details?module=${encodeURIComponent(normalizedModule)}`
+        : "/food/delivery/pocket/details"
+    );
+  };
+
+  const cashLimitRatio = walletState.totalCashLimit > 0
+    ? Math.min(Math.max(walletState.availableCashLimit / walletState.totalCashLimit, 0), 1)
+    : 0;
+
+  // Hex colours on purpose: deliveryTheme.css recolours Tailwind green/blue/orange utilities.
+  const statementLinks = [
+    {
+      label: 'Pocket statement',
+      hint: 'All credits & debits',
+      icon: LayoutGrid,
+      tone: 'bg-[#F5F3FF] text-[#7C3AED]',
+      onClick: goToPocketDetails,
+    },
+    {
+      label: 'Deduction list',
+      hint: 'Penalties & adjustments',
+      icon: FileText,
+      tone: 'bg-[#FEF2F2] text-[#DC2626]',
+      onClick: () => navigate('/food/delivery/pocket/deductions'),
+    },
+    {
+      label: 'Limit settlement',
+      hint: 'Cash deposits to company',
+      icon: Receipt,
+      tone: 'bg-[#FFF4ED] text-[#F35B1C]',
+      onClick: () => navigate('/food/delivery/pocket/limit-settlement'),
+    },
+  ];
+
   if (loading) return (
-    <div className="min-h-screen bg-[#f6e9dc] flex flex-col items-center justify-center font-poppins">
+    <div className="min-h-[60vh] flex flex-col items-center justify-center font-poppins">
        <div className="w-10 h-10 border-4 border-[#F35B1C] border-t-transparent rounded-full animate-spin mb-4" />
        <p className="text-xs font-semibold text-gray-500">Loading Pocket...</p>
     </div>
   );
 
+  // No inner scroll container here: DeliveryHomeV2's content area scrolls this page.
+  // A nested overflow box with overscroll containment swallowed touch/wheel scrolling.
   return (
-    <div className="app-shell-page min-h-screen bg-[#f6e9dc] font-poppins">
-       
-       {/* 0. Header */}
-       <div className="app-shell-page__header safe-top bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-             <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-[#F35B1C] border border-red-100">
-                <Wallet className="w-5 h-5" />
-             </div>
-             <div>
-                <h1 className="text-xl font-black text-gray-950 uppercase tracking-tighter">Pocket History</h1>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Earnings & Wallet Hub</p>
-             </div>
-          </div>
-       </div>
-       <div className="app-shell-page__body pb-32">
-       {/* 1. BANK DETAILS BANNER */}
-       {!walletState.bankDetailsFilled && (
-         <div className="bg-yellow-400 px-4 py-3 flex items-center gap-3 border-b border-yellow-500/20">
-            <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center text-white shrink-0 shadow-lg">
-               <FileText className="w-7 h-7" />
-            </div>
-            <div className="flex-1">
-               <h3 className="text-sm font-bold text-black mb-0.5">Submit bank details</h3>
-               <p className="text-xs text-black/80 font-medium">PAN & bank details required for payouts</p>
-            </div>
-            <button 
-              onClick={() => navigate('/food/delivery/profile/details')}
-              className="bg-yellow-300 text-black px-3 py-1.5 rounded-lg font-bold text-xs shadow-sm"
-            >
-               Submit
-            </button>
-         </div>
-       )}
+    <div className="min-h-full bg-[#F4F5F7] font-poppins">
 
-       <div className="px-4 py-6 bg-gray-100">
-          
-          {/* 1.5 MODULE FILTERS */}
-          {availableModules && availableModules.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-              <button
-                onClick={() => setActiveModuleFilter('all')}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
-                  activeModuleFilter === 'all' 
-                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md' 
-                    : 'bg-white text-gray-500 border border-gray-200'
-                }`}
-              >
-                All
-              </button>
-              {availableModules.map(mod => (
-                <button
-                  key={mod}
-                  onClick={() => setActiveModuleFilter(normalizeModuleFilter(mod))}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
-                    activeModuleFilter === normalizeModuleFilter(mod)
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md' 
-                      : 'bg-white text-gray-500 border border-gray-200'
-                  }`}
-                >
-                  {normalizeModuleFilter(mod).replace('_', ' ')}
-                </button>
-              ))}
+       {/* Header */}
+       <div className="sticky top-0 z-[100] safe-top bg-white/95 backdrop-blur border-b border-gray-100 px-5 py-4">
+          <h1 className="text-[22px] font-extrabold text-gray-900 leading-tight">Pocket</h1>
+          <p className="text-xs font-medium text-gray-500 mt-0.5">Your earnings, balance &amp; payouts</p>
+       </div>
+
+       <div className="px-4 pt-4 pb-6 space-y-5">
+
+          {/* Bank details banner */}
+          {!walletState.bankDetailsFilled && (
+            <div className="flex items-center gap-3 rounded-[18px] border border-[#FCD9A8] bg-[#FFF8EC] p-3.5">
+               <div className="w-10 h-10 rounded-xl bg-[#F59E0B] flex items-center justify-center text-white shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+               </div>
+               <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-gray-900">Add bank details</h3>
+                  <p className="text-xs text-gray-600">PAN &amp; bank account are required for payouts</p>
+               </div>
+               <button
+                 onClick={() => navigate('/food/delivery/profile/details')}
+                 className="shrink-0 rounded-lg bg-gray-900 px-3 py-2 text-xs font-bold text-white active:scale-95"
+               >
+                  Add now
+               </button>
             </div>
           )}
 
-          {/* 2. WEEKLY EARNINGS CARD */}
-          <div 
-            onClick={() => {
-              const normalizedModule = normalizeModuleFilter(activeModuleFilter);
-              navigate(
-                normalizedModule !== "all"
-                  ? `/food/delivery/pocket/details?module=${encodeURIComponent(normalizedModule)}`
-                  : "/food/delivery/pocket/details"
-              );
-            }}
-            className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 text-center mb-5 transition-all active:scale-[0.98]"
+          {/* Module filters */}
+          {availableModules && availableModules.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+              {['all', ...availableModules.map(normalizeModuleFilter)].map((mod) => {
+                const isSelected = activeModuleFilter === mod;
+                return (
+                  <button
+                    key={mod}
+                    onClick={() => setActiveModuleFilter(mod)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold capitalize whitespace-nowrap transition-all ${
+                      isSelected
+                        ? 'bg-[#F35B1C] text-white shadow-md shadow-[#F35B1C]/25'
+                        : 'bg-white text-gray-600 border border-gray-200'
+                    }`}
+                  >
+                    {mod === 'all' ? 'All' : mod.replace('_', ' ')}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Weekly earnings hero */}
+          <button
+            onClick={goToPocketDetails}
+            className="relative w-full overflow-hidden rounded-[22px] bg-gradient-to-br from-[#F35B1C] to-[#FF8A4C] p-5 text-left text-white shadow-lg shadow-[#F35B1C]/25 active:scale-[0.99] transition-all"
           >
-             <p className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-2">Earnings: {getCurrentWeekRange()}</p>
-             <h2 className="text-4xl font-black text-black tracking-tighter">
-                ₹{walletState.weeklyEarnings.toFixed(2)}
-             </h2>
+             <div className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/10" />
+             <div className="absolute -right-2 -bottom-10 h-28 w-28 rounded-full bg-white/10" />
+             <div className="relative">
+                <div className="flex items-center justify-between">
+                   <span className="text-xs font-semibold text-white/85">This week · {getCurrentWeekRange()}</span>
+                   <span className="flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-bold">
+                      Details <ArrowRight className="w-3 h-3" />
+                   </span>
+                </div>
+                <p className="mt-3 text-[34px] font-extrabold leading-none tracking-tight">
+                   ₹{walletState.weeklyEarnings.toFixed(2)}
+                </p>
+                <p className="mt-2 text-xs font-medium text-white/85">
+                   {walletState.weeklyOrders} {walletState.weeklyOrders === 1 ? 'order' : 'orders'} completed
+                </p>
+             </div>
+          </button>
+
+          {/* Balance & cash limit */}
+          <div className="grid grid-cols-2 gap-3">
+             <button
+                onClick={() => navigate('/food/delivery/pocket/balance')}
+                className="rounded-[18px] bg-white p-4 text-left border border-gray-100 shadow-sm active:bg-gray-50"
+             >
+                <div className="flex items-center justify-between">
+                   <div className="w-9 h-9 rounded-xl bg-[#FFF4ED] text-[#F35B1C] flex items-center justify-center">
+                      <Wallet className="w-[18px] h-[18px]" />
+                   </div>
+                   <ChevronRight className="w-4 h-4 text-gray-300" />
+                </div>
+                <p className="mt-3 text-[11px] font-semibold text-gray-500">Pocket balance</p>
+                <p className="mt-0.5 text-lg font-extrabold text-gray-900 truncate">₹{walletState.totalBalance.toFixed(2)}</p>
+                <p className="text-[10px] font-medium text-gray-400">Tap to withdraw</p>
+             </button>
+
+             <button
+                onClick={() => navigate('/food/delivery/pocket/cash-limit')}
+                className="rounded-[18px] bg-white p-4 text-left border border-gray-100 shadow-sm active:bg-gray-50"
+             >
+                <div className="flex items-center justify-between">
+                   <div className="w-9 h-9 rounded-xl bg-[#EEF4FF] text-[#2563EB] flex items-center justify-center">
+                      <ShieldCheck className="w-[18px] h-[18px]" />
+                   </div>
+                   <ChevronRight className="w-4 h-4 text-gray-300" />
+                </div>
+                <p className="mt-3 text-[11px] font-semibold text-gray-500">Available cash limit</p>
+                <p className="mt-0.5 text-lg font-extrabold text-gray-900 truncate">₹{walletState.availableCashLimit.toFixed(2)}</p>
+                {walletState.totalCashLimit > 0 ? (
+                  <div className="mt-1.5">
+                     <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                        <div className="h-full rounded-full bg-[#2563EB]" style={{ width: `${cashLimitRatio * 100}%` }} />
+                     </div>
+                     <p className="mt-1 text-[10px] font-medium text-gray-400">of ₹{walletState.totalCashLimit.toFixed(0)}</p>
+                  </div>
+                ) : (
+                  <p className="text-[10px] font-medium text-gray-400">Cash you can collect</p>
+                )}
+             </button>
           </div>
 
-          {/* 3. EARNINGS GUARANTEE - API DRIVEN (NO STATIC VALUES) */}
+          {/* Earnings guarantee - API driven */}
           {hasActiveOffer && (
-          <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 mb-6">
-             <div className="bg-black p-4 flex items-center justify-between">
+          <div className="rounded-[20px] bg-white border border-gray-100 shadow-sm overflow-hidden">
+             <div className="flex items-center justify-between bg-[#111827] p-4">
                 <div>
-                  <h3 className="text-lg font-black text-white leading-none mb-1">Earnings Guarantee</h3>
                   <div className="flex items-center gap-2">
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Valid till {formatOfferValidTill(activeOffer.validTill)}</span>
+                     <Sparkles className="w-4 h-4 text-[#FBBF24]" />
+                     <h3 className="text-base font-extrabold text-white leading-none">Earnings Guarantee</h3>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-2">
+                     <span className="text-[11px] font-medium text-gray-400">Valid till {formatOfferValidTill(activeOffer.validTill)}</span>
                      {activeOffer.isLive && (
-                       <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                          <span className="text-[10px] font-bold text-green-500 uppercase">Live</span>
-                       </div>
+                       <span className="flex items-center gap-1 text-[10px] font-bold uppercase text-[#22C55E]">
+                          <span className="w-1.5 h-1.5 bg-[#22C55E] rounded-full animate-pulse" /> Live
+                       </span>
                      )}
                   </div>
                 </div>
-                <div className="bg-white/10 px-4 py-2 rounded-xl text-center border border-white/5">
-                   <p className="text-lg font-black text-white leading-none mb-0.5">₹{activeOffer.targetAmount}</p>
-                   <p className="text-[9px] font-bold text-gray-400 uppercase">{activeOffer.targetOrders} orders</p>
+                <div className="rounded-xl bg-white/10 px-3 py-2 text-center">
+                   <p className="text-base font-extrabold text-white leading-none">₹{activeOffer.targetAmount}</p>
+                   <p className="mt-0.5 text-[10px] font-medium text-gray-400">{activeOffer.targetOrders} orders</p>
                 </div>
              </div>
 
-             <div className="p-8 pb-10 flex items-center justify-around gap-8">
-                {/* Orders Circle */}
-                <div className="flex flex-col items-center">
-                   <div className="relative w-28 h-28">
-                      <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
-                         <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="8" />
-                         <motion.circle 
-                            cx="50" cy="50" r="45" fill="none" stroke="#000" strokeWidth="8" strokeLinecap="round"
-                            initial={{ pathLength: 0 }} animate={{ pathLength: ordersProgress }} transition={{ duration: 1.5, ease: "easeOut" }}
-                         />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                         <span className="text-xl font-black text-black leading-none">{activeOffer.currentOrders}</span>
-                         <span className="text-[9px] font-bold text-gray-400 uppercase mt-0.5">of {activeOffer.targetOrders}</span>
-                      </div>
-                   </div>
-                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-4">Orders Done</p>
-                </div>
-
-                {/* Earnings Circle */}
-                <div className="flex flex-col items-center">
-                   <div className="relative w-28 h-28">
-                      <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 100 100">
-                         <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="8" />
-                         <motion.circle 
-                            cx="50" cy="50" r="45" fill="none" stroke="#F35B1C" strokeWidth="8" strokeLinecap="round"
-                            initial={{ pathLength: 0 }} animate={{ pathLength: earningsProgress }} transition={{ duration: 1.5, ease: "easeOut" }}
-                         />
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-2">
-                         <span className="text-base font-black text-black leading-none truncate">₹{activeOffer.currentEarnings}</span>
-                      </div>
-                   </div>
-                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-4">Earned Yet</p>
-                </div>
+             <div className="flex items-center justify-around gap-6 px-6 py-6">
+                {[
+                  { label: 'Orders done', progress: ordersProgress, color: '#111827', value: activeOffer.currentOrders, sub: `of ${activeOffer.targetOrders}` },
+                  { label: 'Earned so far', progress: earningsProgress, color: '#F35B1C', value: `₹${activeOffer.currentEarnings}`, sub: `of ₹${activeOffer.targetAmount}` },
+                ].map((ring) => (
+                  <div key={ring.label} className="flex flex-col items-center">
+                     <div className="relative w-24 h-24">
+                        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                           <circle cx="50" cy="50" r="44" fill="none" stroke="#F3F4F6" strokeWidth="9" />
+                           <motion.circle
+                              cx="50" cy="50" r="44" fill="none" stroke={ring.color} strokeWidth="9" strokeLinecap="round"
+                              initial={{ pathLength: 0 }} animate={{ pathLength: ring.progress }} transition={{ duration: 1.2, ease: "easeOut" }}
+                           />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center px-2 text-center">
+                           <span className="text-base font-extrabold text-gray-900 leading-none truncate max-w-full">{ring.value}</span>
+                           <span className="mt-0.5 text-[9px] font-semibold text-gray-400">{ring.sub}</span>
+                        </div>
+                     </div>
+                     <p className="mt-3 text-[11px] font-semibold text-gray-500">{ring.label}</p>
+                  </div>
+                ))}
              </div>
           </div>
           )}
 
-          {/* 4. POCKET ACTION BUTTONS */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-             <button 
-                onClick={() => navigate('/food/delivery/pocket/balance')}
-                className="w-full p-5 border-b border-gray-50 flex items-center justify-between active:bg-gray-50"
-             >
-                <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-black border border-gray-100">
-                      <Wallet className="w-6 h-6" />
-                   </div>
-                   <div>
-                      <span className="text-sm font-bold text-gray-800 block">Pocket balance</span>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Withdrawal Hub</p>
-                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                   <span className="text-base font-black text-black">₹{walletState.totalBalance.toFixed(2)}</span>
-                   <ChevronRight className="w-4 h-4 text-gray-300" />
-                </div>
-             </button>
-
-             <button 
-                onClick={() => navigate('/food/delivery/pocket/cash-limit')}
-                className="w-full p-5 border-b border-gray-50 flex items-center justify-between active:bg-gray-50"
-             >
-                <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-black border border-gray-100">
-                      <ShieldCheck className="w-6 h-6" />
-                   </div>
-                   <div>
-                      <span className="text-sm font-bold text-gray-800 block">Available cash limit</span>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Spend Control</p>
-                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                   <span className="text-base font-black text-black">₹{walletState.availableCashLimit.toFixed(2)}</span>
-                   <ChevronRight className="w-4 h-4 text-gray-300" />
-                </div>
-             </button>
-
-             {/* <div className="p-5">
+          {/* Payouts & rewards */}
+          <section>
+             <h2 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-gray-400">Payouts &amp; rewards</h2>
+             <div className="rounded-[18px] bg-white border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden">
                 <button
-                   onClick={() => setShowDepositPopup(true)}
-                   className="w-full py-4 bg-[#F35B1C] hover:bg-red-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/20 active:scale-95 transition-all"
+                   onClick={() => navigate('/food/delivery/pocket/payout')}
+                   className="flex w-full items-center gap-3 p-4 text-left active:bg-gray-50"
                 >
-                   Deposit Cash
-                </button>
-             </div> */}
-          </div>
-
-          {/* 5. MORE SERVICES - Vertical List */}
-          <div className="space-y-4">
-             <div className="grid grid-cols-2 gap-4">
-                <div onClick={() => navigate('/food/delivery/pocket/payout')} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50">
-                   <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4 border border-blue-100">
+                   <div className="w-10 h-10 rounded-xl bg-[#EEF4FF] text-[#2563EB] flex items-center justify-center shrink-0">
                       <IndianRupee className="w-5 h-5" />
                    </div>
-                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Last Payout</p>
-                   <p className="text-xl font-black text-black leading-none mb-1">₹{walletState.payoutAmount}</p>
-                   <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tight">Prev Week Info</p>
-                </div>
-
-                <div onClick={() => navigate('/food/delivery/pocket/limit-settlement')} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50 flex flex-col justify-between">
-                   <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-[#F35B1C] mb-4 border border-red-100">
-                      <Receipt className="w-5 h-5" />
+                   <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900">Last payout</p>
+                      <p className="text-xs text-gray-500 truncate">{walletState.payoutPeriod}</p>
                    </div>
-                   <p className="text-sm font-bold text-gray-800 leading-tight">Limit Settlement</p>
-                </div>
-             </div>
+                   <span className="text-sm font-extrabold text-gray-900">₹{walletState.payoutAmount}</span>
+                   <ChevronRight className="w-4 h-4 text-gray-300" />
+                </button>
 
-             {/* Referral Bonus Row */}
-             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between active:bg-gray-50 transition-all" onClick={() => navigate('/food/delivery/pocket/balance')}>
-                <div className="flex items-center gap-4">
-                   <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-green-600 border border-green-100">
-                      <Gift className="w-6 h-6" />
-                   </div>
-                   <div>
-                      <span className="text-sm font-bold text-gray-800 block">Referral Bonus</span>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Earned Rewards</p>
-                   </div>
-                </div>
-                <div className="text-right">
-                   <p className="text-lg font-black text-green-600">+{formatCurrency(walletState.totalBonus)}</p>
-                </div>
-             </div>
-
-             <div className="grid grid-cols-2 gap-4">
-                <div onClick={() => navigate('/food/delivery/pocket/deductions')} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50 flex flex-col justify-between">
-                   <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-600 mb-4 border border-red-100">
-                      <FileText className="w-5 h-5" />
-                   </div>
-                   <p className="text-sm font-bold text-gray-800 leading-tight">Deduction List</p>
-                </div>
-
-                <div
-                  onClick={() => {
-                    const normalizedModule = normalizeModuleFilter(activeModuleFilter);
-                    navigate(
-                      normalizedModule !== "all"
-                        ? `/food/delivery/pocket/details?module=${encodeURIComponent(normalizedModule)}`
-                        : "/food/delivery/pocket/details"
-                    );
-                  }}
-                  className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 active:bg-gray-50 flex flex-col justify-between"
+                <button
+                   onClick={() => navigate('/food/delivery/pocket/balance')}
+                   className="flex w-full items-center gap-3 p-4 text-left active:bg-gray-50"
                 >
-                   <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center text-purple-600 mb-4 border border-purple-100">
-                      <LayoutGrid className="w-5 h-5" />
+                   <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] text-[#16A34A] flex items-center justify-center shrink-0">
+                      <Gift className="w-5 h-5" />
                    </div>
-                   <p className="text-sm font-bold text-gray-800 leading-tight">Pocket statement</p>
-                </div>
+                   <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-900">Referral bonus</p>
+                      <p className="text-xs text-gray-500">Rewards earned from referrals</p>
+                   </div>
+                   <span className="text-sm font-extrabold text-[#16A34A]">+{formatCurrency(walletState.totalBonus)}</span>
+                   <ChevronRight className="w-4 h-4 text-gray-300" />
+                </button>
              </div>
-          </div>
-       </div>
+          </section>
+
+          {/* Statements */}
+          <section>
+             <h2 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-gray-400">Statements</h2>
+             <div className="rounded-[18px] bg-white border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden">
+                {statementLinks.map(({ label, hint, icon: Icon, tone, onClick }) => (
+                  <button
+                     key={label}
+                     onClick={onClick}
+                     className="flex w-full items-center gap-3 p-4 text-left active:bg-gray-50"
+                  >
+                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tone}`}>
+                        <Icon className="w-5 h-5" />
+                     </div>
+                     <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900">{label}</p>
+                        <p className="text-xs text-gray-500">{hint}</p>
+                     </div>
+                     <ChevronRight className="w-4 h-4 text-gray-300" />
+                  </button>
+                ))}
+             </div>
+          </section>
        </div>
 
        {/* DEPOSIT POPUP - Multi-mode: Online / Admin Details / Zone Hub */}
@@ -480,10 +485,6 @@ export const PocketV2 = () => {
           )}
        </AnimatePresence>
 
-       {/* Icon Helper for Navigation Drawer */}
-       <div className="hidden">
-          <ChevronRight />
-       </div>
     </div>
   );
 };

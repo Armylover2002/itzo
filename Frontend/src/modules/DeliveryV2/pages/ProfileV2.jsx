@@ -14,7 +14,12 @@ import {
   Trash2,
   AlertTriangle,
   Truck,
-  CreditCard
+  CreditCard,
+  FileText,
+  Gift,
+  IdCard,
+  ScrollText,
+  ShieldCheck
 } from "lucide-react"
 import { deliveryAPI } from "@food/api"
 import { toast } from "sonner"
@@ -23,8 +28,7 @@ import { stopAllSync } from "@/modules/DeliveryV2/services/deliveryOrderSync"
 import VehicleSwitcherSheet from '@/modules/DeliveryV2/components/modals/VehicleSwitcherSheet'
 
 /**
- * ProfileV2 - 1:1 EXACT Restoration of the Legacy Profile Hub.
- * Matches ProfilePage.jsx exactly.
+ * ProfileV2 - delivery partner account hub (rendered inside DeliveryHomeV2).
  */
 export const ProfileV2 = () => {
   const navigate = useNavigate()
@@ -114,9 +118,30 @@ export const ProfileV2 = () => {
     }
   }
 
+  // Hex colours on purpose: deliveryTheme.css recolours Tailwind green/blue/orange utilities.
+  const menuSections = [
+    {
+      title: "Account",
+      items: [
+        { label: "Personal details", hint: "Name, phone & address", icon: User, tone: "bg-[#EEF4FF] text-[#2563EB]", onClick: () => navigate("/food/delivery/profile/details") },
+        { label: "Documents", hint: "Aadhaar, PAN & licence", icon: FileText, tone: "bg-[#F5F3FF] text-[#7C3AED]", onClick: () => navigate("/food/delivery/profile/documents") },
+        { label: "Bank details", hint: "Account for payouts", icon: CreditCard, tone: "bg-[#ECFDF5] text-[#16A34A]", onClick: () => navigate("/food/delivery/profile/bank") },
+        { label: "ID card", hint: "Your delivery partner ID", icon: IdCard, tone: "bg-[#FFF4ED] text-[#F35B1C]", onClick: () => navigate("/food/delivery/help/id-card") },
+      ],
+    },
+    {
+      title: "Help & legal",
+      items: [
+        { label: "Support tickets", hint: "Raise or track an issue", icon: Ticket, tone: "bg-[#FEF3C7] text-[#B45309]", onClick: () => navigate("/food/delivery/help/tickets") },
+        { label: "Terms & conditions", icon: ScrollText, tone: "bg-gray-100 text-gray-600", onClick: () => navigate("/food/delivery/profile/terms") },
+        { label: "Privacy policy", icon: ShieldCheck, tone: "bg-gray-100 text-gray-600", onClick: () => navigate("/food/delivery/profile/privacy") },
+      ],
+    },
+  ]
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center font-poppins">
+      <div className="min-h-[60vh] flex items-center justify-center font-poppins">
         <div className="flex items-center gap-2 text-gray-700">
           <Loader2 className="w-5 h-5 animate-spin" />
           <span className="text-sm font-medium">Loading profile...</span>
@@ -125,148 +150,136 @@ export const ProfileV2 = () => {
     )
   }
 
+  const phone = profile?.phone ? `${profile?.countryCode || "+91"} ${profile.phone}` : ""
+
+  // No inner scroll container here: DeliveryHomeV2's content area scrolls this page.
+  // A nested overflow box with overscroll containment swallowed touch/wheel scrolling.
   return (
-    <div className="app-shell-page min-h-screen bg-gray-100 text-gray-900 font-poppins">
-      {/* 0. Header */}
-      <div className="app-shell-page__header safe-top bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-         <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100">
-               <User className="w-5 h-5" />
-            </div>
-            <div>
-               <h1 className="text-xl font-black text-gray-950 uppercase tracking-tighter">My Profile</h1>
-               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Account & Settings</p>
-            </div>
-         </div>
+    <div className="min-h-full bg-[#F4F5F7] text-gray-900 font-poppins">
+      {/* Header */}
+      <div className="sticky top-0 z-[100] safe-top bg-white/95 backdrop-blur border-b border-gray-100 px-5 py-4">
+        <h1 className="text-[22px] font-extrabold text-gray-900 leading-tight">Profile</h1>
+        <p className="text-xs font-medium text-gray-500 mt-0.5">Account &amp; settings</p>
       </div>
-      <div className="app-shell-page__body pb-24">
-      {/* Profile Header Block */}
-      <div className="bg-white p-4 w-full shadow-sm">
-        <div 
+
+      <div className="px-4 pt-4 pb-6 space-y-5">
+        {/* Profile card */}
+        <button
           onClick={() => navigate("/food/delivery/profile/details")}
-          className="flex items-start justify-between cursor-pointer"
+          className="relative w-full overflow-hidden rounded-[22px] bg-gradient-to-br from-[#F35B1C] to-[#FF8A4C] p-5 text-left text-white shadow-lg shadow-[#F35B1C]/25 active:scale-[0.99] transition-all"
         >
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h2 className="text-2xl md:text-3xl font-bold">{profile?.name || ""}</h2>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-            <p className="text-gray-600 text-sm md:text-base mb-3 font-medium">{profile?.deliveryId || ""}</p>
-          </div>
-          <div className="relative shrink-0 ml-4">
+          <div className="absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/10" />
+          <div className="relative flex items-center gap-4">
             {profile?.profileImage?.url ? (
-              <img src={profile.profileImage.url} alt="Profile" className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-gray-200" />
+              <img src={profile.profileImage.url} alt="Profile" className="w-16 h-16 rounded-full object-cover border-2 border-white/70 shrink-0" />
             ) : (
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
-                <User className="w-10 h-10 md:w-12 md:h-12 text-gray-400" />
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/70 shrink-0">
+                <User className="w-8 h-8 text-white" />
               </div>
             )}
-            <div className="absolute bottom-0 right-0 bg-white rounded-full p-2 shadow-md border-2 border-white">
-              <Briefcase className="w-4 h-4 text-gray-600" />
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-extrabold leading-tight truncate">{profile?.name || "Delivery partner"}</h2>
+              {profile?.deliveryId && (
+                <p className="mt-1 inline-block rounded-md bg-white/20 px-2 py-0.5 text-[11px] font-bold">ID: {profile.deliveryId}</p>
+              )}
+              {phone && <p className="mt-1 text-xs font-medium text-white/85 truncate">{phone}</p>}
             </div>
+            <ChevronRight className="w-5 h-5 text-white/80 shrink-0" />
           </div>
-        </div>
-      </div>
+        </button>
 
-      <div className="px-4 py-6">
-        {/* Navigation Buttons */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        {/* Quick actions */}
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => navigate("/food/delivery/history")}
-            className="bg-white rounded-xl p-4 flex flex-col items-center gap-2 border border-transparent active:bg-gray-50 transition-colors shadow-sm"
+            className="flex items-center gap-3 rounded-[18px] bg-white p-4 border border-gray-100 shadow-sm active:bg-gray-50"
           >
-            <div className="rounded-full bg-blue-50 p-3">
-              <Bike className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 rounded-xl bg-[#EEF4FF] text-[#2563EB] flex items-center justify-center shrink-0">
+              <Bike className="w-5 h-5" />
             </div>
-            <span className="text-sm font-bold text-gray-900">Trips history</span>
+            <span className="text-sm font-bold text-gray-900 text-left">Trip history</span>
           </button>
-
           <button
             onClick={() => setShowVehicleSwitcher(true)}
-            className="bg-white rounded-xl p-4 flex flex-col items-center gap-2 border border-transparent active:bg-gray-50 transition-colors shadow-sm"
+            className="flex items-center gap-3 rounded-[18px] bg-white p-4 border border-gray-100 shadow-sm active:bg-gray-50"
           >
-            <div className="rounded-full bg-green-50 p-3">
-              <Truck className="w-6 h-6 text-green-600" />
+            <div className="w-10 h-10 rounded-xl bg-[#ECFDF5] text-[#16A34A] flex items-center justify-center shrink-0">
+              <Truck className="w-5 h-5" />
             </div>
-            <span className="text-sm font-bold text-gray-900">My Vehicles</span>
+            <span className="text-sm font-bold text-gray-900 text-left">My vehicles</span>
           </button>
         </div>
 
-        {/* Sections */}
-        <div className="space-y-4">
-          {/* Share & Earn */}
-          <div className="bg-white rounded-xl p-4 flex items-center justify-between gap-4">
-            <div className="min-w-0">
-              <h3 className="text-base font-bold text-gray-900 mb-1">
-                Share & Earn{referralReward > 0 ? ` ₹${referralReward}` : ""}
-              </h3>
-              <p className="text-gray-500 text-xs font-medium">Invite friends to join the delivery partner fleet.</p>
+        {/* Share & earn */}
+        <div className="flex items-center gap-3 rounded-[18px] bg-white p-4 border border-gray-100 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-[#FFF4ED] text-[#F35B1C] flex items-center justify-center shrink-0">
+            <Gift className="w-5 h-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-gray-900">
+              Refer &amp; earn{referralReward > 0 ? ` ₹${referralReward}` : ""}
+            </h3>
+            <p className="text-xs text-gray-500">Invite friends to join as delivery partners</p>
+          </div>
+          <button
+            onClick={handleShareReferral}
+            className="shrink-0 flex items-center gap-1.5 rounded-lg bg-[#F35B1C] px-3 py-2 text-xs font-bold text-white active:scale-95"
+          >
+            <Share2 className="w-3.5 h-3.5" /> Share
+          </button>
+        </div>
+
+        {/* Menu sections */}
+        {menuSections.map((section) => (
+          <section key={section.title}>
+            <h2 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-gray-400">{section.title}</h2>
+            <div className="rounded-[18px] bg-white border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden">
+              {section.items.map(({ label, hint, icon: Icon, tone, onClick }) => (
+                <button
+                  key={label}
+                  onClick={onClick}
+                  className="flex w-full items-center gap-3 p-4 text-left active:bg-gray-50"
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tone}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-900">{label}</p>
+                    {hint && <p className="text-xs text-gray-500">{hint}</p>}
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-300" />
+                </button>
+              ))}
             </div>
+          </section>
+        ))}
+
+        {/* Account actions */}
+        <section>
+          <div className="rounded-[18px] bg-white border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden">
             <button
-              onClick={handleShareReferral}
-              className="shrink-0 bg-[#F35B1C] hover:bg-[#E64D02] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest shadow-md transition-colors"
+              onClick={() => setShowLogoutConfirm(true)}
+              className="flex w-full items-center gap-3 p-4 text-left active:bg-[#FEF2F2]"
             >
-              Share
+              <div className="w-10 h-10 rounded-xl bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center shrink-0">
+                <LogOut className="w-5 h-5" />
+              </div>
+              <span className="flex-1 text-sm font-bold text-[#DC2626]">Log out</span>
+            </button>
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="flex w-full items-center gap-3 p-4 text-left active:bg-[#FEF2F2]"
+            >
+              <div className="w-10 h-10 rounded-xl bg-[#FEF2F2] text-[#DC2626] flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-[#DC2626]">Delete account</p>
+                <p className="text-xs text-gray-500">Permanently deactivate your account</p>
+              </div>
             </button>
           </div>
-
-          {/* Subscription Section */}
-          {/* <div>
-            <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3 px-1">Subscription</h3>
-            <div
-              onClick={() => navigate("/food/delivery/subscription")}
-              className="bg-white rounded-xl p-4 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <CreditCard className="w-5 h-5 text-gray-700" />
-                <span className="text-sm font-bold text-gray-900">Partner Subscription</span>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-300" />
-            </div>
-          </div> */}
-
-          {/* Support Section */}
-          <div>
-            <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mb-3 px-1">Support</h3>
-            <div
-              onClick={() => navigate("/food/delivery/help/tickets")}
-              className="bg-white rounded-xl p-4 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Ticket className="w-5 h-5 text-gray-700" />
-                <span className="text-sm font-bold text-gray-900">Support tickets</span>
-              </div>
-              <ArrowRight className="w-5 h-5 text-gray-300" />
-            </div>
-          </div>
-
-          {/* Partner options Section */}
-          {/* Logout Section */}
-          <div className="pt-4 space-y-3">
-            <div 
-              onClick={() => setShowLogoutConfirm(true)}
-              className="bg-white rounded-xl p-4 flex items-center justify-between cursor-pointer border border-red-50 hover:bg-red-50/30 active:bg-red-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <LogOut className="w-5 h-5 text-red-600" />
-                <span className="text-sm font-bold text-red-600">Log out</span>
-              </div>
-              <ArrowRight className="w-5 h-5 text-red-100" />
-            </div>
-
-            <div 
-              onClick={() => setShowDeleteConfirm(true)}
-              className="bg-white rounded-xl p-4 flex items-center justify-between cursor-pointer border border-red-100 hover:bg-red-50/30 active:bg-red-50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Trash2 className="w-5 h-5 text-red-600" />
-                <span className="text-sm font-bold text-red-600">Delete Account</span>
-              </div>
-              <ArrowRight className="w-5 h-5 text-red-100" />
-            </div>
-          </div>
-        </div>
-      </div>
+        </section>
       </div>
 
       {/* Logout Confirm Popup */}

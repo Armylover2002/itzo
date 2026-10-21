@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { 
   ArrowLeft, ChevronDown, Loader2, Gift, X, 
-  CheckCircle2, Clock, Search, History
+  CheckCircle2, Clock, Search, History, Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { deliveryAPI } from '@food/api';
@@ -11,10 +11,7 @@ import { useDeliveryStore } from '@/modules/DeliveryV2/store/useDeliveryStore';
 import { addDeliveryNotification } from '@food/utils/deliveryNotifications';
 
 /**
- * HistoryV2 - EXACT 1:1 Match with User Screenshot.
- * Theme: Clean White
- * Accent: Emerald Green (#F35B1C)
- * Font: Poppins
+ * HistoryV2 - delivery partner trip history (rendered inside DeliveryHomeV2).
  */
 export const HistoryV2 = () => {
   const goBack = useDeliveryBackNavigation();
@@ -248,150 +245,155 @@ export const HistoryV2 = () => {
     return `${qty}x ${name}${items.length > 1 ? ` +${items.length - 1} more` : ''}`;
   }
 
+  const moduleOptions = ['all', ...(availableModules || []).map(normalizeModuleFilter)];
+  const completedCount = visibleTrips.filter((trip) => (trip.status || '').toLowerCase() === 'completed').length;
+
+  // No inner scroll container here: DeliveryHomeV2's content area scrolls this page.
+  // A nested overflow box with overscroll containment swallowed touch/wheel scrolling.
   return (
-    <div className="app-shell-page min-h-screen bg-white font-poppins">
-       {/* 1. Header (Premium V2 Styled) */}
-       <div className="app-shell-page__header safe-top bg-[#121212] border-b border-white/10 px-6 py-3 flex items-center justify-between backdrop-blur-2xl">
-          <div className="flex items-center gap-4">
-            <button onClick={goBack} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white border border-white/10 active:scale-90 transition-all">
-               <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-               <h1 className="text-xl font-black text-white uppercase tracking-tighter">Trip History</h1>
-               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">Your delivery milestones</p>
-            </div>
-          </div>
-          <button onClick={() => setShowBonusModal(true)} className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center text-[#F35B1C] border border-green-500/20 relative active:scale-90 transition-all">
-             <Gift className="w-5 h-5" />
-             {bonusCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#F35B1C] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                   {bonusCount}
-                </span>
-             )}
-          </button>
-       </div>
-
-       {/* Tabs + filters stay pinned with the header in native WebView */}
-       <div className="app-shell-page__header bg-white border-b border-gray-100">
-       {/* 2. Selection Tabs (Matched to Image) */}
-       <div className="px-4 flex items-center gap-8 border-b border-gray-100">
-          {['daily', 'weekly', 'monthly'].map((tab) => (
-             <button
-               key={tab}
-               onClick={() => setActiveTab(tab)}
-               className={`py-4 text-base font-medium capitalize relative ${activeTab === tab ? 'text-[#F35B1C]' : 'text-gray-400'}`}
-             >
-                {tab}
-                {activeTab === tab && <motion.div layoutId="tab-indicator" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F35B1C]" />}
-             </button>
-          ))}
-       </div>
-
-       {/* 3. Filter Controls (Matched to Image) */}
-       <div className="px-4 py-4 flex flex-col gap-3">
-          {availableModules && availableModules.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => setActiveModuleFilter('all')}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
-                  activeModuleFilter === 'all' 
-                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md' 
-                    : 'bg-white text-gray-500 border border-gray-200'
-                }`}
-              >
-                All
-              </button>
-              {availableModules.map(mod => (
-                <button
-                  key={mod}
-                  onClick={() => setActiveModuleFilter(normalizeModuleFilter(mod))}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
-                    activeModuleFilter === normalizeModuleFilter(mod)
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md' 
-                      : 'bg-white text-gray-500 border border-gray-200'
-                  }`}
-                >
-                  {normalizeModuleFilter(mod).replace('_', ' ')}
+    <div className="min-h-full bg-[#F4F5F7] font-poppins">
+       {/* Header + tabs + filters stay pinned together */}
+       <div className="sticky top-0 z-[100] safe-top bg-white border-b border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+          <div className="px-4 pt-4 pb-3 flex items-center justify-between gap-3">
+             <div className="flex items-center gap-3 min-w-0">
+                <button onClick={goBack} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 active:scale-90 transition-all shrink-0" aria-label="Back">
+                   <ArrowLeft className="w-[18px] h-[18px]" />
                 </button>
-              ))}
-            </div>
-          )}
-          <div className="flex gap-3 w-full">
-            <button 
-               onClick={() => { setShowDatePicker(!showDatePicker); setShowTripTypePicker(false); }}
-               className="flex-1 px-4 py-3 bg-[#f8f9fa] border border-gray-100 rounded-xl flex items-center justify-between text-gray-800"
-            >
-               <span className="text-sm font-medium">{formatDateDisplay(selectedDate)}</span>
-               <ChevronDown className={`w-4 h-4 text-gray-400 transform transition-transform ${showDatePicker ? 'rotate-180' : ''}`} />
-            </button>
-            <button 
-               onClick={() => { setShowTripTypePicker(!showTripTypePicker); setShowDatePicker(false); }}
-               className="w-[140px] px-4 py-3 bg-[#f8f9fa] border border-gray-100 rounded-xl flex items-center justify-between text-gray-800"
-            >
-               <span className="text-sm font-medium">{selectedTripType}</span>
-               <ChevronDown className={`w-4 h-4 text-gray-400 transform transition-transform ${showTripTypePicker ? 'rotate-180' : ''}`} />
-            </button>
+                <div className="min-w-0">
+                   <h1 className="text-[22px] font-extrabold text-gray-900 leading-tight">Trip History</h1>
+                   <p className="text-xs font-medium text-gray-500">Your deliveries &amp; earnings</p>
+                </div>
+             </div>
+             <button
+                onClick={() => setShowBonusModal(true)}
+                className="relative w-10 h-10 rounded-xl bg-[#FFF4ED] flex items-center justify-center text-[#F35B1C] active:scale-90 transition-all shrink-0"
+                aria-label="Bonuses"
+             >
+                <Gift className="w-5 h-5" />
+                {bonusCount > 0 && (
+                   <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-[#F35B1C] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                      {bonusCount}
+                   </span>
+                )}
+             </button>
+          </div>
+
+          {/* Period segmented control */}
+          <div className="px-4">
+             <div className="grid grid-cols-3 rounded-xl bg-gray-100 p-1">
+                {['daily', 'weekly', 'monthly'].map((tab) => (
+                   <button
+                     key={tab}
+                     onClick={() => setActiveTab(tab)}
+                     className={`relative py-2 text-sm font-bold capitalize rounded-lg transition-colors ${activeTab === tab ? 'text-[#F35B1C]' : 'text-gray-500'}`}
+                   >
+                      {activeTab === tab && <motion.div layoutId="history-period" className="absolute inset-0 rounded-lg bg-white shadow-sm" />}
+                      <span className="relative">{tab}</span>
+                   </button>
+                ))}
+             </div>
+          </div>
+
+          {/* Filters */}
+          <div className="px-4 py-3 flex flex-col gap-3">
+             {availableModules && availableModules.length > 0 && (
+               <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                 {moduleOptions.map((mod) => (
+                   <button
+                     key={mod}
+                     onClick={() => setActiveModuleFilter(mod)}
+                     className={`px-4 py-1.5 rounded-full text-xs font-bold capitalize whitespace-nowrap transition-all ${
+                       activeModuleFilter === mod
+                         ? 'bg-[#F35B1C] text-white shadow-md shadow-[#F35B1C]/25'
+                         : 'bg-white text-gray-600 border border-gray-200'
+                     }`}
+                   >
+                     {mod === 'all' ? 'All' : mod.replace('_', ' ')}
+                   </button>
+                 ))}
+               </div>
+             )}
+
+             <div className="relative flex gap-3 w-full">
+               <button
+                  onClick={() => { setShowDatePicker(!showDatePicker); setShowTripTypePicker(false); }}
+                  className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between gap-2 text-gray-800"
+               >
+                  <span className="flex items-center gap-2 text-sm font-semibold truncate">
+                     <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                     {formatDateDisplay(selectedDate)}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${showDatePicker ? 'rotate-180' : ''}`} />
+               </button>
+               <button
+                  onClick={() => { setShowTripTypePicker(!showTripTypePicker); setShowDatePicker(false); }}
+                  className="w-[140px] px-4 py-2.5 bg-white border border-gray-200 rounded-xl flex items-center justify-between gap-2 text-gray-800"
+               >
+                  <span className="text-sm font-semibold capitalize truncate">{selectedTripType === 'ALL TRIPS' ? 'All trips' : selectedTripType}</span>
+                  <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${showTripTypePicker ? 'rotate-180' : ''}`} />
+               </button>
+
+               {/* Dropdowns open right under their buttons */}
+               <AnimatePresence>
+                  {showDatePicker && (
+                     <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute left-0 right-[152px] top-full mt-2 z-[200] bg-white rounded-2xl shadow-2xl border border-gray-100 max-h-[300px] overflow-y-auto p-1.5">
+                        {recentDates.map((date, idx) => (
+                           <button
+                              key={idx}
+                              onClick={() => { setSelectedDate(date); setShowDatePicker(false); }}
+                              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm ${date.toDateString() === selectedDate.toDateString() ? 'bg-[#FFF4ED] text-[#F35B1C] font-bold' : 'text-gray-700 font-medium hover:bg-gray-50'}`}
+                           >
+                              {formatDateDisplay(date)}
+                           </button>
+                        ))}
+                     </motion.div>
+                  )}
+                  {showTripTypePicker && (
+                     <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute right-0 top-full mt-2 w-48 z-[200] bg-white rounded-2xl shadow-2xl border border-gray-100 p-1.5">
+                        {tripTypes.map((type, idx) => (
+                           <button
+                              key={idx}
+                              onClick={() => { setSelectedTripType(type); setShowTripTypePicker(false); }}
+                              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm capitalize ${type === selectedTripType ? 'bg-[#FFF4ED] text-[#F35B1C] font-bold' : 'text-gray-700 font-medium hover:bg-gray-50'}`}
+                           >
+                              {type === 'ALL TRIPS' ? 'All trips' : type}
+                           </button>
+                        ))}
+                     </motion.div>
+                  )}
+               </AnimatePresence>
+             </div>
           </div>
        </div>
-       </div>
 
-       <div className="app-shell-page__body pb-32">
-       {/* Dropdowns */}
-       <AnimatePresence>
-          {showDatePicker && (
-             <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="fixed left-4 right-4 top-[230px] z-[200] bg-white rounded-2xl shadow-2xl border border-gray-100 max-h-[300px] overflow-y-auto p-2">
-                {recentDates.map((date, idx) => (
-                   <button 
-                      key={idx} 
-                      onClick={() => { setSelectedDate(date); setShowDatePicker(false); }}
-                      className={`w-full text-left p-4 rounded-xl text-sm font-medium ${date.toDateString() === selectedDate.toDateString() ? 'bg-green-50 text-[#F35B1C] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
-                   >
-                      {formatDateDisplay(date)}
-                   </button>
-                ))}
-             </motion.div>
-          )}
-          {showTripTypePicker && (
-             <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="fixed right-4 top-[230px] w-48 z-[200] bg-white rounded-2xl shadow-2xl border border-gray-100 p-2">
-                {tripTypes.map((type, idx) => (
-                   <button 
-                      key={idx} 
-                      onClick={() => { setSelectedTripType(type); setShowTripTypePicker(false); }}
-                      className={`w-full text-left p-4 rounded-xl text-sm font-medium ${type === selectedTripType ? 'bg-green-50 text-[#F35B1C] font-bold' : 'text-gray-700 hover:bg-gray-50'}`}
-                   >
-                      {type}
-                   </button>
-                ))}
-             </motion.div>
-          )}
-       </AnimatePresence>
-
-       {/* 4. Page Content */}
-       <div className="px-4 py-2 space-y-5">
-          {/* Performance Summary Banner (Matched to Image) */}
-          <div className="bg-[#E9F9F4] rounded-2xl p-6 border border-[#D1F2E8] flex justify-between items-center">
+       <div className="px-4 pt-4 pb-6 space-y-4">
+          {/* Summary */}
+          <div className="grid grid-cols-3 gap-2 rounded-[20px] bg-gradient-to-br from-[#F35B1C] to-[#FF8A4C] p-4 text-white shadow-lg shadow-[#F35B1C]/20">
              <div>
-                <p className="text-[11px] font-bold text-[#F35B1C] mb-1">COD Collected</p>
-                <h3 className="text-xl font-bold text-gray-950">₹{metrics.cod.toFixed(2)}</h3>
+                <p className="text-[11px] font-semibold text-white/80">Earnings</p>
+                <p className="mt-1 text-lg font-extrabold leading-none truncate">₹{metrics.earnings.toFixed(2)}</p>
              </div>
-             <div className="text-right">
-                <p className="text-[11px] font-bold text-[#F35B1C] mb-1">Earnings</p>
-                <h3 className="text-xl font-bold text-gray-950">₹{metrics.earnings.toFixed(2)}</h3>
+             <div className="border-l border-white/25 pl-3">
+                <p className="text-[11px] font-semibold text-white/80">COD collected</p>
+                <p className="mt-1 text-lg font-extrabold leading-none truncate">₹{metrics.cod.toFixed(2)}</p>
+             </div>
+             <div className="border-l border-white/25 pl-3">
+                <p className="text-[11px] font-semibold text-white/80">Completed</p>
+                <p className="mt-1 text-lg font-extrabold leading-none">{completedCount}</p>
              </div>
           </div>
 
-          {/* Trip List */}
+          {/* Trip list */}
           {loading ? (
              <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Loader2 className="w-8 h-8 animate-spin text-[#F35B1C]" />
                 <p className="text-gray-400 text-xs font-medium">Fetching trips...</p>
              </div>
           ) : visibleTrips.length > 0 ? (
-             <div className="space-y-4">
+             <div className="space-y-3">
                 {visibleTrips.map((trip, idx) => {
                    const isCompleted = (trip.status || '').toLowerCase() === 'completed';
                    const isCancelled = (trip.status || '').toLowerCase() === 'cancelled';
-                   const isPending = !isCompleted && !isCancelled;
                    const payout = Number(trip.deliveryEarning || trip.amount || trip.earningAmount || 0);
                    const isCOD = (trip.paymentMethod || '').toLowerCase() === 'cash' || (trip.paymentMethod || '').toLowerCase() === 'cod';
                    const collection = isCOD ? Number(trip.codCollectedAmount || trip.orderTotal || 0) : 0;
@@ -413,60 +415,59 @@ export const HistoryV2 = () => {
                    const paidLabel = isReturnPickup
                      ? Number(trip.orderTotal || trip.totalAmount || 0)
                      : (isCOD ? collection : Number(trip.orderTotal || trip.totalAmount || 0));
+                   const statusTone = isCompleted
+                     ? 'bg-[#ECFDF5] text-[#16A34A]'
+                     : isCancelled
+                       ? 'bg-[#FEF2F2] text-[#DC2626]'
+                       : 'bg-[#FEF3C7] text-[#B45309]';
 
                    return (
-                      <div key={tripKey} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm active:scale-[0.99] transition-all">
-                         <div className="flex justify-between items-start mb-2">
-                             <div className="flex items-start gap-2">
-                                <div>
-                                  <h4 className="text-base font-bold text-gray-950">{trip.orderId || 'ORDER-ID'}</h4>
-                                  <p className="text-sm font-medium text-gray-500 mt-0.5">
-                                    {isReturnPickup
-                                      ? 'Return Pickup'
-                                      : (trip.restaurant || trip.restaurantName || trip.pickupPoints?.[0]?.name || trip.items?.[0]?.sourceName || 'Store')}
-                                  </p>
-                                  <p className="text-xs text-gray-400 font-medium mt-0.5 line-clamp-1">{extractItems(trip)}</p>
-                                </div>
-                             </div>
-                             <span className={`text-sm font-bold ${isCompleted ? 'text-[#F35B1C]' : isCancelled ? 'text-red-500' : 'text-red-500'}`}>
-                                {trip.status || 'Status'}
-                             </span>
-                         </div>
-                         
-                         <div className="flex gap-2 mb-4 mt-3">
-                             {isReturnPickup ? (
-                               <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-700">
-                                 Return Pickup
-                               </span>
-                             ) : (
-                               <span className="text-[10px] font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-600">
-                                 Delivery
-                               </span>
-                             )}
-                             <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${isCOD ? 'bg-red-50 text-red-600' : 'bg-green-50 text-[#F35B1C]'}`}>
-                                {isCOD ? 'COD' : 'Online'}
-                             </span>
+                      <div key={tripKey} className="bg-white rounded-[18px] p-4 border border-gray-100 shadow-sm">
+                         <div className="flex justify-between items-start gap-3">
+                            <div className="min-w-0">
+                               <h4 className="text-[15px] font-bold text-gray-900 truncate">{trip.orderId || 'ORDER-ID'}</h4>
+                               <p className="text-sm font-medium text-gray-600 mt-0.5 truncate">
+                                 {isReturnPickup
+                                   ? 'Return Pickup'
+                                   : (trip.restaurant || trip.restaurantName || trip.pickupPoints?.[0]?.name || trip.items?.[0]?.sourceName || 'Store')}
+                               </p>
+                               <p className="text-xs text-gray-400 font-medium mt-0.5 line-clamp-1">{extractItems(trip)}</p>
+                            </div>
+                            <span className={`shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full ${statusTone}`}>
+                               {trip.status || 'Status'}
+                            </span>
                          </div>
 
-                         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-50">
-                             <div>
-                                <p className="text-[11px] font-medium text-gray-400 mb-1">Time</p>
-                                <p className="text-sm font-bold text-gray-950">{trip.time || '--:--'}</p>
-                             </div>
-                             <div className="text-center">
-                                <p className="text-[11px] font-medium text-gray-400 mb-1">
-                                  {isReturnPickup ? 'Refund' : (isCOD ? 'COD' : 'Paid')}
-                                </p>
-                                <p className="text-sm font-bold text-gray-950">₹{Number(paidLabel || 0).toFixed(2)}</p>
-                             </div>
-                             <div className="text-right">
-                                <p className="text-[11px] font-medium text-gray-400 mb-1">Earning</p>
-                                <p className="text-sm font-bold text-gray-950">₹{payout.toFixed(2)}</p>
-                             </div>
+                         <div className="flex gap-2 mt-3">
+                            {isReturnPickup ? (
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-md bg-[#FEF3C7] text-[#B45309]">Return pickup</span>
+                            ) : (
+                              <span className="text-[10px] font-bold px-2.5 py-1 rounded-md bg-gray-100 text-gray-600">Delivery</span>
+                            )}
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md ${isCOD ? 'bg-[#FFF4ED] text-[#F35B1C]' : 'bg-[#EEF4FF] text-[#2563EB]'}`}>
+                               {isCOD ? 'COD' : 'Online'}
+                            </span>
+                         </div>
+
+                         <div className="grid grid-cols-3 gap-3 mt-3 rounded-xl bg-gray-50 px-3 py-2.5">
+                            <div>
+                               <p className="text-[10px] font-medium text-gray-400">Time</p>
+                               <p className="text-sm font-bold text-gray-900">{trip.time || '--:--'}</p>
+                            </div>
+                            <div className="text-center">
+                               <p className="text-[10px] font-medium text-gray-400">
+                                 {isReturnPickup ? 'Refund' : (isCOD ? 'COD' : 'Paid')}
+                               </p>
+                               <p className="text-sm font-bold text-gray-900">₹{Number(paidLabel || 0).toFixed(2)}</p>
+                            </div>
+                            <div className="text-right">
+                               <p className="text-[10px] font-medium text-gray-400">Earning</p>
+                               <p className="text-sm font-extrabold text-[#16A34A]">₹{payout.toFixed(2)}</p>
+                            </div>
                          </div>
 
                          {isReturnPickup && (trip.pickupPricingBreakdown || Number(trip.distanceKm || trip.pickupDistanceKm) > 0 || payout > 0) && (
-                           <div className="mt-3 pt-3 border-t border-gray-50 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                           <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                              <div>
                                <p className="text-[10px] font-medium text-gray-400">Distance</p>
                                <p className="font-bold text-gray-800">
@@ -475,9 +476,7 @@ export const HistoryV2 = () => {
                              </div>
                              <div>
                                <p className="text-[10px] font-medium text-gray-400">Base Fee</p>
-                               <p className="font-bold text-gray-800">
-                                 ₹{returnBaseFee.toFixed(2)}
-                               </p>
+                               <p className="font-bold text-gray-800">₹{returnBaseFee.toFixed(2)}</p>
                              </div>
                              <div>
                                <p className="text-[10px] font-medium text-gray-400">Extra KM</p>
@@ -487,9 +486,7 @@ export const HistoryV2 = () => {
                              </div>
                              <div>
                                <p className="text-[10px] font-medium text-gray-400">Per KM</p>
-                               <p className="font-bold text-gray-800">
-                                 ₹{returnPerKm.toFixed(2)}
-                               </p>
+                               <p className="font-bold text-gray-800">₹{returnPerKm.toFixed(2)}</p>
                              </div>
                            </div>
                          )}
@@ -498,12 +495,14 @@ export const HistoryV2 = () => {
                 })}
              </div>
           ) : (
-             <div className="py-20 text-center flex flex-col items-center">
-                <Clock className="w-12 h-12 text-gray-100 mb-4" />
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">No Trips Recorded</p>
+             <div className="py-16 text-center flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-white border border-gray-100 flex items-center justify-center mb-4">
+                   <Clock className="w-7 h-7 text-gray-300" />
+                </div>
+                <p className="text-sm font-bold text-gray-700">No trips found</p>
+                <p className="mt-1 text-xs text-gray-400">Try another date or filter</p>
              </div>
           )}
-       </div>
        </div>
 
        {/* Bonus Drawer (The Gift Modal) */}
@@ -527,7 +526,7 @@ export const HistoryV2 = () => {
                    <div className="w-12 h-1 bg-gray-100 rounded-full mx-auto mb-8 shrink-0" />
                    <div className="flex items-center justify-between mb-8 shrink-0">
                       <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center text-[#F35B1C] border border-green-100">
+                         <div className="w-12 h-12 bg-[#FFF4ED] rounded-xl flex items-center justify-center text-[#F35B1C]">
                             <Gift className="w-6 h-6" />
                          </div>
                          <div>
@@ -547,7 +546,7 @@ export const HistoryV2 = () => {
                                <p className="text-sm font-medium text-gray-600 line-clamp-1">{tx.description || 'Bonus Payout'}</p>
                                <p className="text-[10px] text-gray-400 font-medium mt-1">{new Date(tx.createdAt || tx.date).toLocaleDateString()}</p>
                             </div>
-                            <span className="bg-green-100 text-[#F35B1C] text-[10px] font-bold px-3 py-1 rounded-full uppercase">DELIVERED</span>
+                            <span className="bg-[#ECFDF5] text-[#16A34A] text-[10px] font-bold px-3 py-1 rounded-full uppercase">Credited</span>
                          </div>
                       )) : (
                          <div className="py-20 text-center flex flex-col items-center">
@@ -557,7 +556,7 @@ export const HistoryV2 = () => {
                       )}
                    </div>
                    
-                   <button onClick={() => setShowBonusModal(false)} className="w-full py-5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-2xl font-bold text-base mt-8 shrink-0 active:scale-95 transition-all">Okay, Got it</button>
+                   <button onClick={() => setShowBonusModal(false)} className="w-full py-4 bg-[#F35B1C] text-white rounded-2xl font-bold text-base mt-6 shrink-0 active:scale-95 transition-all">Okay, Got it</button>
                 </motion.div>
              </div>
           )}
