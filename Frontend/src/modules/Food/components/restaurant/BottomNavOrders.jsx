@@ -57,50 +57,30 @@ export default function BottomNavOrders() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-[60]">
-      <div className="relative bg-white dark:bg-[#1a1a1a] border-t border-gray-200 dark:border-gray-800 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-        <div className="flex items-center justify-around h-auto px-2 sm:px-4">
-          {tabs.map((tab, index) => {
+    // Floating rounded bar; the wrapper lets taps through around it.
+    <div className="fixed bottom-0 left-0 right-0 z-[60] px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pointer-events-none">
+      <div className="pointer-events-auto mx-auto max-w-md rounded-[28px] bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 shadow-[0_4px_24px_rgba(0,0,0,0.12)] p-1.5">
+        <div className="flex items-center justify-around gap-1">
+          {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = activeTab === tab.id
-            const isLast = index === tabs.length - 1
 
             return (
-              <div key={tab.id} className="flex flex-1 items-center">
-                <button
-                  onClick={() => handleTabClick(tab)}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`flex flex-1 flex-col items-center gap-1.5 px-2 sm:px-3 py-2 transition-all duration-200 relative w-full ${
-                    isActive
-                      ? "text-[#10335D]"
-                      : "text-gray-600 dark:text-gray-400"
-                  }`}
-                >
-                  <Icon
-                    className={`h-5 w-5 ${
-                      isActive
-                        ? "text-[#10335D] fill-[#10335D]"
-                        : "text-gray-600 dark:text-gray-400"
-                    }`}
-                    strokeWidth={isActive ? 2 : 2}
-                  />
-                  <span
-                    className={`text-xs sm:text-sm font-medium ${
-                      isActive
-                        ? "text-[#10335D] font-semibold"
-                        : "text-gray-600 dark:text-gray-400"
-                    }`}
-                  >
-                    {tab.label}
-                  </span>
-                  {isActive && (
-                    <div className="absolute top-0 left-0 right-0 h-0.5 bg-[#10335D] rounded-b-full" />
-                  )}
-                </button>
-                {!isLast && (
-                  <div className="h-8 w-px bg-gray-300 dark:bg-gray-700" />
-                )}
-              </div>
+              <button
+                key={tab.id}
+                onClick={() => handleTabClick(tab)}
+                aria-current={isActive ? "page" : undefined}
+                className={`flex flex-1 flex-col items-center gap-1 rounded-[22px] px-2 py-2 transition-all duration-200 ${
+                  isActive
+                    ? "bg-[var(--rt-primary-soft)] text-[var(--rt-primary)]"
+                    : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 2} />
+                <span className={`text-[11px] ${isActive ? "font-bold" : "font-medium"}`}>
+                  {tab.label}
+                </span>
+              </button>
             )
           })}
         </div>

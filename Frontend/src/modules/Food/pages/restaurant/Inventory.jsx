@@ -2039,7 +2039,7 @@ export default function Inventory() {
   return (
     <div className="min-h-screen bg-[#f3f5f8] flex flex-col lg:h-screen lg:overflow-hidden">
       {/* Navbar */}
-      <div className="sticky top-0 z-50 bg-white">
+      <div className="sticky top-0 z-50 bg-[#f3f5f8]">
         <RestaurantNavbar
           showSearch={false}
           showOfflineOnlineTag={false}

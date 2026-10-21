@@ -561,38 +561,38 @@ export default function Feedback() {
 
   return (
     <div className="min-h-full bg-gray-100 flex flex-col lg:bg-slate-50" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-      <div className="sticky bg-white top-0 z-40 px-4 py-3 border-b border-gray-200 lg:backdrop-blur lg:bg-white/95">
+      <div className="sticky top-0 z-40 px-4 pt-3 pb-4 bg-[var(--rt-primary)] rounded-b-[24px] shadow-lg shadow-black/10 lg:rounded-none lg:shadow-none lg:pb-3 lg:border-b lg:border-gray-200 lg:backdrop-blur lg:bg-white/95">
         <div className="lg:max-w-6xl lg:mx-auto lg:px-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] tracking-wider text-gray-500 uppercase lg:text-xs">Showing data for</p>
-              <p className="text-md font-bold text-gray-900 lg:text-2xl">{restaurantData?.name || "Restaurant"}</p>
+              <p className="text-[10px] tracking-wider text-white/75 uppercase lg:text-xs lg:text-gray-500">Showing data for</p>
+              <p className="text-md font-bold text-white lg:text-2xl lg:text-gray-900">{restaurantData?.name || "Restaurant"}</p>
               <p className="hidden lg:block text-sm text-gray-500 mt-0.5">Complaints and customer reviews</p>
             </div>
             <div className="flex items-center gap-2 lg:hidden">
               <button
                 type="button"
                 onClick={() => navigate("/food/restaurant/notifications")}
-                className="p-1 rounded-full hover:bg-gray-100 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:scale-95 transition-all"
                 aria-label="Open notifications"
               >
-                <Bell className="w-6 h-6 text-gray-700" />
+                <Bell className="w-[18px] h-[18px] text-white" />
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/food/restaurant/help-centre/support")}
-                className="p-1 rounded-full hover:bg-gray-100 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:scale-95 transition-all"
                 aria-label="Open support"
               >
-                <HelpCircle className="w-6 h-6 text-gray-700" />
+                <HelpCircle className="w-[18px] h-[18px] text-white" />
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/food/restaurant/explore")}
-                className="p-1 rounded-full hover:bg-gray-100 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:scale-95 transition-all"
                 aria-label="Open explore"
               >
-                <Menu className="w-6 h-6 text-gray-700" />
+                <Menu className="w-[18px] h-[18px] text-white" />
               </button>
             </div>
           </div>
@@ -606,7 +606,7 @@ export default function Feedback() {
                   setSearchParams(tab.id === "complaints" ? { tab: "complaints" } : {})
                 }}
                 className={`px-6 py-2 rounded-full text-sm font-bold transition-all lg:px-8 lg:py-2.5 ${
-                  activeTab === tab.id ? "bg-[#10335D] text-white shadow-lg shadow-[#10335D]/20" : "bg-white text-gray-600 border border-gray-200 lg:bg-slate-100 lg:border-slate-200"
+                  activeTab === tab.id ? "bg-white text-[var(--rt-primary)] shadow-md lg:bg-[var(--rt-primary)] lg:text-white" : "bg-white/15 text-white border border-white/30 lg:bg-slate-100 lg:text-gray-600 lg:border-slate-200"
                 }`}
               >
                 {tab.label}
@@ -648,7 +648,7 @@ export default function Feedback() {
                   <p className="text-sm text-gray-500 font-medium">No complaints found</p>
                 </div>
               ) : (
-                <div className="space-y-4 pb-20 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0 xl:grid-cols-2">
+                <div className="space-y-4 pb-28 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0 xl:grid-cols-2">
                   {complaints.map((complaint) => (
                     <div key={complaint._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3 lg:p-5 lg:border-slate-200 lg:shadow-md hover:shadow-lg transition-shadow">
                       <div className="flex justify-between items-center">
@@ -728,7 +728,7 @@ export default function Feedback() {
                 <p className="text-sm text-gray-500 font-medium">No reviews found</p>
               </div>
             ) : (
-            <div className="space-y-4 pb-20 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0 xl:grid-cols-2">
+            <div className="space-y-4 pb-28 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0 xl:grid-cols-2">
               {displayedReviews.map((review) => (
                 <div key={review.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3 lg:p-5 lg:border-slate-200 lg:shadow-md hover:shadow-lg transition-shadow">
                   <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase">

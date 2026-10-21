@@ -901,37 +901,37 @@ export default function ExploreMore() {
           duration: 0.25,
           ease: [0.25, 0.1, 0.25, 1]
         }}
-        className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-50 backdrop-blur bg-white/95"
+        className="sticky top-0 z-50 px-4 pt-3 pb-4 bg-[var(--rt-primary)] rounded-b-[24px] shadow-lg shadow-black/10 lg:rounded-none lg:shadow-none lg:pb-3 lg:border-b lg:border-gray-200 lg:backdrop-blur lg:bg-white/95"
       >
         <div className="flex items-center justify-between lg:max-w-6xl lg:mx-auto lg:px-4 lg:py-2 lg:w-full">
           <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => navigate("/food/restaurant")}
-              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+              className="w-9 h-9 flex items-center justify-center bg-white/20 rounded-full transition-colors lg:hidden"
               aria-label="Go back"
             >
-              <ArrowLeft className="w-6 h-6 text-gray-900" />
+              <ArrowLeft className="w-5 h-5 text-white" />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-gray-900 lg:text-2xl">Explore more</h1>
+              <h1 className="text-lg font-bold text-white lg:text-2xl lg:text-gray-900">Explore more</h1>
               <p className="hidden text-sm text-gray-500 lg:block">Manage outlet, settings, orders, and account tools</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSearchOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white/20 rounded-full transition-colors lg:bg-transparent lg:hover:bg-gray-100"
               aria-label="Search"
             >
-              <Search className="w-5 h-5 text-gray-900" />
+              <Search className="w-[18px] h-[18px] text-white lg:text-gray-900" />
             </button>
             <button
               onClick={() => setProfileOpen(true)}
-              className="p-2 hover:bg-gray-100 bg-gray-200 rounded-full transition-colors overflow-hidden flex items-center justify-center"
+              className="w-9 h-9 bg-white rounded-full transition-colors overflow-hidden flex items-center justify-center lg:bg-gray-200"
               aria-label="Profile"
             >
               {userData.profileImage?.url ? (
-                <img src={userData.profileImage.url} alt="Profile" className="w-5 h-5 object-cover rounded-full" />
+                <img src={userData.profileImage.url} alt="Profile" className="w-full h-full object-cover rounded-full" />
               ) : (
                 <UserRound className="w-5 h-5 text-gray-900" />
               )}

@@ -2343,7 +2343,7 @@ case "cancelled":
     return (
     <div className="flex-1 flex flex-col h-full bg-gray-100 md:bg-slate-50 md:overflow-hidden overflow-x-hidden">
       {/* Restaurant Navbar - Sticky at top (Mobile only) */}
-      <div className="sticky top-0 z-50 bg-white md:hidden">
+      <div className="sticky top-0 z-50 bg-gray-100 md:hidden">
         <RestaurantNavbar 
           showNotifications={true} 
           searchValue={searchQuery}

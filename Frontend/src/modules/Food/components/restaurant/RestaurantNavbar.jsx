@@ -385,24 +385,24 @@ export default function RestaurantNavbar({
   }
 
   return (
-    <div className="w-full bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+    <div className="w-full bg-[var(--rt-primary)] text-white rounded-b-[24px] shadow-lg shadow-black/10 px-4 pt-3 pb-4 flex items-center justify-between">
       {/* Left Side - Restaurant Info */}
       <div className="flex-1 min-w-0 pr-4 flex items-center gap-3">
         {logoUrl && (
-          <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain rounded-lg" />
+          <img src={logoUrl} alt="Logo" className="h-10 w-10 object-contain rounded-xl bg-white p-0.5 shrink-0" />
         )}
         <div className="min-w-0">
           {/* Restaurant Name & Company */}
           <div className="flex items-baseline gap-1.5 min-w-0">
-            <h1 className="text-[15px] font-bold text-gray-900 truncate">
+            <h1 className="text-[15px] font-bold text-white truncate">
               {loading ? "Loading..." : (restaurantName || "Restaurant")}
             </h1>
 
           </div>
           {!loading && location && location.trim() !== "" && (
             <div className="flex items-center gap-1 mt-0.5 opacity-80">
-              <MapPin className="w-2.5 h-2.5 text-gray-500 shrink-0" />
-              <p className="text-[10px] text-gray-500 truncate font-medium" title={location}>
+              <MapPin className="w-2.5 h-2.5 text-white/80 shrink-0" />
+              <p className="text-[10px] text-white/80 truncate font-medium" title={location}>
                 {location}
               </p>
             </div>
@@ -416,19 +416,13 @@ export default function RestaurantNavbar({
         {showOfflineOnlineTag && (
           <button
             onClick={handleStatusClick}
-            className={`flex items-center gap-1.5 px-2 py-1 border rounded-full hover:opacity-80 transition-all ${displayStatus === "Online"
-                ? "bg-[#10335D]/10 border-[#10335D]/30"
-                : "bg-gray-100 border-gray-300"
-              }`}
+            className="flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full bg-white shadow-sm hover:opacity-90 transition-all"
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${displayStatus === "Online" ? "bg-[#10335D]" : "bg-gray-500"
-              }`}></span>
-            <span className={`text-sm font-medium ${displayStatus === "Online" ? "text-[#10335D]" : "text-gray-700"
-              }`}>
+            <span className={`w-2 h-2 rounded-full ${displayStatus === "Online" ? "bg-[#22C55E]" : "bg-gray-400"}`}></span>
+            <span className={`text-sm font-semibold ${displayStatus === "Online" ? "text-[#15803D]" : "text-gray-600"}`}>
               {displayStatus}
             </span>
-            <ChevronRight className={`w-4 h-4 ${displayStatus === "Online" ? "text-[#10335D]" : "text-gray-700"
-              }`} />
+            <ChevronRight className="w-4 h-4 text-gray-400" />
           </button>
         )}
 
@@ -436,10 +430,10 @@ export default function RestaurantNavbar({
         {showSearch && (
           <button
             onClick={handleSearchClick}
-            className="p-2 ml-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="w-9 h-9 ml-1.5 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
             aria-label="Search"
           >
-            <Search className="w-5 h-5 text-gray-700" />
+            <Search className="w-[18px] h-[18px] text-white" />
           </button>
         )}
 
@@ -447,12 +441,12 @@ export default function RestaurantNavbar({
         {showNotifications && (
           <button
             onClick={handleNotificationsClick}
-            className="relative p-2 ml-1 hover:bg-gray-100 rounded-full transition-colors"
+            className="relative w-9 h-9 ml-1.5 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
             aria-label="Notifications"
           >
-            <Bell className="w-5 h-5 text-gray-700" />
+            <Bell className="w-[18px] h-[18px] text-white" />
             {unreadCount > 0 && (
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-red-500 border border-white" />
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-[#FACC15] border border-white" />
             )}
           </button>
         )}
@@ -460,10 +454,10 @@ export default function RestaurantNavbar({
         {/* Hamburger Menu Icon */}
         <button
           onClick={handleMenuClick}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="w-9 h-9 ml-1.5 flex items-center justify-center bg-white/20 hover:bg-white/30 rounded-full transition-colors"
           aria-label="Menu"
         >
-          <Menu className="w-5 h-5 text-gray-700" />
+          <Menu className="w-[18px] h-[18px] text-white" />
         </button>
       </div>
     </div>
