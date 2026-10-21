@@ -42,11 +42,19 @@ export default function RestaurantDetailsSummary({
   const isClosedBySchedule =
     isRestaurantOffline &&
     !getRestaurantAvailabilityStatus(restaurant, now, { ignoreOperationalStatus: true }).isOpen;
+<<<<<<< HEAD
   const nextOpening = isClosedBySchedule ? getNextOpening(restaurant, now) : null;
   const isOpeningSoon = Boolean(nextOpening && nextOpening.minutesUntilOpen <= OPENING_SOON_MINUTES);
   // Manually offline within working hours: show today's hours instead of a guessed reopening time.
   const todayTimingsLabel =
     isRestaurantOffline && !isClosedBySchedule ? getTodayTimingsLabel(restaurant, now) : null;
+=======
+  const nextOpeningLabel = isClosedBySchedule ? getNextOpeningLabel(restaurant, now) : null;
+  // Manually offline within working hours: show today's hours instead of a guessed reopening time.
+  const todayTimingsLabel =
+    isRestaurantOffline && !isClosedBySchedule ? getTodayTimingsLabel(restaurant, now) : null;
+  const offlineTimeLabel = nextOpeningLabel || (todayTimingsLabel ? `Timings: ${todayTimingsLabel}` : null);
+>>>>>>> 26094ddc4b0e95ff742b27e2b4d64698f67bde7c
 
   const reviewsCount = restaurant?.reviews > 0 ? `${restaurant.reviews.toLocaleString()}+ ratings` : "No ratings";
 
@@ -99,10 +107,17 @@ export default function RestaurantDetailsSummary({
               {isOutOfService ? "Out of zone" : isRestaurantOffline ? "Offline" : "Open now"}
             </span>
 
+<<<<<<< HEAD
             {!isOutOfService && todayTimingsLabel && (
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">
                 <Clock className="h-3 w-3" />
                 Timings: {todayTimingsLabel}
+=======
+            {!isOutOfService && offlineTimeLabel && (
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">
+                <Clock className="h-3 w-3" />
+                {offlineTimeLabel}
+>>>>>>> 26094ddc4b0e95ff742b27e2b4d64698f67bde7c
               </span>
             )}
           </div>
@@ -179,7 +194,11 @@ export default function RestaurantDetailsSummary({
                 {isOutOfService
                   ? "You are outside the delivery zone. Change your location to order."
                   : isClosedBySchedule
+<<<<<<< HEAD
                     ? "This restaurant is currently closed. You can browse the menu but cannot place orders."
+=======
+                    ? `This restaurant is currently closed.${nextOpeningLabel ? ` ${nextOpeningLabel}.` : ""} You can browse the menu but cannot place orders.`
+>>>>>>> 26094ddc4b0e95ff742b27e2b4d64698f67bde7c
                     : "This restaurant is temporarily offline and will be back soon. You can browse the menu but cannot place orders."}
               </p>
             </div>
