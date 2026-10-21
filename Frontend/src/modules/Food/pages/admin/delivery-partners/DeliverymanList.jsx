@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, Download, ChevronDown, Eye, User, Star, ArrowUpDown, Settings, FileText, FileSpreadsheet, Loader2, Check, Columns, ExternalLink, Calendar, MapPin, CreditCard, Mail, Phone, Bike, FileCheck, Pencil, Save, X, Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { Search, Download, ChevronDown, Eye, User, Star, ArrowUpDown, Settings, FileText, FileSpreadsheet, Loader2, Check, Columns, ExternalLink, Calendar, MapPin, CreditCard, Mail, Phone, Bike, FileCheck, Pencil, Save, X, Plus, ChevronLeft, ChevronRight, Trash2, Upload } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@food/components/ui/dialog"
@@ -13,6 +13,56 @@ import ApprovalAuditCard from "@food/components/admin/ApprovalAuditCard"
 const debugError = () => {}
 
 const PAGE_SIZE = 30
+
+const EDIT_DETAIL_SECTIONS = [
+  {
+    title: "Personal Details",
+    fields: [
+      { key: "name", label: "Full Name", required: true },
+      { key: "phone", label: "Phone", type: "tel", required: true },
+      { key: "email", label: "Email", type: "email" },
+      { key: "address", label: "Address", wide: true },
+      { key: "city", label: "City" },
+      { key: "state", label: "State" },
+    ],
+  },
+  {
+    title: "Vehicle Details",
+    fields: [
+      { key: "vehicleType", label: "Vehicle Type" },
+      { key: "vehicleName", label: "Vehicle Name" },
+      { key: "vehicleNumber", label: "Vehicle Number", uppercase: true },
+      { key: "drivingLicenseNumber", label: "Driving License Number", uppercase: true },
+    ],
+  },
+  {
+    title: "Documents",
+    fields: [
+      { key: "panNumber", label: "PAN Number", uppercase: true },
+      { key: "aadharNumber", label: "Aadhaar Number" },
+    ],
+  },
+  {
+    title: "Bank Details",
+    fields: [
+      { key: "bankAccountHolderName", label: "Account Holder Name" },
+      { key: "bankAccountNumber", label: "Account Number" },
+      { key: "bankIfscCode", label: "IFSC Code", uppercase: true },
+      { key: "bankName", label: "Bank Name" },
+      { key: "upiId", label: "UPI ID" },
+    ],
+  },
+]
+
+const EDIT_DETAIL_FIELD_KEYS = EDIT_DETAIL_SECTIONS.flatMap((section) => section.fields.map((field) => field.key))
+
+const EDIT_PHOTO_FIELDS = [
+  { key: "profilePhoto", label: "Profile Photo" },
+  { key: "aadharPhoto", label: "Aadhaar Photo" },
+  { key: "panPhoto", label: "PAN Photo" },
+  { key: "drivingLicensePhoto", label: "Driving License Photo" },
+  { key: "vehicleImage", label: "Vehicle Image" },
+]
 
 const formatCurrency = (amount) => {
   const numericAmount = Number(amount)
@@ -70,6 +120,10 @@ export default function DeliverymanList() {
     return canPerformAdminPermissionAction(currentUser, resolvedPermissions, "food::deliveryman_management::deliveryman::list", "create")
   }, [currentUser, resolvedPermissions])
 
+  const canDelete = useMemo(() => {
+    return canPerformAdminPermissionAction(currentUser, resolvedPermissions, "food::deliveryman_management::deliveryman::list", "delete")
+  }, [currentUser, resolvedPermissions])
+
   const [searchQuery, setSearchQuery] = useState("")
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({
@@ -88,6 +142,13 @@ export default function DeliverymanList() {
   const [editValues, setEditValues] = useState({ pocketBalance: "", cashInHand: "" })
   const [savingDeliveryId, setSavingDeliveryId] = useState(null)
   const [activeUpdatingId, setActiveUpdatingId] = useState(null)
+  const [isEditDetailsOpen, setIsEditDetailsOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState(null)
+  const [editForm, setEditForm] = useState({})
+  const [editFiles, setEditFiles] = useState({})
+  const [loadingEditId, setLoadingEditId] = useState(null)
+  const [isSavingDetails, setIsSavingDetails] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
   const fetchSeqRef = useRef(0)
   const [visibleColumns, setVisibleColumns] = useState({
     si: true,
@@ -399,6 +460,130 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
       toast.error(err.response?.data?.message || "Failed to update wallet")
     } finally {
       setSavingDeliveryId(null)
+    }
+  }
+
+  const openEditDetails = async (deliveryman) => {
+    if (!canEdit) {
+      toast.error("Permission denied")
+      return
+    }
+    const deliverymanId = String(deliveryman?._id || "")
+    try {
+      setLoadingEditId(deliverymanId)
+      const response = await adminAPI.getDeliveryPartnerById(deliverymanId)
+      const details = response?.data?.data?.delivery || deliveryman
+      const form = {}
+      EDIT_DETAIL_FIELD_KEYS.forEach((key) => {
+        form[key] = details?.[key] == null ? "" : String(details[key])
+      })
+      setEditForm(form)
+      setEditFiles({})
+      setEditTarget({ ...deliveryman, ...details, walletSummary: deliveryman.walletSummary })
+      setEditValues({
+        pocketBalance: String(Number(deliveryman.pocketBalance) || 0),
+        cashInHand: String(Number(deliveryman.cashInHand) || 0),
+      })
+      setIsEditDetailsOpen(true)
+    } catch (err) {
+      debugError("Error loading delivery partner for edit:", err)
+      toast.error(err?.response?.data?.message || "Failed to load delivery partner details")
+    } finally {
+      setLoadingEditId(null)
+    }
+  }
+
+  const closeEditDetails = () => {
+    if (isSavingDetails) return
+    setIsEditDetailsOpen(false)
+    setEditTarget(null)
+    setEditForm({})
+    setEditFiles({})
+    cancelEditingWallet()
+  }
+
+  const saveEditDetails = async () => {
+    if (!editTarget) return
+    if (!String(editForm.name || "").trim()) {
+      toast.error("Name is required")
+      return
+    }
+    if (String(editForm.phone || "").replace(/\D/g, "").length < 10) {
+      toast.error("Enter a valid 10-digit phone number")
+      return
+    }
+
+    const deliverymanId = String(editTarget._id)
+    const selectedFiles = Object.entries(editFiles).filter(([, file]) => file)
+    let payload = editForm
+    if (selectedFiles.length > 0) {
+      payload = new FormData()
+      Object.entries(editForm).forEach(([key, value]) => payload.append(key, value ?? ""))
+      selectedFiles.forEach(([key, file]) => payload.append(key, file))
+    }
+
+    try {
+      setIsSavingDetails(true)
+      const response = await adminAPI.updateDeliveryPartnerDetails(deliverymanId, payload)
+      if (!response?.data?.success) {
+        toast.error(response?.data?.message || "Failed to update delivery partner")
+        return
+      }
+      const updated = response.data.data || {}
+      setDeliverymen((prev) =>
+        prev.map((item) => (String(item._id) === deliverymanId ? { ...item, ...updated } : item)),
+      )
+      setViewDetails((prev) => (prev && String(prev._id) === deliverymanId ? { ...prev, ...updated } : prev))
+
+      const walletChanged =
+        Number(editValues.pocketBalance) !== Number(editTarget.pocketBalance || 0) ||
+        Number(editValues.cashInHand) !== Number(editTarget.cashInHand || 0)
+      if (canEdit && walletChanged) {
+        await saveWalletChanges(editTarget)
+      }
+
+      toast.success(response.data.message || "Delivery partner details updated")
+      setIsEditDetailsOpen(false)
+      setEditTarget(null)
+      setEditFiles({})
+    } catch (err) {
+      debugError("Error updating delivery partner details:", err)
+      toast.error(err?.response?.data?.message || "Failed to update delivery partner")
+    } finally {
+      setIsSavingDetails(false)
+    }
+  }
+
+  const handleDeleteDeliveryman = async (deliveryman) => {
+    if (!canDelete) {
+      toast.error("Permission denied")
+      return
+    }
+    const deliverymanId = String(deliveryman?._id || "")
+    const confirmed = window.confirm(
+      `Delete ${deliveryman?.name || "this delivery partner"}'s account?\n\nThe partner will be logged out, set offline and will not be able to login again. The account will move to Deleted Accounts.`,
+    )
+    if (!confirmed) return
+
+    try {
+      setDeletingId(deliverymanId)
+      const response = await adminAPI.deleteDeliveryPartner(deliverymanId)
+      if (!response?.data?.success) {
+        toast.error(response?.data?.message || "Failed to delete delivery partner")
+        return
+      }
+      setDeliverymen((prev) => prev.filter((item) => String(item._id) !== deliverymanId))
+      setPagination((prev) => ({ ...prev, total: Math.max(0, (prev.total || 0) - 1) }))
+      if (viewDetails && String(viewDetails._id) === deliverymanId) {
+        setIsViewOpen(false)
+        setViewDetails(null)
+      }
+      toast.success(response.data.message || "Delivery partner deleted")
+    } catch (err) {
+      debugError("Error deleting delivery partner:", err)
+      toast.error(err?.response?.data?.message || "Failed to delete delivery partner")
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -756,11 +941,12 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                                   </>
                                 ) : (
                                   <button
-                                    onClick={() => startEditingWallet(dm)}
-                                    className="p-1.5 rounded bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors"
-                                    title="Edit Wallet"
+                                    onClick={() => openEditDetails(dm)}
+                                    disabled={loadingEditId === String(dm._id)}
+                                    className="p-1.5 rounded bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                                    title="Edit Details"
                                   >
-                                    <Pencil className="w-4 h-4" />
+                                    {loadingEditId === String(dm._id) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Pencil className="w-4 h-4" />}
                                   </button>
                                 )
                               )}
@@ -783,6 +969,16 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                                   ) : (
                                     dm.isActive !== false ? "Deactivate" : "Activate"
                                   )}
+                                </button>
+                              )}
+                              {canDelete && (
+                                <button
+                                  onClick={() => handleDeleteDeliveryman(dm)}
+                                  disabled={deletingId === String(dm._id)}
+                                  className="p-1.5 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                                  title="Delete Account"
+                                >
+                                  {deletingId === String(dm._id) ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                 </button>
                               )}
                             </div>
@@ -825,6 +1021,133 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
           ) : null}
         </div>
       </div>
+
+      {/* Edit Details Dialog */}
+      <Dialog open={isEditDetailsOpen} onOpenChange={(open) => { if (!open) closeEditDetails() }}>
+        <DialogContent className="max-w-3xl bg-white p-0 max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-200">
+            <DialogTitle className="text-xl font-bold text-slate-900">
+              Edit Delivery Partner{editTarget?.name ? ` · ${editTarget.name}` : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="px-6 py-4 space-y-6">
+            {EDIT_DETAIL_SECTIONS.map((section) => (
+              <div key={section.title}>
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">{section.title}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {section.fields.map((field) => (
+                    <label key={field.key} className={`block ${field.wide ? "sm:col-span-2" : ""}`}>
+                      <span className="text-xs font-medium text-slate-600">
+                        {field.label}{field.required ? <span className="text-red-500"> *</span> : null}
+                      </span>
+                      <input
+                        type={field.type || "text"}
+                        value={editForm[field.key] ?? ""}
+                        onChange={(e) => {
+                          const value = field.uppercase ? e.target.value.toUpperCase() : e.target.value
+                          setEditForm((prev) => ({ ...prev, [field.key]: value }))
+                        }}
+                        disabled={isSavingDetails}
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 disabled:bg-slate-50"
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">Photos</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {EDIT_PHOTO_FIELDS.map((photo) => {
+                  const selectedFile = editFiles[photo.key]
+                  const previewUrl = selectedFile ? URL.createObjectURL(selectedFile) : editTarget?.[photo.key]
+                  return (
+                    <div key={photo.key} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
+                      <div className="w-14 h-14 shrink-0 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center">
+                        {previewUrl ? (
+                          <img src={previewUrl} alt={photo.label} className="w-full h-full object-cover" />
+                        ) : (
+                          <FileText className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-slate-700">{photo.label}</p>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {selectedFile ? selectedFile.name : previewUrl ? "Current photo" : "Not uploaded"}
+                        </p>
+                      </div>
+                      <label className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50 ${isSavingDetails ? "pointer-events-none opacity-50" : "cursor-pointer"}`}>
+                        <Upload className="w-3.5 h-3.5" />
+                        Change
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null
+                            setEditFiles((prev) => ({ ...prev, [photo.key]: file }))
+                            e.target.value = ""
+                          }}
+                        />
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">Wallet</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="text-xs font-medium text-slate-600">Pocket Balance (₹)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editValues.pocketBalance}
+                    onChange={(e) => updateWalletFieldValue("pocketBalance", e.target.value)}
+                    disabled={isSavingDetails}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 disabled:bg-slate-50"
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-xs font-medium text-slate-600">Cash In Hand (₹)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editValues.cashInHand}
+                    onChange={(e) => updateWalletFieldValue("cashInHand", e.target.value)}
+                    disabled={isSavingDetails}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 disabled:bg-slate-50"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+          <DialogFooter className="px-6 py-4 border-t border-slate-200 flex gap-2 sm:justify-end">
+            <button
+              type="button"
+              onClick={closeEditDetails}
+              disabled={isSavingDetails}
+              className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={saveEditDetails}
+              disabled={isSavingDetails}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+            >
+              {isSavingDetails ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save Changes
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* View Details Dialog */}
       <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>

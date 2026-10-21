@@ -264,6 +264,19 @@ router.get('/delivery/:id', checkPermission('food::deliveryman_management::deliv
 router.patch('/delivery/:id/approve', checkPermission('food::deliveryman_management::deliveryman::join_request', 'edit'), adminController.approveDeliveryPartner);
 router.patch('/delivery/:id/reject', checkPermission('food::deliveryman_management::deliveryman::join_request', 'edit'), adminController.rejectDeliveryPartner);
 router.patch('/delivery/:id/active-status', checkPermission('food::deliveryman_management::deliveryman::list', 'edit'), adminController.updateDeliveryPartnerActiveStatus);
+router.patch(
+    '/delivery/:id',
+    checkPermission('food::deliveryman_management::deliveryman::list', 'edit'),
+    upload.fields([
+        { name: 'profilePhoto', maxCount: 1 },
+        { name: 'aadharPhoto', maxCount: 1 },
+        { name: 'panPhoto', maxCount: 1 },
+        { name: 'drivingLicensePhoto', maxCount: 1 },
+        { name: 'vehicleImage', maxCount: 1 },
+    ]),
+    adminController.updateDeliveryPartnerDetails
+);
+router.delete('/delivery/:id', checkPermission('food::deliveryman_management::deliveryman::list', 'delete'), adminController.deleteDeliveryPartner);
 
 // ----- Zones -----
 router.get('/zones', checkPermission('food::restaurant_management::zone_setup', 'view'), adminController.getZones);

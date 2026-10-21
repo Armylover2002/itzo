@@ -527,6 +527,16 @@ export const adminAPI = {
       { isActive: isActive !== false },
       { contextModule: "admin" },
     ),
+  /** Admin edits delivery partner details (JSON or multipart FormData with document photos). */
+  updateDeliveryPartnerDetails: (id, data) =>
+    apiClient.patch(`/food/admin/delivery/${String(id)}`, data, {
+      contextModule: "admin",
+    }),
+  /** Admin soft-deletes a delivery partner account. */
+  deleteDeliveryPartner: (id) =>
+    apiClient.delete(`/food/admin/delivery/${String(id)}`, {
+      contextModule: "admin",
+    }),
   /** GET /food/admin/delivery/support-tickets - list all delivery support tickets (query: status, priority, search, page, limit). */
   getDeliverySupportTickets: (params) =>
     apiClient.get("/food/admin/delivery/support-tickets", {

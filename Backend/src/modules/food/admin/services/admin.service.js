@@ -39,6 +39,7 @@ import { FeedbackExperience } from '../models/feedbackExperience.model.js';
 import { FoodUser } from '../../../../core/users/user.model.js';
 import { FoodAdmin } from '../../../../core/admin/admin.model.js';
 import { FoodRefreshToken } from '../../../../core/refreshTokens/refreshToken.model.js';
+import { uploadImageBuffer } from '../../../../services/upload.service.js';
 import { FoodDeliveryCashLimit } from '../models/deliveryCashLimit.model.js';
 import { FoodRestaurantWithdrawalLimit } from '../models/restaurantWithdrawalLimit.model.js';
 import { FoodDeliveryEmergencyHelp } from '../models/deliveryEmergencyHelp.model.js';
@@ -6525,7 +6526,7 @@ export async function updateDeliverySupportTicket(id, body = {}) {
 // ----- Delivery partners (approved list) -----
 export async function getDeliveryPartners(query) {
     const { page = 1, limit = 30, search } = query;
-    const filter = { status: 'approved' };
+    const filter = { status: 'approved', isDeleted: { $ne: true }, accountStatus: { $ne: 'deleted' } };
     if (search && typeof search === 'string' && search.trim()) {
         const term = search.trim();
         filter.$or = [
@@ -8029,6 +8030,86 @@ export async function updateDeliveryPartnerActiveStatus(id, isActive) {
     }
 
     return updated;
+}
+
+const ADMIN_EDITABLE_DELIVERY_TEXT_FIELDS = [
+    'name', 'email', 'countryCode', 'address', 'city', 'state',
+    'vehicleType', 'vehicleName', 'vehicleNumber',
+    'panNumber', 'aadharNumber', 'drivingLicenseNumber',
+    'bankAccountHolderName', 'bankAccountNumber', 'bankIfscCode', 'bankName', 'upiId',
+];
+
+const ADMIN_EDITABLE_DELIVERY_PHOTO_FOLDERS = {
+    profilePhoto: 'food/delivery/profile',
+    aadharPhoto: 'food/delivery/aadhar',
+    panPhoto: 'food/delivery/pan',
+    drivingLicensePhoto: 'food/delivery/driving-license',
+    vehicleImage: 'food/delivery/vehicle',
+};
+
+export async function updateDeliveryPartnerDetailsByAdmin(id, body = {}, files = {}) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+    const partner = await FoodDeliveryPartner.findById(id);
+    if (!partner) return null;
+    if (partner.isDeleted === true || partner.accountStatus === 'deleted') {
+        throw new ValidationError('Cannot edit a deleted delivery partner');
+    }
+
+    if (Object.prototype.hasOwnProperty.call(body, 'phone')) {
+        const phoneDigits = String(body.phone || '').replace(/\D/g, '').slice(-10);
+        if (phoneDigits.length !== 10) {
+            throw new ValidationError('A valid 10-digit phone number is required');
+        }
+        partner.phone = phoneDigits;
+    }
+
+    for (const field of ADMIN_EDITABLE_DELIVERY_TEXT_FIELDS) {
+        if (!Object.prototype.hasOwnProperty.call(body, field)) continue;
+        const value = String(body[field] ?? '').trim();
+        if (field === 'name' && !value) {
+            throw new ValidationError('Name is required');
+        }
+        // Empty optional values are unset so sparse unique indexes don't collide on ''.
+        partner[field] = value || undefined;
+    }
+
+    for (const [field, folder] of Object.entries(ADMIN_EDITABLE_DELIVERY_PHOTO_FOLDERS)) {
+        const file = files?.[field]?.[0];
+        if (file?.buffer) {
+            partner[field] = await uploadImageBuffer(file.buffer, folder);
+        }
+    }
+
+    try {
+        await partner.save();
+    } catch (err) {
+        if (err?.code === 11000) {
+            const field = Object.keys(err.keyPattern || err.keyValue || {})[0] || 'field';
+            throw new ConflictError(`Another delivery partner already uses this ${field}`);
+        }
+        if (err?.name === 'ValidationError') {
+            throw new ValidationError(Object.values(err.errors || {})[0]?.message || err.message);
+        }
+        throw err;
+    }
+
+    return partner.toObject();
+}
+
+export async function deleteDeliveryPartnerByAdmin(id) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+    const exists = await FoodDeliveryPartner.exists({ _id: id });
+    if (!exists) return null;
+
+    const { deleteDeliveryPartnerAccount } = await import(
+        '../../delivery/services/delivery.service.js'
+    );
+    await deleteDeliveryPartnerAccount(id);
+    await FoodDeliveryPartner.updateOne(
+        { _id: id },
+        { $set: { fcmTokens: [], fcmTokenMobile: [] } },
+    );
+    return { success: true };
 }
 
 // ----- Zones CRUD -----

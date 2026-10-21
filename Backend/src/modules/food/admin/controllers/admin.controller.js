@@ -185,6 +185,61 @@ export async function updateDeliveryPartnerActiveStatus(req, res, next) {
     }
 }
 
+export async function updateDeliveryPartnerDetails(req, res, next) {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid delivery partner id'
+            });
+        }
+
+        const partner = await adminService.updateDeliveryPartnerDetailsByAdmin(id, req.body || {}, req.files || {});
+        if (!partner) {
+            return res.status(404).json({
+                success: false,
+                message: 'Delivery partner not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Delivery partner details updated successfully',
+            data: partner
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function deleteDeliveryPartner(req, res, next) {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid delivery partner id'
+            });
+        }
+
+        const result = await adminService.deleteDeliveryPartnerByAdmin(id);
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: 'Delivery partner not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Delivery partner account deleted successfully'
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function bulkUpdateCustomersCodAccess(req, res, next) {
     try {
         const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
