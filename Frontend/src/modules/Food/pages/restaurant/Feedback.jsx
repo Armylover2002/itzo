@@ -560,44 +560,44 @@ export default function Feedback() {
   }
 
   return (
-    <div className="min-h-full bg-gray-100 flex flex-col lg:bg-slate-50" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-      <div className="sticky top-0 z-40 px-4 pt-3 pb-4 bg-[var(--rt-primary)] rounded-b-[24px] shadow-lg shadow-black/10 lg:rounded-none lg:shadow-none lg:pb-3 lg:border-b lg:border-gray-200 lg:backdrop-blur lg:bg-white/95">
+    <div className="min-h-full bg-[#F6F7F9] flex flex-col" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+      <div className="sticky top-0 z-40 safe-top bg-white/95 backdrop-blur border-b border-gray-100 px-4 pt-4 pb-3">
         <div className="lg:max-w-6xl lg:mx-auto lg:px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] tracking-wider text-white/75 uppercase lg:text-xs lg:text-gray-500">Showing data for</p>
-              <p className="text-md font-bold text-white lg:text-2xl lg:text-gray-900">{restaurantData?.name || "Restaurant"}</p>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold text-gray-500">Showing data for</p>
+              <p className="mt-0.5 text-[22px] font-extrabold text-gray-900 leading-tight truncate">{restaurantData?.name || "Restaurant"}</p>
               <p className="hidden lg:block text-sm text-gray-500 mt-0.5">Complaints and customer reviews</p>
             </div>
-            <div className="flex items-center gap-2 lg:hidden">
+            <div className="flex items-center gap-2 shrink-0 lg:hidden">
               <button
                 type="button"
                 onClick={() => navigate("/food/restaurant/notifications")}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 active:scale-95 transition-all"
                 aria-label="Open notifications"
               >
-                <Bell className="w-[18px] h-[18px] text-white" />
+                <Bell className="w-[18px] h-[18px]" />
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/food/restaurant/help-centre/support")}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 active:scale-95 transition-all"
                 aria-label="Open support"
               >
-                <HelpCircle className="w-[18px] h-[18px] text-white" />
+                <HelpCircle className="w-[18px] h-[18px]" />
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/food/restaurant/explore")}
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/20 active:scale-95 transition-all"
+                className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 text-gray-700 active:scale-95 transition-all"
                 aria-label="Open explore"
               >
-                <Menu className="w-[18px] h-[18px] text-white" />
+                <Menu className="w-[18px] h-[18px]" />
               </button>
             </div>
           </div>
-          
-          <div className="flex gap-2 mt-4 lg:mt-5">
+
+          <div className="mt-4 flex gap-1 rounded-xl bg-gray-100 p-1 lg:max-w-sm">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -605,8 +605,8 @@ export default function Feedback() {
                   setActiveTab(tab.id)
                   setSearchParams(tab.id === "complaints" ? { tab: "complaints" } : {})
                 }}
-                className={`px-6 py-2 rounded-full text-sm font-bold transition-all lg:px-8 lg:py-2.5 ${
-                  activeTab === tab.id ? "bg-white text-[var(--rt-primary)] shadow-md lg:bg-[var(--rt-primary)] lg:text-white" : "bg-white/15 text-white border border-white/30 lg:bg-slate-100 lg:text-gray-600 lg:border-slate-200"
+                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                  activeTab === tab.id ? "bg-white text-[var(--rt-primary)] shadow-sm" : "text-gray-500"
                 }`}
               >
                 {tab.label}
@@ -616,14 +616,14 @@ export default function Feedback() {
         </div>
       </div>
 
-      <div className="flex-1 p-4 lg:max-w-6xl lg:mx-auto lg:px-8 lg:py-6 lg:w-full">
+      <div className="flex-1 px-4 pt-4 pb-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:py-6 lg:w-full">
         {activeTab === "complaints" ? (
           <div className="space-y-4">
             <div className="flex gap-2 lg:gap-3">
               <button
                 type="button"
                 onClick={() => setIsDateSelectorOpen(true)}
-                className="flex-1 bg-white p-3 rounded-xl border border-gray-200 flex justify-between items-center lg:max-w-xs lg:rounded-2xl lg:px-4 lg:py-3 lg:shadow-sm hover:border-gray-300 transition-colors relative z-10"
+                className="flex-1 bg-white px-4 py-3 rounded-[18px] border border-gray-100 shadow-sm flex justify-between items-center lg:max-w-xs active:bg-gray-50 transition-colors relative z-10"
               >
                 <div className="text-left">
                   <p className="text-xs font-bold text-gray-900 lg:text-sm capitalize">{selectedDateRangeLabel}</p>
@@ -634,7 +634,7 @@ export default function Feedback() {
               <button
                 type="button"
                 onClick={() => setIsComplaintsFilterOpen(true)}
-                className="bg-white p-3 rounded-xl border border-gray-200 lg:rounded-2xl lg:px-4 lg:shadow-sm hover:border-gray-300 transition-colors relative z-10"
+                className="w-12 shrink-0 flex items-center justify-center bg-white rounded-[18px] border border-gray-100 shadow-sm active:bg-gray-50 transition-colors relative z-10"
               >
                 <SlidersHorizontal className="w-4 h-4 text-gray-900" />
               </button>
@@ -644,13 +644,13 @@ export default function Feedback() {
               {isComplaintsLoading ? (
                 <div className="flex justify-center p-10 lg:py-20"><Loader2 className="animate-spin text-gray-400" /></div>
               ) : complaints.length === 0 ? (
-                <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200 lg:py-24 lg:bg-white">
+                <div className="text-center py-16 bg-white rounded-[20px] border border-gray-100 shadow-sm lg:py-24">
                   <p className="text-sm text-gray-500 font-medium">No complaints found</p>
                 </div>
               ) : (
-                <div className="space-y-4 pb-28 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0 xl:grid-cols-2">
+                <div className="space-y-3 pb-28 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0">
                   {complaints.map((complaint) => (
-                    <div key={complaint._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3 lg:p-5 lg:border-slate-200 lg:shadow-md hover:shadow-lg transition-shadow">
+                    <div key={complaint._id} className="bg-white rounded-[18px] p-4 border border-gray-100 shadow-sm space-y-3 lg:p-5">
                       <div className="flex justify-between items-center">
                         <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${
                           complaint.status === 'open' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
@@ -659,7 +659,7 @@ export default function Feedback() {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-400">
+                        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center font-bold text-gray-500 shrink-0">
                           {complaint.userId?.name?.[0] || 'U'}
                         </div>
                         <div>
@@ -688,13 +688,13 @@ export default function Feedback() {
         ) : (
           <div className="space-y-4">
             {activeTab === "reviews" && ratingSummary.totalReviews > 0 && (
-              <div className="hidden lg:flex items-center gap-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center gap-6 rounded-[18px] border border-gray-100 bg-white p-4 shadow-sm lg:p-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#10335D] text-xl font-bold text-white">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#10335D] text-xl font-extrabold text-white">
                     {ratingSummary.averageRating}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">Average rating</p>
+                    <p className="text-sm font-bold text-gray-900">Average rating</p>
                     <p className="text-xs text-gray-500">{ratingSummary.totalReviews} reviews · {ratingSummary.totalRatings} rated orders</p>
                   </div>
                 </div>
@@ -702,7 +702,7 @@ export default function Feedback() {
             )}
 
             <div className="flex gap-2 lg:gap-3">
-              <div className="flex-1 bg-white p-3 rounded-xl border border-gray-200 flex items-center gap-2 lg:max-w-md lg:rounded-2xl lg:px-4 lg:shadow-sm">
+              <div className="flex-1 bg-white px-4 py-3 rounded-[18px] border border-gray-100 shadow-sm flex items-center gap-2 lg:max-w-md">
                 <Search className="w-4 h-4 text-gray-400" />
                 <input
                   type="text"
@@ -715,7 +715,7 @@ export default function Feedback() {
               <button
                 type="button"
                 onClick={() => setIsFilterOpen(true)}
-                className="bg-white p-3 rounded-xl border border-gray-200 lg:rounded-2xl lg:px-4 lg:shadow-sm hover:border-gray-300 transition-colors relative z-10"
+                className="w-12 shrink-0 flex items-center justify-center bg-white rounded-[18px] border border-gray-100 shadow-sm active:bg-gray-50 transition-colors relative z-10"
               >
                 <SlidersHorizontal className="w-4 h-4 text-gray-900" />
               </button>
@@ -724,19 +724,19 @@ export default function Feedback() {
             {isFilterLoading || isLoadingReviews ? (
               <div className="flex justify-center p-10 lg:py-20"><Loader2 className="animate-spin text-gray-400" /></div>
             ) : displayedReviews.length === 0 ? (
-              <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200 lg:py-24 lg:bg-white">
+              <div className="text-center py-16 bg-white rounded-[20px] border border-gray-100 shadow-sm lg:py-24">
                 <p className="text-sm text-gray-500 font-medium">No reviews found</p>
               </div>
             ) : (
-            <div className="space-y-4 pb-28 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0 xl:grid-cols-2">
+            <div className="space-y-3 pb-28 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0 lg:pb-0">
               {displayedReviews.map((review) => (
-                <div key={review.id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm space-y-3 lg:p-5 lg:border-slate-200 lg:shadow-md hover:shadow-lg transition-shadow">
+                <div key={review.id} className="bg-white rounded-[18px] p-4 border border-gray-100 shadow-sm space-y-3 lg:p-5">
                   <div className="flex items-center justify-between text-[10px] text-gray-400 font-bold uppercase">
                     <span>Order #{review.orderNumber}</span>
                     <span>{review.date}</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <img src={review.userImage} className="w-8 h-8 rounded-full border border-gray-100" />
+                    <img src={review.userImage} className="w-9 h-9 rounded-xl border border-gray-100 object-cover" />
                     <p className="font-bold text-gray-900 text-sm">{review.userName}</p>
                     <div className="ml-auto flex items-center gap-1 bg-[#10335D] text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
                       {review.rating} <Star className="w-2 h-2 fill-current" />

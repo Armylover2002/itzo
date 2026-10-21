@@ -817,21 +817,21 @@ export default function ExploreMore() {
         delay,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      className="mb-8"
+      className="mb-6 lg:mb-0"
     >
       <motion.h2
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2, delay: delay + 0.05 }}
-        className="text-base font-bold text-gray-900 mb-4 lg:text-lg"
+        className="px-1 mb-2 text-[11px] font-bold uppercase tracking-wider text-gray-500"
       >
         {title}
       </motion.h2>
-      <div className="grid grid-cols-3 gap-4 lg:grid-cols-4 xl:grid-cols-5 lg:gap-5">
+      <div className="rounded-[18px] bg-white border border-gray-100 shadow-sm divide-y divide-gray-100 overflow-hidden">
         {items.map((item, index) => {
           const IconComponent = item.icon
           return (
-            <motion.div
+            <motion.button
               key={item.id}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
@@ -840,42 +840,36 @@ export default function ExploreMore() {
                 delay: delay + 0.1 + (index * 0.02),
                 ease: [0.25, 0.1, 0.25, 1]
               }}
-              className="flex flex-col items-center"
+              whileTap={{ scale: 0.99 }}
+              onClick={() => {
+                if (item.route) {
+                  navigate(item.route)
+                }
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3.5 text-left active:bg-gray-50 hover:bg-gray-50 transition-colors"
             >
-              <motion.button
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => {
-                  if (item.route) {
-                    navigate(item.route)
-                  }
-                }}
-                className="w-full flex flex-col items-center justify-start p-3 sm:p-4 bg-white rounded-[20px] shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] border border-slate-100 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)] hover:border-green-200 hover:bg-green-50/30 transition-all duration-300 min-h-[100px] sm:min-h-[110px] group"
-              >
-                <div className="relative flex items-center justify-center mb-2 sm:mb-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-slate-50 group-hover:bg-green-100 transition-colors duration-300">
-                    {item.customIcon ? (
-                      <span className="text-sm sm:text-lg font-bold text-slate-700 group-hover:text-green-700 transition-colors duration-300">hp</span>
-                    ) : (
-                      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-slate-600 group-hover:text-green-700 transition-colors duration-300" strokeWidth={2} />
-                    )}
-                  </div>
-                  {item.badge && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: delay + 0.15 + (index * 0.02), type: "spring", stiffness: 500 }}
-                      className="absolute -top-1 -right-1 sm:-right-2 bg-red-500 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm"
-                    >
-                      {item.badge}
-                    </motion.span>
-                  )}
-                </div>
-                <span className="text-[11px] sm:text-[13px] text-slate-700 font-medium text-center leading-tight group-hover:text-green-800 transition-colors duration-300 px-1">
-                  {item.label}
-                </span>
-              </motion.button>
-            </motion.div>
+              <div className="w-9 h-9 shrink-0 flex items-center justify-center rounded-xl bg-gray-100 text-gray-700">
+                {item.customIcon ? (
+                  <span className="text-sm font-bold">hp</span>
+                ) : (
+                  <IconComponent className="w-[18px] h-[18px]" strokeWidth={2} />
+                )}
+              </div>
+              <span className="flex-1 min-w-0 text-sm font-semibold text-gray-900 truncate">
+                {item.label}
+              </span>
+              {item.badge && (
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: delay + 0.15 + (index * 0.02), type: "spring", stiffness: 500 }}
+                  className="shrink-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
+                >
+                  {item.badge}
+                </motion.span>
+              )}
+              <ChevronRight className="w-4 h-4 shrink-0 text-gray-300" />
+            </motion.button>
           )
         })}
       </div>
@@ -891,7 +885,7 @@ export default function ExploreMore() {
         duration: 0.2,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      className="min-h-full bg-white overflow-x-hidden pb-24 lg:pb-8 lg:bg-slate-50"
+      className="min-h-full bg-[#F6F7F9] overflow-x-hidden pb-24 lg:pb-8"
     >
       {/* Header */}
       <motion.div
@@ -901,37 +895,37 @@ export default function ExploreMore() {
           duration: 0.25,
           ease: [0.25, 0.1, 0.25, 1]
         }}
-        className="sticky top-0 z-50 px-4 pt-3 pb-4 bg-[var(--rt-primary)] rounded-b-[24px] shadow-lg shadow-black/10 lg:rounded-none lg:shadow-none lg:pb-3 lg:border-b lg:border-gray-200 lg:backdrop-blur lg:bg-white/95"
+        className="sticky top-0 z-50 safe-top bg-white/95 backdrop-blur border-b border-gray-100 px-4 py-3"
       >
         <div className="flex items-center justify-between lg:max-w-6xl lg:mx-auto lg:px-4 lg:py-2 lg:w-full">
           <div className="flex items-center gap-3 flex-1">
             <button
               onClick={() => navigate("/food/restaurant")}
-              className="w-9 h-9 flex items-center justify-center bg-white/20 rounded-full transition-colors lg:hidden"
+              className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-xl active:scale-95 transition-all lg:hidden"
               aria-label="Go back"
             >
-              <ArrowLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5 text-gray-900" />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-white lg:text-2xl lg:text-gray-900">Explore more</h1>
+              <h1 className="text-[22px] font-extrabold text-gray-900 leading-tight">Explore more</h1>
               <p className="hidden text-sm text-gray-500 lg:block">Manage outlet, settings, orders, and account tools</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSearchOpen(true)}
-              className="w-9 h-9 flex items-center justify-center bg-white/20 rounded-full transition-colors lg:bg-transparent lg:hover:bg-gray-100"
+              className="w-9 h-9 flex items-center justify-center bg-gray-100 rounded-xl active:scale-95 transition-all"
               aria-label="Search"
             >
-              <Search className="w-[18px] h-[18px] text-white lg:text-gray-900" />
+              <Search className="w-[18px] h-[18px] text-gray-700" />
             </button>
             <button
               onClick={() => setProfileOpen(true)}
-              className="w-9 h-9 bg-white rounded-full transition-colors overflow-hidden flex items-center justify-center lg:bg-gray-200"
+              className="w-9 h-9 bg-gray-100 rounded-xl transition-colors overflow-hidden flex items-center justify-center"
               aria-label="Profile"
             >
               {userData.profileImage?.url ? (
-                <img src={userData.profileImage.url} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                <img src={userData.profileImage.url} alt="Profile" className="w-full h-full object-cover" />
               ) : (
                 <UserRound className="w-5 h-5 text-gray-900" />
               )}
@@ -941,7 +935,7 @@ export default function ExploreMore() {
       </motion.div>
 
       {/* Main Content */}
-      <div className="px-4 py-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:py-8">
+      <div className="px-4 pt-4 pb-6 lg:max-w-6xl lg:mx-auto lg:px-8 lg:py-8">
         {/* Restaurant Information Card */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -952,19 +946,19 @@ export default function ExploreMore() {
             ease: [0.25, 0.1, 0.25, 1]
           }}
         >
-          <Card className="bg-white border-gray-200 py-3 mb-6 rounded-lg shadow-0 lg:shadow-sm lg:border-slate-200 lg:rounded-2xl">
+          <Card className="bg-white border-gray-100 py-4 mb-6 rounded-[20px] shadow-sm">
             <CardContent className="px-4">
               <div className="w-full flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <Store className="w-5 h-5 text-gray-900" />
+                  <div className="w-11 h-11 shrink-0 flex items-center justify-center bg-[var(--rt-primary)] rounded-xl">
+                    <Store className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h2 className="text-base font-semibold text-gray-900 mb-0.5">
+                    <h2 className="text-base font-extrabold text-gray-900 mb-0.5 truncate">
                       {restaurantDisplayName}
                     </h2>
                     {restaurantDisplayAddress && (
-                      <p className="text-sm text-gray-500 break-words text-wrap">
+                      <p className="text-xs font-medium text-gray-500 break-words text-wrap">
                         {restaurantDisplayAddress}
                       </p>
                     )}
@@ -977,7 +971,8 @@ export default function ExploreMore() {
 
         {/* Sections */}
         {filteredSections.length > 0 ? (
-          filteredSections.map((section, index) => (
+          <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+          {filteredSections.map((section, index) => (
             <div key={section.key}>
               {renderSection(section.title, section.items, 0.1 + (index * 0.05))}
               {index < filteredSections.length - 1 && (
@@ -985,11 +980,12 @@ export default function ExploreMore() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.25 + (index * 0.05), duration: 0.2 }}
-                  className="border-t border-gray-200 my-6"
+                  className="hidden"
                 />
               )}
             </div>
-          ))
+          ))}
+          </div>
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -1006,7 +1002,7 @@ export default function ExploreMore() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.45, duration: 0.2 }}
-          className="border-t border-gray-200 my-6"
+          className="my-6"
         />
 
         <motion.button
@@ -1014,18 +1010,18 @@ export default function ExploreMore() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.25 }}
           onClick={() => setLogoutConfirmOpen(true)}
-          className="w-full flex items-center justify-between gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-left"
+          className="w-full flex items-center justify-between gap-3 rounded-[18px] border border-gray-100 bg-white shadow-sm px-4 py-3.5 text-left active:bg-gray-50 lg:max-w-md"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-100">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50">
               <LogOut className="w-5 h-5 text-red-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-base font-semibold text-red-700">Logout</p>
-              <p className="text-sm text-red-500">Tap to sign out from this device</p>
+              <p className="text-sm font-bold text-red-600">Logout</p>
+              <p className="text-xs font-medium text-gray-500">Tap to sign out from this device</p>
             </div>
           </div>
-          <ChevronRight className="w-5 h-5 text-red-400 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
         </motion.button>
 
         <motion.button
@@ -1033,18 +1029,18 @@ export default function ExploreMore() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.25 }}
           onClick={() => setDeleteConfirmOpen(true)}
-          className="mt-3 w-full flex items-center justify-between gap-3 rounded-2xl border border-red-100 bg-red-50/60 px-4 py-4 text-left"
+          className="mt-3 w-full flex items-center justify-between gap-3 rounded-[18px] border border-gray-100 bg-white shadow-sm px-4 py-3.5 text-left active:bg-gray-50 lg:max-w-md"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-100">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-50">
               <Trash2 className="w-5 h-5 text-red-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-base font-semibold text-red-700">Delete Account</p>
-              <p className="text-sm text-red-500">Permanently delete your restaurant account</p>
+              <p className="text-sm font-bold text-red-600">Delete Account</p>
+              <p className="text-xs font-medium text-gray-500">Permanently delete your restaurant account</p>
             </div>
           </div>
-          <ChevronRight className="w-5 h-5 text-red-400 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />
         </motion.button>
       </div>
 

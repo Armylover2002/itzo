@@ -2341,9 +2341,9 @@ case "cancelled":
   };
 
     return (
-    <div className="flex-1 flex flex-col h-full bg-gray-100 md:bg-slate-50 md:overflow-hidden overflow-x-hidden">
+    <div className="flex-1 flex flex-col h-full bg-[#F6F7F9] md:overflow-hidden overflow-x-hidden">
       {/* Restaurant Navbar - Sticky at top (Mobile only) */}
-      <div className="sticky top-0 z-50 bg-gray-100 md:hidden">
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur md:hidden">
         <RestaurantNavbar 
           showNotifications={true} 
           searchValue={searchQuery}
@@ -2352,9 +2352,9 @@ case "cancelled":
       </div>
 
       {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between px-6 pt-5 pb-3 bg-white">
+      <div className="hidden md:flex items-center justify-between px-6 pt-5 pb-3 bg-white/95 backdrop-blur">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-[22px] font-extrabold text-gray-900 leading-tight flex items-center gap-2">
             Live orders
             {incomingQueueOrders.length > 0 && (
               <button
@@ -2377,16 +2377,45 @@ case "cancelled":
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search orders, menu..."
-            className="pl-11 pr-4 py-2.5 bg-white border border-gray-100 rounded-full text-sm w-80 focus:outline-none focus:border-gray-300 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-shadow"
+            className="pl-11 pr-4 py-2.5 bg-gray-100 border border-gray-100 rounded-xl text-sm w-80 focus:outline-none focus:bg-white focus:border-gray-200 transition-colors"
           />
         </div>
       </div>
 
-      {/* Top Filter Bar - Sticky below navbar on mobile, static on desktop */}
-      <div className="sticky top-[50px] md:static z-40 pb-2 md:pb-3 bg-gray-100 md:bg-white md:px-6 border-b border-gray-200/50 md:border-gray-100">
+      {/* Mobile Hero - Live orders summary */}
+      <div className="md:hidden px-4 pt-4">
+        <div className="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#7F1D1D] to-[#B91C1C] p-5 text-white shadow-lg shadow-[#7F1D1D]/25">
+          <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10" />
+          <div className="absolute -right-2 bottom-[-40px] h-24 w-24 rounded-full bg-white/5" />
+          <div className="relative flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-white/75">Live orders</p>
+              <p className="mt-1 text-[22px] font-extrabold leading-tight truncate">
+                {filterTabs.find((tab) => tab.id === activeFilter)?.label || "All"}
+                {activeFilter === "all" ? " orders" : ""}
+              </p>
+              <p className="mt-1 text-xs font-medium text-white/75">Manage incoming and active orders</p>
+            </div>
+            {incomingQueueOrders.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIncomingPanelMinimized(false)}
+                className="shrink-0 flex flex-col items-center rounded-xl bg-white px-3 py-2 text-[#7F1D1D] active:scale-95 transition-all"
+                title="Open incoming orders"
+              >
+                <span className="text-lg font-extrabold leading-none">{incomingQueueOrders.length}</span>
+                <span className="mt-0.5 text-[10px] font-bold uppercase tracking-wide">New</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Grid - tiles on mobile, single row on desktop */}
+      <div className="relative z-10 md:bg-white/95 md:backdrop-blur md:px-6 md:pb-3 md:border-b md:border-gray-100">
         <div
           ref={filterBarRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide bg-transparent rounded-full px-3 md:px-0 py-2 mt-2 md:mt-0"
+          className="grid grid-cols-4 gap-2 px-4 pt-4 pb-1 md:flex md:gap-2 md:overflow-x-auto md:px-0 md:pt-2 md:pb-0 scrollbar-hide"
           style={{
             scrollbarWidth: "none",
             msOverflowStyle: "none",
@@ -2411,21 +2440,13 @@ case "cancelled":
                     setTimeout(() => setIsTransitioning(false), 300);
                   }
                 }}
-                className={`shrink-0 px-4 py-2 md:px-5 md:py-2.5 rounded-full font-medium text-xs md:text-[13px] whitespace-nowrap relative overflow-hidden flex items-center gap-2 ${isActive ? "text-white" : "bg-white text-gray-600 border border-gray-100/50 hover:bg-gray-50"
+                className={`relative overflow-hidden flex flex-col items-center justify-center gap-1.5 rounded-[16px] border px-1 py-3 text-center md:shrink-0 md:flex-row md:gap-2 md:rounded-xl md:px-5 md:py-2.5 ${isActive ? "border-[#10335D] text-white shadow-md shadow-[#10335D]/20" : "border-gray-100 bg-white text-gray-700 shadow-sm"
                   }`}
-                animate={{
-                  scale: isActive ? 1.05 : 1,
-                  opacity: isActive ? 1 : 0.7,
-                }}
-                transition={{
-                  duration: 0.3,
-                  ease: [0.25, 0.1, 0.25, 1],
-                }}
                 whileTap={{ scale: 0.95 }}>
                 {isActive && (
                   <motion.div
                     layoutId="activeFilterBackground"
-                    className="absolute inset-0 bg-[#10335D] rounded-full -z-10"
+                    className="absolute inset-0 bg-[#10335D]"
                     initial={false}
                     transition={{
                       type: "spring",
@@ -2434,8 +2455,12 @@ case "cancelled":
                     }}
                   />
                 )}
-                <span className="relative z-10 flex items-center gap-1.5">
-                  {tab.icon && <tab.icon className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isActive ? "text-white" : "text-gray-400"}`} strokeWidth={2.5} />}
+                {tab.icon && (
+                  <span className={`relative z-10 flex h-8 w-8 items-center justify-center rounded-xl md:h-auto md:w-auto md:bg-transparent ${isActive ? "bg-white/15" : "bg-gray-100"}`}>
+                    <tab.icon className={`w-4 h-4 ${isActive ? "text-white" : "text-gray-600"}`} strokeWidth={2.5} />
+                  </span>
+                )}
+                <span className="relative z-10 w-full truncate text-[11px] font-bold leading-tight md:w-auto md:text-[13px] md:whitespace-nowrap">
                   {tab.label}
                 </span>
               </motion.button>
@@ -2445,7 +2470,7 @@ case "cancelled":
       </div>
 
       {/* Main Layout Area */}
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row md:gap-6 px-4 md:px-6 pt-4 md:pt-6 pb-24 md:pb-6 md:overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row md:gap-6 px-4 md:px-6 pt-3 md:pt-6 pb-24 md:pb-6 md:overflow-hidden">
         
         {/* Left Column - Scrollable Content */}
         <div
@@ -2531,7 +2556,7 @@ case "cancelled":
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className={`mt-4 mb-4 rounded-2xl shadow-sm px-6 py-4 ${restaurantStatus.rejectionReason
+              className={`mt-1 mb-4 rounded-[18px] shadow-sm px-4 py-4 ${restaurantStatus.rejectionReason
                 ? "bg-white border border-red-200"
                 : "bg-white border border-yellow-200"
                 }`}>
@@ -2619,7 +2644,7 @@ case "cancelled":
         </div>
 
         {/* Desktop Details Pane (Right Column) */}
-        <div className="hidden md:flex flex-col bg-white rounded-2xl border border-gray-100/80 shadow-sm overflow-hidden w-[380px] lg:w-[420px] shrink-0 h-full">
+        <div className="hidden md:flex flex-col bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden w-[380px] lg:w-[420px] shrink-0 h-full">
             {selectedOrder ? (
               <div className="flex-1 overflow-hidden h-full">
                 <OrderDetails
@@ -2634,10 +2659,10 @@ case "cancelled":
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center h-full">
-                <div className="w-20 h-20 bg-slate-50/80 rounded-full flex items-center justify-center mb-6 border border-gray-100">
+                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mb-5">
                   <Inbox className="w-8 h-8 text-slate-300" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">No order selected</h3>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-2">No order selected</h3>
                 <p className="text-sm text-gray-500 max-w-[250px]">
                   Select an order from the list to view detailed information, items, and status
                 </p>
@@ -3410,7 +3435,7 @@ const OrderCard = memo(function OrderCard({
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
-    <div className={`w-full bg-white rounded-2xl p-4 mb-3 border shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:shadow-md transition-shadow relative flex flex-col gap-3 cursor-pointer group ${isFoodQuickDelivery ? "border-emerald-300 ring-1 ring-emerald-100" : "border-gray-100/80"}`}
+    <div className={`w-full bg-white rounded-[18px] p-4 mb-3 border shadow-sm active:bg-gray-50 transition-colors relative flex flex-col gap-3 cursor-pointer group ${isFoodQuickDelivery ? "border-emerald-300 ring-1 ring-emerald-100" : "border-gray-100"}`}
       onClick={() =>
         onSelect?.({
           orderId,
@@ -3465,7 +3490,7 @@ const OrderCard = memo(function OrderCard({
       {/* Middle Row: Content */}
       <div className="flex gap-3">
         {/* Photo */}
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
+        <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 border border-gray-100 flex-shrink-0">
           {photoUrl ? (
             <img
               src={photoUrl}
@@ -3493,7 +3518,7 @@ const OrderCard = memo(function OrderCard({
       </div>
 
       {/* Bottom Row: Actions & Assignment */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
         <div className="flex flex-wrap items-center gap-1.5 flex-1 pr-2">
           {(isPreparing || isReady || normalizedStatus === "confirmed") && (
             <>
