@@ -1,6 +1,25 @@
-import { Clock, MapPin, Star, Utensils, Leaf, Info } from "lucide-react";
+import { Clock, MapPin, Star, Utensils, Leaf, Info, Hourglass } from "lucide-react";
 import { Badge } from "@food/components/ui/badge";
-import { getNextOpeningLabel, getRestaurantAvailabilityStatus, getTodayTimingsLabel } from "@food/utils/restaurantAvailability";
+import { getNextOpening, getRestaurantAvailabilityStatus, getTodayTimingsLabel } from "@food/utils/restaurantAvailability";
+
+const OPENING_SOON_MINUTES = 60;
+
+const formatDuration = (totalMinutes) => {
+  if (totalMinutes < 60) return `${totalMinutes} ${totalMinutes === 1 ? "minute" : "minutes"}`;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes ? `${hours} hr ${minutes} min` : `${hours} hr`;
+};
+
+const getOpeningMessage = ({ minutesUntilOpen, dayLabel, timeLabel }) => {
+  if (minutesUntilOpen <= OPENING_SOON_MINUTES) {
+    return `Restaurant opens in ${formatDuration(minutesUntilOpen)}`;
+  }
+  if (dayLabel === "today") {
+    return `Restaurant opens today at ${timeLabel} (in ${formatDuration(minutesUntilOpen)})`;
+  }
+  return `Restaurant opens ${dayLabel} at ${timeLabel}`;
+};
 
 export default function RestaurantDetailsSummary({
   restaurant,
@@ -23,11 +42,11 @@ export default function RestaurantDetailsSummary({
   const isClosedBySchedule =
     isRestaurantOffline &&
     !getRestaurantAvailabilityStatus(restaurant, now, { ignoreOperationalStatus: true }).isOpen;
-  const nextOpeningLabel = isClosedBySchedule ? getNextOpeningLabel(restaurant, now) : null;
+  const nextOpening = isClosedBySchedule ? getNextOpening(restaurant, now) : null;
+  const isOpeningSoon = Boolean(nextOpening && nextOpening.minutesUntilOpen <= OPENING_SOON_MINUTES);
   // Manually offline within working hours: show today's hours instead of a guessed reopening time.
   const todayTimingsLabel =
     isRestaurantOffline && !isClosedBySchedule ? getTodayTimingsLabel(restaurant, now) : null;
-  const offlineTimeLabel = nextOpeningLabel || (todayTimingsLabel ? `Timings: ${todayTimingsLabel}` : null);
 
   const reviewsCount = restaurant?.reviews > 0 ? `${restaurant.reviews.toLocaleString()}+ ratings` : "No ratings";
 
@@ -80,10 +99,10 @@ export default function RestaurantDetailsSummary({
               {isOutOfService ? "Out of zone" : isRestaurantOffline ? "Offline" : "Open now"}
             </span>
 
-            {!isOutOfService && offlineTimeLabel && (
+            {!isOutOfService && todayTimingsLabel && (
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded bg-amber-50 text-amber-700 border border-amber-200">
                 <Clock className="h-3 w-3" />
-                {offlineTimeLabel}
+                Timings: {todayTimingsLabel}
               </span>
             )}
           </div>
@@ -119,14 +138,48 @@ export default function RestaurantDetailsSummary({
             </div>
           </div>
 
-          {(isRestaurantOffline || isOutOfService) && (
+          {!isOutOfService && nextOpening && (
+            <div
+              className={`mt-5 flex items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+                isOpeningSoon
+                  ? "bg-emerald-50 border-emerald-100"
+                  : "bg-amber-50 border-amber-100"
+              }`}
+            >
+              <div className="min-w-0">
+                <span
+                  className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white ${
+                    isOpeningSoon ? "bg-emerald-600" : "bg-amber-600"
+                  }`}
+                >
+                  {isOpeningSoon ? "Opening soon" : "Closed now"}
+                </span>
+                <p
+                  className={`mt-1.5 text-[14px] font-semibold leading-snug ${
+                    isOpeningSoon ? "text-emerald-800" : "text-amber-800"
+                  }`}
+                >
+                  {getOpeningMessage(nextOpening)}
+                </p>
+                <p className="mt-0.5 text-[12px] text-gray-500">
+                  You can browse the menu. Ordering starts once it opens.
+                </p>
+              </div>
+              <Hourglass
+                className={`h-9 w-9 shrink-0 ${isOpeningSoon ? "text-emerald-600" : "text-amber-600"}`}
+                strokeWidth={1.5}
+              />
+            </div>
+          )}
+
+          {(isOutOfService || (isRestaurantOffline && !nextOpening)) && (
             <div className="mt-5 flex items-start gap-2 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2.5">
               <Info className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
               <p className="text-[13px] font-medium text-rose-700 leading-tight">
                 {isOutOfService
                   ? "You are outside the delivery zone. Change your location to order."
                   : isClosedBySchedule
-                    ? `This restaurant is currently closed.${nextOpeningLabel ? ` ${nextOpeningLabel}.` : ""} You can browse the menu but cannot place orders.`
+                    ? "This restaurant is currently closed. You can browse the menu but cannot place orders."
                     : "This restaurant is temporarily offline and will be back soon. You can browse the menu but cannot place orders."}
               </p>
             </div>

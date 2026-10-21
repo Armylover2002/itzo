@@ -166,10 +166,11 @@ const getOpeningMinutesForDay = (restaurant, dayName) => {
 }
 
 /**
- * Label for when a closed restaurant next opens per its schedule, e.g. "Opens today at 5:00 PM",
- * "Opens tomorrow at 9:00 AM" or "Opens Monday at 9:00 AM". Returns null when unknown.
+ * When a closed restaurant next opens per its schedule:
+ * { minutesUntilOpen, timeLabel: "5:00 PM", dayLabel: "today" | "tomorrow" | "Monday" }.
+ * Returns null when unknown.
  */
-export const getNextOpeningLabel = (restaurant, now = new Date()) => {
+export const getNextOpening = (restaurant, now = new Date()) => {
   if (!restaurant) return null
 
   const istNow = toIstDate(now)
@@ -183,12 +184,23 @@ export const getNextOpeningLabel = (restaurant, now = new Date()) => {
 
     const nextMinutes = Math.min(...candidates)
     const hours24 = Math.floor(nextMinutes / 60)
-    const timeLabel = formatTimeLabel(`${hours24}:${String(nextMinutes % 60).padStart(2, "0")}`)
-    const dayLabel = offset === 0 ? "today" : offset === 1 ? "tomorrow" : dayName
-    return `Opens ${dayLabel} at ${timeLabel}`
+    return {
+      minutesUntilOpen: offset * 24 * 60 + nextMinutes - nowMinutes,
+      timeLabel: formatTimeLabel(`${hours24}:${String(nextMinutes % 60).padStart(2, "0")}`),
+      dayLabel: offset === 0 ? "today" : offset === 1 ? "tomorrow" : dayName,
+    }
   }
 
   return null
+}
+
+/**
+ * Label for when a closed restaurant next opens per its schedule, e.g. "Opens today at 5:00 PM",
+ * "Opens tomorrow at 9:00 AM" or "Opens Monday at 9:00 AM". Returns null when unknown.
+ */
+export const getNextOpeningLabel = (restaurant, now = new Date()) => {
+  const next = getNextOpening(restaurant, now)
+  return next ? `Opens ${next.dayLabel} at ${next.timeLabel}` : null
 }
 
 /**
