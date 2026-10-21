@@ -12,6 +12,16 @@ import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js'
 import { createRazorpayOrder, isRazorpayConfigured, getRazorpayKeyId } from '../../orders/helpers/razorpay.helper.js';
 import { logger } from '../../../../utils/logger.js';
 import { invalidateSubscriptionStatsCache } from '../../admin/utils/subscriptionStatsCache.js';
+import { FoodDeliveryPartner } from '../../delivery/models/deliveryPartner.model.js';
+
+// Delivery partners (by last 10 phone digits) that never need a subscription / daily pass to go online.
+const SUBSCRIPTION_EXEMPT_DELIVERY_PHONES = ['9000000009'];
+
+const isSubscriptionExemptDeliveryPartner = async (userId) => {
+    const partner = await FoodDeliveryPartner.findById(userId).select('phone').lean();
+    const last10 = String(partner?.phone || '').replace(/\D/g, '').slice(-10);
+    return SUBSCRIPTION_EXEMPT_DELIVERY_PHONES.includes(last10);
+};
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -396,6 +406,16 @@ export async function activateDailyPass(userId, userType, retryCount = 0) {
 export async function ensureDailyPassEligibility(userId, userType) {
     if (!['RESTAURANT', 'DELIVERY_PARTNER'].includes(userType)) {
         throw new ValidationError('Invalid user type for eligibility check');
+    }
+
+    // 0. Exempt delivery partners: always eligible, never charged
+    if (userType === 'DELIVERY_PARTNER' && await isSubscriptionExemptDeliveryPartner(userId)) {
+        return {
+            eligible: true,
+            reason: 'RECURRING_ACTIVE',
+            shouldDeduct: false,
+            subscriptionType: 'EXEMPT'
+        };
     }
 
     // 1. Priority Check: recurring plan (MONTH/WEEK/YEAR) active or in grace
