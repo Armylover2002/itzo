@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, Fragment } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback, Fragment } from "react"
 import { createPortal } from "react-dom"
 import { Link, useNavigate } from "react-router-dom"
 import { Plus, Minus, ArrowLeft, ChevronRight, Clock, MapPin, Phone, FileText, Utensils, Tag, Percent, Share2, ChevronUp, ChevronDown, X, Check, Settings, CreditCard, Wallet, Building2, Sparkles, Banknote, Zap, CheckCircle2, MessageCircle, Send, Mail, Copy } from "lucide-react"
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import confetti from "canvas-confetti"
 
 import AnimatedPage from "@food/components/user/AnimatedPage"
+import CouponCelebration from "@food/components/user/cart/CouponCelebration"
 import { Button } from "@food/components/ui/button"
 import { useCart } from "@food/context/CartContext"
 import { useProfile } from "@food/context/ProfileContext"
@@ -303,6 +304,9 @@ export default function Cart() {
 
   const [showCoupons, setShowCoupons] = useState(false)
   const [appliedCoupon, setAppliedCoupon] = useState(null)
+  // { code, amount } while the "You saved ₹X" party-popper popup is showing
+  const [couponCelebration, setCouponCelebration] = useState(null)
+  const closeCouponCelebration = useCallback(() => setCouponCelebration(null), [])
   const [couponCode, setCouponCode] = useState("")
   const [manualCouponCode, setManualCouponCode] = useState("")
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("razorpay")
@@ -1661,6 +1665,14 @@ const isFirstTimeOnlyCoupon = (coupon) =>
   coupon?.customerScope === "first-time" ||
   coupon?.isFirstOrderOnly === true
 
+// Party-popper popup after a coupon is accepted; returns false when there is no saving to show.
+const celebrateCoupon = (code, discount) => {
+  const amount = Math.round(Number(discount) || 0)
+  if (amount <= 0) return false
+  setCouponCelebration({ code: String(code || "").toUpperCase(), amount })
+  return true
+}
+
 const handleApplyCoupon = async (coupon) => {
   if (coupon?.meetsMinOrder === false) {
     toast.error(`Add items worth ${RUPEE_SYMBOL}${Number(coupon.amountToUnlock || 0)} to apply this coupon`)
@@ -1707,6 +1719,7 @@ const handleApplyCoupon = async (coupon) => {
       setCouponCode(coupon.code)
       setManualCouponCode(coupon.code)
       setShowCoupons(false)
+      celebrateCoupon(coupon.code, result.pricing.appliedCoupon.discount)
     } catch (error) {
       debugError("Error recalculating pricing:", error)
       toast.error("Failed to apply coupon")
@@ -1778,7 +1791,9 @@ const handleApplyCouponCode = async () => {
       },
     )
     setShowCoupons(false)
-    toast.success("Coupon applied")
+    if (!celebrateCoupon(inputCode, result.pricing.appliedCoupon.discount)) {
+      toast.success("Coupon applied")
+    }
   } catch (error) {
     debugError("Error applying coupon code:", error)
     toast.error("Failed to apply coupon")
@@ -2538,6 +2553,7 @@ if (maxTimeString && maxUpperBound > 0) {
 
 return (
   <div className="relative min-h-screen overflow-x-hidden bg-slate-50 dark:bg-[#0a0a0a]">
+    <CouponCelebration celebration={couponCelebration} onClose={closeCouponCelebration} />
     {/* Header - Sticky at top */}
     <div className="bg-white dark:bg-[#1a1a1a] border-b dark:border-gray-800 sticky top-0 z-20 flex-shrink-0">
       <div className="max-w-7xl mx-auto">
