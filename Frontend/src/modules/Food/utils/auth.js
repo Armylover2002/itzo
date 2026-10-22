@@ -214,6 +214,7 @@ export function clearModuleAuth(module) {
     clearRestaurantSessionCache();
     sessionStorage.removeItem("restaurantReonboard");
     sessionStorage.removeItem("restaurant_registrationToken");
+    localStorage.removeItem("restaurant_registrationToken");
   }
   if (module === "seller") {
     sessionStorage.removeItem("sellerReonboard");

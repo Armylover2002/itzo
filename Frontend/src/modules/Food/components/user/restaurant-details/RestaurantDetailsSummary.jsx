@@ -96,7 +96,7 @@ export default function RestaurantDetailsSummary({
                 ? "bg-rose-50 text-rose-700 border border-rose-200" 
                 : "bg-emerald-50 text-emerald-700 border border-emerald-200"
             }`}>
-              {isOutOfService ? "Out of zone" : isRestaurantOffline ? "Offline" : "Open now"}
+              {isOutOfService ? "Out of zone" : isRestaurantOffline ? "Closed" : "Open now"}
             </span>
 
             {!isOutOfService && todayTimingsLabel && (
@@ -180,7 +180,7 @@ export default function RestaurantDetailsSummary({
                   ? "You are outside the delivery zone. Change your location to order."
                   : isClosedBySchedule
                     ? "This restaurant is currently closed. You can browse the menu but cannot place orders."
-                    : "This restaurant is temporarily offline and will be back soon. You can browse the menu but cannot place orders."}
+                    : "This restaurant is temporarily closed and will be back soon. You can browse the menu but cannot place orders."}
               </p>
             </div>
           )}

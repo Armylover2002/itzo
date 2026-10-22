@@ -34,7 +34,8 @@ export const signRestaurantRegistrationToken = (phone) => {
             phoneLast10: digits.slice(-10),
         },
         config.jwtAccessSecret,
-        { expiresIn: '2h' }
+        // Long enough for executives to finish onboarding across sessions; renewed on every onboarding call.
+        { expiresIn: '7d' }
     );
 };
 

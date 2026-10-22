@@ -151,7 +151,7 @@ export const MealItemCard = memo(function MealItemCard({ item, quantity, onAdd, 
           )
         ) : (
           <span className="absolute bottom-2 left-2 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-semibold text-white">
-            Offline
+            Closed
           </span>
         )}
       </div>

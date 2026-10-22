@@ -88,7 +88,10 @@ function getAccessToken(config) {
     if (module === "restaurant") {
       const url = String(config?.url || "").toLowerCase();
       if (url.includes("/onboarding/") || url.includes("/restaurant/register")) {
-        const registrationToken = sessionStorage.getItem("restaurant_registrationToken");
+        // sessionStorage is per-tab; localStorage keeps it across tab close / browser restart.
+        const registrationToken =
+          sessionStorage.getItem("restaurant_registrationToken") ||
+          localStorage.getItem("restaurant_registrationToken");
         if (registrationToken) return registrationToken;
       }
     }
@@ -157,7 +160,19 @@ apiClient.interceptors.request.use(
 );
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Backend renews the onboarding registration token on every onboarding call.
+    const renewedToken = response?.headers?.["x-registration-token"];
+    if (renewedToken) {
+      try {
+        sessionStorage.setItem("restaurant_registrationToken", renewedToken);
+        localStorage.setItem("restaurant_registrationToken", renewedToken);
+      } catch {
+        // storage unavailable — keep using the existing token
+      }
+    }
+    return response;
+  },
   async (err) => {
     const original = err?.config;
     if (err?.response?.status === 429) {

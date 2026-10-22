@@ -260,7 +260,7 @@ const FoodRestaurantCard = memo(({
             )}
             {isUnavailable && (
               <p className="mt-1 text-[12px] font-semibold text-red-600">
-                {isOutOfService ? "Not delivering to your location" : "Offline"}
+                {isOutOfService ? "Not delivering to your location" : "Closed"}
               </p>
             )}
           </div>

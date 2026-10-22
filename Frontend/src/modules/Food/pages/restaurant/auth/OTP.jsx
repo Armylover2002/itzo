@@ -295,6 +295,7 @@ export default function RestaurantOTP() {
 
       if (data?.registrationToken) {
         sessionStorage.setItem("restaurant_registrationToken", data.registrationToken)
+        localStorage.setItem("restaurant_registrationToken", data.registrationToken)
       }
 
       if (needsRegistration) {

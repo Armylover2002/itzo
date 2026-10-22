@@ -1,4 +1,4 @@
-import { verifyAccessToken, verifyRestaurantRegistrationToken, verifySellerRegistrationToken } from './token.util.js';
+import { verifyAccessToken, verifyRestaurantRegistrationToken, verifySellerRegistrationToken, signRestaurantRegistrationToken } from './token.util.js';
 import { sendError } from '../../utils/response.js';
 import { FoodUser } from '../users/user.model.js';
 import { FoodDeliveryPartner } from '../../modules/food/delivery/models/deliveryPartner.model.js';
@@ -79,6 +79,8 @@ export const requireRestaurantRegistrationToken = (req, res, next) => {
         }
         req.registrationPhone = phoneLast10;
         req.registrationPhoneDigits = String(decoded.phone || phoneLast10).replace(/\D/g, '');
+        // Sliding renewal: an active onboarding session never expires mid-form.
+        res.setHeader('X-Registration-Token', signRestaurantRegistrationToken(req.registrationPhoneDigits));
         next();
     } catch {
         return sendError(res, 401, 'Invalid or expired registration token. Please verify OTP again.');

@@ -978,7 +978,7 @@ function RestaurantDetailsContent() {
 
     const availability = getRestaurantAvailabilityStatus(restaurant)
     if (!availability.isOpen) {
-      toast.error("Restaurant is currently offline. Please try again later.")
+      toast.error("Restaurant is currently closed. Please try again later.")
       return
     }
 

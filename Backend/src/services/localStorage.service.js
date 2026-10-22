@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import sharp from 'sharp';
 import { config } from '../config/env.js';
 
 // Base directory for all uploads. Relative values resolve against the project
@@ -26,7 +27,13 @@ const detectExtension = (buffer, fallback = 'bin') => {
         return 'webp';
     }
     if (buffer.toString('ascii', 0, 4) === '%PDF') return 'pdf';
-    if (buffer.toString('ascii', 4, 8) === 'ftyp') return 'mp4';
+    if (buffer.toString('ascii', 4, 8) === 'ftyp') {
+        // AVIF/HEIC photos share the ISO-BMFF "ftyp" box with MP4; check the brand.
+        const brand = buffer.toString('ascii', 8, 12).toLowerCase();
+        if (brand === 'avif' || brand === 'avis') return 'avif';
+        if (['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1'].includes(brand)) return 'heic';
+        return 'mp4';
+    }
     if (buffer[0] === 0x42 && buffer[1] === 0x4d) return 'bmp';
 
     const head = buffer.toString('utf8', 0, 300).trim().toLowerCase();
@@ -35,6 +42,32 @@ const detectExtension = (buffer, fallback = 'bin') => {
     }
 
     return fallback;
+};
+
+// Stored as-is: formats every browser renders in an <img>, plus PDFs/videos that some
+// callers send through the image helpers. Anything else is converted to webp.
+const BROWSER_IMAGE_EXTENSIONS = new Set(['jpg', 'png', 'gif', 'webp', 'svg', 'bmp', 'pdf', 'mp4']);
+
+/**
+ * Makes an uploaded image displayable everywhere. AVIF/HEIC (phone camera photos,
+ * images saved from Google) were previously stored as ".mp4" and never rendered,
+ * so the UI fell back to a placeholder. Returns { buffer, extension }.
+ */
+const normalizeImageBuffer = async (buffer) => {
+    const extension = detectExtension(buffer, 'unknown');
+    if (BROWSER_IMAGE_EXTENSIONS.has(extension)) return { buffer, extension };
+
+    try {
+        const converted = await sharp(buffer, { failOn: 'error' })
+            .rotate()
+            .webp({ quality: 85 })
+            .toBuffer();
+        return { buffer: converted, extension: 'webp' };
+    } catch {
+        // Unrecognised bytes keep the old behaviour (stored as .png).
+        if (extension === 'unknown') return { buffer, extension: 'png' };
+        throw new Error('Unsupported image format. Please upload a JPG, PNG or WEBP image.');
+    }
 };
 
 /**
@@ -123,12 +156,13 @@ export const uploadImageBuffer = async (buffer, folder = 'uploads') => {
     }
 
     try {
-        const filename = generateFilename(detectExtension(buffer, 'png'));
+        const image = await normalizeImageBuffer(buffer);
+        const filename = generateFilename(image.extension);
         const { absolutePath, publicUrl } = getFilePaths(folder, filename);
 
         ensureDirectoryExists(path.dirname(absolutePath));
 
-        fs.writeFileSync(absolutePath, buffer);
+        fs.writeFileSync(absolutePath, image.buffer);
 
         return publicUrl;
     } catch (error) {
@@ -142,19 +176,19 @@ export const uploadImageBufferDetailed = async (buffer, folder = 'uploads') => {
     }
 
     try {
-        const extension = detectExtension(buffer, 'png');
+        const { buffer: imageBuffer, extension } = await normalizeImageBuffer(buffer);
         const filename = generateFilename(extension);
         const { absolutePath, publicUrl } = getFilePaths(folder, filename);
 
         ensureDirectoryExists(path.dirname(absolutePath));
 
-        fs.writeFileSync(absolutePath, buffer);
+        fs.writeFileSync(absolutePath, imageBuffer);
 
         return {
             secure_url: publicUrl,
             public_id: publicUrl,
             format: extension,
-            bytes: buffer.length,
+            bytes: imageBuffer.length,
             width: null, // Cannot determine easily without sharp, but not strictly required
             height: null,
             resource_type: 'image'

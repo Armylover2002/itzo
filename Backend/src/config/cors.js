@@ -45,4 +45,5 @@ export const corsOptions = {
         return callback(null, false);
     },
     credentials: true,
+    exposedHeaders: ['X-Registration-Token'],
 };
