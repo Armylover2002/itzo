@@ -52,6 +52,7 @@ export default function RestaurantDetailsOverlays(props) {
     setSelectedTimeSlot,
     showOffersSheet,
     setShowOffersSheet,
+    restaurantCoupons,
     expandedCoupons,
     setExpandedCoupons,
     showMenuOptionsSheet,
@@ -130,6 +131,7 @@ export default function RestaurantDetailsOverlays(props) {
         open={showOffersSheet}
         onClose={() => setShowOffersSheet(false)}
         restaurant={restaurant}
+        coupons={restaurantCoupons}
         expandedCoupons={expandedCoupons}
         setExpandedCoupons={setExpandedCoupons}
       />

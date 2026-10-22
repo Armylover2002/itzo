@@ -1,29 +1,43 @@
-import { Percent, ChevronRight } from "lucide-react";
+import { BadgePercent } from "lucide-react";
+import { getCouponHeadline, getCouponSubline } from "./restaurantDetailsUtils";
 
-export default function RestaurantDetailsOffers({ offers = [], activeIndex = 0, onOpenOffers }) {
-  const visibleOffers = offers.filter(Boolean);
-  if (visibleOffers.length === 0) return null;
+/** Zomato-style horizontal strip of the coupons applicable at this restaurant. */
+export default function RestaurantDetailsOffers({ coupons = [], onOpenOffers }) {
+  const visibleCoupons = coupons.filter((coupon) => coupon?.couponCode);
+  if (visibleCoupons.length === 0) return null;
+
+  const single = visibleCoupons.length === 1;
 
   return (
-    <section className="px-4 sm:px-6 mt-4">
+    <section className="mt-4" aria-label="Offers">
       <div className="max-w-7xl mx-auto">
-        <button
-          type="button"
-          onClick={onOpenOffers}
-          className="w-full text-left rounded-2xl border border-red-100 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/20 dark:border-red-900/40 p-4 flex items-center gap-4 hover:shadow-md transition-shadow"
-        >
-          <div className="h-11 w-11 rounded-2xl bg-white dark:bg-[#1a1a1a] flex items-center justify-center shadow-sm shrink-0">
-            <Percent className="h-5 w-5 text-[#FB4F01]" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-[#FB4F01]">Offers available</p>
-            <p className="text-sm font-bold text-gray-900 dark:text-white truncate mt-0.5">
-              {visibleOffers[activeIndex % visibleOffers.length]}
-            </p>
-            <p className="text-xs text-gray-500 mt-0.5">{visibleOffers.length} offer{visibleOffers.length > 1 ? "s" : ""} · Tap to view</p>
-          </div>
-          <ChevronRight className="h-5 w-5 text-gray-400 shrink-0" />
-        </button>
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-4 sm:px-6 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {visibleCoupons.map((coupon, index) => (
+            <button
+              key={coupon.id || coupon.couponCode}
+              type="button"
+              onClick={onOpenOffers}
+              className={`snap-start shrink-0 ${single ? "w-full" : "w-[82%] sm:w-[340px]"} text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] px-3.5 py-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-shadow`}
+            >
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#FB4F01] to-[#ff7a3d] flex items-center justify-center shrink-0">
+                <BadgePercent className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-extrabold text-gray-900 dark:text-white truncate">
+                  {getCouponHeadline(coupon)}
+                </p>
+                <p className="text-[11px] font-semibold tracking-wide text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                  {getCouponSubline(coupon)}
+                </p>
+              </div>
+              {!single && (
+                <span className="self-end text-[10px] font-semibold text-gray-400 shrink-0">
+                  {index + 1}/{visibleCoupons.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
     </section>
   );

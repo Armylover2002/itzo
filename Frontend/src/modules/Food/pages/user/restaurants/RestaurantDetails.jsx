@@ -102,6 +102,7 @@ function RestaurantDetailsContent() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null)
   const [expandedCoupons, setExpandedCoupons] = useState(new Set())
+  const [restaurantCoupons, setRestaurantCoupons] = useState([])
   const [showMenuSheet, setShowMenuSheet] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
@@ -1814,6 +1815,32 @@ function RestaurantDetailsContent() {
     }
   }, [restaurant, targetDishId])
 
+  // Active coupons usable here: admin coupons for this restaurant / all restaurants + the restaurant's own.
+  const couponRestaurantId = restaurant?.mongoId || restaurant?.id || null
+  useEffect(() => {
+    if (!couponRestaurantId) {
+      setRestaurantCoupons([])
+      return
+    }
+    let cancelled = false
+    restaurantAPI
+      .getPublicOffers({ restaurantId: String(couponRestaurantId) }, { contextModule: "user" })
+      .then((res) => {
+        if (cancelled) return
+        const list = res?.data?.data?.allOffers
+        setRestaurantCoupons(
+          Array.isArray(list) ? list.filter((coupon) => coupon?.couponCode && coupon.showInCart !== false) : [],
+        )
+      })
+      .catch((error) => {
+        debugWarn("Failed to load restaurant coupons:", error)
+        if (!cancelled) setRestaurantCoupons([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [couponRestaurantId])
+
   // Highlight offers/texts for the blue offer line
   const highlightOffers = [
     "Upto 50% OFF",
@@ -1969,6 +1996,11 @@ function RestaurantDetailsContent() {
         isOutOfService={isOutOfService}
       />
 
+      <RestaurantDetailsOffers
+        coupons={restaurantCoupons}
+        onOpenOffers={() => setShowOffersSheet(true)}
+      />
+
       <RestaurantDetailsMenuToolbar
         activeFilterCount={activeFilterCount}
         filters={filters}
@@ -2062,6 +2094,7 @@ function RestaurantDetailsContent() {
         setSelectedTimeSlot={setSelectedTimeSlot}
         showOffersSheet={showOffersSheet}
         setShowOffersSheet={setShowOffersSheet}
+        restaurantCoupons={restaurantCoupons}
         expandedCoupons={expandedCoupons}
         setExpandedCoupons={setExpandedCoupons}
         showMenuOptionsSheet={showMenuOptionsSheet}

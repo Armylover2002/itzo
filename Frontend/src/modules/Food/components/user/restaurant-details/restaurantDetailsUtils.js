@@ -10,6 +10,50 @@ export const FOOD_IMAGE_FALLBACK =
   );
 export const RUPEE_SYMBOL = "\u20B9";
 
+const toAmount = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : 0;
+};
+
+/** "20% OFF UPTO \u20B980" / "FLAT \u20B9100 OFF" \u2014 headline for a coupon from /food/restaurant/offers. */
+export const getCouponHeadline = (coupon = {}) => {
+  const value = toAmount(coupon.discountValue);
+  if (coupon.discountType === "percentage") {
+    const max = toAmount(coupon.maxDiscount);
+    return `${value}% OFF${max ? ` UPTO ${RUPEE_SYMBOL}${max}` : ""}`;
+  }
+  return `FLAT ${RUPEE_SYMBOL}${value} OFF`;
+};
+
+/** "USE WELCOME50 | ABOVE \u20B9199" \u2014 sub line shown under the headline. */
+export const getCouponSubline = (coupon = {}) => {
+  const min = toAmount(coupon.minOrderValue);
+  const code = String(coupon.couponCode || "").toUpperCase();
+  return [code && `USE ${code}`, min ? `ABOVE ${RUPEE_SYMBOL}${min}` : ""].filter(Boolean).join(" | ");
+};
+
+/** Terms list for the offers sheet, built only from fields the API actually returns. */
+export const getCouponTerms = (coupon = {}) => {
+  const terms = [];
+  const min = toAmount(coupon.minOrderValue);
+  const max = toAmount(coupon.maxDiscount);
+  if (min) terms.push(`Valid on orders above ${RUPEE_SYMBOL}${min}`);
+  if (coupon.discountType === "percentage" && max) terms.push(`Maximum discount ${RUPEE_SYMBOL}${max}`);
+  if (coupon.isFirstOrderOnly || coupon.customerScope === "first-time") terms.push("Valid on your first order only");
+  if (toAmount(coupon.perUserLimit)) {
+    const limit = toAmount(coupon.perUserLimit);
+    terms.push(`Can be used ${limit} time${limit > 1 ? "s" : ""} per user`);
+  }
+  if (coupon.endDate) {
+    const end = new Date(coupon.endDate);
+    if (!Number.isNaN(end.getTime())) {
+      terms.push(`Valid till ${end.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`);
+    }
+  }
+  terms.push("Apply the code in cart before placing the order");
+  return terms;
+};
+
 const toImageUrl = (value) => {
   if (!value) return "";
   if (typeof value === "string") return value.trim();
