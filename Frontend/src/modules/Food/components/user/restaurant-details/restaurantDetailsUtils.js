@@ -25,6 +25,50 @@ export const getCouponHeadline = (coupon = {}) => {
   return `FLAT ${RUPEE_SYMBOL}${value} OFF`;
 };
 
+/** "Flat \u20B975 OFF" / "20% OFF upto \u20B980" \u2014 sentence-case title for the cart offer banner. */
+export const getCouponShortTitle = (coupon = {}) => {
+  const value = toAmount(coupon.discountValue);
+  if (coupon.discountType === "percentage") {
+    const max = toAmount(coupon.maxDiscount);
+    return `${value}% OFF${max ? ` upto ${RUPEE_SYMBOL}${max}` : ""}`;
+  }
+  return `Flat ${RUPEE_SYMBOL}${value} OFF`;
+};
+
+/** Discount a coupon gives on `subtotal` (0 when the minimum order is not met). */
+export const getCouponDiscountFor = (coupon = {}, subtotal = 0) => {
+  if (subtotal < toAmount(coupon.minOrderValue)) return 0;
+  const value = toAmount(coupon.discountValue);
+  if (coupon.discountType === "percentage") {
+    const pct = (subtotal * value) / 100;
+    const max = toAmount(coupon.maxDiscount);
+    return max ? Math.min(pct, max) : pct;
+  }
+  return Math.min(value, subtotal);
+};
+
+/**
+ * Picks what the Zomato-style cart banner should say: the best unlocked coupon, or
+ * else the one closest to unlocking. Returns null when there is nothing to show.
+ */
+export const pickCartOfferCoupon = (coupons = [], subtotal = 0) => {
+  const list = coupons.filter((coupon) => coupon?.couponCode);
+  if (list.length === 0) return null;
+
+  const unlocked = list
+    .map((coupon) => ({ coupon, discount: getCouponDiscountFor(coupon, subtotal) }))
+    .filter((entry) => entry.discount > 0)
+    .sort((a, b) => b.discount - a.discount)[0];
+  if (unlocked) return { coupon: unlocked.coupon, unlocked: true, amountToUnlock: 0 };
+
+  const closest = list
+    .map((coupon) => ({ coupon, gap: toAmount(coupon.minOrderValue) - subtotal }))
+    .filter((entry) => entry.gap > 0)
+    .sort((a, b) => a.gap - b.gap)[0];
+  if (!closest) return null;
+  return { coupon: closest.coupon, unlocked: false, amountToUnlock: Math.ceil(closest.gap) };
+};
+
 /** "USE WELCOME50 | ABOVE \u20B9199" \u2014 sub line shown under the headline. */
 export const getCouponSubline = (coupon = {}) => {
   const min = toAmount(coupon.minOrderValue);

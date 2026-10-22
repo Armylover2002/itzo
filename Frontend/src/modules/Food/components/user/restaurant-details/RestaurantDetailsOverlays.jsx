@@ -7,6 +7,7 @@ import RestaurantManageCollectionsSheet from "./sheets/RestaurantManageCollectio
 import RestaurantItemDetailSheet from "./sheets/RestaurantItemDetailSheet";
 import RestaurantScheduleSheet from "./sheets/RestaurantScheduleSheet";
 import RestaurantOffersSheet from "./sheets/RestaurantOffersSheet";
+import RestaurantCartOfferBanner from "./RestaurantCartOfferBanner";
 import RestaurantMenuOptionsSheet from "./sheets/RestaurantMenuOptionsSheet";
 import RestaurantShareModal from "./sheets/RestaurantShareModal";
 
@@ -154,7 +155,12 @@ export default function RestaurantDetailsOverlays(props) {
       />
       {typeof window !== "undefined" &&
         createPortal(
-          <AddToCartAnimation bottomOffset={80} linkTo="/food/user/cart" hideOnPages={true} />,
+          <AddToCartAnimation
+            bottomOffset={80}
+            linkTo="/food/user/cart"
+            hideOnPages={true}
+            topBanner={<RestaurantCartOfferBanner coupons={restaurantCoupons} restaurant={restaurant} />}
+          />,
           document.body,
         )}
     </>

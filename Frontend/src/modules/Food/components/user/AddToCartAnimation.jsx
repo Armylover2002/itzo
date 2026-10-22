@@ -29,6 +29,7 @@ export default function AddToCartAnimation({
   hideOnPages = true,
   linkTo = '/food/user/cart',
   dynamicBottom = null,
+  topBanner = null,
 }) {
   const { cart, items, itemCount, total, lastAddEvent, lastRemoveEvent, clearCart } = useCart();
   const location = useLocation();
@@ -441,20 +442,24 @@ export default function AddToCartAnimation({
             }}
             className={`left-0 right-0 z-[9999] flex justify-center px-4 pb-4 md:pb-6 transition-all duration-300 ease-in-out bg-transparent ${dynamicBottom || ''}`}
           >
-            <CartCheckoutBar
-              ref={linkRef}
-              items={cart}
-              count={itemCount}
-              onCheckoutClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                debugLog('Checkout clicked, navigating to:', linkTo);
-                navigate(linkTo);
-              }}
-              menuPath={getFoodCartMenuPath(cart)}
-              onClear={clearCart}
-              className={`pointer-events-auto w-full max-w-md ${pillClassName}`}
-            />
+            <div className="pointer-events-auto w-full max-w-md flex flex-col">
+              {/* Optional strip tucked behind the bar's top edge (e.g. coupon unlock banner) */}
+              {topBanner}
+              <CartCheckoutBar
+                ref={linkRef}
+                items={cart}
+                count={itemCount}
+                onCheckoutClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  debugLog('Checkout clicked, navigating to:', linkTo);
+                  navigate(linkTo);
+                }}
+                menuPath={getFoodCartMenuPath(cart)}
+                onClear={clearCart}
+                className={`relative w-full ${pillClassName}`}
+              />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
