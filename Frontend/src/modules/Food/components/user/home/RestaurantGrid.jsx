@@ -26,30 +26,34 @@ const getCardCouponText = (coupon) => {
   return `${getCouponShortTitle(coupon)}${min > 0 ? ` above ₹${min}` : ""}`;
 };
 
+const MAX_CARD_COUPONS = 4;
+const COUPON_ROTATE_MS = 3000;
+
 /**
- * Splits the public offers list into per-restaurant coupons and platform-wide ones,
- * keeping only the best coupon for each restaurant key (business id, Mongo id or slug).
+ * Splits the public offers list into per-restaurant coupons and platform-wide ones
+ * (business id, Mongo id or slug keys). All coupons are kept so the card can rotate them.
  */
 const buildCouponIndex = (offers = []) => {
   const byRestaurant = new Map();
-  let platformBest = null;
+  const platform = [];
   for (const coupon of offers) {
     if (!coupon?.couponCode || coupon.showInCart === false) continue;
     if (coupon.restaurantScope === "all") {
-      if (!platformBest || couponRank(coupon) > couponRank(platformBest)) platformBest = coupon;
+      platform.push(coupon);
       continue;
     }
     const keys = [coupon.restaurantId, coupon.restaurantSlug].filter(Boolean).map((key) => String(key).toLowerCase());
     for (const key of keys) {
-      const current = byRestaurant.get(key);
-      if (!current || couponRank(coupon) > couponRank(current)) byRestaurant.set(key, coupon);
+      if (!byRestaurant.has(key)) byRestaurant.set(key, []);
+      byRestaurant.get(key).push(coupon);
     }
   }
-  return { byRestaurant, platformBest };
+  return { byRestaurant, platform };
 };
 
-const findRestaurantCoupon = (couponIndex, restaurant) => {
-  if (!couponIndex) return null;
+/** Best-first, de-duplicated coupons for a card: restaurant coupons, else platform-wide ones. */
+const findRestaurantCoupons = (couponIndex, restaurant) => {
+  if (!couponIndex) return [];
   const keys = [
     restaurant?.restaurantId,
     restaurant?.mongoId,
@@ -59,11 +63,65 @@ const findRestaurantCoupon = (couponIndex, restaurant) => {
   ]
     .filter(Boolean)
     .map((key) => String(key).toLowerCase());
+  const seen = new Set();
+  const own = [];
   for (const key of keys) {
-    const coupon = couponIndex.byRestaurant.get(key);
-    if (coupon) return coupon;
+    for (const coupon of couponIndex.byRestaurant.get(key) || []) {
+      if (seen.has(coupon.couponCode)) continue;
+      seen.add(coupon.couponCode);
+      own.push(coupon);
+    }
   }
-  return couponIndex.platformBest;
+  const pool = own.length > 0 ? own : couponIndex.platform;
+  return [...pool].sort((a, b) => couponRank(b) - couponRank(a)).slice(0, MAX_CARD_COUPONS);
+};
+
+/** Zomato-style offer ticker: cycles through coupons with a vertical slide. */
+const CardCouponTicker = ({ coupons }) => {
+  const [active, setActive] = React.useState(0);
+  const count = coupons.length;
+
+  React.useEffect(() => {
+    setActive(0);
+    if (count < 2) return undefined;
+    const timer = setInterval(() => setActive((prev) => (prev + 1) % count), COUPON_ROTATE_MS);
+    return () => clearInterval(timer);
+  }, [count]);
+
+  if (count === 0) return null;
+  const coupon = coupons[active % count];
+
+  return (
+    <div className="mt-1 flex items-center gap-1.5 text-[12px] font-medium text-gray-700 dark:text-gray-300">
+      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#256FEF]">
+        <BadgePercent className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+      </span>
+      <div className="relative h-4 flex-1 overflow-hidden">
+        <AnimatePresence initial={false}>
+          <motion.span
+            key={coupon.couponCode}
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "-100%", opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+            className="absolute inset-0 truncate leading-4"
+          >
+            {getCardCouponText(coupon)}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+      {count > 1 && (
+        <span className="flex shrink-0 items-center gap-0.5">
+          {coupons.map((item, i) => (
+            <span
+              key={item.couponCode}
+              className={`h-1 rounded-full transition-all ${i === active % count ? "w-2.5 bg-[#256FEF]" : "w-1 bg-gray-300"}`}
+            />
+          ))}
+        </span>
+      )}
+    </div>
+  );
 };
 
 const getSavingsPercent = (price, otherPrice) => {
@@ -192,7 +250,7 @@ const FoodRestaurantCard = memo(({
   isFavorite,
   onFavoriteToggle,
   backendOrigin,
-  coupon
+  coupons
 }) => {
   const navigate = useNavigate();
   const { addToCart, updateQuantity, removeFromCart, getCartItem, cart } = useCart();
@@ -313,14 +371,7 @@ const FoodRestaurantCard = memo(({
                 <span className="line-clamp-1">{metaParts.join(" • ")}</span>
               </div>
             )}
-            {coupon && (
-              <div className="mt-1 flex items-center gap-1.5 text-[12px] font-medium text-gray-700 dark:text-gray-300">
-                <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#256FEF]">
-                  <BadgePercent className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
-                </span>
-                <span className="line-clamp-1">{getCardCouponText(coupon)}</span>
-              </div>
-            )}
+            <CardCouponTicker coupons={coupons} />
             {isUnavailable && (
               <p className="mt-1 text-[12px] font-semibold text-red-600">
                 {isOutOfService ? "Not delivering to your location" : "Closed"}
@@ -487,7 +538,7 @@ const RestaurantGrid = memo(({
               isFavorite={isFavorite}
               onFavoriteToggle={onFavoriteToggle}
               backendOrigin={backendOrigin}
-              coupon={findRestaurantCoupon(couponIndex, restaurant)}
+              coupons={findRestaurantCoupons(couponIndex, restaurant)}
             />
           ))}
         </div>
