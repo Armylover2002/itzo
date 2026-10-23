@@ -94,30 +94,42 @@ const CardCouponTicker = ({ coupons }) => {
   const coupon = coupons[active % count];
 
   return (
-    <div className="mt-1 flex items-center gap-1.5 text-[12px] font-medium text-gray-700 dark:text-gray-300">
-      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#256FEF]">
-        <BadgePercent className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
-      </span>
-      <div className="h-4 min-w-0 flex-1 overflow-hidden">
+    <div className="relative mt-2 flex items-center gap-2 overflow-hidden rounded-lg border border-[#256FEF]/25 bg-gradient-to-r from-[#256FEF]/15 to-[#256FEF]/5 px-2 py-1.5 text-[14px] font-bold text-[#1d4fb8] dark:text-blue-300">
+      {/* light sweep to draw the eye */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 w-10 -skew-x-12 bg-white/60"
+        initial={{ x: "-150%" }}
+        animate={{ x: "700%" }}
+        transition={{ duration: 1.4, ease: "easeInOut", repeat: Infinity, repeatDelay: 2.2 }}
+      />
+      <motion.span
+        className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#256FEF]"
+        animate={{ scale: [1, 1.18, 1] }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <BadgePercent className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+      </motion.span>
+      <div className="relative h-5 min-w-0 flex-1 overflow-hidden">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={coupon.couponCode}
-            initial={{ y: 16, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -16, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="truncate leading-4"
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="truncate leading-5"
           >
             {getCardCouponText(coupon)}
           </motion.div>
         </AnimatePresence>
       </div>
       {count > 1 && (
-        <span className="flex shrink-0 items-center gap-0.5">
+        <span className="relative flex shrink-0 items-center gap-0.5">
           {coupons.map((item, i) => (
             <span
               key={item.couponCode}
-              className={`h-1 rounded-full transition-all ${i === active % count ? "w-2.5 bg-[#256FEF]" : "w-1 bg-gray-300"}`}
+              className={`h-1 rounded-full transition-all ${i === active % count ? "w-3 bg-[#256FEF]" : "w-1 bg-[#256FEF]/30"}`}
             />
           ))}
         </span>
