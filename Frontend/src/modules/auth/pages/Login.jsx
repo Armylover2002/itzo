@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react"
 import { motion } from "framer-motion"
 import { Routes, Route, Navigate, Link, useLocation, useNavigate } from "react-router-dom"
-import { Phone, Lock, ArrowRight, ArrowLeft, ShieldCheck, Loader2, UserRound, Headset, ShieldAlert, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react"
+import { Phone, Lock, ArrowRight, ShieldCheck, Loader2, UserRound, Headset, ShieldAlert, Facebook, Instagram, Twitter, Linkedin, Youtube } from "lucide-react"
 import { toast } from "sonner"
 import { authAPI, userAPI } from "@food/api"
 import { isModuleAuthenticated, setAuthData, clearModuleAuth } from "@food/utils/auth"
@@ -447,24 +447,6 @@ export default function UnifiedOTPFastLogin() {
         {/* Dark gradient overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-transparent" />
 
-        {/* Back Button */}
-        <button 
-          type="button"
-          onClick={() => {
-            if (showNameInput) {
-               setStep(1);
-               clearNameFlow();
-            } else if (step === 2) {
-               setStep(1);
-            } else {
-               navigate("/");
-            }
-          }} 
-          className="absolute top-6 left-6 z-20 p-2 bg-white/20 hover:bg-white/30 active:scale-95 rounded-full backdrop-blur-sm transition-all cursor-pointer"
-        >
-          <ArrowLeft className="w-5 h-5 text-white" strokeWidth={3} />
-        </button>
-        
         <div className="relative z-10 flex flex-col items-center mt-[-40px]">
           <motion.div
             initial={{ scale: 0 }}

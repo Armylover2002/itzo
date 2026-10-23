@@ -8,9 +8,63 @@ import { RestaurantGridSkeleton, LoadingSkeletonRegion } from "@food/components/
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
 import { useCart } from "@food/context/CartContext";
 import { buildCartLineId, getDefaultFoodVariant, getFoodDisplayPrice, hasFoodVariants } from "@food/utils/foodVariants";
+import { restaurantAPI } from "@food/api";
+import { getCouponShortTitle } from "@food/components/user/restaurant-details/restaurantDetailsUtils";
 import RestaurantImageCarousel from "./RestaurantImageCarousel";
 
 const ACCENT = "#FB4F01";
+
+// Rough headline value used only to rank coupons for the card ("biggest" offer wins).
+const couponRank = (coupon) =>
+  coupon.discountType === "percentage"
+    ? Number(coupon.maxDiscount) || Number(coupon.discountValue) || 0
+    : Number(coupon.discountValue) || 0;
+
+/** "Flat ₹75 OFF above ₹199" for the restaurant card. */
+const getCardCouponText = (coupon) => {
+  const min = Math.round(Number(coupon.minOrderValue) || 0);
+  return `${getCouponShortTitle(coupon)}${min > 0 ? ` above ₹${min}` : ""}`;
+};
+
+/**
+ * Splits the public offers list into per-restaurant coupons and platform-wide ones,
+ * keeping only the best coupon for each restaurant key (business id, Mongo id or slug).
+ */
+const buildCouponIndex = (offers = []) => {
+  const byRestaurant = new Map();
+  let platformBest = null;
+  for (const coupon of offers) {
+    if (!coupon?.couponCode || coupon.showInCart === false) continue;
+    if (coupon.restaurantScope === "all") {
+      if (!platformBest || couponRank(coupon) > couponRank(platformBest)) platformBest = coupon;
+      continue;
+    }
+    const keys = [coupon.restaurantId, coupon.restaurantSlug].filter(Boolean).map((key) => String(key).toLowerCase());
+    for (const key of keys) {
+      const current = byRestaurant.get(key);
+      if (!current || couponRank(coupon) > couponRank(current)) byRestaurant.set(key, coupon);
+    }
+  }
+  return { byRestaurant, platformBest };
+};
+
+const findRestaurantCoupon = (couponIndex, restaurant) => {
+  if (!couponIndex) return null;
+  const keys = [
+    restaurant?.restaurantId,
+    restaurant?.mongoId,
+    restaurant?._id,
+    restaurant?.id,
+    restaurant?.restaurantNameNormalized,
+  ]
+    .filter(Boolean)
+    .map((key) => String(key).toLowerCase());
+  for (const key of keys) {
+    const coupon = couponIndex.byRestaurant.get(key);
+    if (coupon) return coupon;
+  }
+  return couponIndex.platformBest;
+};
 
 const getSavingsPercent = (price, otherPrice) => {
   const p = Number(price) || 0;
@@ -137,7 +191,8 @@ const FoodRestaurantCard = memo(({
   currentDate,
   isFavorite,
   onFavoriteToggle,
-  backendOrigin
+  backendOrigin,
+  coupon
 }) => {
   const navigate = useNavigate();
   const { addToCart, updateQuantity, removeFromCart, getCartItem, cart } = useCart();
@@ -258,6 +313,14 @@ const FoodRestaurantCard = memo(({
                 <span className="line-clamp-1">{metaParts.join(" • ")}</span>
               </div>
             )}
+            {coupon && (
+              <div className="mt-1 flex items-center gap-1.5 text-[12px] font-medium text-gray-700 dark:text-gray-300">
+                <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#256FEF]">
+                  <BadgePercent className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
+                </span>
+                <span className="line-clamp-1">{getCardCouponText(coupon)}</span>
+              </div>
+            )}
             {isUnavailable && (
               <p className="mt-1 text-[12px] font-semibold text-red-600">
                 {isOutOfService ? "Not delivering to your location" : "Closed"}
@@ -341,6 +404,24 @@ const RestaurantGrid = memo(({
   // Pre-compute Date object once per tick to avoid N new Date() calls inside card renders
   const currentDate = React.useMemo(() => new Date(availabilityTick), [availabilityTick]);
 
+  // One request for all active coupons; each card then picks its own best offer.
+  const [couponIndex, setCouponIndex] = React.useState(null);
+  React.useEffect(() => {
+    let cancelled = false;
+    restaurantAPI
+      .getPublicOffers({}, { contextModule: "user" })
+      .then((res) => {
+        const offers = res?.data?.data?.allOffers;
+        if (!cancelled && Array.isArray(offers)) setCouponIndex(buildCouponIndex(offers));
+      })
+      .catch(() => {
+        // Coupons are decorative on the card; the list works without them.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Re-created after every page lands, so if the sentinel is still on screen (short
   // page, or client-side filters hid most of it) the next page is requested right away.
   React.useEffect(() => {
@@ -406,6 +487,7 @@ const RestaurantGrid = memo(({
               isFavorite={isFavorite}
               onFavoriteToggle={onFavoriteToggle}
               backendOrigin={backendOrigin}
+              coupon={findRestaurantCoupon(couponIndex, restaurant)}
             />
           ))}
         </div>
