@@ -60,6 +60,8 @@ const findRestaurantCoupons = (couponIndex, restaurant) => {
     restaurant?._id,
     restaurant?.id,
     restaurant?.restaurantNameNormalized,
+    // Cards from the home feed carry no normalized name; the backend slug is name.trim().toLowerCase() with dashes as spaces.
+    typeof restaurant?.name === "string" ? restaurant.name.trim().toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ") : null,
   ]
     .filter(Boolean)
     .map((key) => String(key).toLowerCase());
