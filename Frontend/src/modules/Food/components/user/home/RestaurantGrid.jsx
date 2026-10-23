@@ -96,18 +96,18 @@ const CardCouponTicker = ({ coupons }) => {
       <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-[#256FEF]">
         <BadgePercent className="h-2.5 w-2.5 text-white" strokeWidth={2.5} />
       </span>
-      <div className="relative h-4 flex-1 overflow-hidden">
-        <AnimatePresence initial={false}>
-          <motion.span
+      <div className="h-4 min-w-0 flex-1 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
             key={coupon.couponCode}
-            initial={{ y: "100%", opacity: 0 }}
+            initial={{ y: 16, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "-100%", opacity: 0 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="absolute inset-0 truncate leading-4"
+            exit={{ y: -16, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="truncate leading-4"
           >
             {getCardCouponText(coupon)}
-          </motion.span>
+          </motion.div>
         </AnimatePresence>
       </div>
       {count > 1 && (
