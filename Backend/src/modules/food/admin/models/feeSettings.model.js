@@ -96,6 +96,8 @@ const feeSettingsSchema = new mongoose.Schema(
         sponsorRules: { type: [deliverySponsorRuleSchema], default: [] },
         deliveryDistanceSlabs: { type: [deliveryDistanceSlabSchema], default: [] },
         deliveryFeeRanges: { type: [deliveryFeeRangeSchema], default: [] },
+        /** Food orders with item subtotal >= this get free delivery for the user. 0/unset = off. */
+        freeDeliveryThreshold: { type: Number, min: 0 },
         platformFee: { type: Number, min: 0 },
         packagingFee: { type: Number, min: 0 },
         gstRate: { type: Number, min: 0, max: 100 },

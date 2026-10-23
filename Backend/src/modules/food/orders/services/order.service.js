@@ -3444,12 +3444,21 @@ export async function calculateOrder(userId, dto, options = {}) {
     orderType === "mixed" ? Math.max(deliveryFee, qcStoreDeliveryFee) : deliveryFee;
   const expressDeliveryFee =
     orderType === "mixed" ? deliveryFee + qcStoreDeliveryFee : deliveryFee;
-  const selectedDeliveryFee =
+  const baseSelectedDeliveryFee =
     orderType === "mixed"
       ? dto.deliveryFleet === "express"
         ? expressDeliveryFee
         : normalDeliveryFee
       : deliveryFee;
+  // Admin "free delivery above" threshold: food-only orders; the user's delivery fee drops to 0
+  // (rider/total delivery cost is untouched, the platform absorbs it).
+  const freeDeliveryThreshold = Number(feeSettings.freeDeliveryThreshold) || 0;
+  const freeDeliveryApplied =
+    orderType === "food" &&
+    freeDeliveryThreshold > 0 &&
+    subtotal >= freeDeliveryThreshold &&
+    baseSelectedDeliveryFee > 0;
+  const selectedDeliveryFee = freeDeliveryApplied ? 0 : baseSelectedDeliveryFee;
   // Item tax only; delivery-fee tax depends on which delivery option is chosen.
   const itemTax = tax;
   const deliveryFeeTaxLine = buildDeliveryFeeTaxLine(selectedDeliveryFee, feeSettings);
@@ -3606,7 +3615,9 @@ export async function calculateOrder(userId, dto, options = {}) {
       totalDeliveryFee:
         orderType === "food" ? totalDeliveryFee : selectedDeliveryFee,
       userDeliveryFee:
-        orderType === "food" ? userDeliveryFee : selectedDeliveryFee,
+        orderType === "food" ? (freeDeliveryApplied ? 0 : userDeliveryFee) : selectedDeliveryFee,
+      freeDeliveryThreshold: orderType === "food" && freeDeliveryThreshold > 0 ? freeDeliveryThreshold : null,
+      freeDeliveryApplied,
       restaurantDeliveryFee:
         orderType === "food" ? restaurantDeliveryFee : 0,
       sponsoredDelivery:

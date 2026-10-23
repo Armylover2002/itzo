@@ -17,6 +17,7 @@ import { useZone } from "@food/hooks/useZone";
 import OptimizedImage from "@food/components/OptimizedImage";
 import AdvertisementSection from "./AdvertisementSection";
 import PromoRow from "@food/components/user/home/PromoRow";
+import FreeDeliveryBanner from "./FreeDeliveryBanner";
 import { Button } from "@food/components/ui/button";
 import { Card, CardContent } from "@food/components/ui/card";
 import {
@@ -213,6 +214,8 @@ function FoodHomeContent({
           toggleRef={vegModeToggleRef}
         />
       </div>
+
+      <FreeDeliveryBanner />
 
       <div className="relative overflow-hidden rounded-[40px] mx-4 mt-2 px-6 py-10 shadow-[inset_0_-10px_40px_rgba(0,0,0,0.02)] border border-gray-100/50">
         <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: `url(${foodPattern})`, backgroundSize: '150px' }} />

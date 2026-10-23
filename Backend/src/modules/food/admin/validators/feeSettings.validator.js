@@ -61,6 +61,7 @@ const feeSettingsUpsertSchema = z.object({
     deliveryFeeRanges: z.array(rangeSchema).optional(),
     sponsorRules: z.array(sponsorRuleSchema).optional(),
     deliveryDistanceSlabs: z.array(deliveryDistanceSlabSchema).optional(),
+    freeDeliveryThreshold: z.number().min(0).nullable().optional(),
     platformFee: z.number().min(0).nullable().optional(),
     packagingFee: z.number().min(0).nullable().optional(),
     gstRate: z.number().min(0).max(100).nullable().optional(),
@@ -128,6 +129,12 @@ export const validateFeeSettingsUpsertDto = (body) => {
                 deliveryFee: Number(slab?.deliveryFee)
             }))
             : undefined,
+        freeDeliveryThreshold:
+            body?.freeDeliveryThreshold === null
+                ? null
+                : body?.freeDeliveryThreshold !== undefined
+                    ? Number(body.freeDeliveryThreshold)
+                    : undefined,
         platformFee:
             body?.platformFee === null ? null : body?.platformFee !== undefined ? Number(body.platformFee) : undefined,
         packagingFee:

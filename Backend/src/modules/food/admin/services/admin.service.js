@@ -3061,6 +3061,9 @@ export async function upsertFeeSettings(body) {
         if (body.sponsorRules !== undefined) $set.sponsorRules = body.sponsorRules;
         if (body.deliveryDistanceSlabs !== undefined) $set.deliveryDistanceSlabs = body.deliveryDistanceSlabs;
 
+        if (body.freeDeliveryThreshold === null) $unset.freeDeliveryThreshold = 1;
+        else if (body.freeDeliveryThreshold !== undefined) $set.freeDeliveryThreshold = body.freeDeliveryThreshold;
+
         if (body.platformFee === null) $unset.platformFee = 1;
         else if (body.platformFee !== undefined) $set.platformFee = body.platformFee;
 
@@ -3110,6 +3113,7 @@ export async function upsertFeeSettings(body) {
     if (body.perKmCharge !== undefined && body.perKmCharge !== null) payload.perKmCharge = body.perKmCharge;
     if (body.sponsorRules !== undefined) payload.sponsorRules = body.sponsorRules ?? [];
     if (body.deliveryDistanceSlabs !== undefined) payload.deliveryDistanceSlabs = body.deliveryDistanceSlabs ?? [];
+    if (body.freeDeliveryThreshold !== undefined && body.freeDeliveryThreshold !== null) payload.freeDeliveryThreshold = body.freeDeliveryThreshold;
     if (body.platformFee !== undefined && body.platformFee !== null) payload.platformFee = body.platformFee;
     if (body.packagingFee !== undefined && body.packagingFee !== null) payload.packagingFee = body.packagingFee;
     if (body.gstRate !== undefined && body.gstRate !== null) payload.gstRate = body.gstRate;

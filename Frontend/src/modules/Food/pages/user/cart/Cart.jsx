@@ -454,6 +454,7 @@ export default function Cart() {
     packagingFee: 0,
     gstRate: 0,
     deliveryFeeTaxRate: 0,
+    freeDeliveryThreshold: 0,
   })
 
 
@@ -1291,6 +1292,7 @@ useEffect(() => {
           packagingFee: Number(settings.packagingFee ?? 0),
           gstRate: Number(settings.gstRate ?? 0),
           deliveryFeeTaxRate: Number(settings.deliveryFeeTaxRate ?? 0),
+          freeDeliveryThreshold: Number(settings.freeDeliveryThreshold ?? 0),
         })
       }
     } catch (error) {
@@ -1361,6 +1363,11 @@ const baseComputedDeliveryFee =
     ? Number(pricing.deliveryFee || 0)
     : fallbackDeliveryFee
 const deliveryFee = baseComputedDeliveryFee
+// Admin "free delivery above ₹X": nudge the user to add more items until the threshold is met.
+const freeDeliveryThreshold = Number(pricing?.freeDeliveryThreshold ?? feeSettings.freeDeliveryThreshold) || 0
+const freeDeliveryRemaining = Math.max(0, freeDeliveryThreshold - subtotal)
+const showFreeDeliveryNudge =
+  freeDeliveryThreshold > 0 && freeDeliveryRemaining > 0 && deliveryFee > 0 && !isQuickCart && !hasQuickItems
 const quickDeliveryFee = Number(pricing?.quickDeliveryFee || 0) || 0
 const quickEtaLabel = formatQuickEtaWindow(pricing?.etaPromise || pricing?.quickDelivery?.etaPromise)
 const gates = pricing?.quickDelivery?.gates
@@ -3009,6 +3016,22 @@ return (
 
             {/* Coupon Section */}
             <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-gray-800 shadow-sm flex flex-col">
+              {showFreeDeliveryNudge && (
+                <div className="px-4 py-3 md:px-6 md:py-4 border-b border-dashed border-gray-200 dark:border-gray-800 bg-[#fff7f2] dark:bg-orange-900/10">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                    Add items worth {RUPEE_SYMBOL}{Math.ceil(freeDeliveryRemaining)} more to get <span className="text-[#FB4F01]">FREE delivery</span>
+                  </p>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-orange-100 dark:bg-gray-800">
+                    <motion.div
+                      className="h-full rounded-full bg-[#FB4F01]"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (subtotal / freeDeliveryThreshold) * 100)}%` }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                    />
+                  </div>
+                  <p className="mt-1 text-[11px] text-gray-500">Free delivery on orders above {RUPEE_SYMBOL}{freeDeliveryThreshold}</p>
+                </div>
+              )}
               {deliveryFee === 0 && (
                 <div className="px-4 py-3 md:px-6 md:py-4 border-b border-dashed border-gray-200 dark:border-gray-800 flex items-center gap-3 bg-[#f4fcf7] dark:bg-green-900/10">
                   <CheckCircle2 className="h-5 w-5 text-green-600 fill-green-600/20" />

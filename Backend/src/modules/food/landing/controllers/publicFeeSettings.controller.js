@@ -7,6 +7,7 @@ function toPublicFeeSettings(settings) {
     baseDistanceKm: settings.baseDistanceKm ?? null,
     baseDeliveryFee: settings.baseDeliveryFee ?? settings.deliveryFee ?? null,
     perKmCharge: settings.perKmCharge ?? null,
+    freeDeliveryThreshold: settings.freeDeliveryThreshold ?? null,
     platformFee: settings.platformFee ?? null,
     packagingFee: settings.packagingFee ?? null,
     gstRate: settings.gstRate ?? null,
