@@ -8020,7 +8020,10 @@ export async function updateDeliveryPartnerActiveStatus(id, isActive) {
     const nextIsActive = Boolean(isActive);
     const update = {
         isActive: nextIsActive,
-        ...(nextIsActive ? {} : { availabilityStatus: 'offline' }),
+        // Re-activating must also lift a soft-delete, otherwise login stays blocked.
+        ...(nextIsActive
+            ? { isDeleted: false, accountStatus: 'active' }
+            : { availabilityStatus: 'offline' }),
     };
 
     const updated = await FoodDeliveryPartner.findByIdAndUpdate(
