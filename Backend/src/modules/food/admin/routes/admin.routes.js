@@ -140,6 +140,7 @@ router.patch('/foods/:id/approve', checkPermission('food::food_management::food_
 router.patch('/foods/:id/reject', checkPermission('food::food_management::food_approval', 'edit'), foodApprovalController.rejectFoodItemController);
 
 // ----- Offers & Coupons -----
+router.get('/restaurants/:id/coupon-food-items', checkPermission('food::promotions_management::coupons', 'view'), adminController.getRestaurantFoodItemsForCoupon);
 router.get('/offers', checkPermission('food::promotions_management::coupons', 'view'), adminController.getAllOffers);
 router.post('/offers', checkPermission('food::promotions_management::coupons', 'create'), adminController.createAdminOffer);
 router.patch('/offers/:id/cart-visibility', checkPermission('food::promotions_management::coupons', 'edit'), adminController.updateAdminOfferCartVisibility);

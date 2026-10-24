@@ -3405,6 +3405,7 @@ export async function calculateOrder(userId, dto, options = {}) {
       itemSubtotal: foodItemSubtotal,
       userId,
       resolvedRestaurantObjectId,
+      items: items.filter((i) => i.type === "food"),
     });
     discount = couponResult.discount;
     appliedCoupon = couponResult.appliedCoupon;

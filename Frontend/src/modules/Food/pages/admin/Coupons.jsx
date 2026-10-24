@@ -27,6 +27,11 @@ const formatDateCell = (value) => {
 }
 
 const formatDiscount = (offer) => {
+  if (offer.discountType === "free-item") {
+    const qty = Number(offer.freeItemQuantity) || 1
+    const gate = offer.triggerItemName ? ` on ${offer.triggerItemName}` : ""
+    return `Free ${offer.freeItemName || "item"}${qty > 1 ? ` x${qty}` : ""}${gate}`
+  }
   if (offer.discountType === "flat-price") {
     return `₹${Number(offer.discountValue || offer.originalPrice || 0)} OFF`
   }
@@ -132,6 +137,89 @@ function RestaurantMultiSelect({ restaurants, selectedIds, onChange }) {
   )
 }
 
+/** Single-select dropdown with search, listing all of a restaurant's items. */
+function ItemSelect({ items, value, onChange, placeholder, disabled, hasError, clearLabel }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState("")
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onDocClick)
+    return () => document.removeEventListener("mousedown", onDocClick)
+  }, [])
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return q ? items.filter((i) => `${i.name} ${i.categoryName || ""}`.toLowerCase().includes(q)) : items
+  }, [items, query])
+
+  const selected = items.find((i) => i.id === value)
+  const pick = (id) => {
+    onChange(id)
+    setOpen(false)
+    setQuery("")
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((p) => !p)}
+        className={`w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border ${hasError ? "border-red-500" : "border-slate-300"} bg-white text-left disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+      >
+        <span className={selected ? "text-slate-900 truncate" : "text-slate-400 truncate"}>
+          {selected ? `${selected.name} (₹${selected.price})` : placeholder}
+        </span>
+        <ChevronDown className="w-4 h-4 text-slate-500 shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg">
+          <div className="p-2 border-b border-slate-100">
+            <input
+              type="text"
+              autoFocus
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${items.length} items...`}
+              className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="max-h-60 overflow-y-auto">
+            {clearLabel && (
+              <button type="button" onClick={() => pick("")} className="w-full text-left px-3 py-2 text-sm text-slate-500 hover:bg-slate-50">
+                {clearLabel}
+              </button>
+            )}
+            {filtered.length === 0 ? (
+              <p className="px-3 py-3 text-sm text-slate-500">No items found</p>
+            ) : (
+              filtered.map((i) => (
+                <button
+                  key={i.id}
+                  type="button"
+                  onClick={() => pick(i.id)}
+                  className={`w-full flex items-center justify-between gap-2 text-left px-3 py-2 text-sm hover:bg-slate-50 ${i.id === value ? "bg-blue-50 text-blue-700" : "text-slate-800"}`}
+                >
+                  <span className="truncate">
+                    {i.name}
+                    {i.categoryName ? <span className="text-xs text-slate-400"> · {i.categoryName}</span> : null}
+                    {i.isAvailable === false ? <span className="text-xs text-red-500"> · unavailable</span> : null}
+                  </span>
+                  <span className="shrink-0 text-xs text-slate-500">₹{i.price}</span>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Coupons() {
   const [searchQuery, setSearchQuery] = useState("")
   const [offers, setOffers] = useState([])
@@ -147,6 +235,7 @@ export default function Coupons() {
   const [updatingStatus, setUpdatingStatus] = useState({})
   const [editingOfferId, setEditingOfferId] = useState(null)
   const [errors, setErrors] = useState({})
+  const [restaurantFoodItems, setRestaurantFoodItems] = useState([])
   const [formData, setFormData] = useState({
     couponCode: "",
     discountType: "percentage",
@@ -154,6 +243,9 @@ export default function Coupons() {
     customerScope: "all",
     restaurantScope: "all",
     restaurantIds: [],
+    freeItemId: "",
+    freeItemQuantity: "1",
+    triggerItemId: "",
     endDate: "",
     startDate: "",
     minOrderValue: "",
@@ -209,6 +301,29 @@ export default function Coupons() {
     fetchRestaurants()
   }, [])
 
+  const isFreeItem = formData.discountType === "free-item"
+  const freeItemRestaurantId = isFreeItem && formData.restaurantIds.length === 1 ? formData.restaurantIds[0] : ""
+
+  useEffect(() => {
+    if (!freeItemRestaurantId) {
+      setRestaurantFoodItems([])
+      return undefined
+    }
+    let cancelled = false
+    adminAPI
+      .getRestaurantFoodItemsForCoupon(freeItemRestaurantId)
+      .then((res) => {
+        if (!cancelled) setRestaurantFoodItems(res?.data?.data?.items || [])
+      })
+      .catch((err) => {
+        debugError("Error fetching restaurant items:", err)
+        if (!cancelled) setRestaurantFoodItems([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [freeItemRestaurantId])
+
   const todayYMD = () => {
     const d = new Date()
     const m = String(d.getMonth() + 1).padStart(2, "0")
@@ -220,9 +335,15 @@ export default function Coupons() {
     const e = {}
     const f = draft || formData
     const pct = f.discountType === "percentage"
+    const free = f.discountType === "free-item"
     const value = Number(f.discountValue)
     if (!String(f.couponCode || "").trim()) e.couponCode = "Coupon code is required"
-    if (!Number.isFinite(value) || value <= 0) e.discountValue = "Discount must be greater than 0"
+    if (!free && (!Number.isFinite(value) || value <= 0)) e.discountValue = "Discount must be greater than 0"
+    if (free) {
+      if (f.restaurantScope !== "selected" || f.restaurantIds.length !== 1) e.restaurantIds = "Select exactly one restaurant"
+      if (!f.freeItemId) e.freeItemId = "Select the free item"
+      if (!f.triggerItemId && !(Number(f.minOrderValue) > 0)) e.minOrderValue = 'Set "Buy this item" or a min order value'
+    }
     if (pct && (f.maxDiscount === "" || f.maxDiscount === null || f.maxDiscount === undefined)) {
       e.maxDiscount = "Max discount is required for percentage coupons"
     }
@@ -249,6 +370,25 @@ export default function Coupons() {
       value = String(value || "").toUpperCase()
     }
     if (field === "discountType") {
+      if (value === "free-item") {
+        setFormData((prev) => {
+          const next = {
+            ...prev,
+            discountType: value,
+            discountValue: "",
+            maxDiscount: "",
+            restaurantScope: "selected",
+            restaurantIds: prev.restaurantIds.slice(0, 1),
+            freeItemId: "",
+            triggerItemId: "",
+          }
+          validateForm(next)
+          return next
+        })
+        if (submitError) setSubmitError("")
+        if (submitSuccess) setSubmitSuccess("")
+        return
+      }
       // When switching to flat-price, clear and disable maxDiscount
       if (value === "flat-price") {
         setFormData((prev) => {
@@ -262,6 +402,12 @@ export default function Coupons() {
       }
     }
     const next = { ...formData, [field]: value }
+    if (field === "restaurantIds" && formData.discountType === "free-item") {
+      // Free items belong to one restaurant: keep only the latest pick and reset item choices.
+      next.restaurantIds = value.length > 1 ? [value[value.length - 1]] : value
+      next.freeItemId = ""
+      next.triggerItemId = ""
+    }
     // Date constraints
     if (field === "startDate" && next.endDate) {
       // Ensure startDate <= endDate
@@ -297,6 +443,9 @@ export default function Coupons() {
       customerScope: "all",
       restaurantScope: "all",
       restaurantIds: [],
+      freeItemId: "",
+      freeItemQuantity: "1",
+      triggerItemId: "",
       endDate: "",
       startDate: "",
       minOrderValue: "",
@@ -323,6 +472,9 @@ export default function Coupons() {
       couponCode: offer.couponCode || "",
       discountType: offer.discountType || "percentage",
       discountValue: offer.discountValue != null ? String(offer.discountValue) : "",
+      freeItemId: offer.freeItemId || "",
+      freeItemQuantity: String(offer.freeItemQuantity || 1),
+      triggerItemId: offer.triggerItemId || "",
       customerScope: offer.customerScope || "all",
       restaurantScope: offer.restaurantScope || "all",
       restaurantIds: offer.restaurantScope === "selected"
@@ -361,7 +513,7 @@ export default function Coupons() {
     }
 
     const parsedDiscountValue = Number(formData.discountValue)
-    if (!Number.isFinite(parsedDiscountValue) || parsedDiscountValue <= 0) {
+    if (formData.discountType !== "free-item" && (!Number.isFinite(parsedDiscountValue) || parsedDiscountValue <= 0)) {
       setSubmitError("Discount value must be greater than 0")
       return
     }
@@ -376,7 +528,14 @@ export default function Coupons() {
       const payload = {
         couponCode: formData.couponCode.trim(),
         discountType: formData.discountType,
-        discountValue: parsedDiscountValue,
+        discountValue: formData.discountType === "free-item" ? 0 : parsedDiscountValue,
+        ...(formData.discountType === "free-item"
+          ? {
+            freeItemId: formData.freeItemId,
+            freeItemQuantity: Math.max(1, Number(formData.freeItemQuantity) || 1),
+            triggerItemId: formData.triggerItemId || undefined,
+          }
+          : {}),
         customerScope: formData.customerScope,
         restaurantScope: formData.restaurantScope,
         restaurantIds: formData.restaurantScope === "selected" ? formData.restaurantIds : undefined,
@@ -524,9 +683,11 @@ export default function Coupons() {
                   >
                     <option value="percentage">Percentage</option>
                     <option value="flat-price">Flat Amount</option>
+                    <option value="free-item">Free Item</option>
                   </select>
                 </div>
 
+                {!isFreeItem && (
                 <div title={formData.discountType === "flat-price" ? "Max discount is not applicable for flat coupons" : ""}>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">
                     {formData.discountType === "percentage" ? "Discount (%)" : "Discount Amount"}
@@ -542,6 +703,51 @@ export default function Coupons() {
                   />
                   {errors.discountValue && <p className="mt-1 text-xs text-red-600">{errors.discountValue}</p>}
                 </div>
+                )}
+
+                {isFreeItem && (
+                  <>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Free Item</label>
+                      <ItemSelect
+                        items={restaurantFoodItems}
+                        value={formData.freeItemId}
+                        onChange={(id) => handleFormChange("freeItemId", id)}
+                        disabled={!freeItemRestaurantId}
+                        hasError={Boolean(errors.freeItemId)}
+                        placeholder={freeItemRestaurantId ? "Choose free item" : "Select a restaurant first"}
+                      />
+                      {errors.freeItemId && <p className="mt-1 text-xs text-red-600">{errors.freeItemId}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Free Quantity</label>
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={formData.freeItemQuantity}
+                        onChange={(e) => handleFormChange("freeItemQuantity", e.target.value)}
+                        className="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">Buy This Item (optional)</label>
+                      <ItemSelect
+                        items={restaurantFoodItems}
+                        value={formData.triggerItemId}
+                        onChange={(id) => handleFormChange("triggerItemId", id)}
+                        disabled={!freeItemRestaurantId}
+                        placeholder="Any item (use Min Order Value)"
+                        clearLabel="Any item (use Min Order Value)"
+                      />
+                      <p className="mt-1 text-[11px] text-slate-500">
+                        Free item is given when the user buys this item, or orders above the Min Order Value.
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1">Customer Scope</label>
@@ -560,6 +766,7 @@ export default function Coupons() {
                   <select
                     value={formData.restaurantScope}
                     onChange={(e) => handleFormChange("restaurantScope", e.target.value)}
+                    disabled={isFreeItem}
                     className="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="all">All Restaurants</option>
@@ -614,7 +821,7 @@ export default function Coupons() {
                     value={formData.maxDiscount}
                     onChange={(e) => handleFormChange("maxDiscount", e.target.value)}
                   placeholder="e.g. 100"
-                    disabled={formData.discountType === "flat-price"}
+                    disabled={formData.discountType !== "percentage"}
                     className={`w-full px-3 py-2.5 text-sm rounded-lg border ${errors.maxDiscount ? "border-red-500" : "border-slate-300"} bg-white disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500`}
                 />
                   {formData.discountType === "percentage" && errors.maxDiscount && <p className="mt-1 text-xs text-red-600">{errors.maxDiscount}</p>}
@@ -662,13 +869,14 @@ export default function Coupons() {
                 {formData.restaurantScope === "selected" && (
                   <div className="md:col-span-2 lg:col-span-3">
                     <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      Select Restaurants ({formData.restaurantIds.length} selected)
+                      {isFreeItem ? "Select Restaurant (one)" : `Select Restaurants (${formData.restaurantIds.length} selected)`}
                     </label>
                     <RestaurantMultiSelect
                       restaurants={restaurants}
                       selectedIds={formData.restaurantIds}
                       onChange={(ids) => handleFormChange("restaurantIds", ids)}
                     />
+                    {errors.restaurantIds && <p className="mt-1 text-xs text-red-600">{errors.restaurantIds}</p>}
                   </div>
                 )}
               </div>

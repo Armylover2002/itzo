@@ -4,8 +4,11 @@ import { ValidationError } from '../../../../core/auth/errors.js';
 
 const createOfferSchema = z.object({
     couponCode: z.string().min(1, 'Coupon code is required'),
-    discountType: z.enum(['percentage', 'flat-price']).default('percentage'),
-    discountValue: z.number().positive('Discount value must be greater than 0'),
+    discountType: z.enum(['percentage', 'flat-price', 'free-item']).default('percentage'),
+    discountValue: z.number().min(0).default(0),
+    freeItemId: z.string().optional(),
+    freeItemQuantity: z.number().int().min(1).optional(),
+    triggerItemId: z.string().optional(),
     customerScope: z.enum(['all', 'first-time']).default('all'),
     restaurantScope: z.enum(['all', 'selected']).default('all'),
     restaurantId: z.string().optional(),
@@ -24,7 +27,10 @@ export const validateCreateOfferDto = (body) => {
         ...body,
         couponCode: typeof body?.couponCode === 'string' ? body.couponCode.trim() : body?.couponCode,
         discountType: body?.discountType,
-        discountValue: Number(body?.discountValue),
+        discountValue: Number(body?.discountValue) || 0,
+        freeItemId: body?.freeItemId ? String(body.freeItemId) : undefined,
+        freeItemQuantity: body?.freeItemQuantity !== undefined ? Number(body.freeItemQuantity) : undefined,
+        triggerItemId: body?.triggerItemId ? String(body.triggerItemId) : undefined,
         customerScope: body?.customerScope,
         restaurantScope: body?.restaurantScope,
         restaurantId: body?.restaurantId ? String(body.restaurantId) : undefined,
@@ -70,8 +76,28 @@ export const validateCreateOfferDto = (body) => {
         throw new ValidationError('endDate must be a future date');
     }
     // Business rule: percentage coupon must have maxDiscount; flat ignores it
+    const isFreeItem = result.data.discountType === 'free-item';
+    if (!isFreeItem && !(result.data.discountValue > 0)) {
+        throw new ValidationError('Discount value must be greater than 0');
+    }
+    if (isFreeItem) {
+        if (restaurantIds.length !== 1) {
+            throw new ValidationError('Free item coupons must be linked to exactly one restaurant');
+        }
+        if (!result.data.freeItemId || !mongoose.Types.ObjectId.isValid(result.data.freeItemId)) {
+            throw new ValidationError('Select the free item');
+        }
+        if (result.data.triggerItemId && !mongoose.Types.ObjectId.isValid(result.data.triggerItemId)) {
+            throw new ValidationError('Invalid item selected for "buy this item"');
+        }
+        if (!result.data.triggerItemId && !(Number(result.data.minOrderValue) > 0)) {
+            throw new ValidationError('Set a "buy this item" or a minimum order value for the free item coupon');
+        }
+    }
     let maxDiscount = result.data.maxDiscount;
-    if (result.data.discountType === 'percentage') {
+    if (isFreeItem) {
+        maxDiscount = undefined;
+    } else if (result.data.discountType === 'percentage') {
         if (maxDiscount === undefined || maxDiscount === null || Number.isNaN(Number(maxDiscount))) {
             throw new ValidationError('maxDiscount is required for percentage coupons');
         }
@@ -84,6 +110,9 @@ export const validateCreateOfferDto = (body) => {
         couponCode: result.data.couponCode.trim().toUpperCase(),
         discountType: result.data.discountType,
         discountValue: result.data.discountValue,
+        freeItemId: isFreeItem ? result.data.freeItemId : undefined,
+        freeItemQuantity: isFreeItem ? (result.data.freeItemQuantity || 1) : undefined,
+        triggerItemId: isFreeItem ? result.data.triggerItemId : undefined,
         customerScope: result.data.customerScope,
         restaurantScope: result.data.restaurantScope,
         restaurantId: restaurantIds[0],

@@ -27,6 +27,7 @@ export const getCouponHeadline = (coupon = {}) => {
 
 /** "Flat \u20B975 OFF" / "20% OFF upto \u20B980" \u2014 sentence-case title for the cart offer banner. */
 export const getCouponShortTitle = (coupon = {}) => {
+  if (coupon.discountType === "free-item") return `Free ${coupon.freeItem?.name || "item"}`;
   const value = toAmount(coupon.discountValue);
   if (coupon.discountType === "percentage") {
     const max = toAmount(coupon.maxDiscount);
@@ -37,6 +38,7 @@ export const getCouponShortTitle = (coupon = {}) => {
 
 /** Discount a coupon gives on `subtotal` (0 when the minimum order is not met). */
 export const getCouponDiscountFor = (coupon = {}, subtotal = 0) => {
+  if (coupon.discountType === "free-item") return 0; // value comes from the free item line in the cart
   if (subtotal < toAmount(coupon.minOrderValue)) return 0;
   const value = toAmount(coupon.discountValue);
   if (coupon.discountType === "percentage") {

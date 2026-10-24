@@ -5974,6 +5974,11 @@ export async function getAllOffers(_query = {}) {
             customerScope: o.customerScope || 'all',
             discountType: o.discountType,
             discountValue: Number(o.discountValue) || 0,
+            freeItemId: o.freeItemId ? String(o.freeItemId) : null,
+            freeItemName: o.freeItemName || '',
+            freeItemQuantity: o.freeItemQuantity || 1,
+            triggerItemId: o.triggerItemId ? String(o.triggerItemId) : null,
+            triggerItemName: o.triggerItemName || '',
             discountPercentage,
             originalPrice,
             discountedPrice,
@@ -6001,6 +6006,7 @@ export async function getAllOffers(_query = {}) {
 
 export async function createAdminOffer(body) {
     await assertUniquePlatformCouponCode(body.couponCode);
+    const freeItemFields = await resolveFreeItemFields(body);
 
     const doc = await FoodOffer.create({
         couponCode: body.couponCode,
@@ -6010,6 +6016,7 @@ export async function createAdminOffer(body) {
         restaurantScope: body.restaurantScope,
         restaurantId: body.restaurantScope === 'selected' ? body.restaurantId : undefined,
         restaurantIds: body.restaurantScope === 'selected' ? (body.restaurantIds || []) : [],
+        ...freeItemFields,
         minOrderValue: body.minOrderValue ?? 0,
         maxDiscount: body.maxDiscount ?? null,
         usageLimit: body.usageLimit ?? null,
@@ -6059,7 +6066,57 @@ export async function createAdminOffer(body) {
         }
     }
 
+    await invalidateOffersCacheSafely('offer create');
     return doc.toObject();
+}
+
+/** Validates free-item coupon items against the restaurant's menu and returns the fields to persist. */
+async function resolveFreeItemFields(body) {
+    const cleared = { freeItemId: null, freeItemName: '', freeItemQuantity: 1, triggerItemId: null, triggerItemName: '' };
+    if (body.discountType !== 'free-item') return cleared;
+
+    const ids = [body.freeItemId, body.triggerItemId].filter(Boolean);
+    const foods = await FoodItem.find({
+        _id: { $in: ids },
+        restaurantId: body.restaurantId,
+    }).select('name').lean();
+    const byId = new Map(foods.map((f) => [String(f._id), f]));
+
+    const freeItem = byId.get(String(body.freeItemId));
+    if (!freeItem) throw new ValidationError('Free item does not belong to the selected restaurant');
+    const triggerItem = body.triggerItemId ? byId.get(String(body.triggerItemId)) : null;
+    if (body.triggerItemId && !triggerItem) {
+        throw new ValidationError('"Buy this item" does not belong to the selected restaurant');
+    }
+
+    return {
+        freeItemId: freeItem._id,
+        freeItemName: freeItem.name,
+        freeItemQuantity: body.freeItemQuantity || 1,
+        triggerItemId: triggerItem?._id ?? null,
+        triggerItemName: triggerItem?.name ?? '',
+    };
+}
+
+/** Approved menu items of a restaurant, for the free-item coupon pickers. */
+export async function getRestaurantFoodItemsForCoupon(restaurantId) {
+    if (!restaurantId || !mongoose.Types.ObjectId.isValid(String(restaurantId))) {
+        throw new ValidationError('Invalid restaurant id');
+    }
+    const items = await FoodItem.find({ restaurantId, approvalStatus: 'approved' })
+        .sort({ name: 1 })
+        .select('name price image categoryName isAvailable')
+        .lean();
+    return {
+        items: items.map((i) => ({
+            id: String(i._id),
+            name: i.name,
+            price: i.price,
+            image: i.image || '',
+            categoryName: i.categoryName || '',
+            isAvailable: i.isAvailable !== false,
+        })),
+    };
 }
 
 async function invalidateOffersCacheSafely(context) {
@@ -6114,6 +6171,11 @@ export async function updateAdminOffer(id, body) {
         restaurantScope: existing.restaurantScope,
         restaurantId: existing.restaurantId ?? null,
         restaurantIds: existing.restaurantIds ?? [],
+        freeItemId: existing.freeItemId ?? null,
+        freeItemName: existing.freeItemName ?? '',
+        freeItemQuantity: existing.freeItemQuantity ?? 1,
+        triggerItemId: existing.triggerItemId ?? null,
+        triggerItemName: existing.triggerItemName ?? '',
         minOrderValue: existing.minOrderValue ?? 0,
         maxDiscount: existing.maxDiscount ?? null,
         usageLimit: existing.usageLimit ?? null,
@@ -6127,6 +6189,7 @@ export async function updateAdminOffer(id, body) {
     if (body.couponCode && body.couponCode !== existing.couponCode) {
         await assertUniquePlatformCouponCode(body.couponCode, existing._id);
     }
+    const freeItemFields = await resolveFreeItemFields(body);
 
     // Preserve the existing lifecycle state unless the new end date forces inactivity.
     let status = existing.status;
@@ -6145,6 +6208,7 @@ export async function updateAdminOffer(id, body) {
                 restaurantScope: body.restaurantScope,
                 restaurantId: body.restaurantScope === 'selected' ? body.restaurantId : null,
                 restaurantIds: body.restaurantScope === 'selected' ? (body.restaurantIds || []) : [],
+                ...freeItemFields,
                 minOrderValue: body.minOrderValue ?? 0,
                 maxDiscount: body.maxDiscount ?? null,
                 usageLimit: body.usageLimit ?? null,

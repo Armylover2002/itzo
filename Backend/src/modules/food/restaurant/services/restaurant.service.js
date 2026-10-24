@@ -3026,6 +3026,13 @@ export const listPublicOffers = async (query = {}) => {
 
     const { FoodOfferUsage } = await import('../../admin/models/offerUsage.model.js');
 
+    // Free-item coupons: load the free/trigger items so the app can show and auto-add them.
+    const freeItemIds = [...new Set(list.flatMap((o) => (o.discountType === 'free-item' ? [o.freeItemId, o.triggerItemId] : [])).filter(Boolean).map(String))];
+    const freeItemDocs = freeItemIds.length
+        ? await FoodItem.find({ _id: { $in: freeItemIds } }).select('name price image images isAvailable approvalStatus variants foodType').lean()
+        : [];
+    const freeItemById = new Map(freeItemDocs.map((d) => [String(d._id), d]));
+
     const adminOffers = [];
     for (const o of list) {
         if (!isCouponWithinDateWindow(o, now) || !(await isCouponUsageAvailable(o))) continue;
@@ -3054,9 +3061,11 @@ export const listPublicOffers = async (query = {}) => {
                 : 'All Restaurants';
 
         const title =
-            o.discountType === 'percentage'
-                ? `${Number(o.discountValue) || 0}% OFF`
-                : `Flat ₹${Number(o.discountValue) || 0} OFF`;
+            o.discountType === 'free-item'
+                ? `Free ${o.freeItemName || 'item'}`
+                : o.discountType === 'percentage'
+                    ? `${Number(o.discountValue) || 0}% OFF`
+                    : `Flat ₹${Number(o.discountValue) || 0} OFF`;
 
         adminOffers.push({
             id: String(o._id),
@@ -3065,12 +3074,37 @@ export const listPublicOffers = async (query = {}) => {
             title,
             discountType: o.discountType,
             discountValue: o.discountValue,
+            ...(o.discountType === 'free-item' ? (() => {
+                const free = freeItemById.get(String(o.freeItemId));
+                const trigger = o.triggerItemId ? freeItemById.get(String(o.triggerItemId)) : null;
+                return {
+                    freeItem: {
+                        id: String(o.freeItemId),
+                        name: free?.name || o.freeItemName || 'Free item',
+                        price: Number(free?.price) || 0,
+                        image: free?.image || free?.images?.[0] || '',
+                        isVeg: String(free?.foodType || '').toLowerCase() === 'veg',
+                        quantity: o.freeItemQuantity || 1,
+                        available: Boolean(free && free.isAvailable !== false && free.approvalStatus === 'approved'),
+                    },
+                    triggerItem: o.triggerItemId
+                        ? { id: String(o.triggerItemId), name: trigger?.name || o.triggerItemName || '' }
+                        : null,
+                };
+            })() : {}),
             maxDiscount: o.maxDiscount ?? null,
             customerScope: o.customerScope || 'all',
             restaurantScope: o.restaurantScope,
             restaurantId: restaurant?.restaurantId || (restaurant?._id ? String(restaurant._id) : (o.restaurantScope === 'selected' ? String(o.restaurantId) : null)),
             restaurantName,
             restaurantSlug,
+            // Every restaurant this coupon applies to (business id, Mongo id, slug) so listings can match any of them.
+            restaurantKeys: o.restaurantScope === 'selected'
+                ? [...(o.restaurantIds || []), o.restaurantId]
+                    .filter((r) => r && typeof r === 'object')
+                    .flatMap((r) => [r.restaurantId, r._id ? String(r._id) : null, r.restaurantNameNormalized])
+                    .filter(Boolean)
+                : [],
             restaurantImage: restaurant?.profileImage || null,
             deliveryTime: restaurant?.estimatedDeliveryTime || null,
             restaurantRating: typeof restaurant?.rating === 'number' ? restaurant.rating : 0,

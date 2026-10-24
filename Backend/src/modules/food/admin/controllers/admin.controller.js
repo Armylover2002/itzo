@@ -528,6 +528,15 @@ export async function getRestaurantMenuById(req, res, next) {
     }
 }
 
+export async function getRestaurantFoodItemsForCoupon(req, res, next) {
+    try {
+        const data = await adminService.getRestaurantFoodItemsForCoupon(req.params.id);
+        res.status(200).json({ success: true, message: 'Food items fetched successfully', data });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function getRestaurantCategoriesForMenu(req, res, next) {
     try {
         const { id } = req.params;

@@ -3,13 +3,19 @@ import mongoose from 'mongoose';
 const foodOfferSchema = new mongoose.Schema(
     {
         couponCode: { type: String, required: true, trim: true, uppercase: true, unique: true },
-        discountType: { type: String, enum: ['percentage', 'flat-price'], default: 'percentage', index: true },
+        discountType: { type: String, enum: ['percentage', 'flat-price', 'free-item'], default: 'percentage', index: true },
         discountValue: { type: Number, required: true, min: 0 },
         customerScope: { type: String, enum: ['all', 'first-time'], default: 'all', index: true },
         restaurantScope: { type: String, enum: ['all', 'selected'], default: 'all', index: true },
         restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodRestaurant' },
         // Multi-restaurant coupons: restaurantId mirrors the first entry for backward compatibility.
         restaurantIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FoodRestaurant' }],
+        // free-item coupons: freeItemId is given free when triggerItemId is in the cart (or minOrderValue is met).
+        freeItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodItem', default: null },
+        freeItemName: { type: String, trim: true, default: '' },
+        freeItemQuantity: { type: Number, default: 1, min: 1 },
+        triggerItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodItem', default: null },
+        triggerItemName: { type: String, trim: true, default: '' },
         minOrderValue: { type: Number, default: 0, min: 0 },
         maxDiscount: { type: Number, default: null, min: 0 },
         usageLimit: { type: Number, default: null, min: 0 },

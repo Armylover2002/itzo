@@ -304,6 +304,7 @@ export default function Cart() {
 
   const [showCoupons, setShowCoupons] = useState(false)
   const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const pendingFreeCouponRef = useRef(null)
   // { code, amount } while the "You saved ₹X" party-popper popup is showing
   const [couponCelebration, setCouponCelebration] = useState(null)
   const closeCouponCelebration = useCallback(() => setCouponCelebration(null), [])
@@ -1011,18 +1012,29 @@ export default function Cart() {
             const displayDiscount = Number(coupon.displayDiscount) || (isPct ? estimatedDiscount : discountValue)
             const meetsMinOrder = coupon.meetsMinOrder !== false
             const amountToUnlock = Number(coupon.amountToUnlock || 0)
+            const isFreeItem = coupon.discountType === "free-item"
+            const freeItem = coupon.freeItem || null
+            const triggerItem = coupon.triggerItem || null
             return {
+              freeItem,
+              triggerItem,
               code: coupon.couponCode,
               discount: estimatedDiscount,
               discountType: coupon.discountType,
               discountValue,
               displayDiscount,
               discountPercentage: coupon.discountPercentage,
-              discountDisplay: isPct
+              discountDisplay: isFreeItem
+                ? `Free ${freeItem?.name || "item"}${(freeItem?.quantity || 1) > 1 ? ` x${freeItem.quantity}` : ""}`
+                : isPct
                 ? `${coupon.discountPercentage}% OFF`
                 : `${RUPEE_SYMBOL}${displayDiscount} OFF`,
               minOrder: coupon.minOrderValue || 0,
-              description: isPct
+              description: isFreeItem
+                ? (triggerItem?.name
+                  ? `Get ${freeItem?.name || "an item"} free when you order ${triggerItem.name}`
+                  : `Get ${freeItem?.name || "an item"} free on orders above ${RUPEE_SYMBOL}${Number(coupon.minOrderValue || 0)}`)
+                : isPct
                 ? `${coupon.discountPercentage}% OFF on item total with '${coupon.couponCode}'`
                 : `Save ${RUPEE_SYMBOL}${displayDiscount} on item total with '${coupon.couponCode}'`,
               customerGroup: coupon.customerGroup || coupon.customerScope || "all",
@@ -1681,6 +1693,42 @@ const celebrateCoupon = (code, discount) => {
 }
 
 const handleApplyCoupon = async (coupon) => {
+  // Free-item coupons: needs the "buy" item in the cart, and the free item is added automatically.
+  if (coupon?.discountType === "free-item" && coupon.freeItem) {
+    const { freeItem, triggerItem } = coupon
+    const inCart = (id) => cart.some((entry) => String(entry.itemId || entry.id) === String(id))
+    if (triggerItem?.id && !inCart(triggerItem.id)) {
+      toast.error(`Add ${triggerItem.name || "the required item"} to your cart to get ${freeItem.name} free`)
+      return
+    }
+    if (!freeItem.available) {
+      toast.error(`${freeItem.name} is currently unavailable`)
+      return
+    }
+    if (!inCart(freeItem.id)) {
+      const base = cart[0] || {}
+      pendingFreeCouponRef.current = coupon
+      addToCart({
+        restaurant: base.restaurant,
+        restaurantId: base.restaurantId,
+        sourceId: base.sourceId,
+        sourceName: base.sourceName,
+        orderType: base.orderType,
+        id: String(freeItem.id),
+        lineItemId: String(freeItem.id),
+        itemId: String(freeItem.id),
+        name: freeItem.name,
+        price: freeItem.price,
+        image: freeItem.image,
+        isVeg: freeItem.isVeg,
+        variantId: "",
+        variantName: "",
+        quantity: Number(freeItem.quantity) || 1,
+      })
+      return
+    }
+  }
+
   if (coupon?.meetsMinOrder === false) {
     toast.error(`Add items worth ${RUPEE_SYMBOL}${Number(coupon.amountToUnlock || 0)} to apply this coupon`)
     return
@@ -1734,6 +1782,17 @@ const handleApplyCoupon = async (coupon) => {
   }
 }
 
+// After the free item is auto-added, finish applying the pending free-item coupon.
+useEffect(() => {
+  const pending = pendingFreeCouponRef.current
+  if (!pending) return
+  const freeId = String(pending.freeItem?.id || "")
+  if (cart.some((entry) => String(entry.itemId || entry.id) === freeId)) {
+    pendingFreeCouponRef.current = null
+    handleApplyCoupon(pending)
+  }
+}, [cart])
+
 const handleApplyCouponCode = async () => {
   const inputCode = manualCouponCode.trim().toUpperCase()
   if (!inputCode) {
@@ -1749,6 +1808,11 @@ const handleApplyCouponCode = async () => {
   const matchedCoupon = availableCoupons.find(
     (coupon) => String(coupon.code || "").toUpperCase() === inputCode,
   )
+
+  if (matchedCoupon?.discountType === "free-item") {
+    await handleApplyCoupon(matchedCoupon)
+    return
+  }
 
   try {
     const result = await runSequencedFoodCalculate(

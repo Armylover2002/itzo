@@ -67,6 +67,44 @@ export function normalizeDiscountType(discountType) {
     return 'percentage';
 }
 
+export function isFreeItemCoupon(coupon) {
+    return String(coupon?.discountType || '').toLowerCase() === 'free-item';
+}
+
+const lineItemId = (item) => String(item?.itemId || item?.id || item?._id || '');
+
+/**
+ * Free-item coupon: the free item must already be in the cart (the app adds it automatically).
+ * Gate = "buy this item" in the cart, and/or min order value (free item lines excluded from the subtotal).
+ * Discount = price of the free units (up to freeItemQuantity).
+ */
+export function calculateFreeItemDiscount(coupon, items = []) {
+    const freeId = String(coupon?.freeItemId?._id || coupon?.freeItemId || '');
+    if (!freeId) return 0;
+    const lines = Array.isArray(items) ? items : [];
+    const freeLines = lines.filter((it) => lineItemId(it) === freeId);
+    if (!freeLines.length) return 0;
+
+    const triggerId = String(coupon?.triggerItemId?._id || coupon?.triggerItemId || '');
+    if (triggerId && !lines.some((it) => lineItemId(it) === triggerId && (Number(it.quantity) || 1) > 0)) return 0;
+
+    const lineTotal = (it) => (Number(it.price) || 0) * (Number(it.quantity) || 1);
+    const paidSubtotal = lines
+        .filter((it) => lineItemId(it) !== freeId)
+        .reduce((sum, it) => sum + lineTotal(it), 0);
+    if (paidSubtotal < getCouponMinOrderValue(coupon)) return 0;
+
+    let remaining = Math.max(1, Number(coupon.freeItemQuantity) || 1);
+    let discount = 0;
+    for (const line of freeLines) {
+        const free = Math.min(remaining, Number(line.quantity) || 1);
+        discount += free * (Number(line.price) || 0);
+        remaining -= free;
+        if (remaining <= 0) break;
+    }
+    return Math.max(0, Math.floor(discount));
+}
+
 export function calculateDiscountFromCoupon(coupon, itemSubtotal) {
     const safeSubtotal = Math.max(0, Number(itemSubtotal) || 0);
     if (!coupon || safeSubtotal <= 0) return 0;
@@ -253,6 +291,7 @@ export async function validateAndApplyCoupon({
     itemSubtotal,
     userId,
     resolvedRestaurantObjectId,
+    items = [],
 }) {
     const codeRaw = couponCode ? String(couponCode).trim().toUpperCase() : '';
     if (!codeRaw || itemSubtotal <= 0) {
@@ -268,7 +307,8 @@ export async function validateAndApplyCoupon({
     if (offer) {
         const statusOk = offer.status === 'active' && offer.showInCart !== false;
         const scopeOk = offerMatchesRestaurant(offer, resolvedRestaurantObjectId);
-        const minOk = itemSubtotal >= getCouponMinOrderValue(offer);
+        // Free-item coupons check their own gate (trigger item / min order) inside calculateFreeItemDiscount.
+        const minOk = isFreeItemCoupon(offer) || itemSubtotal >= getCouponMinOrderValue(offer);
         const dateOk = isCouponWithinDateWindow(offer, now);
         const usageOk = await isCouponUsageAvailable(offer);
 
@@ -283,7 +323,12 @@ export async function validateAndApplyCoupon({
 
         const allowed = statusOk && scopeOk && minOk && dateOk && usageOk && perUserOk && firstOrderOk;
         if (allowed) {
-            const discount = calculateDiscountFromCoupon(offer, itemSubtotal);
+            const discount = isFreeItemCoupon(offer)
+                ? calculateFreeItemDiscount(offer, items)
+                : calculateDiscountFromCoupon(offer, itemSubtotal);
+            if (isFreeItemCoupon(offer) && discount <= 0) {
+                return { discount: 0, appliedCoupon: null };
+            }
             return {
                 discount,
                 appliedCoupon: {
@@ -341,6 +386,18 @@ export async function validateAndApplyCoupon({
 
 export function getCouponCartEligibility(coupon, numericSubtotal) {
     const minOrderValue = getCouponMinOrderValue(coupon);
+    if (isFreeItemCoupon(coupon)) {
+        // Item-based: the app checks the trigger item against the cart; only min order is known here.
+        const hasSub = Number.isFinite(numericSubtotal) && numericSubtotal > 0;
+        const meets = minOrderValue <= 0 || (hasSub && numericSubtotal >= minOrderValue);
+        return {
+            minOrderValue,
+            meetsMinOrder: meets,
+            amountToUnlock: meets ? 0 : Math.max(0, Math.ceil(minOrderValue - (hasSub ? numericSubtotal : 0))),
+            estimatedDiscount: 0,
+            displayDiscount: 0,
+        };
+    }
     const hasSubtotal = Number.isFinite(numericSubtotal) && numericSubtotal > 0;
     const meetsMinOrder = minOrderValue <= 0 || (hasSubtotal && numericSubtotal >= minOrderValue);
     const amountToUnlock = meetsMinOrder

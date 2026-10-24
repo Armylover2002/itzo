@@ -42,8 +42,10 @@ const buildCouponIndex = (offers = []) => {
       platform.push(coupon);
       continue;
     }
-    const keys = [coupon.restaurantId, coupon.restaurantSlug].filter(Boolean).map((key) => String(key).toLowerCase());
-    for (const key of keys) {
+    const keys = [coupon.restaurantId, coupon.restaurantSlug, ...(coupon.restaurantKeys || [])]
+      .filter(Boolean)
+      .map((key) => String(key).toLowerCase());
+    for (const key of new Set(keys)) {
       if (!byRestaurant.has(key)) byRestaurant.set(key, []);
       byRestaurant.get(key).push(coupon);
     }

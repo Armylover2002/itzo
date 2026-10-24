@@ -978,6 +978,8 @@ export const adminAPI = {
     }),
 
   /** Offers & Coupons (admin) */
+  getRestaurantFoodItemsForCoupon: (restaurantId) =>
+    apiClient.get(`/food/admin/restaurants/${restaurantId}/coupon-food-items`, { contextModule: "admin" }),
   getAllOffers: (params = {}) =>
     apiClient.get("/food/admin/offers", { params, contextModule: "admin" }),
   createAdminOffer: (body) =>
@@ -1571,6 +1573,8 @@ export const restaurantAPI = {
           endDate: o.endDate || null,
           showInCart: o.showInCart !== false,
           estimatedDiscount,
+          freeItem: o.freeItem || null,
+          triggerItem: o.triggerItem || null,
           couponSource: o.couponSource || "admin",
           meetsMinOrder: o.meetsMinOrder !== false,
           amountToUnlock: Number(o.amountToUnlock || 0),
