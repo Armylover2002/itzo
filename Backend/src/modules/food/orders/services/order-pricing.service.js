@@ -12,6 +12,7 @@ import { ValidationError } from '../../../../core/auth/errors.js';
 import { resolveRestaurantCommissionPercentage } from '../../constants/commission.constants.js';
 import { resolveRestaurantDocument } from '../../shared/restaurantIdentity.util.js';
 import { roadDistanceKm } from './order.helpers.js';
+import { offerMatchesRestaurant } from '../../shared/coupon.util.js';
 
 function roundCurrency(value) {
   const num = Number(value);
@@ -210,9 +211,7 @@ export async function calculateOrderPricing(userId, dto) {
       const statusOk = offer.status === "active";
       const startOk = !offer.startDate || now >= new Date(offer.startDate);
       const endOk = !offer.endDate || now < new Date(offer.endDate);
-      const scopeOk =
-        offer.restaurantScope !== "selected" ||
-        String(offer.restaurantId || "") === String(resolvedRestaurantObjectId || "");
+      const scopeOk = offerMatchesRestaurant(offer, resolvedRestaurantObjectId);
       const minOk = subtotal >= (Number(offer.minOrderValue) || 0);
       let usageOk = true;
       if (

@@ -5937,6 +5937,7 @@ export async function getAllOffers(_query = {}) {
     const list = await FoodOffer.find({})
         .sort({ createdAt: -1 })
         .populate({ path: 'restaurantId', select: 'restaurantName' })
+        .populate({ path: 'restaurantIds', select: 'restaurantName' })
         .lean();
 
     const offers = list.map((o, index) => {
@@ -5946,9 +5947,11 @@ export async function getAllOffers(_query = {}) {
         const isScheduled = Boolean(startTs && now < startTs);
         const isExpired = isOfferEndDateExpired(o.endDate);
 
+        // Legacy offers only have restaurantId; fall back to it when restaurantIds is empty.
+        const selectedRestaurants = (o.restaurantIds?.length ? o.restaurantIds : [o.restaurantId]).filter(Boolean);
         const restaurantName =
             o.restaurantScope === 'selected'
-                ? (o.restaurantId?.restaurantName || 'Selected Restaurant')
+                ? (selectedRestaurants.map((r) => r?.restaurantName).filter(Boolean).join(', ') || 'Selected Restaurant')
                 : 'All Restaurants';
 
         const discountPercentage = o.discountType === 'percentage' ? Number(o.discountValue) : 0;
@@ -5988,6 +5991,7 @@ export async function getAllOffers(_query = {}) {
             restaurantDbId: o.restaurantId
                 ? String(o.restaurantId?._id || o.restaurantId)
                 : null,
+            restaurantDbIds: selectedRestaurants.map((r) => String(r?._id || r)),
             createdByRole: o.createdByRole || 'ADMIN',
         };
     });
@@ -6005,6 +6009,7 @@ export async function createAdminOffer(body) {
         customerScope: body.customerScope,
         restaurantScope: body.restaurantScope,
         restaurantId: body.restaurantScope === 'selected' ? body.restaurantId : undefined,
+        restaurantIds: body.restaurantScope === 'selected' ? (body.restaurantIds || []) : [],
         minOrderValue: body.minOrderValue ?? 0,
         maxDiscount: body.maxDiscount ?? null,
         usageLimit: body.usageLimit ?? null,
@@ -6033,11 +6038,11 @@ export async function createAdminOffer(body) {
         throw error;
     }
 
-    if (doc.restaurantScope === 'selected' && doc.restaurantId) {
+    if (doc.restaurantScope === 'selected' && doc.restaurantIds?.length) {
         try {
             const { notifyOwnersWithInbox } = await import('../../../../core/notifications/ownerInboxNotify.js');
             await notifyOwnersWithInbox(
-                [{ ownerType: 'RESTAURANT', ownerId: doc.restaurantId }],
+                doc.restaurantIds.map((rid) => ({ ownerType: 'RESTAURANT', ownerId: rid })),
                 {
                     title: 'New Campaign Invitation! 📢',
                     body: `You have been invited to join a new campaign: "${doc.couponCode}". Check it out now!`,
@@ -6108,6 +6113,7 @@ export async function updateAdminOffer(id, body) {
         customerScope: existing.customerScope,
         restaurantScope: existing.restaurantScope,
         restaurantId: existing.restaurantId ?? null,
+        restaurantIds: existing.restaurantIds ?? [],
         minOrderValue: existing.minOrderValue ?? 0,
         maxDiscount: existing.maxDiscount ?? null,
         usageLimit: existing.usageLimit ?? null,
@@ -6138,6 +6144,7 @@ export async function updateAdminOffer(id, body) {
                 customerScope: body.customerScope,
                 restaurantScope: body.restaurantScope,
                 restaurantId: body.restaurantScope === 'selected' ? body.restaurantId : null,
+                restaurantIds: body.restaurantScope === 'selected' ? (body.restaurantIds || []) : [],
                 minOrderValue: body.minOrderValue ?? 0,
                 maxDiscount: body.maxDiscount ?? null,
                 usageLimit: body.usageLimit ?? null,

@@ -34,6 +34,10 @@ export function resolveFirstTimeRestaurantScope(coupon, resolvedRestaurantObject
     if (coupon.restaurantScope === 'all') return null;
 
     if (coupon.restaurantScope === 'selected') {
+        // Multi-restaurant offer: scope first-time check to the restaurant being ordered from.
+        if (resolvedRestaurantObjectId && offerMatchesRestaurant(coupon, resolvedRestaurantObjectId)) {
+            return new mongoose.Types.ObjectId(String(resolvedRestaurantObjectId));
+        }
         const fromCoupon = coupon.restaurantId?._id || coupon.restaurantId;
         if (fromCoupon && mongoose.Types.ObjectId.isValid(String(fromCoupon))) {
             return new mongoose.Types.ObjectId(String(fromCoupon));

@@ -3005,16 +3005,23 @@ export const listPublicOffers = async (query = {}) => {
                 {
                     $and: [
                         { restaurantScope: 'selected' },
-                        { restaurantId: resolvedRestaurantObjectId },
+                        {
+                            $or: [
+                                { restaurantId: resolvedRestaurantObjectId },
+                                { restaurantIds: resolvedRestaurantObjectId },
+                            ],
+                        },
                     ],
                 },
             ],
         });
     }
 
+    const restaurantPopulateSelect = 'restaurantName restaurantNameNormalized profileImage estimatedDeliveryTime rating restaurantId';
     const list = await FoodOffer.find(filter)
         .sort({ createdAt: -1 })
-        .populate({ path: 'restaurantId', select: 'restaurantName restaurantNameNormalized profileImage estimatedDeliveryTime rating restaurantId' })
+        .populate({ path: 'restaurantId', select: restaurantPopulateSelect })
+        .populate({ path: 'restaurantIds', select: restaurantPopulateSelect })
         .lean();
 
     const { FoodOfferUsage } = await import('../../admin/models/offerUsage.model.js');
@@ -3033,7 +3040,13 @@ export const listPublicOffers = async (query = {}) => {
             if (!perUserOk) continue;
         }
 
-        const restaurant = o.restaurantId && typeof o.restaurantId === 'object' ? o.restaurantId : null;
+        // For multi-restaurant offers, show the restaurant being browsed (else the first one).
+        const matchedRestaurant = resolvedRestaurantObjectId
+            ? (o.restaurantIds || []).find((r) => String(r?._id || r) === String(resolvedRestaurantObjectId))
+            : null;
+        const firstRestaurant = (o.restaurantIds || [])[0];
+        const pickedRestaurant = matchedRestaurant || (o.restaurantId && typeof o.restaurantId === 'object' ? o.restaurantId : null) || firstRestaurant;
+        const restaurant = pickedRestaurant && typeof pickedRestaurant === 'object' ? pickedRestaurant : null;
         const restaurantSlug = restaurant?.restaurantNameNormalized || undefined;
         const restaurantName =
             o.restaurantScope === 'selected'

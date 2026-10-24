@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
-import { Search } from "lucide-react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { Search, ChevronDown, X } from "lucide-react"
 import { adminAPI } from "@food/api"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -36,6 +36,102 @@ const formatDiscount = (offer) => {
 }
 
 
+function RestaurantMultiSelect({ restaurants, selectedIds, onChange }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState("")
+  const ref = useRef(null)
+
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onDocClick)
+    return () => document.removeEventListener("mousedown", onDocClick)
+  }, [])
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return q ? restaurants.filter((r) => (r.name || "").toLowerCase().includes(q)) : restaurants
+  }, [restaurants, query])
+
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds])
+  const nameById = useMemo(() => new Map(restaurants.map((r) => [String(r._id), r.name])), [restaurants])
+
+  const toggle = (id) => {
+    onChange(selectedSet.has(id) ? selectedIds.filter((x) => x !== id) : [...selectedIds, id])
+  }
+  const allFilteredSelected = filtered.length > 0 && filtered.every((r) => selectedSet.has(String(r._id)))
+  const toggleAllFiltered = () => {
+    const ids = filtered.map((r) => String(r._id))
+    onChange(
+      allFilteredSelected
+        ? selectedIds.filter((x) => !ids.includes(x))
+        : [...new Set([...selectedIds, ...ids])],
+    )
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((p) => !p)}
+        className="w-full flex items-center justify-between px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <span className={selectedIds.length ? "text-slate-900" : "text-slate-400"}>
+          {selectedIds.length ? `${selectedIds.length} restaurant(s) selected` : "Choose restaurants"}
+        </span>
+        <ChevronDown className="w-4 h-4 text-slate-500" />
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg">
+          <div className="p-2 border-b border-slate-100">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search restaurant..."
+              className="w-full px-3 py-2 text-sm rounded-md border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <label className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-700 border-b border-slate-100 cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" checked={allFilteredSelected} onChange={toggleAllFiltered} className="h-4 w-4" />
+            Select all{query.trim() ? " (filtered)" : ""}
+          </label>
+          <div className="max-h-60 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <p className="px-3 py-3 text-sm text-slate-500">No restaurants found</p>
+            ) : (
+              filtered.map((r) => {
+                const id = String(r._id)
+                return (
+                  <label key={id} className="flex items-center gap-2 px-3 py-2 text-sm text-slate-800 cursor-pointer hover:bg-slate-50">
+                    <input type="checkbox" checked={selectedSet.has(id)} onChange={() => toggle(id)} className="h-4 w-4" />
+                    {r.name}
+                  </label>
+                )
+              })
+            )}
+          </div>
+        </div>
+      )}
+
+      {selectedIds.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {selectedIds.map((id) => (
+            <span key={id} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium">
+              {nameById.get(id) || "Restaurant"}
+              <button type="button" onClick={() => toggle(id)} aria-label="Remove">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Coupons() {
   const [searchQuery, setSearchQuery] = useState("")
   const [offers, setOffers] = useState([])
@@ -57,7 +153,7 @@ export default function Coupons() {
     discountValue: "",
     customerScope: "all",
     restaurantScope: "all",
-    restaurantId: "",
+    restaurantIds: [],
     endDate: "",
     startDate: "",
     minOrderValue: "",
@@ -200,7 +296,7 @@ export default function Coupons() {
       discountValue: "",
       customerScope: "all",
       restaurantScope: "all",
-      restaurantId: "",
+      restaurantIds: [],
       endDate: "",
       startDate: "",
       minOrderValue: "",
@@ -229,7 +325,11 @@ export default function Coupons() {
       discountValue: offer.discountValue != null ? String(offer.discountValue) : "",
       customerScope: offer.customerScope || "all",
       restaurantScope: offer.restaurantScope || "all",
-      restaurantId: offer.restaurantScope === "selected" ? String(offer.restaurantDbId || offer.restaurantId || "") : "",
+      restaurantIds: offer.restaurantScope === "selected"
+        ? (Array.isArray(offer.restaurantDbIds) && offer.restaurantDbIds.length
+          ? offer.restaurantDbIds.map(String)
+          : [String(offer.restaurantDbId || offer.restaurantId || "")].filter(Boolean))
+        : [],
       endDate: toYMD(offer.endDate),
       startDate: toYMD(offer.startDate),
       minOrderValue: offer.minOrderValue != null && offer.minOrderValue !== 0 ? String(offer.minOrderValue) : "",
@@ -266,8 +366,8 @@ export default function Coupons() {
       return
     }
 
-    if (formData.restaurantScope === "selected" && !formData.restaurantId) {
-      setSubmitError("Please select a restaurant")
+    if (formData.restaurantScope === "selected" && formData.restaurantIds.length === 0) {
+      setSubmitError("Please select at least one restaurant")
       return
     }
 
@@ -279,7 +379,7 @@ export default function Coupons() {
         discountValue: parsedDiscountValue,
         customerScope: formData.customerScope,
         restaurantScope: formData.restaurantScope,
-        restaurantId: formData.restaurantScope === "selected" ? formData.restaurantId : undefined,
+        restaurantIds: formData.restaurantScope === "selected" ? formData.restaurantIds : undefined,
         endDate: formData.endDate || undefined,
         startDate: formData.startDate || undefined,
         minOrderValue: formData.minOrderValue !== "" ? Number(formData.minOrderValue) : undefined,
@@ -561,19 +661,14 @@ export default function Coupons() {
 
                 {formData.restaurantScope === "selected" && (
                   <div className="md:col-span-2 lg:col-span-3">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">Select Restaurant</label>
-                    <select
-                      value={formData.restaurantId}
-                      onChange={(e) => handleFormChange("restaurantId", e.target.value)}
-                      className="w-full px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Choose a restaurant</option>
-                      {restaurants.map((restaurant) => (
-                        <option key={restaurant._id} value={restaurant._id}>
-                          {restaurant.name}
-                        </option>
-                      ))}
-                    </select>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      Select Restaurants ({formData.restaurantIds.length} selected)
+                    </label>
+                    <RestaurantMultiSelect
+                      restaurants={restaurants}
+                      selectedIds={formData.restaurantIds}
+                      onChange={(ids) => handleFormChange("restaurantIds", ids)}
+                    />
                   </div>
                 )}
               </div>

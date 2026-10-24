@@ -9,6 +9,7 @@ const createOfferSchema = z.object({
     customerScope: z.enum(['all', 'first-time']).default('all'),
     restaurantScope: z.enum(['all', 'selected']).default('all'),
     restaurantId: z.string().optional(),
+    restaurantIds: z.array(z.string()).optional(),
     endDate: z.string().optional().or(z.literal('')).or(z.undefined()),
     startDate: z.string().optional().or(z.literal('')).or(z.undefined()),
     minOrderValue: z.number().min(0).optional(),
@@ -27,6 +28,9 @@ export const validateCreateOfferDto = (body) => {
         customerScope: body?.customerScope,
         restaurantScope: body?.restaurantScope,
         restaurantId: body?.restaurantId ? String(body.restaurantId) : undefined,
+        restaurantIds: Array.isArray(body?.restaurantIds)
+            ? [...new Set(body.restaurantIds.map((id) => String(id)))]
+            : undefined,
         endDate: body?.endDate ? String(body.endDate) : undefined,
         startDate: body?.startDate ? String(body.startDate) : undefined,
         minOrderValue: body?.minOrderValue !== undefined ? Number(body.minOrderValue) : undefined,
@@ -41,9 +45,13 @@ export const validateCreateOfferDto = (body) => {
         throw new ValidationError(result.error.errors[0].message);
     }
 
+    let restaurantIds = [];
     if (result.data.restaurantScope === 'selected') {
-        if (!result.data.restaurantId || !mongoose.Types.ObjectId.isValid(result.data.restaurantId)) {
-            throw new ValidationError('Valid restaurantId is required for selected restaurant scope');
+        restaurantIds = result.data.restaurantIds?.length
+            ? result.data.restaurantIds
+            : (result.data.restaurantId ? [result.data.restaurantId] : []);
+        if (!restaurantIds.length || !restaurantIds.every((id) => mongoose.Types.ObjectId.isValid(id))) {
+            throw new ValidationError('At least one valid restaurant is required for selected restaurant scope');
         }
     }
 
@@ -78,7 +86,8 @@ export const validateCreateOfferDto = (body) => {
         discountValue: result.data.discountValue,
         customerScope: result.data.customerScope,
         restaurantScope: result.data.restaurantScope,
-        restaurantId: result.data.restaurantScope === 'selected' ? result.data.restaurantId : undefined,
+        restaurantId: restaurantIds[0],
+        restaurantIds,
         endDate,
         startDate,
         minOrderValue: result.data.minOrderValue,
