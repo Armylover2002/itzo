@@ -1422,7 +1422,10 @@ const otherPlatformSubtotal = cart.reduce((sum, item) => {
   return sum + (itemOtherPrice * (item.quantity || 1));
 }, 0);
 
-const otherPlatformSavings = Math.max(0, otherPlatformSubtotal - subtotal);
+// Compare like for like: other platform item total vs our item total AFTER
+// the coupon discount, so removing a coupon updates the savings number too.
+const effectiveItemTotal = Math.max(0, subtotal - discount);
+const otherPlatformSavings = Math.max(0, otherPlatformSubtotal - effectiveItemTotal);
 
 const savings = pricing?.savings ?? Math.max(0, totalBeforeDiscount - total)
 const isUserCodAllowed = userProfile?.isCodAllowed !== false
@@ -3507,7 +3510,7 @@ return (
                       )}
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Incl. taxes and charges</p>
-                    {otherPlatformSubtotal > subtotal && (
+                    {otherPlatformSavings > 0 && (
                       <p className="text-xs font-semibold text-[#FB4F01] dark:text-red-400 mt-1">
                         Other platform item total {RUPEE_SYMBOL}{otherPlatformSubtotal.toFixed(0)} • Save {RUPEE_SYMBOL}{otherPlatformSavings.toFixed(0)}
                       </p>
@@ -3604,10 +3607,10 @@ return (
                   </div>
 
                   {/* Price Comparison Summary - Moved below To Pay */}
-                  {otherPlatformSubtotal > subtotal && (
+                  {otherPlatformSavings > 0 && (
                     <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-800/30">
                       <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-[#FB4F01] dark:text-red-400 uppercase tracking-wider">Other Platform Price</span>
+                        <span className="text-xs font-bold text-[#FB4F01] dark:text-red-400 uppercase tracking-wider">Other Platform Item Total</span>
                         <span className="text-sm font-bold text-gray-500">{RUPEE_SYMBOL}{otherPlatformSubtotal.toFixed(0)}</span>
                       </div>
                       <div className="flex justify-between items-center mt-1">
