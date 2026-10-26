@@ -8158,6 +8158,11 @@ export async function updateDeliveryPartnerDetailsByAdmin(id, body = {}, files =
         }
     }
 
+    // Repair legacy docs where a restore wrote an invalid accountStatus (e.g. 'approved').
+    if (partner.accountStatus !== 'active') {
+        partner.accountStatus = 'active';
+    }
+
     try {
         await partner.save();
     } catch (err) {

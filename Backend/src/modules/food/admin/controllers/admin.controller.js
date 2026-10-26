@@ -2089,14 +2089,14 @@ export async function reactivateAccount(req, res, next) {
             const FoodRestaurant = mongoose.model('FoodRestaurant');
             updatedDoc = await FoodRestaurant.findByIdAndUpdate(
                 id,
-                { $set: { isDeleted: false, accountStatus: 'approved', isActive: true, isAcceptingOrders: true } },
+                { $set: { isDeleted: false, accountStatus: 'active', isActive: true, isAcceptingOrders: true } },
                 { new: true }
             );
         } else if (role === 'Delivery Boy') {
             const FoodDeliveryPartner = mongoose.model('FoodDeliveryPartner');
             updatedDoc = await FoodDeliveryPartner.findByIdAndUpdate(
                 id,
-                { $set: { isDeleted: false, accountStatus: 'approved', isActive: true } },
+                { $set: { isDeleted: false, accountStatus: 'active', isActive: true } },
                 { new: true }
             );
         } else {
