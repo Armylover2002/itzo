@@ -1876,20 +1876,13 @@ const handleApplyCouponCode = async () => {
 
 
 const handleRemoveCoupon = async () => {
-  // Handler recalculates — suppress the effect that would fire on coupon clear.
-  suppressPricingRecalcRef.current = true
+  // Clearing the coupon changes foodPricingRequestKey, so the main pricing effect
+  // recalculates. Do NOT also calculate here: the effect cleanup aborts that
+  // in-flight request as stale and the suppressed effect never refetches,
+  // leaving the old discounted prices on screen.
   setAppliedCoupon(null)
   setCouponCode("")
   setManualCouponCode("")
-
-  // Recalculate pricing without coupon (same sequencer as main effect)
-  if (cart.length > 0 && hasSavedAddress) {
-    try {
-      await runSequencedFoodCalculate({ couponCodeOverride: null })
-    } catch (error) {
-      debugError("Error recalculating pricing:", error)
-    }
-  }
 }
 
 
