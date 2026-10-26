@@ -1425,7 +1425,11 @@ const otherPlatformSubtotal = cart.reduce((sum, item) => {
 // Compare like for like: other platform item total vs our item total AFTER
 // the coupon discount, so removing a coupon updates the savings number too.
 const effectiveItemTotal = Math.max(0, subtotal - discount);
-const otherPlatformSavings = Math.max(0, otherPlatformSubtotal - effectiveItemTotal);
+const itemSavings = Math.max(0, otherPlatformSubtotal - effectiveItemTotal);
+// Delivery fee waived (free-delivery threshold) counts as a saving too.
+const originalDeliveryFee = Number(pricing?.originalDeliveryFee) || 0
+const deliverySavings = deliveryFee === 0 ? Math.max(0, originalDeliveryFee) : 0
+const otherPlatformSavings = itemSavings + deliverySavings
 
 const savings = pricing?.savings ?? Math.max(0, totalBeforeDiscount - total)
 const isUserCodAllowed = userProfile?.isCodAllowed !== false
@@ -3530,7 +3534,12 @@ return (
                     <span className="text-gray-600 dark:text-gray-400 border-b border-dashed border-gray-400 pb-[1px]">
                       Delivery Fee {hasDistanceDeliveryBreakdown ? `| ${Number(resolvedDistanceKm).toFixed(1)} kms` : ""}
                     </span>
-                    <div className="text-right">
+                    <div className="text-right flex items-center gap-2">
+                      {deliveryFee === 0 && deliverySavings > 0 && (
+                        <span className="text-gray-400 line-through font-medium">
+                          {RUPEE_SYMBOL}{deliverySavings.toFixed(0)}
+                        </span>
+                      )}
                       <span className={deliveryFee === 0 ? "text-[#FB4F01] font-semibold" : "text-gray-800 dark:text-gray-200 font-medium"}>
                         {deliveryFee === 0 ? "FREE" : `${RUPEE_SYMBOL}${deliveryFee.toFixed(0)}`}
                       </span>

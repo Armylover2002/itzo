@@ -3613,6 +3613,8 @@ export async function calculateOrder(userId, dto, options = {}) {
       taxBreakdown,
       packagingFee,
       deliveryFee: selectedDeliveryFee,
+      // Fee before a free-delivery waiver, so the cart can show it struck through.
+      originalDeliveryFee: baseSelectedDeliveryFee,
       totalDeliveryFee:
         orderType === "food" ? totalDeliveryFee : selectedDeliveryFee,
       userDeliveryFee:
