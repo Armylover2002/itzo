@@ -79,11 +79,11 @@ const CategoryRail = memo(({
         )}
       </div>
 
-      <div ref={scrollRef} className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide md:gap-5 scroll-smooth">
+      <div ref={scrollRef} className="flex gap-3 overflow-x-auto px-1 pt-1 pb-2 scrollbar-hide md:gap-5 scroll-smooth">
         {/* Offers Card */}
         {hasOffers && (
         <div 
-          className="hidden md:flex w-[72px] md:w-[84px] flex-shrink-0 flex-col items-center space-y-2 cursor-pointer group"
+          className="hidden md:flex w-[64px] md:w-[84px] flex-shrink-0 flex-col items-center space-y-2 cursor-pointer group"
           onClick={() => navigate("/user/under-250")}
         >
           <div className="w-16 h-16 rounded-full bg-red-100/30 flex items-center justify-center p-0.5 border-2 border-[#FB4F01] overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
@@ -102,10 +102,10 @@ const CategoryRail = memo(({
             type="button"
             aria-pressed={!selectedCategoryId}
             onClick={() => onSelectCategory(null)}
-            className="w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group border-0 bg-transparent p-0"
+            className="w-[64px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group border-0 bg-transparent p-0"
           >
-            <span className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${!selectedCategoryId ? "bg-[#FB4F01] text-white shadow-md md:bg-orange-50 md:text-[#FB4F01] md:shadow-none md:ring-2 md:ring-[#FB4F01] md:ring-offset-2" : "bg-orange-50 text-[#FB4F01]"}`}>
-              <LayoutGrid className="h-6 w-6" aria-hidden="true" />
+            <span className={`w-14 h-14 md:w-16 md:h-16 shrink-0 aspect-square rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${!selectedCategoryId ? "bg-[#FB4F01] text-white shadow-md md:bg-orange-50 md:text-[#FB4F01] md:shadow-none md:ring-2 md:ring-[#FB4F01] md:ring-offset-2" : "bg-orange-50 text-[#FB4F01]"}`}>
+              <LayoutGrid className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" />
             </span>
             <span className={`text-xs font-bold truncate w-full text-center ${!selectedCategoryId ? "text-[#FB4F01]" : "text-gray-800 dark:text-gray-300"}`}>
               All
@@ -118,8 +118,8 @@ const CategoryRail = memo(({
           const content = (
             <>
               <div
-                className={`w-16 h-16 rounded-full overflow-hidden bg-orange-50 ring-4 ring-orange-100 transition-transform group-hover:scale-110 ${
-                  isSelected ? "!ring-[#FB4F01] ring-offset-2" : ""
+                className={`w-14 h-14 md:w-16 md:h-16 shrink-0 aspect-square rounded-full overflow-hidden bg-orange-50 border-[3px] transition-transform group-hover:scale-110 ${
+                  isSelected ? "border-[#FB4F01]" : "border-orange-100"
                 }`}
               >
                 <OptimizedImage
@@ -138,7 +138,7 @@ const CategoryRail = memo(({
               </span>
             </>
           );
-          const itemClass = "w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group";
+          const itemClass = "w-[64px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group";
 
           // Home filters the restaurant list in place; other callers still open the category page.
           return onSelectCategory ? (
