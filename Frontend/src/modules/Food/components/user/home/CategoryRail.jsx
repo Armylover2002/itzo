@@ -52,8 +52,8 @@ const CategoryRail = memo(({
   const hasScrollableContent = canScrollLeft || canScrollRight;
 
   return (
-    <section className="mt-4 px-4 md:mt-6" data-purpose="mind-categories">
-      <div className="flex items-center justify-between mb-2 sm:mb-3">
+    <section className="mt-1 px-4 md:mt-6" data-purpose="mind-categories">
+      <div className="hidden md:flex items-center justify-between mb-2 sm:mb-3">
         <h3 className="text-[15px] font-semibold text-[#1c1c1e] dark:text-white md:text-xl tracking-tight">What's on your mind?</h3>
         {hasScrollableContent && (
           <div className="flex gap-2">
@@ -83,7 +83,7 @@ const CategoryRail = memo(({
         {/* Offers Card */}
         {hasOffers && (
         <div 
-          className="w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 cursor-pointer group"
+          className="hidden md:flex w-[72px] md:w-[84px] flex-shrink-0 flex-col items-center space-y-2 cursor-pointer group"
           onClick={() => navigate("/user/under-250")}
         >
           <div className="w-16 h-16 rounded-full bg-red-100/30 flex items-center justify-center p-0.5 border-2 border-[#FB4F01] overflow-hidden transition-transform group-hover:scale-105 group-active:scale-95">
@@ -104,10 +104,10 @@ const CategoryRail = memo(({
             onClick={() => onSelectCategory(null)}
             className="w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group border-0 bg-transparent p-0"
           >
-            <span className={`w-16 h-16 rounded-full flex items-center justify-center bg-orange-50 text-[#FB4F01] transition-transform group-hover:scale-110 ${!selectedCategoryId ? "ring-2 ring-[#FB4F01] ring-offset-2" : ""}`}>
+            <span className={`w-16 h-16 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${!selectedCategoryId ? "bg-[#FB4F01] text-white shadow-md md:bg-orange-50 md:text-[#FB4F01] md:shadow-none md:ring-2 md:ring-[#FB4F01] md:ring-offset-2" : "bg-orange-50 text-[#FB4F01]"}`}>
               <LayoutGrid className="h-6 w-6" aria-hidden="true" />
             </span>
-            <span className={`text-xs font-semibold truncate w-full text-center ${!selectedCategoryId ? "text-[#FB4F01]" : "text-gray-600 dark:text-gray-300"}`}>
+            <span className={`text-xs font-bold truncate w-full text-center ${!selectedCategoryId ? "text-[#FB4F01]" : "text-gray-800 dark:text-gray-300"}`}>
               All
             </span>
           </button>
@@ -118,8 +118,8 @@ const CategoryRail = memo(({
           const content = (
             <>
               <div
-                className={`w-16 h-16 rounded-full overflow-hidden bg-gray-100 transition-transform group-hover:scale-110 ${
-                  isSelected ? "ring-2 ring-[#FB4F01] ring-offset-2" : ""
+                className={`w-16 h-16 rounded-full overflow-hidden bg-orange-50 ring-4 ring-orange-100 transition-transform group-hover:scale-110 ${
+                  isSelected ? "!ring-[#FB4F01] ring-offset-2" : ""
                 }`}
               >
                 <OptimizedImage

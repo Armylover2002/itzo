@@ -475,6 +475,7 @@ export default function Home() {
             vegMode={vegMode}
             onVegModeChange={handleVegModeChange}
             headerVideoUrl={landing.videoUrl}
+            onFilterClick={() => setIsFilterOpen(true)}
           />
         )}
       </div>
@@ -482,16 +483,15 @@ export default function Home() {
       {state.isBootstrapped && activeTab === "food" && (
         <div className="relative z-10 w-full">
           <div
-            className="relative overflow-hidden shadow-sm pb-[1px] rounded-[20px] md:rounded-none mx-3 sm:mx-4 md:mx-0 mt-0"
+            className="relative overflow-hidden rounded-[20px] md:rounded-none mx-4 md:mx-0 mt-1 md:mt-0 md:pb-[1px] shadow-md md:shadow-sm bg-orange-50 md:[background:var(--home-hero-bg)]"
             style={{
-              background: vegMode
+              "--home-hero-bg": vegMode
                 ? "linear-gradient(135deg, #2e7d32 0%, #388e3c 100%)"
                 : "linear-gradient(135deg, #FB4F01 0%, #C83C00 100%)",
-              paddingBottom: "1px",
             }}
           >
-            <Suspense fallback={<HeroBannerSkeleton className="h-[130px] w-full" />}>
-              <div className="h-[130px] sm:h-36 md:h-[450px] lg:h-[500px] mt-0 relative z-10 w-full px-0">
+            <Suspense fallback={<HeroBannerSkeleton className="h-[170px] w-full" />}>
+              <div className="h-[170px] sm:h-48 md:h-[450px] lg:h-[500px] mt-0 relative z-10 w-full px-0">
                 {heroVideoUrl ? (
                   <video
                     // Remounts per clip so the browser reliably loads the new source.
@@ -546,40 +546,6 @@ export default function Home() {
                 </div>
               </div>
             </Suspense>
-
-            {/* Banner Search and Location */}
-            <div className="px-4 pt-0 -mt-2 relative z-20 md:hidden md:max-w-3xl md:mx-auto md:pb-8 md:-mt-16">
-              <div className="flex w-full items-center bg-white rounded-full shadow-lg overflow-hidden relative pr-2 border border-gray-100">
-                {/* Location */}
-                <button
-                  type="button"
-                  onClick={() => openLocationSelector()}
-                  className="flex items-center gap-1.5 px-4 py-3 bg-transparent border-0 hover:bg-gray-50 transition-colors shrink-0 max-w-[140px]"
-                >
-                  <MapPin className="h-4 w-4 shrink-0 text-[#FB4F01]" strokeWidth={2.5} />
-                  <div className="flex items-center min-w-0">
-                    <span className="truncate text-xs font-bold text-gray-800">
-                      {imgUtils.formatSavedAddress(effectiveLocation) || "Select Location"}
-                    </span>
-                    <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0 text-gray-800" strokeWidth={2.5} />
-                  </div>
-                </button>
-
-                <div className="h-6 w-px bg-gray-200 shrink-0" />
-
-                {/* Search */}
-                <button
-                  type="button"
-                  onClick={handleSearchFocus}
-                  className="flex-1 flex items-center justify-between px-3 py-3 bg-transparent border-0 text-left hover:bg-gray-50 transition-colors min-w-0"
-                >
-                  <span className="block truncate text-xs text-gray-400 font-medium w-full">
-                    {placeholders?.[placeholderIndex] || "Search for restaurants, food or more"}
-                  </span>
-                  <Search className="h-4 w-4 shrink-0 text-gray-400 ml-2" strokeWidth={2} />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       )}

@@ -161,11 +161,11 @@ const BannerSection = memo(({
           aria-label={`Open hero banner ${currentBannerIndex + 1}`}
         />
 
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 z-30 pointer-events-none">
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 px-2 py-1 z-30 pointer-events-none">
           {heroBannerImages.map((_, index) => (
             <div
               key={index}
-              className={`h-1 rounded-full transition-all duration-300 ${currentBannerIndex === index ? "bg-white/80 w-4" : "bg-white/30 w-1"
+              className={`h-1.5 rounded-full transition-all duration-300 ${currentBannerIndex === index ? "bg-white w-4 shadow" : "bg-white/60 w-1.5"
                 }`}
             />
           ))}
