@@ -1327,15 +1327,16 @@ export default function OrderTracking() {
     order?.userId,
   ), [isAuthenticated, authUser, order?.userId]);
 
+  // User can cancel for 5 minutes from the time the order was placed.
   const acceptedAtMs = useMemo(() => {
-    const ts = order?.tracking?.confirmed?.timestamp || order?.tracking?.preparing?.timestamp || order?.updatedAt || order?.createdAt;
+    const ts = order?.createdAt || order?.tracking?.placed?.timestamp || order?.tracking?.confirmed?.timestamp;
     const parsed = ts ? new Date(ts).getTime() : NaN;
     return Number.isFinite(parsed) ? parsed : null;
-  }, [order?.tracking?.confirmed?.timestamp, order?.tracking?.preparing?.timestamp, order?.updatedAt, order?.createdAt]);
+  }, [order?.createdAt, order?.tracking?.placed?.timestamp, order?.tracking?.confirmed?.timestamp]);
 
   const editWindowRemainingMs = useMemo(() => {
     if (!isAdminAccepted || !acceptedAtMs) return 0;
-    return Math.max(0, 60000 - (timerNow - acceptedAtMs));
+    return Math.max(0, 5 * 60 * 1000 - (timerNow - acceptedAtMs));
   }, [isAdminAccepted, acceptedAtMs, timerNow]);
 
   const isEditWindowOpen = editWindowRemainingMs > 0;
@@ -2594,7 +2595,7 @@ export default function OrderTracking() {
           </motion.div>
         )}
 
-        {!isAdminAccepted && !isDeliveredOrder && orderStatus !== 'cancelled' && (
+        {(!isAdminAccepted || isEditWindowOpen) && !isDeliveredOrder && orderStatus !== 'cancelled' && (
           <motion.div className="bg-white dark:bg-card rounded-xl shadow-sm overflow-hidden border border-transparent dark:border-white/10" {...MOTION_SLIDE_UP(0.8)}>
             <SectionItem icon={CircleSlash} title="Cancel order" subtitle="" onClick={handleCancelOrder} />
           </motion.div>

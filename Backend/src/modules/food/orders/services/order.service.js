@@ -150,7 +150,7 @@ const buildCodEligibility = (orderTotal, codOrderLimit) => {
 const ORDER_ID_PREFIX = "FOD-";
 const ORDER_ID_LENGTH = 6;
 const USER_CANCEL_FULL_REFUND_WINDOW_MS = 30 * 1000;
-const USER_CANCEL_EDIT_WINDOW_MS = 60 * 1000;
+const USER_CANCEL_EDIT_WINDOW_MS = 5 * 60 * 1000;
 
 async function ensureRazorpayPaymentNotConsumed(paymentId, { currentFoodOrderId = null } = {}) {
   const rzPaymentId = String(paymentId || "").trim();
@@ -4733,10 +4733,8 @@ export async function cancelOrder(orderId, userId, reason, refundTo) {
     !hasAcceptedDeliveryPartner;
 
   if (!alwaysCancelableStatuses.includes(orderStatus)) {
-    const cancelWindowStartEntry = [...(order.statusHistory || [])]
-      .reverse()
-      .find((entry) => cancelWindowStatuses.includes(String(entry?.to || "").trim().toLowerCase()));
-    const cancelWindowStartAt = cancelWindowStartEntry?.at || order.updatedAt || order.createdAt || null;
+    // Window runs from order placement.
+    const cancelWindowStartAt = order.createdAt || null;
     const cancelWindowStartMs = cancelWindowStartAt ? new Date(cancelWindowStartAt).getTime() : NaN;
     const isWithinCancelWindow =
       cancelWindowStatuses.includes(orderStatus) &&
