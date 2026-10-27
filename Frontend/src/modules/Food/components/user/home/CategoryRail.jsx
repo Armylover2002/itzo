@@ -52,7 +52,7 @@ const CategoryRail = memo(({
   const hasScrollableContent = canScrollLeft || canScrollRight;
 
   return (
-    <section className="mt-1 px-4 md:mt-6" data-purpose="mind-categories">
+    <section className="sticky top-16 z-40 mt-1 bg-white pb-1 px-4 dark:bg-[#0a0a0a] md:static md:mt-6" data-purpose="mind-categories">
       <div className="hidden md:flex items-center justify-between mb-2 sm:mb-3">
         <h3 className="text-[15px] font-semibold text-[#1c1c1e] dark:text-white md:text-xl tracking-tight">What's on your mind?</h3>
         {hasScrollableContent && (

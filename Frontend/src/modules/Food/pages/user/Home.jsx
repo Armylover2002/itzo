@@ -456,7 +456,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-x-clip bg-white pb-16 dark:bg-[#0a0a0a] md:pb-8">
-      <div className="sticky top-0 z-[50] overflow-x-clip md:hidden bg-white dark:bg-[#0a0a0a]">
+      <div className="contents md:hidden">
         {!state.isBootstrapped && activeTab === "food" ? (
           <div className="px-4 pt-6 pb-4">
             <div className="h-10 w-48 bg-slate-100 animate-pulse rounded-xl mb-6" />

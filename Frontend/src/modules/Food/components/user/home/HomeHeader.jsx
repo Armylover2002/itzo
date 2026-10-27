@@ -147,87 +147,97 @@ export default function HomeHeader({
     navigate("/food/user/search");
   };
 
-  return (
-    <motion.div
-      ref={headerRef}
-      className={cn(
-        "relative z-50 border-none pb-0 outline-none transition-colors duration-300 md:hidden",
-        isLightChrome ? "bg-white dark:bg-[#0a0a0a]" : "bg-transparent",
-      )}
-      style={!isLightChrome ? { backgroundColor: theme.accent } : undefined}
+  const logoBlock = (
+    <Link
+      to="/food/user"
+      className="flex shrink-0 flex-col items-end border-0 bg-transparent p-0 outline-none"
     >
-      <header
-        className={cn(
-          "px-3 pt-2 pb-4 outline-none transition-colors duration-300 sm:px-4",
-          isLightChrome
-            ? "bg-white dark:bg-[#0a0a0a]"
-            : "border-b-0 border-none",
-        )}
-        style={!isLightChrome ? { backgroundColor: "transparent" } : undefined}
-      >
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            to="/food/user"
-            className="flex shrink-0 flex-col items-start border-0 bg-transparent p-0 outline-none"
-          >
-            <img
-              src={logoUrl}
-              alt="ItzoFood"
-              className="h-8 sm:h-9 w-auto object-contain dark:brightness-0 dark:invert"
-              onError={(e) => { e.target.onerror = null; e.target.src = "/final_logo200.png"; }}
-            />
-            {!embedded && (
-              <span className="mt-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:text-gray-300">
-                Good Food. Near You.
-              </span>
-            )}
-          </Link>
+      <img
+        src={logoUrl}
+        alt="ItzoFood"
+        className="h-8 sm:h-9 w-auto object-contain dark:brightness-0 dark:invert"
+        onError={(e) => { e.target.onerror = null; e.target.src = "/final_logo200.png"; }}
+      />
+      {!embedded && (
+        <span className="mt-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:text-gray-300">
+          Good Food. Near You.
+        </span>
+      )}
+    </Link>
+  );
 
-          {!embedded && (
+  return (
+    <>
+      <motion.div
+        ref={headerRef}
+        className={cn(
+          "relative z-10 border-none pb-0 outline-none transition-colors duration-300 md:hidden",
+          isLightChrome ? "bg-white dark:bg-[#0a0a0a]" : "bg-transparent",
+        )}
+        style={!isLightChrome ? { backgroundColor: theme.accent } : undefined}
+      >
+        <header
+          className={cn(
+            "px-3 pt-2 outline-none transition-colors duration-300 sm:px-4",
+            embedded ? "pb-4" : "pb-1",
+            isLightChrome
+              ? "bg-white dark:bg-[#0a0a0a]"
+              : "border-b-0 border-none",
+          )}
+          style={!isLightChrome ? { backgroundColor: "transparent" } : undefined}
+        >
+          <div className="flex items-center justify-between gap-3">
+            {embedded ? (
+              logoBlock
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleLocationClick}
+                  className="flex min-w-0 max-w-[60%] items-center gap-1.5 border-0 bg-transparent p-0 outline-none"
+                  aria-label="Choose delivery location"
+                >
+                  <MapPin className="h-5 w-5 shrink-0" style={{ color: theme.accent }} fill={theme.accent} stroke="#fff" strokeWidth={1.5} />
+                  <span className="truncate text-sm font-bold text-gray-900 dark:text-white">
+                    {locationTitle}
+                  </span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-gray-700 dark:text-gray-300" strokeWidth={2.5} />
+                </button>
+                {logoBlock}
+              </>
+            )}
+          </div>
+        </header>
+      </motion.div>
+
+      {/* Search row is its own sticky element (direct child of the page container)
+          so it stays pinned while the logo/location row scrolls away. */}
+      {!embedded && (
+        <div className="sticky top-0 z-50 flex h-16 items-center gap-2 bg-white px-3 sm:px-4 md:hidden dark:bg-[#0a0a0a]">
+          <button
+            type="button"
+            onClick={openSearch}
+            className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border bg-white px-4 text-left shadow-sm outline-none dark:bg-gray-900"
+            style={{ borderColor: `${theme.accent}40` }}
+            aria-label="Search"
+          >
+            <Search className="h-5 w-5 shrink-0 text-gray-700 dark:text-gray-300" strokeWidth={2} />
+            <span className="block truncate text-sm font-medium text-gray-400">
+              {placeholders?.[placeholderIndex] || "Search for restaurants, cuisines, food..."}
+            </span>
+          </button>
+          {isFood && onFilterClick && (
             <button
               type="button"
-              onClick={handleLocationClick}
-              className="flex min-w-0 max-w-[55%] items-center gap-1.5 border-0 bg-transparent p-0 outline-none"
-              aria-label="Choose delivery location"
+              onClick={onFilterClick}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-0 bg-transparent outline-none"
+              aria-label="Filters"
             >
-              <MapPin className="h-5 w-5 shrink-0" style={{ color: theme.accent }} fill={theme.accent} stroke="#fff" strokeWidth={1.5} />
-              <span className="truncate text-sm font-bold text-gray-900 dark:text-white">
-                {locationTitle}
-              </span>
-              <ChevronDown className="h-4 w-4 shrink-0 text-gray-700 dark:text-gray-300" strokeWidth={2.5} />
+              <SlidersHorizontal className="h-6 w-6 text-gray-800 dark:text-gray-200" strokeWidth={1.8} />
             </button>
           )}
         </div>
-
-        {!embedded && (
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={openSearch}
-              className="flex h-12 min-w-0 flex-1 items-center gap-3 rounded-full border bg-white px-4 text-left shadow-sm outline-none dark:bg-gray-900"
-              style={{ borderColor: `${theme.accent}40` }}
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 shrink-0 text-gray-700 dark:text-gray-300" strokeWidth={2} />
-              <span className="block truncate text-sm font-medium text-gray-400">
-                {placeholders?.[placeholderIndex] || "Search for restaurants, cuisines, food..."}
-              </span>
-            </button>
-            {isFood && onFilterClick && (
-              <button
-                type="button"
-                onClick={onFilterClick}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-0 bg-transparent outline-none"
-                aria-label="Filters"
-              >
-                <SlidersHorizontal className="h-6 w-6 text-gray-800 dark:text-gray-200" strokeWidth={1.8} />
-              </button>
-            )}
-          </div>
-        )}
-      </header>
-
-
-    </motion.div>
+      )}
+    </>
   );
 }
