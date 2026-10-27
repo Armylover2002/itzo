@@ -1,8 +1,9 @@
 export const isApprovedVehicle = (vehicle) => {
   if (!vehicle) return false;
   if (vehicle.isDispatchEligible === true) return true;
+  // Mirror backend (setDeliveryPartnerActiveVehicle): only rejected vehicles are blocked.
   const status = String(vehicle.status || vehicle.verificationStatus || '').toLowerCase();
-  return status === 'active' || status === 'approved';
+  return status !== 'rejected';
 };
 
 export const getApprovedVehicles = (vehicles = []) =>
