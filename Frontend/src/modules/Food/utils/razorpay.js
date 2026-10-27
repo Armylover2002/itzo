@@ -35,6 +35,69 @@ export const loadRazorpayScript = () => {
   });
 };
 
+const isMobileCheckout = () => {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || '') ||
+    (navigator.maxTouchPoints > 1 && window.innerWidth <= 1024);
+};
+
+/**
+ * Mobile browsers may block checkout.open() when it follows the async order
+ * request. Ask for one fresh tap, then call Razorpay synchronously from that
+ * tap handler so the browser keeps the user-activation permission.
+ */
+const openRazorpayCheckout = (razorpay, options) => {
+  if (!isMobileCheckout()) {
+    razorpay.open();
+    return;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', 'Continue to secure payment');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:flex-end;justify-content:center;background:rgba(15,23,42,.58);padding:16px;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;';
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'width:100%;max-width:480px;border-radius:24px;background:#fff;padding:24px 20px calc(20px + env(safe-area-inset-bottom, 0px));box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center;';
+
+  const title = document.createElement('h2');
+  title.textContent = 'Continue to secure payment';
+  title.style.cssText = 'margin:0;color:#111827;font-size:18px;font-weight:700;';
+
+  const message = document.createElement('p');
+  message.textContent = 'Tap below to open Razorpay and complete your payment.';
+  message.style.cssText = 'margin:8px 0 20px;color:#6b7280;font-size:14px;line-height:1.5;';
+
+  const continueButton = document.createElement('button');
+  continueButton.type = 'button';
+  continueButton.textContent = 'Open Razorpay';
+  continueButton.style.cssText = 'width:100%;min-height:52px;border:0;border-radius:14px;background:#fb4f01;color:#fff;font-size:16px;font-weight:700;cursor:pointer;touch-action:manipulation;';
+
+  const cancelButton = document.createElement('button');
+  cancelButton.type = 'button';
+  cancelButton.textContent = 'Cancel payment';
+  cancelButton.style.cssText = 'margin-top:12px;min-height:44px;border:0;background:transparent;color:#6b7280;font-size:14px;font-weight:600;cursor:pointer;touch-action:manipulation;';
+
+  const closePrompt = () => overlay.remove();
+  continueButton.addEventListener('click', () => {
+    closePrompt();
+    try {
+      razorpay.open();
+    } catch (error) {
+      options.onError?.(error);
+    }
+  }, { once: true });
+  cancelButton.addEventListener('click', () => {
+    closePrompt();
+    options.onClose?.();
+  }, { once: true });
+
+  panel.append(title, message, continueButton, cancelButton);
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+};
+
 /**
  * Initialize Razorpay payment
  * @param {Object} options - Payment options
@@ -111,9 +174,9 @@ export const initRazorpayPayment = async (options) => {
       }
     });
 
-    razorpay.open();
+    openRazorpayCheckout(razorpay, options);
 
-    console.log('âœ… Razorpay checkout opened successfully');
+    console.log(isMobileCheckout() ? 'Razorpay checkout is ready to open' : 'Razorpay checkout opened successfully');
     console.log('Razorpay options:', {
       key: razorpayOptions.key ? 'Present' : 'Missing',
       amount: razorpayOptions.amount,
@@ -409,7 +472,7 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
           rzp.on('payment.failed', (resp) => {
             reject(new Error(resp?.error?.description || 'Payment failed'));
           });
-          rzp.open();
+          openRazorpayCheckout(rzp, rzpOptions);
         } catch (webErr) {
           reject(new Error('Payment unavailable. Please try again.'));
         }
