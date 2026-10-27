@@ -346,7 +346,7 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       const eligibilityRes = await subscriptionAPI.getEligibility('DELIVERY_PARTNER');
       const eligibility = eligibilityRes?.data?.data;
 
-      if (eligibility) {
+      if (eligibility && eligibility.enforcementEnabled !== false) {
         if (eligibility.reason !== 'RECURRING_ACTIVE' && eligibility.reason !== 'DAY_PASS_ACTIVE') {
           if (!eligibility.eligible && eligibility.reason === 'LOW_BALANCE') {
             setEligibilityData(eligibility);

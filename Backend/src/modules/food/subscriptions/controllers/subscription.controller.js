@@ -3,6 +3,7 @@ import * as userSubscriptionService from '../services/subscription.service.js';
 import * as walletService from '../services/wallet.service.js';
 import { validatePurchaseSubscriptionDto, validateVerifyPurchaseDto } from '../validators/subscription.validator.js';
 import { sendResponse } from '../../../../utils/response.js';
+import { isSubscriptionEnforced } from '../../../common/services/subscriptionEnforcement.service.js';
 
 export async function getPlansController(req, res, next) {
     try {
@@ -103,8 +104,22 @@ export async function verifyTopupController(req, res, next) {
 export async function getSubscriptionEligibilityController(req, res, next) {
     try {
         const { role: userType, userId } = req.user;
+        const enforcementEnabled = await isSubscriptionEnforced(userType);
+        if (!enforcementEnabled) {
+            return sendResponse(res, 200, 'Subscription enforcement is disabled', {
+                eligible: true,
+                reason: 'ENFORCEMENT_DISABLED',
+                shouldDeduct: false,
+                subscriptionType: null,
+                enforcementEnabled: false,
+            });
+        }
+
         const eligibility = await walletService.ensureDailyPassEligibility(userId, userType);
-        return sendResponse(res, 200, 'Subscription eligibility fetched', eligibility);
+        return sendResponse(res, 200, 'Subscription eligibility fetched', {
+            ...eligibility,
+            enforcementEnabled: true,
+        });
     } catch (err) {
         next(err);
     }
