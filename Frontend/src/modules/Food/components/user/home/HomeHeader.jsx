@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation as useRouterLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useNotificationInbox from "@food/hooks/useNotificationInbox";
 import { getAppLogo, subscribeBusinessSettings } from "@common/utils/businessSettings";
 
 const tabs = [
@@ -107,6 +108,23 @@ export default function HomeHeader({
     return subscribeBusinessSettings(apply);
   }, []);
 
+  const [localUnread, setLocalUnread] = useState(0);
+  const { unreadCount: broadcastUnreadCount } = useNotificationInbox("user", { limit: 100 });
+  useEffect(() => {
+    const sync = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem("food_user_notifications") || "[]");
+        setLocalUnread(Array.isArray(saved) ? saved.filter((item) => !item.read).length : 0);
+      } catch {
+        setLocalUnread(0);
+      }
+    };
+    sync();
+    window.addEventListener("notificationsUpdated", sync);
+    return () => window.removeEventListener("notificationsUpdated", sync);
+  }, []);
+  const hasUnread = localUnread + (broadcastUnreadCount || 0) > 0;
+
   const isFood = activeTab === "food";
   const theme =
     activeTab === "quick"
@@ -150,21 +168,22 @@ export default function HomeHeader({
   const logoBlock = (
     <Link
       to="/food/user"
-      className="flex shrink-0 flex-col items-end border-0 bg-transparent p-0 outline-none"
+      className="flex shrink-0 items-center border-0 bg-transparent p-0 outline-none"
     >
       <img
         src={logoUrl}
         alt="ItzoFood"
-        className="h-8 sm:h-9 w-auto object-contain dark:brightness-0 dark:invert"
+        className={cn(
+          "w-auto object-contain dark:brightness-0 dark:invert",
+          embedded ? "h-7 sm:h-8" : "h-12 w-12 rounded-full bg-white p-1 shadow-sm",
+        )}
         onError={(e) => { e.target.onerror = null; e.target.src = "/final_logo200.png"; }}
       />
-      {!embedded && (
-        <span className="mt-0.5 text-[11px] font-semibold leading-none text-gray-700 dark:text-gray-300">
-          Good Food. Near You.
-        </span>
-      )}
     </Link>
   );
+
+  const headerTitle = location?.area || location?.city || locationTitle;
+  const headerSubtitle = isMeaningfulLocationValue(savedAddressText) ? savedAddressText : locationSubtitle;
 
   return (
     <>
@@ -181,7 +200,9 @@ export default function HomeHeader({
             "px-3 pt-2 outline-none transition-colors duration-300 sm:px-4",
             embedded ? "pb-4" : "pb-1",
             isLightChrome
-              ? "bg-white dark:bg-[#0a0a0a]"
+              ? embedded
+                ? "bg-white dark:bg-[#0a0a0a]"
+                : "bg-gradient-to-br from-orange-100 via-orange-50 to-white dark:bg-[#0a0a0a] dark:bg-none"
               : "border-b-0 border-none",
           )}
           style={!isLightChrome ? { backgroundColor: "transparent" } : undefined}
@@ -191,19 +212,33 @@ export default function HomeHeader({
               logoBlock
             ) : (
               <>
+                {logoBlock}
                 <button
                   type="button"
                   onClick={handleLocationClick}
-                  className="flex min-w-0 max-w-[60%] items-center gap-1.5 border-0 bg-transparent p-0 outline-none"
+                  className="flex min-w-0 flex-1 flex-col items-start border-0 bg-transparent p-0 text-left outline-none"
                   aria-label="Choose delivery location"
                 >
-                  <MapPin className="h-5 w-5 shrink-0" style={{ color: theme.accent }} fill={theme.accent} stroke="#fff" strokeWidth={1.5} />
-                  <span className="truncate text-sm font-bold text-gray-900 dark:text-white">
-                    {locationTitle}
+                  <span className="flex max-w-full items-center gap-1">
+                    <span className="truncate text-base font-extrabold text-gray-900 dark:text-white">
+                      {headerTitle}
+                    </span>
+                    <ChevronDown className="h-4 w-4 shrink-0 text-gray-800 dark:text-gray-300" strokeWidth={2.5} />
                   </span>
-                  <ChevronDown className="h-4 w-4 shrink-0 text-gray-700 dark:text-gray-300" strokeWidth={2.5} />
+                  <span className="max-w-full truncate text-xs font-medium text-gray-500 dark:text-gray-400">
+                    {headerSubtitle}
+                  </span>
                 </button>
-                {logoBlock}
+                <Link
+                  to="/food/user/notifications"
+                  className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-gray-900 shadow-sm outline-none"
+                  aria-label="Open notifications"
+                >
+                  <Bell className="h-5 w-5" strokeWidth={2} />
+                  {hasUnread && (
+                    <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
+                  )}
+                </Link>
               </>
             )}
           </div>

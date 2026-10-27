@@ -858,6 +858,15 @@ html, body {
   overflow-x: hidden;
 }
 
+/* `overflow-x: hidden` on both html and body turns body into a scroll container,
+   which breaks position: sticky (search bar / category rail on Home).
+   `clip` hides horizontal overflow without creating a scroll container. */
+@supports (overflow: clip) {
+  body {
+    overflow-x: clip;
+  }
+}
+
 /* Safe-area padding for native status bar */
 .safe-top {
   padding-top: env(safe-area-inset-top, 0px);
