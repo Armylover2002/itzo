@@ -418,7 +418,13 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
               if (result.error || result.cancelled) { finishFailure(result.error || 'Payment cancelled'); return; }
             }
 
-            // Handler returned void/null â†’ it accepted the payment, native UI is open
+            // flutter_inappwebview resolves an UNREGISTERED handler immediately with
+            // null, so a quick null/undefined means "no such handler" -> try the next.
+            // (A real native handler that is awaiting payment stays pending and hits
+            // the 'timeout' branch below instead.)
+            if (result == null) continue;
+
+            // Handler returned a non-empty valueâ†’ it accepted the payment, native UI is open
             // Wait up to 10 minutes for the payment to complete via callback
             timeoutId = setTimeout(() => {
               finishFailure(new Error('Payment timed out. Please try again.'));
@@ -427,7 +433,12 @@ export const handleFlutterRazorpayPayment = (rzpOptions) => {
 
           } catch (err) {
             if (err.message === 'timeout') {
-              continue; // handler not registered, try next name
+              // Handler is registered and still pending -> native UI is open.
+              // Wait up to 10 minutes for the payment to complete via callback.
+              timeoutId = setTimeout(() => {
+                finishFailure(new Error('Payment timed out. Please try again.'));
+              }, 10 * 60 * 1000);
+              return;
             }
             console.warn(`[Razorpay Flutter] Handler "${handlerName}" rejected:`, err);
           }
