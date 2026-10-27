@@ -42,8 +42,8 @@ export function invalidateFoodHomeRestaurantCache() {
   clearPersistentCache(RESTAURANTS_STORAGE_PREFIX);
 }
 
-const buildRestaurantListKey = (businessType, zoneId, pureVeg) =>
-  `${businessType || DEFAULT_BUSINESS_TYPE}|${zoneId || "global"}|${pureVeg ? "pure" : "all"}`;
+const buildRestaurantListKey = (businessType, zoneId, pureVeg, categoryKey = "") =>
+  `${businessType || DEFAULT_BUSINESS_TYPE}|${zoneId || "global"}|${pureVeg ? "pure" : "all"}${categoryKey ? `|cat:${categoryKey}` : ""}`;
 
 const getCachedRestaurantList = (listKey) => {
   if (globalHomeCache.restaurantsByKey[listKey]) return globalHomeCache.restaurantsByKey[listKey];
@@ -147,7 +147,11 @@ export const useFoodHomeData = ({
 
   // --- Restaurants State ---
   const pureVegOnly = vegMode === "pure";
-  const restaurantListKey = buildRestaurantListKey(businessType, zoneId, pureVegOnly);
+  // Category tapped on the home rail: the restaurant list is re-queried in place
+  // (only restaurants selling it, cards previewing just those dishes).
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const selectedCategoryKey = selectedCategory?.categoryIds?.join(",") || "";
+  const restaurantListKey = buildRestaurantListKey(businessType, zoneId, pureVegOnly, selectedCategoryKey);
   const initialRestaurantList = getCachedRestaurantList(restaurantListKey);
   const [restaurantsData, setRestaurantsData] = useState(initialRestaurantList?.items || []);
   const [loadingRestaurants, setLoadingRestaurants] = useState(!initialRestaurantList);
@@ -214,6 +218,10 @@ export const useFoodHomeData = ({
             id: String(cat?.id || cat?._id || cat?.slug || idx),
             name: cat?.name || "",
             slug: cat?.slug || String(cat?.name || "").toLowerCase().replace(/\s+/g, "-"),
+            // A tile can merge several category docs; all of them count as one selection.
+            categoryIds: Array.isArray(cat?.categoryIds) && cat.categoryIds.length
+              ? cat.categoryIds.map(String)
+              : [String(cat?.id || cat?._id || "")].filter(Boolean),
             image: normalizeImageUrl(cat?.image || cat?.imageUrl) || foodImages[idx % foodImages.length],
             foodTypeScope: cat?.foodTypeScope || "",
             itemCount: Number(cat?.itemCount) || 0,
@@ -359,13 +367,14 @@ export const useFoodHomeData = ({
     params.businessType = businessType || DEFAULT_BUSINESS_TYPE;
     // Pure-veg mode is filtered server-side so every page is full of usable results.
     if (pureVegOnly) params.pureVeg = "true";
+    if (selectedCategoryKey) params.categoryId = selectedCategoryKey;
 
     // Map local active filters to API params
     if (filters.activeFilters?.has("rating-45-plus")) params.minRating = 4.5;
     else if (filters.activeFilters?.has("rating-4-plus")) params.minRating = 4.0;
     return params;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roundedOriginKey, zoneId, businessType, pureVegOnly]);
+  }, [roundedOriginKey, zoneId, businessType, pureVegOnly, selectedCategoryKey]);
 
   const extractRestaurantPage = useCallback((response, page) => {
     const payload = response?.data?.data;
@@ -707,6 +716,6 @@ export const useFoodHomeData = ({
     meta: { recommended: recommendedForYouRestaurants },
     advertisements: advertisements,
     actions: { toggleFilter, applyFiltersAndRefetch, loadMoreRestaurants },
-    state: { activeFilters, sortBy, setSortBy, selectedCuisine, setSelectedCuisine, isBootstrapped }
+    state: { activeFilters, sortBy, setSortBy, selectedCuisine, setSelectedCuisine, isBootstrapped, selectedCategory, setSelectedCategory }
   };
 };

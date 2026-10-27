@@ -10,7 +10,9 @@ const CategoryRail = memo(({
   showCategorySkeleton,
   navigate,
   backendOrigin = "",
-  hasOffers = true
+  hasOffers = true,
+  selectedCategoryId = null,
+  onSelectCategory
 }) => {
   const scrollRef = React.useRef(null);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
@@ -95,25 +97,54 @@ const CategoryRail = memo(({
         </div>
         )}
 
-        {!showCategorySkeleton && displayCategories.map((category, index) => (
-          <Link
-            key={category.id || index}
-            to={`/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
-            className="w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group"
-          >
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 transition-transform group-hover:scale-110">
-              <OptimizedImage
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-cover"
-                backendOrigin={backendOrigin}
-              />
-            </div>
-            <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 truncate w-full text-center">
-              {category.name}
-            </span>
-          </Link>
-        ))}
+        {!showCategorySkeleton && displayCategories.map((category, index) => {
+          const isSelected = Boolean(selectedCategoryId) && String(selectedCategoryId) === String(category.id);
+          const content = (
+            <>
+              <div
+                className={`w-16 h-16 rounded-full overflow-hidden bg-gray-100 transition-transform group-hover:scale-110 ${
+                  isSelected ? "ring-2 ring-[#FB4F01] ring-offset-2" : ""
+                }`}
+              >
+                <OptimizedImage
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-cover"
+                  backendOrigin={backendOrigin}
+                />
+              </div>
+              <span
+                className={`text-xs font-semibold truncate w-full text-center ${
+                  isSelected ? "text-[#FB4F01]" : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                {category.name}
+              </span>
+            </>
+          );
+          const itemClass = "w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group";
+
+          // Home filters the restaurant list in place; other callers still open the category page.
+          return onSelectCategory ? (
+            <button
+              key={category.id || index}
+              type="button"
+              aria-pressed={isSelected}
+              onClick={() => onSelectCategory(isSelected ? null : category)}
+              className={`${itemClass} border-0 bg-transparent p-0`}
+            >
+              {content}
+            </button>
+          ) : (
+            <Link
+              key={category.id || index}
+              to={`/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
+              className={itemClass}
+            >
+              {content}
+            </Link>
+          );
+        })}
 
         {showCategorySkeleton && <CategoryChipRowSkeleton className="flex-shrink-0" />}
       </div>

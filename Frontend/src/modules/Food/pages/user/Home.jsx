@@ -130,6 +130,7 @@ const MealsUnderSection = lazy(() => import("@food/components/user/home/MealsUnd
 const ExploreMoreSection = lazy(() => import("@food/components/user/home/ExploreMoreSection"));
 const HomeDesktopHero = lazy(() => import("@food/components/user/home/HomeDesktopHero"));
 const HomeFilterModal = lazy(() => import("@food/components/user/home/HomeFilterModal"));
+const FreeDeliveryPopup = lazy(() => import("@food/components/user/home/FreeDeliveryPopup"));
 
 const MiniCart = lazy(() => import("@food/components/user/MiniCart"));
 const OrderTrackingCard = lazy(() => import("@food/components/user/OrderTrackingCard"));
@@ -691,6 +692,8 @@ export default function Home() {
               setShowAllCategoriesModal={setShowAllCategoriesModal}
               backendOrigin={BACKEND_ORIGIN}
               hasOffers={restaurants.loading ? true : (restaurants.visible || []).some(r => r.offer)}
+              selectedCategoryId={state.selectedCategory?.id || null}
+              onSelectCategory={state.setSelectedCategory}
             />
           </Suspense>
 
@@ -792,6 +795,8 @@ export default function Home() {
               loadMoreRestaurants={actions.loadMoreRestaurants}
               restaurantLoadMoreRef={restaurantLoadMoreRef}
               advertisements={advertisements}
+              selectedCategory={state.selectedCategory}
+              onClearCategory={() => state.setSelectedCategory(null)}
             />
           </Suspense>
         </div>
@@ -813,6 +818,12 @@ export default function Home() {
             </QuickCartProvider>
           </QuickLocationProvider>
         </div>
+      )}
+
+      {activeTab === "food" && (
+        <Suspense fallback={null}>
+          <FreeDeliveryPopup />
+        </Suspense>
       )}
 
       {/* Veg Mode Popups (Enable / Switch Off) */}

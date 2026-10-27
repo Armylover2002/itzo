@@ -2611,7 +2611,7 @@ const MENU_PREVIEW_ITEMS_PER_RESTAURANT = 8;
  * Attaches a short `menuPreview` (recommended dishes first) to each restaurant for the
  * home-page cards. One aggregate for the whole page instead of N menu calls.
  */
-const attachMenuPreviewToRestaurants = async (restaurants = [], { pureVeg = false } = {}) => {
+const attachMenuPreviewToRestaurants = async (restaurants = [], { pureVeg = false, categoryId = null } = {}) => {
     const ids = restaurants
         .map((r) => String(r?._id || ''))
         .filter((id) => mongoose.Types.ObjectId.isValid(id))
@@ -2625,6 +2625,7 @@ const attachMenuPreviewToRestaurants = async (restaurants = [], { pureVeg = fals
         isAvailable: { $ne: false },
     };
     if (pureVeg) match.foodType = 'Veg';
+    if (categoryId) match.categoryId = categoryId;
 
     const [groups, slotTimings] = await Promise.all([
         FoodItem.aggregate([
@@ -2783,6 +2784,21 @@ export const listApprovedRestaurants = async (query = {}) => {
         filter.$and = [...(filter.$and || []), zoneFilter];
     }
 
+    // Category filter: only restaurants that sell an approved, available item in this category.
+    // Accepts one id or a comma-separated list (a storefront category can span several docs).
+    const categoryIdList = String(query.categoryId || '')
+        .split(',')
+        .map((id) => id.trim())
+        .filter((id) => mongoose.Types.ObjectId.isValid(id))
+        .map((id) => new mongoose.Types.ObjectId(id));
+    const categoryId = categoryIdList.length ? { $in: categoryIdList } : null;
+    if (categoryId) {
+        const itemMatch = { categoryId, approvalStatus: 'approved', isAvailable: { $ne: false } };
+        if (query.pureVeg === 'true') itemMatch.foodType = 'Veg';
+        const restaurantIds = await FoodItem.distinct('restaurantId', itemMatch);
+        filter.$and = [...(filter.$and || []), { _id: { $in: restaurantIds } }];
+    }
+
     const lat = toFiniteNumber(query.lat);
     const lng = toFiniteNumber(query.lng);
     // Accept both radiusKm (preferred) and maxDistance (legacy frontend param).
@@ -2888,7 +2904,7 @@ export const listApprovedRestaurants = async (query = {}) => {
         }));
         await attachOutletTimingsToRestaurants(restaurants);
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng, { resortNearest: sortBy === 'nearest' });
-        if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true' });
+        if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true', categoryId });
         return { restaurants, total, page, limit };
     }
 
@@ -2935,7 +2951,7 @@ export const listApprovedRestaurants = async (query = {}) => {
     if (lat !== null && lng !== null) {
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng);
     }
-    if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true' });
+    if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true', categoryId });
 
     return { restaurants, total, page, limit };
 };

@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { Star, BadgePercent, Bookmark, Plus, Minus, UtensilsCrossed } from "lucide-react";
+import { Star, BadgePercent, Bookmark, Plus, Minus, UtensilsCrossed, X } from "lucide-react";
 import { Button } from "@food/components/ui/button";
 import { RestaurantGridSkeleton, LoadingSkeletonRegion } from "@food/components/ui/loading-skeletons";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
@@ -464,7 +464,9 @@ const RestaurantGrid = memo(({
   backendOrigin,
   hasMoreRestaurants,
   loadMoreRestaurants,
-  restaurantLoadMoreRef
+  restaurantLoadMoreRef,
+  selectedCategory = null,
+  onClearCategory
 }) => {
   const observer = React.useRef();
 
@@ -518,7 +520,20 @@ const RestaurantGrid = memo(({
           <h2 className="text-[12px] font-bold uppercase tracking-widest text-[#9ca3af]">
             {totalRestaurants ?? filteredRestaurants.length} Restaurants Delivering to You
           </h2>
-          <span className="text-[15px] font-bold text-[#1c1c1e]">Featured</span>
+          {selectedCategory ? (
+            <div className="flex items-center gap-2">
+              <span className="text-[15px] font-bold text-[#1c1c1e]">{selectedCategory.name}</span>
+              <button
+                type="button"
+                onClick={onClearCategory}
+                className="flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2.5 py-0.5 text-[12px] font-semibold text-gray-700"
+              >
+                <X className="h-3 w-3" /> Clear
+              </button>
+            </div>
+          ) : (
+            <span className="text-[15px] font-bold text-[#1c1c1e]">Featured</span>
+          )}
         </div>
       </div>
 
@@ -558,6 +573,12 @@ const RestaurantGrid = memo(({
             />
           ))}
         </div>
+
+        {selectedCategory && !loadingRestaurants && visibleRestaurants.length === 0 && (
+          <p className="px-4 py-10 text-center text-[14px] text-gray-500">
+            No restaurants near you have {selectedCategory.name} right now.
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col items-center gap-2 px-4 pt-4 sm:pt-6">
