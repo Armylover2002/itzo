@@ -514,7 +514,7 @@ const RestaurantGrid = memo(({
   }, [loadingRestaurants, loadingMoreRestaurants, hasMoreRestaurants, loadMoreRestaurants, restaurantLoadMoreRef]);
 
   return (
-    <section className="content-auto space-y-0 pb-8 pt-3 sm:pt-4 md:pb-10 lg:pt-6">
+    <section data-purpose="restaurant-grid" className="content-auto scroll-mt-28 space-y-0 pb-8 pt-3 sm:pt-4 md:pb-10 lg:pt-6">
       <div className="mb-4 px-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-[12px] font-bold uppercase tracking-widest text-[#9ca3af]">

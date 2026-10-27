@@ -322,15 +322,10 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
       return;
     }
 
-    const approved = getApprovedVehicles(driverVehicles);
-    if (!approved.length) {
-      toast.error('No approved vehicle available. Please contact admin.');
-      return;
-    }
-
     if (!activeVehicleId) {
-      const only = approved[0];
-      const vId = String(only.id || only.vehicleId || '').trim();
+      const approved = getApprovedVehicles(driverVehicles);
+      const only = approved?.[0];
+      const vId = only ? String(only.id || only.vehicleId || '').trim() : '';
       try {
         if (vId) {
           const vehicleRes = await deliveryAPI.setActiveVehicle(vId);

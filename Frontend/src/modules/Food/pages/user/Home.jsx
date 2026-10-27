@@ -322,6 +322,16 @@ export default function Home() {
     enabled: isFoodRoute
   });
 
+  const handleCategorySelect = useCallback((category) => {
+    state.setSelectedCategory(category);
+    window.requestAnimationFrame(() => {
+      document.querySelector('[data-purpose="restaurant-grid"]')?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  }, [state.setSelectedCategory]);
+
   // --- UI Effects ---
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -693,7 +703,7 @@ export default function Home() {
               backendOrigin={BACKEND_ORIGIN}
               hasOffers={restaurants.loading ? true : (restaurants.visible || []).some(r => r.offer)}
               selectedCategoryId={state.selectedCategory?.id || null}
-              onSelectCategory={state.setSelectedCategory}
+              onSelectCategory={handleCategorySelect}
             />
           </Suspense>
 

@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, LayoutGrid } from "lucide-react";
 import { CategoryChipRowSkeleton } from "@food/components/ui/loading-skeletons";
 import OptimizedImage from "@food/components/OptimizedImage";
 import foodPattern from "@food/assets/food_pattern_background.png";
@@ -95,6 +95,22 @@ const CategoryRail = memo(({
           </div>
           <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Offers</span>
         </div>
+        )}
+
+        {onSelectCategory && !showCategorySkeleton && (
+          <button
+            type="button"
+            aria-pressed={!selectedCategoryId}
+            onClick={() => onSelectCategory(null)}
+            className="w-[72px] md:w-[84px] flex-shrink-0 flex flex-col items-center space-y-2 group border-0 bg-transparent p-0"
+          >
+            <span className={`w-16 h-16 rounded-full flex items-center justify-center bg-orange-50 text-[#FB4F01] transition-transform group-hover:scale-110 ${!selectedCategoryId ? "ring-2 ring-[#FB4F01] ring-offset-2" : ""}`}>
+              <LayoutGrid className="h-6 w-6" aria-hidden="true" />
+            </span>
+            <span className={`text-xs font-semibold truncate w-full text-center ${!selectedCategoryId ? "text-[#FB4F01]" : "text-gray-600 dark:text-gray-300"}`}>
+              All
+            </span>
+          </button>
         )}
 
         {!showCategorySkeleton && displayCategories.map((category, index) => {
