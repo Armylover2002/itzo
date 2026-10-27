@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
-import { onboardingFeeAPI } from "@/services/api"
-import { Settings, Save, ShieldAlert, CheckCircle2 } from "lucide-react"
+import { onboardingFeeAPI, adminAPI } from "@/services/api"
+import { Settings, Save, ShieldAlert, CheckCircle2, Loader2 } from "lucide-react"
 import toast from "react-hot-toast"
 
 export default function OnboardingFeeManagement() {
@@ -11,9 +11,44 @@ export default function OnboardingFeeManagement() {
     DELIVERY_PARTNER: { price: 0, isActive: false }
   })
 
+  // Delivery Boy Subscription enforcement toggle state
+  const [deliverySubEnabled, setDeliverySubEnabled] = useState(false)
+  const [subToggleLoading, setSubToggleLoading] = useState(false)
+
   useEffect(() => {
     fetchConfig()
+    fetchSubscriptionEnforcement()
   }, [])
+
+  const fetchSubscriptionEnforcement = async () => {
+    try {
+      const res = await adminAPI.getBusinessSettings()
+      const settings = res?.data?.data || res?.data?.settings || res?.data || {}
+      setDeliverySubEnabled(!!settings.subscriptionEnforcement?.deliveryPartner)
+    } catch (err) {
+      console.error("Failed to load subscription enforcement:", err)
+    }
+  }
+
+  const handleToggleDeliverySubscription = async () => {
+    const newValue = !deliverySubEnabled
+    setSubToggleLoading(true)
+    try {
+      await adminAPI.updateBusinessSettings({
+        subscriptionEnforcement: { deliveryPartner: newValue }
+      })
+      setDeliverySubEnabled(newValue)
+      toast.success(newValue
+        ? "Delivery Boy Subscription enabled — delivery partners must have a subscription to go online."
+        : "Delivery Boy Subscription disabled — delivery partners can go online without a subscription."
+      )
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to update subscription setting")
+    } finally {
+      setSubToggleLoading(false)
+    }
+  }
 
   const fetchConfig = async () => {
     setLoading(true)
@@ -93,6 +128,48 @@ export default function OnboardingFeeManagement() {
             <div>
               <h1 className="text-2xl font-bold text-slate-900">Onboarding Fee Management</h1>
               <p className="text-sm text-slate-500 mt-1">Configure registration fees for restaurants, sellers, and delivery partners.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Delivery Boy Subscription Toggle Card */}
+        <div className="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 mb-6">
+          <div className="p-6 flex items-center justify-between">
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-slate-800">Delivery Boy Subscription</h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {deliverySubEnabled
+                  ? "Subscription is required — delivery partners must have an active subscription or sufficient wallet balance to go online."
+                  : "Subscription is disabled — delivery partners can go online without any subscription."
+                }
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {subToggleLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+              <div className="flex items-center gap-2">
+                {deliverySubEnabled ? (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Enabled
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-semibold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-full">
+                    <ShieldAlert className="w-3.5 h-3.5" /> Disabled
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={handleToggleDeliverySubscription}
+                disabled={subToggleLoading}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                  deliverySubEnabled ? "bg-[#6413C7]" : "bg-slate-300"
+                } ${subToggleLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    deliverySubEnabled ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
             </div>
           </div>
         </div>
