@@ -1999,6 +1999,9 @@ const handlePlaceOrder = async () => {
     // Ensure we're using the correct restaurant from restaurantData (most reliable)
     const finalRestaurantId = restaurantData?.restaurantId || restaurantData?._id || null;
     const finalRestaurantName = restaurantData?.name || null;
+    // Both id forms — restaurantData's business code AND Mongo _id — accepted
+    // when cleaning the cart, since cart items may carry either form.
+    const finalRestaurantIds = [restaurantData?.restaurantId, restaurantData?._id].filter(Boolean);
 
     if (!finalRestaurantId) {
       debugError('? CRITICAL: Cannot place order - Restaurant ID is missing!');
@@ -2055,7 +2058,7 @@ const handlePlaceOrder = async () => {
       // Automatically clean cart to keep items from the restaurant matching restaurantData
       if (finalRestaurantId && finalRestaurantName) {
         debugLog('?? Auto-cleaning cart to keep items from:', finalRestaurantName);
-        cleanCartForRestaurant(finalRestaurantId, finalRestaurantName);
+        cleanCartForRestaurant(finalRestaurantIds, finalRestaurantName);
         toast.error('Cart contained items from different restaurants. Items from other restaurants have been removed.');
       } else {
         // If restaurantData is not available, keep items from first restaurant in cart
@@ -2074,15 +2077,25 @@ const handlePlaceOrder = async () => {
       return;
     }
 
-    // If restaurant names match but IDs differ, that's OK (same restaurant, different ID format)
-    // But log a warning in development
+    // Same name, different IDs: either a legacy "same restaurant, different ID
+    // format" case, or (multi-outlet hub) a stale cart mixing items from the
+    // hub and one of its franchise outlets — those share a display name but
+    // are genuinely different pickup locations. Treat it the same as a real
+    // cross-restaurant conflict: keep only the items matching the currently
+    // resolved restaurant and make the user confirm/retry.
     if (uniqueRestaurantIds.length > 1 && uniqueRestaurantNames.length === 1) {
-      if (process.env.NODE_ENV === 'development') {
-        debugWarn('?? Cart items have different restaurant IDs but same name. This is OK if IDs are in different formats.', {
-          restaurantIds: uniqueRestaurantIds,
-          restaurantName: uniqueRestaurantNames[0]
-        });
+      debugWarn('?? Cart items share a name but have different restaurant IDs — cleaning to the resolved restaurant.', {
+        restaurantIds: uniqueRestaurantIds,
+        restaurantName: uniqueRestaurantNames[0]
+      });
+      if (finalRestaurantId && finalRestaurantName) {
+        cleanCartForRestaurant(finalRestaurantIds, finalRestaurantName);
+        toast.error('Your cart had items from a different outlet of this restaurant. Please review your cart and try again.');
+      } else {
+        toast.error('Cart contains items from different outlets. Please clear cart and try again.');
       }
+      setIsPlacingOrder(false);
+      return;
     }
 
     // Validate that cart items' restaurantId matches the restaurantData

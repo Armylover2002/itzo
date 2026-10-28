@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { ShieldCheck } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { restaurantAPI } from "@food/api"
+import { setAuthData as setRestaurantAuthData } from "@food/utils/auth"
 import { useCompanyName } from "@food/hooks/useCompanyName"
 import { getAppLogo, getRestaurantLoginBanner, subscribeBusinessSettings } from "@common/utils/businessSettings"
 import loginBg from "@food/assets/loginbanner.png"
@@ -64,6 +65,45 @@ export default function RestaurantLogin() {
   const [error, setError] = useState("")
   const [isSending, setIsSending] = useState(false)
   const [keyboardInset, setKeyboardInset] = useState(0)
+
+  // "restaurant" = normal OTP login. "franchise" = outlet login with userId/password
+  // issued by the main hub owner (see Hub & franchise outlets page).
+  const [loginMode, setLoginMode] = useState("restaurant")
+  const [franchiseForm, setFranchiseForm] = useState({ franchiseLoginId: "", password: "" })
+  const [franchiseError, setFranchiseError] = useState("")
+  const [isFranchiseSubmitting, setIsFranchiseSubmitting] = useState(false)
+
+  const handleFranchiseLogin = async () => {
+    if (!franchiseForm.franchiseLoginId.trim() || !franchiseForm.password) {
+      setFranchiseError("Login ID and password are required")
+      return
+    }
+    setFranchiseError("")
+    setIsFranchiseSubmitting(true)
+    try {
+      const res = await restaurantAPI.loginFranchise(
+        franchiseForm.franchiseLoginId.trim(),
+        franchiseForm.password,
+      )
+      const data = res?.data?.data
+      const accessToken = data?.accessToken
+      const refreshToken = data?.refreshToken ?? null
+      const restaurant = data?.user
+      if (!accessToken || !restaurant) {
+        setFranchiseError("Login failed. Please try again.")
+        return
+      }
+      setRestaurantAuthData("restaurant", accessToken, restaurant, refreshToken)
+      window.dispatchEvent(new Event("restaurantAuthChanged"))
+      navigate("/food/restaurant", { replace: true })
+    } catch (apiErr) {
+      setFranchiseError(
+        apiErr?.response?.data?.message || apiErr?.message || "Invalid login ID or password",
+      )
+    } finally {
+      setIsFranchiseSubmitting(false)
+    }
+  }
 
   useEffect(() => {
     if (typeof window === "undefined" || !window.visualViewport) return undefined
@@ -218,6 +258,69 @@ export default function RestaurantLogin() {
                 <div className="h-[2px] w-12 sm:w-16 bg-[#6b554b] mx-auto rounded-full" />
              </div>
 
+             <div className="flex mb-5 sm:mb-6 bg-gray-100 rounded-xl p-1">
+               <button
+                 type="button"
+                 onClick={() => setLoginMode("restaurant")}
+                 className={`flex-1 h-9 sm:h-10 rounded-lg text-xs sm:text-sm font-bold transition-all ${
+                   loginMode === "restaurant" ? "bg-white shadow text-[#10335D]" : "text-gray-500"
+                 }`}
+               >
+                 Login as Restaurant
+               </button>
+               <button
+                 type="button"
+                 onClick={() => setLoginMode("franchise")}
+                 className={`flex-1 h-9 sm:h-10 rounded-lg text-xs sm:text-sm font-bold transition-all ${
+                   loginMode === "franchise" ? "bg-white shadow text-[#10335D]" : "text-gray-500"
+                 }`}
+               >
+                 Login as Franchise
+               </button>
+             </div>
+
+             {loginMode === "franchise" ? (
+               <div className="space-y-5 sm:space-y-6">
+                 <div className="space-y-3 sm:space-y-4">
+                   <div className="border-b-2 border-gray-200 focus-within:border-[#10335D] transition-all py-1.5 sm:py-2">
+                     <input
+                       type="text"
+                       autoComplete="username"
+                       placeholder="Franchise login ID"
+                       value={franchiseForm.franchiseLoginId}
+                       onChange={(e) =>
+                         setFranchiseForm((f) => ({ ...f, franchiseLoginId: e.target.value }))
+                       }
+                       className="block w-full px-1 py-1 bg-transparent text-gray-900 outline-none placeholder:text-gray-300 font-bold text-base sm:text-lg"
+                     />
+                   </div>
+                   <div className="border-b-2 border-gray-200 focus-within:border-[#10335D] transition-all py-1.5 sm:py-2">
+                     <input
+                       type="password"
+                       autoComplete="current-password"
+                       placeholder="Password"
+                       value={franchiseForm.password}
+                       onChange={(e) => setFranchiseForm((f) => ({ ...f, password: e.target.value }))}
+                       className="block w-full px-1 py-1 bg-transparent text-gray-900 outline-none placeholder:text-gray-300 font-bold text-base sm:text-lg"
+                     />
+                   </div>
+                   {franchiseError && (
+                     <p className="text-[#10335D] text-xs font-bold italic px-2">{franchiseError}</p>
+                   )}
+                 </div>
+                 <Button
+                   onClick={handleFranchiseLogin}
+                   disabled={isFranchiseSubmitting}
+                   className={`w-full h-11 sm:h-12 md:h-14 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base md:text-lg tracking-wide transition-all duration-300 ${
+                     !isFranchiseSubmitting
+                       ? "bg-[#10335D] hover:bg-[#E64D02] text-white shadow-lg shadow-[#10335D]/20 transform active:scale-[0.98]"
+                       : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                   }`}
+                 >
+                   {isFranchiseSubmitting ? "Logging in..." : "Login"}
+                 </Button>
+               </div>
+             ) : (
              <div className="space-y-5 sm:space-y-6">
                <div className="space-y-3 sm:space-y-4">
                  <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#10335D] transition-all py-1.5 sm:py-2 group">
@@ -264,7 +367,8 @@ export default function RestaurantLogin() {
                   {isSending ? "Processing..." : "Get Verification Code"}
                 </Button>
              </div>
-             
+             )}
+
              <div className="mt-5 sm:mt-8">
                <RestaurantAuthFooter className="pt-4 sm:pt-5 border-t border-gray-100" />
              </div>

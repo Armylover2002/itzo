@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import ms from "ms";
+import bcrypt from "bcryptjs";
 import { FoodUser } from "../users/user.model.js";
 import { FoodAdmin } from "../admin/admin.model.js";
 import { AdminResetOtp } from "../admin/adminResetOtp.model.js";
@@ -688,6 +689,38 @@ export const issueRestaurantSession = async (restaurant) => {
     isPendingApproval:
       user?.status === "pending" && user?.wasEverApproved !== true,
   };
+};
+
+/**
+ * Franchise outlet login: userId/password instead of OTP. The outlet is a normal
+ * FoodRestaurant document with parentRestaurantId set, so the issued session is
+ * identical in shape to a regular restaurant login (same role/claims) — the
+ * independent-restaurant OTP flow above is completely untouched by this path.
+ */
+export const loginFranchiseOutlet = async (franchiseLoginId, password) => {
+  if (!franchiseLoginId || !password) {
+    throw new ValidationError("Login ID and password are required");
+  }
+
+  const outlet = await FoodRestaurant.findOne({
+    franchiseLoginId: String(franchiseLoginId).trim(),
+    parentRestaurantId: { $ne: null },
+  }).select("+franchisePasswordHash");
+
+  if (!outlet || !outlet.franchisePasswordHash) {
+    throw new AuthError("Invalid login ID or password");
+  }
+
+  const isMatch = await bcrypt.compare(password, outlet.franchisePasswordHash);
+  if (!isMatch) {
+    throw new AuthError("Invalid login ID or password");
+  }
+
+  if (outlet.isDeleted === true || outlet.accountStatus === "deleted" || outlet.isActive === false) {
+    throw new AuthError("Your account has been deleted/deactivated. Please contact support.");
+  }
+
+  return issueRestaurantSession(outlet);
 };
 
 export const requestDeliveryOtp = async (phone) => {
