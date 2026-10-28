@@ -1343,6 +1343,9 @@ export const restaurantAPI = {
       return Promise.reject(new Error("Phone and OTP are required"));
     return authService.verifyRestaurantOtp(phone, otp, fcmToken, platform);
   },
+  /** Franchise outlet login — userId/password instead of OTP. */
+  loginFranchise: (franchiseLoginId, password) =>
+    authService.loginFranchiseOutlet(franchiseLoginId, password),
   getMe: () => authService.getMe("restaurant"),
   /** Restaurant dashboard: fetch current restaurant profile (deduped + short-cached). */
   getCurrentRestaurant: () => getRestaurantCurrentOnce(),
@@ -2060,6 +2063,25 @@ export const restaurantAPI = {
   deleteAdvertisement: (id) =>
     apiClient.delete(`/food/restaurant/advertisements/${String(id)}`, {
       contextModule: "restaurant",
+    }),
+};
+
+/** Multi-outlet / franchise hub management (owner-only). */
+export const hubAPI = {
+  listOutlets: () =>
+    apiClient.get("/food/restaurant/hubs", { contextModule: "restaurant" }),
+  createOutlet: (payload) =>
+    apiClient.post("/food/restaurant/hubs", payload, { contextModule: "restaurant" }),
+  updateOutlet: (id, payload) =>
+    apiClient.patch(`/food/restaurant/hubs/${String(id)}`, payload, { contextModule: "restaurant" }),
+  deleteOutlet: (id) =>
+    apiClient.delete(`/food/restaurant/hubs/${String(id)}`, { contextModule: "restaurant" }),
+  getEarnings: () =>
+    apiClient.get("/food/restaurant/hubs/earnings", { contextModule: "restaurant" }),
+  /** Public: resolve a hub brand id to the nearest active outlet for a user's lat/lng. */
+  resolveOutlet: (restaurantId, lat, lng) =>
+    apiClient.get(`/food/restaurant/restaurants/${String(restaurantId)}/resolve-outlet`, {
+      params: { lat, lng },
     }),
 };
 

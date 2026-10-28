@@ -748,6 +748,11 @@ export default function ExploreMore() {
   }, [profileOpen, scheduleOffOpen, dateTimePickerOpen, successPopupOpen, existingScheduleOpen, searchOpen])
 
   // Section data
+  // Franchise outlets (own doc has parentRestaurantId) never see hub management —
+  // only the main restaurant owner that created the franchise logins does.
+  const loggedInUser = getCurrentUser("restaurant")
+  const isHubOwner = !loggedInUser?.parentRestaurantId
+
   const manageOutletItems = [
     { id: 1, label: "Outlet info", icon: Info, route: "/restaurant/outlet-info" },
     { id: 2, label: "Outlet timings", icon: Clock, route: "/restaurant/outlet-timings" },
@@ -755,6 +760,7 @@ export default function ExploreMore() {
     { id: 6, label: "Item slot timings", icon: Clock, route: "/restaurant/item-slot-timings" },
     { id: 5, label: "Create Coupons", icon: Gift, route: "/restaurant/create-coupons" },
     { id: 7, label: "Advertisements", icon: Megaphone, route: "/restaurant/advertisements" },
+    ...(isHubOwner ? [{ id: 8, label: "Hub & franchise outlets", icon: Building2, route: "/restaurant/hub-outlets" }] : []),
   ]
 
   const settingsItems = [

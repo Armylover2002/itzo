@@ -12,6 +12,7 @@ const AUTH = {
   ADMIN_LOGIN: "/food/auth/admin/login",
   RESTAURANT_REQUEST_OTP: "/food/auth/restaurant/request-otp",
   RESTAURANT_VERIFY_OTP: "/food/auth/restaurant/verify-otp",
+  RESTAURANT_FRANCHISE_LOGIN: "/food/auth/restaurant/franchise-login",
   DELIVERY_REQUEST_OTP: "/food/auth/delivery/request-otp",
   DELIVERY_VERIFY_OTP: "/food/auth/delivery/verify-otp",
   REFRESH_TOKEN: "/food/auth/refresh-token",
@@ -343,6 +344,20 @@ export function verifyRestaurantOtp(phone, otp, fcmToken = null, platform = "web
     phone: normalized,
     otp: otpStr,
     ...(fcmToken ? { fcmToken, platform } : {}),
+  });
+}
+
+/**
+ * Franchise outlet login (userId/password instead of OTP). Returns the same
+ * { accessToken, refreshToken, user } shape as verifyRestaurantOtp.
+ */
+export function loginFranchiseOutlet(franchiseLoginId, password) {
+  if (!franchiseLoginId || !password) {
+    return Promise.reject(new Error("Login ID and password are required"));
+  }
+  return apiClient.post(AUTH.RESTAURANT_FRANCHISE_LOGIN, {
+    franchiseLoginId: String(franchiseLoginId).trim(),
+    password: String(password),
   });
 }
 

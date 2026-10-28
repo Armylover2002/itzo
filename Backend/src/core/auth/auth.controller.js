@@ -8,6 +8,7 @@ import {
   verifyRestaurantOtpAndLogin,
   requestDeliveryOtp,
   verifyDeliveryOtpAndLogin,
+  loginFranchiseOutlet,
 
   logout,
   logoutAll,
@@ -121,6 +122,16 @@ export const verifyRestaurantOtpController = async (req, res, next) => {
   try {
     const { phone, otp, fcmToken, platform } = validateRestaurantOtpVerifyDto(req.body);
     const result = await verifyRestaurantOtpAndLogin(phone, otp, fcmToken, platform);
+    return sendResponse(res, 200, "Login successful", result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const loginFranchiseOutletController = async (req, res, next) => {
+  try {
+    const { franchiseLoginId, password } = req.body || {};
+    const result = await loginFranchiseOutlet(franchiseLoginId, password);
     return sendResponse(res, 200, "Login successful", result);
   } catch (error) {
     next(error);

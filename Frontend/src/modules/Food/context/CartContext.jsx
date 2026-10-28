@@ -220,9 +220,11 @@ export function CartProvider({ children }) {
           newRestaurantNameNormalized &&
           firstRestaurantNameNormalized !== newRestaurantNameNormalized
 
+        // Multi-outlet hub: a brand's hub and its franchise outlets share the
+        // same display name, so id must be checked even when names match —
+        // otherwise a cart item from one location silently merges with a new
+        // item from another (same-named) location.
         const hasIdMismatch =
-          !firstRestaurantNameNormalized &&
-          !newRestaurantNameNormalized &&
           firstItemRestaurantId &&
           newItemRestaurantId &&
           String(firstItemRestaurantId) !== String(newItemRestaurantId)
@@ -264,17 +266,23 @@ export function CartProvider({ children }) {
         const normalizeName = (name) => name ? name.trim().toLowerCase() : '';
         const firstRestaurantNameNormalized = normalizeName(firstItemRestaurantName);
         const newRestaurantNameNormalized = normalizeName(newItemRestaurantName);
-        
-        if (firstRestaurantNameNormalized && newRestaurantNameNormalized) {
-          if (firstRestaurantNameNormalized !== newRestaurantNameNormalized) {
-            debugError('❌ Cannot add item: Restaurant name mismatch!', { firstItemRestaurantId, newItemRestaurantId });
-            return safePrev;
-          }
-        } else if (firstItemRestaurantId && newItemRestaurantId) {
-          if (firstItemRestaurantId !== newItemRestaurantId) {
-            debugError('❌ Cannot add item: Cart contains items from different restaurant!', { firstItemRestaurantId, newItemRestaurantId });
-            return safePrev;
-          }
+
+        const nameMismatch =
+          firstRestaurantNameNormalized &&
+          newRestaurantNameNormalized &&
+          firstRestaurantNameNormalized !== newRestaurantNameNormalized;
+
+        // Checked independently of name — a hub and its franchise outlets
+        // share the same display name, so matching names don't mean matching
+        // pickup locations.
+        const idMismatch =
+          firstItemRestaurantId &&
+          newItemRestaurantId &&
+          String(firstItemRestaurantId) !== String(newItemRestaurantId);
+
+        if (nameMismatch || idMismatch) {
+          debugError('❌ Cannot add item: Cart contains items from a different restaurant/outlet!', { firstItemRestaurantId, newItemRestaurantId });
+          return safePrev;
         }
       }
       
@@ -397,30 +405,39 @@ export function CartProvider({ children }) {
 
   // Clean cart to remove items from different restaurants
   // Keeps only items from the specified restaurant
-  const cleanCartForRestaurant = useCallback((restaurantId, restaurantName) => {
+  const cleanCartForRestaurant = useCallback((restaurantIdOrIds, restaurantName) => {
+    // Accepts either one id or a list of acceptable ids for the same
+    // restaurant (e.g. its Mongo _id AND its business code "REST000034") —
+    // a restaurant is referenced in different formats in different parts of
+    // the app, and treating only one form as valid used to wrongly clear a
+    // legitimate same-restaurant cart.
+    const acceptableIds = (Array.isArray(restaurantIdOrIds) ? restaurantIdOrIds : [restaurantIdOrIds])
+      .filter(Boolean)
+      .map((id) => String(id));
+
     setCart((prev) => {
       const safePrev = normalizeCartData(prev)
       if (safePrev.length === 0) return safePrev;
-      
+
       // Normalize restaurant name for comparison
       const normalizeName = (name) => name ? name.trim().toLowerCase() : '';
       const targetRestaurantNameNormalized = normalizeName(restaurantName);
-      
-      // Filter cart to keep only items from the target restaurant
+
+      // Filter cart to keep only items from the target restaurant.
+      // ID is checked first and is authoritative: a multi-outlet hub's
+      // franchise outlets share the hub's display name, so name-matching
+      // alone would wrongly keep items pinned to a different outlet.
       const cleanedCart = safePrev.filter((item) => {
-        const itemRestaurantId = item?.restaurantId;
+        const itemRestaurantId = item?.restaurantId != null ? String(item.restaurantId) : '';
         const itemRestaurantName = item?.restaurant;
         const itemRestaurantNameNormalized = normalizeName(itemRestaurantName);
-        
-        // Check by restaurant name first (more reliable)
+
+        if (acceptableIds.length && itemRestaurantId) {
+          return acceptableIds.includes(itemRestaurantId);
+        }
+        // Fallback to name only when an id isn't available on one side.
         if (targetRestaurantNameNormalized && itemRestaurantNameNormalized) {
           return itemRestaurantNameNormalized === targetRestaurantNameNormalized;
-        }
-        // Fallback to ID comparison
-        if (restaurantId && itemRestaurantId) {
-          return itemRestaurantId === restaurantId || 
-                 itemRestaurantId === restaurantId.toString() ||
-                 itemRestaurantId.toString() === restaurantId;
         }
         // If no match, remove item
         return false;

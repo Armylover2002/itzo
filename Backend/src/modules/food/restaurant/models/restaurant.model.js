@@ -270,6 +270,26 @@ const restaurantSchema = new mongoose.Schema(
       index: true,
     },
     /**
+     * Multi-outlet / franchise hub support.
+     * `parentRestaurantId` null = independent restaurant (unchanged legacy flow).
+     * Set = this document is a franchise outlet belonging to that hub.
+     */
+    parentRestaurantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "FoodRestaurant",
+      default: null,
+      index: true,
+    },
+    /** True only on the restaurant document that owns/manages the hub's outlets. */
+    isMainHub: { type: Boolean, default: false, index: true },
+    /** Franchise outlet: when true, menu/stock reads resolve against parentRestaurantId instead of own id. */
+    useMainHubInventory: { type: Boolean, default: false },
+    /** Display label for a franchise outlet (e.g. "Indiranagar branch"). */
+    outletLabel: { type: String, trim: true },
+    /** Login id + password hash for franchise outlets (separate from OTP-based owner login). */
+    franchiseLoginId: { type: String, trim: true, index: true, sparse: true },
+    franchisePasswordHash: { type: String, select: false },
+    /**
      * Restaurant business type. "Street Food Vendor" unlocks live-location
      * broadcasting (moving stall) instead of a fixed shop address.
      */
