@@ -111,11 +111,11 @@ const FooterSection = React.memo(function FooterSection() {
   }, []);
 
   const socialLinks = [
-    { name: 'Linkedin', icon: LinkedinOriginal, url: settings?.socialLinkedinUrl || '#' },
-    { name: 'Instagram', icon: InstagramOriginal, url: settings?.socialInstagramUrl || '#' },
-    { name: 'Youtube', icon: YoutubeOriginal, url: settings?.socialYoutubeUrl || '#' },
-    { name: 'Facebook', icon: FacebookOriginal, url: settings?.socialFacebookUrl || '#' },
-    { name: 'X', icon: TwitterOriginal, url: settings?.socialTwitterUrl || '#' },
+    { name: 'Linkedin', icon: LinkedinOriginal, url: settings?.socialLinks?.linkedin || '#' },
+    { name: 'Instagram', icon: InstagramOriginal, url: settings?.socialLinks?.instagram || '#' },
+    { name: 'Youtube', icon: YoutubeOriginal, url: settings?.socialLinks?.youtube || '#' },
+    { name: 'Facebook', icon: FacebookOriginal, url: settings?.socialLinks?.facebook || '#' },
+    { name: 'X', icon: TwitterOriginal, url: settings?.socialLinks?.twitter || '#' },
   ];
 
   let logoImg = settings?.landingFooterLogo?.url || "/itzo-logo-transparent.png";
