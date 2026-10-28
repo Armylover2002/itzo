@@ -43,7 +43,12 @@ const foodSchema = new mongoose.Schema(
         approvedAt: { type: Date },
         rejectedAt: { type: Date },
         approvedBy: { type: actionPerformerSchema, default: null },
-        rejectedBy: { type: actionPerformerSchema, default: null }
+        rejectedBy: { type: actionPerformerSchema, default: null },
+        /**
+         * Set only on an outlet's mirrored copy of a hub item (useMainHubInventory sync).
+         * Points at the hub's own FoodItem so later edits can find and update the copy.
+         */
+        hubSourceItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodItem', default: null, index: true },
     },
     {
         collection: 'food_items',

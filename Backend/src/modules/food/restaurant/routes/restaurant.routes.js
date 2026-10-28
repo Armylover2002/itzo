@@ -89,6 +89,14 @@ import { cacheResponse, invalidateCache } from '../../../../middleware/cache.js'
 import { invalidateCategoryCaches } from '../../shared/categoryCache.js';
 import { updateLiveLocationController, toggleLiveTrackingController } from '../controllers/vendorLocation.controller.js';
 import { vendorLocationRateLimiter } from '../../../../middleware/rateLimit.js';
+import {
+    listHubOutletsController,
+    createHubOutletController,
+    updateHubOutletController,
+    deleteHubOutletController,
+    getHubEarningsController,
+    resolveNearestOutletController
+} from '../controllers/hub.controller.js';
 
 const router = express.Router();
 
@@ -110,6 +118,23 @@ const handleAdvertisementUpload = (req, res, next) => {
         }
         return sendError(res, 400, err.message || 'Failed to upload advertisement files');
     });
+};
+
+/**
+ * Hub management is owner-only — a franchise outlet logging in (its own doc has
+ * parentRestaurantId set) must not be able to spawn or manage outlets of its own.
+ */
+const requireHubOwner = async (req, res, next) => {
+    try {
+        const restaurant = await FoodRestaurant.findById(req.user?.userId).select('parentRestaurantId').lean();
+        if (!restaurant) return sendError(res, 404, 'Restaurant not found');
+        if (restaurant.parentRestaurantId) {
+            return sendError(res, 403, 'Franchise outlets cannot manage hub outlets');
+        }
+        next();
+    } catch (error) {
+        next(error);
+    }
 };
 
 /**
@@ -180,6 +205,9 @@ router.get('/restaurants/price-filter', (req, res, next) => {
 router.get('/restaurants/:id', cacheResponse(600, 'restaurant_detail'), getApprovedRestaurantController);
 router.get('/restaurants/:id/menu', cacheResponse(600, 'restaurant_menu'), getPublicRestaurantMenuController);
 router.get('/restaurants/:id/outlet-timings', cacheResponse(600, 'restaurant_timings'), getOutletTimingsByRestaurantIdController);
+// Public: resolve a hub brand id to its nearest active outlet for this user's lat/lng
+// (no-op — returns the same id — for a normal, non-hub restaurant).
+router.get('/restaurants/:id/resolve-outlet', resolveNearestOutletController);
 router.get('/offers', optionalAuthMiddleware, listPublicOffersController);
 // Public: categories list (zone-aware; returns zone categories + global)
 router.get('/categories/public', cacheResponse(600, 'categories'), listCategoriesController);
@@ -223,6 +251,13 @@ router.put('/outlet-timings', authMiddleware, requireRestaurant, requireApproved
     next();
 }, upsertCurrentRestaurantOutletTimingsController);
 router.get('/finance', authMiddleware, requireRestaurant, requireApprovedRestaurant, getRestaurantFinanceController);
+
+// Hub / franchise outlets (owner-only)
+router.get('/hubs', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, listHubOutletsController);
+router.post('/hubs', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, createHubOutletController);
+router.patch('/hubs/:id', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, updateHubOutletController);
+router.delete('/hubs/:id', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, deleteHubOutletController);
+router.get('/hubs/earnings', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, getHubEarningsController);
 
 router.get('/subscription-eligibility', authMiddleware, requireRestaurant, requireApprovedRestaurant, checkSubscriptionEligibilityController);
 router.get('/subscription-wallet', authMiddleware, requireRestaurant, requireApprovedRestaurant, getRestaurantSubscriptionWalletController);

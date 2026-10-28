@@ -18,7 +18,7 @@ import { ensureDailyPassEligibility, activateDailyPass, checkRestaurantEligibili
 import { isSubscriptionEnforced } from '../../../common/services/subscriptionEnforcement.service.js';
 import { logger } from '../../../../utils/logger.js';
 import { getRoadDistancesToDestination } from '../../../../services/roadDistance.service.js';
-import { parseGeoPoint } from '../../shared/geo.utils.js';
+import { parseGeoPoint, haversineKm } from '../../shared/geo.utils.js';
 import {
     splitReviewableUpdate,
     mergePendingProfileChanges,
@@ -89,6 +89,68 @@ async function enrichRestaurantsWithRoadDistance(restaurants, userLat, userLng, 
     return restaurants;
 }
 
+/**
+ * Multi-outlet hub: a listing card shows the hub's single brand entry, but the
+ * "X km away" / ETA on that card should reflect whichever of the hub's own
+ * address or one of its outlets is actually nearest the user — not always the
+ * hub's own address. Swaps `restaurant.location` to the nearest candidate's
+ * point (straight-line comparison) before the road-distance pass below runs,
+ * so every downstream distance/sort/ETA calculation picks it up for free.
+ * No-op for every normal (non-hub) restaurant.
+ */
+async function attachNearestOutletLocation(restaurants, userLat, userLng) {
+    const lat = Number(userLat);
+    const lng = Number(userLng);
+    if (!Array.isArray(restaurants) || !restaurants.length || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+        return;
+    }
+
+    const hubIds = restaurants.filter((r) => r.isMainHub).map((r) => r._id);
+    if (!hubIds.length) return;
+
+    const outlets = await FoodRestaurant.find({
+        parentRestaurantId: { $in: hubIds },
+        isActive: { $ne: false },
+        isDeleted: { $ne: true },
+        status: 'approved',
+    }).select('parentRestaurantId location outletLabel').lean();
+    if (!outlets.length) return;
+
+    const outletsByHub = new Map();
+    for (const outlet of outlets) {
+        const key = String(outlet.parentRestaurantId);
+        if (!outletsByHub.has(key)) outletsByHub.set(key, []);
+        outletsByHub.get(key).push(outlet);
+    }
+
+    for (const restaurant of restaurants) {
+        if (!restaurant.isMainHub) continue;
+        const candidates = outletsByHub.get(String(restaurant._id));
+        if (!candidates?.length) continue;
+
+        const hubPoint = parseGeoPoint(restaurant.location || restaurant);
+        let best = hubPoint
+            ? { location: restaurant.location, dist: haversineKm(lat, lng, hubPoint.lat, hubPoint.lng), isOutlet: false }
+            : null;
+
+        for (const outlet of candidates) {
+            const point = parseGeoPoint(outlet.location);
+            if (!point) continue;
+            const dist = haversineKm(lat, lng, point.lat, point.lng);
+            if (dist === null) continue;
+            if (!best || dist < best.dist) {
+                best = { location: outlet.location, dist, isOutlet: true, outletLabel: outlet.outletLabel };
+            }
+        }
+
+        if (best?.isOutlet) {
+            // Swap in the outlet's full location (address text included, not just
+            // coordinates) so the card's displayed address matches its distance.
+            restaurant.location = best.location;
+            restaurant.nearestOutletLabel = best.outletLabel || null;
+        }
+    }
+}
 
 const normalizeName = (value) =>
     String(value || '')
@@ -413,7 +475,16 @@ const toRestaurantProfile = (doc) => {
         createdAt: doc.createdAt,
         updatedAt: doc.updatedAt,
         rating: normalizeRatingValue(doc.rating),
-        totalRatings: normalizeTotalRatingsValue(doc.totalRatings)
+        totalRatings: normalizeTotalRatingsValue(doc.totalRatings),
+        // Multi-outlet hub: must survive this shaping, otherwise a franchise
+        // outlet's localStorage session gets this field wiped the moment
+        // RestaurantApprovalGuard refreshes /current on route change, and the
+        // "Hub & franchise outlets" menu item wrongly reappears for it.
+        parentRestaurantId: doc.parentRestaurantId ? String(doc.parentRestaurantId) : null,
+        isMainHub: doc.isMainHub === true,
+        useMainHubInventory: doc.useMainHubInventory === true,
+        outletLabel: doc.outletLabel || '',
+        franchiseLoginId: doc.franchiseLoginId || ''
     };
 };
 
@@ -1729,6 +1800,11 @@ export const getCurrentRestaurantProfile = async (restaurantId) => {
                 'locationSource',
                 'currentLocation',
                 'zoneId',
+                'parentRestaurantId',
+                'isMainHub',
+                'useMainHubInventory',
+                'outletLabel',
+                'franchiseLoginId',
                 'profileImage',
                 'coverImages',
                 'menuImages',
@@ -1880,7 +1956,12 @@ export const updateRestaurantAcceptingOrders = async (restaurantId, isAcceptingO
                 'kitchenPrepMinutes',
                 'status',
                 'createdAt',
-                'updatedAt'
+                'updatedAt',
+                'parentRestaurantId',
+                'isMainHub',
+                'useMainHubInventory',
+                'outletLabel',
+                'franchiseLoginId'
             ].join(' ')
         }
     ).lean();
@@ -2395,7 +2476,12 @@ export const updateRestaurantProfile = async (restaurantId, body = {}) => {
                     'isActive',
                     'onboarding',
                     'rejectionReason',
-                    'approvedAt'
+                    'approvedAt',
+                    'parentRestaurantId',
+                    'isMainHub',
+                    'useMainHubInventory',
+                    'outletLabel',
+                    'franchiseLoginId'
                 ].join(' ')
             }
         ).lean();
@@ -2708,7 +2794,12 @@ export const listApprovedRestaurants = async (query = {}) => {
     const page = Math.max(parseInt(query.page, 10) || 1, 1);
     const skip = (page - 1) * limit;
 
-    const filter = { status: 'approved', isListed: { $ne: false } };
+    // Multi-outlet hub: a franchise outlet is its own FoodRestaurant doc (so
+    // order/wallet/menu plumbing can stay untouched), but customers must only
+    // ever see ONE listing per brand — the hub. The detail-page resolver
+    // (resolveNearestOutlet) is what actually routes the order to whichever
+    // outlet is nearest; outlets never appear in public listings themselves.
+    const filter = { status: 'approved', isListed: { $ne: false }, parentRestaurantId: null };
 
     if (query.city && String(query.city).trim()) {
         const city = String(query.city).trim().slice(0, 80);
@@ -2809,6 +2900,7 @@ export const listApprovedRestaurants = async (query = {}) => {
     const projection = {
         restaurantId: 1,
         restaurantName: 1,
+        isMainHub: 1,
         area: 1,
         city: 1,
         cuisines: 1,
@@ -2902,6 +2994,7 @@ export const listApprovedRestaurants = async (query = {}) => {
             openDays: Array.isArray(r.openDays) ? r.openDays : [],
             menuImages: Array.isArray(r.menuImages) ? r.menuImages : [],
         }));
+        await attachNearestOutletLocation(restaurants, lat, lng);
         await attachOutletTimingsToRestaurants(restaurants);
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng, { resortNearest: sortBy === 'nearest' });
         if (wantsMenuPreview) await attachMenuPreviewToRestaurants(restaurants, { pureVeg: query.pureVeg === 'true', categoryId });
@@ -2947,6 +3040,9 @@ export const listApprovedRestaurants = async (query = {}) => {
         menuImages: Array.isArray(r.menuImages) ? r.menuImages : []
     }));
 
+    if (lat !== null && lng !== null) {
+        await attachNearestOutletLocation(restaurants, lat, lng);
+    }
     await attachOutletTimingsToRestaurants(restaurants);
     if (lat !== null && lng !== null) {
         await enrichRestaurantsWithRoadDistance(restaurants, lat, lng);

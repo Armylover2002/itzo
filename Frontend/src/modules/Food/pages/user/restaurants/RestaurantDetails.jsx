@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react"
 import { useParams, useNavigate, useSearchParams } from "react-router-dom"
-import { restaurantAPI } from "@food/api"
+import { restaurantAPI, hubAPI } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { toast } from "sonner"
 import { useLocation } from "@food/hooks/useLocation"
@@ -566,6 +566,34 @@ function RestaurantDetailsContent() {
             // Availability fields for grayscale styling
             isActive: actualRestaurant?.isActive !== false, // Default to true if not specified
             isAcceptingOrders: actualRestaurant?.isAcceptingOrders !== false, // Default to true if not specified
+          }
+
+          // Multi-outlet hub: if this is a hub brand with franchise outlets, swap
+          // the id used for menu/cart/order to whichever outlet (or the hub
+          // itself) is nearest the user's active delivery address. A no-op for
+          // every normal (non-hub) restaurant — resolveOutlet just echoes the
+          // same id back (matchedBy: "self").
+          if (deliveryUserPoint?.lat != null && deliveryUserPoint?.lng != null) {
+            try {
+              const resolveId = transformedRestaurant.mongoId || transformedRestaurant.id
+              if (resolveId) {
+                const resolveResponse = await hubAPI.resolveOutlet(
+                  resolveId,
+                  deliveryUserPoint.lat,
+                  deliveryUserPoint.lng,
+                )
+                const resolved = resolveResponse?.data?.data
+                if (resolved?.restaurantId && resolved.matchedBy !== 'self') {
+                  debugLog('? Resolved nearest outlet:', resolved)
+                  transformedRestaurant.id = resolved.businessId || String(resolved.restaurantId)
+                  transformedRestaurant.mongoId = String(resolved.restaurantId)
+                  transformedRestaurant.restaurantId = resolved.businessId || String(resolved.restaurantId)
+                }
+              }
+            } catch (resolveError) {
+              // Outlet resolution is best-effort — fall back to the hub/original id.
+              debugWarn('? resolve-outlet failed, using original restaurant id:', resolveError?.message)
+            }
           }
 
           debugLog('? Transformed restaurant:', transformedRestaurant)

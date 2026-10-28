@@ -7,6 +7,7 @@ import {
     refreshTokenController,
     requestRestaurantOtpController,
     verifyRestaurantOtpController,
+    loginFranchiseOutletController,
     requestDeliveryOtpController,
     verifyDeliveryOtpController,
 
@@ -43,6 +44,8 @@ router.post('/user/request-recovery', otpRequestGuards, requestAccountRecoveryCo
 // Restaurant OTP login
 router.post('/restaurant/request-otp', otpRequestGuards, requestRestaurantOtpController);
 router.post('/restaurant/verify-otp', otpVerifyGuards, verifyRestaurantOtpController);
+// Franchise outlet login (userId/password instead of OTP) — issues the same session shape as above.
+router.post('/restaurant/franchise-login', otpVerifyGuards, loginFranchiseOutletController);
 
 // Delivery partner OTP login
 router.post('/delivery/request-otp', otpRequestGuards, requestDeliveryOtpController);
