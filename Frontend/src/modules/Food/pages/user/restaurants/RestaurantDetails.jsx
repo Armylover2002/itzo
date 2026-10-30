@@ -248,7 +248,10 @@ function RestaurantDetailsContent() {
           try {
             // First, try to get restaurant directly by slug/ID (no zoneId needed)
             try {
-              response = await restaurantAPI.getRestaurantById(slug)
+              const lookupParams = (deliveryUserPoint?.lat != null && deliveryUserPoint?.lng != null)
+                ? { lat: deliveryUserPoint.lat, lng: deliveryUserPoint.lng }
+                : {};
+              response = await restaurantAPI.getRestaurantById(slug, { params: lookupParams })
               if (response?.data?.success && response?.data?.data) {
                 apiRestaurant = response.data.data
                 debugLog('? Found restaurant in restaurant API by slug/ID:', apiRestaurant)
@@ -588,6 +591,14 @@ function RestaurantDetailsContent() {
                   transformedRestaurant.id = resolved.businessId || String(resolved.restaurantId)
                   transformedRestaurant.mongoId = String(resolved.restaurantId)
                   transformedRestaurant.restaurantId = resolved.businessId || String(resolved.restaurantId)
+                  if (resolved.location) {
+                    transformedRestaurant.locationObject = resolved.location
+                    transformedRestaurant.location = formatRestaurantAddress(resolved.location)
+                  }
+                  if (resolved.area) transformedRestaurant.area = resolved.area
+                  if (resolved.city) transformedRestaurant.city = resolved.city
+                  if (resolved.address) transformedRestaurant.address = resolved.address
+                  if (resolved.outletLabel) transformedRestaurant.outletLabel = resolved.outletLabel
                 }
               }
             } catch (resolveError) {
@@ -1064,6 +1075,8 @@ function RestaurantDetailsContent() {
       image: item.image,
       restaurant: restaurant.name, // Use restaurant.name directly (already validated)
       restaurantId: validRestaurantId, // Use validated restaurantId
+      restaurantLocation: restaurant.location,
+      restaurantLocationObject: restaurant.locationObject,
       // Used by the floating cart bar (logo + "Menu" link back to this restaurant)
       restaurantSlug: restaurant.slug || slug || "",
       restaurantImage: restaurant.profileImage?.url || (typeof restaurant.profileImage === "string" ? restaurant.profileImage : "") || "",

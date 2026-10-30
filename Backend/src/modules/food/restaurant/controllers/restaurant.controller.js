@@ -119,7 +119,8 @@ export const listHomePriceFilterRestaurantsController = async (req, res, next) =
 
 export const getApprovedRestaurantController = async (req, res, next) => {
     try {
-        const restaurant = await getApprovedRestaurantByIdOrSlug(req.params.id);
+        const { lat, lng } = req.query;
+        const restaurant = await getApprovedRestaurantByIdOrSlug(req.params.id, lat, lng);
         if (!restaurant) {
             return res.status(404).json({ success: false, message: 'Restaurant not found' });
         }

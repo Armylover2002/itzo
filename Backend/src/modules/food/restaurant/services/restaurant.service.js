@@ -3052,44 +3052,37 @@ export const listApprovedRestaurants = async (query = {}) => {
     return { restaurants, total, page, limit };
 };
 
-export const getApprovedRestaurantByIdOrSlug = async (idOrSlug) => {
+export const getApprovedRestaurantByIdOrSlug = async (idOrSlug, userLat = null, userLng = null) => {
     const value = String(idOrSlug || '').trim();
     if (!value) return null;
 
+    let doc = null;
     // ObjectId path
     if (/^[0-9a-fA-F]{24}$/.test(value)) {
-        const doc = await FoodRestaurant.findOne({ _id: value, status: 'approved' }).lean();
-        if (!doc) return null;
-        return {
-            ...doc,
-            rating: normalizeRatingValue(doc.rating),
-            totalRatings: normalizeTotalRatingsValue(doc.totalRatings)
-        };
-    }
-
-    // Public restaurant code path, e.g. REST000003
-    if (/^REST\d{6}$/i.test(value)) {
-        const doc = await FoodRestaurant.findOne({
+        doc = await FoodRestaurant.findOne({ _id: value, status: 'approved' }).lean();
+    } else if (/^REST\d{6}$/i.test(value)) {
+        // Public restaurant code path, e.g. REST000003
+        doc = await FoodRestaurant.findOne({
             restaurantId: value.toUpperCase(),
             status: 'approved',
         }).lean();
-        if (!doc) return null;
-        return {
-            ...doc,
-            rating: normalizeRatingValue(doc.rating),
-            totalRatings: normalizeTotalRatingsValue(doc.totalRatings)
-        };
+    } else {
+        // Slug path: use normalized field for index-friendly exact match.
+        const restaurantNameNormalized = normalizeName(value);
+        if (!restaurantNameNormalized) return null;
+
+        doc = await FoodRestaurant.findOne({
+            status: 'approved',
+            restaurantNameNormalized
+        }).lean();
     }
 
-    // Slug path: use normalized field for index-friendly exact match.
-    const restaurantNameNormalized = normalizeName(value);
-    if (!restaurantNameNormalized) return null;
-
-    const doc = await FoodRestaurant.findOne({
-        status: 'approved',
-        restaurantNameNormalized
-    }).lean();
     if (!doc) return null;
+
+    if (doc.isMainHub && userLat != null && userLng != null) {
+        await attachNearestOutletLocation([doc], userLat, userLng);
+    }
+
     return {
         ...doc,
         rating: normalizeRatingValue(doc.rating),
