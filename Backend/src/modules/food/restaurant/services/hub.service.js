@@ -85,7 +85,7 @@ export const createHubOutlet = async (mainRestaurantId, payload) => {
   }
 
   if (outlet.useMainHubInventory) {
-    backfillHubInventoryForOutlet(hub._id, outlet._id).catch(() => {});
+    backfillHubInventoryForOutlet(hub._id, outlet._id).catch(() => { });
   }
 
   return outlet.toObject();
@@ -113,7 +113,7 @@ export const updateHubOutlet = async (mainRestaurantId, outletId, payload) => {
   await outlet.save();
 
   if (sharingJustEnabled) {
-    backfillHubInventoryForOutlet(mainRestaurantId, outlet._id).catch(() => {});
+    backfillHubInventoryForOutlet(mainRestaurantId, outlet._id).catch(() => { });
   }
 
   return outlet.toObject();
