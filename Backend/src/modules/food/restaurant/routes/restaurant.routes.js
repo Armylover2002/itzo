@@ -202,7 +202,10 @@ router.get('/restaurants/price-filter', (req, res, next) => {
     if (req.query?.lat != null && req.query?.lng != null) return next();
     return cacheResponse(300, 'landing_settings_price_filter')(req, res, next);
 }, listHomePriceFilterRestaurantsController);
-router.get('/restaurants/:id', cacheResponse(600, 'restaurant_detail'), getApprovedRestaurantController);
+router.get('/restaurants/:id', (req, res, next) => {
+    if (req.query?.lat != null && req.query?.lng != null) return next();
+    return cacheResponse(600, 'restaurant_detail')(req, res, next);
+}, getApprovedRestaurantController);
 router.get('/restaurants/:id/menu', cacheResponse(600, 'restaurant_menu'), getPublicRestaurantMenuController);
 router.get('/restaurants/:id/outlet-timings', cacheResponse(600, 'restaurant_timings'), getOutletTimingsByRestaurantIdController);
 // Public: resolve a hub brand id to its nearest active outlet for this user's lat/lng

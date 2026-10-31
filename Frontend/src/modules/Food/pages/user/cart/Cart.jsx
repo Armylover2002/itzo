@@ -24,7 +24,7 @@ import MixedSharedCart from "@food/pages/user/cart/MixedSharedCart"
 import { useLocation as useUserLocation } from "@food/hooks/useLocation"
 import { useLocationSelector } from "@food/components/user/UserLayout"
 import { useZone } from "@food/hooks/useZone"
-import { orderAPI, restaurantAPI, userAPI, API_ENDPOINTS } from "@food/api"
+import { orderAPI, restaurantAPI, userAPI, hubAPI, API_ENDPOINTS } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { initRazorpayPayment, isFlutterWebView, handleFlutterRazorpayPayment } from "@food/utils/razorpay"
 import { sanitizeOrderImage, sanitizeOrderNotes } from "@food/utils/orderPayload"
@@ -730,11 +730,38 @@ export default function Cart() {
           const cartRestaurantId = cart[0].restaurantId;
           const cartRestaurantName = cart[0].restaurant;
 
-          debugLog("?? Fetching restaurant data by restaurantId from cart:", cartRestaurantId)
-          const response = await restaurantAPI.getRestaurantById(cartRestaurantId)
-          const data = response?.data?.data?.restaurant || response?.data?.restaurant
+          const userPoint = parseGeoPoint(defaultAddress);
+          const lookupParams = (userPoint?.lat != null && userPoint?.lng != null)
+            ? { lat: userPoint.lat, lng: userPoint.lng }
+            : {};
+          const response = await restaurantAPI.getRestaurantById(cartRestaurantId, { params: lookupParams })
+          let data = response?.data?.data?.restaurant || response?.data?.restaurant
 
           if (data) {
+            // Multi-outlet hub: resolve nearest outlet based on delivery address
+            if (data.isMainHub && userPoint?.lat != null && userPoint?.lng != null) {
+              try {
+                const resolveRes = await hubAPI.resolveOutlet(data._id || data.restaurantId, userPoint.lat, userPoint.lng);
+                const resolved = resolveRes?.data?.data;
+                if (resolved?.restaurantId && resolved.matchedBy !== 'self') {
+                  if (resolved.location) {
+                    data.location = resolved.location;
+                    data.locationObject = resolved.location;
+                  }
+                  if (resolved.area) data.area = resolved.area;
+                  if (resolved.city) data.city = resolved.city;
+                  if (resolved.address) data.address = resolved.address;
+                  data.nearestOutletId = String(resolved.restaurantId);
+                  data.nearestOutletBusinessId = resolved.businessId;
+                  data.nearestOutletLabel = resolved.outletLabel || resolved.name;
+                }
+              } catch (resErr) {
+                debugWarn("Failed to resolve nearest outlet in Cart:", resErr);
+              }
+            } else if (cart[0]?.restaurantLocationObject) {
+              data.location = data.location || cart[0].restaurantLocationObject;
+            }
+
             // CRITICAL: Validate that fetched restaurant matches cart items
             const fetchedRestaurantId = data.restaurantId || data._id?.toString();
             const fetchedRestaurantName = data.name;
@@ -743,7 +770,9 @@ export default function Cart() {
             const restaurantIdMatches =
               fetchedRestaurantId === cartRestaurantId ||
               data._id?.toString() === cartRestaurantId ||
-              data.restaurantId === cartRestaurantId;
+              data.restaurantId === cartRestaurantId ||
+              (data.parentRestaurantId && String(data.parentRestaurantId) === String(cartRestaurantId)) ||
+              (data.isMainHub && data.nearestOutletId === String(cartRestaurantId));
 
             // Check if restaurant name matches (if available in cart)
             const restaurantNameMatches =
@@ -1078,6 +1107,8 @@ export default function Cart() {
         ? deliveryModeOverride === "quick"
         : deliveryType === "quick" && !isScheduled
     const resolvedRestaurantId =
+      restaurantData?.nearestOutletBusinessId ||
+      restaurantData?.nearestOutletId ||
       restaurantData?.restaurantId ||
       restaurantData?._id ||
       restaurantId ||

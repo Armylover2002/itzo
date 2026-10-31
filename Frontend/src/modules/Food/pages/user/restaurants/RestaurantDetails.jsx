@@ -68,7 +68,7 @@ function RestaurantDetailsContent() {
   const targetDishId = useMemo(() => String(searchParams.get('dish') || '').trim(), [searchParams])
   const { addToCart, updateQuantity, removeFromCart, getCartItem, cart } = useCart()
   const { vegMode, addDishFavorite, removeDishFavorite, isDishFavorite, getDishFavorites, getFavorites, addFavorite, removeFavorite, isFavorite, activeAddress } = useProfile()
-  
+
   const userLocation = useMemo(() => {
     if (!activeAddress) return null
     return {
@@ -182,9 +182,9 @@ function RestaurantDetailsContent() {
 
   const hasNonVegItems = useMemo(() => {
     if (!restaurant?.menuSections) return false;
-    
+
     const isPureVegRest = restaurant?.pureVegRestaurant === true || String(restaurant?.pureVegRestaurant).toLowerCase() === "true" || restaurant?.details?.pureVegRestaurant === true || String(restaurant?.details?.pureVegRestaurant).toLowerCase() === "true";
-    
+
     if (isPureVegRest) return false;
 
     let foundNonVeg = false;
@@ -248,7 +248,10 @@ function RestaurantDetailsContent() {
           try {
             // First, try to get restaurant directly by slug/ID (no zoneId needed)
             try {
-              response = await restaurantAPI.getRestaurantById(slug)
+              const lookupParams = (deliveryUserPoint?.lat != null && deliveryUserPoint?.lng != null)
+                ? { lat: deliveryUserPoint.lat, lng: deliveryUserPoint.lng }
+                : {};
+              response = await restaurantAPI.getRestaurantById(slug, { params: lookupParams })
               if (response?.data?.success && response?.data?.data) {
                 apiRestaurant = response.data.data
                 debugLog('? Found restaurant in restaurant API by slug/ID:', apiRestaurant)
@@ -588,6 +591,14 @@ function RestaurantDetailsContent() {
                   transformedRestaurant.id = resolved.businessId || String(resolved.restaurantId)
                   transformedRestaurant.mongoId = String(resolved.restaurantId)
                   transformedRestaurant.restaurantId = resolved.businessId || String(resolved.restaurantId)
+                  if (resolved.location) {
+                    transformedRestaurant.locationObject = resolved.location
+                    transformedRestaurant.location = formatRestaurantAddress(resolved.location)
+                  }
+                  if (resolved.area) transformedRestaurant.area = resolved.area
+                  if (resolved.city) transformedRestaurant.city = resolved.city
+                  if (resolved.address) transformedRestaurant.address = resolved.address
+                  if (resolved.outletLabel) transformedRestaurant.outletLabel = resolved.outletLabel
                 }
               }
             } catch (resolveError) {
@@ -667,21 +678,21 @@ function RestaurantDetailsContent() {
           try {
             const timingsPromise = outletRestaurantId
               ? restaurantAPI
-                  .getOutletTimingsByRestaurantId(outletRestaurantId)
-                  .then((outletResponse) => {
-                    const outletTimingsData =
-                      outletResponse?.data?.data?.outletTimings ||
-                      outletResponse?.data?.outletTimings
-                    if (outletTimingsData) {
-                      setRestaurant((prev) => ({ ...prev, outletTimings: outletTimingsData }))
-                    }
-                  })
-                  .catch((outletError) => {
-                    debugWarn(
-                      "Outlet timings fetch failed, falling back to delivery timings:",
-                      outletError?.message,
-                    )
-                  })
+                .getOutletTimingsByRestaurantId(outletRestaurantId)
+                .then((outletResponse) => {
+                  const outletTimingsData =
+                    outletResponse?.data?.data?.outletTimings ||
+                    outletResponse?.data?.outletTimings
+                  if (outletTimingsData) {
+                    setRestaurant((prev) => ({ ...prev, outletTimings: outletTimingsData }))
+                  }
+                })
+                .catch((outletError) => {
+                  debugWarn(
+                    "Outlet timings fetch failed, falling back to delivery timings:",
+                    outletError?.message,
+                  )
+                })
               : Promise.resolve()
 
             const menuPromise = (async () => {
@@ -714,7 +725,7 @@ function RestaurantDetailsContent() {
                 let recommendedMap = {}
                 try {
                   recommendedMap = JSON.parse(localStorage.getItem("restaurant_inventory_recommended_map")) || {}
-                } catch (e) {}
+                } catch (e) { }
 
                 const toArray = (value) => {
                   if (Array.isArray(value)) return value
@@ -724,7 +735,7 @@ function RestaurantDetailsContent() {
                 const normalizeItem = (item = {}) => {
                   const itemIdStr = String(item.id || item._id || "")
                   let isRecommended = item.isRecommended === true || item.isRecommended === 1 || String(item.isRecommended) === "true"
-                  
+
                   if (recommendedMap[itemIdStr] === true) {
                     isRecommended = true
                   }
@@ -1064,6 +1075,8 @@ function RestaurantDetailsContent() {
       image: item.image,
       restaurant: restaurant.name, // Use restaurant.name directly (already validated)
       restaurantId: validRestaurantId, // Use validated restaurantId
+      restaurantLocation: restaurant.location,
+      restaurantLocationObject: restaurant.locationObject,
       // Used by the floating cart bar (logo + "Menu" link back to this restaurant)
       restaurantSlug: restaurant.slug || slug || "",
       restaurantImage: restaurant.profileImage?.url || (typeof restaurant.profileImage === "string" ? restaurant.profileImage : "") || "",
@@ -1237,7 +1250,7 @@ function RestaurantDetailsContent() {
     return restaurant.menuSections
       .map((section, index) => {
         if (isRecommendedSection(section)) return null
-        
+
         if (isPureVegRest && section?.foodTypeScope?.toLowerCase() === "non-veg") return null
 
         let validItems = toRenderableArray(section?.items)
@@ -1573,10 +1586,10 @@ function RestaurantDetailsContent() {
       // Hide non-veg items if the restaurant is pure veg
       const hasProposedVegStatus = restaurant?.pendingProfileChanges?.proposed?.hasOwnProperty('pureVegRestaurant');
       const proposedVegStatus = restaurant?.pendingProfileChanges?.proposed?.pureVegRestaurant;
-      const isPureVegRest = hasProposedVegStatus 
+      const isPureVegRest = hasProposedVegStatus
         ? (proposedVegStatus === true || String(proposedVegStatus).toLowerCase() === "true")
         : (restaurant?.pureVegRestaurant === true || String(restaurant?.pureVegRestaurant).toLowerCase() === "true" || restaurant?.details?.pureVegRestaurant === true || String(restaurant?.details?.pureVegRestaurant).toLowerCase() === "true");
-      
+
       const ft = item?.foodType?.toLowerCase()?.trim() || ""
       const isNonVegItem = item?.isVeg === false || ft === "non-veg" || ft === "nonveg" || ft === "non veg"
       if (isPureVegRest && isNonVegItem) {

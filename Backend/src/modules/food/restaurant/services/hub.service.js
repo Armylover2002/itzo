@@ -86,6 +86,7 @@ export const createHubOutlet = async (mainRestaurantId, payload) => {
 
   if (outlet.useMainHubInventory) {
     backfillHubInventoryForOutlet(hub._id, outlet._id).catch(() => {});
+    backfillHubInventoryForOutlet(hub._id, outlet._id).catch(() => { });
   }
 
   return outlet.toObject();
@@ -114,6 +115,7 @@ export const updateHubOutlet = async (mainRestaurantId, outletId, payload) => {
 
   if (sharingJustEnabled) {
     backfillHubInventoryForOutlet(mainRestaurantId, outlet._id).catch(() => {});
+    backfillHubInventoryForOutlet(mainRestaurantId, outlet._id).catch(() => { });
   }
 
   return outlet.toObject();
@@ -177,6 +179,16 @@ export const resolveNearestOutlet = async (restaurantIdOrCode, lat, lng) => {
   // Not a hub (or itself a franchise outlet) — nothing to resolve, return as-is.
   if (!target.isMainHub) {
     return { restaurantId: target._id, businessId: target.restaurantId, matchedBy: 'self' };
+    return {
+      restaurantId: target._id,
+      businessId: target.restaurantId,
+      name: target.restaurantName,
+      location: target.location,
+      area: target.area || target.location?.area,
+      city: target.city || target.location?.city,
+      address: target.address || target.location?.address || target.location?.formattedAddress,
+      matchedBy: 'self',
+    };
   }
 
   const outlets = await FoodRestaurant.find({
@@ -191,6 +203,16 @@ export const resolveNearestOutlet = async (restaurantIdOrCode, lat, lng) => {
 
   if (!userPoint) {
     return { restaurantId: target._id, businessId: target.restaurantId, matchedBy: 'default-hub' };
+    return {
+      restaurantId: target._id,
+      businessId: target.restaurantId,
+      name: target.restaurantName,
+      location: target.location,
+      area: target.area || target.location?.area,
+      city: target.city || target.location?.city,
+      address: target.address || target.location?.address || target.location?.formattedAddress,
+      matchedBy: 'default-hub',
+    };
   }
 
   let best = null;
@@ -206,12 +228,27 @@ export const resolveNearestOutlet = async (restaurantIdOrCode, lat, lng) => {
 
   if (!best) {
     return { restaurantId: target._id, businessId: target.restaurantId, matchedBy: 'default-hub' };
+    return {
+      restaurantId: target._id,
+      businessId: target.restaurantId,
+      name: target.restaurantName,
+      location: target.location,
+      area: target.area || target.location?.area,
+      city: target.city || target.location?.city,
+      address: target.address || target.location?.address || target.location?.formattedAddress,
+      matchedBy: 'default-hub',
+    };
   }
 
   return {
     restaurantId: best.candidate._id,
     businessId: best.candidate.restaurantId,
     name: best.candidate.outletLabel || best.candidate.restaurantName,
+    outletLabel: best.candidate.outletLabel,
+    location: best.candidate.location,
+    area: best.candidate.area || best.candidate.location?.area,
+    city: best.candidate.city || best.candidate.location?.city,
+    address: best.candidate.address || best.candidate.location?.address || best.candidate.location?.formattedAddress,
     distanceKm: Math.round(best.distanceKm * 100) / 100,
     matchedBy: String(best.candidate._id) === String(target._id) ? 'main-hub' : 'nearest-outlet',
   };
