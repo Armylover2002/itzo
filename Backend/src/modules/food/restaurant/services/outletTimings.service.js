@@ -55,7 +55,7 @@ const FULL_TO_SHORT_DAYS = {
     Sunday: 'Sun'
 };
 
-const MAX_SHIFTS_PER_DAY = 3;
+const MAX_SHIFTS_PER_DAY = 7;
 
 const timeToMinutesLocal = (t) => {
     const m = /^(\d{2}):(\d{2})$/.exec(t || '');
@@ -65,7 +65,7 @@ const timeToMinutesLocal = (t) => {
 
 /**
  * Normalize+validate a raw list of {openingTime, closingTime} shifts for a single day.
- * Max 3, each open<close, and no two non-overnight shifts overlapping. Overnight
+ * Max MAX_SHIFTS_PER_DAY, each open<close, and no two non-overnight shifts overlapping. Overnight
  * (wraparound) shifts are accepted without strict overlap math, consistent with the
  * existing single-window overnight handling elsewhere.
  */
@@ -189,14 +189,14 @@ const notifyAdminsAboutOpeningDaysReview = (restaurantId, restaurantName) => {
 
 /**
  * Build per-day outlet timings from onboarding delivery schedule (openDays + times), OR,
- * when `shiftsInput` is given, from a flat list of up to 3 shift cards each carrying its
+ * when `shiftsInput` is given, from a flat list of up to MAX_SHIFTS_PER_DAY shift cards each carrying its
  * own day selection: [{ openingTime, closingTime, days: ['Mon', ...] }, ...]. This is the
  * shape the shift-picker UI (Onboarding/AddRestaurant/OutletTimings) submits.
  */
 export function buildOutletTimingsArrayFromSchedule(openDays, openingTime, closingTime, shiftsInput) {
     if (Array.isArray(shiftsInput) && shiftsInput.length > 0) {
-        if (shiftsInput.length > 3) {
-            throw new ValidationError('A maximum of 3 shifts is allowed');
+        if (shiftsInput.length > MAX_SHIFTS_PER_DAY) {
+            throw new ValidationError(`A maximum of ${MAX_SHIFTS_PER_DAY} shifts is allowed`);
         }
         const shiftCards = shiftsInput.map((s) => {
             const openTime = normalizeTime(s?.openingTime, '');

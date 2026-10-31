@@ -115,7 +115,7 @@ export const validateOnboardingStep1 = (step1, zones = []) => {
   return errors
 }
 
-const MAX_SHIFTS = 3
+const MAX_SHIFTS = 7
 const timeStringToMinutes = (value) => {
   if (!value || typeof value !== "string") return null
   const [h, m] = value.split(":").map(Number)
@@ -142,7 +142,7 @@ export const validateOnboardingStep2 = (step2) => {
   }
 
   // Mirrors AddRestaurant.jsx's validateShifts / backend normalizeShiftsList rules: each
-  // shift's times set and open != close, at least one day selected across shifts, max 3
+  // shift's times set and open != close, at least one day selected across shifts, max MAX_SHIFTS
   // shifts, no overlapping shifts on a shared day (skip strict overlap math for overnight
   // shifts, closingTime < openingTime — same wraparound convention as restaurantAvailability.js).
   const shifts = Array.isArray(step2.shifts) ? step2.shifts : []

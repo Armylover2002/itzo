@@ -12,7 +12,7 @@ import { useAuth } from "@core/context/AuthContext"
 import { getCurrentUser } from "@food/utils/auth"
 import { canPerformAdminPermissionAction, extractAdminPermissions, extractAdminRoleId, fetchAdminRolePermissions } from "@food/utils/adminPermissions"
 import { toast } from "sonner"
-import ShiftTimingsEditor, { shiftsFromLegacyWindow, SHIFT_DAY_LABELS } from "@food/components/restaurant/ShiftTimingsEditor"
+import ShiftTimingsEditor, { shiftsFromLegacyWindow, SHIFT_DAY_LABELS, MAX_SHIFTS } from "@food/components/restaurant/ShiftTimingsEditor"
 
 const OWNER_PHONE_DUPLICATE_MSG = "This phone number is already registered with another restaurant."
 const PRIMARY_CONTACT_DUPLICATE_MSG = "This contact number is already registered with another restaurant."
@@ -2323,7 +2323,7 @@ export default function RestaurantsList() {
                       {detailsFieldErrors.primaryContactNumber && <p className="mt-1 text-xs text-red-600">{detailsFieldErrors.primaryContactNumber}</p>}
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-xs text-slate-500 mb-2">Outlet Timings (up to 3 shifts)</label>
+                      <label className="block text-xs text-slate-500 mb-2">Outlet Timings (up to {MAX_SHIFTS} shifts)</label>
                       <ShiftTimingsEditor
                         shifts={detailsForm.shifts}
                         onChange={(shifts) => setDetailsForm((prev) => ({ ...prev, shifts }))}

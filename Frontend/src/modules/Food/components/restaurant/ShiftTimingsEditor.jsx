@@ -3,10 +3,10 @@ import TimePicker12h from "@shared/components/TimePicker12h"
 
 // Shared multi-shift timing picker used by owner onboarding, admin's direct-add-restaurant
 // flow, and the restaurant dashboard's own outlet-timings page. Keep it simple: a list of
-// up to 3 shift cards, each with an open/close time and its own 7-day toggle grid.
+// up to MAX_SHIFTS shift cards, each with an open/close time and its own 7-day toggle grid.
 //
 // Shift shape: { openingTime: "HH:mm", closingTime: "HH:mm", days: ["Mon", ...] }
-export const MAX_SHIFTS = 3
+export const MAX_SHIFTS = 7
 export const SHIFT_DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 export const emptyShift = () => ({ openingTime: "", closingTime: "", days: [] })

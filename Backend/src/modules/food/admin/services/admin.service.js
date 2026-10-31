@@ -4148,7 +4148,7 @@ export async function updateRestaurantById(id, body = {}) {
         doc.openDays = body.openDays.map(d => toStr(d)).filter(Boolean);
     }
     // Optional richer multi-shift schedule from the shared shift editor (same shape as
-    // onboarding's `shifts`: up to 3 {openingTime, closingTime, days} cards). When present,
+    // onboarding's `shifts`: up to 7 {openingTime, closingTime, days} cards). When present,
     // it becomes the source of truth for the outlet-timings collection.
     const shiftsInput = Array.isArray(body.shifts) ? body.shifts : undefined;
     if (body.offer !== undefined) doc.offer = toStr(body.offer);
@@ -5474,7 +5474,7 @@ export async function createRestaurantByAdmin(body, performer = null) {
     const restaurant = await FoodRestaurant.create(doc);
 
     // Optional richer multi-shift schedule from the shared shift editor (same shape as
-    // onboarding's `shifts`: up to 3 {openingTime, closingTime, days} cards).
+    // onboarding's `shifts`: up to 7 {openingTime, closingTime, days} cards).
     const shiftsInput = Array.isArray(body.shifts) ? body.shifts : undefined;
 
     await syncOutletTimingsFromOpenDays(

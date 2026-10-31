@@ -462,7 +462,7 @@ export default function AddRestaurant() {
   }
 
   // Mirrors backend normalizeShiftsList rules: each shift's times set and open != close,
-  // at least one day selected across shifts, max 3 shifts, no overlapping shifts on a
+  // at least one day selected across shifts, max MAX_SHIFTS shifts, no overlapping shifts on a
   // shared day (skip strict overlap math for overnight shifts, closingTime < openingTime).
   const validateShifts = (shifts) => {
     const errors = []

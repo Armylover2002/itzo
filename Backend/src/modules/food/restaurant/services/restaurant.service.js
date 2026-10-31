@@ -1201,7 +1201,7 @@ export const saveOnboardingStep = async (stepNum, payload, files) => {
                     ? payload.openDays.split(',').map((d) => d.trim()).filter(Boolean)
                     : []);
 
-            // Optional richer multi-shift schedule (up to 3 shifts, each with its own days),
+            // Optional richer multi-shift schedule (up to 7 shifts, each with its own days),
             // sent as a JSON string field alongside the flat fields (mirrors `openDays`).
             let shiftsInput;
             if (payload.shifts !== undefined && payload.shifts !== null && payload.shifts !== '') {

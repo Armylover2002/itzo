@@ -46,7 +46,7 @@ import {
 } from "@food/utils/onboardingValidation"
 import { clearOnboardingDraft, clearOnboardingFileCache } from "@food/utils/onboardingDraftStorage"
 import OnboardingRestaurantCardPreview from "@food/components/restaurant/OnboardingRestaurantCardPreview"
-import ShiftTimingsEditor, { shiftsFromLegacyWindow } from "@food/components/restaurant/ShiftTimingsEditor"
+import ShiftTimingsEditor, { shiftsFromLegacyWindow, MAX_SHIFTS } from "@food/components/restaurant/ShiftTimingsEditor"
 import { toast } from "sonner"
 
 const OWNER_PHONE_DUPLICATE_MSG = "This phone number is already registered with another restaurant."
@@ -2224,7 +2224,7 @@ export default function RestaurantOnboarding() {
           <span>Delivery timings</span>
         </Label>
         <p className={ONBOARDING_HINT}>
-          Add up to 3 shifts with their own hours and open days (e.g. a lunch shift and a
+          Add up to {MAX_SHIFTS} shifts with their own hours and open days (e.g. a lunch shift and a
           separate dinner shift).
         </p>
         <ShiftTimingsEditor

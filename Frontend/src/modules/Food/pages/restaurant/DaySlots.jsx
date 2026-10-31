@@ -31,6 +31,10 @@ const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
 
+// Max time slots (shifts) a restaurant can configure per day. Mirrors the backend
+// MAX_SHIFTS_PER_DAY in outletTimings.service.js.
+const MAX_SLOTS_PER_DAY = 7
+
 const getDefaultDayData = () => ({
   isOpen: true,
   slots: [{ id: Date.now(), start: "03:45", end: "02:15", startPeriod: "am", endPeriod: "pm" }]
@@ -510,8 +514,8 @@ export default function DaySlots() {
   }
 
   const addSlot = () => {
-    if (dayData.slots.length >= 3) {
-      alert("Maximum 3 slots allowed per day")
+    if (dayData.slots.length >= MAX_SLOTS_PER_DAY) {
+      alert(`Maximum ${MAX_SLOTS_PER_DAY} slots allowed per day`)
       return
     }
     setDayData(prev => ({
@@ -597,7 +601,7 @@ export default function DaySlots() {
         
         <div className="bg-gray-50 p-2">
           <p className="text-sm text-gray-700">
-            Add or modify your restaurant timings here. You can create maximum up to 3 time slots in a day.
+            Add or modify your restaurant timings here. You can create maximum up to {MAX_SLOTS_PER_DAY} time slots in a day.
           </p>
         </div>
 
@@ -711,7 +715,7 @@ export default function DaySlots() {
         </div>
 
         {/* Add Time Slot Button */}
-        {dayData.slots.length < 3 && (
+        {dayData.slots.length < MAX_SLOTS_PER_DAY && (
           <button
             onClick={addSlot}
             className="w-full text-blue-600 hover:text-blue-700 text-sm font-medium py-3 transition-colors"

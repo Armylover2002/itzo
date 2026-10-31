@@ -61,8 +61,8 @@ const openingDayTimingSchema = new mongoose.Schema(
       type: [openingDayShiftSchema],
       default: undefined,
       validate: {
-        validator: (v) => !Array.isArray(v) || v.length <= 3,
-        message: 'A maximum of 3 shifts is allowed per day',
+        validator: (v) => !Array.isArray(v) || v.length <= 7,
+        message: 'A maximum of 7 shifts is allowed per day',
       },
     },
   },
