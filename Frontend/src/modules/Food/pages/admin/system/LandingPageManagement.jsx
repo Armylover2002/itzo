@@ -3,6 +3,7 @@ import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2,
 import api from "@food/api"
 import { adminAPI } from "@food/api"
 import { getModuleToken } from "@food/utils/auth"
+import { compressImage } from "@/shared/utils/imageCompression"
 import { Input } from "@food/components/ui/input"
 import { Label } from "@food/components/ui/label"
 import { Button } from "@food/components/ui/button"
@@ -124,6 +125,22 @@ const BannerHeaderFormBlock = ({ banner, index, onSave }) => {
   )
 }
 
+// No size limit for banners: big photos are shrunk in the browser first (faster upload, same look).
+// GIF/SVG are left alone because re-encoding would break animation/vectors.
+const prepareBannerFiles = (files) =>
+  Promise.all(
+    files.map((file) =>
+      !file.type.startsWith('image/') || /gif|svg/.test(file.type) || file.size <= 1024 * 1024
+        ? file
+        : compressImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920, initialQuality: 0.85 })
+    )
+  )
+
+const uploadErrorMessage = (err, fallback) => {
+  if (err?.response?.status === 413) return 'Upload is too large. Please choose smaller or fewer images.'
+  return err?.response?.data?.message || err?.message || fallback
+}
+
 export default function LandingPageManagement() {
   const [activeTab, setActiveTab] = useState('banners')
   const [exploreMoreSubTab, setExploreMoreSubTab] = useState('icons')
@@ -237,7 +254,11 @@ export default function LandingPageManagement() {
   }
 
   // Helper function to get admin token and add to request config
+  // contextModule pins the axios interceptor to the admin token. These URLs (/food/hero-banners...)
+  // contain no "/admin/", so it would otherwise treat them as user calls and send the customer
+  // token whenever one is stored in the same browser -> 403 "Forbidden: insufficient permissions".
   const getAuthConfig = (additionalConfig = {}) => {
+    additionalConfig = { ...additionalConfig, contextModule: 'admin' }
     const adminToken = getModuleToken('admin')
 
     // Debug logging in development
@@ -366,6 +387,8 @@ export default function LandingPageManagement() {
       setSuccess(null)
       setBannersUploadProgress({ current: 0, total: files.length })
 
+      files = await prepareBannerFiles(files)
+
       // Use batch upload endpoint for multiple files
       const formData = new FormData()
       files.forEach((file) => {
@@ -389,8 +412,10 @@ export default function LandingPageManagement() {
       const response = await api.post('/food/hero-banners/multiple', formData, config)
 
       if (response.data.success) {
-        const uploadedBanners = response.data.data?.banners || []
-        const errors = response.data.data?.errors || []
+        // API answers { results: [{ success, banner } | { success: false, error }] }.
+        const results = response.data.data?.results || []
+        const uploadedBanners = results.filter((r) => r?.success)
+        const errors = results.filter((r) => !r?.success).map((r) => r?.error || 'Upload failed')
         const successCount = uploadedBanners.length
         const failCount = errors.length
 
@@ -421,8 +446,7 @@ export default function LandingPageManagement() {
         setError(null)
       } else {
         // Filter out token-related errors
-        const errorMessage = err.response?.data?.message || 'Failed to upload banners'
-        setErrorSafely(errorMessage)
+        setErrorSafely(uploadErrorMessage(err, 'Failed to upload banners'))
       }
 
       setBannersUploadProgress({ current: 0, total: 0 })
@@ -996,6 +1020,8 @@ export default function LandingPageManagement() {
       setSuccess(null)
       setUnder250BannersUploadProgress({ current: 0, total: files.length })
 
+      files = await prepareBannerFiles(files)
+
       const formData = new FormData()
       files.forEach((file) => {
         // Backend expects field name "files" (upload.array('files'))
@@ -1012,8 +1038,7 @@ export default function LandingPageManagement() {
         setTimeout(() => setSuccess(null), 3000)
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to upload under 250 banners'
-      setErrorSafely(errorMessage)
+      setErrorSafely(uploadErrorMessage(err, 'Failed to upload under 250 banners'))
 
       setUnder250BannersUploadProgress({ current: 0, total: 0 })
     } finally {
@@ -1494,7 +1519,7 @@ export default function LandingPageManagement() {
                       </button>
                       <span className="text-slate-600"> or drag and drop</span>
                     </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, WEBP up to 5MB each (Max 5 images at once)</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, WEBP, any size (Max 5 images at once)</p>
                   </div>
                 )}
               </div>
@@ -1716,7 +1741,7 @@ export default function LandingPageManagement() {
                       </button>
                       <span className="text-slate-600"> or drag and drop</span>
                     </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, WEBP up to 5MB each (Max 5 images at once)</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, WEBP, any size (Max 5 images at once)</p>
                   </div>
                 )}
               </div>

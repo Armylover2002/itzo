@@ -93,6 +93,9 @@ const HeroSection = React.memo(function HeroSection({ navigate }) {
             ref={heroVideoElRef}
             autoPlay
             muted
+            // A one-clip playlist can't "advance" (next index == same index, so React never
+            // remounts it) and would freeze on the last frame; loop it natively instead.
+            loop={landingVideoUrls.length === 1}
             playsInline
             preload="metadata"
             poster={posterUrl}

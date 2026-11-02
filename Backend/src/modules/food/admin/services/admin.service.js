@@ -222,7 +222,7 @@ const partnerMatchesZone = (partner, zone) => {
 };
 
 async function getZoneDeliveryPartnerStats(zoneId, zoneDoc) {
-    if (!zoneId || !zoneDoc) return { approved: 0, pending: 0 };
+    if (!zoneId || !zoneDoc) return { approved: 0, pending: 0, online: 0 };
 
     const zoneObjectId = new mongoose.Types.ObjectId(zoneId);
     const orderPartnerIds = await FoodOrder.distinct('dispatch.deliveryPartnerId', {
@@ -231,17 +231,21 @@ async function getZoneDeliveryPartnerStats(zoneId, zoneDoc) {
         'dispatch.deliveryPartnerId': { $ne: null },
     });
 
-    const [approvedFromOrders, partners] = await Promise.all([
+    const [approvedFromOrders, onlineFromOrders, partners] = await Promise.all([
         orderPartnerIds.length
             ? FoodDeliveryPartner.countDocuments({ _id: { $in: orderPartnerIds }, status: 'approved' })
             : Promise.resolve(0),
+        orderPartnerIds.length
+            ? FoodDeliveryPartner.countDocuments({ _id: { $in: orderPartnerIds }, status: 'approved', availabilityStatus: 'online' })
+            : Promise.resolve(0),
         FoodDeliveryPartner.find({ status: { $in: ['approved', 'pending'] } })
-            .select('status lastLat lastLng city state address')
+            .select('status availabilityStatus lastLat lastLng city state address')
             .lean(),
     ]);
 
     const orderPartnerIdSet = new Set(orderPartnerIds.map((id) => String(id)));
     let approvedByLocation = 0;
+    let onlineByLocation = 0;
     let pending = 0;
 
     for (const partner of partners) {
@@ -250,12 +254,14 @@ async function getZoneDeliveryPartnerStats(zoneId, zoneDoc) {
             pending += 1;
         } else if (partner.status === 'approved' && !orderPartnerIdSet.has(String(partner._id))) {
             approvedByLocation += 1;
+            if (partner.availabilityStatus === 'online') onlineByLocation += 1;
         }
     }
 
     return {
         approved: Number(approvedFromOrders) + approvedByLocation,
         pending,
+        online: Number(onlineFromOrders) + onlineByLocation,
     };
 };
 
@@ -460,7 +466,7 @@ export async function getRestaurants(query) {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
-            .select('restaurantId restaurantName location area city profileImage coverImages menuImages status ownerName ownerPhone zoneId commissionPercentage isListed productCount pureVegRestaurant businessType liveTrackingEnabled currentLocation lastLocationUpdate createdAt updatedAt showWithoutMenu openingTime closingTime openDays fssaiNumber fssaiExpiry fssaiImage fssaiApplicationStatus fssaiApplicationId')
+            .select('restaurantId restaurantName location area city profileImage coverImages menuImages status ownerName ownerPhone zoneId commissionPercentage isListed isAcceptingOrders productCount pureVegRestaurant businessType liveTrackingEnabled currentLocation lastLocationUpdate createdAt updatedAt showWithoutMenu openingTime closingTime openDays fssaiNumber fssaiExpiry fssaiImage fssaiApplicationStatus fssaiApplicationId')
             .populate('zoneId', 'name zoneName')
             .lean(),
         FoodRestaurant.countDocuments(filter)
@@ -750,7 +756,9 @@ export async function getDashboardStats(query = {}) {
         recentPendingOrders,
         recentDeliveredOrders,
         recentCancelledOrders,
-        recentCustomers
+        recentCustomers,
+        restaurantsOnline,
+        deliveryOnline
     ] = await Promise.all([
         FoodOrder.aggregate([
             { $match: orderMatch },
@@ -1009,7 +1017,12 @@ export async function getDashboardStats(query = {}) {
                     }
                 }
             ])
-            : FoodUser.find({}).sort({ createdAt: -1 }).limit(5).select('name createdAt').lean()
+            : FoodUser.find({}).sort({ createdAt: -1 }).limit(5).select('name createdAt').lean(),
+        // Online = restaurant toggle on (missing flag counts as on, same as the restaurant app).
+        FoodRestaurant.countDocuments({ ...restaurantMatch, status: 'approved', isAcceptingOrders: { $ne: false } }),
+        zoneDeliveryStatsPromise
+            ? zoneDeliveryStatsPromise.then((stats) => stats.online)
+            : FoodDeliveryPartner.countDocuments({ status: 'approved', availabilityStatus: 'online' })
     ]);
 
     const liveSignals = [];
@@ -1147,10 +1160,14 @@ export async function getDashboardStats(query = {}) {
         },
         restaurants: {
             total: Number(restaurantsTotal || 0),
+            online: Number(restaurantsOnline || 0),
+            offline: Math.max(0, Number(restaurantsTotal || 0) - Number(restaurantsOnline || 0)),
             pendingRequests: Number(restaurantsPending || 0)
         },
         deliveryBoys: {
             total: Number(deliveryTotal || 0),
+            online: Number(deliveryOnline || 0),
+            offline: Math.max(0, Number(deliveryTotal || 0) - Number(deliveryOnline || 0)),
             pendingRequests: Number(deliveryPending || 0)
         },
         foods: { total: Number(foodsTotal || 0) },
@@ -6600,7 +6617,7 @@ export async function updateDeliverySupportTicket(id, body = {}) {
 
 // ----- Delivery partners (approved list) -----
 export async function getDeliveryPartners(query) {
-    const { page = 1, limit = 30, search } = query;
+    const { page = 1, limit = 30, search, availability } = query;
     const filter = { status: 'approved', isDeleted: { $ne: true }, accountStatus: { $ne: 'deleted' } };
     if (search && typeof search === 'string' && search.trim()) {
         const term = search.trim();
@@ -6617,13 +6634,22 @@ export async function getDeliveryPartners(query) {
     const pageNum = Math.max(1, Number(page) || 1);
     const skip = (pageNum - 1) * limitNum;
 
-    const [list, total] = await Promise.all([
+    // Online/offline chips reflect the search, not the availability filter itself.
+    const baseFilter = { ...filter };
+    const availabilityValue = String(availability || '').toLowerCase();
+    if (availabilityValue === 'online' || availabilityValue === 'offline') {
+        filter.availabilityStatus = availabilityValue === 'online' ? 'online' : { $ne: 'online' };
+    }
+
+    const [list, total, onlineCount, allCount] = await Promise.all([
         FoodDeliveryPartner.find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limitNum)
             .lean(),
-        FoodDeliveryPartner.countDocuments(filter)
+        FoodDeliveryPartner.countDocuments(filter),
+        FoodDeliveryPartner.countDocuments({ ...baseFilter, availabilityStatus: 'online' }),
+        FoodDeliveryPartner.countDocuments(baseFilter)
     ]);
 
     const partnerIds = list.map(p => p._id);
@@ -6657,6 +6683,7 @@ export async function getDeliveryPartners(query) {
             vehicleType: doc.vehicleType || '',
             status: doc.status,
             isActive: doc.isActive !== false,
+            availabilityStatus: doc.availabilityStatus === 'online' ? 'online' : 'offline',
             profilePhoto: doc.profilePhoto || null,
             profileImage: doc.profilePhoto ? { url: doc.profilePhoto } : null,
             totalOrders: countsMap.get(doc._id.toString()) || 0
@@ -6665,6 +6692,7 @@ export async function getDeliveryPartners(query) {
 
     return {
         deliveryPartners,
+        availabilityCounts: { all: allCount, online: onlineCount, offline: Math.max(0, allCount - onlineCount) },
         pagination: {
             page: pageNum,
             limit: limitNum,

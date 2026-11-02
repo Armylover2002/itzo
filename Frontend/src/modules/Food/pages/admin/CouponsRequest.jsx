@@ -1,14 +1,14 @@
 import { useState, useMemo, useEffect } from "react";
 import { 
-  Search, Eye, Check, X, ArrowUpDown, Loader2, 
-  Clock, Store, ShieldAlert, BadgeCheck, FileText, CheckCircle2, XCircle, RefreshCw
+  Search, Eye, X, ArrowUpDown, Loader2, 
+  Store, ShieldAlert, BadgeCheck, FileText, CheckCircle2, XCircle, RefreshCw
 } from "lucide-react";
 import { adminAPI } from "@food/api";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@food/components/ui/dialog";
 
 const statusBadgeClass = (status) => {
-  const value = String(status || "Pending").toLowerCase()
+  const value = String(status || "Approved").toLowerCase()
   if (value === "approved") return "bg-emerald-50 text-emerald-700 border-emerald-200"
   if (value === "rejected") return "bg-rose-50 text-rose-700 border-rose-200"
   return "bg-amber-50 text-amber-700 border-amber-200"
@@ -87,7 +87,7 @@ export default function CouponsRequest() {
     let result = [...requests];
 
     if (statusFilter !== "ALL") {
-      result = result.filter(r => String(r.status || "Pending").toUpperCase() === statusFilter);
+      result = result.filter(r => String(r.status || "Approved").toUpperCase() === statusFilter);
     }
 
     if (searchQuery.trim()) {
@@ -125,7 +125,7 @@ export default function CouponsRequest() {
       const response = await adminAPI.updateRestaurantCouponStatus(requestId, newStatus);
       
       if (response?.data?.success || response?.success) {
-        toast.success(`Coupon request successfully ${newStatus.toLowerCase()}!`);
+        toast.success("Coupon deactivated");
         
         setRequests(prev => prev.map(r => 
           (r._id === requestId || r.id === requestId) ? { ...r, status: newStatus } : r
@@ -244,52 +244,27 @@ export default function CouponsRequest() {
 
         {/* Status Notice or Action Buttons */}
         <div className="border-t border-slate-100 pt-5 mt-6 flex flex-col sm:flex-row items-center justify-end gap-3 w-full">
-          {selectedRequest.status !== "Pending" ? (
-            <>
-              <div className="flex-1 flex items-center justify-center p-3 rounded-lg border text-sm font-semibold bg-slate-50 border-slate-100 text-slate-600 w-full">
-                {selectedRequest.status === "Approved" ? (
-                  <span className="flex items-center gap-1.5 text-emerald-600">
-                    <CheckCircle2 className="w-4 h-4" /> This coupon request has been APPROVED
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 text-rose-600">
-                    <XCircle className="w-4 h-4" /> This coupon request has been REJECTED
-                  </span>
-                )}
-              </div>
-              {selectedRequest.status === "Approved" && (
-                <button
-                  type="button"
-                  onClick={() => handleUpdateStatus(selectedRequest._id || selectedRequest.id, "Rejected")}
-                  disabled={processingId !== null}
-                  className="px-5 py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                >
-                  {processingId === selectedRequest._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                  Deactivate
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={() => handleUpdateStatus(selectedRequest._id || selectedRequest.id, "Rejected")}
-                disabled={processingId !== null}
-                className="px-5 py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {processingId === selectedRequest._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                Reject
-              </button>
-              <button
-                type="button"
-                onClick={() => handleUpdateStatus(selectedRequest._id || selectedRequest.id, "Approved")}
-                disabled={processingId !== null}
-                className="px-5 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg flex items-center gap-1.5 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {processingId === selectedRequest._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                Approve
-              </button>
-            </>
+          <div className="flex-1 flex items-center justify-center p-3 rounded-lg border text-sm font-semibold bg-slate-50 border-slate-100 text-slate-600 w-full">
+            {selectedRequest.status === "Rejected" ? (
+              <span className="flex items-center gap-1.5 text-rose-600">
+                <XCircle className="w-4 h-4" /> This coupon has been DEACTIVATED
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-emerald-600">
+                <CheckCircle2 className="w-4 h-4" /> This coupon is ACTIVE (no approval needed)
+              </span>
+            )}
+          </div>
+          {selectedRequest.status !== "Rejected" && (
+            <button
+              type="button"
+              onClick={() => handleUpdateStatus(selectedRequest._id || selectedRequest.id, "Rejected")}
+              disabled={processingId !== null}
+              className="px-5 py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg flex items-center justify-center gap-1.5 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            >
+              {processingId === selectedRequest._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+              Deactivate
+            </button>
           )}
         </div>
       </div>
@@ -307,8 +282,8 @@ export default function CouponsRequest() {
               <ShieldAlert className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900">Coupons Request</h1>
-              <p className="text-sm text-slate-500 font-medium">Verify and approve restaurant requested coupons & promo codes</p>
+              <h1 className="text-2xl font-black tracking-tight text-slate-900">Restaurant Coupons</h1>
+              <p className="text-sm text-slate-500 font-medium">Coupons created by restaurants go live instantly; deactivate any that should not run</p>
             </div>
           </div>
           <button 
@@ -322,12 +297,11 @@ export default function CouponsRequest() {
         </div>
 
         {/* Summary Metric Counters */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
           {[
-            { label: "Total Requests", count: requests.length, color: "text-slate-900 bg-slate-50 border-slate-200" },
-            { label: "Pending Verification", count: requests.filter(r => (r.status || "Pending") === "Pending").length, color: "text-amber-600 bg-amber-50 border-amber-200/50" },
-            { label: "Approved Coupons", count: requests.filter(r => r.status === "Approved").length, color: "text-emerald-600 bg-emerald-50 border-emerald-200/50" },
-            { label: "Rejected Requests", count: requests.filter(r => r.status === "Rejected").length, color: "text-rose-600 bg-rose-50 border-rose-200/50" },
+            { label: "Total Coupons", count: requests.length, color: "text-slate-900 bg-slate-50 border-slate-200" },
+            { label: "Active Coupons", count: requests.filter(r => r.status !== "Rejected").length, color: "text-emerald-600 bg-emerald-50 border-emerald-200/50" },
+            { label: "Deactivated", count: requests.filter(r => r.status === "Rejected").length, color: "text-rose-600 bg-rose-50 border-rose-200/50" },
           ].map((card, idx) => (
             <div key={idx} className={`p-4 rounded-xl border ${card.color} shadow-sm transition-all hover:scale-[1.01]`}>
               <p className="text-xs font-bold uppercase tracking-wider opacity-75">{card.label}</p>
@@ -356,7 +330,7 @@ export default function CouponsRequest() {
             <div className="flex flex-wrap items-center gap-3">
               {/* Status filter */}
               <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 p-1 rounded-lg">
-                {["ALL", "PENDING", "APPROVED", "REJECTED"].map((status) => (
+                {["ALL", "APPROVED", "REJECTED"].map((status) => (
                   <button
                     key={status}
                     onClick={() => setStatusFilter(status)}
@@ -366,7 +340,7 @@ export default function CouponsRequest() {
                         : "text-slate-600 hover:text-slate-800"
                     }`}
                   >
-                    {status === "ALL" ? "All Status" : status}
+                    {status === "ALL" ? "All Status" : status === "APPROVED" ? "Active" : "Deactivated"}
                   </button>
                 ))}
               </div>
@@ -431,7 +405,7 @@ export default function CouponsRequest() {
                 ) : (
                   processedRequests.map((request, index) => {
                     const reqId = request._id || request.id;
-                    const status = request.status || "Pending";
+                    const status = request.status || "Approved";
 
                     return (
                       <tr key={reqId} className="hover:bg-slate-50/50 transition-colors">
@@ -476,8 +450,8 @@ export default function CouponsRequest() {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full border ${statusBadgeClass(status)}`}>
-                            {status === "Approved" ? <BadgeCheck className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
-                            {status}
+                            {status === "Rejected" ? <XCircle className="w-3.5 h-3.5" /> : <BadgeCheck className="w-3.5 h-3.5" />}
+                            {status === "Rejected" ? "Deactivated" : "Active"}
                           </span>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-center">

@@ -125,6 +125,8 @@ export default function DeliverymanList() {
   }, [currentUser, resolvedPermissions])
 
   const [searchQuery, setSearchQuery] = useState("")
+  const [availabilityFilter, setAvailabilityFilter] = useState("all") // all | online | offline
+  const [availabilityCounts, setAvailabilityCounts] = useState({ all: 0, online: 0, offline: 0 })
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({
     page: 1,
@@ -181,6 +183,9 @@ export default function DeliverymanList() {
       if (nextSearch.trim()) {
         params.search = nextSearch.trim()
       }
+      if (availabilityFilter !== "all") {
+        params.availability = availabilityFilter
+      }
 
       const [partnersResponse, walletsResponse] = await Promise.allSettled([
         adminAPI.getDeliveryPartners(params),
@@ -197,6 +202,7 @@ export default function DeliverymanList() {
         const data = partnersResponse.value.data.data || {}
         const partners = data.deliveryPartners || []
         const pager = data.pagination || {}
+        if (data.availabilityCounts) setAvailabilityCounts(data.availabilityCounts)
         setPagination({
           page: Number(pager.page) || nextPage,
           limit: Number(pager.limit) || PAGE_SIZE,
@@ -256,7 +262,7 @@ export default function DeliverymanList() {
     } finally {
       if (seq === fetchSeqRef.current) setLoading(false)
     }
-  }, [page, searchQuery])
+  }, [page, searchQuery, availabilityFilter])
 
   // One fetch path only — avoids mount + search double-call.
   useEffect(() => {
@@ -267,7 +273,7 @@ export default function DeliverymanList() {
     return () => clearTimeout(timer)
     // fetchDeliverymen closes over page/search; depend on those primitives only.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, searchQuery])
+  }, [page, searchQuery, availabilityFilter])
 
   const filteredDeliverymen = useMemo(() => {
     return deliverymen
@@ -275,6 +281,11 @@ export default function DeliverymanList() {
 
   const handleSearchChange = (value) => {
     setSearchQuery(value)
+    setPage(1)
+  }
+
+  const handleAvailabilityFilterChange = (value) => {
+    setAvailabilityFilter(value)
     setPage(1)
   }
 
@@ -691,12 +702,33 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
             </div>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-700">Deliveryman</span>
               <span className="px-3 py-1 rounded-full text-sm font-semibold bg-slate-100 text-slate-700">
                 {pagination.total || filteredDeliverymen.length}
               </span>
+            </div>
+            <div className="flex items-center gap-2" role="group" aria-label="Filter by availability">
+              {[
+                { key: "all", label: "All", count: availabilityCounts.all },
+                { key: "online", label: "Online", count: availabilityCounts.online },
+                { key: "offline", label: "Offline", count: availabilityCounts.offline },
+              ].map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => handleAvailabilityFilterChange(opt.key)}
+                  aria-pressed={availabilityFilter === opt.key}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-full border transition-all ${
+                    availabilityFilter === opt.key
+                      ? "bg-blue-600 border-blue-600 text-white"
+                      : "bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {opt.label} ({opt.count})
+                </button>
+              ))}
             </div>
           </div>
 
@@ -910,6 +942,9 @@ availableCashLimit: deliveryman.availableCashLimit || 0,
                         {visibleColumns.availabilityStatus && (
                           <td className="px-6 py-4">
                             <div className="flex flex-col">
+                              <span className="text-xs mb-1">
+                                Availability: <span className={`${dm.availabilityStatus === 'online' ? 'text-emerald-700' : 'text-slate-500'} font-semibold`}>{dm.availabilityStatus === 'online' ? "online" : "offline"}</span>
+                              </span>
                               <span className="text-xs">
                                 Account Status: <span className={`${dm.isActive !== false ? 'text-emerald-700' : 'text-rose-700'} underline`}>{dm.isActive !== false ? "active" : "inactive"}</span>
                               </span>

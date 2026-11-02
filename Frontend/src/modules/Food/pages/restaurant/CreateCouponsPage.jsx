@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion"
 import {
   ArrowLeft,
   BadgeCheck,
-  Clock3,
   Edit2,
   Loader2,
   Plus,
@@ -44,7 +43,7 @@ const defaultFormData = {
 }
 
 const statusBadgeClass = (status) => {
-  const value = String(status || "Pending").toLowerCase()
+  const value = String(status || "Approved").toLowerCase()
   if (value === "approved") return "bg-emerald-50 text-emerald-700 border-emerald-200"
   if (value === "rejected") return "bg-rose-50 text-rose-700 border-rose-200"
   return "bg-amber-50 text-amber-700 border-amber-200"
@@ -94,14 +93,14 @@ export default function CreateCouponsPage() {
     return list.reduce(
       (acc, coupon) => {
         acc.total += 1
-        const status = String(coupon?.status || "Pending").toLowerCase()
-        if (isCouponExpired(coupon)) acc.expired += 1
-        if (status === "approved") acc.approved += 1
-        else if (status === "rejected") acc.rejected += 1
-        else acc.pending += 1
+        const status = String(coupon?.status || "Approved").toLowerCase()
+        const expired = isCouponExpired(coupon)
+        if (expired) acc.expired += 1
+        if (status === "rejected") acc.rejected += 1
+        else if (!expired) acc.active += 1
         return acc
       },
-      { total: 0, pending: 0, approved: 0, rejected: 0, expired: 0 },
+      { total: 0, active: 0, rejected: 0, expired: 0 },
     )
   }, [coupons])
 
@@ -179,10 +178,10 @@ export default function CreateCouponsPage() {
 
       if (editingCoupon) {
         await restaurantAPI.updateCoupon(editingCoupon._id || editingCoupon.id, payload)
-        toast.success("Coupon request updated and sent for admin approval")
+        toast.success("Coupon updated and live")
       } else {
         await restaurantAPI.createCoupon(payload)
-        toast.success("Coupon request submitted and pending admin approval")
+        toast.success("Coupon created and live")
       }
 
       resetModal()
@@ -211,7 +210,7 @@ export default function CreateCouponsPage() {
           {editingCoupon ? "Edit Coupon" : "Create Coupon"}
         </h2>
         <p className="text-xs text-slate-500 lg:text-sm">
-          Configure your promo campaign. Resubmitting will reset status to pending.
+          Configure your promo campaign. Changes go live immediately.
         </p>
       </div>
       <button onClick={resetModal} className="p-1 hover:bg-slate-100 rounded-full">
@@ -379,7 +378,7 @@ export default function CreateCouponsPage() {
           <div className="flex-1 lg:flex lg:items-center lg:justify-between lg:gap-4">
             <div>
               <h1 className="text-xl font-bold text-slate-900 lg:text-2xl">Create Coupons</h1>
-              <p className="text-xs text-slate-500 lg:text-sm lg:mt-1">Submit coupon campaigns for admin review & approval.</p>
+              <p className="text-xs text-slate-500 lg:text-sm lg:mt-1">Create coupon campaigns that go live instantly.</p>
             </div>
             <button
               onClick={openCreateModal}
@@ -394,7 +393,7 @@ export default function CreateCouponsPage() {
 
       <div className="p-4 space-y-4 lg:max-w-5xl lg:mx-auto lg:px-8 lg:py-6 lg:space-y-6">
         {/* Offer summary stats */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
           {[
             {
               label: "Total Offers",
@@ -404,15 +403,8 @@ export default function CreateCouponsPage() {
               iconClassName: "bg-slate-100 text-slate-700",
             },
             {
-              label: "Pending",
-              value: couponStats.pending,
-              icon: Clock3,
-              className: "border-amber-200 bg-amber-50 text-amber-900",
-              iconClassName: "bg-amber-100 text-amber-700",
-            },
-            {
-              label: "Approved",
-              value: couponStats.approved,
+              label: "Active",
+              value: couponStats.active,
               icon: BadgeCheck,
               className: "border-emerald-200 bg-emerald-50 text-emerald-900",
               iconClassName: "bg-emerald-100 text-emerald-700",
@@ -461,9 +453,9 @@ export default function CreateCouponsPage() {
           <div className="flex gap-3">
             <AlertCircle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-slate-900 font-sans">Campaign Approval System</p>
+              <p className="text-sm font-semibold text-slate-900 font-sans">Instant Coupons</p>
               <p className="mt-1 text-xs text-slate-600 leading-relaxed font-sans">
-                Every coupon requested remains pending until approved by the admin. Once approved, the coupon becomes active and users can apply it to orders from your outlet. Editing a coupon resets its status to pending.
+                Coupons you create or edit go live immediately, and users can apply them to orders from your outlet. The discount is borne by your restaurant.
               </p>
             </div>
           </div>
@@ -492,7 +484,7 @@ export default function CreateCouponsPage() {
         ) : (
           <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
             {coupons.map((coupon) => {
-              const status = coupon?.status || "Pending"
+              const status = coupon?.status || "Approved"
               const expired = isCouponExpired(coupon)
               const expiryFormatted = (coupon?.endDate || coupon?.expiryDate)
                 ? new Date(coupon.endDate || coupon.expiryDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -512,8 +504,8 @@ export default function CreateCouponsPage() {
                           {coupon.couponCode}
                         </span>
                         <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${statusBadgeClass(status)}`}>
-                          {status === "Approved" ? <BadgeCheck className="mr-1 h-3.5 w-3.5" /> : <Clock3 className="mr-1 h-3.5 w-3.5" />}
-                          {status}
+                          {status === "Approved" ? <BadgeCheck className="mr-1 h-3.5 w-3.5" /> : <Ban className="mr-1 h-3.5 w-3.5" />}
+                          {status === "Approved" ? "Active" : status}
                         </span>
                         {expired && (
                           <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700">

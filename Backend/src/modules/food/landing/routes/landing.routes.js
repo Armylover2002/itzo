@@ -61,6 +61,10 @@ const router = express.Router();
 // Header video needs a larger cap than the default 5MB image upload limit.
 const videoUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024, files: 1 } });
 
+// Banners must never be rejected for size, so they skip the shared 5MB cap.
+// shortcut: 100MB/file is the ceiling to protect server memory (files are buffered in RAM); raise only if needed.
+const bannerUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024, files: 10 } });
+
 const LANDING_PERM = 'food::banner_settings::landing_page';
 const adminLanding = (action) => [
     authMiddleware,
@@ -81,7 +85,7 @@ router.get('/hero-banners', ...adminLanding('view'), listHeroBannersController);
 router.post(
     '/hero-banners/multiple',
     ...adminLanding('create'),
-    upload.array('files'),
+    bannerUpload.array('files'),
     invalidateLandingCacheOnSuccess('landing_hero'),
     uploadHeroBannersController
 );
@@ -115,7 +119,7 @@ router.get('/hero-banners/under-250', ...adminLanding('view'), listUnder250Banne
 router.post(
     '/hero-banners/under-250/multiple',
     ...adminLanding('create'),
-    upload.array('files'),
+    bannerUpload.array('files'),
     invalidateLandingCacheOnSuccess('landing_under250'),
     uploadUnder250BannersController
 );
