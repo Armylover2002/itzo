@@ -557,6 +557,10 @@ export default function SignupStep2() {
           const previewUrl = file._previewUrl || file.previewUrl
           if (previewUrl && previewUrl.startsWith('blob:')) {
             URL.revokeObjectURL(previewUrl)
+            // The same File is handed back from memoryDocs when the driver returns to this step;
+            // a stale (revoked) blob URL left on it would render as a broken image.
+            delete file._previewUrl
+            delete file.previewUrl
           }
         }
       })
