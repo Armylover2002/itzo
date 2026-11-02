@@ -209,13 +209,21 @@ export async function fetchAvailableOffers() {
         availableResponse?.data?.data ||
         availableResponse?.data ||
         {};
-      const foodOrders = Array.isArray(availablePayload?.docs)
-        ? availablePayload.docs
-        : Array.isArray(availablePayload?.items)
-          ? availablePayload.items
-          : Array.isArray(availablePayload)
-            ? availablePayload
-            : [];
+      // GET /food/delivery/orders/available answers with buildPaginatedResult:
+      // { data: [...], meta, pagination } (plus `orders` on some paths).
+      // Reading only docs/items left this array permanently empty, so a rider
+      // whose socket missed the offer never saw the order at all.
+      const foodOrders = Array.isArray(availablePayload?.data)
+        ? availablePayload.data
+        : Array.isArray(availablePayload?.orders)
+          ? availablePayload.orders
+          : Array.isArray(availablePayload?.docs)
+            ? availablePayload.docs
+            : Array.isArray(availablePayload?.items)
+              ? availablePayload.items
+              : Array.isArray(availablePayload)
+                ? availablePayload
+                : [];
 
       return { foodOrders };
     } finally {
