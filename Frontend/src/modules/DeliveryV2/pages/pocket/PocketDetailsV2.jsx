@@ -55,6 +55,10 @@ export const PocketDetailsV2 = () => {
         setLoading(true);
         const response = await deliveryAPI.getPocketDetails({
           date: weekRange.start.toISOString(),
+          // Explicit boundaries: the server must not re-derive the week in its
+          // own timezone, otherwise the range slips a day and comes back empty.
+          start: weekRange.start.toISOString(),
+          end: weekRange.end.toISOString(),
           ...(moduleFilter ? { module: moduleFilter } : {}),
           limit: 2000
         });

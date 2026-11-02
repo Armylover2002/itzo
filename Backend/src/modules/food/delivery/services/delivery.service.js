@@ -1499,7 +1499,19 @@ export const getDeliveryPocketDetails = async (deliveryPartnerId, query = {}) =>
         throw new ValidationError('Delivery partner not found');
     }
     const date = query.date ? new Date(query.date) : new Date();
-    const { start, end } = getWeekRange(date);
+    // Client sends its own week boundaries so the range is not re-derived in the
+    // server timezone (a client-local Sunday midnight lands on Saturday in UTC,
+    // which silently shifted the whole week back and returned an empty payout).
+    const explicitStart = query.start ? new Date(query.start) : null;
+    const explicitEnd = query.end ? new Date(query.end) : null;
+    const hasExplicitRange =
+        explicitStart && explicitEnd
+        && !Number.isNaN(explicitStart.getTime())
+        && !Number.isNaN(explicitEnd.getTime())
+        && explicitEnd > explicitStart;
+    const { start, end } = hasExplicitRange
+        ? { start: explicitStart, end: explicitEnd }
+        : getWeekRange(date);
     const limit = Math.min(Math.max(parseInt(query.limit, 10) || 1000, 1), 2000);
 
     const partnerId = new mongoose.Types.ObjectId(deliveryPartnerId);

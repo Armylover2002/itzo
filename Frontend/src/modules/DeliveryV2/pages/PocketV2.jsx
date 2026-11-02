@@ -339,6 +339,35 @@ export const PocketV2 = () => {
              </button>
           </div>
 
+          {/* Cash in hand - deposit to restore cash limit */}
+          <div className="rounded-[18px] bg-white border border-gray-100 shadow-sm p-4">
+             <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#FFF4ED] text-[#F35B1C] flex items-center justify-center shrink-0">
+                   <IndianRupee className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                   <p className="text-sm font-bold text-gray-900">Cash in hand</p>
+                   <p className="text-xs text-gray-500">
+                      {walletState.cashInHand > 0
+                        ? 'Deposit to restore your cash limit'
+                        : 'No pending cash to deposit'}
+                   </p>
+                </div>
+                <span className="text-lg font-extrabold text-gray-900">₹{walletState.cashInHand.toFixed(2)}</span>
+             </div>
+             <button
+                onClick={() => setShowDepositPopup(true)}
+                disabled={walletState.cashInHand <= 0}
+                className={`mt-3 w-full rounded-xl py-3 text-sm font-bold transition-all ${
+                  walletState.cashInHand > 0
+                    ? 'bg-[#F35B1C] text-white shadow-md shadow-[#F35B1C]/25 active:scale-[0.98]'
+                    : 'bg-gray-100 text-gray-400'
+                }`}
+             >
+                Deposit cash
+             </button>
+          </div>
+
           {/* Earnings guarantee - API driven */}
           {hasActiveOffer && (
           <div className="rounded-[20px] bg-white border border-gray-100 shadow-sm overflow-hidden">
