@@ -31,6 +31,22 @@ export const getOrderKey = (order) => {
   return key == null ? "" : String(key).trim();
 };
 
+/**
+ * Quick Commerce vs Food, resolved from the order payload itself.
+ * The URL must not decide this: the banner renders on the shared home served at
+ * both /food/user and /quick, so a pathname check mislabels the order and sends
+ * the tracking page to the wrong module's API ("Order Not Found").
+ */
+export const isQuickCommerceOrder = (order) => {
+  if (!order) return false;
+  const explicit = String(order.orderType || order.module || "").trim().toLowerCase();
+  if (explicit === "quick") return true;
+  if (explicit === "food") return false;
+  if (order.storeName || order.sellerName || order.sellerId || order.seller) return true;
+  if (order.restaurantName || order.restaurantId || order.restaurant) return false;
+  return /^QC/i.test(String(order.orderId || order._id || ""));
+};
+
 export const orderKeysMatch = (a, b) => {
   const left = String(a || "").trim();
   const right = String(b || "").trim();

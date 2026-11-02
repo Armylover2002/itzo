@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatScheduledAtShort } from "@food/utils/scheduleTime";
@@ -11,6 +11,7 @@ import {
   getOrderStatus,
   getActiveOrderVenueImageUrl,
   getActiveOrderVenueName,
+  isQuickCommerceOrder,
   shouldShowActiveOrderBanner,
   shouldShowActiveOrderBannerWithLifecycle,
 } from "@food/utils/activeOrderUtils";
@@ -87,7 +88,6 @@ function legacyBannerStatusText(orderStatus, orderPhase, isQuickOrder) {
 
 function OrderTrackingCardInner({ hasBottomNav = true }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const activeOrder = useActiveOrderStore((s) => s.activeOrder);
   const etaMinutes = useActiveOrderStore((s) => s.etaMinutes);
   const dismissedKey = useActiveOrderStore((s) => s.dismissedKey);
@@ -105,16 +105,7 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
     return shouldShowActiveOrderBanner(activeOrder, dismissedKey) ? activeOrder : null;
   }, [activeOrder, dismissedKey, lifecycle]);
 
-  const isQuickOrder = useMemo(() => {
-    if (!bannerOrder) return false;
-    return (
-      bannerOrder.orderType === "quick" ||
-      bannerOrder.module === "quick" ||
-      !!bannerOrder.storeName ||
-      !!bannerOrder.sellerName ||
-      location.pathname.includes("/quick")
-    );
-  }, [bannerOrder, location.pathname]);
+  const isQuickOrder = useMemo(() => isQuickCommerceOrder(bannerOrder), [bannerOrder]);
 
   const venueImageUrl = useMemo(() => {
     if (!bannerOrder) return "";
@@ -169,8 +160,13 @@ function OrderTrackingCardInner({ hasBottomNav = true }) {
       >
         <div
           onClick={() => {
+            if (!currentOrderKey) return;
             const basePath = isQuickOrder ? "/quick/orders" : "/food/user/orders";
-            navigate(`${basePath}/${currentOrderKey}`);
+            // orderType travels in state: the tracking page otherwise infers the
+            // module from the path alone and queries the wrong API.
+            navigate(`${basePath}/${encodeURIComponent(currentOrderKey)}`, {
+              state: { orderType: isQuickOrder ? "quick" : "food" },
+            });
           }}
           className={`relative bg-white/95 backdrop-blur-xl rounded-[20px] p-4 shadow-[0_8px_30px_${isQuickOrder ? "rgba(59,130,246,0.15)" : "rgba(204,37,50,0.15)"}] border ${isQuickOrder ? "border-blue-100/60" : "border-red-100/60"} overflow-visible cursor-pointer group`}
         >
