@@ -1,6 +1,7 @@
 import rateLimit from 'express-rate-limit';
 import { config } from '../config/env.js';
 import { logger } from '../utils/logger.js';
+import { verifyAccessToken } from '../core/auth/token.util.js';
 
 // NODE_ENV controls how generous each limiter's dev floor is (see `isProduction ?
 // x : Math.max(x, devFloor)` below on every limiter). This is deliberate, documented
@@ -30,6 +31,26 @@ const normalizeIp = (raw) => {
 };
 
 const ipKey = (req) => normalizeIp(req.ip || req.socket?.remoteAddress);
+
+/**
+ * Key for the general API limiter. A signed-in user gets a budget of their own: with a plain
+ * IP key, everyone behind one address (office/mobile-carrier NAT, an admin panel polling in
+ * another tab) shared a single 500/15min budget, so customers' order-tracking calls started
+ * returning 429. The token is verified, so a forged id cannot buy a fresh budget; anything
+ * unverifiable falls back to the IP bucket.
+ */
+export const apiRateLimitKey = (req) => {
+    const header = String(req.headers?.authorization || '');
+    if (header.startsWith('Bearer ')) {
+        try {
+            const decoded = verifyAccessToken(header.slice(7));
+            if (decoded?.userId && decoded?.role) return `u:${decoded.role}:${decoded.userId}`;
+        } catch {
+            // expired or invalid token -> shared IP bucket below
+        }
+    }
+    return ipKey(req);
+};
 
 /** Key OTP/login limits by the identity being targeted, so one IP cannot spam many
  *  numbers and one number cannot be spammed from many IPs. */
@@ -123,7 +144,7 @@ export const apiRateLimiter = rateLimit({
     windowMs: config.rateLimitWindowMinutes * 60 * 1000,
     limit: isProduction ? config.rateLimitMaxRequests : Math.max(config.rateLimitMaxRequests, 5000),
     store: createStore('api'),
-    keyGenerator: ipKey,
+    keyGenerator: apiRateLimitKey,
     skip: skipUnmetered,
     handler: buildHandler('api', 'Too many requests, please try again later.'),
     validate: { ip: false },
