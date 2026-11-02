@@ -367,6 +367,8 @@ export default function RestaurantsList() {
             approvalStatus: normalizeApprovalStatus(restaurant),
             isActive: restaurant.isActive !== false,
             isListed: restaurant.isListed || false,
+            // Same rule as the restaurant app: toggle is on unless explicitly switched off.
+            isOnline: restaurant.isAcceptingOrders !== false,
             productCount: restaurant.productCount || 0,
             rating: restaurant.ratings?.average || restaurant.rating || 0,
             logo: getPrimaryRestaurantImage(restaurant, PLACEHOLDER_40),
@@ -421,6 +423,7 @@ export default function RestaurantsList() {
     all: "All",
     zone: "",
     businessType: "All",
+    availability: "All", // All | Online | Offline
   })
 
   const filteredRestaurants = useMemo(() => {
@@ -441,6 +444,12 @@ export default function RestaurantsList() {
       } else if (filters.all === "Inactive") {
         result = result.filter(restaurant => restaurant.isActive !== true)
       }
+    }
+
+    if (filters.availability === "Online") {
+      result = result.filter(restaurant => restaurant.isOnline)
+    } else if (filters.availability === "Offline") {
+      result = result.filter(restaurant => !restaurant.isOnline)
     }
 
     if (filters.zone) {
@@ -505,6 +514,8 @@ export default function RestaurantsList() {
   const totalRestaurants = restaurants.length
   const activeRestaurants = restaurants.filter(r => r.isActive === true).length
   const inactiveRestaurants = restaurants.filter(r => r.isActive !== true).length
+  const onlineRestaurants = restaurants.filter(r => r.isOnline).length
+  const offlineRestaurants = totalRestaurants - onlineRestaurants
 
   // Show full phone number without masking
   const formatPhone = (phone) => {
@@ -1888,6 +1899,17 @@ export default function RestaurantsList() {
               </div>
 
               <select
+                value={filters.availability}
+                onChange={(e) => setFilters((prev) => ({ ...prev, availability: e.target.value }))}
+                aria-label="Filter by online or offline"
+                className="px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="All">All ({totalRestaurants})</option>
+                <option value="Online">Online ({onlineRestaurants})</option>
+                <option value="Offline">Offline ({offlineRestaurants})</option>
+              </select>
+
+              <select
                 value={filters.businessType}
                 onChange={(e) => setFilters((prev) => ({ ...prev, businessType: e.target.value }))}
                 className="px-3 py-2.5 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -2085,6 +2107,10 @@ export default function RestaurantsList() {
                           <div className="flex flex-col gap-1.5">
                             <span className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-semibold ${approvalStatusBadgeClass(restaurant.approvalStatus)}`}>
                               {approvalStatusLabel(restaurant.approvalStatus)}
+                            </span>
+                            <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${restaurant.isOnline ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'}`}>
+                              <span className={`h-1.5 w-1.5 rounded-full ${restaurant.isOnline ? 'bg-green-500' : 'bg-slate-400'}`} />
+                              {restaurant.isOnline ? 'Online' : 'Offline'}
                             </span>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-[11px] text-slate-500 min-w-[75px]">Visible to Users:</span>

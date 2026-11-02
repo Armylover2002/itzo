@@ -237,7 +237,11 @@ export default function LandingPageManagement() {
   }
 
   // Helper function to get admin token and add to request config
+  // contextModule pins the axios interceptor to the admin token. These URLs (/food/hero-banners...)
+  // contain no "/admin/", so it would otherwise treat them as user calls and send the customer
+  // token whenever one is stored in the same browser -> 403 "Forbidden: insufficient permissions".
   const getAuthConfig = (additionalConfig = {}) => {
+    additionalConfig = { ...additionalConfig, contextModule: 'admin' }
     const adminToken = getModuleToken('admin')
 
     // Debug logging in development

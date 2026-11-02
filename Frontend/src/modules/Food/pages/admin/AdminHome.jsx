@@ -245,8 +245,12 @@ export default function AdminHome() {
 
   // Additional stats
   const totalRestaurants = dashboardData?.restaurants?.total || 0
+  const onlineRestaurants = dashboardData?.restaurants?.online || 0
+  const offlineRestaurants = dashboardData?.restaurants?.offline || 0
   const pendingRestaurantRequests = dashboardData?.restaurants?.pendingRequests || 0
   const totalDeliveryBoys = dashboardData?.deliveryBoys?.total || 0
+  const onlineDeliveryBoys = dashboardData?.deliveryBoys?.online || 0
+  const offlineDeliveryBoys = dashboardData?.deliveryBoys?.offline || 0
   const pendingDeliveryBoyRequests = dashboardData?.deliveryBoys?.pendingRequests || 0
   const totalFoods = dashboardData?.foods?.total || 0
   const totalAddons = dashboardData?.addons?.total || 0
@@ -446,7 +450,7 @@ export default function AdminHome() {
           <StatCard
             title="Total restaurants"
             value={totalRestaurants.toLocaleString("en-IN")}
-            helper="Approved restaurants"
+            helper={`${onlineRestaurants} online · ${offlineRestaurants} offline`}
             icon={<Store className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             cardBg="bg-[#F5F3FF] border-purple-200/60 hover:border-purple-300/80"
             iconBg="bg-purple-100/80"
@@ -468,7 +472,7 @@ export default function AdminHome() {
           <StatCard
             title="Total delivery boy"
             value={totalDeliveryBoys.toLocaleString("en-IN")}
-            helper="Approved delivery partners"
+            helper={`${onlineDeliveryBoys} online · ${offlineDeliveryBoys} offline`}
             icon={<Truck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
             cardBg="bg-[#F0F9FF] border-sky-200/60 hover:border-sky-300/80"
             iconBg="bg-sky-100/80"
