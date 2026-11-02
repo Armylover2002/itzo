@@ -14,6 +14,10 @@ const debugError = (...args) => { }
 const DB_NAME = "DeliverySignupDB"
 const STORE_NAME = "documents"
 
+// Survives step 1 <-> step 2 route changes (same page session) even when IndexedDB is flaky
+// in WebViews. Only trusted together with the "file: true" placeholder in sessionStorage.
+const memoryDocs = new Map()
+
 let cachedDB = null
 const initDB = () => {
   return new Promise((resolve) => {
@@ -56,15 +60,31 @@ const initDB = () => {
   });
 }
 
+// Android WebView often can't read stored Blob/File objects back, so keep plain bytes.
+const recordToFile = (record) => {
+  if (record instanceof Blob) return record // written by an older build
+  if (!record?.buffer) return null
+  return new File([record.buffer], record.name || "document.jpg", {
+    type: record.type || "image/jpeg",
+    lastModified: record.lastModified,
+  })
+}
+
 const saveFileToDB = async (key, file) => {
   try {
     const db = await initDB()
     if (!db) return
+    const record = {
+      name: file.name,
+      type: file.type,
+      lastModified: file.lastModified,
+      buffer: await file.arrayBuffer(),
+    }
     return new Promise((resolve) => {
       try {
         const transaction = db.transaction(STORE_NAME, "readwrite")
         const store = transaction.objectStore(STORE_NAME)
-        store.put(file, key)
+        store.put(record, key)
         transaction.oncomplete = () => resolve()
         transaction.onerror = () => resolve()
       } catch (e) {
@@ -182,6 +202,7 @@ const removeFileFromDB = async (key) => {
 }
 
 const clearDB = async () => {
+  memoryDocs.clear()
   const db = await initDB()
   if (!db) return
   try {
@@ -231,7 +252,7 @@ const hasDocumentValue = (localFile, uploadedValue) => {
   if (typeof uploadedValue === "string") return uploadedValue.trim().length > 0
   if (uploadedValue && typeof uploadedValue === "object") {
     if (typeof uploadedValue.url === "string" && uploadedValue.url.trim()) return true
-    if (uploadedValue && uploadedValue.file === true) return true
+    // `{ file: true }` is only a marker; the real file must be in `documents` (checked above).
   }
   return false
 }
@@ -405,13 +426,6 @@ export default function SignupStep2() {
     drivingLicensePhoto: null
   })
 
-  const [documents, setDocuments] = useState({
-    profilePhoto: null,
-    aadharPhoto: null,
-    panPhoto: null,
-    drivingLicensePhoto: null
-  })
-
   const [uploadedDocs, setUploadedDocs] = useState(() => {
     const saved = sessionStorage.getItem("deliverySignupDocs")
     if (saved) {
@@ -422,6 +436,14 @@ export default function SignupStep2() {
       }
     }
     return createEmptyUploadedDocs()
+  })
+
+  const [documents, setDocuments] = useState(() => {
+    const initial = { profilePhoto: null, aadharPhoto: null, panPhoto: null, drivingLicensePhoto: null }
+    memoryDocs.forEach((file, key) => {
+      if (uploadedDocs[key]?.file === true) initial[key] = file
+    })
+    return initial
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -460,17 +482,35 @@ export default function SignupStep2() {
         });
       }
       
+      // Only keys marked as picked but not already restored from memory.
+      const pending = keys.filter((key) => uploadedDocs[key]?.file === true && !documents[key]);
+      if (pending.length === 0) return;
+
+      setUploading((prev) => ({ ...prev, ...Object.fromEntries(pending.map((key) => [key, "restoring"])) }));
       const loaded = {};
-      for (const key of keys) {
-        if (uploadedDocs[key]) {
-          const file = await getFileFromDB(key);
-          if (file) {
-            loaded[key] = file;
-          }
-        }
+      for (const key of pending) {
+        const file = recordToFile(await getFileFromDB(key));
+        if (file) loaded[key] = file;
       }
-      if (isMounted && Object.keys(loaded).length > 0) {
-        setDocuments(prev => ({ ...prev, ...loaded }));
+      if (!isMounted) return;
+
+      setDocuments((prev) => ({ ...prev, ...loaded }));
+      setUploading((prev) => {
+        const next = { ...prev };
+        pending.forEach((key) => delete next[key]);
+        return next;
+      });
+
+      // A marker with no file behind it would show a broken "Uploaded" card and let the
+      // driver pay the onboarding fee with no documents attached - make them pick it again.
+      const failed = pending.filter((key) => !loaded[key]);
+      if (failed.length > 0) {
+        setUploadedDocs((prev) => {
+          const next = { ...prev };
+          failed.forEach((key) => { next[key] = null; });
+          return next;
+        });
+        toast.error("Some documents could not be restored. Please upload them again.");
       }
     };
     loadFromDB();
@@ -558,6 +598,7 @@ export default function SignupStep2() {
       return { ...prev, [docType]: file }
     })
     setUploadedDocs((prev) => ({ ...prev, [docType]: { file: true } }))
+    memoryDocs.set(docType, file)
     await saveFileToDB(docType, file)
     toast.success(`${docType.replace(/([A-Z])/g, " $1").trim()} selected`)
   }
@@ -588,6 +629,7 @@ export default function SignupStep2() {
       ...prev,
       [docType]: null
     }))
+    memoryDocs.delete(docType)
     removeFileFromDB(docType)
   }
 
@@ -765,7 +807,7 @@ export default function SignupStep2() {
               {isUploading ? (
                 <>
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mb-2"></div>
-                  <p className="text-sm text-gray-500">{uploading[docType] ? "Uploading..." : "Restoring..."}</p>
+                  <p className="text-sm text-gray-500">{uploading[docType] === "restoring" ? "Restoring..." : "Uploading..."}</p>
                 </>
               ) : (
                 <>
