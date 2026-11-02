@@ -3,6 +3,7 @@ import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2,
 import api from "@food/api"
 import { adminAPI } from "@food/api"
 import { getModuleToken } from "@food/utils/auth"
+import { compressImage } from "@/shared/utils/imageCompression"
 import { Input } from "@food/components/ui/input"
 import { Label } from "@food/components/ui/label"
 import { Button } from "@food/components/ui/button"
@@ -122,6 +123,29 @@ const BannerHeaderFormBlock = ({ banner, index, onSave }) => {
       </div>
     </div>
   )
+}
+
+// Server accepts 5MB per image (and nginx 100MB per request), so phone/camera shots are shrunk
+// in the browser first. GIF/SVG are left alone because re-encoding would break animation/vectors.
+const BANNER_MAX_BYTES = 5 * 1024 * 1024
+const prepareBannerFiles = async (files) => {
+  const prepared = []
+  for (const file of files) {
+    const skip = !file.type.startsWith('image/') || /gif|svg/.test(file.type) || file.size <= 1024 * 1024
+    const out = skip
+      ? file
+      : await compressImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920, initialQuality: 0.85 })
+    if (out.size > BANNER_MAX_BYTES) {
+      throw new Error(`"${file.name}" is still larger than 5MB after compression. Please use a smaller image.`)
+    }
+    prepared.push(out)
+  }
+  return prepared
+}
+
+const uploadErrorMessage = (err, fallback) => {
+  if (err?.response?.status === 413) return 'Upload is too large. Please choose smaller or fewer images.'
+  return err?.response?.data?.message || err?.message || fallback
 }
 
 export default function LandingPageManagement() {
@@ -370,6 +394,8 @@ export default function LandingPageManagement() {
       setSuccess(null)
       setBannersUploadProgress({ current: 0, total: files.length })
 
+      files = await prepareBannerFiles(files)
+
       // Use batch upload endpoint for multiple files
       const formData = new FormData()
       files.forEach((file) => {
@@ -393,8 +419,10 @@ export default function LandingPageManagement() {
       const response = await api.post('/food/hero-banners/multiple', formData, config)
 
       if (response.data.success) {
-        const uploadedBanners = response.data.data?.banners || []
-        const errors = response.data.data?.errors || []
+        // API answers { results: [{ success, banner } | { success: false, error }] }.
+        const results = response.data.data?.results || []
+        const uploadedBanners = results.filter((r) => r?.success)
+        const errors = results.filter((r) => !r?.success).map((r) => r?.error || 'Upload failed')
         const successCount = uploadedBanners.length
         const failCount = errors.length
 
@@ -425,8 +453,7 @@ export default function LandingPageManagement() {
         setError(null)
       } else {
         // Filter out token-related errors
-        const errorMessage = err.response?.data?.message || 'Failed to upload banners'
-        setErrorSafely(errorMessage)
+        setErrorSafely(uploadErrorMessage(err, 'Failed to upload banners'))
       }
 
       setBannersUploadProgress({ current: 0, total: 0 })
@@ -1000,6 +1027,8 @@ export default function LandingPageManagement() {
       setSuccess(null)
       setUnder250BannersUploadProgress({ current: 0, total: files.length })
 
+      files = await prepareBannerFiles(files)
+
       const formData = new FormData()
       files.forEach((file) => {
         // Backend expects field name "files" (upload.array('files'))
@@ -1016,8 +1045,7 @@ export default function LandingPageManagement() {
         setTimeout(() => setSuccess(null), 3000)
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Failed to upload under 250 banners'
-      setErrorSafely(errorMessage)
+      setErrorSafely(uploadErrorMessage(err, 'Failed to upload under 250 banners'))
 
       setUnder250BannersUploadProgress({ current: 0, total: 0 })
     } finally {
