@@ -152,7 +152,8 @@ export async function createRestaurantCoupon(restaurantId, body) {
         restaurantId: rid,
         restaurantName: restaurant.restaurantName || 'Unknown Restaurant',
         ...payload,
-        status: 'Pending',
+        // Restaurant coupons go live immediately; there is no admin approval step.
+        status: 'Approved',
     });
 
     try {
@@ -222,7 +223,7 @@ export async function updateRestaurantCoupon(restaurantId, couponId, body) {
         {
             $set: {
                 ...payload,
-                status: 'Pending',
+                status: 'Approved',
             }
         },
         { new: true }

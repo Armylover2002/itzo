@@ -123,7 +123,7 @@ export const adminSidebarMenu = [
       },
       {
         type: "link",
-        label: "Coupons Request",
+        label: "Restaurant Coupons",
         permissionKey: "coupons",
         path: "/ecs/food/coupons-request",
         icon: "FileCheck",

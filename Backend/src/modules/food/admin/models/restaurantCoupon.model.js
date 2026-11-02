@@ -20,7 +20,7 @@ const restaurantCouponSchema = new mongoose.Schema(
         isFirstOrderOnly: { type: Boolean, default: false },
         description: { type: String },
         showInCart: { type: Boolean, default: true },
-        status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending', index: true }
+        status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Approved', index: true }
     },
     { collection: 'food_restaurant_coupons', timestamps: true }
 );
