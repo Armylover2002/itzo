@@ -1223,10 +1223,10 @@ export default function DeliveryHomeV2({ tab = 'feed' }) {
                </div>
              )}
 
-             <div className="absolute left-4 bottom-28 md:bottom-32 z-[120] flex flex-row items-center gap-1 rounded-2xl bg-white p-1.5 shadow-xl shadow-black/15 border border-gray-100">
+             <div className="absolute left-4 bottom-28 md:bottom-32 z-[120] flex flex-col items-center gap-1 rounded-2xl bg-white p-1.5 shadow-xl shadow-black/15 border border-gray-100">
                 <button onClick={() => setZoom(z => Math.min(22, z + 1))} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-800 active:bg-gray-100 transition-all" aria-label="Zoom in"><Plus className="w-5 h-5 stroke-[2.5]" /></button>
                 <button onClick={() => setZoom(z => Math.max(8, z - 1))} className="w-10 h-10 rounded-xl flex items-center justify-center text-gray-800 active:bg-gray-100 transition-all" aria-label="Zoom out"><Minus className="w-5 h-5 stroke-[2.5]" /></button>
-                <div className="w-px h-6 bg-gray-200 mx-0.5" />
+                <div className="h-px w-6 bg-gray-200 my-0.5" />
                 <button
                   onClick={() => {
                     const nextSimState = !isSimMode;
