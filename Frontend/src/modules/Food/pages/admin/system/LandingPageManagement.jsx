@@ -125,23 +125,16 @@ const BannerHeaderFormBlock = ({ banner, index, onSave }) => {
   )
 }
 
-// Server accepts 5MB per image (and nginx 100MB per request), so phone/camera shots are shrunk
-// in the browser first. GIF/SVG are left alone because re-encoding would break animation/vectors.
-const BANNER_MAX_BYTES = 5 * 1024 * 1024
-const prepareBannerFiles = async (files) => {
-  const prepared = []
-  for (const file of files) {
-    const skip = !file.type.startsWith('image/') || /gif|svg/.test(file.type) || file.size <= 1024 * 1024
-    const out = skip
-      ? file
-      : await compressImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920, initialQuality: 0.85 })
-    if (out.size > BANNER_MAX_BYTES) {
-      throw new Error(`"${file.name}" is still larger than 5MB after compression. Please use a smaller image.`)
-    }
-    prepared.push(out)
-  }
-  return prepared
-}
+// No size limit for banners: big photos are shrunk in the browser first (faster upload, same look).
+// GIF/SVG are left alone because re-encoding would break animation/vectors.
+const prepareBannerFiles = (files) =>
+  Promise.all(
+    files.map((file) =>
+      !file.type.startsWith('image/') || /gif|svg/.test(file.type) || file.size <= 1024 * 1024
+        ? file
+        : compressImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920, initialQuality: 0.85 })
+    )
+  )
 
 const uploadErrorMessage = (err, fallback) => {
   if (err?.response?.status === 413) return 'Upload is too large. Please choose smaller or fewer images.'
@@ -1526,7 +1519,7 @@ export default function LandingPageManagement() {
                       </button>
                       <span className="text-slate-600"> or drag and drop</span>
                     </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, WEBP up to 5MB each (Max 5 images at once)</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, WEBP, any size (Max 5 images at once)</p>
                   </div>
                 )}
               </div>
@@ -1748,7 +1741,7 @@ export default function LandingPageManagement() {
                       </button>
                       <span className="text-slate-600"> or drag and drop</span>
                     </div>
-                    <p className="text-xs text-slate-500">PNG, JPG, WEBP up to 5MB each (Max 5 images at once)</p>
+                    <p className="text-xs text-slate-500">PNG, JPG, WEBP, any size (Max 5 images at once)</p>
                   </div>
                 )}
               </div>
