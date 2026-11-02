@@ -499,6 +499,9 @@ export default function Home() {
                     ref={heroVideoElRef}
                     autoPlay
                     muted
+                    // One-clip playlist: next index == same index, so it never remounts and
+                    // would freeze on the last frame; loop it natively instead.
+                    loop={homeHeroVideoUrls.length === 1}
                     playsInline
                     preload="metadata"
                     poster={heroPosterUrl || undefined}
