@@ -5,6 +5,8 @@ import restaurantRoutes from '../modules/food/restaurant/routes/restaurant.route
 import mediaRoutes from '../modules/media/routes/media.routes.js';
 import landingRoutes from '../modules/food/landing/routes/landing.routes.js';
 import uploadRoutes from '../modules/uploads/routes/upload.routes.js';
+import { uploadHandoffFile, downloadHandoffFile } from '../modules/uploads/fileHandoff.js';
+import { upload as memoryUpload } from '../middleware/upload.js';
 import restaurantAdminRoutes from '../modules/food/admin/routes/admin.routes.js';
 import userRoutes from '../modules/food/user/routes/user.routes.js';
 import orderUserRoutes from '../modules/food/orders/routes/order.routes.user.js';
@@ -59,6 +61,10 @@ router.use('/v1/food/dining/public', requireEnabledModule('food'), publicDiningR
 router.use('/v1/food', requireEnabledModule('food'), landingRoutes);
 router.use('/v1/food/search', requireEnabledModule('food'), searchRoutes);
 router.use('/v1/uploads', uploadRoutes);
+// Invoice/PDF hand-off for the Android app shell (it cannot open blob: URLs). Upload needs any signed-in
+// role; the download link is one-time-ish, unguessable and expires in 10 minutes.
+router.post('/v1/files/handoff', authMiddleware, memoryUpload.single('file'), uploadHandoffFile);
+router.get('/v1/files/handoff/:id', downloadHandoffFile);
 router.use('/v1/job-applications', jobApplicationRoutes);
 router.use('/job-applications', jobApplicationRoutes);
 router.use('/v1/licensing-request', licensingRoutes);

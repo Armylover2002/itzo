@@ -6,6 +6,8 @@
  * silently does nothing. There we hand the file to the OS share sheet instead.
  */
 
+import apiClient from "@/services/api/axios"
+
 export const isNativeAppShell = () => {
   if (typeof window === "undefined") return false
   const ua = String(window.navigator?.userAgent || "").toLowerCase()
@@ -96,6 +98,36 @@ const anchorDownload = async (blob, fileName) => {
   }
 }
 
+// The upload goes through the shared axios client, which picks the session token by `contextModule`.
+const moduleFromPath = () => {
+  const path = String(window.location?.pathname || "").toLowerCase()
+  if (path.includes("/ecs")) return "admin"
+  if (path.includes("/restaurant")) return "restaurant"
+  if (path.includes("/delivery")) return "delivery"
+  return "user"
+}
+
+/**
+ * Android app shells cannot open or save blob: URLs ("Cannot open: blob://..."), so hand the PDF to
+ * the server and open the returned https link, which the OS can download. Returns false when the
+ * upload fails so the caller can show an honest error instead of a fake "downloaded" toast.
+ */
+const downloadViaServer = async (blob, fileName) => {
+  try {
+    const form = new FormData()
+    form.append("file", blob, fileName)
+    form.append("fileName", fileName)
+    const res = await apiClient.post("/files/handoff", form, { contextModule: moduleFromPath() })
+    const path = res?.data?.data?.url
+    if (!path) return false
+    window.open(new URL(path, window.location.origin).toString(), "_blank")
+    return true
+  } catch (error) {
+    console.error("Server hand-off failed:", error)
+    return false
+  }
+}
+
 const openBlobInNewTab = (blob) => {
   if (typeof window === "undefined") return false
   const url = URL.createObjectURL(blob)
@@ -126,6 +158,9 @@ export const saveBlobAsFile = async (blob, fileName, options = {}) => {
         (isNativeAppShell() || (isMobileDevice() && canSharePdfFiles()))))
 
   if (shouldSharePdfFirst && (await shareBlobFile(blob, fileName))) return true
+
+  // Inside the app shell neither anchor downloads nor blob: tabs work, so go through the server.
+  if (isPdf && isNativeAppShell()) return downloadViaServer(blob, fileName)
 
   if (isPdf || preferDownload) {
     if (await anchorDownload(blob, fileName)) return true
