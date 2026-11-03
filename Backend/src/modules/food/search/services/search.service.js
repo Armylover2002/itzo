@@ -4,6 +4,7 @@ import { FoodCategory } from '../../admin/models/category.model.js';
 import { FoodZone } from '../../admin/models/zone.model.js';
 import mongoose from 'mongoose';
 import { getRoadDistancesFromOrigin } from '../../../../services/roadDistance.service.js';
+import { fuzzyMatches } from '../utils/fuzzy.js';
 
 const zoneToPolygon = (zoneDoc) => {
     const coords = Array.isArray(zoneDoc?.coordinates) ? zoneDoc.coordinates : [];
@@ -48,6 +49,68 @@ const buildZoneRestaurantConstraint = async (zoneIdRaw) => {
     }
 
     return { $or: zoneClauses };
+};
+
+// Light in-memory copy of approved dish names for the typo-tolerant fallback; a few hundred rows.
+const DISH_INDEX_TTL_MS = 5 * 60 * 1000;
+const DISH_INDEX_MAX = 20000;
+let dishIndex = { at: 0, rows: [] };
+
+const getDishIndex = async () => {
+    if (Date.now() - dishIndex.at < DISH_INDEX_TTL_MS && dishIndex.rows.length) return dishIndex.rows;
+    const rows = await FoodItem.find({ approvalStatus: 'approved' })
+        .select('name restaurantId image foodType')
+        .limit(DISH_INDEX_MAX)
+        .lean();
+    dishIndex = { at: Date.now(), rows };
+    return rows;
+};
+
+/**
+ * Runs only when the exact search found nothing: matches spelling mistakes and plurals
+ * ("waffles", "waffele" -> Waffle) against restaurant names, cuisines and dish names.
+ */
+const fuzzyFill = async ({ term, restaurantFilter, isVeg, limit, restaurantDetailsMap }) => {
+    const candidates = await FoodRestaurant.find(restaurantFilter).select('restaurantName cuisines').lean();
+    const matchedRestaurantIds = new Set(
+        candidates
+            .filter((r) => fuzzyMatches(term, r.restaurantName) || (r.cuisines || []).some((c) => fuzzyMatches(term, c)))
+            .map((r) => String(r._id))
+    );
+    const allowedIds = new Set(candidates.map((r) => String(r._id)));
+
+    const dishes = (await getDishIndex()).filter(
+        (f) => allowedIds.has(String(f.restaurantId)) && (isVeg !== 'true' || f.foodType === 'Veg') && fuzzyMatches(term, f.name)
+    );
+    const dishByRestaurant = new Map();
+    dishes.forEach((f) => {
+        const key = String(f.restaurantId);
+        if (!dishByRestaurant.has(key)) dishByRestaurant.set(key, f);
+    });
+
+    const wantedIds = [...new Set([...matchedRestaurantIds, ...dishByRestaurant.keys()])].slice(0, limit * 2);
+    if (wantedIds.length === 0) return;
+
+    const docs = await FoodRestaurant.find({
+        ...restaurantFilter,
+        _id: { $in: wantedIds.map((id) => new mongoose.Types.ObjectId(id)) },
+    }).lean();
+
+    docs.forEach((r) => {
+        const id = String(r._id);
+        const dish = dishByRestaurant.get(id);
+        if (matchedRestaurantIds.has(id) || !dish) {
+            restaurantDetailsMap.set(id, { ...r, matchType: 'restaurant' });
+        } else {
+            restaurantDetailsMap.set(id, {
+                ...r,
+                matchType: 'food',
+                matchedDish: dish.name,
+                matchedDishImage: dish.image,
+                matchedDishId: dish._id,
+            });
+        }
+    });
 };
 
 /**
@@ -171,6 +234,12 @@ export const searchUnified = async (query = {}, options = {}) => {
                     });
                 });
             }
+        }
+
+        // Nothing matched exactly -> forgive spelling mistakes and plurals.
+        if (restaurantDetailsMap.size === 0 && term.length >= 3) {
+            await fuzzyFill({ term, restaurantFilter, isVeg, limit, restaurantDetailsMap });
+            restaurantDetailsMap.forEach((_, id) => restaurantIds.add(id));
         }
     } else {
         // No search text -> List all restaurants matching filters (category/zone)

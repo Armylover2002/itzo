@@ -30,3 +30,9 @@ export function applyNativeShellClasses(pathname = '') {
     native && isNativeAppShellRoute(pathname),
   )
 }
+
+/**
+ * Cold starts of the app shell reopen the last visited route. Throw-away screens such as the search
+ * page must not be restored: a half-typed (or stuck) query would otherwise greet the user on every launch.
+ */
+export const isRestorableNativeRoute = (route) => !/^\/food\/user\/search(\/|\?|$)/.test(String(route || ''))

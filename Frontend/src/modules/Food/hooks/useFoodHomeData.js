@@ -61,6 +61,12 @@ const transformRestaurant = (restaurant, backendOrigin, page) => {
   );
   const coverImages = imgUtils.extractImages(restaurant.coverImages || restaurant.coverImage, backendOrigin);
   const allImages = Array.from(new Set([...profileImageCandidates, ...coverImages].filter(Boolean)));
+  const fallbackImage =
+    (Array.isArray(restaurant.menuPreview)
+      ? restaurant.menuPreview.map((item) => imgUtils.normalizeImageUrl(item?.image, backendOrigin)).find(Boolean)
+      : "") ||
+    imgUtils.extractImages(restaurant.menuImages, backendOrigin)[0] ||
+    "";
 
   return {
     id: restaurant.restaurantId || restaurant._id,
@@ -77,6 +83,8 @@ const transformRestaurant = (restaurant, backendOrigin, page) => {
     featuredPrice: restaurant.featuredPrice,
     image: allImages[0] || "",
     images: allImages,
+    // Shown only when none of the images above can be loaded (see RestaurantImageCarousel).
+    fallbackImage: fallbackImage || "",
     pureVegRestaurant: restaurant.pureVegRestaurant === true,
     location: restaurant.location,
     offer: restaurant.offer,

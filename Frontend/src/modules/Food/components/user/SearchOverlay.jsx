@@ -4,6 +4,7 @@ import { X, Search, Clock, Loader2, Mic } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
 import { restaurantAPI, searchAPI } from "@food/api"
+import { useVoiceSearch } from "@food/hooks/useVoiceSearch"
 
 const SEARCH_HISTORY_KEY = "user_recent_searches_v1"
 
@@ -13,7 +14,6 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
   const [filteredFoods, setFilteredFoods] = useState([])
   const [recentSuggestions, setRecentSuggestions] = useState([])
   const [loadingFoods, setLoadingFoods] = useState(false)
-  const [isListening, setIsListening] = useState(false)
   const [debouncedSearch, setDebouncedSearch] = useState(searchValue)
 
   useEffect(() => {
@@ -157,26 +157,15 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
     onSearchChange("")
   }
 
-  const handleVoiceSearch = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Voice search is not supported in this browser.");
-      return;
-    }
+  const { isListening, start: startVoice } = useVoiceSearch((transcript) => {
+    onSearchChange(transcript)
+    saveRecentSearch(transcript)
+  })
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-IN';
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      if (transcript) {
-        onSearchChange(transcript);
-        saveRecentSearch(transcript);
-      }
-    };
-    recognition.start();
-  };
+  const handleVoiceSearch = () => {
+    // No speech API (app shell): fall back to the keyboard so its mic can be used.
+    if (!startVoice()) inputRef.current?.focus()
+  }
 
   if (!isOpen) return null
 
@@ -257,7 +246,7 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
           }}
         >
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
-            {searchValue.trim() === "" ? "All Dishes" : `Search Results (${filteredFoods.length})`}
+            {searchValue.trim() === "" ? "All Restaurants" : `Search Results (${filteredFoods.length})`}
           </h3>
           {filteredFoods.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -297,16 +286,16 @@ export default function SearchOverlay({ isOpen, onClose, searchValue, onSearchCh
               {loadingFoods ? (
                 <>
                   <Loader2 className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4 animate-spin" />
-                  <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg font-semibold">Loading dishes from database...</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg font-semibold">Loading...</p>
                 </>
               ) : (
                 <>
                   <Search className="h-12 w-12 sm:h-16 sm:w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg font-semibold">
-                    {searchValue.trim() ? `No results found for "${searchValue}"` : "No dishes found in database"}
+                    {searchValue.trim() ? `No results found for "${searchValue}"` : "No restaurants found nearby"}
                   </p>
                   <p className="text-sm sm:text-base text-gray-500 dark:text-gray-500 mt-2">
-                    {searchValue.trim() ? "Try a different search term" : "Add menu items in restaurant menus to show here"}
+                    {searchValue.trim() ? "Try a different search term" : "Please check back soon"}
                   </p>
                 </>
               )}

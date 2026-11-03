@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { UtensilsCrossed } from "lucide-react";
 import OptimizedImage from "@food/components/OptimizedImage";
 
 const WEBVIEW_SESSION_CACHE_BUSTER = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -67,6 +68,7 @@ const RestaurantImageCarousel = React.memo(
     const [isImageUnavailable, setIsImageUnavailable] = useState(false);
     const [showShimmer, setShowShimmer] = useState(true);
     const [lastGoodSrc, setLastGoodSrc] = useState("");
+    const [fallbackFailed, setFallbackFailed] = useState(false);
     const touchStartX = useRef(0);
     const touchEndX = useRef(0);
     const isSwiping = useRef(false);
@@ -87,6 +89,7 @@ const RestaurantImageCarousel = React.memo(
 
     useEffect(() => {
       setLastGoodSrc("");
+      setFallbackFailed(false);
     }, [restaurant?.id, restaurant?.slug]);
 
     useEffect(() => {
@@ -174,8 +177,21 @@ const RestaurantImageCarousel = React.memo(
         </div>
 
         {isImageUnavailable && (
-          <div className="absolute inset-0 z-[2] flex items-center justify-center bg-gray-100">
-            <span className="text-xs text-gray-500">Image unavailable</span>
+          <div className="absolute inset-0 z-[2] flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100">
+            {restaurant?.fallbackImage && !fallbackFailed ? (
+              <OptimizedImage
+                src={withCacheBuster(restaurant.fallbackImage)}
+                alt={restaurant?.name || "Restaurant"}
+                className="w-full h-full object-cover"
+                backendOrigin={backendOrigin}
+                onError={() => setFallbackFailed(true)}
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-2 px-4 text-center">
+                <UtensilsCrossed className="h-8 w-8 text-orange-300" />
+                <span className="line-clamp-2 text-sm font-semibold text-orange-400">{restaurant?.name}</span>
+              </div>
+            )}
           </div>
         )}
 

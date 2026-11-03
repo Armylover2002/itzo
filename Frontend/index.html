@@ -7,8 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Loaded without blocking first paint: a slow/blocked font CDN must not hold the app on a blank screen. -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet">
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet">
+  </noscript>
   <!-- External splash CSS avoids Vite html-inline-proxy Windows path bugs during build -->
   <link rel="stylesheet" href="/initial-splash.css" />
   <title>ItzoFood</title>
@@ -16,36 +21,52 @@
 
 <body>
   <div id="initial-splash">
-    <img id="initial-splash-img" src="/useritzo.png" alt="ItzoFood Logo" />
+    <img id="initial-splash-img" src="/useritzo-splash.webp" alt="ItzoFood Logo" />
   </div>
   <script>
     // Splash image per panel (files in /public), picked from the URL before the app boots.
     (function () {
       var p = location.pathname;
-      var src = '/useritzo.png';
-      if (/^\/ecs(\/|$)/.test(p)) src = '/ecsitzo.jpeg';
-      else if (/^\/hrms(\/|$)/.test(p)) src = '/ecsitzo.jpeg';
-      else if (/^(\/food)?\/restaurant(\/|$)/.test(p)) src = '/restaurantitzo.jpeg';
-      else if (/^(\/food)?\/delivery(\/|$)/.test(p)) src = '/deliveryitzo.jpeg';
-      else if (/^\/seller(\/|$)/.test(p)) src = '/selleritzo.jpeg';
+      var src = '/useritzo-splash.webp';
+      var isUser = true;
+      if (/^\/ecs(\/|$)/.test(p)) { src = '/ecsitzo.jpeg'; isUser = false; }
+      else if (/^\/hrms(\/|$)/.test(p)) { src = '/ecsitzo.jpeg'; isUser = false; }
+      else if (/^(\/food)?\/restaurant(\/|$)/.test(p)) { src = '/restaurantitzo.jpeg'; isUser = false; }
+      else if (/^(\/food)?\/delivery(\/|$)/.test(p)) { src = '/deliveryitzo.jpeg'; isUser = false; }
+      else if (/^\/seller(\/|$)/.test(p)) { src = '/selleritzo.jpeg'; isUser = false; }
       var img = document.getElementById('initial-splash-img');
-      if (img) img.src = src;
+      if (img && img.getAttribute('src') !== src) img.src = src;
+      // The user splash artwork is a flat orange square: fill the screen with the same orange so it
+      // blends with the app's own orange launch screen instead of flashing a white page.
+      if (isUser) document.getElementById('initial-splash').style.backgroundColor = '#FC5002';
     })();
   </script>
   <div id="root"></div>
   <script type="module" src="/src/index.jsx"></script>
   <script>
     // Wait until the main content has loaded
-    window.addEventListener('load', () => {
+    var hideSplash = function () {
+      var splash = document.getElementById('initial-splash');
+      if (!splash || splash.dataset.hiding) return;
+      splash.dataset.hiding = '1';
+      splash.style.opacity = '0';
+      setTimeout(function () { splash.remove(); }, 600);
+    };
+    window.addEventListener('load', function () {
       // Add a slight delay to ensure React has painted
-      setTimeout(() => {
-        const splash = document.getElementById('initial-splash');
-        if (splash) {
-          splash.style.opacity = '0';
-          setTimeout(() => splash.remove(), 600);
-        }
-      }, 100);
+      setTimeout(hideSplash, 100);
     });
+    // `load` also waits for fonts/images; on a slow or blocked network it can take very long, and the
+    // user would stay on the splash. Drop it as soon as the app has painted its first screen, and
+    // never keep it up for more than 8 seconds regardless.
+    var paintedPoll = setInterval(function () {
+      var root = document.getElementById('root');
+      if (root && root.childElementCount > 0) {
+        clearInterval(paintedPoll);
+        setTimeout(hideSplash, 150);
+      }
+    }, 100);
+    setTimeout(function () { clearInterval(paintedPoll); hideSplash(); }, 8000);
   </script>
 </body>
 

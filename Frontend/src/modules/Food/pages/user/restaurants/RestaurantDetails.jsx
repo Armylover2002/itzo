@@ -66,6 +66,8 @@ function RestaurantDetailsContent() {
   const [searchParams] = useSearchParams()
   const showOnlyUnder250 = searchParams.get('under250') === 'true'
   const targetDishId = useMemo(() => String(searchParams.get('dish') || '').trim(), [searchParams])
+  // The term the customer searched for; lets the "search result" section list every matching dish.
+  const searchedTerm = useMemo(() => String(searchParams.get('q') || '').trim(), [searchParams])
   const { addToCart, updateQuantity, removeFromCart, getCartItem, cart } = useCart()
   const { vegMode, addDishFavorite, removeDishFavorite, isDishFavorite, getDishFavorites, getFavorites, addFavorite, removeFavorite, isFavorite, activeAddress } = useProfile()
 
@@ -809,9 +811,20 @@ function RestaurantDetailsContent() {
                   })
                   const matchedItem = allItemsInMenu.find(item => String(item.id || item._id || "").trim() === targetDishId)
                   if (matchedItem) {
+                    // Spaces/punctuation are ignored so "vadapav" also finds "Bombay Vada Pav [ Butter ]".
+                    const squash = (text) => String(text || "").toLowerCase().replace(/[^a-z0-9]/g, "")
+                    const needle = squash(searchedTerm)
+                    const matchedItems = [matchedItem]
+                    if (needle.length >= 3) {
+                      allItemsInMenu.forEach((item) => {
+                        if (item !== matchedItem && item.isAvailable !== false && squash(item.name).includes(needle)) {
+                          matchedItems.push(item)
+                        }
+                      })
+                    }
                     searchedDishSection = {
                       name: "Result for your search",
-                      items: [matchedItem],
+                      items: matchedItems,
                       subsections: [],
                       isSearchResult: true
                     }
@@ -1003,12 +1016,7 @@ function RestaurantDetailsContent() {
 
   // Helper function to update item quantity in both local state and cart
   const updateItemQuantity = (item, newQuantity, event = null, preferredVariant = null) => {
-    // Check authentication
-    if (!isModuleAuthenticated('user')) {
-      toast.error("Please login to add items to cart")
-      navigate('/user/auth/login', { state: { from: location.pathname } })
-      return
-    }
+    // Guests can build a cart; login is asked when they place the order (Cart page).
 
     // CRITICAL: Check if user is in service zone or restaurant is available
     if (isOutOfService) {
@@ -1200,6 +1208,9 @@ function RestaurantDetailsContent() {
   }
 
   const getSectionDisplayName = (section) => {
+    if (section?.isSearchResult || String(section?.name || "").trim().toLowerCase() === "result for your search") {
+      return "Results for your search"
+    }
     if (isRecommendedSection(section)) {
       return "Recommended for you"
     }
