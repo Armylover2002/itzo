@@ -712,10 +712,15 @@ export const placeOrder = async (req, res) => {
     // COD flag is enforced only for cash.
     if (idQuery.userId) {
       const orderingUser = await FoodUser.findById(idQuery.userId)
-        .select('isCodAllowed isActive')
+        .select('isCodAllowed isActive isOrderingAllowed')
         .lean();
       if (!orderingUser || orderingUser.isActive === false) {
         throw new ForbiddenError('User account is deactivated');
+      }
+      if (orderingUser.isOrderingAllowed === false) {
+        const err = new ForbiddenError('Ordering is currently disabled for your account. Please contact support.');
+        err.code = 'ORDERING_DISABLED';
+        throw err;
       }
       if (paymentMode === 'cash' && orderingUser.isCodAllowed === false) {
         throw new ForbiddenError('Cash on Delivery is not available for this account');

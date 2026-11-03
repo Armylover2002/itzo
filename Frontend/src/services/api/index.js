@@ -778,6 +778,22 @@ export const adminAPI = {
       { isCodAllowed: isCodAllowed !== false },
       { contextModule: "admin" },
     ),
+  /** Admin switch: can this customer place orders at all? */
+  updateCustomerOrderAccess: (id, isOrderingAllowed) =>
+    apiClient.patch(
+      `/food/admin/customers/${String(id)}/order-access`,
+      { isOrderingAllowed: isOrderingAllowed !== false },
+      { contextModule: "admin" },
+    ),
+  bulkUpdateCustomerOrderAccess: (ids = [], isOrderingAllowed) =>
+    apiClient.patch(
+      "/food/admin/customers/order-access/bulk",
+      {
+        ids: Array.isArray(ids) ? ids : [],
+        isOrderingAllowed: isOrderingAllowed !== false,
+      },
+      { contextModule: "admin" },
+    ),
   bulkUpdateCustomerCodAccess: (ids = [], isCodAllowed) =>
     apiClient.patch(
       "/food/admin/customers/cod-access/bulk",
@@ -810,6 +826,13 @@ export const adminAPI = {
     apiClient.patch(
       `/food/admin/orders/${String(orderId)}/status`,
             { orderStatus: "cancelled_by_admin", reason: String(reason || "").trim() },
+      { contextModule: "admin" },
+    ),
+  /** Admin completes an accepted order on the rider's behalf (payment, earnings, notifications all update). */
+  markOrderDelivered: (orderId, reason = "") =>
+    apiClient.patch(
+      `/food/admin/orders/${String(orderId)}/deliver`,
+      { reason: String(reason || "").trim() },
       { contextModule: "admin" },
     ),
   processRefund: (orderId, body = {}) =>

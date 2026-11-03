@@ -240,6 +240,52 @@ export async function deleteDeliveryPartner(req, res, next) {
     }
 }
 
+export async function updateCustomerOrderAccess(req, res, next) {
+    try {
+        const { id } = req.params;
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid customer id' });
+        }
+        const isOrderingAllowed = req.body?.isOrderingAllowed;
+        if (typeof isOrderingAllowed !== 'boolean') {
+            return res.status(400).json({ success: false, message: 'isOrderingAllowed must be a boolean' });
+        }
+        const updated = await adminService.updateCustomerOrderAccess(id, isOrderingAllowed);
+        if (!updated) return res.status(404).json({ success: false, message: 'Customer not found' });
+        console.log(
+            `[AUDIT] customer_order_access_update adminId=${req.user?.userId || req.user?.id || 'unknown'} customerId=${id} isOrderingAllowed=${isOrderingAllowed}`
+        );
+        res.status(200).json({
+            success: true,
+            message: `Ordering ${isOrderingAllowed ? 'enabled' : 'disabled'} for customer`,
+            data: { customer: updated },
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+export async function bulkUpdateCustomersOrderAccess(req, res, next) {
+    try {
+        const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];
+        const isOrderingAllowed = req.body?.isOrderingAllowed;
+        if (typeof isOrderingAllowed !== 'boolean') {
+            return res.status(400).json({ success: false, message: 'isOrderingAllowed must be a boolean' });
+        }
+        const result = await adminService.bulkUpdateCustomersOrderAccess(ids, isOrderingAllowed);
+        console.log(
+            `[AUDIT] customer_order_access_bulk_update adminId=${req.user?.userId || req.user?.id || 'unknown'} count=${ids.length} isOrderingAllowed=${isOrderingAllowed} matched=${result?.matched ?? 0} modified=${result?.modified ?? 0}`
+        );
+        res.status(200).json({
+            success: true,
+            message: `Ordering ${isOrderingAllowed ? 'enabled' : 'disabled'} for selected customers`,
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function bulkUpdateCustomersCodAccess(req, res, next) {
     try {
         const ids = Array.isArray(req.body?.ids) ? req.body.ids : [];

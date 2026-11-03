@@ -20,7 +20,8 @@ export const getRestaurantReferralStats = async (restaurantId) => {
     return {
         referralCount: Number(restaurant?.referralCount) || 0,
         totalReferralEarnings: Number(wallet?.referralEarnings) || 0,
-        rewardAmount: Math.max(0, Number(settingsDoc?.restaurant?.referrerReward) || 0)
+        rewardAmount: Math.max(0, Number(settingsDoc?.restaurant?.referrerReward) || 0),
+        description: String(settingsDoc?.restaurant?.description || '').trim()
     };
 };
 
@@ -90,6 +91,7 @@ export const getRestaurantReferralDetails = async (restaurantId) => {
             referralCount: Number(restaurant?.referralCount) || 0,
             totalReferralEarnings: Number(wallet?.referralEarnings) || 0,
             rewardAmount: Math.max(0, Number(settingsDoc?.restaurant?.referrerReward) || 0),
+            description: String(settingsDoc?.restaurant?.description || '').trim(),
             totalInvited,
             creditedCount,
             pendingCount,

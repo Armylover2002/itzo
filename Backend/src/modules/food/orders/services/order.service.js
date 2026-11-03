@@ -3671,6 +3671,14 @@ export async function calculateOrder(userId, dto, options = {}) {
 
 // ----- Create order -----
 export async function createOrder(userId, dto) {
+  // Admin can switch ordering off per customer (Customers page); the UI disables the button, this is the real gate.
+  const gateUser = await FoodUser.findById(userId).select("isOrderingAllowed isActive").lean();
+  if (gateUser && gateUser.isOrderingAllowed === false) {
+    const err = new ForbiddenError("Ordering is currently disabled for your account. Please contact support.");
+    err.code = "ORDERING_DISABLED";
+    throw err;
+  }
+
   const items = normalizeOrderItems(dto.items, dto.orderType);
   const hasFoodItems = items.some((item) => item.type === "food");
   const hasQuickItems = items.some((item) => item.type === "quick");
@@ -6638,6 +6646,103 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
   return sanitizeOrderForExternal(await resolveOrderWithCustomerGender(order));
 }
 
+/** Statuses an admin can force-complete: accepted by the restaurant and not finished yet. */
+const ADMIN_DELIVERABLE_STATUSES = ["confirmed", "preparing", "ready_for_pickup", "picked_up"];
+
+/**
+ * Admin marks an accepted order as delivered (rider never tapped "complete", customer confirmed by phone, ...).
+ * Does everything the rider's completeDelivery does, so payment, ledger, coupon usage, rider/platform
+ * earnings, sockets and notifications all end up in the same state as a normal delivery.
+ */
+export async function markOrderDeliveredByAdmin(orderId, adminId, reason = "") {
+  const identity = buildOrderIdentityFilter(orderId);
+  if (!identity) throw new ValidationError("Order id required");
+  if (!mongoose.Types.ObjectId.isValid(adminId)) throw new ValidationError("Invalid admin id");
+
+  const order = await FoodOrder.findOne(identity);
+  if (!order) throw new NotFoundError("Order not found");
+  if (order.orderType && order.orderType !== "food") {
+    throw new ValidationError("Only food orders can be marked delivered from here");
+  }
+
+  const from = order.orderStatus;
+  if (from === "delivered") throw new ValidationError("Order is already delivered");
+  if (!ADMIN_DELIVERABLE_STATUSES.includes(from)) {
+    throw new ValidationError(
+      from === "created" || from === "placed" || from === "scheduled"
+        ? "Accept the order first, then mark it delivered"
+        : "This order cannot be marked delivered in its current state",
+    );
+  }
+
+  const payMethod = String(order.payment?.method || "").trim().toLowerCase();
+  const prevPayStatus = String(order.payment?.status || "").trim().toLowerCase();
+  if (!["paid", "refunded"].includes(prevPayStatus)) {
+    // Cash is collected at the door, so delivery settles it. Online/wallet money must already be in.
+    if (payMethod !== "cash") {
+      throw new ValidationError("Online payment is not completed for this order, so it cannot be marked delivered");
+    }
+    order.payment.status = "paid";
+  }
+
+  const note = String(reason || "").trim();
+  const now = new Date();
+  order.orderStatus = "delivered";
+  order.financialsLocked = true;
+  order.financialsLockedAt = order.financialsLockedAt || now;
+  order.deliveryState = {
+    ...(order.deliveryState?.toObject?.() || order.deliveryState || {}),
+    currentPhase: "delivered",
+    status: "delivered",
+    deliveredAt: now,
+  };
+  safePushStatusHistory(order, {
+    byRole: "ADMIN",
+    byId: adminId,
+    from,
+    to: "delivered",
+    note: note ? `Marked delivered by admin: ${note}` : "Marked delivered by admin",
+  });
+  await order.save();
+
+  const riderId =
+    order.dispatch?.deliveryPartnerId?.toString?.() || order.dispatch?.deliveryPartnerId || null;
+
+  try {
+    await foodTransactionService.updateTransactionStatus(
+      order._id,
+      payMethod === "cash" && prevPayStatus === "cod_pending"
+        ? "cod_marked_paid_on_delivery"
+        : "payment_snapshot_sync",
+      {
+        status: "captured",
+        recordedByRole: "ADMIN",
+        recordedById: adminId,
+        note: `Marked delivered by admin. Prev payment status: ${prevPayStatus}`,
+      },
+    );
+    await foodTransactionService.realizeFoodQuickRestaurantShare(order);
+  } catch (err) {
+    logger.error(`[AdminDeliver] ledger sync failed for ${order.orderId || order._id}: ${err?.message || err}`);
+  }
+
+  await consumeOrderCouponUsageOnDelivery(order, order.userId);
+  emitOrderUpdate(order, riderId);
+  enqueueOrderEvent("delivery_completed", {
+    orderMongoId: order._id?.toString?.(),
+    orderId: order.orderId,
+    deliveryPartnerId: riderId,
+    payMethod,
+    prevPayStatus,
+    paymentStatus: order.payment?.status,
+    riderEarning: Number(order.riderEarning || 0),
+    platformProfit: Number(order.platformProfit || 0),
+    paymentMethod: payMethod,
+  });
+
+  return sanitizeOrderForExternal(await resolveOrderWithCustomerGender(order));
+}
+
 function emitOrderUpdate(order, deliveryPartnerId) {
   try {
     const io = getIO();
@@ -6654,10 +6759,12 @@ function emitOrderUpdate(order, deliveryPartnerId) {
             }
           : undefined,
       });
-      io.to(rooms.delivery(deliveryPartnerId)).emit(
-        "order_status_update",
-        payload,
-      );
+      if (deliveryPartnerId) {
+        io.to(rooms.delivery(deliveryPartnerId)).emit(
+          "order_status_update",
+          payload,
+        );
+      }
       io.to(rooms.restaurant(order.restaurantId)).emit(
         "order_status_update",
         payload,
@@ -6737,6 +6844,7 @@ function emitOrderUpdate(order, deliveryPartnerId) {
       },
     );
 
+    if (!deliveryPartnerId) return;
     void notifyOwnerSafely(
       { ownerType: "DELIVERY_PARTNER", ownerId: deliveryPartnerId },
       {

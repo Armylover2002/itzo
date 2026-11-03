@@ -61,6 +61,8 @@ router.get('/customers/:id', checkPermission('food::customer_management::custome
 router.get('/customers/:id/contacts', checkPermission('food::customer_management::customers', 'view'), getCustomerContactsAdminController);
 router.patch('/customers/:id/status', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerStatus);
 router.patch('/customers/:id/cod-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerCodAccess);
+router.patch('/customers/order-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersOrderAccess);
+router.patch('/customers/:id/order-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerOrderAccess);
 router.patch('/customers/cod-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersCodAccess);
 
 // ----- Customer Role Requests -----
@@ -293,6 +295,7 @@ router.get('/orders', checkPermission('food::order_management::orders', 'view'),
 router.get('/orders/:orderId/pos-analytics', checkPermission('food::restaurant_management::restaurants::list', 'view'), adminController.getOrderPosAnalytics);
 router.get('/orders/:orderId', checkPermission('food::order_management::orders', 'view'), orderController.getOrderByIdAdminController);
 router.patch('/orders/:orderId/status', checkPermission('food::order_management::orders', 'edit'), orderController.updateOrderStatusAdminController);
+router.patch('/orders/:orderId/deliver', checkPermission('food::order_management::orders', 'edit'), orderController.markOrderDeliveredAdminController);
 router.post('/orders/:orderId/refund', checkPermission('food::order_management::orders::refunded', 'create'), adminController.processRefund);
 router.delete('/orders/:orderId', checkPermission('food::order_management::orders::cancelled', 'delete'), orderController.deleteOrderAdminController);
 

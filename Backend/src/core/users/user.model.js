@@ -157,6 +157,12 @@ const userSchema = new mongoose.Schema(
             default: true,
             index: true
         },
+        /** Admin switch (Customers page): when false the customer cannot place any order. Missing = allowed. */
+        isOrderingAllowed: {
+            type: Boolean,
+            default: true,
+            index: true
+        },
         role: {
             type: String,
             // default: 'USER'

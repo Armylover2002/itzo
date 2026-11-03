@@ -33,16 +33,19 @@ export default function ReferralSettings() {
       referrerReward: "",
       refereeReward: "",
       limit: "",
+      description: "",
     },
     delivery: {
       referrerReward: "",
       refereeReward: "",
       limit: "",
+      description: "",
     },
     restaurant: {
       referrerReward: "",
       refereeReward: "",
       limit: "",
+      description: "",
     },
     isActive: true,
   })
@@ -58,16 +61,19 @@ export default function ReferralSettings() {
             referrerReward: s.user?.referrerReward ?? "",
             refereeReward: s.user?.refereeReward ?? "",
             limit: s.user?.limit ?? "",
+            description: s.user?.description ?? "",
           },
           delivery: {
             referrerReward: s.delivery?.referrerReward ?? "",
             refereeReward: s.delivery?.refereeReward ?? "",
             limit: s.delivery?.limit ?? "",
+            description: s.delivery?.description ?? "",
           },
           restaurant: {
             referrerReward: s.restaurant?.referrerReward ?? "",
             refereeReward: s.restaurant?.refereeReward ?? "",
             limit: s.restaurant?.limit ?? "",
+            description: s.restaurant?.description ?? "",
           },
           isActive: s.isActive !== false,
         })
@@ -92,16 +98,19 @@ export default function ReferralSettings() {
           referrerReward: Number(settings.user.referrerReward) || 0,
           refereeReward: Number(settings.user.refereeReward) || 0,
           limit: Number(settings.user.limit) || 0,
+          description: String(settings.user.description || "").trim(),
         },
         delivery: {
           referrerReward: Number(settings.delivery.referrerReward) || 0,
           refereeReward: Number(settings.delivery.refereeReward) || 0,
           limit: Number(settings.delivery.limit) || 0,
+          description: String(settings.delivery.description || "").trim(),
         },
         restaurant: {
           referrerReward: Number(settings.restaurant.referrerReward) || 0,
           refereeReward: Number(settings.restaurant.refereeReward) || 0,
           limit: Number(settings.restaurant.limit) || 0,
+          description: String(settings.restaurant.description || "").trim(),
         },
         isActive: settings.isActive,
       }
@@ -133,6 +142,17 @@ export default function ReferralSettings() {
       [section]: {
         ...prev[section],
         [key]: v,
+      },
+    }))
+  }
+
+  const onDescriptionChange = (section) => (e) => {
+    const v = String(e.target.value ?? "").slice(0, 500)
+    setSettings((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        description: v,
       },
     }))
   }
@@ -234,6 +254,20 @@ export default function ReferralSettings() {
                       placeholder="e.g. 10"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea
+                      value={settings.user.description}
+                      onChange={onDescriptionChange("user")}
+                      rows={4}
+                      maxLength={500}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-none"
+                      placeholder="e.g. Share your link. You earn when your friend signs up and places their first order."
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Optional - customers see this on their Refer & Earn screen ({settings.user.description.length}/500)
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -272,6 +306,20 @@ export default function ReferralSettings() {
                       placeholder="e.g. 5"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea
+                      value={settings.delivery.description}
+                      onChange={onDescriptionChange("delivery")}
+                      rows={4}
+                      maxLength={500}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-none"
+                      placeholder="e.g. Share your link. You earn when your friend signs up and places their first order."
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Optional - delivery partners see this in their Refer & earn card ({settings.delivery.description.length}/500)
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -309,6 +357,20 @@ export default function ReferralSettings() {
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                       placeholder="e.g. 3"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                    <textarea
+                      value={settings.restaurant.description}
+                      onChange={onDescriptionChange("restaurant")}
+                      rows={4}
+                      maxLength={500}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all resize-none"
+                      placeholder="e.g. Share your link. You earn when your friend signs up and places their first order."
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">
+                      Optional - restaurants see this on their Refer & Earn screen ({settings.restaurant.description.length}/500)
+                    </p>
                   </div>
                 </div>
               </div>

@@ -35,6 +35,7 @@ export default function RestaurantReferEarn() {
     referralCount: 0,
     totalReferralEarnings: 0,
     rewardAmount: 0,
+    description: "",
     totalInvited: 0,
     creditedCount: 0,
     pendingCount: 0,
@@ -71,6 +72,7 @@ export default function RestaurantReferEarn() {
             referralCount: Number(nextStats.referralCount) || 0,
             totalReferralEarnings: Number(nextStats.totalReferralEarnings) || 0,
             rewardAmount: Number(nextStats.rewardAmount) || 0,
+            description: String(nextStats.description || "").trim(),
             totalInvited: Number(nextStats.totalInvited) || 0,
             creditedCount: Number(nextStats.creditedCount) || 0,
             pendingCount: Number(nextStats.pendingCount) || 0,
@@ -145,8 +147,8 @@ export default function RestaurantReferEarn() {
 
         <Card className="bg-white dark:bg-[#1a1a1a] rounded-2xl border-0 dark:border-gray-800 shadow-sm mb-3">
           <CardContent className="p-4">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Invite other restaurants to join {companyName} and earn rewards when they get approved!
+            <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">
+              {stats.description || `Invite other restaurants to join ${companyName} and earn rewards when they get approved!`}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <div className="rounded-xl bg-gray-50 dark:bg-gray-800/50 p-3">

@@ -12,6 +12,7 @@ import ViewOrderDialog from "@food/components/admin/orders/ViewOrderDialog"
 import SettingsDialog from "@food/components/admin/orders/SettingsDialog"
 import RefundModal from "@food/components/admin/orders/RefundModal"
 import RejectOrderModal from "@food/components/admin/orders/RejectOrderModal"
+import DeliverOrderModal from "@food/components/admin/orders/DeliverOrderModal"
 import { useOrdersManagement } from "@food/components/admin/orders/useOrdersManagement"
 import { Loader2 } from "lucide-react"
 import { OrdersDashboardSkeleton } from "@food/components/ui/loading-skeletons"
@@ -54,6 +55,8 @@ export default function OrdersPage({ statusKey = "all" }) {
   const [selectedOrderForRefund, setSelectedOrderForRefund] = useState(null)
   const [rejectModalOpen, setRejectModalOpen] = useState(false)
   const [selectedOrderForReject, setSelectedOrderForReject] = useState(null)
+  const [deliverModalOpen, setDeliverModalOpen] = useState(false)
+  const [selectedOrderForDeliver, setSelectedOrderForDeliver] = useState(null)
   const showLoadingSkeleton = useDelayedLoading(isLoading, { delay: 120, minDuration: 360 })
   const seenOrderIdsRef = useRef(new Set())
   const isFirstLoadRef = useRef(true)
@@ -609,6 +612,8 @@ export default function OrdersPage({ statusKey = "all" }) {
         paymentType,
         paymentStatus,
         orderStatus: displayStatus,
+        // Raw backend status; orderStatus above is only the display label.
+        rawOrderStatus: backendStatus,
         deliveryPartnerName,
         deliveryPartnerPhone,
         deliveryType: order.deliveryType || "Home Delivery",
@@ -863,6 +868,36 @@ export default function OrdersPage({ statusKey = "all" }) {
     }
   }
 
+  const handleMarkDelivered = (order) => {
+    setSelectedOrderForDeliver(order)
+    setDeliverModalOpen(true)
+  }
+
+  const confirmMarkDelivered = async (note) => {
+    const order = selectedOrderForDeliver
+    if (!order) return
+    const orderIdToUse = order.id || order._id || order.orderId
+    try {
+      setProcessingActionOrderId(orderIdToUse)
+      setProcessingActionType('deliver')
+      const response = await adminAPI.markOrderDelivered(orderIdToUse, note)
+      if (response.data?.success) {
+        toast.success(response.data?.message || `Order ${order.orderId} marked as delivered`)
+        setDeliverModalOpen(false)
+        setSelectedOrderForDeliver(null)
+        await fetchOrders({ silent: true, withRingCheck: false })
+      } else {
+        toast.error(response.data?.message || "Failed to mark order as delivered")
+      }
+    } catch (error) {
+      debugError("Error marking order delivered:", error)
+      toast.error(error.response?.data?.message || "Failed to mark order as delivered")
+    } finally {
+      setProcessingActionOrderId(null)
+      setProcessingActionType(null)
+    }
+  }
+
   const handleDeleteOrder = async (order) => {
     const orderIdToUse = order.id || order._id || order.orderId
     if (!orderIdToUse) {
@@ -1093,7 +1128,14 @@ export default function OrdersPage({ statusKey = "all" }) {
         onConfirm={confirmRejectOrder}
         isProcessing={processingActionOrderId !== null}
       />
-      <OrdersTable 
+      <DeliverOrderModal
+        isOpen={deliverModalOpen}
+        onOpenChange={setDeliverModalOpen}
+        order={selectedOrderForDeliver}
+        onConfirm={confirmMarkDelivered}
+        isProcessing={processingActionType === 'deliver'}
+      />
+      <OrdersTable
         orders={filteredOrders} 
         visibleColumns={visibleColumns}
         onViewOrder={handleViewOrder}
@@ -1102,6 +1144,7 @@ export default function OrdersPage({ statusKey = "all" }) {
         onDeleteOrder={statusKey === "all" ? handleDeleteOrder : undefined}
         onAcceptOrder={statusKey === "all" || statusKey === "pending" ? handleAcceptOrder : undefined}
         onRejectOrder={statusKey === "all" || statusKey === "pending" ? handleRejectOrder : undefined}
+        onMarkDelivered={handleMarkDelivered}
         actionLoadingOrderId={processingActionOrderId}
         actionLoadingType={processingActionType}
         deletingOrderId={deletingOrderId}

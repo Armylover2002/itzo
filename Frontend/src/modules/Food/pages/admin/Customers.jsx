@@ -28,6 +28,9 @@ export default function Customers() {
   /** null | 'enable' | 'disable' — only the clicked bulk COD button shows loading */
   const [bulkCodLoadingAction, setBulkCodLoadingAction] = useState(null)
   const [codUpdatingId, setCodUpdatingId] = useState(null)
+  /** null | 'enable' | 'disable' — bulk "can place order" action in progress */
+  const [bulkOrderLoadingAction, setBulkOrderLoadingAction] = useState(null)
+  const [orderUpdatingId, setOrderUpdatingId] = useState(null)
 
   // Soft delete state
   const [deleteTargetCustomer, setDeleteTargetCustomer] = useState(null)
@@ -205,6 +208,54 @@ export default function Customers() {
       )
     } finally {
       setCodUpdatingId(null)
+    }
+  }
+
+  const handleToggleOrderAccess = async (customerId) => {
+    const customer = customers.find((c) => getCustomerId(c) === customerId)
+    if (!customer) return
+    const nextAllowed = !(customer.isOrderingAllowed !== false)
+    const setAllowed = (value) =>
+      setCustomers((prev) =>
+        prev.map((c) => (getCustomerId(c) === customerId ? { ...c, isOrderingAllowed: value } : c))
+      )
+    try {
+      setOrderUpdatingId(customerId)
+      setAllowed(nextAllowed)
+      await adminAPI.updateCustomerOrderAccess(customerId, nextAllowed)
+      toast.success(`Ordering ${nextAllowed ? "enabled" : "disabled"} for user`)
+    } catch (error) {
+      debugError("Error updating order access:", error)
+      toast.error("Failed to update order access")
+      setAllowed(!nextAllowed)
+    } finally {
+      setOrderUpdatingId(null)
+    }
+  }
+
+  const handleBulkOrderAccess = async (isOrderingAllowed) => {
+    if (!selectedCustomerIds.length) {
+      toast.error("Please select at least one customer")
+      return
+    }
+    if (bulkOrderLoadingAction) return
+    try {
+      setBulkOrderLoadingAction(isOrderingAllowed ? "enable" : "disable")
+      await adminAPI.bulkUpdateCustomerOrderAccess(selectedCustomerIds, isOrderingAllowed)
+      setCustomers((prev) =>
+        prev.map((customer) =>
+          selectedCustomerIds.includes(getCustomerId(customer))
+            ? { ...customer, isOrderingAllowed: isOrderingAllowed !== false }
+            : customer
+        )
+      )
+      toast.success(`Ordering ${isOrderingAllowed ? "enabled" : "disabled"} for selected users`)
+      setSelectedCustomerIds([])
+    } catch (error) {
+      debugError("Error in bulk order access update:", error)
+      toast.error("Failed to update selected users")
+    } finally {
+      setBulkOrderLoadingAction(null)
     }
   }
 
@@ -593,7 +644,7 @@ export default function Customers() {
             <p className="text-sm text-[#5C5247]">
               {selectedCustomersCount > 0
                 ? `${selectedCustomersCount} customer selected`
-                : "Select customers for bulk COD action"}
+                : "Select customers for bulk COD / ordering action"}
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -615,6 +666,27 @@ export default function Customers() {
                 }`}
               >
                 {bulkCodLoadingAction === "disable" ? "Disabling..." : "Disable COD"}
+              </button>
+              <span className="mx-1 h-6 w-px bg-[#EDE8E0]" aria-hidden="true" />
+              <button
+                type="button"
+                onClick={() => handleBulkOrderAccess(true)}
+                disabled={selectedCustomersCount === 0 || bulkOrderLoadingAction !== null}
+                className={`px-3 py-2 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:cursor-not-allowed ${
+                  selectedCustomersCount === 0 || bulkOrderLoadingAction === "enable" ? "opacity-50" : ""
+                }`}
+              >
+                {bulkOrderLoadingAction === "enable" ? "Enabling..." : "Enable Ordering"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleBulkOrderAccess(false)}
+                disabled={selectedCustomersCount === 0 || bulkOrderLoadingAction !== null}
+                className={`px-3 py-2 text-xs font-semibold rounded-md bg-rose-600 text-white hover:bg-rose-700 disabled:cursor-not-allowed ${
+                  selectedCustomersCount === 0 || bulkOrderLoadingAction === "disable" ? "opacity-50" : ""
+                }`}
+              >
+                {bulkOrderLoadingAction === "disable" ? "Disabling..." : "Disable Ordering"}
               </button>
             </div>
           </div>
@@ -638,6 +710,7 @@ export default function Customers() {
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Total Order Amount</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Joining Date</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">COD Access</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Place Order</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Active/Inactive</th>
                   <th className="px-6 py-4 text-center text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Actions</th>
                 </tr>
@@ -645,13 +718,13 @@ export default function Customers() {
               <tbody className="bg-white divide-y divide-[#EDE8E0]/70">
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-8 text-center">
+                    <td colSpan={10} className="px-6 py-8 text-center">
                       <div className="text-sm text-[#9E8F7E]">Loading customers...</div>
                     </td>
                   </tr>
                 ) : displayCustomers.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-8 text-center">
+                    <td colSpan={10} className="px-6 py-8 text-center">
                       <div className="text-sm text-[#9E8F7E]">No customers found</div>
                     </td>
                   </tr>
@@ -717,6 +790,21 @@ export default function Customers() {
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${customer.isCodAllowed !== false ? "translate-x-6" : "translate-x-1"
+                              }`}
+                          />
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleToggleOrderAccess(getCustomerId(customer))}
+                          disabled={orderUpdatingId === getCustomerId(customer)}
+                          title={customer.isOrderingAllowed !== false ? "Customer can place orders" : "Customer cannot place orders"}
+                          aria-label="Allow customer to place orders"
+                          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-60 ${customer.isOrderingAllowed !== false ? "bg-emerald-600" : "bg-slate-300"
+                            }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${customer.isOrderingAllowed !== false ? "translate-x-6" : "translate-x-1"
                               }`}
                           />
                         </button>

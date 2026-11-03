@@ -528,6 +528,22 @@ export async function updateOrderStatusAdminController(req, res, next) {
     }
 }
 
+/** Admin → Orders → "Delivered" button: completes an accepted order on the rider's behalf. */
+export async function markOrderDeliveredAdminController(req, res, next) {
+    try {
+        const updated = await orderService.markOrderDeliveredByAdmin(
+            req.params.orderId,
+            req.user?.userId,
+            typeof req.body?.reason === 'string' ? req.body.reason : "",
+        );
+        return sendResponse(res, 200, 'Order marked as delivered', {
+            order: toOrderMutationAck(updated),
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
 export async function assignDeliveryPartnerController(req, res, next) {
     try {
         const adminId = req.user?.userId;

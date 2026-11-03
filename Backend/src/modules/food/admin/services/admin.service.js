@@ -2061,6 +2061,7 @@ const mapCustomerListItem = (u, stats = { totalOrder: 0, totalOrderAmount: 0 }) 
     status: u.isActive !== false,
     isActive: u.isActive !== false,
     isCodAllowed: u.isCodAllowed !== false,
+    isOrderingAllowed: u.isOrderingAllowed !== false,
     isVerified: u.isVerified === true,
     totalOrder: Number(stats.totalOrder || 0),
     totalOrderAmount: Number(stats.totalOrderAmount || 0),
@@ -2207,7 +2208,7 @@ export async function getCustomers(query = {}) {
 
         const docs = pageIds.length
             ? await FoodUser.find({ _id: { $in: pageIds } })
-                .select('name email phone countryCode isVerified isActive isCodAllowed createdAt profileImage')
+                .select('name email phone countryCode isVerified isActive isCodAllowed isOrderingAllowed createdAt profileImage')
                 .lean()
             : [];
 
@@ -2233,7 +2234,7 @@ export async function getCustomers(query = {}) {
                 .sort(sort)
                 .skip(skip)
                 .limit(limit)
-                .select('name email phone countryCode isVerified isActive isCodAllowed createdAt profileImage')
+                .select('name email phone countryCode isVerified isActive isCodAllowed isOrderingAllowed createdAt profileImage')
                 .lean(),
             FoodUser.countDocuments(filter)
         ]);
@@ -2326,6 +2327,7 @@ export async function getCustomerById(id) {
         status: u.isActive !== false,
         isActive: u.isActive !== false,
         isCodAllowed: u.isCodAllowed !== false,
+        isOrderingAllowed: u.isOrderingAllowed !== false,
         isVerified: u.isVerified === true,
         phoneVerified: u.isVerified === true,
         gender: u.gender || '',
@@ -2478,6 +2480,39 @@ export async function updateCustomerCodAccess(id, isCodAllowed) {
     if (!updatedDoc) return null;
     // Return the same sanitized list shape used by getCustomers (no fcmTokens / raw dump).
     return mapCustomerListItem(updatedDoc.toObject());
+}
+
+export async function updateCustomerOrderAccess(id, isOrderingAllowed) {
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) return null;
+
+    const updatedDoc = await FoodUser.findOneAndUpdate(
+        { _id: id, role: 'USER' },
+        { $set: { isOrderingAllowed: Boolean(isOrderingAllowed) } },
+        { new: true }
+    );
+    if (!updatedDoc) return null;
+    return mapCustomerListItem(updatedDoc.toObject());
+}
+
+export async function bulkUpdateCustomersOrderAccess(ids = [], isOrderingAllowed) {
+    const objectIds = Array.from(
+        new Set(
+            (Array.isArray(ids) ? ids : [])
+                .map((id) => String(id || '').trim())
+                .filter((id) => mongoose.Types.ObjectId.isValid(id))
+        )
+    ).map((id) => new mongoose.Types.ObjectId(id));
+
+    if (!objectIds.length) return { matched: 0, modified: 0 };
+
+    const result = await FoodUser.updateMany(
+        { _id: { $in: objectIds }, role: 'USER' },
+        { $set: { isOrderingAllowed: Boolean(isOrderingAllowed) } }
+    );
+    return {
+        matched: Number(result.matchedCount || 0),
+        modified: Number(result.modifiedCount || 0),
+    };
 }
 
 export async function bulkUpdateCustomersCodAccess(ids = [], isCodAllowed) {
@@ -3159,10 +3194,15 @@ const normalizeReferralSection = (incoming, fallback = {}) => {
         }
         return Math.max(0, Number(fallback[key]) || 0);
     };
+    const description =
+        incoming && typeof incoming.description === 'string'
+            ? incoming.description.trim().slice(0, 500)
+            : String(fallback?.description || '');
     return {
         referrerReward: pick('referrerReward'),
         refereeReward: pick('refereeReward'),
-        limit: pick('limit')
+        limit: pick('limit'),
+        description
     };
 };
 

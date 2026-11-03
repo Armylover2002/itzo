@@ -10,12 +10,14 @@ export async function getPublicReferralSettingsController(req, res, next) {
                 user: {
                     referrerReward: Number(settings.user?.referrerReward) || 0,
                     refereeReward: Number(settings.user?.refereeReward) || 0,
-                    limit: Number(settings.user?.limit) || 0
+                    limit: Number(settings.user?.limit) || 0,
+                    description: String(settings.user?.description || '').trim()
                 },
                 delivery: {
                     referrerReward: Number(settings.delivery?.referrerReward) || 0,
                     refereeReward: Number(settings.delivery?.refereeReward) || 0,
-                    limit: Number(settings.delivery?.limit) || 0
+                    limit: Number(settings.delivery?.limit) || 0,
+                    description: String(settings.delivery?.description || '').trim()
                 }
             }
             : null;
