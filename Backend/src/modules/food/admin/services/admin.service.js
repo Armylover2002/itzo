@@ -57,7 +57,7 @@ import { FoodRestaurantSupportTicket } from '../../restaurant/models/supportTick
 import { FoodOrder } from '../../orders/models/order.model.js';
 import { FoodTransaction } from '../../orders/models/foodTransaction.model.js';
 import { Transaction } from '../../../../core/payments/models/transaction.model.js';
-import { buildOrderIdentityFilter } from '../../orders/services/order.helpers.js';
+import { buildOrderIdentityFilter, adminVisibleOrdersFilter } from '../../orders/services/order.helpers.js';
 import { FoodRestaurantWithdrawal } from '../../restaurant/models/foodRestaurantWithdrawal.model.js';
 import { applyPendingOpenDaysUpdate, discardPendingOpenDaysUpdate, syncOutletTimingsFromOpenDays, attachOutletTimingsToRestaurants } from '../../restaurant/services/outletTimings.service.js';
 import { buildPaginationMeta, buildPaginationOptions } from '../../../../utils/helpers.js';
@@ -9039,7 +9039,7 @@ export async function getSidebarBadges() {
             FoodDeliveryPartner.countDocuments({ status: 'pending' }),
             FoodItem.countDocuments({ approvalStatus: 'pending' }),
             FoodAddon.countDocuments({ approvalStatus: 'pending' }),
-            FoodOrder.countDocuments({ orderStatus: { $in: ['created', 'placed'] } }),
+            FoodOrder.countDocuments({ ...adminVisibleOrdersFilter(), orderStatus: { $in: ['created', 'placed'] } }),
             FoodOrder.countDocuments({ paymentMethod: 'offline_payment', orderStatus: { $in: ['created', 'placed'] } }),
             FoodRestaurantWithdrawal.countDocuments({ status: 'pending' }),
             FoodDeliveryWithdrawal.countDocuments({ status: 'pending' }),

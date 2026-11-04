@@ -105,7 +105,7 @@ import { DISPATCH_DOCUMENT_TYPES } from '../../../quick-commerce/utils/dispatchD
 import * as returnPickupDelivery from '../../../quick-commerce/services/returnPickupDelivery.service.js';
 import { deductWalletBalance, refundWalletBalance } from '../../user/services/userWallet.service.js';
 import { getGlobalBranding } from '../../../common/services/globalBranding.service.js';
-import { roadDistanceKm, PAYMENT_QUEUE_ACTIONS, enqueueOrderEvent, notifyRestaurantNewOrder, canExposeOrderToRestaurant, enrichRestaurantQuickPricing, watchdogCancellationReason } from './order.helpers.js';
+import { roadDistanceKm, PAYMENT_QUEUE_ACTIONS, adminVisibleOrdersFilter, enqueueOrderEvent, notifyRestaurantNewOrder, canExposeOrderToRestaurant, enrichRestaurantQuickPricing, watchdogCancellationReason } from './order.helpers.js';
 import { scorePointsByRoadDistance } from '../../../../services/roadDistance.service.js';
 import { assertDeliveryPartnerCodHeadroom } from '../../delivery/services/deliveryFinance.service.js';
 import { getDeliveryCashLimitSettings } from '../../admin/services/admin.service.js';
@@ -7104,13 +7104,7 @@ const EMPTY_ORDER_REPORT_STATUS_SUMMARY = {
 const isTruthyQueryFlag = (value) => value === true || value === "true" || value === "1";
 
 async function buildListOrdersAdminFilter(query = {}) {
-  const filter = {
-    orderType: { $in: ["food", "mixed"] },
-    $or: [
-      { "payment.method": { $in: ["cash", "wallet"] } },
-      { "payment.status": { $in: ["paid", "authorized", "captured", "settled", "refunded"] } },
-    ],
-  };
+  const filter = adminVisibleOrdersFilter();
 
   const rawStatus = typeof query.status === "string" ? query.status.trim().toLowerCase() : "";
   const cancelledBy = typeof query.cancelledBy === "string" ? query.cancelledBy.trim().toLowerCase() : "";

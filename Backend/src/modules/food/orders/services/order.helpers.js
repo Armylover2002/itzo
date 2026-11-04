@@ -68,6 +68,19 @@ function runSyncPaymentProcessor(action, payload = {}) {
  * jobOptions (3rd arg) is passed to addOrderJob — e.g. { delay, jobId }.
  * Never blocks API response; failures are logged only.
  */
+/**
+ * Base filter for every admin Orders screen: food/mixed orders only, and online orders only once the
+ * payment has gone through (abandoned Razorpay checkouts never show up). The sidebar badge counts with
+ * the same filter, so a number in the menu always has matching rows behind it.
+ */
+export const adminVisibleOrdersFilter = () => ({
+  orderType: { $in: ["food", "mixed"] },
+  $or: [
+    { "payment.method": { $in: ["cash", "wallet"] } },
+    { "payment.status": { $in: ["paid", "authorized", "captured", "settled", "refunded"] } },
+  ],
+});
+
 export function enqueueOrderEvent(action, payload = {}, jobOptions = {}) {
   const isPaymentAction = PAYMENT_QUEUE_ACTIONS.includes(action);
 
