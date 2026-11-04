@@ -1,8 +1,6 @@
 node_modules/
 dist/
 build/
-.env
-.env.*
 *.log
 branch_structure.json
 temp_auto_push.bat
@@ -13,3 +11,4 @@ temp_interactive_push.bat
 # on the live server) and committing it makes `git reset --hard` on deploy overwrite/
 # resurrect live uploads in a folder the server never actually serves from.
 Backend/uploads/
+config.bat
