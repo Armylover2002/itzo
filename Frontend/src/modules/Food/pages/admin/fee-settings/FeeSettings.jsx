@@ -618,7 +618,7 @@ deliveryBoyPerKm: dbPerKm,
                                       aria-checked={range.isFree === true}
                                       disabled={savingFeeSettings}
                                       onClick={() => handleToggleRangeFree(originalIndex)}
-                                      title={range.isFree === true ? "Free in this range (with the Free Delivery Above amount) - click to switch off" : "Click to allow free delivery in this range"}
+                                      title={range.isFree === true ? "Free delivery in this range, whatever the order value - click to switch off" : "Click to make delivery free in this range"}
                                       className="inline-flex items-center gap-2 disabled:opacity-60"
                                     >
                                       <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${range.isFree === true ? "bg-green-600" : "bg-slate-300"}`}>
@@ -793,7 +793,7 @@ deliveryBoyPerKm: dbPerKm,
                         onChange={(e) => setNewRange({ ...newRange, isFree: e.target.checked })}
                         className="h-4 w-4 accent-green-600"
                       />
-                      Free delivery in this distance range - applies only when the order also reaches "Free Delivery Above" (rider pay is unchanged)
+                      Free delivery in this distance range, whatever the order value (orders reaching "Free Delivery Above" are free in every range; rider pay is unchanged)
                     </label>
                     <div className="flex items-end gap-2">
                       <Button

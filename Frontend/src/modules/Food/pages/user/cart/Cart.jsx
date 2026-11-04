@@ -1409,10 +1409,8 @@ const deliveryFee = baseComputedDeliveryFee
 // Admin "free delivery above ₹X": nudge the user to add more items until the threshold is met.
 const freeDeliveryThreshold = Number(pricing?.freeDeliveryThreshold ?? feeSettings.freeDeliveryThreshold) || 0
 const freeDeliveryRemaining = Math.max(0, freeDeliveryThreshold - subtotal)
-// Not shown when this distance range is not a free one: a bigger cart would not unlock free delivery there.
 const showFreeDeliveryNudge =
-  freeDeliveryThreshold > 0 && freeDeliveryRemaining > 0 && deliveryFee > 0 && !isQuickCart && !hasQuickItems &&
-  pricing?.freeDeliveryUnlockableByValue !== false
+  freeDeliveryThreshold > 0 && freeDeliveryRemaining > 0 && deliveryFee > 0 && !isQuickCart && !hasQuickItems
 const quickDeliveryFee = Number(pricing?.quickDeliveryFee || 0) || 0
 const quickEtaLabel = formatQuickEtaWindow(pricing?.etaPromise || pricing?.quickDelivery?.etaPromise)
 const gates = pricing?.quickDelivery?.gates
