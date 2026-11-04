@@ -1093,6 +1093,7 @@ async function applyRangeBasedFoodDeliveryPricing({ feeSettings, subtotal, addre
     sponsoredKm: 0,
     deliveryDistanceKm: deliveryFeeResult.distanceKm,
     deliverySponsorType: "USER_FULL",
+    freeBySlab: deliveryFeeResult.freeBySlab === true,
     deliveryFeeBreakdown: {
       source: deliveryFeeResult.source,
       distanceKm: deliveryFeeResult.distanceKm,
@@ -3299,6 +3300,8 @@ export async function calculateOrder(userId, dto, options = {}) {
   let deliveryDistanceKm = null;
   let deliverySponsorType = "USER_FULL";
   let deliveryFeeBreakdown = null;
+  // True when the admin marked the order's distance range as free (see Fee Settings -> ranges).
+  let deliveryFreeBySlab = false;
 
   if (orderType === "food") {
     if (hasDeliveryFeeRanges(feeSettings)) {
@@ -3308,6 +3311,7 @@ export async function calculateOrder(userId, dto, options = {}) {
         address: trustedDeliveryAddress,
         restaurant: primaryRestaurant,
       });
+      deliveryFreeBySlab = rangePricing.freeBySlab === true;
       deliveryFee = rangePricing.deliveryFee;
       totalDeliveryFee = rangePricing.totalDeliveryFee;
       userDeliveryFee = rangePricing.userDeliveryFee;
@@ -3454,11 +3458,25 @@ export async function calculateOrder(userId, dto, options = {}) {
   // Admin "free delivery above" threshold: food-only orders; the user's delivery fee drops to 0
   // (rider/total delivery cost is untouched, the platform absorbs it).
   const freeDeliveryThreshold = Number(feeSettings.freeDeliveryThreshold) || 0;
+  // Free delivery needs EVERY configured condition to hold:
+  //  - once the admin has marked any distance range as free, the order must be in a free range AND
+  //    (when a threshold is set) reach it; meeting only one of the two is not enough;
+  //  - with no free range configured it stays the original rule: item total >= threshold.
+  const anyFreeSlabConfigured =
+    Array.isArray(feeSettings.deliveryFeeRanges) &&
+    feeSettings.deliveryFeeRanges.some((range) => range?.isFree === true);
+  const freeByThreshold = freeDeliveryThreshold > 0 && subtotal >= freeDeliveryThreshold;
+  const qualifiesForFreeDelivery = !anyFreeSlabConfigured
+    ? freeByThreshold
+    : freeDeliveryThreshold > 0
+      ? freeByThreshold && deliveryFreeBySlab
+      : deliveryFreeBySlab;
   const freeDeliveryApplied =
     orderType === "food" &&
-    freeDeliveryThreshold > 0 &&
-    subtotal >= freeDeliveryThreshold &&
+    qualifiesForFreeDelivery &&
     baseSelectedDeliveryFee > 0;
+  // Can a bigger cart still unlock free delivery here? (false when this distance range is not a free one)
+  const freeDeliveryUnlockableByValue = !anyFreeSlabConfigured || deliveryFreeBySlab;
   const selectedDeliveryFee = freeDeliveryApplied ? 0 : baseSelectedDeliveryFee;
   // Item tax only; delivery-fee tax depends on which delivery option is chosen.
   const itemTax = tax;
@@ -3621,6 +3639,10 @@ export async function calculateOrder(userId, dto, options = {}) {
         orderType === "food" ? (freeDeliveryApplied ? 0 : userDeliveryFee) : selectedDeliveryFee,
       freeDeliveryThreshold: orderType === "food" && freeDeliveryThreshold > 0 ? freeDeliveryThreshold : null,
       freeDeliveryApplied,
+      freeDeliveryUnlockableByValue,
+      freeDeliveryReason: freeDeliveryApplied
+        ? (anyFreeSlabConfigured ? (freeDeliveryThreshold > 0 ? "order_value_and_distance" : "distance_slab") : "order_value")
+        : null,
       restaurantDeliveryFee:
         orderType === "food" ? restaurantDeliveryFee : 0,
       sponsoredDelivery:

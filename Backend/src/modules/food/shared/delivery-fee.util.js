@@ -88,6 +88,16 @@ function matchFeeRange(ranges, distanceKm, pickValue) {
   return null;
 }
 
+/** The distance range that covers `distanceKm` (same boundary rules as matchFeeRange), or null. */
+function findFeeRange(ranges, distanceKm) {
+  let found = null;
+  matchFeeRange(ranges, distanceKm, (range) => {
+    found = range;
+    return 0;
+  });
+  return found;
+}
+
 export async function loadActiveFeeSettings() {
   const feeDoc = await FoodFeeSettings.findOne({ isActive: { $ne: false } })
     .sort({ createdAt: -1 })
@@ -149,6 +159,8 @@ export function resolveUserDeliveryFee(feeSettings = {}, { subtotal = 0, distanc
         deliveryFee: matchedFee,
         distanceKm: Number(distanceKm.toFixed(2)),
         source: 'distance',
+        // Admin marked this distance range as free for the user.
+        freeBySlab: findFeeRange(ranges, distanceKm)?.isFree === true,
       };
     }
   }

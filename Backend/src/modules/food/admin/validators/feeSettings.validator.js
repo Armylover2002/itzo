@@ -12,6 +12,7 @@ const rangeSchema = z.object({
     min: z.number().min(0),
     max: z.number().min(0),
     fee: z.number().min(0),
+    isFree: z.boolean().optional().default(false),
     deliveryBoyPerKm: z.number().min(0).optional().default(0),
     deliveryBoyBasePay: z.number().min(0).optional().default(0)
 });
@@ -103,6 +104,7 @@ export const validateFeeSettingsUpsertDto = (body) => {
                 min: Number(r?.min),
                 max: Number(r?.max),
                 fee: Number(r?.fee),
+                isFree: r?.isFree === true,
                 deliveryBoyPerKm: Number(r?.deliveryBoyPerKm || 0),
                 deliveryBoyBasePay: Number(r?.deliveryBoyBasePay || 0)
             }))

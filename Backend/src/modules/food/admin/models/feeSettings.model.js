@@ -29,6 +29,8 @@ const deliveryFeeRangeSchema = new mongoose.Schema(
         min: { type: Number, required: true, min: 0 },
         max: { type: Number, required: true, min: 0 },
         fee: { type: Number, required: true, min: 0 },
+        /** Admin switch: orders in this distance range get free delivery for the user (rider pay is unchanged). */
+        isFree: { type: Boolean, default: false },
         deliveryBoyPerKm: { type: Number, min: 0, default: 0 },
         deliveryBoyBasePay: { type: Number, min: 0, default: 0 }
     },
