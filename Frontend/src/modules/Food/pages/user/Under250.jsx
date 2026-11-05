@@ -851,11 +851,13 @@ export default function Under250() {
   return (
 
     <div className={`relative min-h-screen bg-white dark:bg-[#0a0a0a] ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
+      {/* Mobile header: stays in flow + sticky, so it never overlaps the banner.
+          It only gains a divider/shadow once the banner has scrolled behind it. */}
       <div
         ref={stickyHeaderRef}
-        className={`fixed top-0 left-0 right-0 z-40 w-full md:hidden transition-all duration-300 ${hasScrolledPastBanner
-          ? "bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-200"
-          : "bg-transparent"
+        className={`safe-top sticky top-0 z-40 w-full md:hidden bg-white dark:bg-[#0a0a0a] transition-shadow duration-300 ${hasScrolledPastBanner
+          ? "shadow-sm border-b border-gray-200 dark:border-white/10"
+          : "border-b border-transparent"
           }`}
       >
         <div className="relative z-50 pt-2 sm:pt-3 pb-2">

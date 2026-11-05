@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { useProfile } from "@food/context/ProfileContext"
 import * as imgUtils from "@food/utils/imageUtils"
 import { parseGeoPoint } from "@food/utils/geo"
+import { useDeliveryAddressMode } from "@food/utils/deliveryAddressMode"
 import {
     getCachedSettings,
     getCompanyName,
@@ -21,11 +22,6 @@ import {
     updateBrowserFavicon,
     subscribeBusinessSettings,
 } from "@common/utils/businessSettings"
-
-const getStoredDeliveryAddressMode = () => {
-    if (typeof window === "undefined") return "saved"
-    return window.localStorage.getItem("deliveryAddressMode") || "saved"
-}
 
 export default function DesktopNavbar({ showLogo = true }) {
     const location = useLocation()
@@ -52,7 +48,7 @@ export default function DesktopNavbar({ showLogo = true }) {
         postalCode: defaultSavedAddress.postalCode || defaultSavedAddress.zipCode || "",
     } : null
 
-    const deliveryAddressMode = getStoredDeliveryAddressMode()
+    const deliveryAddressMode = useDeliveryAddressMode()
     const effectiveLocation = (deliveryAddressMode === "current" ? userLocation : defaultSavedAddressLocation) || userLocation
     const mainLocationName = imgUtils.formatSavedAddress(effectiveLocation) || "Select Location"
 

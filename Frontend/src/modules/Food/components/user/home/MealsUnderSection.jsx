@@ -15,6 +15,14 @@ const HOME_RAIL_LIMIT = 15;
 
 const getRestaurantPath = (restaurant) => `/user/restaurants/${restaurant?.slug || restaurant?.id}`;
 
+/** Deep-links straight to the tapped dish: RestaurantDetails reads `?dish=` to expand
+ *  its menu section, scroll the card into view and highlight it. */
+const getItemPath = (item) => {
+  const basePath = getRestaurantPath(item?.restaurant);
+  const dishId = String(item?.id || item?._id || "").trim();
+  return dishId ? `${basePath}?dish=${encodeURIComponent(dishId)}` : basePath;
+};
+
 const getSourcePosition = (event, itemId) => {
   const button = event?.currentTarget;
   if (!button) return null;
@@ -48,7 +56,7 @@ export function useMealCartActions() {
 
       // Items with variants need a variant choice — let the restaurant page handle it.
       if (Array.isArray(item.variants) && item.variants.length > 0) {
-        navigate(getRestaurantPath(item.restaurant));
+        navigate(getItemPath(item));
         return;
       }
 
@@ -108,7 +116,7 @@ export const MealItemCard = memo(function MealItemCard({ item, quantity, onAdd, 
   const isCustomisable = Array.isArray(item.variants) && item.variants.length > 0;
 
   return (
-    <Link to={getRestaurantPath(restaurant)} className={`group block ${className}`}>
+    <Link to={getItemPath(item)} className={`group block ${className}`}>
       <div className={`relative aspect-square w-full overflow-hidden rounded-[22px] bg-gray-100`}>
         {item.image ? (
           <OptimizedImage

@@ -1,4 +1,5 @@
 import { useSearchParams, Link, useNavigate, useLocation as useRouterLocation } from "react-router-dom";
+import { useDeliveryAddressMode } from "@food/utils/deliveryAddressMode";
 import React, {
   Suspense,
   lazy,
@@ -149,11 +150,6 @@ const quickPlaceholders = [
 
 const WEBVIEW_SESSION_CACHE_BUSTER = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-const getStoredDeliveryAddressMode = () => {
-  if (typeof window === "undefined") return "saved";
-  return window.localStorage.getItem("deliveryAddressMode") || "saved";
-};
-
 const defaultBannersImages = [
   "/banner.png",
   "/banner.png",
@@ -291,7 +287,7 @@ export default function Home() {
   }, [defaultSavedAddress]);
   const { zoneId: savedZoneId, isInService: isSavedInService, isOutOfService: isSavedOutOfService } = useZone(defaultSavedAddressLocation);
 
-  const deliveryAddressMode = getStoredDeliveryAddressMode();
+  const deliveryAddressMode = useDeliveryAddressMode();
   const effectiveZoneId = (deliveryAddressMode === "current" ? liveZoneId : savedZoneId) || liveZoneId;
   const effectiveLocation = (deliveryAddressMode === "current" ? location : defaultSavedAddressLocation) || location;
   // Out of service only once the relevant zone lookup has actually resolved to
