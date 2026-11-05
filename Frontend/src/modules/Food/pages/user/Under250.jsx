@@ -849,12 +849,12 @@ export default function Under250() {
           It only gains a divider/shadow once the banner has scrolled behind it. */}
       <div
         ref={stickyHeaderRef}
-        className={`safe-top sticky top-0 z-40 w-full md:hidden bg-white dark:bg-[#0a0a0a] transition-shadow duration-300 ${hasScrolledPastBanner
+        className={`sticky top-0 z-40 w-full md:hidden bg-white dark:bg-[#0a0a0a] transition-shadow duration-300 ${hasScrolledPastBanner
           ? "shadow-sm border-b border-gray-200 dark:border-white/10"
           : "border-b border-transparent"
           }`}
       >
-        <div className="relative z-50 pt-2 sm:pt-3 pb-2">
+        <div className="relative z-50">
           <PageNavbar textColor="black" zIndex={20} showProfile={false} showLogo={false} />
         </div>
       </div>
