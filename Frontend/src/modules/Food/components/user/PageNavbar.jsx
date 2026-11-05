@@ -930,7 +930,7 @@ export default function PageNavbar({
 
   return (
     <nav
-      className={`relative ${zIndexClass} w-full px-3 sm:px-4 md:px-6 lg:px-8 pb-2 sm:pb-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] sm:pt-[calc(env(safe-area-inset-top)+0.75rem)] bg-transparent !bg-transparent shadow-none border-0`}
+      className={`relative ${zIndexClass} w-full px-3 sm:px-4 md:px-6 lg:px-8 ${showLogo ? "pb-2 sm:pb-3 pt-[calc(env(safe-area-inset-top)+0.5rem)] sm:pt-[calc(env(safe-area-inset-top)+0.75rem)]" : "pb-1 pt-[calc(env(safe-area-inset-top)+0.125rem)]"} bg-transparent !bg-transparent shadow-none border-0`}
       onClick={onNavClick}
     >
       <div className="flex items-center justify-between max-w-7xl mx-auto">
@@ -971,16 +971,16 @@ export default function PageNavbar({
             ) : (
               <div className={`flex flex-col ${showLogo ? "items-center" : "items-start w-full"} min-w-0 max-w-full`}>
                 <div className={`flex items-center min-w-0 max-w-full ${showLogo ? "justify-center gap-1" : "gap-1.5"}`}>
-                  {!showLogo && <MapPin className={`h-[18px] w-[18px] ${textColor === "white" ? "text-white" : "text-[#FB4F01]"} flex-shrink-0`} strokeWidth={2.5} />}
+                  {!showLogo && <MapPin className={`h-4 w-4 ${textColor === "white" ? "text-white" : "text-[#FB4F01]"} flex-shrink-0`} strokeWidth={2.5} />}
                   <div className={`flex items-center gap-1 min-w-0 max-w-full`}>
-                    <span className={`${showLogo ? "text-sm sm:text-base md:text-lg" : "text-[16px]"} font-bold ${textColorClass} truncate block`}>
+                    <span className={`${showLogo ? "text-sm sm:text-base md:text-lg" : "text-[14px] leading-tight"} font-bold ${textColorClass} truncate block`}>
                       {mainLocationName}
                     </span>
                     <ChevronDown className={`${showLogo ? "h-3 w-3 sm:h-4 sm:w-4" : "h-[14px] w-[14px] mt-0.5"} ${textColorClass} flex-shrink-0`} strokeWidth={showLogo ? 2.5 : 3} />
                   </div>
                 </div>
                 {locationSubText && (
-                  <span className={`${showLogo ? "text-[10px] sm:text-xs font-medium text-center max-w-[140px] sm:max-w-[200px]" : "text-[11px] font-semibold text-left pl-6"} ${textColorClass}/80 truncate block w-full`}>
+                  <span className={`${showLogo ? "text-[10px] sm:text-xs font-medium text-center max-w-[140px] sm:max-w-[200px]" : "text-[10px] leading-tight font-semibold text-left pl-6"} ${textColorClass}/80 truncate block w-full`}>
                     {locationSubText}
                   </span>
                 )}
