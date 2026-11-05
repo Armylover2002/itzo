@@ -59,7 +59,7 @@ const FreeDeliveryPopup = memo(function FreeDeliveryPopup() {
           <motion.div
             role="dialog"
             aria-modal="true"
-            className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-gradient-to-b from-pink-500 to-fuchsia-600 px-6 pb-6 pt-10 text-center shadow-2xl"
+            className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-gradient-to-b from-[#FF7A2F] via-[#FB4F01] to-[#C83C00] px-6 pb-6 pt-10 text-center shadow-2xl"
             initial={{ scale: 0.85, y: 30, opacity: 0 }}
             animate={{ scale: 1, y: 0, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -74,16 +74,16 @@ const FreeDeliveryPopup = memo(function FreeDeliveryPopup() {
             >
               <X className="h-5 w-5" />
             </button>
-            <h2 className="text-5xl font-black uppercase leading-none text-yellow-300">Free</h2>
+            <h2 className="text-5xl font-black uppercase leading-none text-white">Free</h2>
             <h3 className="mt-1 text-4xl font-black uppercase leading-none text-white">Delivery</h3>
-            <p className="mt-5 text-lg font-bold text-yellow-200">
+            <p className="mt-5 text-lg font-bold text-white/90">
               on all orders above{" "}
-              <span className="text-yellow-300">₹{Math.round(threshold)}</span>
+              <span className="text-amber-200">₹{Math.round(threshold)}</span>
             </p>
             <button
               type="button"
               onClick={close}
-              className="mt-7 w-full rounded-full bg-yellow-300 py-3.5 text-base font-extrabold uppercase text-indigo-950 shadow-lg active:scale-95"
+              className="mt-7 w-full rounded-full bg-white py-3.5 text-base font-extrabold uppercase text-[#C83C00] shadow-lg active:scale-95"
             >
               Order now
             </button>

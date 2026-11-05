@@ -4,7 +4,7 @@ import { Toaster } from 'sonner'
 import App from './app/App.jsx'
 import { isModuleAuthenticated } from './modules/Food/utils/auth.js'
 import { applySellerOnboardingColdStart } from './modules/seller/utils/sellerSession.js'
-import { applyNativeShellClasses } from './shared/utils/nativeShell.js'
+import { applyNativeShellClasses, isRestorableNativeRoute } from './shared/utils/nativeShell.js'
 import './shared/styles/global.css'
 
 // app console
@@ -71,7 +71,7 @@ function resolveNativeInitialRoute() {
   if (pathname.startsWith('/user')) return `/food${pathname}`
   if (pathname.startsWith('/ecs')) return pathname
   if (pathname.startsWith('/hrms')) return pathname
-  if (storedRoute.startsWith('/food/') || storedRoute.startsWith('/ecs') || storedRoute.startsWith('/hrms')) {
+  if ((storedRoute.startsWith('/food/') || storedRoute.startsWith('/ecs') || storedRoute.startsWith('/hrms')) && isRestorableNativeRoute(storedRoute)) {
     return storedRoute
   }
 

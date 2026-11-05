@@ -20,7 +20,6 @@ import AddToCartAnimation from "@food/components/user/AddToCartAnimation"
 import OptimizedImage from "@food/components/OptimizedImage"
 import ItemSlotAvailabilityNote from "@food/components/user/ItemSlotAvailabilityNote"
 import api, { restaurantAPI } from "@food/api"
-import { isModuleAuthenticated } from "@food/utils/auth"
 import { formatDistance } from "@food/utils/common"
 import { getRoadDistancesToDestination } from "@/shared/services/roadDistance"
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability"
@@ -618,12 +617,7 @@ export default function Under250() {
 
   // Helper function to update item quantity in bothlocal state and cart
   const updateItemQuantity = (item, newQuantity, event = null, restaurantName = null) => {
-    // Check authentication
-    if (!isModuleAuthenticated('user')) {
-      toast.error("Please login to add items to cart")
-      navigate('/user/auth/login', { state: { from: location.pathname } })
-      return
-    }
+    // Guests can build a cart; login is asked when they place the order (Cart page).
 
     // Removed out of service check based on user request
 

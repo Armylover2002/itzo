@@ -106,6 +106,8 @@ export default function QuickSharedCart({ initialAddress = null, addressMode = "
   const { addresses = [], getDefaultAddress, userProfile } = useProfile();
   const companyName = useCompanyName();
   const isUserCodAllowed = userProfile?.isCodAllowed !== false;
+  // Admin can switch ordering off per customer (Customers page); missing flag = allowed.
+  const isOrderingAllowed = userProfile?.isOrderingAllowed !== false;
 
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cash");
@@ -230,6 +232,11 @@ export default function QuickSharedCart({ initialAddress = null, addressMode = "
     if (!isAuthenticated) {
       toast.error("Please login to place an order");
       navigate('/user/auth/login?redirect=/cart');
+      return;
+    }
+
+    if (!isOrderingAllowed) {
+      toast.error("Ordering is currently disabled for your account. Please contact support.");
       return;
     }
 
@@ -588,16 +595,23 @@ export default function QuickSharedCart({ initialAddress = null, addressMode = "
                 </div>
               </div>
 
+              {!isOrderingAllowed && (
+                <p className="mt-4 rounded-xl bg-red-500/15 px-3 py-2 text-center text-xs font-semibold text-red-200">
+                  Ordering is currently disabled for your account. Please contact support.
+                </p>
+              )}
               <Button
                 onClick={handlePlaceOrder}
-                disabled={isPlacingOrder || isPricingLoading}
+                disabled={isPlacingOrder || isPricingLoading || !isOrderingAllowed}
                 className="mt-5 h-12 w-full rounded-full bg-emerald-400 text-slate-950 hover:bg-emerald-300"
               >
                 {isPlacingOrder
                   ? selectedPaymentMethod === "razorpay"
                     ? "Opening payment..."
                     : "Placing order..."
-                  : isPricingLoading
+                  : !isOrderingAllowed
+                    ? "Ordering disabled"
+                    : isPricingLoading
                     ? "Refreshing total..."
                     : selectedPaymentMethod === "razorpay"
                       ? "Pay & place quick order"

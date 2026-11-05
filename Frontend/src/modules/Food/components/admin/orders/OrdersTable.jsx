@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from "react"
-import { Eye, Printer, ArrowUpDown, Loader2, Check, X, Trash2 } from "lucide-react"
+import { Eye, Printer, ArrowUpDown, Loader2, Check, X, Trash2, PackageCheck } from "lucide-react"
+
+// Accepted by the restaurant and not finished: the only states an admin can complete directly.
+const ADMIN_DELIVERABLE_STATUSES = ["confirmed", "preparing", "ready_for_pickup", "picked_up"]
 
 const getStatusColor = (orderStatus) => {
   const colors = {
@@ -47,6 +50,7 @@ export default function OrdersTable({
   onDeleteOrder,
   onAcceptOrder,
   onRejectOrder,
+  onMarkDelivered,
   actionLoadingOrderId,
   actionLoadingType,
   deletingOrderId,
@@ -412,6 +416,21 @@ export default function OrdersTable({
                             <X className="w-3.5 h-3.5" />
                           )}
                           <span>Reject</span>
+                        </button>
+                      )}
+                      {onMarkDelivered && order.orderType === "Food" && ADMIN_DELIVERABLE_STATUSES.includes(order.rawOrderStatus) && (
+                        <button
+                          onClick={() => onMarkDelivered(order)}
+                          disabled={actionLoadingOrderId === (order.id || order.orderId)}
+                          className="px-2.5 py-1.5 rounded text-xs font-medium text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                          title="Mark order as delivered"
+                        >
+                          {actionLoadingOrderId === (order.id || order.orderId) && actionLoadingType === 'deliver' ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <PackageCheck className="w-3.5 h-3.5" />
+                          )}
+                          <span>Delivered</span>
                         </button>
                       )}
                       <button 

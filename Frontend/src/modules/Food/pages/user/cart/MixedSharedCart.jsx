@@ -135,6 +135,8 @@ export default function MixedSharedCart({ initialAddress = null, addressMode = "
   const companyName = useCompanyName();
   const { cart, updateQuantity, clearCart } = useCart();
   const { addresses = [], getDefaultAddress, userProfile } = useProfile();
+  // Admin can switch ordering off per customer (Customers page); missing flag = allowed.
+  const isOrderingAllowed = userProfile?.isOrderingAllowed !== false;
 
   const [pricing, setPricing] = useState(null);
   const [isPricingLoading, setIsPricingLoading] = useState(false);
@@ -257,6 +259,11 @@ export default function MixedSharedCart({ initialAddress = null, addressMode = "
     if (!isAuthenticated) {
       toast.error("Please login to place an order");
       navigate('/user/auth/login?redirect=/cart');
+      return;
+    }
+
+    if (!isOrderingAllowed) {
+      toast.error("Ordering is currently disabled for your account. Please contact support.");
       return;
     }
 
@@ -609,13 +616,18 @@ export default function MixedSharedCart({ initialAddress = null, addressMode = "
                 </div>
               </div>
 
+              {!isOrderingAllowed && (
+                <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-semibold text-red-600">
+                  Ordering is currently disabled for your account. Please contact support.
+                </p>
+              )}
               <Button
                 type="button"
                 onClick={handlePlaceOrder}
-                disabled={isPlacingOrder || isPricingLoading || !defaultAddress}
+                disabled={isPlacingOrder || isPricingLoading || !defaultAddress || !isOrderingAllowed}
                 className="h-12 w-full rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
               >
-                {isPlacingOrder ? "Placing order..." : "Place mixed order"}
+                {isPlacingOrder ? "Placing order..." : !isOrderingAllowed ? "Ordering disabled" : "Place mixed order"}
               </Button>
 
               {/* {selectedDeliveryMode === "express" && (

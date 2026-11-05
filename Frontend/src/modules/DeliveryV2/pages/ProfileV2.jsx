@@ -36,6 +36,7 @@ export const ProfileV2 = () => {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [referralReward, setReferralReward] = useState(0)
+  const [referralDescription, setReferralDescription] = useState("")
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [logoutSubmitting, setLogoutSubmitting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -64,6 +65,7 @@ export const ProfileV2 = () => {
     deliveryAPI.getReferralStats().then((res) => {
       const reward = res?.data?.data?.stats?.rewardAmount
       setReferralReward(Number(reward) || 0)
+      setReferralDescription(String(res?.data?.data?.stats?.description || "").trim())
     }).catch(() => {})
   }, [])
 
@@ -219,7 +221,9 @@ export const ProfileV2 = () => {
             <h3 className="text-sm font-bold text-gray-900">
               Refer &amp; earn{referralReward > 0 ? ` ₹${referralReward}` : ""}
             </h3>
-            <p className="text-xs text-gray-500">Invite friends to join as delivery partners</p>
+            <p className="text-xs text-gray-500 whitespace-pre-line">
+              {referralDescription || "Invite friends to join as delivery partners"}
+            </p>
           </div>
           <button
             onClick={handleShareReferral}

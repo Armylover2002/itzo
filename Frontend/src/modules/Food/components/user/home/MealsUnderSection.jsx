@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import OptimizedImage from "@food/components/OptimizedImage";
 import { useCart } from "@food/context/CartContext";
 import { useProfile } from "@food/context/ProfileContext";
-import { isModuleAuthenticated } from "@food/utils/auth";
 import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability";
 import useHomePriceFilter from "@food/hooks/user/useHomePriceFilter";
 
@@ -48,11 +47,7 @@ export function useMealCartActions() {
       event.preventDefault();
       event.stopPropagation();
 
-      if (!isModuleAuthenticated("user")) {
-        toast.error("Please login to add items to cart");
-        navigate("/user/auth/login", { state: { from: window.location.pathname } });
-        return;
-      }
+      // Guests can build a cart; login is asked when they place the order (Cart page).
 
       // Items with variants need a variant choice — let the restaurant page handle it.
       if (Array.isArray(item.variants) && item.variants.length > 0) {

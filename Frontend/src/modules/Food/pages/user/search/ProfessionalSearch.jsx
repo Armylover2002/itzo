@@ -13,6 +13,7 @@ import { useZone } from "@food/hooks/useZone"
 import { searchAPI } from "@/services/api"
 import OutOfZoneScreen from "@food/components/user/OutOfZoneScreen"
 import { motion, AnimatePresence } from "framer-motion"
+import { useVoiceSearch } from "@food/hooks/useVoiceSearch"
 
 // Helper to resolve media URLs consistently
 const getMediaUrl = (url) => {
@@ -48,11 +49,16 @@ export default function ProfessionalSearch() {
   // URL se query sync - jab bhi URL change ho, query update ho
   const urlQuery = searchParams.get("q") || location.state?.query || ""
   const [query, setQuery] = useState(urlQuery)
-  const debouncedQuery = useDebounce(query, 400)
+  // An emptied box must apply at once; waiting out the debounce let the stale text be written
+  // back to the URL (and from there into the input), so the clear button appeared to do nothing.
+  const debouncedRaw = useDebounce(query, 400)
+  const debouncedQuery = query ? debouncedRaw : ""
+  const inputRef = useRef(null)
+  // Last q we put in the URL ourselves, so the URL -> input sync below ignores our own writes.
+  const lastWrittenQueryRef = useRef(urlQuery)
   
   const [results, setResults] = useState({ restaurants: [], dishes: [] })
   const [loading, setLoading] = useState(false)
-  const [isListening, setIsListening] = useState(false)
   const [categories, setCategories] = useState([])
   const [selectedCategoryId, setSelectedCategoryId] = useState(searchParams.get("cat") || null)
   const [history, setHistory] = useState([])
@@ -60,7 +66,9 @@ export default function ProfessionalSearch() {
   // URL query change hone par query state sync karein
   useEffect(() => {
     const currentUrlQuery = searchParams.get("q") || ""
+    if (currentUrlQuery === lastWrittenQueryRef.current) return
     if (currentUrlQuery && currentUrlQuery !== query) {
+      lastWrittenQueryRef.current = currentUrlQuery
       setQuery(currentUrlQuery)
     }
   }, [searchParams])
@@ -124,40 +132,36 @@ export default function ProfessionalSearch() {
   useEffect(() => {
     performSearch(debouncedQuery, selectedCategoryId)
     if (debouncedQuery) {
+        lastWrittenQueryRef.current = debouncedQuery
         setSearchParams({ q: debouncedQuery, ...(selectedCategoryId ? { cat: selectedCategoryId } : {}) }, { replace: true })
     }
   }, [debouncedQuery, selectedCategoryId, performSearch, setSearchParams])
 
-  // Speech Recognition Implementation
-  const handleVoiceSearch = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      alert("Voice search is not supported in this browser.")
-      return
-    }
+  const { isListening, start: startVoice } = useVoiceSearch((transcript) => {
+    setQuery(transcript)
+    addToHistory(transcript)
+  })
 
-    const recognition = new SpeechRecognition()
-    recognition.lang = 'en-IN'
-    recognition.onstart = () => setIsListening(true)
-    recognition.onend = () => setIsListening(false)
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript
-      setQuery(transcript)
-      addToHistory(transcript)
-    }
-    recognition.start()
+  const handleVoiceSearch = () => {
+    // No speech API (app shell): fall back to the keyboard so its mic can be used.
+    if (!startVoice()) inputRef.current?.focus()
   }
 
   const handleClear = () => {
+    lastWrittenQueryRef.current = ""
     setQuery("")
     setSelectedCategoryId(null)
-    setSearchParams({})
+    // Also drops location.state.query, which would otherwise bring the old text back on reload.
+    navigate(location.pathname, { replace: true, state: null })
     setResults({ restaurants: [], dishes: [] })
+    inputRef.current?.focus()
   }
 
   const handleCategoryClick = (id) => {
     const newCat = selectedCategoryId === id ? null : id
     setSelectedCategoryId(newCat)
+    // The category grid is long; bring the results into view instead of leaving the user staring at it.
+    window.scrollTo({ top: 0, behavior: "smooth" })
     if (newCat) {
         setSearchParams({ ...Object.fromEntries(searchParams), cat: newCat })
     } else {
@@ -183,6 +187,7 @@ export default function ProfessionalSearch() {
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input 
+              ref={inputRef}
               autoFocus
               placeholder="Search for restaurants or dishes..." 
               value={query}
@@ -195,6 +200,8 @@ export default function ProfessionalSearch() {
               </button>
             )}
             <button 
+              type="button"
+              aria-label="Voice search"
               onClick={handleVoiceSearch}
               className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full transition-all ${isListening ? 'text-[#FB4F01] scale-125 animate-pulse' : 'text-slate-400'}`}
             >
@@ -206,13 +213,27 @@ export default function ProfessionalSearch() {
 
       <div className="max-w-3xl mx-auto p-4">
         {/* Categories (Admin only) */}
-        {!query && !loading && (
+        {selectedCategoryId && (
+          <div className="mb-4 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleCategoryClick(selectedCategoryId)}
+              className="inline-flex items-center gap-2 rounded-full bg-[#FB4F01]/10 border border-[#FB4F01]/30 px-3 py-1.5 text-sm font-semibold text-[#C83C00]"
+            >
+              {categories.find((c) => c._id === selectedCategoryId)?.name || "Category"}
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {!query && !loading && !selectedCategoryId && (
           <div className="mb-8">
             <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 px-1">Top Categories</h3>
             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-4">
               {categories.map((cat) => (
                 <button 
                   key={cat._id} 
+                  type="button"
                   onClick={() => handleCategoryClick(cat._id)}
                   className={`flex flex-col items-center group transition-all ${selectedCategoryId === cat._id ? 'scale-110' : ''}`}
                 >
@@ -281,7 +302,7 @@ export default function ProfessionalSearch() {
                 </div>
                 <div className="grid gap-4">
                   {results.dishes.map((r) => (
-                    <Link to={`/food/user/restaurants/${r.slug || r._id}${r.matchedDishId ? `?dish=${r.matchedDishId}` : ''}`} key={r._id} className="flex gap-4 p-3 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-slate-100 dark:border-zinc-800 hover:shadow-md transition-shadow group">
+                    <Link to={`/food/user/restaurants/${r.slug || r._id}${r.matchedDishId ? `?dish=${r.matchedDishId}${query ? `&q=${encodeURIComponent(query)}` : ''}` : ''}`} key={r._id} className="flex gap-4 p-3 bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-slate-100 dark:border-zinc-800 hover:shadow-md transition-shadow group">
                        <div className="w-24 h-24 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 relative">
                            <img 
                             src={getMediaUrl(r.matchedDishImage || r.profileImage || (Array.isArray(r.coverImages) && r.coverImages[0]) || r.image || (Array.isArray(r.images) && r.images[0]))} 

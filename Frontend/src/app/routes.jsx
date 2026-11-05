@@ -14,7 +14,7 @@ import RoleGuard from '@core/guards/RoleGuard'
 import { AuthPageGuard } from '@core/guards/RouteGuard'
 import { UserRole } from '@core/constants/roles'
 import SellerAuthPage from '../modules/seller/pages/Auth'
-import { applyNativeShellClasses } from '@/shared/utils/nativeShell'
+import { applyNativeShellClasses, isRestorableNativeRoute } from '@/shared/utils/nativeShell'
 import ItzoFoodLanding from '../modules/Food/pages/landing/ItzoFoodLanding'
 
 const PublicAboutPage = lazy(() => import('../modules/Food/pages/landing/pages/AboutUs'))
@@ -175,7 +175,7 @@ const AppRoutes = () => {
     if (!isNativeLikeShell) return
 
     const route = `${location.pathname || ''}${location.search || ''}`
-    if (route.startsWith('/food/') || route.startsWith('/ecs') || route.startsWith('/hrms')) {
+    if ((route.startsWith('/food/') || route.startsWith('/ecs') || route.startsWith('/hrms')) && isRestorableNativeRoute(route)) {
       localStorage.setItem(NATIVE_LAST_ROUTE_KEY, route)
     }
   }, [location.pathname, location.search])

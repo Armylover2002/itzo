@@ -361,6 +361,8 @@ const CheckoutPage = () => {
   const { showToast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const { userProfile } = useProfile();
+  // Admin can switch ordering off per customer (Customers page); missing flag = allowed.
+  const isOrderingAllowed = userProfile?.isOrderingAllowed !== false;
   const { settings } = useSettings();
   const routerLocation = useRouterLocation();
   const [walletBalance, setWalletBalance] = useState(Number(userProfile?.walletBalance || 0));
@@ -945,6 +947,10 @@ const CheckoutPage = () => {
   // Now:        build address first â†’ check street â†’ block + toast if invalid.
   //             Also reuses the built address object (no double call).
   const handlePlaceOrder = useCallback(async () => {
+    if (!isOrderingAllowed) {
+      showToast("Ordering is currently disabled for your account. Please contact support.", "error");
+      return;
+    }
     // Build and validate address BEFORE setting loading state
     const addressForOrder = buildAddressForOrder();
 
@@ -1179,7 +1185,7 @@ const CheckoutPage = () => {
     cart, buildAddressForOrder, getCheckoutCartItemsForSync, selectedPayment,
     discountAmount, gstAmount, platformFee, deliveryFee, cartTotal, selectedTimeSlot,
     syncVisibleCartToBackend, clearCart, showToast, navigate, getCheckoutErrorMessage,
-    isAuthenticated, walletBalance, totalAmount, user, isCodBlockedByOrderValue, codBlockedMessage,
+    isAuthenticated, walletBalance, totalAmount, user, isCodBlockedByOrderValue, codBlockedMessage, isOrderingAllowed,
   ]);
 
   // â”€â”€ Effects â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1829,7 +1835,7 @@ const CheckoutPage = () => {
                   </div>
                   <div className="hidden lg:block">
                     {selectedPayment === "cash" || selectedPayment === "wallet" ? (
-                      <button onClick={handlePlaceOrder} disabled={isPlacingOrder || (!pricingPreview && isPreviewLoading) || (selectedPayment === "wallet" && walletBalance < totalAmount)} className="w-full py-3 rounded-xl bg-rose-600/90 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium text-[14px] tracking-wide transition-colors">
+                      <button onClick={handlePlaceOrder} disabled={isPlacingOrder || !isOrderingAllowed || (!pricingPreview && isPreviewLoading) || (selectedPayment === "wallet" && walletBalance < totalAmount)} className="w-full py-3 rounded-xl bg-rose-600/90 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium text-[14px] tracking-wide transition-colors">
                         {isPlacingOrder ? (
                           <div className="flex items-center justify-center gap-2">
                             <Loader2 className="animate-spin" size={18} />
@@ -1840,7 +1846,7 @@ const CheckoutPage = () => {
                         )}
                       </button>
                     ) : (
-                      <SlideToPay amount={totalAmount} onSuccess={handlePlaceOrder} isLoading={isPlacingOrder || (!pricingPreview && isPreviewLoading)} text="Order Now" />
+                      <SlideToPay amount={totalAmount} onSuccess={handlePlaceOrder} isLoading={isPlacingOrder || !isOrderingAllowed || (!pricingPreview && isPreviewLoading)} text="Order Now" />
                     )}
                     <p className="text-center text-[10px] text-slate-400 font-medium mt-2.5 tracking-wide">SSL encrypted secure checkout</p>
                   </div>
@@ -1855,14 +1861,17 @@ const CheckoutPage = () => {
       {/* Mobile Footer */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 pb-[calc(0.65rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(0,0,0,0.08)] z-50 rounded-t-2xl">
         <div className="max-w-4xl mx-auto">
+          {!isOrderingAllowed && (
+            <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-center text-xs font-semibold text-red-600">Ordering is currently disabled for your account. Please contact support.</p>
+          )}
           {selectedPayment === "cash" || selectedPayment === "wallet" ? (
-            <button onClick={handlePlaceOrder} disabled={isPlacingOrder || (!pricingPreview && isPreviewLoading) || (selectedPayment === "wallet" && walletBalance < totalAmount)} className="w-full py-3 rounded-xl bg-rose-600/90 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium text-[14px] tracking-wide transition-colors">
+            <button onClick={handlePlaceOrder} disabled={isPlacingOrder || !isOrderingAllowed || (!pricingPreview && isPreviewLoading) || (selectedPayment === "wallet" && walletBalance < totalAmount)} className="w-full py-3 rounded-xl bg-rose-600/90 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium text-[14px] tracking-wide transition-colors">
               {isPlacingOrder ? "Placing Order..." : (
                 <span className="tabular-nums">Place Order | ₹{totalAmount}</span>
               )}
             </button>
           ) : (
-            <SlideToPay amount={totalAmount} onSuccess={handlePlaceOrder} isLoading={isPlacingOrder || (!pricingPreview && isPreviewLoading)} text="Slide to Pay" />
+            <SlideToPay amount={totalAmount} onSuccess={handlePlaceOrder} isLoading={isPlacingOrder || !isOrderingAllowed || (!pricingPreview && isPreviewLoading)} text="Slide to Pay" />
           )}
         </div>
       </div>

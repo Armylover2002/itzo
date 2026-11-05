@@ -73,7 +73,8 @@ export default function FeeSettings() {
     max: '', 
     fee: '0', 
     deliveryBoyPerKm: '0', 
-    deliveryBoyBasePay: '0' 
+    deliveryBoyBasePay: '0',
+    isFree: false
   })
 
   const QUICK_SHARE_TOTAL_ERROR =
@@ -333,11 +334,12 @@ export default function FeeSettings() {
       }
     }
 
-    const updatedRanges = [...feeSettings.deliveryFeeRanges, { 
-      min, 
-      max, 
-      fee, 
-      deliveryBoyPerKm: dbPerKm, 
+    const updatedRanges = [...feeSettings.deliveryFeeRanges, {
+      min,
+      max,
+      fee,
+      isFree: newRange.isFree === true,
+deliveryBoyPerKm: dbPerKm, 
       deliveryBoyBasePay: dbBasePay 
     }]
     updatedRanges.sort((a, b) => a.min - b.min)
@@ -353,7 +355,7 @@ export default function FeeSettings() {
     await saveSettings(updatedSettings)
 
     // Reset state
-    setNewRange({ min: '', max: '', fee: '0', deliveryBoyPerKm: '0', deliveryBoyBasePay: '0' })
+    setNewRange({ min: '', max: '', fee: '0', deliveryBoyPerKm: '0', deliveryBoyBasePay: '0', isFree: false })
   }
 
   // Delete delivery fee range
@@ -367,6 +369,16 @@ export default function FeeSettings() {
     await saveSettings(updatedSettings)
   }
 
+  // Flip "free delivery for users" on a saved range without opening the editor.
+  const handleToggleRangeFree = async (index) => {
+    const ranges = feeSettings.deliveryFeeRanges.map((range, i) =>
+      i === index ? { ...range, isFree: !(range.isFree === true) } : range
+    )
+    const updatedSettings = { ...feeSettings, deliveryFeeRanges: ranges }
+    setFeeSettings(updatedSettings)
+    await saveSettings(updatedSettings)
+  }
+
   // Edit delivery fee range
   const handleEditRange = (index) => {
     const range = feeSettings.deliveryFeeRanges[index]
@@ -375,7 +387,8 @@ export default function FeeSettings() {
       max: range.max, 
       fee: range.fee || '0',
       deliveryBoyPerKm: range.deliveryBoyPerKm ?? '0',
-      deliveryBoyBasePay: range.deliveryBoyBasePay ?? '0'
+      deliveryBoyBasePay: range.deliveryBoyBasePay ?? '0',
+      isFree: range.isFree === true
     })
     setEditingRangeIndex(index)
   }
@@ -428,11 +441,12 @@ export default function FeeSettings() {
     }
 
     // Add updated range
-    ranges.push({ 
-      min, 
-      max, 
-      fee, 
-      deliveryBoyPerKm: dbPerKm, 
+    ranges.push({
+      min,
+      max,
+      fee,
+      isFree: newRange.isFree === true,
+deliveryBoyPerKm: dbPerKm, 
       deliveryBoyBasePay: dbBasePay 
     })
     ranges.sort((a, b) => a.min - b.min)
@@ -445,13 +459,13 @@ export default function FeeSettings() {
     setFeeSettings(updatedSettings)
     await saveSettings(updatedSettings)
 
-    setNewRange({ min: '', max: '', fee: '0', deliveryBoyPerKm: '0', deliveryBoyBasePay: '0' })
+    setNewRange({ min: '', max: '', fee: '0', deliveryBoyPerKm: '0', deliveryBoyBasePay: '0', isFree: false })
     setEditingRangeIndex(null)
   }
 
   // Cancel edit
   const handleCancelEdit = () => {
-    setNewRange({ min: '', max: '', fee: '0', deliveryBoyPerKm: '0', deliveryBoyBasePay: '0' })
+    setNewRange({ min: '', max: '', fee: '0', deliveryBoyPerKm: '0', deliveryBoyBasePay: '0', isFree: false })
     setEditingRangeIndex(null)
   }
 
@@ -525,6 +539,7 @@ export default function FeeSettings() {
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">Min Distance (km)</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">Max Distance (km)</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">User Delivery Fee (₹)</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">Free Delivery</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">DB Per KM (₹)</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-slate-200">DB Base Pay (₹)</th>
                           <th className="px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200">Actions</th>
@@ -579,8 +594,40 @@ export default function FeeSettings() {
                                         className="w-20 px-2 py-1 border border-blue-300 rounded focus:ring-2 focus:ring-blue-500 outline-none text-green-600 font-medium"
                                       />
                                     </div>
+                                  ) : range.isFree === true ? (
+                                    <span className="text-slate-400 line-through">₹{range.fee}</span>
                                   ) : (
                                     <>₹{range.fee}</>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-sm border-b border-slate-100">
+                                  {isEditing ? (
+                                    <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={newRange.isFree === true}
+                                        onChange={(e) => setNewRange({ ...newRange, isFree: e.target.checked })}
+                                        className="h-4 w-4 accent-green-600"
+                                      />
+                                      Free
+                                    </label>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      role="switch"
+                                      aria-checked={range.isFree === true}
+                                      disabled={savingFeeSettings}
+                                      onClick={() => handleToggleRangeFree(originalIndex)}
+                                      title={range.isFree === true ? "Free in this range (with the Free Delivery Above amount) - click to switch off" : "Click to allow free delivery in this range"}
+                                      className="inline-flex items-center gap-2 disabled:opacity-60"
+                                    >
+                                      <span className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${range.isFree === true ? "bg-green-600" : "bg-slate-300"}`}>
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${range.isFree === true ? "translate-x-4" : "translate-x-0.5"}`} />
+                                      </span>
+                                      <span className={`text-xs font-semibold ${range.isFree === true ? "text-green-700" : "text-slate-400"}`}>
+                                        {range.isFree === true ? "FREE" : "Off"}
+                                      </span>
+                                    </button>
                                   )}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-slate-900 border-b border-slate-100">
@@ -739,6 +786,15 @@ export default function FeeSettings() {
                         placeholder="0"
                       />
                     </div>
+                    <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer md:col-span-3 lg:col-span-6">
+                      <input
+                        type="checkbox"
+                        checked={newRange.isFree === true}
+                        onChange={(e) => setNewRange({ ...newRange, isFree: e.target.checked })}
+                        className="h-4 w-4 accent-green-600"
+                      />
+                      Free delivery in this distance range - applies only when the order also reaches "Free Delivery Above" (rider pay is unchanged)
+                    </label>
                     <div className="flex items-end gap-2">
                       <Button
                         onClick={editingRangeIndex !== null ? handleSaveEditRange : handleAddRange}

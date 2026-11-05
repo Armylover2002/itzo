@@ -137,7 +137,7 @@ const resolveFallbackDeliveryFee = ({
         : distanceKm >= min && distanceKm < max
 
       if (inRange && Number.isFinite(fee)) return fee
-    }
+}
   }
 
   if (rangeFees.length > 0) {
@@ -233,7 +233,7 @@ export default function Cart() {
   const hasFoodItems = cart.some((item) => (item?.orderType || "food") === "food")
   const isQuickCart = cart.length > 0 && cart.every((item) => (item?.orderType || "food") === "quick")
 
-  const { getDefaultAddress, getDefaultPaymentMethod, setDefaultAddress, addresses, paymentMethods, userProfile, vegMode, activeAddress, activeAddressId, setActiveAddressId } = useProfile()
+  const { getDefaultAddress, getDefaultPaymentMethod, setDefaultAddress, updateUserProfile, addresses, paymentMethods, userProfile, vegMode, activeAddress, activeAddressId, setActiveAddressId } = useProfile()
   const { createOrder } = useOrders()
   const { openLocationSelector } = useLocationSelector()
   const { location: currentLocation, loading: currentLocationLoading } = useUserLocation() // Get live location address
@@ -1409,8 +1409,10 @@ const deliveryFee = baseComputedDeliveryFee
 // Admin "free delivery above ₹X": nudge the user to add more items until the threshold is met.
 const freeDeliveryThreshold = Number(pricing?.freeDeliveryThreshold ?? feeSettings.freeDeliveryThreshold) || 0
 const freeDeliveryRemaining = Math.max(0, freeDeliveryThreshold - subtotal)
+// Not shown when this distance range is not a free one: a bigger cart would not unlock free delivery there.
 const showFreeDeliveryNudge =
-  freeDeliveryThreshold > 0 && freeDeliveryRemaining > 0 && deliveryFee > 0 && !isQuickCart && !hasQuickItems
+  freeDeliveryThreshold > 0 && freeDeliveryRemaining > 0 && deliveryFee > 0 && !isQuickCart && !hasQuickItems &&
+  pricing?.freeDeliveryUnlockableByValue !== false
 const quickDeliveryFee = Number(pricing?.quickDeliveryFee || 0) || 0
 const quickEtaLabel = formatQuickEtaWindow(pricing?.etaPromise || pricing?.quickDelivery?.etaPromise)
 const gates = pricing?.quickDelivery?.gates
@@ -1464,6 +1466,9 @@ const otherPlatformSavings = itemSavings + deliverySavings
 
 const savings = pricing?.savings ?? Math.max(0, totalBeforeDiscount - total)
 const isUserCodAllowed = userProfile?.isCodAllowed !== false
+// Admin can switch ordering off per customer (Customers page); missing flag = allowed.
+const isOrderingAllowed = userProfile?.isOrderingAllowed !== false
+const ORDERING_DISABLED_MESSAGE = "Ordering is currently disabled for your account. Please contact support."
 const codOrderLimit = Number(pricing?.codOrderLimit || 0)
 const hasCodOrderLimit = Number.isFinite(codOrderLimit) && codOrderLimit > 0
 const isCodBlockedByOrderValue = hasCodOrderLimit && Number(total || 0) > codOrderLimit
@@ -1928,6 +1933,11 @@ const handlePlaceOrder = async () => {
     toast.error("Please login to place an order");
     navigate('/user/auth/login?redirect=/cart');
     return;
+  }
+
+  if (!isOrderingAllowed) {
+    toast.error(ORDERING_DISABLED_MESSAGE)
+    return
   }
 
   if (!hasSavedAddress) {
@@ -2558,6 +2568,10 @@ const handlePlaceOrder = async () => {
     else if (error.response) {
       // Server responded with error status
       errorMessage = error.response.data?.message || `Server error: ${error.response.status}`
+      // Admin switched ordering off while this screen was open: lock the button from now on.
+      if (error.response.data?.code === 'ORDERING_DISABLED') {
+        updateUserProfile?.({ isOrderingAllowed: false })
+      }
     }
     // Handle other errors
     else if (error.message) {
@@ -3718,10 +3732,16 @@ return (
             </div>
           </div>
 
+          {!isOrderingAllowed && (
+            <p className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-semibold text-red-600 dark:bg-red-900/20">
+              {ORDERING_DISABLED_MESSAGE}
+            </p>
+          )}
+
           {/* Place Order Button */}
           <button
             onClick={handlePlaceOrder}
-            disabled={isPlacingOrder || (selectedPaymentMethod === "wallet" && walletBalance < total)}
+            disabled={isPlacingOrder || !isOrderingAllowed || (selectedPaymentMethod === "wallet" && walletBalance < total)}
             className="w-full bg-gradient-to-r from-[#FB4F01] to-[#FB4F01] hover:from-[#C83C00] hover:to-[#CF2834] text-white px-6 h-12 md:h-14 rounded-2xl font-bold shadow-lg shadow-[#FB4F01]/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between transition-transform active:scale-[0.98]"
           >
             {(selectedPaymentMethod === "razorpay" || selectedPaymentMethod === "wallet" || selectedPaymentMethod === "cash") && (
@@ -3733,9 +3753,11 @@ return (
             <div className="flex items-center gap-1 mx-auto text-sm md:text-lg tracking-wide">
               {isPlacingOrder
                 ? "Processing..."
-                : !hasSavedAddress
-                  ? "Select Address"
-                  : "Place Order"}
+                : !isOrderingAllowed
+                  ? "Ordering Disabled"
+                  : !hasSavedAddress
+                    ? "Select Address"
+                    : "Place Order"}
               <div className="flex align-center h-full">
                 <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
               </div>

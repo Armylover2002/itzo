@@ -6,16 +6,22 @@ const referralSettingsSchema = new mongoose.Schema(
             referrerReward: { type: Number, min: 0, default: 0 },
             refereeReward: { type: Number, min: 0, default: 0 },
             limit: { type: Number, min: 0, default: 0 },
+            /** Shown to that role in its Refer & Earn screen (set by admin). */
+            description: { type: String, trim: true, maxlength: 500, default: '' },
         },
         delivery: {
             referrerReward: { type: Number, min: 0, default: 0 },
             refereeReward: { type: Number, min: 0, default: 0 },
             limit: { type: Number, min: 0, default: 0 },
+            /** Shown to that role in its Refer & Earn screen (set by admin). */
+            description: { type: String, trim: true, maxlength: 500, default: '' },
         },
         restaurant: {
             referrerReward: { type: Number, min: 0, default: 0 },
             refereeReward: { type: Number, min: 0, default: 0 },
             limit: { type: Number, min: 0, default: 0 },
+            /** Shown to that role in its Refer & Earn screen (set by admin). */
+            description: { type: String, trim: true, maxlength: 500, default: '' },
         },
         isActive: { type: Boolean, default: true, index: true }
     },
