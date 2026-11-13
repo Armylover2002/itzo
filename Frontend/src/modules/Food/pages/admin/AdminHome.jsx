@@ -67,8 +67,11 @@ export default function AdminHome() {
 
   // Maintenance mode (ordering kill-switch). Only the super admin can flip it; the
   // backend rejects employee PATCHes, so we hide the control for them entirely.
+  // Starts with a concrete default (not null) so the card always renders for an admin —
+  // a failed read must never make the switch silently disappear from the dashboard.
   const isSuperAdmin = user?.role === "ADMIN"
-  const [maintenance, setMaintenance] = useState(null)
+  const [maintenance, setMaintenance] = useState({ enabled: false, message: "" })
+  const [maintenanceLoadFailed, setMaintenanceLoadFailed] = useState(false)
   const [maintenanceSaving, setMaintenanceSaving] = useState(false)
 
   useEffect(() => {
@@ -113,9 +116,12 @@ export default function AdminHome() {
       try {
         const response = await adminAPI.getMaintenanceMode()
         const data = response?.data?.data
-        if (isMounted && data) setMaintenance({ enabled: !!data.enabled, message: data.message || "" })
+        if (!isMounted) return
+        setMaintenance({ enabled: !!data?.enabled, message: data?.message || "" })
+        setMaintenanceLoadFailed(false)
       } catch (error) {
         debugError("Error fetching maintenance mode:", error)
+        if (isMounted) setMaintenanceLoadFailed(true)
       }
     }
 
@@ -402,7 +408,7 @@ export default function AdminHome() {
         }
       />
 
-      {isSuperAdmin && maintenance && (
+      {isSuperAdmin && (
         <div
           className={cn(
             "flex flex-col gap-3 rounded-xl border px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between",
@@ -423,9 +429,11 @@ export default function AdminHome() {
             <div>
               <p className="text-sm font-semibold text-slate-800">Maintenance mode</p>
               <p className="mt-0.5 text-xs text-slate-500">
-                {maintenance.enabled
-                  ? `Ordering is blocked. Customers see: "${maintenance.message}"`
-                  : "Turn this on to stop all customer orders across the app."}
+                {maintenanceLoadFailed
+                  ? "Couldn't read the current state — the server may not have this feature yet."
+                  : maintenance.enabled
+                    ? `Ordering is blocked. Customers see: "${maintenance.message}"`
+                    : "Turn this on to stop all customer orders across the app."}
               </p>
             </div>
           </div>
@@ -436,7 +444,7 @@ export default function AdminHome() {
                 maintenance.enabled ? "bg-amber-200 text-amber-900" : "bg-slate-100 text-slate-600"
               )}
             >
-              {maintenance.enabled ? "ON" : "OFF"}
+              {maintenanceLoadFailed ? "—" : maintenance.enabled ? "ON" : "OFF"}
             </span>
             <Switch
               checked={maintenance.enabled}
