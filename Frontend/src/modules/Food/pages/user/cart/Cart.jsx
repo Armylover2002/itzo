@@ -24,7 +24,7 @@ import MixedSharedCart from "@food/pages/user/cart/MixedSharedCart"
 import { useLocation as useUserLocation } from "@food/hooks/useLocation"
 import { useLocationSelector } from "@food/components/user/UserLayout"
 import { useZone } from "@food/hooks/useZone"
-import { orderAPI, restaurantAPI, userAPI, hubAPI, API_ENDPOINTS } from "@food/api"
+import { orderAPI, restaurantAPI, userAPI, hubAPI, adminAPI, API_ENDPOINTS } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
 import { initRazorpayPayment, isFlutterWebView, handleFlutterRazorpayPayment } from "@food/utils/razorpay"
 import { sanitizeOrderImage, sanitizeOrderNotes } from "@food/utils/orderPayload"
@@ -108,6 +108,7 @@ const formatFullAddress = (address) => {
 const RUPEE_SYMBOL = "\u20B9"
 const CART_RECIPIENT_DETAILS_STORAGE_KEY = "food-cart-recipient-details-v1"
 const CART_ORDER_NOTE_STORAGE_KEY = "food-cart-order-note-v1"
+const MAINTENANCE_FALLBACK_MESSAGE = "We are coming soon. The app is on maintenance."
 const RECIPIENT_NAME_RE = /^[A-Za-z][A-Za-z\s.'-]{1,49}$/
 
 const resolveFallbackDeliveryFee = ({
@@ -238,10 +239,34 @@ export default function Cart() {
   const { openLocationSelector } = useLocationSelector()
   const { location: currentLocation, loading: currentLocationLoading } = useUserLocation() // Get live location address
 
+  // Global ordering kill-switch set by admin (/ecs/food dashboard). The backend also
+  // rejects order creation with 503, this just keeps the UI honest before the tap.
+  const [maintenance, setMaintenance] = useState({ enabled: false, message: "" })
+
   const [showItemDetail, setShowItemDetail] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [selectedItemImageIndex, setSelectedItemImageIndex] = useState(0)
   const [selectedVariantId, setSelectedVariantId] = useState(null)
+
+  const readMaintenanceMode = useCallback(async () => {
+    try {
+      const response = await adminAPI.getPublicMaintenanceMode()
+      const data = response?.data?.data
+      const next = {
+        enabled: !!data?.enabled,
+        message: data?.message || MAINTENANCE_FALLBACK_MESSAGE,
+      }
+      setMaintenance(next)
+      return next
+    } catch {
+      // A failed read must never block a legitimate order.
+      return { enabled: false, message: MAINTENANCE_FALLBACK_MESSAGE }
+    }
+  }, [])
+
+  useEffect(() => {
+    readMaintenanceMode()
+  }, [readMaintenanceMode])
 
   // Network status
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
@@ -1940,6 +1965,14 @@ const handlePlaceOrder = async () => {
     return
   }
 
+  // Re-read the kill-switch at tap time so an admin flipping it mid-session is honoured
+  // even if this tab has been open for a while.
+  const maintenanceState = await readMaintenanceMode()
+  if (maintenanceState.enabled) {
+    toast.error(maintenanceState.message || MAINTENANCE_FALLBACK_MESSAGE)
+    return
+  }
+
   if (!hasSavedAddress) {
     toast.error("Please choose a delivery location to continue")
     openLocationSelector()
@@ -2571,6 +2604,10 @@ const handlePlaceOrder = async () => {
       // Admin switched ordering off while this screen was open: lock the button from now on.
       if (error.response.data?.code === 'ORDERING_DISABLED') {
         updateUserProfile?.({ isOrderingAllowed: false })
+      }
+      // Maintenance mode was switched on while this screen was open: lock the button.
+      if (error.response.data?.code === 'MAINTENANCE_MODE' || error.response.status === 503) {
+        setMaintenance({ enabled: true, message: errorMessage || MAINTENANCE_FALLBACK_MESSAGE })
       }
     }
     // Handle other errors
@@ -3732,16 +3769,20 @@ return (
             </div>
           </div>
 
-          {!isOrderingAllowed && (
+          {maintenance.enabled ? (
+            <p className="mb-2 rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-semibold text-amber-700 dark:bg-amber-900/20">
+              {maintenance.message || MAINTENANCE_FALLBACK_MESSAGE}
+            </p>
+          ) : !isOrderingAllowed ? (
             <p className="mb-2 rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-semibold text-red-600 dark:bg-red-900/20">
               {ORDERING_DISABLED_MESSAGE}
             </p>
-          )}
+          ) : null}
 
           {/* Place Order Button */}
           <button
             onClick={handlePlaceOrder}
-            disabled={isPlacingOrder || !isOrderingAllowed || (selectedPaymentMethod === "wallet" && walletBalance < total)}
+            disabled={isPlacingOrder || maintenance.enabled || !isOrderingAllowed || (selectedPaymentMethod === "wallet" && walletBalance < total)}
             className="w-full bg-gradient-to-r from-[#FB4F01] to-[#FB4F01] hover:from-[#C83C00] hover:to-[#CF2834] text-white px-6 h-12 md:h-14 rounded-2xl font-bold shadow-lg shadow-[#FB4F01]/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between transition-transform active:scale-[0.98]"
           >
             {(selectedPaymentMethod === "razorpay" || selectedPaymentMethod === "wallet" || selectedPaymentMethod === "cash") && (
@@ -3753,11 +3794,13 @@ return (
             <div className="flex items-center gap-1 mx-auto text-sm md:text-lg tracking-wide">
               {isPlacingOrder
                 ? "Processing..."
-                : !isOrderingAllowed
-                  ? "Ordering Disabled"
-                  : !hasSavedAddress
-                    ? "Select Address"
-                    : "Place Order"}
+                : maintenance.enabled
+                  ? "Under Maintenance"
+                  : !isOrderingAllowed
+                    ? "Ordering Disabled"
+                    : !hasSavedAddress
+                      ? "Select Address"
+                      : "Place Order"}
               <div className="flex align-center h-full">
                 <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
               </div>

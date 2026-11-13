@@ -15,6 +15,7 @@ import * as notificationChannelController from '../controllers/notificationChann
 import * as orderController from '../../orders/controllers/order.controller.js';
 import { getAdminPageController, upsertAdminPageController } from '../controllers/pageContent.controller.js';
 import * as employeeController from '../controllers/employee.controller.js';
+import * as maintenanceModeController from '../controllers/maintenanceMode.controller.js';
 import { upload } from '../../../../middleware/upload.js';
 import { checkPermission } from '../../../../core/auth/auth.middleware.js';
 import jobRoutes from './job.route.js';
@@ -32,6 +33,21 @@ const requireAdmin = (req, _res, next) => {
 };
 
 router.use(requireAdmin);
+
+/**
+ * Ordering kill-switch: only the super admin may flip it, employees (even ones with
+ * dashboard access) must not be able to stop the whole marketplace from taking orders.
+ */
+const requireSuperAdmin = (req, _res, next) => {
+    if (req.user?.role !== 'ADMIN') {
+        return next(new AuthError('Only a super admin can change maintenance mode'));
+    }
+    return next();
+};
+
+// ----- Maintenance Mode (ordering kill-switch, shown on the food dashboard) -----
+router.get('/maintenance-mode', checkPermission('food::dashboard', 'view'), maintenanceModeController.getMaintenanceModeAdminController);
+router.patch('/maintenance-mode', requireSuperAdmin, maintenanceModeController.updateMaintenanceModeAdminController);
 
 // ----- Broadcast Notifications -----
 router.post('/notifications/broadcast', checkPermission('food::system_settings::broadcast', 'create'), notificationBroadcastController.createBroadcastNotificationController);

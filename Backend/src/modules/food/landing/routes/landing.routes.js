@@ -1,5 +1,6 @@
 import express from 'express';
 import { upload } from '../../../../middleware/upload.js';
+import { getMaintenanceModePublicController } from '../../admin/controllers/maintenanceMode.controller.js';
 import multer from 'multer';
 import {
     listHeroBannersController,
@@ -216,6 +217,9 @@ router.get('/zones/nearby', listZonesNearbyPublicController);
 router.get('/zones/public', cacheResponse(600, 'landing_zones'), listZonesPublicController);
 router.get('/public/env', getPublicEnvController);
 router.get('/fee-settings/public', cacheResponse(60, 'fee_settings'), getPublicFeeSettingsController);
+// Ordering kill-switch state for the customer app. Deliberately uncached at the HTTP
+// layer — the service keeps a 5s in-process cache, so flipping it takes effect fast.
+router.get('/maintenance-mode/public', getMaintenanceModePublicController);
 
 // Admin landing settings (old paths used by admin UI)
 router.get('/hero-banners/landing/settings', ...adminLanding('view'), getAdminLandingSettingsController);

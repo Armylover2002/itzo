@@ -1203,6 +1203,19 @@ export const adminAPI = {
       contextModule: "admin",
     }),
 
+  /** Maintenance Mode — ordering kill-switch toggled from the food dashboard */
+  getMaintenanceMode: () =>
+    apiClient.get("/food/admin/maintenance-mode", { contextModule: "admin" }),
+  updateMaintenanceMode: (body) =>
+    apiClient.patch("/food/admin/maintenance-mode", body ?? {}, {
+      contextModule: "admin",
+    }),
+  getPublicMaintenanceMode: (config = {}) =>
+    apiClient.get("/food/maintenance-mode/public", {
+      contextModule: "user",
+      ...config,
+    }),
+
   /** Referral Settings (admin) */
   getReferralSettings: () =>
     apiClient.get("/food/admin/referral-settings", { contextModule: "admin" }),

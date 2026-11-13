@@ -1,6 +1,8 @@
 import { sendResponse } from '../../../../utils/response.js';
 import * as orderService from '../services/order.service.js';
 import * as foodOrderPaymentService from '../services/foodOrderPayment.service.js';
+import { getMaintenanceModeCached } from '../../admin/services/maintenanceMode.service.js';
+import { ApiError } from '../../../../utils/ApiError.js';
 import {
     validateCalculateOrderDto,
     validateCreateOrderDto,
@@ -128,6 +130,15 @@ export async function calculateOrderController(req, res, next) {
 
 export async function createOrderController(req, res, next) {
     try {
+        // Admin kill-switch. Enforced here (not only in the UI) so a stale client or a
+        // direct API call can't slip an order through while maintenance mode is on.
+        const maintenance = await getMaintenanceModeCached();
+        if (maintenance.enabled) {
+            const maintenanceError = new ApiError(503, maintenance.message);
+            maintenanceError.code = 'MAINTENANCE_MODE';
+            throw maintenanceError;
+        }
+
         const userId = req.user?.userId;
         const dto = validateCreateOrderDto(req.body);
         const result = await orderService.createOrder(userId, dto);

@@ -31,7 +31,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { Activity, ShoppingBag, CreditCard, Truck, Receipt, IndianRupee, Store, UserCheck, Package, UserCircle, Clock, CheckCircle, Plus, XCircle, UtensilsCrossed, Wallet, CalendarCheck } from "lucide-react"
+import { Activity, ShoppingBag, CreditCard, Truck, Receipt, IndianRupee, Store, UserCheck, Package, UserCircle, Clock, CheckCircle, Plus, XCircle, UtensilsCrossed, Wallet, CalendarCheck, Wrench } from "lucide-react"
+import { Switch } from "@food/components/ui/switch"
 import { adminAPI } from "@food/api"
 import { toast } from "sonner"
 import { useAuth } from "@core/context/AuthContext"
@@ -63,6 +64,12 @@ export default function AdminHome() {
   const [resolvedPermissions, setResolvedPermissions] = useState({})
   const [subOverview, setSubOverview] = useState(null)
   const [diningStats, setDiningStats] = useState(null)
+
+  // Maintenance mode (ordering kill-switch). Only the super admin can flip it; the
+  // backend rejects employee PATCHes, so we hide the control for them entirely.
+  const isSuperAdmin = user?.role === "ADMIN"
+  const [maintenance, setMaintenance] = useState(null)
+  const [maintenanceSaving, setMaintenanceSaving] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -98,6 +105,49 @@ export default function AdminHome() {
       isMounted = false
     }
   }, [user])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchMaintenance = async () => {
+      try {
+        const response = await adminAPI.getMaintenanceMode()
+        const data = response?.data?.data
+        if (isMounted && data) setMaintenance({ enabled: !!data.enabled, message: data.message || "" })
+      } catch (error) {
+        debugError("Error fetching maintenance mode:", error)
+      }
+    }
+
+    fetchMaintenance()
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const handleToggleMaintenance = useCallback(
+    async (nextEnabled) => {
+      const previous = maintenance
+      setMaintenance((current) => ({ ...(current || {}), enabled: nextEnabled }))
+      setMaintenanceSaving(true)
+      try {
+        const response = await adminAPI.updateMaintenanceMode({ enabled: nextEnabled })
+        const data = response?.data?.data
+        if (data) setMaintenance({ enabled: !!data.enabled, message: data.message || "" })
+        toast.success(
+          nextEnabled
+            ? "Maintenance mode is ON — customers can no longer place orders"
+            : "Maintenance mode is OFF — ordering is live again"
+        )
+      } catch (error) {
+        setMaintenance(previous)
+        toast.error(error?.response?.data?.message || "Could not update maintenance mode")
+      } finally {
+        setMaintenanceSaving(false)
+      }
+    },
+    [maintenance]
+  )
 
   const canAccessPath = useCallback(
     (path) => canAccessAdminPath(user, resolvedPermissions, path),
@@ -351,6 +401,52 @@ export default function AdminHome() {
           </>
         }
       />
+
+      {isSuperAdmin && maintenance && (
+        <div
+          className={cn(
+            "flex flex-col gap-3 rounded-xl border px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between",
+            maintenance.enabled
+              ? "border-amber-300 bg-amber-50"
+              : "border-slate-200 bg-white shadow-xs"
+          )}
+        >
+          <div className="flex items-start gap-2.5">
+            <span
+              className={cn(
+                "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                maintenance.enabled ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"
+              )}
+            >
+              <Wrench className="h-4 w-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Maintenance mode</p>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {maintenance.enabled
+                  ? `Ordering is blocked. Customers see: "${maintenance.message}"`
+                  : "Turn this on to stop all customer orders across the app."}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 sm:shrink-0">
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                maintenance.enabled ? "bg-amber-200 text-amber-900" : "bg-slate-100 text-slate-600"
+              )}
+            >
+              {maintenance.enabled ? "ON" : "OFF"}
+            </span>
+            <Switch
+              checked={maintenance.enabled}
+              disabled={maintenanceSaving}
+              onCheckedChange={handleToggleMaintenance}
+              aria-label="Toggle maintenance mode"
+            />
+          </div>
+        </div>
+      )}
 
       {hasError && (
         <div className="mb-2 flex flex-col gap-2 rounded-xl border border-rose-200 bg-[#FEF2F2] px-3 py-2.5 text-xs text-rose-700 sm:flex-row sm:items-center sm:justify-between">
