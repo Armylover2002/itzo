@@ -307,6 +307,29 @@ export async function bulkUpdateCustomersCodAccess(req, res, next) {
     }
 }
 
+export async function adjustCustomerWallet(req, res, next) {
+    try {
+        const { id } = req.params;
+        const { type, amount, reason } = req.body || {};
+        const result = await adminService.adjustCustomerWalletBalance({
+            userId: id,
+            type,
+            amount,
+            reason,
+        });
+        console.log(
+            `[AUDIT] customer_wallet_adjust adminId=${req.user?.userId || req.user?.id || 'unknown'} customerId=${id} type=${type} amount=${amount}`
+        );
+        res.status(200).json({
+            success: true,
+            message: `Wallet balance ${type === 'add' ? 'credited' : 'debited'} successfully`,
+            data: result,
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 // ----- Safety / Emergency Reports -----
 export async function getSafetyEmergencyReports(req, res, next) {
     try {

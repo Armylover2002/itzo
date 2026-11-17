@@ -78,7 +78,8 @@ import { FoodDeliveryWithdrawal } from '../../delivery/models/foodDeliveryWithdr
 import { FoodDeliveryWallet } from '../../delivery/models/deliveryWallet.model.js';
 import { FoodDeliveryCashDeposit } from '../../delivery/models/foodDeliveryCashDeposit.model.js';
 import { initiateRazorpayRefund } from '../../orders/helpers/razorpay.helper.js';
-import { refundWalletBalance } from '../../user/services/userWallet.service.js';
+import { refundWalletBalance, getUserWallet } from '../../user/services/userWallet.service.js';
+import { FoodUserWallet } from '../../user/models/userWallet.model.js';
 import * as foodTransactionService from '../../orders/services/foodTransaction.service.js';
 import { getDeliveryPartnerWalletEnhanced } from '../../delivery/services/deliveryFinance.service.js';
 import {
@@ -2063,6 +2064,7 @@ const mapCustomerListItem = (u, stats = { totalOrder: 0, totalOrderAmount: 0 }) 
     isCodAllowed: u.isCodAllowed !== false,
     isOrderingAllowed: u.isOrderingAllowed !== false,
     isVerified: u.isVerified === true,
+    walletBalance: Number(u.walletBalance || 0),
     totalOrder: Number(stats.totalOrder || 0),
     totalOrderAmount: Number(stats.totalOrderAmount || 0),
     joiningDate: u.createdAt,
@@ -2208,7 +2210,7 @@ export async function getCustomers(query = {}) {
 
         const docs = pageIds.length
             ? await FoodUser.find({ _id: { $in: pageIds } })
-                .select('name email phone countryCode isVerified isActive isCodAllowed isOrderingAllowed createdAt profileImage')
+                .select('name email phone countryCode isVerified isActive isCodAllowed isOrderingAllowed createdAt profileImage walletBalance')
                 .lean()
             : [];
 
@@ -2234,7 +2236,7 @@ export async function getCustomers(query = {}) {
                 .sort(sort)
                 .skip(skip)
                 .limit(limit)
-                .select('name email phone countryCode isVerified isActive isCodAllowed isOrderingAllowed createdAt profileImage')
+                .select('name email phone countryCode isVerified isActive isCodAllowed isOrderingAllowed createdAt profileImage walletBalance')
                 .lean(),
             FoodUser.countDocuments(filter)
         ]);
@@ -2330,6 +2332,7 @@ export async function getCustomerById(id) {
         isOrderingAllowed: u.isOrderingAllowed !== false,
         isVerified: u.isVerified === true,
         phoneVerified: u.isVerified === true,
+        walletBalance: Number(u.walletBalance || 0),
         gender: u.gender || '',
         dateOfBirth: u.dateOfBirth || null,
         addresses: Array.isArray(u.addresses) ? u.addresses : [],
@@ -2512,6 +2515,81 @@ export async function bulkUpdateCustomersOrderAccess(ids = [], isOrderingAllowed
     return {
         matched: Number(result.matchedCount || 0),
         modified: Number(result.modifiedCount || 0),
+    };
+}
+
+/**
+ * Admin: adjust a customer's wallet balance (add or deduct).
+ * Creates a transaction record in the user's wallet for auditability.
+ */
+export async function adjustCustomerWalletBalance({ userId, type, amount, reason }) {
+    const id = String(userId || '').trim();
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        throw new ValidationError('Invalid customer ID');
+    }
+
+    const numAmount = Number(amount);
+    if (!Number.isFinite(numAmount) || numAmount <= 0) {
+        throw new ValidationError('Amount must be a positive number');
+    }
+
+    if (!type || !['add', 'deduct'].includes(type)) {
+        throw new ValidationError('Type must be "add" or "deduct"');
+    }
+
+    const oid = new mongoose.Types.ObjectId(id);
+
+    // Ensure the user exists
+    const user = await FoodUser.findById(oid).select('_id name walletBalance').lean();
+    if (!user) {
+        throw new ValidationError('Customer not found');
+    }
+
+    // Ensure wallet exists
+    let wallet = await FoodUserWallet.findOne({ userId: oid });
+    if (!wallet) {
+        wallet = await FoodUserWallet.create({ userId: oid, balance: 0, transactions: [] });
+    }
+
+    if (type === 'deduct') {
+        const currentBalance = Number(wallet.balance || 0);
+        if (numAmount > currentBalance) {
+            throw new ValidationError(`Insufficient wallet balance. Current balance: ₹${currentBalance.toFixed(2)}`);
+        }
+    }
+
+    const txn = {
+        type: type === 'add' ? 'addition' : 'deduction',
+        amount: numAmount,
+        status: 'Completed',
+        description: reason || (type === 'add' ? 'Admin wallet credit' : 'Admin wallet debit'),
+        metadata: { source: 'admin_adjustment', adjustmentType: type },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+
+    const balanceChange = type === 'add' ? numAmount : -numAmount;
+
+    const updated = await FoodUserWallet.findOneAndUpdate(
+        { userId: oid },
+        {
+            $inc: { balance: balanceChange },
+            $push: { transactions: { $each: [txn], $position: 0 } },
+        },
+        { new: true }
+    );
+
+    // Sync walletBalance on user document
+    const newBalance = Math.max(0, Number(updated?.balance || 0));
+    await FoodUser.updateOne({ _id: oid }, { $set: { walletBalance: newBalance } });
+
+    return {
+        userId: id,
+        name: user.name || '',
+        type,
+        amount: numAmount,
+        newBalance,
+        reason: txn.description,
     };
 }
 

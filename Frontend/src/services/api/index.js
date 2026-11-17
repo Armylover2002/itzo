@@ -764,6 +764,12 @@ export const adminAPI = {
       { isActive: isActive !== false },
       { contextModule: "admin" },
     ),
+  adjustCustomerWallet: (id, { type, amount, reason }) =>
+    apiClient.patch(
+      `/food/admin/customers/${String(id)}/wallet`,
+      { type, amount: Number(amount), reason },
+      { contextModule: "admin" },
+    ),
   getRecoveryRequests: (params = {}) =>
     apiClient.get("/food/admin/customers/recovery-requests", { params, contextModule: "admin" }),
   approveRecoveryRequest: (id) =>

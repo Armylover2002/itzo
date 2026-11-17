@@ -77,6 +77,8 @@ router.get('/customers/:id', checkPermission('food::customer_management::custome
 router.get('/customers/:id/contacts', checkPermission('food::customer_management::customers', 'view'), getCustomerContactsAdminController);
 router.patch('/customers/:id/status', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerStatus);
 router.patch('/customers/:id/cod-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerCodAccess);
+router.patch('/customers/:id/wallet', checkPermission('food::customer_management::customers', 'edit'), adminController.adjustCustomerWallet);
+router.post('/customers/:id/wallet', checkPermission('food::customer_management::customers', 'edit'), adminController.adjustCustomerWallet);
 router.patch('/customers/order-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersOrderAccess);
 router.patch('/customers/:id/order-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerOrderAccess);
 router.patch('/customers/cod-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersCodAccess);
