@@ -435,7 +435,7 @@ function FoodHomeContent({
         <div className="mb-3 px-4 lg:mb-4">
           <div className="flex flex-col gap-0.5 lg:gap-1">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-gray-400 sm:text-sm lg:text-base">
-              {filteredRestaurants.length} Restaurants Delivering to You
+              Restaurants Delivering to You
             </h2>
             <span className="text-base font-normal text-gray-500 sm:text-lg lg:text-2xl">Featured</span>
           </div>

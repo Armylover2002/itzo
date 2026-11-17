@@ -518,7 +518,7 @@ const RestaurantGrid = memo(({
       <div className="mb-4 px-4">
         <div className="flex flex-col gap-1">
           <h2 className="text-[12px] font-bold uppercase tracking-widest text-[#9ca3af]">
-            {totalRestaurants ?? filteredRestaurants.length} Restaurants Delivering to You
+            Restaurants Delivering to You
           </h2>
           {selectedCategory ? (
             <div className="flex items-center gap-2">
