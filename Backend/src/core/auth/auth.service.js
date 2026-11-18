@@ -20,7 +20,6 @@ import { logger } from "../../utils/logger.js";
 import { sendAdminResetOtpEmail } from "../../utils/email.js";
 import mongoose from "mongoose";
 import { AdminRole } from "../admin/role.model.js";
-import { creditReferralReward } from "../../modules/food/user/services/userWallet.service.js";
 import { mergeDeviceToken } from "../notifications/firebase.service.js";
 import {
   assertAdminForgotOtpRequestAllowed,
@@ -383,8 +382,11 @@ export const verifyUserOtpAndLogin = async (
     await userDoc.save();
   }
 
-  // Referral crediting: create pending log first, credit wallets, then mark credited.
-  // Pending logs are retried on later logins if wallet credit previously failed.
+  // Referral: only CREATE the pending log at signup. Both the referrer's and
+  // the referee's rewards are intentionally NOT credited here — they unlock
+  // only once the referee completes (delivers) their first order. See
+  // creditUserReferralOnFirstOrder() in userReferral.service.js, called from
+  // the order-delivery-completion flow.
   const refRaw = typeof ref === "string" ? String(ref).trim() : "";
   try {
     let referralLog = await FoodReferralLog.findOne({
@@ -443,42 +445,7 @@ export const verifyUserOtpAndLogin = async (
       }
     }
 
-    if (referralLog?.status === "pending") {
-      const referrerReward = Math.max(0, Number(referralLog.referrerRewardAmount) || 0);
-      const refereeReward = Math.max(0, Number(referralLog.refereeRewardAmount) || 0);
-
-      await Promise.all([
-        referrerReward > 0
-          ? creditReferralReward(referralLog.referrerId, referrerReward, {
-              role: "USER",
-              refereeId: String(userDoc._id),
-              referralLogId: String(referralLog._id),
-              type: "referrer_reward",
-            })
-          : Promise.resolve(),
-        refereeReward > 0
-          ? creditReferralReward(userDoc._id, refereeReward, {
-              role: "USER",
-              referrerId: String(referralLog.referrerId),
-              referralLogId: String(referralLog._id),
-              type: "referee_reward",
-            })
-          : Promise.resolve(),
-      ]);
-
-      // Atomic pending → credited so retries cannot double-increment referralCount.
-      const marked = await FoodReferralLog.findOneAndUpdate(
-        { _id: referralLog._id, status: "pending" },
-        { $set: { status: "credited" } },
-        { new: true },
-      );
-      if (marked) {
-        await FoodUser.updateOne(
-          { _id: referralLog.referrerId },
-          { $inc: { referralCount: 1 } },
-        );
-      }
-    }
+    // Crediting happens later, on first order delivery — not here.
   } catch (e) {
     // Never fail login due to referral errors. Pending logs stay retryable.
     logger?.warn?.({ err: e }, "Referral crediting failed (user)");
