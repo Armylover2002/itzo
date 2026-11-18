@@ -553,6 +553,10 @@ export default function Home() {
         <div className="bg-white dark:bg-[#0a0a0a]">
           {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
           switcher) so Food/Instamart/Street Food stay reachable even while on Quick. */}
+          {/* Commented out: FOOD / STREET FOOD (etc.) switcher cards hidden per request.
+          A plain JSX comment wrapper can't be used here because this block has its own
+          inner JSX comments, so it's disabled via `false &&` instead — flip back to re-enable. */}
+          {false && (
           <div className={cn(
             "grid md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]",
             visibleTabs.length >= 3 ? "grid-cols-3" : visibleTabs.length === 2 ? "grid-cols-2" : "grid-cols-1"
@@ -659,6 +663,7 @@ export default function Home() {
               );
             })}
           </div>
+          )}
           <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
             <CategoryRail
               displayCategories={categories.display}
