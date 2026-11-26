@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
-import { Search, Download, ChevronDown, Eye, FileDown, FileSpreadsheet, FileText, Mail, Phone, MapPin, Package, IndianRupee, Calendar as CalendarIcon, User, CheckCircle, XCircle, Trash2, Loader2, EyeOff } from "lucide-react"
+import { Search, Download, ChevronDown, Eye, FileDown, FileSpreadsheet, FileText, Mail, Phone, MapPin, Package, IndianRupee, Calendar as CalendarIcon, User, CheckCircle, XCircle, Trash2, Loader2, EyeOff, Wallet, PlusCircle, MinusCircle } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@food/components/ui/dropdown-menu"
 import { exportCustomersToCSV, exportCustomersToExcel, exportCustomersToPDF, exportCustomersToJSON } from "@food/components/admin/customers/customersExportUtils"
 import { adminAPI } from "@food/api"
@@ -37,6 +37,13 @@ export default function Customers() {
   const [deletePassword, setDeletePassword] = useState("")
   const [showDeletePassword, setShowDeletePassword] = useState(false)
   const [deletingCustomer, setDeletingCustomer] = useState(false)
+
+  // Wallet adjustment state
+  const [walletTargetCustomer, setWalletTargetCustomer] = useState(null)
+  const [walletActionType, setWalletActionType] = useState("add") // "add" | "deduct"
+  const [walletAmount, setWalletAmount] = useState("")
+  const [walletReason, setWalletReason] = useState("")
+  const [walletSubmitting, setWalletSubmitting] = useState(false)
 
   // User Contacts state
   const [userContacts, setUserContacts] = useState([])
@@ -381,6 +388,71 @@ export default function Customers() {
     }
   }
 
+  const handleOpenWalletModal = (customer, type = "add") => {
+    setWalletTargetCustomer(customer)
+    setWalletActionType(type)
+    setWalletAmount("")
+    setWalletReason("")
+  }
+
+  const handleCloseWalletModal = () => {
+    if (walletSubmitting) return
+    setWalletTargetCustomer(null)
+    setWalletAmount("")
+    setWalletReason("")
+  }
+
+  const handleWalletSubmit = async (e) => {
+    if (e) e.preventDefault()
+    const customerId = getCustomerId(walletTargetCustomer)
+    if (!customerId || walletSubmitting) return
+
+    const amount = Number(walletAmount)
+    if (!amount || amount <= 0) {
+      toast.error("Please enter a valid amount greater than 0")
+      return
+    }
+
+    const currentBal = Number(walletTargetCustomer.walletBalance || 0)
+    if (walletActionType === "deduct" && amount > currentBal) {
+      toast.error(`Cannot deduct more than current balance (₹${currentBal.toFixed(2)})`)
+      return
+    }
+
+    try {
+      setWalletSubmitting(true)
+      const res = await adminAPI.adjustCustomerWallet(customerId, {
+        type: walletActionType,
+        amount,
+        reason: walletReason.trim() || undefined,
+      })
+
+      const newBal = res?.data?.data?.newBalance ?? (
+        walletActionType === "add" ? currentBal + amount : Math.max(0, currentBal - amount)
+      )
+
+      setCustomers((prev) =>
+        prev.map((c) =>
+          getCustomerId(c) === customerId ? { ...c, walletBalance: newBal } : c
+        )
+      )
+
+      if (userDetails && (getCustomerId(userDetails) === customerId || userDetails.id === customerId || userDetails._id === customerId)) {
+        setUserDetails((prev) => ({ ...prev, walletBalance: newBal }))
+      }
+
+      toast.success(
+        `₹${amount.toFixed(2)} ${walletActionType === "add" ? "added to" : "deducted from"} ${walletTargetCustomer.name || "customer"}'s wallet`
+      )
+      handleCloseWalletModal()
+    } catch (error) {
+      debugError("Wallet adjust error:", error)
+      toast.error(error?.response?.data?.message || "Failed to update wallet balance")
+    } finally {
+      setWalletSubmitting(false)
+    }
+  }
+
   const handleExport = async (format) => {
     try {
       toast.info("Preparing export...")
@@ -424,6 +496,7 @@ export default function Customers() {
         phone: customer.phone || "N/A",
         totalOrder: Number(customer.totalOrder || 0),
         totalOrderAmount: Number(customer.totalOrderAmount || 0),
+        walletBalance: Number(customer.walletBalance || 0),
         joiningDate: formatDateTime(customer.joiningDate),
         isCodAllowed: customer.isCodAllowed !== false,
         status: Boolean(customer.status ?? customer.isActive),
@@ -708,6 +781,7 @@ export default function Customers() {
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Contact Information</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Total Order</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Total Order Amount</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Wallet Balance</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Joining Date</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">COD Access</th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-[#5C5247] uppercase tracking-wider">Place Order</th>
@@ -718,13 +792,13 @@ export default function Customers() {
               <tbody className="bg-white divide-y divide-[#EDE8E0]/70">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-8 text-center">
+                    <td colSpan={11} className="px-6 py-8 text-center">
                       <div className="text-sm text-[#9E8F7E]">Loading customers...</div>
                     </td>
                   </tr>
                 ) : displayCustomers.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-8 text-center">
+                    <td colSpan={11} className="px-6 py-8 text-center">
                       <div className="text-sm text-[#9E8F7E]">No customers found</div>
                     </td>
                   </tr>
@@ -779,6 +853,21 @@ export default function Customers() {
                         <span className="text-sm font-medium text-[#1A1A1A]">{"\u20B9"} {(customer.totalOrderAmount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold text-[#1A1A1A]">
+                            {"\u20B9"}{(customer.walletBalance || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenWalletModal(customer, "add")}
+                            className="p-1 rounded bg-[#F3E8FF] text-[#6413C7] hover:bg-[#6413C7] hover:text-white transition-colors"
+                            title="Add / Deduct Wallet Balance"
+                          >
+                            <Wallet className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-[#5C5247]">{formatDateTime(customer.joiningDate)}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -823,6 +912,13 @@ export default function Customers() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => handleOpenWalletModal(customer, "add")}
+                            className="p-1.5 rounded text-amber-600 hover:bg-amber-50 transition-colors"
+                            title="Add / Deduct Wallet Balance"
+                          >
+                            <Wallet className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => handleViewDetails(getCustomerId(customer))}
                             className="p-1.5 rounded text-[#6413C7] hover:bg-[#F3E8FF] transition-colors"
@@ -933,7 +1029,7 @@ export default function Customers() {
               </div>
 
               {/* Statistics Section */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="bg-[#F3E8FF] border border-[#EDE8E0] rounded-xl p-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Package className="w-4 h-4 text-[#6413C7]" />
@@ -948,6 +1044,24 @@ export default function Customers() {
                   </div>
                   <p className="text-xl font-bold text-[#2E7D32]">
                     {"\u20B9"}{(userDetails.totalOrderAmount || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-amber-600" />
+                      <span className="text-xs font-semibold text-amber-900">Wallet</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenWalletModal(userDetails, "add")}
+                      className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 underline"
+                    >
+                      Manage
+                    </button>
+                  </div>
+                  <p className="text-xl font-bold text-amber-800">
+                    {"\u20B9"}{(userDetails.walletBalance || 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="bg-white border border-[#EDE8E0] rounded-xl p-3">
@@ -1136,6 +1250,194 @@ export default function Customers() {
               </button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Wallet Add / Deduct Dialog */}
+      <Dialog open={!!walletTargetCustomer} onOpenChange={(open) => { if (!open && !walletSubmitting) handleCloseWalletModal() }}>
+        <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-white border-[#EDE8E0] rounded-2xl shadow-xl">
+          <DialogHeader className="px-6 pt-6 pb-4 bg-gradient-to-r from-purple-50 via-white to-amber-50/50 border-b border-[#EDE8E0]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#6413C7]/10 text-[#6413C7] flex items-center justify-center shrink-0">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-bold text-[#1A1A1A]">
+                  Manage Customer Wallet
+                </DialogTitle>
+                <p className="text-xs text-[#5C5247] mt-0.5">
+                  {walletTargetCustomer?.name || "Customer"} · {walletTargetCustomer?.phone || walletTargetCustomer?.email || ""}
+                </p>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <form onSubmit={handleWalletSubmit} className="p-6 space-y-5">
+            {/* Current Balance Card */}
+            <div className="flex items-center justify-between p-4 rounded-xl bg-[#FAF7F2] border border-[#EDE8E0]">
+              <div>
+                <span className="text-xs font-medium text-[#5C5247] uppercase tracking-wider">Current Wallet Balance</span>
+                <p className="text-2xl font-bold text-[#1A1A1A] mt-0.5">
+                  {"\u20B9"}{(Number(walletTargetCustomer?.walletBalance || 0)).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-medium text-[#5C5247] uppercase tracking-wider">After Adjustment</span>
+                <p className={`text-2xl font-bold mt-0.5 ${
+                  walletActionType === "add" ? "text-emerald-600" : "text-rose-600"
+                }`}>
+                  {"\u20B9"}{(
+                    walletActionType === "add"
+                      ? Number(walletTargetCustomer?.walletBalance || 0) + (Number(walletAmount) || 0)
+                      : Math.max(0, Number(walletTargetCustomer?.walletBalance || 0) - (Number(walletAmount) || 0))
+                  ).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+            </div>
+
+            {/* Action Type Toggle (Add vs Deduct) */}
+            <div>
+              <label className="block text-xs font-semibold text-[#5C5247] uppercase tracking-wider mb-2">
+                Action Type
+              </label>
+              <div className="grid grid-cols-2 gap-2 p-1 bg-[#FAF7F2] rounded-xl border border-[#EDE8E0]">
+                <button
+                  type="button"
+                  onClick={() => setWalletActionType("add")}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                    walletActionType === "add"
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "text-[#5C5247] hover:text-[#1A1A1A] hover:bg-white/60"
+                  }`}
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  Add Amount
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWalletActionType("deduct")}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg text-sm font-semibold transition-all ${
+                    walletActionType === "deduct"
+                      ? "bg-rose-600 text-white shadow-sm"
+                      : "text-[#5C5247] hover:text-[#1A1A1A] hover:bg-white/60"
+                  }`}
+                >
+                  <MinusCircle className="w-4 h-4" />
+                  Deduct Amount
+                </button>
+              </div>
+            </div>
+
+            {/* Amount Input */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-[#5C5247] uppercase tracking-wider">
+                  Amount ({"\u20B9"})
+                </label>
+                {walletActionType === "deduct" && Number(walletAmount) > Number(walletTargetCustomer?.walletBalance || 0) && (
+                  <span className="text-xs font-semibold text-rose-600">
+                    Exceeds available balance
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base font-bold text-[#5C5247]">
+                  {"\u20B9"}
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  placeholder="0.00"
+                  value={walletAmount}
+                  onChange={(e) => setWalletAmount(e.target.value)}
+                  className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-base font-semibold focus:outline-none focus:ring-2 bg-white ${
+                    walletActionType === "deduct" && Number(walletAmount) > Number(walletTargetCustomer?.walletBalance || 0)
+                      ? "border-rose-400 focus:ring-rose-400 text-rose-700"
+                      : "border-[#EDE8E0] focus:ring-[#6413C7] focus:border-[#6413C7] text-[#1A1A1A]"
+                  }`}
+                  autoFocus
+                />
+              </div>
+
+              {/* Quick Amount Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                <span className="text-[11px] text-[#9E8F7E] mr-1">Quick:</span>
+                {[50, 100, 200, 500, 1000].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setWalletAmount(String(preset))}
+                    className="px-2.5 py-1 text-xs font-medium rounded-md border border-[#EDE8E0] bg-[#FAF7F2] text-[#5C5247] hover:bg-[#F3E8FF] hover:text-[#6413C7] hover:border-[#6413C7]/30 transition-colors"
+                  >
+                    +{"\u20B9"}{preset}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Reason / Note Input */}
+            <div>
+              <label className="block text-xs font-semibold text-[#5C5247] uppercase tracking-wider mb-1.5">
+                Reason / Note (Optional)
+              </label>
+              <input
+                type="text"
+                placeholder={walletActionType === "add" ? "e.g. Promotional reward, Compensation" : "e.g. Admin correction, Dispute resolution"}
+                value={walletReason}
+                onChange={(e) => setWalletReason(e.target.value)}
+                maxLength={150}
+                className="w-full px-4 py-2.5 border border-[#EDE8E0] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6413C7] focus:border-[#6413C7] bg-white text-[#1A1A1A]"
+              />
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EDE8E0]">
+              <button
+                type="button"
+                onClick={handleCloseWalletModal}
+                disabled={walletSubmitting}
+                className="px-4 py-2.5 text-sm font-semibold rounded-xl border border-[#EDE8E0] text-[#5C5247] hover:bg-[#FAF7F2] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={
+                  walletSubmitting ||
+                  !walletAmount ||
+                  Number(walletAmount) <= 0 ||
+                  (walletActionType === "deduct" && Number(walletAmount) > Number(walletTargetCustomer?.walletBalance || 0))
+                }
+                className={`px-5 py-2.5 text-sm font-semibold rounded-xl text-white transition-all flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${
+                  walletActionType === "add"
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-rose-600 hover:bg-rose-700"
+                }`}
+              >
+                {walletSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    {walletActionType === "add" ? (
+                      <>
+                        <PlusCircle className="w-4 h-4" />
+                        Add {"\u20B9"}{Number(walletAmount) > 0 ? Number(walletAmount).toFixed(2) : "Amount"}
+                      </>
+                    ) : (
+                      <>
+                        <MinusCircle className="w-4 h-4" />
+                        Deduct {"\u20B9"}{Number(walletAmount) > 0 ? Number(walletAmount).toFixed(2) : "Amount"}
+                      </>
+                    )}
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

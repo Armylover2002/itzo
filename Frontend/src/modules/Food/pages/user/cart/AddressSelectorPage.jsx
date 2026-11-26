@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react"
+import { setDeliveryAddressMode } from "@food/utils/deliveryAddressMode"
 import { useNavigate, useLocation as useRouterLocation } from "react-router-dom"
 import { ChevronLeft, ChevronRight, Plus, MapPin, MoreHorizontal, Navigation, Home, Building2, Briefcase, Phone, X, Crosshair, Search, Trash2 } from "lucide-react"
 import { Button } from "@food/components/ui/button"
@@ -454,7 +455,7 @@ export default function AddressSelectorPage() {
         
         // Persist local
         persistSelectedLocation(loc)
-        try { localStorage.setItem("deliveryAddressMode", "current") } catch {}
+        try { setDeliveryAddressMode("current") } catch {}
         
         // Save to Mongo
         try {
@@ -523,7 +524,7 @@ export default function AddressSelectorPage() {
       setActiveAddressId(id)
       await setDefaultAddress(id)
       persistSelectedLocation(buildLocationPayloadFromAddress(address))
-      try { localStorage.setItem("deliveryAddressMode", "saved") } catch {}
+      try { setDeliveryAddressMode("saved") } catch {}
       toast.success("Address selected")
       
       // Use "from" state if available, otherwise default to home page
@@ -725,7 +726,7 @@ export default function AddressSelectorPage() {
           await setDefaultAddress(id)
         }
         persistSelectedLocation(buildLocationPayloadFromAddress(created || payload))
-        try { localStorage.setItem("deliveryAddressMode", "saved") } catch {}
+        try { setDeliveryAddressMode("saved") } catch {}
         toast.success("Address saved")
         setShowAddressForm(false)
         setAddressAutocompleteValue("")

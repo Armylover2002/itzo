@@ -15,6 +15,7 @@ import * as notificationChannelController from '../controllers/notificationChann
 import * as orderController from '../../orders/controllers/order.controller.js';
 import { getAdminPageController, upsertAdminPageController } from '../controllers/pageContent.controller.js';
 import * as employeeController from '../controllers/employee.controller.js';
+import * as maintenanceModeController from '../controllers/maintenanceMode.controller.js';
 import { upload } from '../../../../middleware/upload.js';
 import { checkPermission } from '../../../../core/auth/auth.middleware.js';
 import jobRoutes from './job.route.js';
@@ -32,6 +33,21 @@ const requireAdmin = (req, _res, next) => {
 };
 
 router.use(requireAdmin);
+
+/**
+ * Ordering kill-switch: only the super admin may flip it, employees (even ones with
+ * dashboard access) must not be able to stop the whole marketplace from taking orders.
+ */
+const requireSuperAdmin = (req, _res, next) => {
+    if (req.user?.role !== 'ADMIN') {
+        return next(new AuthError('Only a super admin can change maintenance mode'));
+    }
+    return next();
+};
+
+// ----- Maintenance Mode (ordering kill-switch, shown on the food dashboard) -----
+router.get('/maintenance-mode', checkPermission('food::dashboard', 'view'), maintenanceModeController.getMaintenanceModeAdminController);
+router.patch('/maintenance-mode', requireSuperAdmin, maintenanceModeController.updateMaintenanceModeAdminController);
 
 // ----- Broadcast Notifications -----
 router.post('/notifications/broadcast', checkPermission('food::system_settings::broadcast', 'create'), notificationBroadcastController.createBroadcastNotificationController);
@@ -61,6 +77,8 @@ router.get('/customers/:id', checkPermission('food::customer_management::custome
 router.get('/customers/:id/contacts', checkPermission('food::customer_management::customers', 'view'), getCustomerContactsAdminController);
 router.patch('/customers/:id/status', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerStatus);
 router.patch('/customers/:id/cod-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerCodAccess);
+router.patch('/customers/:id/wallet', checkPermission('food::customer_management::customers', 'edit'), adminController.adjustCustomerWallet);
+router.post('/customers/:id/wallet', checkPermission('food::customer_management::customers', 'edit'), adminController.adjustCustomerWallet);
 router.patch('/customers/order-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersOrderAccess);
 router.patch('/customers/:id/order-access', checkPermission('food::customer_management::customers', 'edit'), adminController.updateCustomerOrderAccess);
 router.patch('/customers/cod-access/bulk', checkPermission('food::customer_management::customers', 'edit'), adminController.bulkUpdateCustomersCodAccess);

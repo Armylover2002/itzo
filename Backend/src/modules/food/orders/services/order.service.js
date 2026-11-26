@@ -104,6 +104,7 @@ import { resolveDeliveryDocumentType } from '../../../quick-commerce/services/di
 import { DISPATCH_DOCUMENT_TYPES } from '../../../quick-commerce/utils/dispatchDocument.constants.js';
 import * as returnPickupDelivery from '../../../quick-commerce/services/returnPickupDelivery.service.js';
 import { deductWalletBalance, refundWalletBalance } from '../../user/services/userWallet.service.js';
+import { creditUserReferralOnFirstOrder } from '../../user/services/userReferral.service.js';
 import { getGlobalBranding } from '../../../common/services/globalBranding.service.js';
 import { roadDistanceKm, PAYMENT_QUEUE_ACTIONS, adminVisibleOrdersFilter, enqueueOrderEvent, notifyRestaurantNewOrder, canExposeOrderToRestaurant, enrichRestaurantQuickPricing, watchdogCancellationReason } from './order.helpers.js';
 import { scorePointsByRoadDistance } from '../../../../services/roadDistance.service.js';
@@ -6653,6 +6654,16 @@ export async function completeDelivery(orderId, deliveryPartnerId, body = {}) {
   }
 
   await consumeOrderCouponUsageOnDelivery(order, order.userId);
+
+  // Refer & Earn: referrer + referee rewards unlock on the referee's first delivered order.
+  try {
+    await creditUserReferralOnFirstOrder(order.userId);
+  } catch (err) {
+    logger.warn(
+      `[Referral] credit-on-first-order failed for ${order.orderId || order._id}: ${err?.message || err}`,
+    );
+  }
+
   emitOrderUpdate(order, deliveryPartnerId);
   enqueueOrderEvent('delivery_completed', {
       orderMongoId: order._id?.toString?.(),
@@ -6749,6 +6760,16 @@ export async function markOrderDeliveredByAdmin(orderId, adminId, reason = "") {
   }
 
   await consumeOrderCouponUsageOnDelivery(order, order.userId);
+
+  // Refer & Earn: referrer + referee rewards unlock on the referee's first delivered order.
+  try {
+    await creditUserReferralOnFirstOrder(order.userId);
+  } catch (err) {
+    logger.warn(
+      `[Referral] credit-on-first-order failed for ${order.orderId || order._id}: ${err?.message || err}`,
+    );
+  }
+
   emitOrderUpdate(order, riderId);
   enqueueOrderEvent("delivery_completed", {
     orderMongoId: order._id?.toString?.(),

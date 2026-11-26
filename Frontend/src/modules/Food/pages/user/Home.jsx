@@ -1,4 +1,5 @@
 import { useSearchParams, Link, useNavigate, useLocation as useRouterLocation } from "react-router-dom";
+import { useDeliveryAddressMode } from "@food/utils/deliveryAddressMode";
 import React, {
   Suspense,
   lazy,
@@ -149,11 +150,6 @@ const quickPlaceholders = [
 
 const WEBVIEW_SESSION_CACHE_BUSTER = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-const getStoredDeliveryAddressMode = () => {
-  if (typeof window === "undefined") return "saved";
-  return window.localStorage.getItem("deliveryAddressMode") || "saved";
-};
-
 const defaultBannersImages = [
   "/banner.png",
   "/banner.png",
@@ -291,7 +287,7 @@ export default function Home() {
   }, [defaultSavedAddress]);
   const { zoneId: savedZoneId, isInService: isSavedInService, isOutOfService: isSavedOutOfService } = useZone(defaultSavedAddressLocation);
 
-  const deliveryAddressMode = getStoredDeliveryAddressMode();
+  const deliveryAddressMode = useDeliveryAddressMode();
   const effectiveZoneId = (deliveryAddressMode === "current" ? liveZoneId : savedZoneId) || liveZoneId;
   const effectiveLocation = (deliveryAddressMode === "current" ? location : defaultSavedAddressLocation) || location;
   // Out of service only once the relevant zone lookup has actually resolved to
@@ -557,6 +553,10 @@ export default function Home() {
         <div className="bg-white dark:bg-[#0a0a0a]">
           {/* TABS SECTION / CARDS SECTION — always visible (matches old itzo's HomeHeader
           switcher) so Food/Instamart/Street Food stay reachable even while on Quick. */}
+          {/* Commented out: FOOD / STREET FOOD (etc.) switcher cards hidden per request.
+          A plain JSX comment wrapper can't be used here because this block has its own
+          inner JSX comments, so it's disabled via `false &&` instead — flip back to re-enable. */}
+          {false && (
           <div className={cn(
             "grid md:flex md:justify-center gap-2 md:gap-4 px-3 py-3 sm:px-4 sm:py-4 mx-auto w-full max-w-7xl relative z-20 bg-white dark:bg-[#0a0a0a]",
             visibleTabs.length >= 3 ? "grid-cols-3" : visibleTabs.length === 2 ? "grid-cols-2" : "grid-cols-1"
@@ -663,6 +663,7 @@ export default function Home() {
               );
             })}
           </div>
+          )}
           <Suspense fallback={<CategoryChipRowSkeleton className="py-1" />}>
             <CategoryRail
               displayCategories={categories.display}

@@ -201,6 +201,17 @@ const globalSettingsSchema = new mongoose.Schema(
             deliveryPartner: { type: Boolean, default: false },
         },
 
+        /**
+         * Admin kill-switch for customer ordering on the Food module, toggled from the
+         * food dashboard (/ecs/food). Lives on this singleton rather than its own
+         * collection because the cluster is at its collection cap.
+         */
+        foodMaintenanceMode: {
+            enabled: { type: Boolean, default: false },
+            message: { type: String, default: 'We are coming soon. The app is on maintenance.' },
+            updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'FoodAdmin', default: null },
+        },
+
         // Customer Privacy Settings — female customer contact protection.
         // When enabled, delivery partners see a support number instead of the
         // female customer's real phone number.

@@ -764,6 +764,12 @@ export const adminAPI = {
       { isActive: isActive !== false },
       { contextModule: "admin" },
     ),
+  adjustCustomerWallet: (id, { type, amount, reason }) =>
+    apiClient.patch(
+      `/food/admin/customers/${String(id)}/wallet`,
+      { type, amount: Number(amount), reason },
+      { contextModule: "admin" },
+    ),
   getRecoveryRequests: (params = {}) =>
     apiClient.get("/food/admin/customers/recovery-requests", { params, contextModule: "admin" }),
   approveRecoveryRequest: (id) =>
@@ -1201,6 +1207,19 @@ export const adminAPI = {
   createOrUpdateFeeSettings: (body) =>
     apiClient.put("/food/admin/fee-settings", body ?? {}, {
       contextModule: "admin",
+    }),
+
+  /** Maintenance Mode — ordering kill-switch toggled from the food dashboard */
+  getMaintenanceMode: () =>
+    apiClient.get("/food/admin/maintenance-mode", { contextModule: "admin" }),
+  updateMaintenanceMode: (body) =>
+    apiClient.patch("/food/admin/maintenance-mode", body ?? {}, {
+      contextModule: "admin",
+    }),
+  getPublicMaintenanceMode: (config = {}) =>
+    apiClient.get("/food/maintenance-mode/public", {
+      contextModule: "user",
+      ...config,
     }),
 
   /** Referral Settings (admin) */

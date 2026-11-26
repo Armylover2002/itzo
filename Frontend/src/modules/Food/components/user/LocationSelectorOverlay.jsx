@@ -4,6 +4,7 @@
  * Kept for reference only — do not mount without coordinating with LocationPrompt.
  */
 import { useMemo, useState, useEffect, useRef, useCallback } from "react"
+import { setDeliveryAddressMode } from "@food/utils/deliveryAddressMode"
 import { ChevronLeft, ChevronRight, Plus, MapPin, MoreHorizontal, Navigation, Home, Building2, Briefcase, Phone, X, Crosshair } from "lucide-react"
 import { Button } from "@food/components/ui/button"
 import { Input } from "@food/components/ui/input"
@@ -968,7 +969,7 @@ export default function LocationSelectorOverlay({ isOpen, onClose }) {
       // don't open the "Add address" form. Just close and return to homepage.
       // Store selection mode so Cart can prefer this current location for delivery address.
       try {
-        localStorage.setItem("deliveryAddressMode", "current");
+        setDeliveryAddressMode("current");
         const payload = {
           street: locationData.street || locationData.area || locationData.address || "Current Location",
           additionalDetails: locationData.area || "",
@@ -2102,7 +2103,7 @@ export default function LocationSelectorOverlay({ isOpen, onClose }) {
         })
         // User saved an address; prefer saved delivery address in Cart.
         try {
-          localStorage.setItem("deliveryAddressMode", "saved")
+          setDeliveryAddressMode("saved")
         } catch {}
       }
 
@@ -2310,7 +2311,7 @@ export default function LocationSelectorOverlay({ isOpen, onClose }) {
       }
       // User picked a saved address; Cart should prefer saved address over current location.
       try {
-        localStorage.setItem("deliveryAddressMode", "saved");
+        setDeliveryAddressMode("saved");
       } catch {}
       onClose()
     } catch (error) {

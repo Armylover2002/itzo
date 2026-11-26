@@ -5,6 +5,7 @@ import {
   hasValidCoordinates,
   USER_LOCATION_STORAGE_KEY,
 } from "@food/utils/locationStorage"
+import { setDeliveryAddressMode } from "@food/utils/deliveryAddressMode"
 
 const debugLog = (...args) => {
   if (import.meta.env.DEV) console.log("[useLocation]", ...args)
@@ -48,6 +49,16 @@ const AUTO_START_LIVE_WATCH = false
 // listener from starting a duplicate fetch while the prompt is being answered.
 let didStartAppOpenLocationFetch = false
 let appOpenLocationFetch = null
+
+// Foreground resume: when the app comes back from the background we must not blindly
+// re-run GPS + reverse-geocode + DB write. Instead we take one cheap, low-accuracy coord
+// probe and only pay for the full refresh when the device has actually moved.
+const RESUME_MIN_HIDDEN_MS = 45_000            // ignore quick tab switches
+const RESUME_MIN_INTERVAL_MS = 2 * 60_000      // at most one probe per 2 minutes, app-wide
+const RESUME_SIGNIFICANT_MOVE_METERS = 150     // below this the shown address is still correct
+const RESUME_PROBE_TIMEOUT_MS = 8000
+let lastResumeProbeAt = 0
+let resumeRefreshInFlight = null
 
 const GPS_TARGET_ACCURACY_METERS = 30
 const GPS_SETTLE_WAIT_MS = 6000
@@ -479,6 +490,10 @@ function useLocationInternal() {
   const lastDbUpdateAtRef = useRef(0)
   const lastDbUpdatedCoordsRef = useRef({ latitude: null, longitude: null })
   const gpsRequestSeqRef = useRef(0)
+  const latestLocationRef = useRef(null)
+  const permissionRef = useRef("unknown")
+  latestLocationRef.current = location
+  permissionRef.current = geolocationPermission
 
   const GEOCODE_REUSE_DISTANCE_METERS = 120
   const GEOCODE_REUSE_TIME_MS = 10 * 60 * 1000
@@ -1961,7 +1976,7 @@ function useLocationInternal() {
                 debugLog("? Fresh location fetched:", location)
                 // Home/Navbar pick restaurants by saved address unless mode is "current".
                 // On app open, restaurants must follow the user's live location.
-                try { localStorage.setItem("deliveryAddressMode", "current") } catch {}
+                try { setDeliveryAddressMode("current") } catch {}
                 window.dispatchEvent(new CustomEvent("userLocationUpdated", { detail: { location } }))
                 debugLog("? Location details:", {
                   formattedAddress: location?.formattedAddress,
@@ -2000,6 +2015,118 @@ function useLocationInternal() {
         permStatusObj.removeEventListener('change', permListener);
         permStatusObj.onchange = null;
       }
+    }
+  }, [])
+
+  /* ===================== FOREGROUND RESUME (app back from background) ===================== */
+  // Fixes: user backgrounds the app, travels, comes back and still sees the old address.
+  // Cost control: one low-accuracy coord probe (no geocode, no DB write) decides whether
+  // the expensive refresh is worth it, and it is throttled app-wide by RESUME_MIN_INTERVAL_MS.
+  useEffect(() => {
+    if (typeof document === "undefined") return undefined
+    if (typeof navigator === "undefined" || !navigator.geolocation) return undefined
+
+    let cancelled = false
+    let hiddenAt = document.visibilityState === "hidden" ? Date.now() : 0
+
+    const probeCoarseCoords = () =>
+      new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve(pos?.coords || null),
+          () => resolve(null),
+          {
+            enableHighAccuracy: false,
+            timeout: RESUME_PROBE_TIMEOUT_MS,
+            maximumAge: 0,
+          }
+        )
+      })
+
+    const refreshIfDeviceMoved = async () => {
+      // The app-open fetch or another instance's resume refresh is already working on it.
+      if (appOpenLocationFetch || resumeRefreshInFlight) return
+      if (Date.now() - lastResumeProbeAt < RESUME_MIN_INTERVAL_MS) return
+      if (permissionRef.current === "denied") return
+      // Claim the window synchronously so sibling hook instances don't probe too.
+      lastResumeProbeAt = Date.now()
+
+      // Never trigger the permission prompt on resume - only refresh if already granted.
+      if (navigator.permissions?.query) {
+        try {
+          const status = await navigator.permissions.query({ name: "geolocation" })
+          if (cancelled) return
+          setGeolocationPermission(status.state)
+          if (status.state !== "granted") return
+        } catch (permErr) {
+          debugWarn("Resume permission check failed:", permErr)
+        }
+      }
+
+      const coords = await probeCoarseCoords()
+      if (cancelled || !coords) return
+
+      const known = latestLocationRef.current
+      const movedMeters = getDistanceMeters(
+        Number(known?.latitude),
+        Number(known?.longitude),
+        coords.latitude,
+        coords.longitude
+      )
+      // A coarse fix can be off by a few hundred metres; don't treat its noise as movement.
+      const accuracySlack = Math.min(Number(coords.accuracy) || 0, 250)
+      if (movedMeters < RESUME_SIGNIFICANT_MOVE_METERS + accuracySlack) {
+        debugLog(
+          `Resume: still around the same place (${movedMeters.toFixed(0)}m, accuracy ${Math.round(coords.accuracy || 0)}m) - keeping cached address`
+        )
+        return
+      }
+
+      debugLog(`Resume: device moved ~${movedMeters.toFixed(0)}m - refreshing address`)
+      resumeRefreshInFlight = getLocation(true, true)
+      try {
+        const freshLocation = await resumeRefreshInFlight
+        if (
+          !cancelled &&
+          freshLocation &&
+          freshLocation.formattedAddress !== "Select location" &&
+          freshLocation.city !== "Current Location"
+        ) {
+          window.dispatchEvent(
+            new CustomEvent("userLocationUpdated", { detail: { location: freshLocation } })
+          )
+        }
+      } catch (err) {
+        debugWarn("Resume location refresh failed (keeping cached):", err?.message || err)
+      } finally {
+        resumeRefreshInFlight = null
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        hiddenAt = Date.now()
+        return
+      }
+      const hiddenMs = hiddenAt ? Date.now() - hiddenAt : 0
+      hiddenAt = 0
+      if (hiddenMs < RESUME_MIN_HIDDEN_MS) return
+      refreshIfDeviceMoved()
+    }
+
+    // Mobile browsers / WebViews often restore from the back-forward cache instead of
+    // firing a real load, so visibilitychange alone can be missed.
+    const handlePageShow = (event) => {
+      if (!event?.persisted) return
+      hiddenAt = 0
+      refreshIfDeviceMoved()
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    window.addEventListener("pageshow", handlePageShow)
+    return () => {
+      cancelled = true
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      window.removeEventListener("pageshow", handlePageShow)
     }
   }, [])
 
