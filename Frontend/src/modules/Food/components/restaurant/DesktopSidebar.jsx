@@ -35,7 +35,7 @@ import {
 import { restaurantAPI } from "@food/api";
 import { getAppLogo, getCompanyName } from "@common/utils/businessSettings";
 import useNotificationInbox from "@food/hooks/useNotificationInbox";
-import { clearModuleAuth } from "@food/utils/auth";
+import { clearModuleAuth, getCurrentUser } from "@food/utils/auth";
 import RestaurantProfile from "@food/pages/restaurant/RestaurantProfile";
 
 const extractRestaurantPayload = (response) =>
@@ -74,6 +74,9 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
   const ownerName = restaurantData?.ownerName || restaurantData?.name || "Owner";
   const ownerImage = restaurantData?.profileImage?.url || restaurantData?.ownerImage?.url || "";
 
+  const loggedInUser = getCurrentUser("restaurant");
+  const isHubOwner = !loggedInUser?.parentRestaurantId && !restaurantData?.parentRestaurantId;
+
   const sections = [
     {
       title: "OPERATIONS",
@@ -98,6 +101,9 @@ export default function DesktopSidebar({ isCollapsed, onToggle }) {
       items: [
         { name: "Outlet info", path: "/food/restaurant/outlet-info", icon: Info },
         { name: "Outlet timings", path: "/food/restaurant/outlet-timings", icon: Clock },
+        ...(isHubOwner
+          ? [{ name: "Hub & franchise outlets", path: "/food/restaurant/hub-outlets", icon: Building2 }]
+          : []),
         ...(restaurantData?.businessType === "Street Food Vendor"
           ? [{ name: "Live Location Control", path: "/food/restaurant/live-location", icon: Map }]
           : []),
