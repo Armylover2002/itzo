@@ -95,8 +95,11 @@ import {
     updateHubOutletController,
     deleteHubOutletController,
     getHubEarningsController,
-    resolveNearestOutletController
+    resolveNearestOutletController,
+    getHubScopeController,
+    switchToOutletController
 } from '../controllers/hub.controller.js';
+import { assertCanActAsOutlet } from '../services/hubAccess.service.js';
 
 const router = express.Router();
 
@@ -131,6 +134,33 @@ const requireHubOwner = async (req, res, next) => {
         if (restaurant.parentRestaurantId) {
             return sendError(res, 403, 'Franchise outlets cannot manage hub outlets');
         }
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * Lets the main restaurant run an otherwise self-scoped endpoint "on behalf of"
+ * one of its own outlets by passing ?outletId=<id> (or outletId in the body).
+ * Used for the hub's per-outlet withdraw/finance rows, so the outlet's money
+ * stays in the outlet's own wallet/ledger instead of being merged into the hub's.
+ *
+ * A franchise outlet can never use this: assertCanActAsOutlet only matches an
+ * outlet whose parentRestaurantId is the caller, so an outlet passing any id but
+ * its own is rejected.
+ */
+const actAsOutlet = async (req, res, next) => {
+    try {
+        const requested = req.query?.outletId || req.body?.outletId;
+        if (!requested) return next();
+        const outlet = await assertCanActAsOutlet(req.user?.userId, String(requested));
+        req.user = {
+            ...req.user,
+            userId: String(outlet._id),
+            actingAsOutletId: String(outlet._id),
+            hubRestaurantId: String(req.user?.userId),
+        };
         next();
     } catch (error) {
         next(error);
@@ -253,7 +283,7 @@ router.put('/outlet-timings', authMiddleware, requireRestaurant, requireApproved
     await invalidateCache('restaurant_timings:*');
     next();
 }, upsertCurrentRestaurantOutletTimingsController);
-router.get('/finance', authMiddleware, requireRestaurant, requireApprovedRestaurant, getRestaurantFinanceController);
+router.get('/finance', authMiddleware, requireRestaurant, requireApprovedRestaurant, actAsOutlet, getRestaurantFinanceController);
 
 // Hub / franchise outlets (owner-only)
 router.get('/hubs', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, listHubOutletsController);
@@ -261,13 +291,15 @@ router.post('/hubs', authMiddleware, requireRestaurant, requireApprovedRestauran
 router.patch('/hubs/:id', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, updateHubOutletController);
 router.delete('/hubs/:id', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, deleteHubOutletController);
 router.get('/hubs/earnings', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, getHubEarningsController);
+router.get('/hubs/scope', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, getHubScopeController);
+router.post('/hubs/:id/switch', authMiddleware, requireRestaurant, requireApprovedRestaurant, requireHubOwner, switchToOutletController);
 
 router.get('/subscription-eligibility', authMiddleware, requireRestaurant, requireApprovedRestaurant, checkSubscriptionEligibilityController);
 router.get('/subscription-wallet', authMiddleware, requireRestaurant, requireApprovedRestaurant, getRestaurantSubscriptionWalletController);
 router.post('/subscription-topup', authMiddleware, requireRestaurant, requireApprovedRestaurant, createTopupOrderController);
 router.post('/verify-topup', authMiddleware, requireRestaurant, requireApprovedRestaurant, verifyTopupController);
-router.post('/withdraw', authMiddleware, requireRestaurant, requireApprovedRestaurant, createWithdrawalRequestController);
-router.get('/withdrawals', authMiddleware, requireRestaurant, requireApprovedRestaurant, listMyWithdrawalsController);
+router.post('/withdraw', authMiddleware, requireRestaurant, requireApprovedRestaurant, actAsOutlet, createWithdrawalRequestController);
+router.get('/withdrawals', authMiddleware, requireRestaurant, requireApprovedRestaurant, actAsOutlet, listMyWithdrawalsController);
 router.post('/withdrawals/:id/cancel', authMiddleware, requireRestaurant, requireApprovedRestaurant, cancelMyWithdrawalController);
 router.post(
     '/profile/profile-image',

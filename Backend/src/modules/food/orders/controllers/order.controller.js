@@ -1,4 +1,5 @@
 import { sendResponse } from '../../../../utils/response.js';
+import { resolveScopeIds } from '../../restaurant/services/hubAccess.service.js';
 import * as orderService from '../services/order.service.js';
 import * as foodOrderPaymentService from '../services/foodOrderPayment.service.js';
 import { getMaintenanceModeCached } from '../../admin/services/maintenanceMode.service.js';
@@ -287,9 +288,18 @@ export async function getOrderByIdRestaurantController(req, res, next) {
     try {
         const restaurantId = req.user?.userId;
         const orderId = req.params.orderId;
-        const order = await orderService.getOrderById(orderId, { restaurantId });
+        // Main restaurant may open an order that belongs to one of its outlets;
+        // an outlet's own scope is just itself, so nothing widens for them.
+        const { scope, ids } = await resolveScopeIds(restaurantId);
+        const order = await orderService.getOrderById(orderId, {
+            restaurantId,
+            restaurantIds: ids,
+        });
         return sendResponse(res, 200, 'Order retrieved', {
-            order: toOrderDetailDto(order, { role: 'RESTAURANT' }),
+            order: {
+                ...toOrderDetailDto(order, { role: 'RESTAURANT' }),
+                outlet: orderService.describeOrderOutlet(order?.restaurantId, scope),
+            },
         });
     } catch (err) {
         next(err);

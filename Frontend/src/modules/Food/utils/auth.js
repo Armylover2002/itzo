@@ -261,6 +261,7 @@ export function clearRestaurantSessionCache() {
     "restaurant_name",
     "restaurantName",
     "restaurant_pendingPhone",
+    "restaurant_hub_session",
   ];
 
   keys.forEach((key) => localStorage.removeItem(key));
@@ -445,4 +446,70 @@ export function setAuthData(module, token, user, refreshToken = null) {
       throw error;
     }
   }
+}
+
+/**
+ * Hub -> outlet session switching.
+ *
+ * Opening an outlet replaces the restaurant module's session with a session
+ * issued for the outlet document itself, so every existing restaurant screen
+ * (menu, orders, finance) works for that outlet unchanged. The hub's own
+ * session is stashed first so "Back to main restaurant" is a pure client-side
+ * restore — the server deliberately offers no outlet->hub escalation.
+ */
+const HUB_SESSION_KEY = "restaurant_hub_session";
+
+export function getStashedHubSession() {
+  try {
+    const raw = localStorage.getItem(HUB_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.accessToken ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isViewingOutletAsHub() {
+  return Boolean(getStashedHubSession());
+}
+
+/**
+ * Stash the current (hub) session, then install the outlet session returned by
+ * POST /food/restaurant/hubs/:id/switch.
+ */
+export function enterOutletSession(switchPayload) {
+  const accessToken = switchPayload?.accessToken;
+  if (!accessToken) throw new Error("Outlet session is missing an access token");
+
+  const hubSession = {
+    accessToken: getModuleToken("restaurant"),
+    refreshToken: getModuleRefreshToken("restaurant"),
+    user: getCurrentUser("restaurant"),
+    hubName:
+      switchPayload?.switchedFrom?.name || getCurrentUser("restaurant")?.restaurantName || "",
+    outletName: switchPayload?.outlet?.name || "",
+    outletRestaurantId: switchPayload?.outlet?.restaurantId || "",
+  };
+  if (!hubSession.accessToken) throw new Error("No hub session to return to");
+
+  // setAuthData clears restaurant-scoped caches (including this key), so the
+  // stash has to be written after the outlet session is installed.
+  setAuthData("restaurant", accessToken, switchPayload.user, switchPayload.refreshToken);
+  try {
+    localStorage.setItem(HUB_SESSION_KEY, JSON.stringify(hubSession));
+  } catch {
+    // Storage failure means no way back — undo rather than trap the owner.
+    setAuthData("restaurant", hubSession.accessToken, hubSession.user, hubSession.refreshToken);
+    throw new Error("Could not switch outlet: browser storage is unavailable");
+  }
+}
+
+/** Restore the stashed hub session. Returns false if there was nothing stashed. */
+export function exitOutletSession() {
+  const hubSession = getStashedHubSession();
+  if (!hubSession) return false;
+  setAuthData("restaurant", hubSession.accessToken, hubSession.user, hubSession.refreshToken);
+  localStorage.removeItem(HUB_SESSION_KEY);
+  return true;
 }

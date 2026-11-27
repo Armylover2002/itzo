@@ -733,6 +733,9 @@ export function toRestaurantOrderListDto(orderLike) {
           })
         : o.restaurantId,
     restaurantName: o.restaurantName,
+    // Which branch this order belongs to (main restaurant vs a franchise
+    // outlet) — attached by listOrdersRestaurant from the caller's hub scope.
+    outlet: o.outlet,
     note: o.note,
     restaurantNote: o.restaurantNote,
     sendCutlery: o.sendCutlery,

@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, Plus, MapPin, Store, IndianRupee, X, Loader2, Pencil } from "lucide-react"
+import { ArrowLeft, Plus, MapPin, Store, IndianRupee, X, Loader2, Pencil, ExternalLink, Wallet } from "lucide-react"
 import { toast } from "sonner"
-import { hubAPI } from "@food/api"
+import { hubAPI, restaurantAPI } from "@food/api"
+import { enterOutletSession } from "@food/utils/auth"
 import useRestaurantBackNavigation from "@food/hooks/useRestaurantBackNavigation"
 import OutletLocationPicker from "@food/components/restaurant/OutletLocationPicker"
 
@@ -224,6 +225,89 @@ function EditOutletModal({ outlet, onClose, onSaved }) {
   )
 }
 
+/**
+ * Per-location withdraw. Each location (the main restaurant and every outlet)
+ * has its own wallet and its own bank account, so a withdrawal always names the
+ * location it is paid out for — balances are never pooled.
+ */
+function WithdrawModal({ row, onClose, onDone }) {
+  const [amount, setAmount] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
+
+  const available = Number(row.availableBalance || 0)
+
+  const handleSubmit = async () => {
+    const value = Number(amount)
+    if (!Number.isFinite(value) || value <= 0) return setError("Enter a valid amount")
+    if (value > available) return setError(`Only ₹${available.toFixed(0)} is available for this location`)
+
+    setSubmitting(true)
+    setError("")
+    try {
+      await restaurantAPI.createWithdrawalRequest(value, {
+        // Omitted for the main restaurant — that is the logged-in account itself.
+        outletId: row.isMain ? undefined : row.restaurantId,
+        idempotencyKey: `hub-wd-${row.restaurantId}-${Date.now()}`,
+      })
+      toast.success("Withdrawal request submitted")
+      onDone()
+      onClose()
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to request withdrawal"))
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Withdraw</h3>
+            <p className="text-xs text-gray-500">{row.name}</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-700">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="bg-gray-50 rounded-xl px-3 py-2">
+          <p className="text-xs text-gray-500">Available for this location</p>
+          <p className="text-lg font-bold text-gray-900">₹{available.toFixed(0)}</p>
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-gray-500">Amount</label>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Enter amount"
+            className="mt-1 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#10335D]"
+          />
+        </div>
+
+        <p className="text-[11px] text-gray-400">
+          Paid into this location&apos;s own bank account. If it has no bank details saved yet, open the
+          outlet and add them first.
+        </p>
+        {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
+
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="w-full h-11 rounded-xl bg-[#10335D] text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
+          {submitting ? "Requesting..." : "Request withdrawal"}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function HubOutlets() {
   const navigate = useNavigate()
   const goBack = useRestaurantBackNavigation()
@@ -232,6 +316,8 @@ export default function HubOutlets() {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [editingOutlet, setEditingOutlet] = useState(null)
+  const [withdrawRow, setWithdrawRow] = useState(null)
+  const [switchingId, setSwitchingId] = useState("")
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -252,6 +338,26 @@ export default function HubOutlets() {
   useEffect(() => {
     load()
   }, [load])
+
+  /**
+   * Open an outlet's panel: the server issues a session for that outlet and the
+   * whole app reloads as that outlet. The hub's session is stashed first, so the
+   * banner's "Back to main" restores it without re-login.
+   */
+  const handleOpenOutlet = async (outlet) => {
+    setSwitchingId(String(outlet._id))
+    try {
+      const res = await hubAPI.switchToOutlet(outlet._id)
+      const payload = res?.data?.data
+      if (!payload?.accessToken) throw new Error("Could not open this outlet")
+      enterOutletSession(payload)
+      // Hard reload so every context re-reads the new session from storage.
+      window.location.assign("/food/restaurant/orders")
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Failed to open outlet"))
+      setSwitchingId("")
+    }
+  }
 
   const handleToggleActive = async (outlet) => {
     try {
@@ -283,6 +389,34 @@ export default function HubOutlets() {
             <p className="text-xs text-gray-400 mt-1">
               Available balance: ₹{Number(earnings.totals?.availableBalance || 0).toFixed(0)} across {earnings.outlets?.length || 0} location(s)
             </p>
+
+            {/* Money is tracked and paid out per location — the total above is
+                only a rollup, never a single pooled balance. */}
+            <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+              {(earnings.outlets || []).map((row) => {
+                const isMain = Boolean(row.isMain)
+                return (
+                  <div key={String(row.restaurantId)} className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-gray-800 truncate">
+                        {isMain ? `${row.name} (Main)` : row.name}
+                      </p>
+                      <p className="text-[11px] text-gray-400">
+                        Available ₹{Number(row.availableBalance || 0).toFixed(0)} · Lifetime ₹
+                        {Number(row.lifetimeEarnings || 0).toFixed(0)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setWithdrawRow({ ...row, isMain })}
+                      disabled={Number(row.availableBalance || 0) <= 0}
+                      className="shrink-0 flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-[#10335D]/10 text-[#10335D] disabled:opacity-40"
+                    >
+                      <Wallet size={12} /> Withdraw
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 
@@ -316,6 +450,19 @@ export default function HubOutlets() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenOutlet(outlet)}
+                        disabled={switchingId === String(outlet._id)}
+                        className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-full bg-[#10335D] text-white disabled:opacity-50"
+                        title="Open this outlet's panel"
+                      >
+                        {switchingId === String(outlet._id) ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <ExternalLink size={12} />
+                        )}
+                        Open
+                      </button>
                       <button
                         onClick={() => setEditingOutlet(outlet)}
                         className="p-1.5 rounded-full text-gray-400 hover:text-[#10335D] hover:bg-gray-100"
@@ -365,6 +512,14 @@ export default function HubOutlets() {
           outlet={editingOutlet}
           onClose={() => setEditingOutlet(null)}
           onSaved={load}
+        />
+      )}
+
+      {withdrawRow && (
+        <WithdrawModal
+          row={withdrawRow}
+          onClose={() => setWithdrawRow(null)}
+          onDone={load}
         />
       )}
     </div>

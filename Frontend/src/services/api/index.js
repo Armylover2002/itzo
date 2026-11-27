@@ -1475,6 +1475,10 @@ export const restaurantAPI = {
     const body = { amount: Number(amount) };
     const key = String(options?.idempotencyKey || "").trim();
     if (key.length >= 8) body.idempotencyKey = key.slice(0, 128);
+    // Main restaurant withdrawing one of its outlets' balance: the money stays
+    // in that outlet's own wallet/ledger, it is never merged into the hub's.
+    const outletId = String(options?.outletId || "").trim();
+    if (outletId) body.outletId = outletId;
     return apiClient.post("/food/restaurant/withdraw", body, {
       contextModule: "restaurant"
     });
@@ -2120,6 +2124,18 @@ export const hubAPI = {
     apiClient.delete(`/food/restaurant/hubs/${String(id)}`, { contextModule: "restaurant" }),
   getEarnings: () =>
     apiClient.get("/food/restaurant/hubs/earnings", { contextModule: "restaurant" }),
+  /** Main restaurant + every outlet, with the label the order list shows. */
+  getScope: () =>
+    apiClient.get("/food/restaurant/hubs/scope", { contextModule: "restaurant" }),
+  /**
+   * Issue a session for one outlet so the whole restaurant panel operates as
+   * that outlet. Pair with enterOutletSession()/exitOutletSession() in
+   * @food/utils/auth, which stash and restore the hub's own session.
+   */
+  switchToOutlet: (id) =>
+    apiClient.post(`/food/restaurant/hubs/${String(id)}/switch`, {}, {
+      contextModule: "restaurant",
+    }),
   /** Public: resolve a hub brand id to the nearest active outlet for a user's lat/lng. */
   resolveOutlet: (restaurantId, lat, lng) =>
     apiClient.get(`/food/restaurant/restaurants/${String(restaurantId)}/resolve-outlet`, {

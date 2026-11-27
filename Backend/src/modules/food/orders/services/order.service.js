@@ -57,6 +57,7 @@ import { FoodAddon } from '../../restaurant/models/foodAddon.model.js';
 import { SellerProduct } from '../../../quick-commerce/seller/models/sellerProduct.model.js';
 import { resolveDiscountSplitByCoupon } from '../../shared/discountSplit.util.js';
 import { resolveRestaurantPhone } from '../../shared/restaurantContact.js';
+import { resolveScopeIds } from '../../restaurant/services/hubAccess.service.js';
 import { FoodTransaction } from '../models/foodTransaction.model.js';
 import { FoodSupportTicket } from '../../user/models/supportTicket.model.js';
 import { Seller } from '../../../quick-commerce/seller/models/seller.model.js';
@@ -4555,7 +4556,7 @@ export async function listOrdersUser(userId, query) {
 
 export async function getOrderById(
   orderId,
-  { userId, restaurantId, deliveryPartnerId, admin } = {},
+  { userId, restaurantId, restaurantIds, deliveryPartnerId, admin } = {},
 ) {
   const identity = buildOrderIdentityFilter(orderId);
   if (!identity) throw new ValidationError("Order id required");
@@ -4582,7 +4583,17 @@ export async function getOrderById(
 
   if (userId && orderUserId !== userId.toString())
     throw new ForbiddenError("Not your order");
-  if (restaurantId && orderRestaurantId !== restaurantId.toString())
+  // `restaurantIds` carries the caller's hub scope (itself + its outlets) when a
+  // main restaurant opens an outlet's order; plain `restaurantId` is the single
+  // -restaurant case and stays exactly as before.
+  const allowedRestaurantIds = (
+    Array.isArray(restaurantIds) && restaurantIds.length
+      ? restaurantIds
+      : restaurantId
+        ? [restaurantId]
+        : []
+  ).map((id) => String(id));
+  if (allowedRestaurantIds.length && !allowedRestaurantIds.includes(orderRestaurantId))
     throw new ForbiddenError("Not your restaurant order");
   if (
     deliveryPartnerId &&
@@ -5118,8 +5129,16 @@ export async function submitOrderRatings(orderId, userId, dto) {
 // ----- Restaurant -----
 export async function listOrdersRestaurant(restaurantId, query) {
   const { page, limit, skip } = buildPaginationOptions(query);
+  // A main restaurant sees its own orders plus every franchise outlet's orders;
+  // an outlet (or a plain single-location restaurant) only ever sees its own.
+  // ?outletId=main pins the list to the logged-in restaurant, ?outletId=<id> to
+  // one outlet, and anything outside the caller's own scope is rejected.
+  const { scope, ids: scopeIds } = await resolveScopeIds(restaurantId, query?.outletId);
   const filter = {
-    restaurantId: new mongoose.Types.ObjectId(restaurantId),
+    restaurantId:
+      scopeIds.length > 1
+        ? { $in: scopeIds.map((id) => new mongoose.Types.ObjectId(id)) }
+        : new mongoose.Types.ObjectId(scopeIds[0]),
     $or: [
       { "payment.method": { $in: ["cash", "wallet"] } },
       { "payment.status": { $in: ["paid", "authorized", "captured", "settled", "refunded"] } },
@@ -5146,10 +5165,34 @@ export async function listOrdersRestaurant(restaurantId, query) {
           doc.deliveryMode,
         );
       }
-      return sanitizeOrderForExternal(normalized, 'RESTAURANT');
+      const sanitized = sanitizeOrderForExternal(normalized, 'RESTAURANT');
+      // Which branch is this order for? The panel shows it on every card so a
+      // hub owner can tell an outlet's order apart from its own at a glance.
+      sanitized.outlet = describeOrderOutlet(doc.restaurantId, scope);
+      return sanitized;
     }),
   );
   return buildPaginatedResult({ docs: sanitizedDocs, total, page, limit });
+}
+
+/**
+ * Human-readable branch tag for an order, resolved from the caller's hub scope.
+ * Falls back to a bare id when the order's restaurant is somehow outside the
+ * scope (can't happen through listOrdersRestaurant's own filter, but detail
+ * reads share this helper).
+ */
+export function describeOrderOutlet(orderRestaurantId, scope) {
+  const id = String(orderRestaurantId?._id || orderRestaurantId || '');
+  if (!id) return undefined;
+  const member = scope?.labelMap?.get(id);
+  if (!member) return { restaurantId: id };
+  return {
+    restaurantId: member.restaurantId,
+    businessId: member.businessId,
+    name: member.name,
+    isMain: member.isMain,
+    isSelf: member.isSelf,
+  };
 }
 
 export async function updateOrderStatusRestaurant(
@@ -5164,9 +5207,14 @@ export async function updateOrderStatusRestaurant(
   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     throw new ValidationError("Invalid restaurant id");
   }
+  // Hub owners accept/reject their outlets' orders too, so the ownership check
+  // runs against the caller's whole scope rather than its own id alone.
+  const { ids: allowedRestaurantIds } = await resolveScopeIds(restaurantId);
   let order = await FoodOrder.findOne({
     ...identity,
-    restaurantId: new mongoose.Types.ObjectId(restaurantId),
+    restaurantId: {
+      $in: allowedRestaurantIds.map((id) => new mongoose.Types.ObjectId(id)),
+    },
   });
   if (!order) throw new NotFoundError("Order not found");
   const from = order.orderStatus;
@@ -5414,8 +5462,11 @@ export async function updateOrderStatusRestaurant(
     const restaurantBody = String(orderStatus).includes("cancel")
       ? `You cancelled order #${order.orderId}.`
       : `Status is now ${String(orderStatus).replace(/_/g, " ")}.`;
+    // The order's own restaurant, not the actor: when a main restaurant accepts
+    // or rejects one of its franchise outlets' orders, the outlet is the one
+    // that needs to see it. For a single-location restaurant both are the same.
     await notifyOwnerSafely(
-      { ownerType: "RESTAURANT", ownerId: restaurantId },
+      { ownerType: "RESTAURANT", ownerId: order.restaurantId || restaurantId },
       {
         title: restaurantTitle,
         body: restaurantBody,

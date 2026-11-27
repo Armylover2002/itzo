@@ -106,3 +106,89 @@ Har franchise outlet ko ek naya **alag `FoodRestaurant` document** banayenge (na
 - `CartContext.jsx` `addToCart` (two mismatch checks, ~L218-230 and ~L258-279 in the current file): id mismatch is now checked independently of name match, not just as a name-empty fallback — differing restaurant ids always trigger the existing "replace cart?" flow / block, even when names are identical.
 - `CartContext.jsx` `cleanCartForRestaurant`: was also name-first (would keep same-named-but-different-id items), so a stale mixed cart wasn't actually fixed by the existing cross-restaurant cleanup path either. Flipped to id-first, but — since a restaurant is referenced by two formats elsewhere in this app (Mongo `_id` and the business code like `REST000034`) — it now accepts an **array** of acceptable ids rather than one, so a legitimate same-restaurant-different-format match still isn't wrongly wiped. `Cart.jsx` passes both `restaurantData._id` and `restaurantData.restaurantId` at its three call sites.
 - `Cart.jsx` `handlePlaceOrder`: the existing "same name, different ids → that's fine, just a dev warning" block actually let a stale mixed cart through to order placement silently. Changed to treat it the same as a real cross-restaurant conflict: auto-clean to the resolved restaurant and make the user confirm/retry, instead of placing an order against the wrong outlet.
+
+## Outlet switching + hub-wide order & money control (2026-11-27)
+
+Goal from the owner: the main restaurant should be able to *operate* an outlet
+(not just create it) — open it, add items, accept/reject its orders, withdraw its
+money — while an outlet stays locked to itself. Balances stay separate per
+branch, every order shows which branch it belongs to, and the delivery partner
+picks up from the outlet.
+
+### Shared scope resolver
+`restaurant/services/hubAccess.service.js` (new) answers "who may this
+logged-in restaurant act for?" in one place:
+- hub owner → itself + every outlet (`parentRestaurantId` = its own id)
+- outlet → itself only (never the hub, never a sibling)
+- standalone restaurant → itself only (old flow, byte-for-byte unchanged)
+
+`getHubScope`, `resolveScopeIds(loginId, outletId)` and `assertCanActAsOutlet`
+are the only new primitives; every call site just swaps `restaurantId: X` for
+`restaurantId: { $in: ids }`. This was chosen over a dedicated franchise-orders
+collection/endpoint precisely because the panel already keys everything off a
+single restaurantId.
+
+### Switch session (hub → outlet)
+- `POST /food/restaurant/hubs/:id/switch` (owner-only) → `switchToOutletSession`
+  mints an ordinary restaurant session for the **outlet document itself** via the
+  existing `issueRestaurantSession`. Every restaurant endpoint therefore works
+  for that outlet with no per-endpoint changes, and the outlet view inherits the
+  outlet's own isolation (no hub page, no sibling outlets, no hub wallet).
+- There is deliberately **no server-side switch-back**: an outlet session asking
+  for its parent's session would hand a real franchise login the hub's keys.
+  Going back is the client restoring the hub session it already held —
+  `enterOutletSession()` / `exitOutletSession()` in `Frontend/src/modules/Food/utils/auth.js`
+  stash the hub's token under `restaurant_hub_session` (added to
+  `clearRestaurantSessionCache`, so it can never leak into another account).
+- `OutletSessionBanner.jsx`, mounted once in `RestaurantLayout`, shows "Viewing
+  outlet: X … Back to main" on every screen while that stash exists, and renders
+  nothing for a normal or a genuine franchise login.
+- `GET /food/restaurant/hubs/scope` returns the main restaurant + outlets with
+  display labels (used by the orders branch switcher).
+
+### Orders
+- `listOrdersRestaurant` now resolves the caller's scope: a hub sees its own and
+  all outlets' orders by default, `?outletId=main` pins to the main restaurant,
+  `?outletId=<id>` to one outlet, and anything outside the scope is rejected.
+- Each order carries `outlet { restaurantId, name, isMain, isSelf }`
+  (`describeOrderOutlet`), surfaced through `toRestaurantOrderListDto` and the
+  detail controller, and rendered as a chip next to the order number
+  (`OutletBadge` in `OrdersMain.jsx`) so a hub owner can tell branches apart.
+- `updateOrderStatusRestaurant` and `getOrderById` check ownership against the
+  whole scope, so a hub can accept/reject an outlet's order; an outlet calling
+  against a hub order still gets `Order not found` / `Not your restaurant order`.
+- The orders page branch switcher is a pure client-side filter over the one
+  shared fetch (`applyOutletFilter`), so all seven status tabs respect it with no
+  extra plumbing and no new requests.
+- Status-change push now targets `order.restaurantId` instead of the acting
+  restaurant, so an outlet is told when the hub accepts/rejects its order
+  (identical behaviour for a single-location restaurant).
+
+### Money — per branch, never pooled
+- `actAsOutlet` middleware (restaurant routes) lets the hub run `/finance`,
+  `/withdraw` and `/withdrawals` "on behalf of" one of its outlets via
+  `outletId`. An outlet can never use it, because `assertCanActAsOutlet` only
+  matches an outlet whose `parentRestaurantId` is the caller.
+- `getHubEarnings` rows now carry `isMain`; `HubOutlets.jsx` lists every branch's
+  own available/lifetime balance with its own Withdraw button. The payout still
+  goes to that branch's own bank details — balances are not merged.
+
+### Verified against the live DB (ritutest REST000034 + Ritutest Outlet 1 REST000056)
+`scripts/test-outlet-switch-ritutest.mjs` — 29/29 assertions passed, covering scope
+resolution, the `outletId` filters, combined vs isolated order lists, detail
+access both ways, the switch session's JWT claims (and that no password hash
+leaks), the escalation attempt from an outlet, per-branch balances, the pickup
+point being the outlet's own address (checked on real delivered order
+FOD-7AVA56), and a hub accepting then rejecting an outlet's order end-to-end.
+The accept test used a synthetic order with `dispatch.modeAtCreation: "manual"`
+so the real rider fleet was never offered the job.
+
+### Known follow-ups (flagged, not half-built)
+- A new order placed at an outlet raises its socket/FCM alert on the **outlet's**
+  channel only, so a hub owner sees it on refresh but gets no live popup for it.
+  The hub's live "incoming order" panel therefore still only pops for its own
+  orders.
+- An outlet's withdrawal needs that outlet's own bank details on its own
+  document; `createHubOutlet` does not copy the hub's bank account (deliberate —
+  the payout is the outlet's), so a brand-new outlet must save bank details
+  (open the outlet → bank details) before its first withdrawal.

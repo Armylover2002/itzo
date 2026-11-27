@@ -39,7 +39,7 @@ import BottomNavOrders from "@food/components/restaurant/BottomNavOrders";
 import RestaurantNavbar from "@food/components/restaurant/RestaurantNavbar";
 import OrderDetails from "./OrderDetails";
 import notificationSound from "@food/assets/audio/alert.mp3";
-import { restaurantAPI } from "@food/api";
+import { restaurantAPI, hubAPI } from "@food/api";
 import { RESTAURANT_COMMISSION_ENABLED } from "@food/constants/commission";
 import { getCancellationDisplayLabel, getCancellationDisplayReason } from "@food/utils/cancellationDisplay";
 
@@ -48,9 +48,73 @@ function invalidateRestaurantOrdersCache() {
   restaurantAPI.getOrders.invalidate?.();
 }
 
+/**
+ * Hub owner's branch filter. The backend already returns the main restaurant's
+ * orders plus every outlet's in one list, so narrowing to one branch is a pure
+ * client-side filter applied in one place — every status tab reads this same
+ * shared fetch and therefore respects it without its own plumbing.
+ * "" / "all" means every branch.
+ */
+let selectedOutletFilter = "";
+
+export function setOrdersOutletFilter(restaurantId) {
+  selectedOutletFilter = String(restaurantId || "");
+}
+
+function applyOutletFilter(response) {
+  const wanted = selectedOutletFilter;
+  if (!wanted || wanted === "all") return response;
+  const orders = response?.data?.data?.orders;
+  if (!Array.isArray(orders)) return response;
+  const filtered = orders.filter(
+    (order) => String(order?.outlet?.restaurantId || "") === wanted,
+  );
+  // Shallow clone so the shared (cached) response object is never mutated.
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      data: { ...response.data.data, orders: filtered },
+    },
+  };
+}
+
 async function fetchRestaurantOrdersShared({ force = false } = {}) {
   if (force) invalidateRestaurantOrdersCache();
-  return restaurantAPI.getOrders();
+  return applyOutletFilter(await restaurantAPI.getOrders());
+}
+
+/**
+ * Which branch an order belongs to. The backend tags every restaurant order
+ * with `outlet` from the caller's hub scope, so a main restaurant sees its own
+ * orders and its franchise outlets' orders in one list and still knows which is
+ * which. Single-location restaurants get `isSelf: true` and show no badge.
+ */
+function buildOutletTag(order) {
+  const outlet = order?.outlet;
+  if (!outlet?.name) return { outletName: null, outletIsMain: true };
+  return {
+    outletName: outlet.name,
+    outletIsMain: Boolean(outlet.isMain),
+    outletIsSelf: Boolean(outlet.isSelf),
+  };
+}
+
+/** Small "which branch" chip shown next to an order number. */
+function OutletBadge({ name, isMain, className = "" }) {
+  if (!name) return null;
+  return (
+    <span
+      className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0 max-w-[120px] truncate ${
+        isMain
+          ? "bg-blue-50 text-[#10335D] border border-[#10335D]/20"
+          : "bg-amber-50 text-amber-700 border border-amber-200"
+      } ${className}`}
+      title={name}
+    >
+      {isMain ? `${name} · Main` : name}
+    </span>
+  );
 }
 import {
   formatScheduledAtShort,
@@ -233,6 +297,7 @@ const transformOrderForList = (order) => {
   isFoodQuickDelivery: isFoodQuick,
   etaPromise: order.etaPromise || null,
   itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
   photoUrl: getOrderPreviewItem(order.items)?.image || null,
   photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
   paymentMethod: order.paymentMethod || order.payment?.method || null,
@@ -281,6 +346,7 @@ function CompletedOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
             deliveredAt:
               order.deliveredAt || order.updatedAt || order.createdAt,
             itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
             photoUrl: getOrderPreviewItem(order.items)?.image || null,
             photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
             amount: order.pricing?.total || order.total || 0,
@@ -388,6 +454,8 @@ function CompletedOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
                       timePlaced: deliveredDate,
                       itemsSummary: order.itemsSummary,
                       paymentMethod: order.paymentMethod,
+                      outletName: order.outletName,
+                      outletIsMain: order.outletIsMain,
                     })
                   }
                   className="w-full text-left flex gap-3 items-stretch">
@@ -411,9 +479,12 @@ function CompletedOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
                   <div className="flex-1 flex flex-col justify-between min-h-[80px]">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-semibold text-black leading-tight">
-                          Order #{order.orderId}
-                        </p>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="text-sm font-semibold text-black leading-tight">
+                            Order #{order.orderId}
+                          </p>
+                          <OutletBadge name={order.outletName} isMain={order.outletIsMain} />
+                        </div>
                         <p className="text-[11px] text-gray-500 mt-1">
                           {order.customerName}
                         </p>
@@ -508,6 +579,7 @@ function CancelledOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
             cancelledBy: order.cancelledBy || "unknown",
             cancellationReason: displayReason,
             itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
             photoUrl: getOrderPreviewItem(order.items)?.image || null,
             photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
             amount: order.pricing?.total || order.total || 0,
@@ -619,6 +691,8 @@ function CancelledOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
                       timePlaced: cancelledDate,
                       itemsSummary: order.itemsSummary,
                       paymentMethod: order.paymentMethod,
+                      outletName: order.outletName,
+                      outletIsMain: order.outletIsMain,
                     })
                   }
                   className="w-full text-left flex gap-3 items-stretch">
@@ -642,9 +716,12 @@ function CancelledOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
                   <div className="flex-1 flex flex-col justify-between min-h-[80px]">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-semibold text-black leading-tight">
-                          Order #{order.orderId}
-                        </p>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <p className="text-sm font-semibold text-black leading-tight">
+                            Order #{order.orderId}
+                          </p>
+                          <OutletBadge name={order.outletName} isMain={order.outletIsMain} />
+                        </div>
                         <p className="text-[11px] text-gray-500 mt-1">
                           {order.customerName}
                         </p>
@@ -1884,6 +1961,10 @@ export default function OrdersMain() {
   }, []);
 
   const [ordersRefreshToken, setOrdersRefreshToken] = useState(0);
+  // Branch switcher: only a main restaurant that actually has franchise outlets
+  // gets one. Everyone else never sees it and never sends a filter.
+  const [hubMembers, setHubMembers] = useState([]);
+  const [outletFilter, setOutletFilter] = useState("");
   const refreshDebounceRef = useRef(null);
   const requestOrdersRefresh = useCallback(() => {
     if (refreshDebounceRef.current) clearTimeout(refreshDebounceRef.current);
@@ -2265,6 +2346,32 @@ export default function OrdersMain() {
     setIsSheetOpen(true);
   }, []);
 
+  // A franchise outlet / single-location restaurant gets 403 or a single-member
+  // scope here — either way no switcher is rendered.
+  useEffect(() => {
+    let cancelled = false;
+    hubAPI
+      .getScope()
+      .then((res) => {
+        const data = res?.data?.data;
+        if (cancelled || !data?.isHubOwner || !data?.hasOutlets) return;
+        setHubMembers(Array.isArray(data.members) ? data.members : []);
+      })
+      .catch(() => {
+        /* not a hub owner — no switcher */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleOutletFilterChange = useCallback((restaurantId) => {
+    setOutletFilter(restaurantId);
+    setOrdersOutletFilter(restaurantId);
+    invalidateRestaurantOrdersCache();
+    setOrdersRefreshToken((token) => token + 1);
+  }, []);
+
   // Incoming panel and mobile order sheet must not stack — sheet left at opacity 0
   // was blocking the whole mobile viewport.
   useEffect(() => {
@@ -2410,6 +2517,38 @@ case "cancelled":
           </div>
         </div>
       </div>
+
+      {/* Branch switcher (main restaurant with franchise outlets only) */}
+      {hubMembers.length > 1 && (
+        <div className="relative z-10 px-4 pt-3 md:px-6 md:bg-white/95 md:backdrop-blur">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            <button
+              onClick={() => handleOutletFilterChange("")}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold border ${
+                !outletFilter
+                  ? "bg-[#10335D] text-white border-[#10335D]"
+                  : "bg-white text-gray-600 border-gray-200"
+              }`}
+            >
+              All branches
+            </button>
+            {hubMembers.map((member) => (
+              <button
+                key={member.restaurantId}
+                onClick={() => handleOutletFilterChange(member.restaurantId)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold border max-w-[160px] truncate ${
+                  outletFilter === member.restaurantId
+                    ? "bg-[#10335D] text-white border-[#10335D]"
+                    : "bg-white text-gray-600 border-gray-200"
+                }`}
+                title={member.name}
+              >
+                {member.isMain ? `${member.name} · Main` : member.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filter Grid - tiles on mobile, single row on desktop */}
       <div className="relative z-10 md:bg-white/95 md:backdrop-blur md:px-6 md:pb-3 md:border-b md:border-gray-100">
@@ -3246,9 +3385,15 @@ case "cancelled":
 
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <p className="text-sm font-semibold text-black">
-                    Order #{selectedOrder.orderId}
-                  </p>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="text-sm font-semibold text-black">
+                      Order #{selectedOrder.orderId}
+                    </p>
+                    <OutletBadge
+                      name={selectedOrder.outletName}
+                      isMain={selectedOrder.outletIsMain}
+                    />
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
                     {selectedOrder.customerName}
                   </p>
@@ -3422,6 +3567,8 @@ const OrderCard = memo(function OrderCard({
   dispatchStatus,
   isFoodQuickDelivery = false,
   deliveryMode,
+  outletName = null,
+  outletIsMain = true,
   onSelect,
   onCancel,
   onMarkReady,
@@ -3452,6 +3599,8 @@ const OrderCard = memo(function OrderCard({
           dispatchStatus,
           isFoodQuickDelivery,
           deliveryMode,
+          outletName,
+          outletIsMain,
         })
       }>
       
@@ -3461,6 +3610,7 @@ const OrderCard = memo(function OrderCard({
           <span className="text-sm font-bold text-gray-900 tracking-tight truncate">
             #{orderId}
           </span>
+          <OutletBadge name={outletName} isMain={outletIsMain} />
           {isFoodQuickDelivery && (
             <span className="inline-flex items-center rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider shrink-0">
               Quick · Priority
@@ -3626,6 +3776,7 @@ function PreparingOrders({
               initialETA, // Store initial ETA in minutes
               preparingTimestamp, // Store when order started preparing
               itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
               photoUrl: getOrderPreviewItem(order.items)?.image || null,
               photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
               deliveryPartnerId: order.deliveryPartnerId || null,
@@ -3903,6 +4054,8 @@ function PreparingOrders({
                 paymentMethod={order.paymentMethod}
                 deliveryPartnerId={order.deliveryPartnerId}
                 dispatchStatus={order.dispatchStatus}
+                outletName={order.outletName}
+                outletIsMain={order.outletIsMain}
                 onSelect={onSelectOrder}
                 onCancel={onCancel}
                 onMarkReady={handleMarkReady}
@@ -3955,6 +4108,7 @@ function ReadyOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) {
             }),
             eta: null, // Don't show ETA for ready orders
             itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
             photoUrl: getOrderPreviewItem(order.items)?.image || null,
             photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
             paymentMethod: order.paymentMethod || order.payment?.method || null,
@@ -4080,6 +4234,7 @@ const OutForDeliveryOrders = ({ onSelectOrder, refreshToken = 0, searchQuery = "
             }),
             eta: null,
             itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
             photoUrl: getOrderPreviewItem(order.items)?.image || null,
             photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
             paymentMethod: order.paymentMethod || order.payment?.method || null,
@@ -4201,6 +4356,7 @@ function ScheduledOrders({ onSelectOrder, refreshToken = 0, searchQuery = "" }) 
             timePlaced: `For: ${scheduledLabel}`,
             scheduledAt: order.scheduledAt,
             itemsSummary: buildOrderItemsSummary(order.items),
+            ...buildOutletTag(order),
             photoUrl: getOrderPreviewItem(order.items)?.image || null,
             photoAlt: getOrderPreviewItem(order.items)?.name || "Order",
             paymentMethod: order.paymentMethod || order.payment?.method || null,

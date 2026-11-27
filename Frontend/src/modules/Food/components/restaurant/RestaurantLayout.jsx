@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import DesktopSidebar from "./DesktopSidebar";
+import OutletSessionBanner from "./OutletSessionBanner";
 
 export default function RestaurantLayout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -14,6 +15,8 @@ export default function RestaurantLayout({ children }) {
         {/* We can optionally wrap the children in a container if we want max-width on desktop, 
             but keeping it flex-1 ensures it fills the remaining space. */}
         <div className="w-full flex-1 flex flex-col md:rounded-tl-2xl md:shadow-sm md:border-l md:border-t md:border-gray-200 bg-white md:bg-transparent min-h-full">
+           {/* Only renders while a hub owner is operating one of its outlets. */}
+           <OutletSessionBanner />
            {children}
         </div>
       </main>

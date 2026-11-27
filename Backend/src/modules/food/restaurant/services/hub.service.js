@@ -10,6 +10,8 @@ import {
   getRestaurantLifetimeOrderEarnings,
 } from './restaurantFinance.service.js';
 import { backfillHubInventoryForOutlet } from './hubInventorySync.service.js';
+import { assertCanActAsOutlet } from './hubAccess.service.js';
+import { issueRestaurantSession } from '../../../../core/auth/auth.service.js';
 
 /**
  * Multi-outlet / franchise hub. An outlet is just another FoodRestaurant
@@ -133,8 +135,14 @@ export const getHubEarnings = async (mainRestaurantId) => {
     .lean();
 
   const targets = [
-    { _id: hub._id, restaurantId: hub.restaurantId, restaurantName: hub.restaurantName, outletLabel: 'Main hub' },
-    ...outlets,
+    {
+      _id: hub._id,
+      restaurantId: hub.restaurantId,
+      restaurantName: hub.restaurantName,
+      outletLabel: hub.restaurantName,
+      isMain: true,
+    },
+    ...outlets.map((outlet) => ({ ...outlet, isMain: false })),
   ];
 
   const rows = await Promise.all(
@@ -147,6 +155,9 @@ export const getHubEarnings = async (mainRestaurantId) => {
         restaurantId: t._id,
         businessId: t.restaurantId,
         name: t.outletLabel || t.restaurantName,
+        // Each row is withdrawn separately — the hub's own balance is never
+        // merged with an outlet's, so the client needs to tell them apart.
+        isMain: Boolean(t.isMain),
         availableBalance,
         lifetimeEarnings,
       };
@@ -251,6 +262,46 @@ export const resolveNearestOutlet = async (restaurantIdOrCode, lat, lng) => {
     address: best.candidate.address || best.candidate.location?.address || best.candidate.location?.formattedAddress,
     distanceKm: Math.round(best.distanceKm * 100) / 100,
     matchedBy: String(best.candidate._id) === String(target._id) ? 'main-hub' : 'nearest-outlet',
+  };
+};
+
+/**
+ * Hub owner "opens" one of its outlets: we mint a normal restaurant session for
+ * the outlet document itself, so every existing restaurant-panel endpoint
+ * (menu, items, orders, timings, finance) works for that outlet with zero
+ * endpoint-specific changes. The issued session is deliberately identical to a
+ * franchise login, which means the outlet view also inherits the outlet's own
+ * isolation: no hub page, no sibling outlets, no hub wallet.
+ *
+ * There is intentionally NO server-side "switch back": going back is the client
+ * restoring the hub session it already held. Letting an outlet session ask for
+ * its parent's session would hand a real franchise login the hub's keys.
+ */
+export const switchToOutletSession = async (mainRestaurantId, outletId) => {
+  const hub = await assertOwnsHub(mainRestaurantId);
+  if (hub.parentRestaurantId) {
+    throw new ValidationError('Franchise outlets cannot switch to another outlet');
+  }
+  if (String(outletId) === String(hub._id)) {
+    throw new ValidationError('Already on the main restaurant');
+  }
+
+  const outlet = await assertCanActAsOutlet(hub._id, outletId);
+  const session = await issueRestaurantSession(outlet);
+
+  return {
+    ...session,
+    switchedFrom: {
+      restaurantId: String(hub._id),
+      businessId: hub.restaurantId,
+      name: hub.restaurantName,
+    },
+    outlet: {
+      restaurantId: String(outlet._id),
+      businessId: outlet.restaurantId,
+      name: outlet.outletLabel || outlet.restaurantName,
+      isActive: outlet.isActive !== false,
+    },
   };
 };
 
